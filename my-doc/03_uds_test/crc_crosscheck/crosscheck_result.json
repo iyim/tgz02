@@ -1,0 +1,135 @@
+{
+  "cases": 18,
+  "match": 18,
+  "mismatch": 0,
+  "naive_diverged": 17,
+  "pass": true,
+  "rows": [
+    {
+      "idx": 0,
+      "len": 1280,
+      "c": "38ea3a26",
+      "js": "38ea3a26",
+      "name": "real_ch0"
+    },
+    {
+      "idx": 1,
+      "len": 1280,
+      "c": "09d6a1c5",
+      "js": "09d6a1c5",
+      "name": "zeros_1280"
+    },
+    {
+      "idx": 2,
+      "len": 1280,
+      "c": "ef05fec5",
+      "js": "ef05fec5",
+      "name": "ones_ffff"
+    },
+    {
+      "idx": 3,
+      "len": 1280,
+      "c": "ef05fec5",
+      "js": "ef05fec5",
+      "name": "minus1_x640"
+    },
+    {
+      "idx": 4,
+      "len": 1280,
+      "c": "a7baa1c5",
+      "js": "a7baa1c5",
+      "name": "min_int16_x640"
+    },
+    {
+      "idx": 5,
+      "len": 1280,
+      "c": "192dfec5",
+      "js": "192dfec5",
+      "name": "max_int16_x640"
+    },
+    {
+      "idx": 6,
+      "len": 1280,
+      "c": "d54f5345",
+      "js": "d54f5345",
+      "name": "alt_minmax"
+    },
+    {
+      "idx": 7,
+      "len": 1280,
+      "c": "dc0d8cd6",
+      "js": "dc0d8cd6",
+      "name": "neg_ramp"
+    },
+    {
+      "idx": 8,
+      "len": 1280,
+      "c": "fafd7bfe",
+      "js": "fafd7bfe",
+      "name": "synth_seq0"
+    },
+    {
+      "idx": 9,
+      "len": 1280,
+      "c": "ee980ac9",
+      "js": "ee980ac9",
+      "name": "synth_seq1"
+    },
+    {
+      "idx": 10,
+      "len": 1280,
+      "c": "1b24072d",
+      "js": "1b24072d",
+      "name": "synth_seq12345"
+    },
+    {
+      "idx": 11,
+      "len": 0,
+      "c": "811c9dc5",
+      "js": "811c9dc5",
+      "name": "len0"
+    },
+    {
+      "idx": 12,
+      "len": 1,
+      "c": "0e0c6b4a",
+      "js": "0e0c6b4a",
+      "name": "len1"
+    },
+    {
+      "idx": 13,
+      "len": 2,
+      "c": "978d310e",
+      "js": "978d310e",
+      "name": "len2"
+    },
+    {
+      "idx": 14,
+      "len": 3,
+      "c": "ee44b241",
+      "js": "ee44b241",
+      "name": "len3"
+    },
+    {
+      "idx": 15,
+      "len": 7,
+      "c": "2b00e6a9",
+      "js": "2b00e6a9",
+      "name": "len7"
+    },
+    {
+      "idx": 16,
+      "len": 13,
+      "c": "aee9fb82",
+      "js": "aee9fb82",
+      "name": "len13"
+    },
+    {
+      "idx": 17,
+      "len": 1023,
+      "c": "5a2412a1",
+      "js": "5a2412a1",
+      "name": "len1023"
+    }
+  ]
+}

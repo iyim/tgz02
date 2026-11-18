@@ -8,3 +8,5 @@ _run/
 *.sock.ready
 __pycache__/
 out/
+crc_c
+crc_crosscheck/crc_c
