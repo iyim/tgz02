@@ -1,0 +1,9 @@
+# 构建产物与运行数据不入库
+*.exe
+*.o
+*.obj
+_run/
+*.cap
+*.sock
+*.sock.ready
+__pycache__/

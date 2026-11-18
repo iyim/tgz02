@@ -406,7 +406,7 @@ $adb = 'D:\GreenSoft\platform-tools\adb.exe'
 & $adb shell su -c 'grep -E "libsmartbox|libsaladapter|libagaudio" /proc/$(pidof com.alibaba.ailabs.genie.smartapp:core)/maps'
 
 # 4) 启动 frida-server（仅需时启动）
-& $adb shell su -c 'setsid /data/local/tmp/fs32 -l 0.0.0.0:27042 >/dev/null 2>&1 &'
+& $adb shell su -c 'setsid /data/local/tmp/fs32 -l 127.0.0.1:27042 >/dev/null 2>&1 &'
 & $adb forward tcp:27042 tcp:27042
 
 # 5) 采集 PCM（按进程名自动找 pid，40 秒）
