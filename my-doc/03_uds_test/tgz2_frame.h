@@ -1,12 +1,15 @@
 /*
- * tgz2_frame.h -- TG-Z02 PCM 旁路 wire protocol v1 (portable C, Win32 + POSIX)
+ * tgz2_frame.h -- TG-Z02 PCM 旁路 wire protocol v2 (portable C, Win32 + POSIX)
  *
  * 一帧 = 40 B 头 + 1280 B 载荷 = 1320 B，对应原厂 40 ms / 16000 Hz 单声道 ch0。
+ *
+ * v1 -> v2 的唯一变化：头 offset 20 由 frames_total 改为 epoch（发送端实例标识），
+ * 以便把「发送端重启」和「真的丢帧」分开；TGZ2_VER 同步改为 2，老接收端会明确拒收。
  *
  * 头布局（全部小端，手工序列化，不依赖 struct 对齐）：
  *   off  size  field
  *   0    4     magic        'T''G''Z''2' = 0x325A4754
- *   4    1     ver          1
+ *   4    1     ver          2
  *   5    1     flags        bit0 synthetic, bit1 speech_active
  *   6    2     hdr_len      40
  *   8    4     seq          生产序号，从 0 起，单调 +1（缺口 = 丢帧）

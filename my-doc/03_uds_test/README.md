@@ -135,15 +135,29 @@ python verify_capture.py _run\m.cap
 
 | 文件 | 作用 | 状态 |
 |---|---|---|
-| `pcm_bridge_draft.js` | 方案 A 草稿（修订 2：非阻塞校验/重连/真 CRC/单调时钟/零分配） | **未在设备上运行** |
-| `thread_probe.js` | 只读线程探针：验证 `feed` 是否单生产者（SPSC 前提） | **未执行** |
+| `pcm_bridge_draft.js` | 方案 A 草稿（修订 4：timespec 偏移、时钟失败丢帧、Math.imul FNV、强引用生命周期、单生产者守卫） | **未在设备上运行** |
+| `thread_probe.js` | 只读线程探针：验证 `feed` 是否单生产者（SPSC 前提）；30 s 到点自动 detach | **未执行** |
 
 执行顺序（每次只引入一个变量）：
 `thread_probe.js`（只读）→ `pcm_bridge_draft.js` + `DRY_RUN=true`（只统计）→ 打开发送。
 
----
+## 7. 本机测试（不连设备）
 
-## 7. 已知限制
+| 文件 | 作用 |
+|---|---|
+| `tests/bridge_unit_test.js` | 把 `pcm_bridge_draft.js` 原样加载进假 Frida 环境：timespec 解码、时钟失败丢帧、端到端帧头/载荷/CRC（BigInt 独立参考）、DRY_RUN 无 socket、多生产者守卫。**61 断言** |
+| `tests/probe_detach_test.js` | `thread_probe.js` 的卸载验证：到点 detach、幂等、安装失败不留定时器、统计口径。**43 断言** |
+| `crc_crosscheck/` | JS/C 的 FNV-1a 逐字节一致（18 组，含真实 ch0）；反面对照证明 `Math.imul` 必需 |
+| `bindweak_probe.js` / `bindweak_run.py` | `Script.bindWeak` 生命周期实测（本机进程） |
+
+```powershell
+node --check pcm_bridge_draft.js
+node tests\bridge_unit_test.js
+node tests\probe_detach_test.js
+cd crc_crosscheck; python run_crosscheck.py
+```
+
+## 8. 已知限制
 
 - 本机只能用 `stream`；`--proto dgram` 只能在 Linux/Android 上测（Windows 内核不支持 AF_UNIX DGRAM）。
 - 原生负载是 `seq` 决定的伪随机序列，不是真语音；真语音路径已由第二阶段 `pcm_talk.raw` 验证。

@@ -193,3 +193,123 @@ python bindweak_run.py
 | `03_uds_test/crc_crosscheck/crosscheck_result.json` | 新增：18/18 一致的机读结果 |
 | `03_uds_test/bindweak_probe.js` / `bindweak_run.py` | 新增：`Script.bindWeak` 生命周期实测（本机） |
 | `03_pcm_bridge_final_review.md` | 本文件 |
+
+---
+
+## 7. 补充审查（round 4）—— 三个缺陷 + 文档同步
+
+本轮证据等级：全部为 **W-PC**（node 单测 / 本机编译），**T-DEV 仍为 0**。
+
+### 7.1 timespec 指针偏移错误（已修，W-PC）
+
+```js
+// 错（修订 3）：两次读同一个地址，tv_nsec 恒等于 tv_sec
+var s = tsMem.readS32(), n = tsMem.readS32();
+
+// 对（修订 4）：arm32 struct timespec { int32 tv_sec; int32 tv_nsec; } 共 8 字节
+var s = buf.readS32();
+var n = buf.add(4).readS32();
+```
+
+**影响（这不是"略微偏一点"）**：`ts_us = sec*1e6 + sec/1000`，等于把秒数当纳秒用。
+例如真实 `sec=12345, nsec=678901234` 应为 `12345678901 µs`，旧代码得到 `12345000012 µs`；
+差值 178 889 µs ≈ **179 ms 的固定偏移**，且随运行时间线性变差（sec 越大偏得越多）。
+后果：接收端 `--max-age-ms` 的过期判定、端到端延迟统计全部失真。
+
+修正做法：把解码单独抽成 `decodeTimespec(buf)`，用 `/* TS-BEGIN */ … /* TS-END */` 标记包住，
+**单元测试直接从发布文件抽取这段执行**（与 FNV 同一套做法，杜绝测试副本漂移）。
+
+| 用例 | 期望 | 说明 |
+|---|---|---|
+| (0, 0) | 0 | 基准 |
+| (12345, 678901234) | 12345678901 | 常规值；旧代码得 12345000012 |
+| (100, 500) | 100000000 | 500 ns 截断为 0 µs（`|0` 语义，与 C 一致） |
+| (1, 999999999) | 1999999 | nsec 上界 |
+| **(7, 999999)** | **7000999** | **陷阱用例：旧写法会得 7000000，测试显式断言 ≠ 7000000** |
+| (−1, 0) / (0, −1) / (0, 1e9) | −1 | 非法值全部返回 −1 |
+| (0, 999999999) | 999999 | 上界内 |
+
+**顺带更正上一轮 §2.3 的结论**：该表当时写"按 `readS32`×2 读取"——语义没错，但**代码实际写成了同一地址读两次**，
+而我当时只核对了"8 字节、sec@0/nsec@4"这一层，没有核到调用点。这一轮把核对下沉成单元测试，就是为了不再犯同类错误。
+
+### 7.2 时钟失败时必须丢帧（已修，W-PC）
+
+修订 3 的行为：`nowUs()` 失败返回 0，但调用方照用 → **ts=0 的帧被放进环并发送**。
+接收端看到 `ts=0` 时 `rx - ts` 是一个巨大的数，会被 `--max-age-ms` 全部判成过期（或反之，取决于实现），
+属于"静默产生毒帧"。
+
+修正（两处独立拦截）：
+
+| 位置 | 代码 | 计数 |
+|---|---|---|
+| hook | `var ts = nowUs(); if (ts === 0) { st.clockDrop++; return; }` —— 不写 ts、不进环 | `clockDrop` |
+| drain | `if (now === 0) { st.noClockTicks++; return; }` —— 不发，也**不拿 0 去算 age**（否则整环会被误判过期） | `noClockTicks` |
+
+两个计数都已并入 `stat` 消息与 `rpc.exports.stats()`。
+
+**故障注入测试**（`tests/bridge_unit_test.js` T3，两种故障）：
+`clock_gettime` 返回 −1；`tv_nsec = 1e9`（非法）。两种情况下都验证：
+
+- `frames = 0`、`clockDrop = 1`、`clockFail ≥ 1`
+- tick 触发后 `sendto` 调用 **0 次**、`sent = 0`
+- 环槽前 8 字节仍全零 → **不存在 ts=0 的帧**被发出去
+- T4 另测"时钟恢复后立刻恢复正常发送"（`frames=1`、有 `sendto`）
+
+### 7.3 `thread_probe` 到点自动卸载（已修，W-PC + 代码审查）
+
+修订 3 的探针到 30 秒只是 `stopped = true`，**Interceptor 一直挂着**（继续吃 CPU、继续计数、还占着 trampoline）。
+
+修订 4 改成单一收尾函数 `finish(reason)`：
+
+```js
+dump('FINAL'); verdict();
+if (listener !== null) { listener.detach(); listener = null; }
+if (dumpTimer !== null) { clearInterval(dumpTimer); dumpTimer = null; }
+if (stopTimer !== null) { clearTimeout(stopTimer); stopTimer = null; }
+```
+
+并保证：`stopped` 守卫使 `finish()` 幂等；**安装阶段任何失败**（模块缺失 / 符号缺失 / 偏移不符 / 签名不符 / attach 抛异常）
+都走同一条 `finish()`，此时 listener 还没有，因此既不 detach 也不创建任何定时器。
+
+验证：`tests/probe_detach_test.js`，**43 条断言全过**（在本机 node 里加载原文件，不连设备）：
+
+| 组 | 断言数 | 内容 |
+|---|---|---|
+| P1 正常 | 13 | Hook=1、interval=1、timeout=1；到点后 detach 1 次、FINAL 打印 1 次、clearInterval/clearTimeout 各 1 次 |
+| P2 幂等 | — | 重复触发不再 detach / 不再 clear；停止后 `onEnter` 直接返回 |
+| P3 安装失败 | 25 | 五种失败各自 Hook=0、interval=0、timeout=0、detach=0，且打印停止原因 |
+| P4 统计 | 5 | 双线程 `threads=2`、长度直方图 `5120→2`/`320→1`、多线程给出 MPSC 警告、仍会 detach |
+
+### 7.4 协议版本注释同步（已修）
+
+`tgz2_frame.h` 文件头注释仍是 `wire protocol v1`、字段表仍是 `ver 1`，而 `TGZ2_VER` 早已是 2。已改为：
+
+- 标题：`wire protocol v2`
+- 字段表：`4  1  ver  2`
+- 增补一句：`v1 -> v2 的唯一变化：offset 20 由 frames_total 改为 epoch …`
+
+### 7.5 本轮验证门禁（全部通过）
+
+| 门禁 | 结果 |
+|---|---|
+| `node --check pcm_bridge_draft.js` | 通过 |
+| `node --check thread_probe.js` | 通过 |
+| `node --check tests/*.js` | 通过 |
+| JS/C CRC 18 组对照 | **18/18 一致**（反面对照 17/18 不一致） |
+| timespec 单元测试 | 11 条断言（含陷阱用例） |
+| 时钟失败丢帧测试 | 14 条断言（两种故障 + 恢复） |
+| bridge 单测合计 | **61 passed / 0 failed** |
+| thread_probe detach 单测 | **43 passed / 0 failed** |
+| UTF-8 完整性扫描 | 35 个文本文件，**0 损坏** |
+
+### 7.6 仍未解决（U，未变）
+
+| # | 项 | 说明 |
+|---|---|---|
+| 1 | `feed` 是否单生产者 | `thread_probe` 本轮禁止执行，SPSC 仍只有运行时守卫 |
+| 2 | 桥在真机的一切行为 | **T-DEV = 0**；单测跑的是**假 Frida 环境**，不等于真机 |
+| 3 | `kill -9 frida-server` 时的 fd 归属 | 设计上残留到目标进程退出 |
+| 4 | 抽象命名空间跨 `:core` 可达性 | 仅 A-SHELL 级别证据 |
+| 5 | 本次 `decodeTimespec` 修正未在真机复核 | 需真机首次运行确认 `ts_us` 与 `CLOCK_MONOTONIC` 一致 |
+
+> 特别声明：本节所有"通过"都是 **W-PC（本机 node / 编译）**，与 TG-Z02 原厂进程无关。

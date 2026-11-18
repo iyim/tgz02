@@ -73,6 +73,7 @@ var st = {
   enabled: false, why: 'init', epoch: 0, seq: 0, fd: -1, nextTry: 0,
   frames: 0, sent: 0, stale: 0, ringDrop: 0, lenBad: 0,
   readFail: 0, hookEx: 0, sendDrop: 0, sendErr: 0, clockFail: 0,
+  clockDrop: 0, noClockTicks: 0,
   connectFail: 0, reconnects: 0, sessions: 0, disables: 0,
   depthMax: 0, producerTid: 0, wantsClose: false, tids: {}
 };
@@ -138,12 +139,30 @@ function bindLibc() {
 }
 
 var tsMem = Memory.alloc(8);
+
+/* TS-BEGIN —— 这段被 tests/bridge_unit_test.js 按标记抽取后单独测试
+ *
+ * arm32 struct timespec { int32 tv_sec; int32 tv_nsec; } 共 8 字节：
+ *   tv_sec 在 +0，tv_nsec 在 +4。
+ * 修订 3 写成 tsMem.readS32(), tsMem.readS32() —— 两次读的是同一地址，
+ * 纳秒恒等于秒，时间戳直接错掉。必须第二处 add(4)。
+ *
+ * 返回 >=0：微秒；返回 -1：字段非法（负值或 nsec ≥ 1e9）。
+ */
+function decodeTimespec(buf) {
+  var s = buf.readS32();
+  var n = buf.add(4).readS32();
+  if (s < 0 || n < 0 || n >= 1000000000) return -1;
+  return s * 1000000 + ((n / 1000) | 0);
+}
+/* TS-END */
+
 function nowUs() {
   try {
     if (libc.clock_gettime(CLOCK_MONOTONIC, tsMem) !== 0) { st.clockFail++; return 0; }
-    var s = tsMem.readS32(), n = tsMem.readS32();
-    if (s < 0 || n < 0 || n >= 1000000000) { st.clockFail++; return 0; }
-    return s * 1000000 + ((n / 1000) | 0);
+    var us = decodeTimespec(tsMem);
+    if (us < 0) { st.clockFail++; return 0; }
+    return us;
   } catch (e) { st.clockFail++; return 0; }
 }
 
@@ -270,7 +289,10 @@ function installHook() {
           h = fnv2(h, v);
         }
         crcArr[slotNo] = h | 0;
-        tsArr[slotNo] = nowUs();
+        /* 时钟失败（nowUs 返回 0）时本帧直接丢弃，绝不把 ts=0 当成采集时刻放进环 */
+        var ts = nowUs();
+        if (ts === 0) { st.clockDrop++; return; }
+        tsArr[slotNo] = ts;
         idx.tail++;
         st.frames++;
         if (depth > st.depthMax) st.depthMax = depth;
@@ -285,6 +307,8 @@ function installHook() {
 function drain() {
   if (!st.enabled) return;
   var now = nowUs();
+  /* 时钟失败时 now 为 0：既不能发帧（ts 无意义），也不能拿 0 去做 age 计算把整环判成过期 */
+  if (now === 0) { st.noClockTicks++; return; }
 
   if (!DRY_RUN && !ensureSock(now)) {
     while (idx.head < idx.tail) { idx.head++; st.stale++; }
@@ -368,6 +392,7 @@ var stat = setInterval(function () {
            frames: st.frames, sent: st.sent, stale: st.stale, ringDrop: st.ringDrop,
            lenBad: st.lenBad, readFail: st.readFail, hookEx: st.hookEx,
            sendDrop: st.sendDrop, sendErr: st.sendErr, clockFail: st.clockFail,
+           clockDrop: st.clockDrop, noClockTicks: st.noClockTicks,
            connectFail: st.connectFail, reconnects: st.reconnects,
            sessions: st.sessions, disables: st.disables, depthMax: st.depthMax,
            producerTid: st.producerTid, tids: st.tids, fd: st.fd, dry: DRY_RUN });
@@ -392,6 +417,7 @@ rpc.exports = {
     return { enabled: st.enabled, why: st.why, frames: st.frames, sent: st.sent,
              stale: st.stale, ringDrop: st.ringDrop, sendDrop: st.sendDrop,
              sendErr: st.sendErr, hookEx: st.hookEx, clockFail: st.clockFail,
+             clockDrop: st.clockDrop, noClockTicks: st.noClockTicks,
              producerTid: st.producerTid, tids: st.tids, fd: st.fd };
   }
 };
