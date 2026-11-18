@@ -1,0 +1,15 @@
+#
+# ADDITIONAL_DEFAULT_PROPERTIES
+#
+ro.secure=1
+security.perf_harden=1
+ro.adb.secure=1
+ro.allow.mock.location=0
+ro.debuggable=0
+#
+# BOOTIMAGE_BUILD_PROPERTIES
+#
+ro.bootimage.build.date=Fri Nov 4 14:58:50 CST 2022
+ro.bootimage.build.date.utc=1667545130
+ro.bootimage.build.fingerprint=alps/full_ailabs_s1l/ailabs_s1l:6.1.8-RS-20221104.1459/O11019/1667545132:user/test-keys
+persist.sys.usb.config=none

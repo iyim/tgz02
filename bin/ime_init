@@ -1,0 +1,7 @@
+#!/system/bin/sh
+busybox mkdir -p /data/data/com.google.android.inputmethod.pinyin/shared_prefs/
+busybox cp /vendor/etc/inputmethod.xml /data/data/com.google.android.inputmethod.pinyin/shared_prefs/com.google.android.inputmethod.pinyin_preferences.xml
+busybox chmod 777 -R /data/data/com.google.android.inputmethod.pinyin/shared_prefs/
+readleakage > /data/system/cpuleakage
+busybox chown system:system /data/system/cpuleakage
+busybox chmod 700 /data/system/cpuleakage
