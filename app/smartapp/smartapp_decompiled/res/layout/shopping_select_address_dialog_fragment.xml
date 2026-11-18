@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:background="@drawable/shopping_address_dialog_page_bg" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+        <ImageView android:id="@id/location_icon" android:layout_width="20.0dp" android:layout_height="28.0dp" android:layout_marginLeft="67.0dp" android:layout_marginTop="39.0dp" android:src="@mipmap/location_icon" android:scaleType="centerInside" />
+        <TextView android:textSize="28.0sp" android:textColor="#ffffff" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="19.0dp" android:layout_marginTop="37.0dp" android:text="@string/tv_adress_receive_ad" android:includeFontPadding="false" android:layout_toRightOf="@id/location_icon" />
+        <TextView android:textSize="20.0sp" android:textColor="#a5b0ba" android:ellipsize="end" android:gravity="center" android:id="@id/tv_taobao_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="42.0dp" android:layout_marginRight="20.0dp" android:singleLine="true" android:includeFontPadding="false" android:layout_alignParentRight="true" />
+    </RelativeLayout>
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="40.0dp">
+        <android.support.v7.widget.RecyclerView android:scrollbarSize="10.0dp" android:scrollbarThumbVertical="@drawable/scrollbar" android:scrollbarTrackVertical="@drawable/scrollbar_background" android:scrollbarStyle="outsideInset" android:id="@id/address_recyclerView" android:paddingRight="20.0dp" android:scrollbars="vertical" android:layout_width="match_parent" android:layout_height="210.0dp" android:layout_marginLeft="67.0dp" android:layout_marginRight="21.0dp" android:fadeScrollbars="false" android:overScrollMode="ifContentScrolls" />
+    </RelativeLayout>
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="82.0dp" android:layout_marginTop="10.0dp">
+        <TextView android:textSize="28.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/tv_giveup" android:background="@drawable/shopping_address_dialog_cancel_bg" android:layout_width="wrap_content" android:layout_height="match_parent" android:text="@string/tv_voice_cancel_str" android:layout_weight="1.0" />
+        <View android:background="#4f5d66" android:layout_width="1.0dp" android:layout_height="match_parent" />
+        <TextView android:textSize="28.0sp" android:textColor="#0082ff" android:gravity="center" android:id="@id/tv_ok" android:background="@drawable/shopping_address_dialog_ok_bg" android:layout_width="wrap_content" android:layout_height="match_parent" android:text="@string/va_sure" android:layout_weight="1.0" />
+    </LinearLayout>
+</LinearLayout>

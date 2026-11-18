@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_horizontal" android:paddingTop="12.0dp" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.taobao.uikit.feature.features.internal.pullrefresh.CustomProgressBar android:id="@id/uik_load_more_footer_progress" android:visibility="gone" android:layout_width="28.0dp" android:layout_height="28.0dp" android:layout_marginRight="12.0dp" />
+    <TextView android:textSize="10.0dp" android:textColor="#444444" android:gravity="center_vertical" android:id="@id/uik_load_more_footer_text" android:layout_width="wrap_content" android:layout_height="28.0dp" android:text="@string/uik_load_more" />
+</LinearLayout>

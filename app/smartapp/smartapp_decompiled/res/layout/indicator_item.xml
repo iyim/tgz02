@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="68.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="22.0sp" android:textColor="#2b3852" android:gravity="center" android:layout_gravity="center" android:id="@id/indicatorTvId" android:layout_width="wrap_content" android:layout_height="66.0dp" android:layout_marginLeft="22.0dp" android:layout_marginRight="22.0dp" android:includeFontPadding="false" android:onClick="onButtonClick" />
+    <ImageView android:id="@id/lineSelected" android:visibility="invisible" android:layout_width="match_parent" android:layout_height="2.0dp" />
+</LinearLayout>

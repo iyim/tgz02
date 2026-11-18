@@ -1,0 +1,529 @@
+{
+  "autoPlay": true,
+  "query": "山河令",
+  "defaultDomain": "all",
+  "tabList": [
+    {
+      "title": "综合",
+      "domain": "all"
+    }, {
+      "title": "视频",
+      "domain": "video"
+    }, {
+      "title": "有声读物",
+      "domain": "audio"
+    }, {
+      "title": "百科",
+      "domain": "baike"
+    }, {
+      "title": "音乐",
+      "domain": "music"
+    }, {
+      "title": "应用",
+      "domain": "app"
+    }
+  ],
+  "searchResult": [
+    {
+      "groupName": "影视",
+      "groupType": "show",
+      "domain": "video",
+      "hasMore": true,
+      "rank": 0,
+      "extend": "group extendInfo",
+      "dataList": [
+        {
+          "id": 1234,
+          "title": "琉璃速看版",
+          "img": "https://m.ykimg.com/050E00005D5CB8DAADA7B2A29A08A630",
+          "description": "春野",
+          "url": "ykiot://yingshi_detail?id=875ec9d2292a40ce9cbc",
+          "extend": "item extend info",
+          "scm": "XXXXX",
+          "authorNames":[
+            "刘德华",
+            "周杰伦"
+          ],
+          "extra": {
+            "verticalImg": "https://m.ykimg.com/050E40005C0A2E4CADA7B2AE6A020B76",
+            "clipImg": "https://aicontent.alibabausercontent.com/image/video_icon/pay_icon.png",
+            "itemType": "collect/还有其他类型，和成说是后台定义的",
+            "type": "music/audio/joke其中一种",
+            "charge": true,
+            "isVip": false,
+            "duration": 120,
+            "publishTime": 121332241241,
+            "source": "youku_video",
+            "score": "9.3",
+            "rawId": "musicId"
+          }
+        },
+        {
+          "title": "琉璃速看版2",
+          "img": "https://m.ykimg.com/050E00005D91BA77ADA7B238DE08FD00",
+          "verticalImg": "https://m.ykimg.com/050E40005C0A2E4CADA7B2AE6A020B76",
+          "description": "春野",
+          "url": "ykiot://abcd.mp4",
+          "extra": {
+            "clipImg": "https://aicontent.alibabausercontent.com/image/video_icon/pay_icon.png",
+            "duration": 120,
+            "source": "youku_video",
+            "score": "9.3"
+          }
+        },
+        {
+          "title": "琉璃速看版3",
+          "img": "https://m.ykimg.com/050E000051C3AE00670C4A551A01DAF4",
+          "verticalImg": "https://m.ykimg.com/050E40005C0A2E4CADA7B2AE6A020B76",
+          "description": "春野",
+          "url": "ykiot://abcd.mp4",
+          "extra": {
+            "clipImg": "https://aicontent.alibabausercontent.com/image/video_icon/pay_icon.png",
+            "duration": 120,
+            "source": "youku_video",
+            "score": "9.3"
+          }
+        },
+        {
+          "title": "琉璃速看版4",
+          "img": "https://m.ykimg.com/050E00005D233CB7425BD93525E567EA",
+          "verticalImg": "https://m.ykimg.com/050E40005C0A2E4CADA7B2AE6A020B76",
+          "description": "春野",
+          "url": "ykiot://abcd.mp4",
+          "extra": {
+            "clipImg": "https://aicontent.alibabausercontent.com/image/video_icon/pay_icon.png",
+            "duration": 120,
+            "source": "youku_video",
+            "score": "9.3"
+          }
+        }
+      ]
+    },
+    {
+      "groupName":"短视频",
+      "groupType": "short_video",
+      "domain": "video",
+      "hasMore": true,
+      "dataList": [
+        {
+          "title": "琉璃短视频",
+          "img": "https://m.ykimg.com/050E000051C3AE00670C4A551A01DAF4",
+          "description": "春野",
+          "url": "ykiot://abcd.mp4",
+          "extra": {
+            "clipImg": "https://aicontent.alibabausercontent.com/image/video_icon/pay_icon.png",
+            "duration": 120,
+            "source": "youku_video",
+            "score": "9.3"
+          }
+        },
+        {
+          "title": "琉璃短视频2",
+          "img": "https://m.ykimg.com/050E00004FBCA7F597927340340EE3AF",
+          "description": "春野",
+          "url": "ykiot://abcd.mp4",
+          "extra": {
+            "clipImg": "https://aicontent.alibabausercontent.com/image/video_icon/pay_icon.png",
+            "duration": 120,
+            "source": "youku_video",
+            "score": "9.3"
+          }
+        },
+        {
+          "title": "琉璃短视频3",
+          "img": "https://m.ykimg.com/050E000051C3B23D670C4A550E037921",
+          "description": "春野",
+          "url": "ykiot://abcd.mp4",
+          "extra": {
+            "clipImg": "https://aicontent.alibabausercontent.com/image/video_icon/pay_icon.png",
+            "duration": 120,
+            "source": "youku_video",
+            "score": "9.3"
+          }
+        },
+        {
+          "title": "琉璃短视频4",
+          "img": "https://m.ykimg.com/050E0000552CD42767379F56CF000801",
+          "description": "春野",
+          "url": "ykiot://abcd.mp4",
+          "extra": {
+            "clipImg": "https://aicontent.alibabausercontent.com/image/video_icon/pay_icon.png",
+            "duration": 120,
+            "source": "youku_video",
+            "score": "9.3"
+          }
+        }
+      ]
+    },
+    {
+      "groupName":"相关搜索",
+      "groupType": "relatedSearch",
+      "domain": "all",
+      "hasMore": false,
+      "dataList": [
+        {
+          "title": "天猫精灵2021新品"
+        },
+        {
+          "title": "周杰伦"
+        },
+        {
+          "title": "王老师"
+        },{
+          "title": "天猫精灵2021新品"
+        },
+        {
+          "title": "周杰伦"
+        },
+        {
+          "title": "王老师"
+        },{
+          "title": "天猫精灵2021新品"
+        },
+        {
+          "title": "周杰伦"
+        }
+      ]
+    },
+    {
+      "groupName":"百科",
+      "groupType": "baike",
+      "domain": "baike",
+      "hasMore": true,
+      "dataList": [
+        {
+          "id": 12323,
+          "img": "https://m.ykimg.com/050E0000521488FE67583962040BB864",
+          "title": "刘德华",
+          "description": "刘德华，1961年9月27日出生于中国香港，籍贯广东新会，中国香港男演员、歌手、作词人、制片人。刘德华，1961年9月27日出生于中国香港，籍贯广东新会，中国香港男演员、歌手、作词人、制片人。刘德华，1961年9月27日出生于中国香港，籍贯广东新会，中国香港男演员、歌手、作词人、制片人。",
+          "extra": {
+            "images":[
+              {
+                "gray":false,
+                "width":1920,
+                "url":"https://entityimg.alicdn.com/kg/刘德华/7595749842451234312/81be1e03918dfddd83e31c9cb2c24943.jpeg",
+                "height":1080
+              },
+              {
+                "gray":false,
+                "width":300,
+                "url":"http://entityimg.alicdn.com/sg/f1b89b272fae65825c7579b6afb047a0/c9fb6241c4eb6166460afa6c8671417b.jpg",
+                "height":374
+              }
+            ],
+            "subTitle":"演员、歌手、填词人、制片人",
+            "isImportant":false,
+            "audios":[
+              {
+                "duration":239,
+                "albumUrl":"http://img.xiami.net/images/album/img48/648/29211472629973.jpg",
+                "name":"一起走过的日子",
+                "id":"23998",
+                "source":"xiami",
+                "type":"song"
+              }
+            ],
+            "videos":[
+              {
+                "vid":"a25fd19459e811e5b522",
+                "title":"澳门风云3",
+                "uri":"ykiot://yingshi_detail?id=a25fd19459e811e5b522&isfull=true&fullback=false&from=com.alibaba.ailabs.basedomain"
+              }
+            ],
+            "isFallback":false,
+            "text":"刘德华，1961年9月27日出生于中国香港，籍贯广东新会，中国香港男演员、歌手、作词人、制片人。",
+            "title":"刘德华",
+            "entity":{
+              "cardNames":[
+                "刘德华的星球",
+                "TA的资讯"
+              ],
+              "isScreen":true,
+              "triggerId":"scene_trigger_2105b22c16261797183592067d07c8",
+              "name":"刘德华",
+              "guid":"7595749842451234312",
+              "type":"ENTITY_PEOPLE"
+            },
+            "displayAttributes":{
+              "职业":"演员、歌手、填词人、制片人",
+              "出生日期":"1961年9月27日",
+              "年龄":"59岁",
+              "描述":"刘德华，1961年9月27日出生于中国香港，籍贯广东新会，中国香港男演员、歌手、作词人、制片人。",
+              "妻子":"朱丽倩",
+              "性别":"男"
+            },
+            "querys":[
+
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "groupName":"有声单集",
+      "groupType": "program_content",
+      "domain": "audio",
+      "hasMore": true,
+      "dataList": [
+        {
+          "title": "有声单集1",
+          "img": "https://m.ykimg.com/050E000052BA8C486758394F6E00A075",
+          "authorNames":[
+            "刘德华",
+            "周杰伦"
+          ],
+          "extra": {
+            "itemType": "collect",
+            "type": "audio",
+            "charge": true,
+            "isVip": false,
+            "duration": 120,
+            "publishTime": 121332241241,
+            "source": "QM",
+            "score": "9.3",
+            "rawId": "musicId"
+          }
+        }
+      ]
+    },
+    {
+      "groupName":"专辑",
+      "groupType": "program_album",
+      "domain": "audio",
+      "hasMore": true,
+      "dataList": [
+        {
+          "title": "有声专辑1",
+          "img": "https://m.ykimg.com/050E00004FC339DA9792736264015D0C",
+          "authorNames":[
+            "刘德华",
+            "周杰伦"
+          ],
+          "extra": {
+            "itemType": "collect",
+            "type": "audio",
+            "charge": true,
+            "isVip": false,
+            "duration": 120,
+            "publishTime": 121332241241,
+            "source": "QM",
+            "score": "9.3",
+            "rawId": "musicId"
+          }
+        }
+      ]
+    },
+    {
+      "groupName":"音乐单曲",
+      "groupType": "music_content",
+      "domain": "music",
+      "hasMore": true,
+      "dataList": [
+        {
+          "title": "音乐单曲",
+          "img": "https://m.ykimg.com/050E00004FC339DA9792736264015D0C",
+          "authorNames":[
+            "刘德华",
+            "周杰伦"
+          ],
+          "extra": {
+            "itemType": "collect",
+            "type": "audio",
+            "charge": true,
+            "isVip": false,
+            "duration": 120,
+            "publishTime": 121332241241,
+            "source": "QM",
+            "score": "9.3",
+            "rawId": "musicId"
+          }
+        },
+        {
+          "title": "音乐单曲2",
+          "img": "https://m.ykimg.com/050E00005D220752425BD9352567B2DF",
+          "authorNames":[
+            "刘德华",
+            "周杰伦"
+          ],
+          "extra": {
+            "itemType": "collect",
+            "type": "audio",
+            "charge": true,
+            "isVip": false,
+            "duration": 120,
+            "publishTime": 121332241241,
+            "source": "QM",
+            "score": "9.3",
+            "rawId": "musicId"
+          }
+        },
+        {
+          "title": "音乐单曲",
+          "img": "https://m.ykimg.com/050E00004FC339DA9792736264015D0C",
+          "authorNames":[
+            "刘德华",
+            "周杰伦"
+          ],
+          "extra": {
+            "itemType": "collect",
+            "type": "audio",
+            "charge": true,
+            "isVip": false,
+            "duration": 120,
+            "publishTime": 121332241241,
+            "source": "QM",
+            "score": "9.3",
+            "rawId": "musicId"
+          }
+        },
+        {
+          "title": "音乐单曲2",
+          "img": "https://m.ykimg.com/050E00005D220752425BD9352567B2DF",
+          "authorNames":[
+            "刘德华",
+            "周杰伦"
+          ],
+          "extra": {
+            "itemType": "collect",
+            "type": "audio",
+            "charge": true,
+            "isVip": false,
+            "duration": 120,
+            "publishTime": 121332241241,
+            "source": "QM",
+            "score": "9.3",
+            "rawId": "musicId"
+          }
+        },
+        {
+          "title": "音乐单曲",
+          "img": "https://m.ykimg.com/050E00004FC339DA9792736264015D0C",
+          "authorNames":[
+            "刘德华",
+            "周杰伦"
+          ],
+          "extra": {
+            "itemType": "collect",
+            "type": "audio",
+            "charge": true,
+            "isVip": false,
+            "duration": 120,
+            "publishTime": 121332241241,
+            "source": "QM",
+            "score": "9.3",
+            "rawId": "musicId"
+          }
+        },
+        {
+          "title": "音乐单曲2",
+          "img": "https://m.ykimg.com/050E00005D220752425BD9352567B2DF",
+          "authorNames":[
+            "刘德华",
+            "周杰伦"
+          ],
+          "extra": {
+            "itemType": "collect",
+            "type": "audio",
+            "charge": true,
+            "isVip": false,
+            "duration": 120,
+            "publishTime": 121332241241,
+            "source": "QM",
+            "score": "9.3",
+            "rawId": "musicId"
+          }
+        },
+        {
+          "title": "音乐单曲",
+          "img": "https://m.ykimg.com/050E00004FC339DA9792736264015D0C",
+          "authorNames":[
+            "刘德华",
+            "周杰伦"
+          ],
+          "extra": {
+            "itemType": "collect",
+            "type": "audio",
+            "charge": true,
+            "isVip": false,
+            "duration": 120,
+            "publishTime": 121332241241,
+            "source": "QM",
+            "score": "9.3",
+            "rawId": "musicId"
+          }
+        }
+      ]
+    },
+    {
+      "groupName":"音乐专辑",
+      "groupType": "music_album",
+      "domain": "music",
+      "hasMore": true,
+      "dataList": [
+        {
+          "title": "有声专辑1",
+          "img": "https://m.ykimg.com/050E00004FC339DA9792736264015D0C",
+          "authorNames":[
+            "刘德华",
+            "周杰伦"
+          ],
+          "extra": {
+            "itemType": "collect",
+            "type": "audio",
+            "charge": true,
+            "isVip": false,
+            "duration": 120,
+            "publishTime": 121332241241,
+            "source": "QM",
+            "score": "9.3",
+            "rawId": "musicId"
+          }
+        },
+        {
+          "title": "有声专辑2",
+          "img": "https://m.ykimg.com/050E00005D220752425BD9352567B2DF",
+          "authorNames":[
+            "刘德华",
+            "周杰伦"
+          ],
+          "extra": {
+            "itemType": "collect",
+            "type": "audio",
+            "charge": true,
+            "isVip": false,
+            "duration": 120,
+            "publishTime": 121332241241,
+            "source": "QM",
+            "score": "9.3",
+            "rawId": "musicId"
+          }
+        }
+      ]
+    },
+    {
+      "groupName":"应用",
+      "groupType": "application",
+      "domain": "app",
+      "hasMore": true,
+      "dataList": [
+        {
+          "title": "优酷",
+          "img": "https://m.ykimg.com/050E0000602353911418AB12422A680B",
+          "url":"ykiot://yingshi_detail?id=cc001f06962411de83b1&isfull=true&fullback=false&from=com.alibaba.ailabs.genie.launcher&pkg=com.youku.iot"
+        },
+        {
+          "title": "爱奇艺",
+          "img": "https://m.ykimg.com/050E40005C2322D7ADC3112F7F020323",
+          "url":"schema"
+        },
+        {
+          "title": "哈哈",
+          "img": "https://m.ykimg.com/050E00005EC5DD0F46C2E30CA52DD688",
+          "url":"schema"
+        }
+      ]
+    }
+  ],
+  "recommendResult": null,
+  "code": 200
+}

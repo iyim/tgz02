@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ScrollView android:id="@id/scroll_view" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <LinearLayout android:orientation="vertical" android:scrollbars="none" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="76.0dp" android:textColor="@android:color/white" android:id="@id/title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="50.0dp" android:layout_marginRight="50.0dp" android:text="杭州" android:singleLine="true" />
+            <TextView android:textSize="36.0dp" android:textColor="#ccffffff" android:id="@id/subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="50.0dp" android:layout_marginTop="10.0dp" android:layout_marginRight="50.0dp" android:text="中华人明共和国的城市" />
+            <com.alibaba.ailabs.basedomain.mvvm.baike.view.LinkItemView android:id="@id/linkItem" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="50.0dp" android:layout_marginTop="30.0dp" android:layout_marginRight="50.0dp" />
+            <TextView android:textSize="32.0dp" android:textColor="@android:color/white" android:id="@id/text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="50.0dp" android:layout_marginTop="30.0dp" android:layout_marginRight="50.0dp" android:text="杭州，简称“杭”，浙江省省会、副省级市、长江三角洲城市群中心城市、环杭州湾大湾区核心城市、杭州都市圈核心城市、沪嘉杭G60科创走廊中心城市、国际重要的电子商务中心，位于中国东南沿海、浙江省北部、钱塘江下游、京杭大运河南端，是浙江省的政治、经济、文化、教育、交通和金融中心。齿。嘴巴细长，牙齿锋利，性情凶猛，善于进攻猎物。" android:maxLines="1111" android:lineSpacingMultiplier="1.7" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

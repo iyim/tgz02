@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="@dimen/genie_nav_bar_padding_left" android:layout_width="match_parent" android:layout_height="@dimen/genie_nav_bar_h"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/genie_nav_bar_back_btn" android:layout_width="@dimen/genie_nav_bar_back_view_size" android:layout_height="@dimen/genie_nav_bar_back_view_size" android:foreground="@drawable/ripple_bg" android:src="@mipmap/icon_genie_nav_bar_back" android:scaleType="centerInside" />
+    <ImageView android:id="@id/genie_nav_bar_home_btn" android:layout_width="@dimen/genie_nav_bar_back_view_size" android:layout_height="@dimen/genie_nav_bar_back_view_size" android:layout_marginLeft="@dimen/genie_nav_bar_home_view_margin_left" android:foreground="@drawable/ripple_bg" android:src="@mipmap/icon_genie_nav_bar_home" android:scaleType="centerInside" />
+    <FrameLayout android:paddingLeft="@dimen/genie_nav_bar_title_view_margin_left" android:paddingRight="@dimen/genie_nav_bar_title_view_margin_left" android:layout_width="match_parent" android:layout_height="match_parent">
+        <TextView android:textSize="@dimen/genie_nav_bar_title_text_view_size" android:textColor="@android:color/white" android:id="@id/genie_nav_bar_title_view" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" />
+    </FrameLayout>
+</LinearLayout>

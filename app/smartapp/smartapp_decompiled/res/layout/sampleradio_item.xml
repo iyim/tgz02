@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="left|center" android:orientation="horizontal" android:layout_width="@dimen/dp_245" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/albumImgIvId" android:background="@drawable/icon_default_album_img" android:layout_width="@dimen/dp_75" android:layout_height="@dimen/dp_75" />
+    <TextView android:textSize="@dimen/music_player_radio_sample" android:id="@id/titleId" android:layout_width="@dimen/dp_160" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/dp_10" android:text="杭州交通广播电台-杭州交通广播" android:lineSpacingExtra="@dimen/dp_5" />
+</LinearLayout>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/image_view" android:layout_width="392.0dp" android:layout_height="392.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/image" android:background="@drawable/base_domain_baike_default_image_392_392" android:layout_width="392.0dp" android:layout_height="392.0dp" />
+    <TextView android:textSize="22.0dp" android:textColor="@android:color/white" android:id="@id/index" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="338.0dp" android:layout_marginTop="360.0dp" android:text="1/5" />
+</RelativeLayout>

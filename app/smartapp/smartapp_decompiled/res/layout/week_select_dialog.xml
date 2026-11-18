@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="#ffffff" android:layout_width="1024.0dp" android:layout_height="470.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:id="@id/time_start" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="49.0dp" android:text="@string/week_select_title" android:layout_alignParentTop="true" android:layout_centerInParent="true" />
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/bottem" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="24.0dp" android:layout_alignParentBottom="true">
+        <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/cancel" android:background="@drawable/whiteground_greyframe" android:layout_width="112.0dp" android:layout_height="56.0dp" android:layout_marginRight="8.0dp" android:text="取消" />
+        <Button android:textSize="24.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/confirm" android:background="@drawable/tintblue_background" android:layout_width="112.0dp" android:layout_height="56.0dp" android:layout_marginLeft="8.0dp" android:text="保存" />
+    </LinearLayout>
+    <LinearLayout android:orientation="vertical" android:id="@id/select_time_item_list" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="20.0dp" android:layout_above="@id/bottem" android:layout_below="@id/time_start" android:layout_centerHorizontal="true">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+            <FrameLayout android:gravity="center" android:layout_gravity="center" android:background="@drawable/week_select_bg" android:layout_width="216.0dp" android:layout_height="105.0dp" android:layout_margin="10.0dp">
+                <ImageView android:layout_gravity="center_vertical" android:id="@id/monday_img" android:background="@drawable/radio_btn_s1_unchecked" android:layout_width="@dimen/radio_button_img_width_and_height" android:layout_height="@dimen/radio_button_img_width_and_height" android:layout_marginLeft="50.0dp" />
+                <CheckBox android:textSize="32.0dp" android:gravity="center" android:id="@id/monday" android:background="@drawable/button_ripple" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="50.0dp" android:button="@null" android:text="@string/monday" />
+            </FrameLayout>
+            <FrameLayout android:gravity="center" android:layout_gravity="center" android:background="@drawable/week_select_bg" android:layout_width="216.0dp" android:layout_height="105.0dp" android:layout_margin="10.0dp">
+                <ImageView android:layout_gravity="center_vertical" android:id="@id/tuesday_img" android:background="@drawable/radio_btn_s1_unchecked" android:layout_width="@dimen/radio_button_img_width_and_height" android:layout_height="@dimen/radio_button_img_width_and_height" android:layout_marginLeft="50.0dp" />
+                <CheckBox android:textSize="32.0dp" android:gravity="center" android:id="@id/tuesday" android:background="@drawable/button_ripple" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="50.0dp" android:button="@null" android:text="@string/tuesday" />
+            </FrameLayout>
+            <FrameLayout android:gravity="center" android:layout_gravity="center" android:background="@drawable/week_select_bg" android:layout_width="216.0dp" android:layout_height="105.0dp" android:layout_margin="10.0dp">
+                <ImageView android:layout_gravity="center_vertical" android:id="@id/wednesday_img" android:background="@drawable/radio_btn_s1_unchecked" android:layout_width="@dimen/radio_button_img_width_and_height" android:layout_height="@dimen/radio_button_img_width_and_height" android:layout_marginLeft="50.0dp" />
+                <CheckBox android:textSize="32.0dp" android:gravity="center" android:id="@id/wednesday" android:background="@drawable/button_ripple" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="50.0dp" android:button="@null" android:text="@string/wednesday" />
+            </FrameLayout>
+            <FrameLayout android:gravity="center" android:layout_gravity="center" android:background="@drawable/week_select_bg" android:layout_width="216.0dp" android:layout_height="105.0dp" android:layout_margin="10.0dp">
+                <ImageView android:layout_gravity="center_vertical" android:id="@id/thursday_img" android:background="@drawable/radio_btn_s1_unchecked" android:layout_width="@dimen/radio_button_img_width_and_height" android:layout_height="@dimen/radio_button_img_width_and_height" android:layout_marginLeft="50.0dp" />
+                <CheckBox android:textSize="32.0dp" android:gravity="center" android:id="@id/thursday" android:background="@drawable/button_ripple" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="50.0dp" android:button="@null" android:text="@string/thursday" />
+            </FrameLayout>
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+            <FrameLayout android:gravity="center" android:layout_gravity="center" android:background="@drawable/week_select_bg" android:layout_width="216.0dp" android:layout_height="105.0dp" android:layout_margin="10.0dp">
+                <ImageView android:layout_gravity="center_vertical" android:id="@id/friday_img" android:background="@drawable/radio_btn_s1_unchecked" android:layout_width="@dimen/radio_button_img_width_and_height" android:layout_height="@dimen/radio_button_img_width_and_height" android:layout_marginLeft="50.0dp" />
+                <CheckBox android:textSize="32.0dp" android:gravity="center" android:id="@id/friday" android:background="@drawable/button_ripple" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="50.0dp" android:button="@null" android:text="@string/friday" />
+            </FrameLayout>
+            <FrameLayout android:gravity="center" android:layout_gravity="center" android:background="@drawable/week_select_bg" android:layout_width="216.0dp" android:layout_height="105.0dp" android:layout_margin="10.0dp">
+                <ImageView android:layout_gravity="center_vertical" android:id="@id/saturday_img" android:background="@drawable/radio_btn_s1_unchecked" android:layout_width="@dimen/radio_button_img_width_and_height" android:layout_height="@dimen/radio_button_img_width_and_height" android:layout_marginLeft="50.0dp" />
+                <CheckBox android:textSize="32.0dp" android:gravity="center" android:id="@id/saturday" android:background="@drawable/button_ripple" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="50.0dp" android:button="@null" android:text="@string/saturday" />
+            </FrameLayout>
+            <FrameLayout android:gravity="center" android:layout_gravity="center" android:background="@drawable/week_select_bg" android:layout_width="216.0dp" android:layout_height="105.0dp" android:layout_margin="10.0dp">
+                <ImageView android:layout_gravity="center_vertical" android:id="@id/sunday_img" android:background="@drawable/radio_btn_s1_unchecked" android:layout_width="@dimen/radio_button_img_width_and_height" android:layout_height="@dimen/radio_button_img_width_and_height" android:layout_marginLeft="50.0dp" />
+                <CheckBox android:textSize="32.0dp" android:gravity="center" android:id="@id/sunday" android:background="@drawable/button_ripple" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="50.0dp" android:button="@null" android:text="@string/sunday" />
+            </FrameLayout>
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

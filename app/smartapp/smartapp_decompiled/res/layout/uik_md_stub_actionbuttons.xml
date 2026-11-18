@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.taobao.uikit.extend.component.unify.Dialog.TBDialogButton android:id="@id/uik_mdButtonDefaultNeutral" style="@style/TBMD_ActionButton.Text" />
+    <com.taobao.uikit.extend.component.unify.Dialog.TBDialogButton android:id="@id/uik_mdButtonDefaultNegative" style="@style/TBMD_ActionButton.Text" />
+    <com.taobao.uikit.extend.component.unify.Dialog.TBDialogButton android:id="@id/uik_mdButtonDefaultPositive" style="@style/TBMD_ActionButton.Text" />
+</merge>

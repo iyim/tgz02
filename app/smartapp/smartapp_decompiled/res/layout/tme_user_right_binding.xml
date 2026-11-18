@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:gravity="center" android:background="@color/transparent" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:background="@drawable/bg_solid_white_12" android:layout_width="756.0dp" android:layout_height="wrap_content" android:layout_centerInParent="true">
+        <TextView android:textSize="24.0sp" android:textColor="@color/color_2b3852" android:gravity="center" android:id="@id/dialog_title" android:layout_width="match_parent" android:layout_height="36.0dp" android:layout_marginTop="16.0dp" android:text="您有一笔待激活的超级会员音乐权益" />
+        <TextView android:textSize="18.0sp" android:textColor="@color/color_4a5a78" android:gravity="center" android:id="@id/dialog_content" android:layout_width="match_parent" android:layout_height="27.0dp" android:text="请选择下方音乐平台充值，一旦选定，本次及后续将自动充值该账户" />
+        <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="225.0dp" android:layout_marginTop="30.0dp">
+            <com.alibaba.ailabs.genie.musicplayer.tme.dialog.UserRightBindingSelector android:id="@id/selector_QQ" android:layout_width="252.0dp" android:layout_height="match_parent" app:imgSrc="@drawable/user_right_bd_qq" app:tag="QM" app:title="QQ音乐" />
+            <com.alibaba.ailabs.genie.musicplayer.tme.dialog.UserRightBindingSelector android:id="@id/selector_KG" android:layout_width="252.0dp" android:layout_height="match_parent" app:imgSrc="@drawable/user_right_bd_kg" app:tag="KG" app:title="酷狗音乐" />
+            <com.alibaba.ailabs.genie.musicplayer.tme.dialog.UserRightBindingSelector android:id="@id/selector_KW" android:layout_width="252.0dp" android:layout_height="match_parent" app:imgSrc="@drawable/user_right_bd_kw" app:tag="KW" app:title="酷我音乐" />
+        </LinearLayout>
+        <View android:background="@color/color_f0f2f7" android:layout_width="match_parent" android:layout_height="2.0dp" android:layout_marginTop="15.0dp" />
+        <RelativeLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16.0dp" android:layout_marginBottom="16.0dp">
+            <TextView android:textSize="24.0sp" android:textColor="@color/color_ffffff" android:gravity="center" android:id="@id/dialog_confirm" android:background="@drawable/bg_solid_blue_28" android:layout_width="188.0dp" android:layout_height="56.0dp" android:layout_marginRight="182.0dp" android:text="充值至该账户" android:layout_alignParentEnd="true" />
+            <TextView android:textSize="24.0sp" android:textColor="@color/genie_pay_black" android:gravity="center" android:id="@id/dialog_cancel" android:background="@drawable/bg_solid_white_28" android:layout_width="188.0dp" android:layout_height="56.0dp" android:layout_marginLeft="182.0dp" android:text="我再想想" />
+        </RelativeLayout>
+    </LinearLayout>
+</RelativeLayout>

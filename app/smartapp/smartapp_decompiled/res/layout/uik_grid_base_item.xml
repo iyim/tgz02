@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.taobao.uikit.extend.feature.view.TUrlImageView android:id="@id/uik_item_pic" android:layout_width="match_parent" android:layout_height="wrap_content" android:scaleType="centerCrop" app:uik_fade_in="true" app:uik_orientation="horizontal" app:uik_ratio="1.0" app:uik_ratioFeature="true" />
+    <TextView android:textSize="12.0dp" android:textColor="@color/uik_title_color" android:ellipsize="end" android:id="@id/uik_item_title" android:paddingLeft="12.0dp" android:paddingRight="12.0dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dp" android:maxLines="2" android:minLines="2" android:lineSpacingExtra="4.0dp" />
+</merge>

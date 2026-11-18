@@ -1,0 +1,11 @@
+{
+  "pages_name":[
+    "com.alibaba.ailabs.genie.rtc/com.alibaba.ailabs.genie.rtc.voip.callin.VoipCallInActivity",
+    "com.alibaba.ailabs.genie.rtc/com.alibaba.ailabs.genie.rtc.voip.callout.VoipCallOutActivity",
+    "com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.childmode.ui.page.ChildFaceActivity",
+    "com.alibaba.ailabs.genie.smartreader",
+    "com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.router.view.LoadActivity",
+    "com.alibaba.ailabs.genie.webapps.game.H5GameActivity",
+    "com.alibaba.ailabs.genie.children/com.alibaba.ailabs.childmode.ui.page.ChildFaceActivity"
+  ]
+}

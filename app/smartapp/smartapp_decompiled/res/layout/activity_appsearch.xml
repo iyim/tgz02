@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_activity_applist_root" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/rl_appsearch_header" android:background="@color/white" android:layout_width="match_parent" android:layout_height="@dimen/common_header_white_height">
+        <com.alibaba.ailabs.appbox.view.ClickImageView android:id="@id/iv_appsearch_back" android:paddingLeft="11.0dp" android:paddingTop="6.0dp" android:paddingRight="11.0dp" android:paddingBottom="6.0dp" android:layout_width="36.0dp" android:layout_height="36.0dp" android:layout_marginLeft="40.0dp" android:src="@drawable/icon_market_back" android:layout_centerVertical="true" />
+        <TextView android:textSize="22.0sp" android:textColor="@color/color_tv_2b3852" android:id="@id/tv_appsearch_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="为你找到以下内容" android:includeFontPadding="true" android:layout_centerInParent="true" android:fontFamily="NotoSansCJKsc-Regular" />
+        <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+    <View android:background="@drawable/shape_content_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_below="@id/rl_appsearch_header" />
+    <com.alibaba.ailabs.searchbox.view.ExposeRecyclerView android:id="@id/rv_appsearch" android:paddingLeft="40.0dp" android:paddingRight="40.0dp" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_below="@id/rl_appsearch_header" />
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="@dimen/common_header_white_height">
+        <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+</RelativeLayout>

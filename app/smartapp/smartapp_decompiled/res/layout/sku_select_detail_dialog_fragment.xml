@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:background="@drawable/shopping_drawable_solid_3333_ffffff" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:id="@id/detail_left_layout" android:visibility="gone" android:layout_width="659.0dp" android:layout_height="381.0dp">
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16.0dp">
+            <ImageView android:id="@id/tv_taobao_img" android:layout_width="28.0dp" android:layout_height="28.0dp" android:layout_marginLeft="20.0dp" />
+            <TextView android:textSize="20.0dp" android:textColor="#ffffff" android:gravity="center" android:id="@id/tv_shopping_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="10.0dp" android:text="@string/tv_shopping_detail_str" android:includeFontPadding="false" />
+        </LinearLayout>
+        <LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="20.0dp" android:layout_marginTop="15.0dp">
+            <ImageView android:id="@id/good_img" android:layout_width="300.0dp" android:layout_height="300.0dp" android:scaleType="centerCrop" />
+            <LinearLayout android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="20.0dp">
+                <TextView android:textSize="30.0dp" android:textColor="#ffffff" android:ellipsize="end" android:gravity="left" android:id="@id/tv_good_name" android:layout_width="309.0dp" android:layout_height="wrap_content" android:maxLines="2" android:singleLine="false" android:includeFontPadding="false" android:lineSpacingExtra="8.0dp" />
+                <LinearLayout android:orientation="horizontal" android:id="@id/post_layout" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="21.0dp">
+                    <TextView android:textSize="20.0sp" android:textColor="#ffa5b0ba" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/shopping_yunfei" android:includeFontPadding="false" />
+                    <TextView android:textSize="20.0sp" android:textColor="#ffa5b0ba" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:text="快递 " android:includeFontPadding="false" />
+                    <TextView android:textSize="20.0sp" android:textColor="#a5b0ba" android:gravity="center" android:id="@id/tv_post_prices" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="1.0dp" android:includeFontPadding="false" />
+                </LinearLayout>
+                <LinearLayout android:orientation="horizontal" android:id="@id/sale_layout" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="14.0dp">
+                    <TextView android:textSize="20.0sp" android:textColor="#ffa5b0ba" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/shopping_month_sale_str" android:includeFontPadding="false" />
+                    <TextView android:textSize="20.0sp" android:textColor="#ffa5b0ba" android:gravity="center" android:id="@id/tv_month_sales" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:includeFontPadding="false" />
+                </LinearLayout>
+                <LinearLayout android:orientation="horizontal" android:id="@id/price_layout" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="97.0dp">
+                    <TextView android:textSize="28.0sp" android:textColor="#ffffff" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/shopping_price" android:includeFontPadding="false" />
+                    <TextView android:textSize="18.0sp" android:textColor="#ff5000" android:gravity="center" android:layout_width="13.0dp" android:layout_height="18.0dp" android:layout_marginLeft="8.0dp" android:text="¥" android:includeFontPadding="false" />
+                    <TextView android:textSize="42.0sp" android:textColor="#ff5000" android:gravity="center" android:id="@id/tv_cur_prices" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="1.0dp" android:includeFontPadding="false" />
+                    <TextView android:textSize="20.0sp" android:textColor="#a5b0ba" android:gravity="center" android:id="@id/tv_orign_prices" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:includeFontPadding="false" />
+                </LinearLayout>
+                <TextView android:textSize="16.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/img_buynow" android:background="@drawable/shopping_now_buy_selector" android:layout_width="120.0dp" android:layout_height="40.0dp" android:layout_marginTop="32.0dp" android:text="@string/tv_buynow" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+    <RelativeLayout android:id="@id/img_close_layout" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="381.0dp">
+        <ImageView android:id="@id/img_close_singles" android:layout_width="35.0dp" android:layout_height="35.0dp" android:layout_marginTop="16.0dp" android:layout_marginRight="16.0dp" android:src="@mipmap/img_close" android:scaleType="centerInside" android:layout_alignParentTop="true" android:layout_alignParentRight="true" />
+    </RelativeLayout>
+    <RelativeLayout android:id="@id/des_layout" android:background="@drawable/shopping_drawable_taobao_order_bg" android:visibility="gone" android:layout_width="match_parent" android:layout_height="381.0dp">
+        <RelativeLayout android:id="@id/img_close_dialog_layout" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <ImageView android:id="@id/img_close" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16.0dp" android:layout_marginRight="16.0dp" android:src="@mipmap/img_close" android:scaleType="centerInside" android:layout_alignParentTop="true" android:layout_alignParentRight="true" />
+        </RelativeLayout>
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginTop="20.0dp" android:layout_below="@id/img_close_dialog_layout">
+            <TextView android:textSize="20.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/tv_info" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/tv_buy_in_taobao" android:maxLines="1" android:includeFontPadding="false" android:layout_centerHorizontal="true" />
+            <TextView android:textSize="18.0sp" android:textColor="#a5b0ba" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10.0dp" android:text="打开手机淘宝扫一扫" android:includeFontPadding="false" android:layout_below="@id/tv_info" android:layout_centerHorizontal="true" />--> 
+            <ImageView android:id="@id/img_qrcode" android:background="@drawable/shopping_taobao_qrcode_bg" android:layout_width="159.0dp" android:layout_height="159.0dp" android:layout_marginBottom="56.0dp" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" />
+        </RelativeLayout>
+    </RelativeLayout>
+    <RelativeLayout android:layout_gravity="center_vertical" android:id="@id/sp_loading_layout" android:background="@drawable/shopping_drawable_solid_3333_ffffff" android:visibility="visible" android:layout_width="match_parent" android:layout_height="381.0dp">
+        <ProgressBar android:id="@id/progress" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerInParent="true" style="?android:progressBarStyleLarge" />
+    </RelativeLayout>
+</LinearLayout>

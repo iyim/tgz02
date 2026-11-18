@@ -1,0 +1,99 @@
+.class Lcom/alipay/android/app/smartpays/api/widget/WearableDialog$7;
+.super Ljava/lang/Object;
+.source "WearableDialog.java"
+
+# interfaces
+.implements Ljava/lang/Runnable;
+
+
+# annotations
+.annotation system Ldalvik/annotation/EnclosingMethod;
+    value = Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;->showLoadingSuccess()V
+.end annotation
+
+.annotation system Ldalvik/annotation/InnerClass;
+    accessFlags = 0x0
+    name = null
+.end annotation
+
+
+# instance fields
+.field final synthetic this$0:Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;
+
+
+# direct methods
+.method constructor <init>(Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;)V
+    .locals 0
+
+    .line 207
+    iput-object p1, p0, Lcom/alipay/android/app/smartpays/api/widget/WearableDialog$7;->this$0:Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;
+
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    return-void
+.end method
+
+
+# virtual methods
+.method public run()V
+    .locals 2
+
+    .line 211
+    :try_start_0
+    iget-object v0, p0, Lcom/alipay/android/app/smartpays/api/widget/WearableDialog$7;->this$0:Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;
+
+    invoke-static {v0}, Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;->access$400(Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;)Lcom/alipay/android/app/smartpays/widget/CustomProgressWheel;
+
+    move-result-object v0
+
+    invoke-virtual {v0}, Lcom/alipay/android/app/smartpays/widget/CustomProgressWheel;->isSpinning()Z
+
+    move-result v0
+
+    if-eqz v0, :cond_0
+
+    .line 212
+    iget-object v0, p0, Lcom/alipay/android/app/smartpays/api/widget/WearableDialog$7;->this$0:Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;
+
+    invoke-static {v0}, Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;->access$400(Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;)Lcom/alipay/android/app/smartpays/widget/CustomProgressWheel;
+
+    move-result-object v0
+
+    invoke-virtual {v0}, Lcom/alipay/android/app/smartpays/widget/CustomProgressWheel;->stopSpinning()V
+
+    .line 213
+    iget-object v0, p0, Lcom/alipay/android/app/smartpays/api/widget/WearableDialog$7;->this$0:Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;
+
+    invoke-static {v0}, Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;->access$400(Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;)Lcom/alipay/android/app/smartpays/widget/CustomProgressWheel;
+
+    move-result-object v0
+
+    invoke-virtual {v0}, Lcom/alipay/android/app/smartpays/widget/CustomProgressWheel;->beginDrawTick()V
+
+    .line 214
+    iget-object v0, p0, Lcom/alipay/android/app/smartpays/api/widget/WearableDialog$7;->this$0:Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;
+
+    invoke-static {v0}, Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;->access$400(Lcom/alipay/android/app/smartpays/api/widget/WearableDialog;)Lcom/alipay/android/app/smartpays/widget/CustomProgressWheel;
+
+    move-result-object v0
+
+    invoke-virtual {v0}, Lcom/alipay/android/app/smartpays/widget/CustomProgressWheel;->start()V
+    :try_end_0
+    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
+
+    goto :goto_0
+
+    :catch_0
+    move-exception v0
+
+    .line 217
+    invoke-static {}, Lcom/alipay/android/app/smartpays/log/LogTracer;->getInstance()Lcom/alipay/android/app/smartpays/log/LogTracer;
+
+    move-result-object v1
+
+    invoke-virtual {v1, v0}, Lcom/alipay/android/app/smartpays/log/LogTracer;->printExceptionStackTrace(Ljava/lang/Throwable;)V
+
+    :cond_0
+    :goto_0
+    return-void
+.end method

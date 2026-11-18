@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:background="#77892133" android:layout_width="928.0dp" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/rl_item_applist" android:background="#77892133" android:layout_width="928.0dp" android:layout_height="wrap_content">
+        <RelativeLayout android:id="@id/rl_class_header" android:layout_width="match_parent" android:layout_height="48.0dp">
+            <TextView android:textSize="28.0sp" android:textColor="@color/white" android:gravity="center_vertical" android:id="@id/tv_skill_class_title1" android:layout_width="wrap_content" android:layout_height="match_parent" android:text="猜你喜欢" android:includeFontPadding="false" />
+        </RelativeLayout>
+        <android.support.v7.widget.RecyclerView android:id="@id/rv_guess_you_like" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_below="@id/rl_class_header" />
+    </RelativeLayout>
+</FrameLayout>

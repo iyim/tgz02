@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="vertical" android:background="@color/transparent" android:focusable="true" android:clickable="true" android:layout_width="match_parent" android:layout_height="64.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="24.0sp" android:textStyle="bold" android:textColor="@color/color_tv_2b3852" android:ellipsize="end" android:gravity="center_vertical" android:id="@id/tv_recommend_item_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="26.0dp" android:text="猜你喜欢的应用" android:maxLines="1" android:includeFontPadding="false" android:layout_alignTop="@id/tv_recommend_item_genie_tips" android:layout_alignBottom="@id/tv_recommend_item_genie_tips" android:layout_alignParentBottom="true" android:fontFamily="NotoSansCJKsc-Bold" />
+</RelativeLayout>

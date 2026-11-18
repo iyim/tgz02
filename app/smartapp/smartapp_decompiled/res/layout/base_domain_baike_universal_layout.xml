@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="horizontal" android:id="@id/root_layout" android:background="@drawable/base_domain_baike_default_bg_cover" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <ImageView android:background="@drawable/baike_bg_zhezhao" android:layout_width="match_parent" android:layout_height="match_parent" />
+    <com.alibaba.ailabs.basedomain.ui.ExitView android:id="@id/layout_exit" android:layout_width="wrap_content" android:layout_height="100.0dp" app:homeVisible="true" />
+    <include android:id="@id/image_view" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="50.0dp" android:layout_marginTop="@dimen/baike_universal_image_view_margin_top" layout="@layout/base_domain_universal_baike_image_1_1_include_layout" />
+    <include android:id="@id/text_view" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="80.0dp" android:layout_toRightOf="@id/image_view" layout="@layout/base_domain_universal_baike_text_main_include_layout" />
+    <ImageView android:id="@id/jump_arrow" android:background="@drawable/base_domain_baike_arrow_arrow_right" android:visibility="gone" android:layout_width="21.0dp" android:layout_height="43.0dp" android:layout_marginLeft="983.0dp" android:layout_marginTop="279.0dp" />
+</RelativeLayout>

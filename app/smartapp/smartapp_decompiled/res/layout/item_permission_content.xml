@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="match_parent" android:layout_height="70.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerVertical="true">
+        <TextView android:textSize="24.0sp" android:textColor="@color/dialog_name" android:id="@id/item_permission_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/item_permission_name" />
+        <TextView android:textSize="20.0sp" android:textColor="@color/dialog_desc" android:id="@id/item_permission_desc" android:paddingTop="6.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/item_permission_desc" />
+    </LinearLayout>
+    <com.alibaba.ailabs.genie.authservice.view.SettingSwitch android:theme="@style/white_switch" android:typeface="normal" android:id="@id/item_switch_developer" android:layout_width="80.0dp" android:layout_height="40.0dp" android:checked="true" android:thumb="@drawable/select_white_switch_thumb" android:layout_alignParentRight="true" android:layout_centerVertical="true" android:track="@drawable/white_switch_track" android:switchMinWidth="96.0dp" />
+</RelativeLayout>

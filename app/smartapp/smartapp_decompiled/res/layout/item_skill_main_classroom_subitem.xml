@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="match_parent" android:layout_height="255.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="horizontal" android:id="@id/rl_item_applist" android:layout_width="match_parent" android:layout_height="match_parent">
+        <include android:id="@id/rl_classroom_item1" android:layout_width="454.0dp" android:layout_height="255.0dp" layout="@layout/item_skill_main_classroom_subitem_one" />
+        <include android:id="@id/rl_classroom_item2" android:layout_width="454.0dp" android:layout_height="255.0dp" android:layout_marginLeft="20.0dp" layout="@layout/item_skill_main_classroom_subitem_one" />
+    </LinearLayout>
+</FrameLayout>

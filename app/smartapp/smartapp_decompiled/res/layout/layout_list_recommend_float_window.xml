@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/recommend_float_window_layout" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="22.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/moreView" android:background="@drawable/video_task_more_btn_bg" android:padding="14.0dp" android:visibility="invisible" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/more_recommend_text" />
+    <RelativeLayout android:id="@id/recommend_area" android:background="@drawable/recommend_list_bg" android:paddingTop="15.0dp" android:visibility="invisible" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_alignParentBottom="true">
+        <TextView android:textSize="24.0sp" android:textColor="#ffffff" android:id="@id/tv_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/recommend_view_text" android:layout_alignParentTop="true" android:layout_marginStart="20.0px" android:layout_alignParentStart="true" />
+        <TextView android:textSize="20.0sp" android:textColor="#d8d8d8" android:gravity="center" android:id="@id/recommend_close" android:background="@drawable/recommend_close" android:paddingTop="4.0dp" android:paddingBottom="4.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/recommend_close" android:layout_alignParentTop="true" android:paddingStart="20.0dp" android:paddingEnd="20.0dp" android:layout_marginEnd="20.0px" android:layout_alignParentEnd="true" />
+        <android.support.v7.widget.RecyclerView android:id="@id/recommend_recycle_view" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" android:layout_marginBottom="16.0dp" android:layout_below="@id/tv_title" />
+    </RelativeLayout>
+</RelativeLayout>

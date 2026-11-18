@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/root" android:background="@color/bg_base_domain_default_color" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.alibaba.ailabs.basedomain.ui.ExitView android:id="@id/layout_exit" android:layout_width="wrap_content" android:layout_height="100.0dp" />
+    <LinearLayout android:orientation="horizontal" android:id="@id/date_location_root" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="168.0dp" android:layout_centerHorizontal="true">
+        <TextView android:textSize="44.0dp" android:textColor="@android:color/white" android:gravity="center" android:id="@id/date_view" android:layout_width="306.0dp" android:layout_height="wrap_content" android:includeFontPadding="false" />
+        <TextView android:textSize="44.0dp" android:textColor="@android:color/white" android:gravity="center" android:id="@id/week_view" android:layout_width="306.0dp" android:layout_height="wrap_content" android:includeFontPadding="false" />
+        <TextView android:textSize="44.0dp" android:textColor="@android:color/white" android:gravity="center" android:id="@id/location_view" android:layout_width="306.0dp" android:layout_height="wrap_content" android:includeFontPadding="false" />
+    </LinearLayout>
+    <LinearLayout android:orientation="horizontal" android:id="@id/tmp_root" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="60.0dp" android:layout_below="@id/date_location_root" android:layout_centerHorizontal="true">
+        <TextView android:textSize="172.0dp" android:textColor="@android:color/white" android:gravity="center_vertical" android:id="@id/temperature_low" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="-43" android:includeFontPadding="false" />
+        <TextView android:textSize="76.0dp" android:textColor="@android:color/white" android:gravity="center_vertical" android:id="@id/degree" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="°C" android:includeFontPadding="false" />
+        <TextView android:textSize="112.0dp" android:textColor="@android:color/white" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="26.0dp" android:layout_marginRight="14.0dp" android:text="～" android:includeFontPadding="false" />
+        <TextView android:textSize="172.0dp" android:textColor="@android:color/white" android:gravity="center_vertical" android:id="@id/temperature_high" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="43" android:includeFontPadding="false" />
+        <TextView android:textSize="76.0dp" android:textColor="@android:color/white" android:gravity="center_vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="°C" android:includeFontPadding="false" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="48.0dp" android:layout_below="@id/tmp_root" android:layout_centerHorizontal="true">
+        <TextView android:textSize="54.0dp" android:textColor="@android:color/white" android:gravity="center" android:id="@id/weather_name" android:layout_width="344.0dp" android:layout_height="76.0dp" android:text="晴转多云" android:includeFontPadding="false" />
+        <TextView android:textSize="54.0dp" android:textColor="@android:color/white" android:ellipsize="end" android:gravity="center" android:id="@id/wind" android:layout_width="344.0dp" android:layout_height="76.0dp" android:text="东南风17-18级" android:maxLines="1" android:includeFontPadding="false" />
+        <FrameLayout android:layout_width="344.0dp" android:layout_height="76.0dp">
+            <ImageView android:gravity="center" android:layout_gravity="center" android:id="@id/aqi_bg" android:layout_width="268.0dp" android:layout_height="76.0dp" android:scaleType="fitXY" />
+            <TextView android:textSize="44.0dp" android:textColor="@android:color/white" android:gravity="center" android:layout_gravity="center" android:id="@id/aqi" android:layout_width="268.0dp" android:layout_height="76.0dp" android:text="轻度污染 | 720" />
+            <TextView android:textSize="44.0dp" android:textColor="@android:color/white" android:gravity="center" android:layout_gravity="center" android:id="@id/uv_view" android:visibility="gone" android:layout_width="268.0dp" android:layout_height="76.0dp" android:text="紫外线 最弱" />
+        </FrameLayout>
+    </LinearLayout>
+</RelativeLayout>

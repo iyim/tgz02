@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_item_applist" android:background="@drawable/bg_market_main_item_ripple_conner_8" android:focusable="true" android:clickable="true" android:layout_width="360.0dp" android:layout_height="136.0dp" android:foreground="@drawable/conner_rect_bg_app_recommend_blue_shape"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:background="@drawable/bg_market_instance_hor" android:layout_width="match_parent" android:layout_height="match_parent" />
+    <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="136.0dp" android:layout_marginTop="36.0dp">
+        <TextView android:textSize="28.0sp" android:textColor="#ffffffff" android:id="@id/tv_rect_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="精灵市场" android:fontFamily="FZLTHJW--GB1-0" />
+        <ImageView android:id="@id/iv_app_list_new" android:background="@drawable/iv_market_new" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="7.0dp" android:layout_marginTop="3.0dp" android:layout_marginBottom="3.0dp" android:layout_toRightOf="@id/tv_rect_title" android:layout_alignTop="@id/tv_rect_title" android:layout_alignBottom="@id/tv_rect_title" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="24.0sp" android:textColor="#ffffffff" android:id="@id/tv_rect_desc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12.0dp" android:text="万千好物等你来撩" android:layout_below="@id/tv_rect_title" />
+    </RelativeLayout>
+</RelativeLayout>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/root" android:background="@color/bg_base_domain_default_color" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.alibaba.ailabs.basedomain.ui.ExitView android:id="@id/layout_exit" android:layout_width="wrap_content" android:layout_height="100.0dp" />
+    <TextView android:textSize="34.0dp" android:textColor="@android:color/white" android:id="@id/date_location" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="128.0dp" android:text="2018.08.20    星期一    杭州" android:layout_centerHorizontal="true" />
+    <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="179.0dp" android:layout_centerHorizontal="true">
+        <TextView android:textSize="130.0dp" android:textColor="@android:color/white" android:gravity="center_vertical" android:id="@id/temperature" android:layout_width="wrap_content" android:layout_height="@dimen/weather_domain_one_day_temperature_height" android:text="-43" />
+        <TextView android:textSize="@dimen/weather_domain_one_day_degree_text_size" android:textColor="@android:color/white" android:gravity="center_vertical" android:id="@id/degree" android:layout_width="wrap_content" android:layout_height="@dimen/weather_domain_one_day_degree_height" android:layout_marginTop="76.0dp" android:text="°C" android:layout_toRightOf="@id/temperature" />
+    </RelativeLayout>
+    <RelativeLayout android:layout_width="wrap_content" android:layout_height="60.0dp" android:layout_marginTop="@dimen/weather_domain_today_weather_desc_margin_top" android:layout_centerHorizontal="true">
+        <TextView android:textSize="38.0dp" android:textColor="@android:color/white" android:gravity="center_vertical" android:id="@id/weather_name" android:layout_width="wrap_content" android:layout_height="match_parent" android:text="大暴雨到特大暴雨" />
+        <TextView android:textSize="38.0dp" android:textColor="@android:color/white" android:gravity="center_vertical" android:id="@id/wind" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginLeft="@dimen/weather_domain_today_wind_margin_left_item" android:text="东南风17-18级" android:layout_toRightOf="@id/weather_name" />
+        <ImageView android:id="@id/aqi_bg" android:layout_width="213.0dp" android:layout_height="60.0dp" android:layout_marginLeft="@dimen/weather_domain_today_wind_margin_left_item" android:scaleType="fitXY" android:layout_toRightOf="@id/wind" />
+        <TextView android:textSize="30.0dp" android:textColor="@android:color/white" android:gravity="center" android:id="@id/aqi" android:layout_width="213.0dp" android:layout_height="@dimen/weather_domain_one_day_aqi_height" android:layout_marginLeft="@dimen/weather_domain_today_wind_margin_left_item" android:layout_marginTop="4.0dp" android:text="轻度污染 | 720" android:layout_toRightOf="@id/wind" />
+    </RelativeLayout>
+</RelativeLayout>

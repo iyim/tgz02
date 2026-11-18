@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:orientation="vertical" android:background="@drawable/dialog_whitebackground" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="#2b3852" android:gravity="center" android:id="@id/title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="40.0dp" android:text="确定要放弃支付吗？" android:includeFontPadding="false" />
+    <LinearLayout android:gravity="left|center" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="30.0dp" android:layout_marginTop="35.0dp" android:layout_marginRight="20.0dp">
+        <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:id="@id/dialog_ordercode" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="订单已创建成功，订单号是：12222222" />
+        <LinearLayout android:gravity="left|center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10.0dp">
+            <TextView android:textSize="20.0sp" android:textColor="#999999" android:id="@id/dialog_nickname" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="取消后您也可以前往 xiaoD 的" />
+            <TextView android:textSize="20.0sp" android:textColor="#00b3ff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=" 淘宝-我的订单 " />
+            <TextView android:textSize="20.0sp" android:textColor="#999999" android:layout_width="160.0dp" android:layout_height="wrap_content" android:text="中继续完成支付" />
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="41.0dp">
+        <View android:background="#cccccc" android:layout_width="match_parent" android:layout_height="0.100000024dp" />
+        <LinearLayout android:gravity="right|center" android:orientation="horizontal" android:background="@drawable/dialog_bottem_whitebackground" android:layout_width="match_parent" android:layout_height="91.0dp">
+            <TextView android:textSize="24.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/tv_giveup" android:background="@drawable/red_background" android:layout_width="152.0dp" android:layout_height="56.0dp" android:layout_marginRight="16.0dp" android:text="放弃支付" />
+            <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/tv_retry" android:background="@drawable/whiteground_greyframe" android:layout_width="152.0dp" android:layout_height="56.0dp" android:layout_marginRight="36.0dp" android:text="继续支付" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

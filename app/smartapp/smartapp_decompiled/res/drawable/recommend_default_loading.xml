@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:height="@dimen/video_task_item_h" android:width="@dimen/video_task_item_w" android:drawable="@drawable/recommend_loading_bg" />
+    <item android:gravity="center" android:id="@id/main_root_first" android:height="29.0dp" android:width="55.0dp" android:drawable="@drawable/default_genie_loading" />
+</layer-list>

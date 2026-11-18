@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.alibaba.ailabs.genie.image.viewpager.view.helper.FingerDragHelper android:gravity="center" android:orientation="vertical" android:id="@id/fingerDragHelper" android:layout_width="match_parent" android:layout_height="match_parent">
+        <com.alibaba.ailabs.genie.image.viewpager.view.helper.SubsamplingScaleImageViewDragClose android:id="@id/photo_view" android:layout_width="match_parent" android:layout_height="match_parent" />
+        <com.alibaba.ailabs.genie.image.viewpager.view.photoview.PhotoView android:id="@id/gif_view" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerInside" />
+    </com.alibaba.ailabs.genie.image.viewpager.view.helper.FingerDragHelper>
+    <ProgressBar android:layout_gravity="center" android:id="@id/progress_view" android:layout_width="60.0dp" android:layout_height="60.0dp" />
+</FrameLayout>

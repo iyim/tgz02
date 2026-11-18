@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:id="@id/root_view" android:tag="layout/contact_activity_main_0" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <FrameLayout android:id="@id/contact_action_bar_layout" android:layout_width="match_parent" android:layout_height="wrap_content" />
+    <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:orientation="vertical" android:id="@id/content_container" android:tag="binding_1" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginBottom="-64.0dp">
+            <include android:id="@id/contact_title_bar" layout="@layout/main_index_bar" />
+            <com.alibaba.ailabs.genie.contacts.view.MainViewPager android:id="@id/contact_content_vp" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent" />
+        </LinearLayout>
+        <android.support.constraint.ConstraintLayout android:layout_gravity="right" android:id="@id/ct_package_layout" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24.0dp">
+            <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/ll_package_btn" android:background="@drawable/btn_blue_solid" android:paddingLeft="20.0dp" android:paddingTop="10.0dp" android:paddingRight="20.0dp" android:paddingBottom="10.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="50.0dp" android:layout_centerVertical="true" app:layout_constraintRight_toRightOf="parent" app:layout_constraintTop_toTopOf="parent">
+                <ImageView android:layout_width="22.0dp" android:layout_height="22.0dp" android:src="@drawable/icon_package" />
+                <TextView android:textSize="20.0sp" android:textColor="#ffffff" android:id="@id/tv_package_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="2.0dp" android:text="我的通话套餐" />
+            </LinearLayout>
+            <TextView android:textSize="18.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/tv_package_content" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10.0dp" app:layout_constraintLeft_toLeftOf="@id/ll_package_btn" app:layout_constraintRight_toRightOf="@id/ll_package_btn" app:layout_constraintTop_toBottomOf="@id/ll_package_btn" />
+        </android.support.constraint.ConstraintLayout>
+    </FrameLayout>
+</LinearLayout>

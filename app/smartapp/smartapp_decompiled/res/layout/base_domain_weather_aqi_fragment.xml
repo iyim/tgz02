@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/root" android:background="@color/bg_base_domain_default_color" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.alibaba.ailabs.basedomain.ui.ExitView android:id="@id/layout_exit" android:layout_width="wrap_content" android:layout_height="100.0dp" />
+    <TextView android:textSize="34.0dp" android:textColor="@android:color/white" android:id="@id/date_location" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/weather_domain_one_day_date_margin_top" android:text="2018.08.20    星期一    杭州" android:layout_centerHorizontal="true" />
+    <TextView android:textSize="@dimen/weather_domain_aqi_fragment_aqi_text_size" android:textColor="@android:color/white" android:gravity="center_vertical" android:id="@id/aqi" android:layout_width="wrap_content" android:layout_height="@dimen/weather_domain_aqi_fragment_aqi_height" android:layout_marginTop="@dimen/weather_domain_aqi_fragment_aqi_margin_top" android:text="510" android:layout_centerHorizontal="true" />
+    <ImageView android:background="@drawable/weather_domain_aqi_icon" android:layout_width="@dimen/weather_domain_aqi_fragment_aqi_icon_width" android:layout_height="@dimen/weather_domain_aqi_fragment_aqi_icon_height" android:layout_marginLeft="@dimen/weather_domain_aqi_fragment_aqi_icon_margin_left" android:layout_marginTop="450.0dp" />
+    <TextView android:textSize="38.0dp" android:textColor="@android:color/white" android:id="@id/aqi_desc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/weather_domain_aqi_fragment_aqi_desc_margin_left" android:layout_marginTop="@dimen/weather_domain_aqi_fragment_aqi_desc_margin_top" android:text="空气质量 严重" />
+</RelativeLayout>

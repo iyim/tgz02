@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:id="@id/shopping_list_item_layout" android:layout_width="454.0dp" android:layout_height="180.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="horizontal" android:id="@id/shopping_item_layout" android:background="@drawable/shopping_search_item_bg" android:layout_width="match_parent" android:layout_height="match_parent">
+        <RelativeLayout android:layout_gravity="center_vertical" android:id="@id/img_layout" android:layout_width="180.0dp" android:layout_height="180.0dp">
+            <ImageView android:id="@id/good_img" android:background="@drawable/shopping_recyleview_good_img_bg" android:layout_width="180.0dp" android:layout_height="180.0dp" android:scaleType="center" />
+            <TextView android:textSize="16.0sp" android:textColor="@color/color_white" android:gravity="center" android:id="@id/tv_good_index" android:background="@drawable/tv_shopping_good_index_bg" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="4.0dp" android:layout_marginBottom="4.0dp" android:layout_alignLeft="@id/good_img" android:layout_alignBottom="@id/good_img" />
+        </RelativeLayout>
+        <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="15.0dp" android:layout_marginTop="15.0dp" android:layout_marginRight="15.0dp" android:layout_toRightOf="@id/img_layout">
+            <TextView android:textSize="22.0sp" android:textColor="#152a36" android:ellipsize="end" android:gravity="left" android:id="@id/tv_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:lines="2" android:singleLine="false" android:includeFontPadding="false" android:lineSpacingExtra="8.0dp" />
+            <RelativeLayout android:layout_width="match_parent" android:layout_height="35.0dp" android:layout_marginTop="10.0dp">
+                <TextView android:textSize="21.0sp" android:textColor="#ff5000" android:id="@id/tv_yuan" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="-3.0dp" android:text="¥" android:includeFontPadding="false" android:layout_alignParentLeft="true" android:layout_alignParentBottom="true" />
+                <TextView android:textSize="24.0sp" android:textColor="#ff5000" android:gravity="center" android:id="@id/tv_cur_price" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="4.0dp" android:layout_marginBottom="-3.0dp" android:includeFontPadding="false" android:layout_toRightOf="@id/tv_yuan" android:layout_alignParentBottom="true" />
+                <TextView android:textSize="15.0sp" android:textColor="#999999" android:gravity="center" android:id="@id/tv_orign_price" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="12.0dp" android:includeFontPadding="false" android:layout_toRightOf="@id/tv_cur_price" android:layout_alignParentBottom="true" />
+                <TextView android:textSize="15.0sp" android:textColor="#999999" android:gravity="center" android:id="@id/tv_month_sale_tips" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="8.0dp" android:text="@string/shopping_month_sale_str" android:includeFontPadding="false" android:layout_toLeftOf="@id/tv_month_sale" android:layout_alignParentBottom="true" />
+                <TextView android:textSize="15.0sp" android:textColor="#999999" android:gravity="center" android:id="@id/tv_month_sale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:layout_alignParentRight="true" android:layout_alignParentBottom="true" />
+            </RelativeLayout>
+            <TextView android:textSize="20.0sp" android:textColor="@android:color/white" android:ellipsize="end" android:gravity="center" android:id="@id/tv_wakeup" android:background="@drawable/shopping_wakeup_item_bg" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10.0dp" android:singleLine="true" />
+        </LinearLayout>
+    </LinearLayout>
+    <ImageView android:layout_gravity="left|center" android:id="@id/img_sellout" android:visibility="gone" android:layout_width="133.0dp" android:layout_height="133.0dp" android:layout_marginLeft="94.0dp" android:src="@mipmap/shopping_has_sellout" android:scaleType="centerInside" />
+    <RelativeLayout android:background="@drawable/shopping_channel_item_layout_bg" android:layout_width="454.0dp" android:layout_height="180.0dp" />
+</FrameLayout>

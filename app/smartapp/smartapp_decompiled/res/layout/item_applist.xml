@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="vertical" android:id="@id/rl_item_applist" android:background="@drawable/conner_rect" android:focusable="true" android:clickable="true" android:layout_width="218.0dp" android:layout_height="248.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/iv_app_list_icon" android:background="@android:drawable/star_big_on" android:layout_width="96.0dp" android:layout_height="96.0dp" android:layout_marginTop="31.0dp" android:layout_centerHorizontal="true" />
+    <TextView android:textSize="28.0sp" android:textColor="#ffffffff" android:id="@id/tv_app_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="18.0dp" android:text="芒果" android:layout_below="@id/iv_app_list_icon" android:layout_centerHorizontal="true" />
+    <TextView android:textSize="21.0sp" android:textColor="#ffffffff" android:id="@id/tv_app_action_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="14.0dp" android:text="打开芒果电视" android:layout_below="@id/tv_app_name" android:layout_centerHorizontal="true" />
+</RelativeLayout>

@@ -1,0 +1,36 @@
+.class public final synthetic Lcom/alibaba/ailabs/genie/musicplayer/fragments/-$$Lambda$ViewPageFragment$EWWLk5xcmYilPhXWxuE4T5PdhYo;
+.super Ljava/lang/Object;
+.source "lambda"
+
+# interfaces
+.implements Landroid/arch/lifecycle/Observer;
+
+
+# instance fields
+.field private final synthetic f$0:Lcom/alibaba/ailabs/genie/musicplayer/fragments/ViewPageFragment;
+
+
+# direct methods
+.method public synthetic constructor <init>(Lcom/alibaba/ailabs/genie/musicplayer/fragments/ViewPageFragment;)V
+    .locals 0
+
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    iput-object p1, p0, Lcom/alibaba/ailabs/genie/musicplayer/fragments/-$$Lambda$ViewPageFragment$EWWLk5xcmYilPhXWxuE4T5PdhYo;->f$0:Lcom/alibaba/ailabs/genie/musicplayer/fragments/ViewPageFragment;
+
+    return-void
+.end method
+
+
+# virtual methods
+.method public final onChanged(Ljava/lang/Object;)V
+    .locals 1
+
+    iget-object v0, p0, Lcom/alibaba/ailabs/genie/musicplayer/fragments/-$$Lambda$ViewPageFragment$EWWLk5xcmYilPhXWxuE4T5PdhYo;->f$0:Lcom/alibaba/ailabs/genie/musicplayer/fragments/ViewPageFragment;
+
+    check-cast p1, Lcom/alibaba/ailabs/genie/musicplayer/ui/lrcview/LrcData;
+
+    invoke-virtual {v0, p1}, Lcom/alibaba/ailabs/genie/musicplayer/fragments/ViewPageFragment;->lambda$initObserver$44$ViewPageFragment(Lcom/alibaba/ailabs/genie/musicplayer/ui/lrcview/LrcData;)V
+
+    return-void
+.end method

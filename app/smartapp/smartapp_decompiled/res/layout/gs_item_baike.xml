@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@drawable/gs_item_bg_shape" android:layout_width="675.0dp" android:layout_height="428.0dp" android:foreground="?selectableItemBackgroundBorderless"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <ImageView android:id="@id/img_post" android:layout_width="198.0dp" android:layout_height="150.0dp" android:layout_marginTop="29.0dp" android:layout_marginRight="36.0dp" android:src="@drawable/gs_default_white_logo" android:scaleType="centerCrop" android:layout_alignParentRight="true" />
+    <TextView android:textSize="50.0sp" android:textColor="#1249b9" android:ellipsize="end" android:gravity="center_vertical" android:id="@id/title" android:paddingLeft="32.0dp" android:layout_width="match_parent" android:layout_height="56.0dp" android:layout_marginTop="79.0dp" android:singleLine="true" />
+    <TextView android:textSize="23.0sp" android:textColor="#2b3753" android:ellipsize="end" android:gravity="center_vertical" android:id="@id/sub_title" android:paddingLeft="32.0dp" android:layout_width="match_parent" android:layout_height="56.0dp" android:layout_marginTop="134.0dp" android:singleLine="true" />
+    <TextView android:textSize="20.0sp" android:textColor="#4a5a78" android:ellipsize="end" android:gravity="center_vertical" android:id="@id/content" android:layout_width="match_parent" android:layout_height="160.0dp" android:layout_marginLeft="22.0dp" android:layout_marginRight="27.0dp" android:layout_marginBottom="67.0dp" android:lines="4" android:layout_alignParentBottom="true" android:lineSpacingMultiplier="1.5" />
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dp" android:layout_marginBottom="21.0dp" android:layout_alignParentBottom="true">
+        <ImageView android:layout_width="28.0dp" android:layout_height="28.0dp" android:src="@drawable/gs_baike_icon" android:scaleType="centerCrop" android:layout_alignParentRight="true" />
+        <TextView android:textSize="18.0dp" android:gravity="center_vertical" android:id="@id/baike_icon" android:layout_width="wrap_content" android:layout_height="20.0dp" android:layout_marginLeft="10.0dp" android:text="百科" />
+    </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/root" android:background="@drawable/encyclopedia_bg" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/bg_root_iv" android:layout_width="match_parent" android:layout_height="match_parent" />
+    <ImageView android:id="@id/images" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerInside" />
+    <TextView android:textSize="@dimen/image_text_view_image_index_text_size" android:textColor="@color/encyclopedia_domain_image_text_fragment_index_text_color" android:gravity="center" android:id="@id/image_index" android:background="@drawable/encyclopedia_image_index_bg" android:layout_width="@dimen/image_text_scale_sub_view_image_index_width" android:layout_height="@dimen/image_text_scale_sub_view_image_index_height" android:layout_marginLeft="@dimen/image_text_scale_sub_view_image_index_margin_left" android:layout_marginTop="@dimen/image_text_scale_sub_view_image_index_margin_top" android:text="1/3" />
+</RelativeLayout>

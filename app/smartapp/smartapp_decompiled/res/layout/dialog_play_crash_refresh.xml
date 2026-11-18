@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@color/color_2b3852_a40" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:background="@drawable/bg_solid_white_12" android:layout_width="520.0dp" android:layout_height="wrap_content" android:layout_centerInParent="true">
+        <TextView android:textSize="32.0sp" android:textColor="@color/color_2b3852" android:id="@id/dialog_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="38.0dp" android:layout_marginRight="40.0dp" android:text="@string/music_tip" />
+        <TextView android:textSize="24.0sp" android:textColor="@color/color_4a5a78" android:id="@id/dialog_content" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="8.0dp" android:layout_marginRight="40.0dp" android:text="@string/play_crash_refresh_tip" />
+        <View android:background="@color/color_f0f2f7" android:layout_width="match_parent" android:layout_height="2.0dp" android:layout_marginTop="42.0dp" />
+        <RelativeLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16.0dp" android:layout_marginBottom="16.0dp">
+            <TextView android:textSize="24.0sp" android:textColor="@color/color_ffffff" android:gravity="center" android:id="@id/dialog_confirm" android:background="@drawable/bg_solid_blue_28" android:layout_width="112.0dp" android:layout_height="56.0dp" android:layout_marginRight="36.0dp" android:text="@string/music_confirm" android:layout_alignParentEnd="true" />
+            <TextView android:textSize="24.0sp" android:textColor="@color/color_4a5a78" android:gravity="center" android:id="@id/dialog_cancel" android:background="@drawable/bg_hollow_gray_28" android:layout_width="112.0dp" android:layout_height="56.0dp" android:layout_marginRight="164.0dp" android:text="@string/tme_cancel" android:layout_alignParentEnd="true" />
+        </RelativeLayout>
+    </LinearLayout>
+</RelativeLayout>

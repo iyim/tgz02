@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:id="@id/contact_item_layout" android:tag="layout/custom_item_layout_0" android:layout_width="164.0dp" android:layout_height="wrap_content" android:layout_marginLeft="42.0dp" android:layout_marginRight="42.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="52.0dp" android:textColor="@color/custom_white" android:gravity="center" android:layout_gravity="center" android:id="@id/user_avatar" android:layout_width="164.0dp" android:layout_height="164.0dp" android:shadowColor="@color/custom_text_shadow_color" android:shadowRadius="10.0" />
+    <TextView android:textSize="@dimen/custom_text_size_34" android:textColor="@color/custom_white" android:ellipsize="end" android:layout_gravity="center" android:id="@id/contacts" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16.0dp" android:singleLine="true" android:maxLength="5" />
+</LinearLayout>

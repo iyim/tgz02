@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:layout_gravity="center" android:id="@id/lay_slip" android:visibility="invisible" android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <View android:background="@drawable/shape_bg_slip_behind" android:layout_width="100.0dp" android:layout_height="6.0dp" />
+        <View android:layout_gravity="center_vertical" android:id="@id/view_slip_front" android:background="@drawable/shape_bg_slip_front" android:layout_width="42.0dp" android:layout_height="6.0dp" android:layout_marginLeft="1.0dp" android:layout_marginRight="1.0dp" />
+    </FrameLayout>
+</FrameLayout>

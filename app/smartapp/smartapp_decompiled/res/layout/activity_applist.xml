@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_activity_applist_root" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/rl_applist_header" android:background="@color/white" android:layout_width="match_parent" android:layout_height="@dimen/common_header_white_height">
+        <com.alibaba.ailabs.appbox.view.ClickImageView android:id="@id/iv_applist_back" android:paddingLeft="11.0dp" android:paddingTop="6.0dp" android:paddingRight="11.0dp" android:paddingBottom="6.0dp" android:layout_width="36.0dp" android:layout_height="36.0dp" android:layout_marginLeft="40.0dp" android:src="@drawable/icon_market_back" android:layout_centerVertical="true" />
+        <TextView android:textSize="22.0sp" android:textStyle="bold" android:textColor="@color/color_tv_2b3852" android:id="@id/tv_app_list" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="我的应用" android:includeFontPadding="true" android:layout_centerInParent="true" />
+        <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+    <View android:background="@drawable/shape_content_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_below="@id/rl_applist_header" />
+    <com.alibaba.ailabs.appbox.adapter.applist.AppListHorizontalScrollView android:scrollbarSize="6.0dp" android:scrollbarThumbHorizontal="@drawable/shape_bg_slip_front" android:scrollbarTrackHorizontal="@drawable/shape_bg_slip_behind" android:id="@id/sc_applist" android:scrollbars="none" android:layout_width="match_parent" android:layout_height="@dimen/app_list_height" android:layout_marginTop="@dimen/common_header_white_height" android:fadeScrollbars="false">
+        <RelativeLayout android:orientation="horizontal" android:id="@id/rl_scrll_container" android:layout_width="match_parent" android:layout_height="match_parent">
+            <TextView android:textSize="22.0dp" android:textColor="@color/color_tv_2b3852" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="65.5dp" android:layout_marginTop="32.0dp" android:text="我的应用" android:includeFontPadding="false" />
+            <FrameLayout android:orientation="vertical" android:id="@id/rv_layout" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginTop="30.0dp">
+                <android.support.v7.widget.RecyclerView android:id="@id/rv_applist" android:background="@color/transparent" android:layout_width="match_parent" android:layout_height="match_parent" />
+            </FrameLayout>
+        </RelativeLayout>
+    </com.alibaba.ailabs.appbox.adapter.applist.AppListHorizontalScrollView>
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="@dimen/common_header_white_height">
+        <View android:id="@id/v_manager_app_bg" android:background="#ffffff" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent" />
+        <TextView android:textSize="20.0sp" android:textColor="@color/color_4a5a78" android:id="@id/tv_clean_app_data" android:background="@drawable/ripple_text_button_gray_b_whit_c" android:paddingLeft="20.0dp" android:paddingTop="7.0dp" android:paddingRight="20.0dp" android:clickable="true" android:layout_width="wrap_content" android:layout_height="36.0dp" android:layout_marginRight="20.0dp" android:text="空间清理" android:includeFontPadding="false" android:layout_toLeftOf="@id/tv_del_app_instance" android:layout_centerVertical="true" android:fontFamily="PingFangSC-Regular" />
+        <TextView android:textSize="20.0sp" android:textColor="@color/color_4a5a78" android:id="@id/tv_del_app_instance" android:background="@drawable/ripple_text_button_gray_b_whit_c" android:paddingLeft="20.0dp" android:paddingTop="7.0dp" android:paddingRight="20.0dp" android:clickable="true" android:layout_width="wrap_content" android:layout_height="36.0dp" android:layout_marginRight="40.0dp" android:text="管理" android:includeFontPadding="false" android:layout_alignParentRight="true" android:layout_centerVertical="true" android:fontFamily="PingFangSC-Regular" />
+        <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+</RelativeLayout>

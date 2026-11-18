@@ -1,0 +1,37 @@
+.class public final Lcom/alibaba/ailabs/appbox/R$mipmap;
+.super Ljava/lang/Object;
+.source "R.java"
+
+
+# annotations
+.annotation system Ldalvik/annotation/EnclosingClass;
+    value = Lcom/alibaba/ailabs/appbox/R;
+.end annotation
+
+.annotation system Ldalvik/annotation/InnerClass;
+    accessFlags = 0x19
+    name = "mipmap"
+.end annotation
+
+
+# static fields
+.field public static final ic_launcher:I = 0x7f0c0037
+
+.field public static final ic_launcher_round:I = 0x7f0c0038
+
+.field public static final icon_market_back:I = 0x7f0c003e
+
+.field public static final iv_add_to_my:I = 0x7f0c004c
+
+
+# direct methods
+.method private constructor <init>()V
+    .locals 0
+
+    .line 1920
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    #disallowed odex opcode
+    #return-void-no-barrier
+    nop
+.end method

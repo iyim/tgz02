@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:background="@color/color_white" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="sellerId: " />
+        <EditText android:id="@id/sellerId" android:layout_width="100.0dp" android:layout_height="45.0dp" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="amount: " />
+        <EditText android:id="@id/amount" android:layout_width="100.0dp" android:layout_height="45.0dp" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="appId: " />
+        <EditText android:id="@id/appId" android:layout_width="100.0dp" android:layout_height="45.0dp" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="outItemId: " />
+        <EditText android:id="@id/outItemId" android:layout_width="100.0dp" android:layout_height="45.0dp" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="outItemName: " />
+        <EditText android:id="@id/outItemName" android:layout_width="100.0dp" android:layout_height="45.0dp" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="outOrderId: " />
+        <EditText android:id="@id/outOrderId" android:layout_width="100.0dp" android:layout_height="45.0dp" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="priKey: " />
+        <EditText android:id="@id/priKey" android:layout_width="100.0dp" android:layout_height="45.0dp" />
+    </LinearLayout>
+    <TextView android:textSize="40.0sp" android:textColor="#000000" android:gravity="center" android:id="@id/testBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="小程序二维码支付测试" />
+    <TextView android:textSize="40.0sp" android:textColor="#000000" android:gravity="center" android:id="@id/testApkBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="apk二维码支付测试" />
+</LinearLayout>

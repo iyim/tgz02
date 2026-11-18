@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="@dimen/item_bottom"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/play_list_item" android:layout_width="@dimen/play_list_w" android:layout_height="@dimen/play_list_h" android:layout_marginLeft="@dimen/play_list_start">
+        <ImageView android:id="@id/play_list_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/img_play_list_record_bg" android:scaleType="fitXY" />
+        <ImageView android:id="@id/play_list_tag" android:layout_width="@dimen/play_list_tag_w" android:layout_height="@dimen/play_list_tag_h" android:layout_alignParentEnd="true" />
+        <ImageView android:id="@id/list_center_img" android:layout_width="@dimen/list_center_img_w" android:layout_height="@dimen/list_center_img_w" android:layout_marginTop="@dimen/list_center_img_t" android:layout_centerHorizontal="true" />
+        <ImageView android:layout_width="wrap_content" android:layout_height="@dimen/list_center_img_w" android:src="@drawable/icon_record_tag" android:adjustViewBounds="true" android:layout_alignTop="@id/list_center_img" android:layout_alignBottom="@id/list_center_img" android:layout_toEndOf="@id/list_center_img" />
+        <TextView android:textSize="@dimen/play_list_name_f" android:ellipsize="end" android:id="@id/play_list_name" android:layout_width="@dimen/list_center_img_w" android:layout_height="wrap_content" android:layout_marginTop="@dimen/play_list_name_t" android:singleLine="true" android:layout_below="@id/list_center_img" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="@dimen/play_list_content_f" android:ellipsize="end" android:id="@id/play_list_content" android:layout_width="@dimen/list_center_img_w" android:layout_height="wrap_content" android:layout_marginTop="4.0dp" android:singleLine="true" android:layout_below="@id/play_list_name" android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+    <View android:id="@id/play_list_end" android:layout_width="@dimen/play_list_start" android:layout_height="@dimen/play_list_start" />
+</LinearLayout>

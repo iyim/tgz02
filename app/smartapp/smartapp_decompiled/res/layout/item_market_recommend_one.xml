@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_item_recommend" android:background="@drawable/bg_market_main_item_ripple_conner_8" android:focusable="true" android:clickable="true" android:layout_width="@dimen/app_recommend_wid" android:layout_height="@dimen/app_recommend_hei" android:foreground="@drawable/conner_rect_bg_app_recommend_blue_shape" android:layout_centerInParent="true"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:layout_width="@dimen/app_recommend_wid" android:layout_height="@dimen/app_recommend_hei" android:layout_centerInParent="true">
+        <ImageView android:id="@id/iv_app_recommend_list_icon" android:layout_width="@dimen/app_recommend_icon_size" android:layout_height="@dimen/app_recommend_icon_size" android:layout_marginTop="32.0dp" android:src="@drawable/iv_default_icon" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="@dimen/app_detail_desc_text_size" android:textColor="#ffffff" android:ellipsize="end" android:gravity="center" android:id="@id/tv_app_recommend_list_title" android:paddingLeft="15.0dp" android:paddingRight="15.0dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="15.0dp" android:layout_marginTop="20.0dp" android:layout_marginRight="15.0dp" android:layout_marginBottom="32.0dp" android:maxLines="1" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" />
+        <RelativeLayout android:layout_width="56.0dp" android:layout_height="24.0dp" android:layout_marginLeft="-28.0dp" android:layout_toRightOf="@id/iv_app_recommend_list_icon" android:layout_alignTop="@id/iv_app_recommend_list_icon">
+            <TextView android:textStyle="bold|italic" android:textColor="@color/white" android:gravity="center" android:id="@id/tv_recommend_hot" android:background="@drawable/bg_app_hot" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent" android:includeFontPadding="false" />
+            <TextView android:textStyle="bold|italic" android:textColor="@color/white" android:gravity="center" android:id="@id/tv_recommend_new" android:background="@drawable/bg_app_new" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent" android:includeFontPadding="false" />
+        </RelativeLayout>
+    </RelativeLayout>
+</RelativeLayout>

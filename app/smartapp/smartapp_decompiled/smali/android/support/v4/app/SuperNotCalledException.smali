@@ -1,0 +1,16 @@
+.class final Landroid/support/v4/app/SuperNotCalledException;
+.super Landroid/util/AndroidRuntimeException;
+.source "SuperNotCalledException.java"
+
+
+# direct methods
+.method public constructor <init>(Ljava/lang/String;)V
+    .locals 0
+
+    .line 23
+    invoke-direct {p0, p1}, Landroid/util/AndroidRuntimeException;-><init>(Ljava/lang/String;)V
+
+    #disallowed odex opcode
+    #return-void-no-barrier
+    nop
+.end method

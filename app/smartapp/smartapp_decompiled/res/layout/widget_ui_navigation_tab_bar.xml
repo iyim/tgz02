@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="68.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.alibaba.ailabs.genie.widgetui.WidgetUINavigationBar android:layout_width="match_parent" android:layout_height="wrap_content">
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent">
+            <android.support.design.widget.TabLayout android:id="@id/nav_bar_tab_layout" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginLeft="241.0dp" android:layout_marginRight="255.0dp" android:layout_centerHorizontal="true" app:tabBackground="@color/widget_ui_transparent" app:tabContentStart="0.0dp" app:tabGravity="fill" app:tabIndicatorHeight="0.0dp" app:tabMaxWidth="0.0dp" app:tabMinWidth="0.0dp" app:tabMode="scrollable" app:tabPaddingBottom="0.0dp" app:tabPaddingEnd="16.0dp" app:tabPaddingStart="16.0dp" app:tabPaddingTop="0.0dp" />
+        </RelativeLayout>
+    </com.alibaba.ailabs.genie.widgetui.WidgetUINavigationBar>
+</FrameLayout>

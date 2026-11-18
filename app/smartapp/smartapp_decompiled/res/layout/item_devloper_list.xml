@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+    <RelativeLayout android:background="@color/white" android:layout_width="match_parent" android:layout_height="176.0dp">
+        <com.alibaba.ailabs.appbox.view.RounderImageView android:id="@id/iv_clean_app_icon" android:layout_width="68.0dp" android:layout_height="68.0dp" android:layout_marginLeft="40.0dp" android:layout_centerVertical="true" app:radiusJS="12.0dp" />
+        <LinearLayout android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="128.0dp" android:layout_centerVertical="true">
+            <TextView android:textSize="32.0sp" android:textColor="@color/color_tv_2b3852" android:ellipsize="end" android:id="@id/tv_clean_app_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxWidth="288.0dp" android:text="小小优趣小小优趣小小优趣小小优趣" android:maxLines="1" android:maxEms="7" android:includeFontPadding="false" android:fontFamily="NotoSansCJKsc-Bold" />
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24.0dp">
+                <com.alibaba.ailabs.cleaner.view.RunTextView android:textSize="24.0sp" android:textColor="@color/color_7383A2" android:id="@id/tv_clean_app_desc" android:visibility="visible" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="150" android:includeFontPadding="false" android:layout_below="@id/tv_clean_app_title" android:fontFamily="NotoSansCJKsc-Regular" />
+            </LinearLayout>
+        </LinearLayout>
+        <TextView android:textSize="32.0sp" android:textColor="@color/color_tv_2b3852" android:ellipsize="end" android:id="@id/tv_size" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="40.0dp" android:maxWidth="288.0dp" android:text="100M" android:maxLines="1" android:maxEms="7" android:includeFontPadding="false" android:layout_alignParentRight="true" android:layout_centerVertical="true" android:fontFamily="NotoSansCJKsc-Bold" />
+    </RelativeLayout>
+</LinearLayout>

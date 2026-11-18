@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <RelativeLayout android:id="@id/rl_item_applist" android:layout_width="454.0dp" android:layout_height="255.0dp" android:layout_marginRight="20.0dp">
+        <com.alibaba.ailabs.appbox.view.RounderImageView android:id="@id/iv_classroom_subitem_bg" android:layout_width="match_parent" android:layout_height="match_parent" app:radiusJS="25.0dp" />
+        <FrameLayout android:background="@drawable/bg_classroom_subitem_text" android:layout_width="match_parent" android:layout_height="75.0dp" android:layout_alignParentBottom="true">
+            <TextView android:textSize="28.0sp" android:textColor="@color/white" android:layout_gravity="center_vertical" android:id="@id/tv_classroom_subitem_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="27.0dp" android:text="玩转天猫精灵带屏技能" android:includeFontPadding="false" />
+        </FrameLayout>
+        <ImageView android:id="@id/iv_play" android:background="@drawable/icon_classroom_paly" android:layout_width="60.0dp" android:layout_height="60.0dp" android:layout_centerInParent="true" />
+    </RelativeLayout>
+</RelativeLayout>

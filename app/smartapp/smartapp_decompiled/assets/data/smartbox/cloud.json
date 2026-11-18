@@ -1,0 +1,17 @@
+{
+  "version": "20170609.2100",
+  "asr": {
+    "addr": "wss://asr-aicloud.alibaba.com:443",
+    "coreType": "cn.asr.rec",
+    "res": "aihome"
+  },
+  "light": {
+    "url": "http://arplatform.alicdn.com/x1box/resource/led20170609_2055.zip",
+    "md5": "ee8cefe65b615bd8c437f3aec23598aa"
+  },
+  "prompt":{
+    "url": "http://arplatform.alicdn.com/x1box/resource/prompt20170609_2055.zip",
+    "md5": "ee54a116cd6c321f56659254ce70e710"
+  }
+}
+

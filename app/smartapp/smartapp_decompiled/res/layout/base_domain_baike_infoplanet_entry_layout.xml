@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="wrap_content" android:layout_height="55.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:gravity="center_vertical" android:background="@drawable/baike_infoplanet_entry_bg" android:paddingLeft="39.0dp" android:layout_width="240.0dp" android:layout_height="42.0dp" android:layout_marginLeft="46.0dp" android:layout_centerVertical="true">
+        <ImageView android:id="@id/baike_infoplanet_arrow_view" android:layout_width="8.0dp" android:layout_height="14.0dp" android:layout_marginLeft="12.0dp" android:layout_marginRight="20.0dp" android:src="@drawable/icon_baike_infoplanet_arrow" android:layout_alignParentRight="true" android:layout_centerVertical="true" />
+        <AdapterViewFlipper android:id="@id/baike_infoplanet_vf" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_toLeftOf="@id/baike_infoplanet_arrow_view" android:layout_centerVertical="true" />
+    </RelativeLayout>
+    <ImageView android:id="@id/baike_infoplanet_logo_iv" android:layout_width="79.0dp" android:layout_height="55.0dp" android:src="@drawable/icon_baike_infoplanet_logo" />
+</RelativeLayout>

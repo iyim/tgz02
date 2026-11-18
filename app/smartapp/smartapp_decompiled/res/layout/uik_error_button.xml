@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Button android:textSize="@dimen/uik_errorButtonTextSize" android:textColor="@color/uik_errorButtonColor" android:background="@drawable/uik_button_error" android:layout_width="@dimen/uik_errorButtonWidth" android:layout_height="@dimen/uik_errorButtonHeight" android:layout_margin="@dimen/uik_errorButtonMargin"
+  xmlns:android="http://schemas.android.com/apk/res/android" />

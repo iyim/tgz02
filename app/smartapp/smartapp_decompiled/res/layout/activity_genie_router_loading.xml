@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/router_loading_page" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerInParent="true">
+        <ImageView android:id="@id/loading_pic" android:layout_width="302.0dp" android:layout_height="220.0dp" android:src="@mipmap/default_genie_router_load_icon" android:scaleType="centerInside" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="22.0sp" android:textColor="#2b3852" android:id="@id/loading_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10.0dp" android:layout_below="@id/loading_pic" android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+    <ProgressBar android:id="@id/loading_progressbar" android:visibility="invisible" android:layout_width="120.0dp" android:layout_height="8.0dp" android:layout_marginBottom="100.0dp" android:maxHeight="50.0dp" android:max="100" android:progress="0" android:indeterminateOnly="false" android:progressDrawable="@drawable/main_pb_bg" android:minHeight="10.0dp" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" />
+    <TextView android:textSize="18.0sp" android:textColor="#778899" android:id="@id/loading_content" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="21.0dp" android:layout_above="@id/loading_progressbar" android:layout_centerHorizontal="true" />
+</RelativeLayout>

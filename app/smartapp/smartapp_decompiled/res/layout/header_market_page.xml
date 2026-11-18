@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="match_parent" android:layout_height="@dimen/common_header_height"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/iv_page_back" android:background="@drawable/market_button_ripple_circle" android:padding="10.0dp" android:layout_width="@dimen/common_header_icon_size" android:layout_height="@dimen/common_header_icon_size" android:layout_marginLeft="@dimen/common_header_left_margin" android:src="@drawable/icon_page_back" android:scaleType="fitXY" android:layout_centerVertical="true" />
+    <ImageView android:id="@id/iv_page_home" android:background="@drawable/market_button_ripple_circle" android:padding="10.0dp" android:layout_width="@dimen/common_header_icon_size" android:layout_height="@dimen/common_header_icon_size" android:src="@drawable/icon_page_home" android:scaleType="fitXY" android:layout_toRightOf="@id/iv_page_back" android:layout_centerVertical="true" />
+    <TextView android:textSize="@dimen/common_header_text_size" android:textColor="#ffffff" android:id="@id/tv_page_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="20.0dp" android:text="" android:layout_toRightOf="@id/iv_page_home" android:layout_centerVertical="true" />
+</RelativeLayout>

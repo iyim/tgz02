@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:tag="layout/fragment_jokeplayer_0" android:background="#f9f9f9" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/mediaBackId" android:background="@drawable/icon_back_bg" android:layout_width="@dimen/dp_40" android:layout_height="@dimen/dp_40" android:layout_marginLeft="@dimen/dp_32" android:layout_marginTop="@dimen/dp_20" android:foreground="@drawable/ripple_bg" />
+    <ImageView android:id="@id/jokeAlbum" android:layout_width="@dimen/music_player_album_image_size" android:layout_height="@dimen/music_player_album_image_size" android:layout_marginTop="@dimen/dp_72" android:layout_marginRight="@dimen/dp_120" android:layout_alignParentRight="true" />
+    <RelativeLayout android:orientation="horizontal" android:id="@id/controlLyId" android:layout_width="@dimen/dp_380" android:layout_height="@dimen/dp_100" android:layout_marginLeft="@dimen/dp_40_minus" android:layout_marginTop="@dimen/dp_30" android:layout_below="@id/jokeAlbum" android:layout_alignStart="@id/jokeAlbum">
+        <ImageButton android:id="@id/joke_last" android:background="@drawable/icon_music_previous" android:layout_width="@dimen/dp_100" android:layout_height="match_parent" android:foreground="@drawable/ripple_bg" android:layout_alignParentStart="true" />
+        <ImageButton android:id="@id/joke_play" android:background="@drawable/icon_music_pause" android:layout_width="@dimen/dp_100" android:layout_height="match_parent" android:foreground="@drawable/ripple_bg" android:layout_centerInParent="true" />
+        <ImageButton android:id="@id/joke_next" android:background="@drawable/icon_next" android:layout_width="@dimen/dp_100" android:layout_height="match_parent" android:foreground="@drawable/ripple_bg" android:layout_alignParentEnd="true" />
+    </RelativeLayout>
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/title" android:background="@drawable/img_joke_bg" android:layout_width="@dimen/dp_507" android:layout_height="@dimen/dp_88" android:layout_marginLeft="@dimen/dp_43" android:layout_marginTop="@dimen/dp_180">
+        <TextView android:textSize="60.0sp" android:textStyle="bold" android:textColor="#2b3852" android:gravity="center" android:id="@id/joke_title" android:layout_width="wrap_content" android:layout_height="@dimen/dp_90" android:layout_marginLeft="@dimen/dp_20" android:layout_marginRight="@dimen/dp_20" android:text="经典笑话" />
+    </LinearLayout>
+    <TextView android:textSize="32.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/joke_content" android:layout_width="@dimen/dp_507" android:layout_height="@dimen/dp_44" android:layout_marginLeft="@dimen/dp_43" android:layout_marginTop="@dimen/dp_26" android:text="每天笑一笑，天天好心情！" android:layout_below="@id/title" />
+</RelativeLayout>

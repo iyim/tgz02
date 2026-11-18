@@ -1,0 +1,197 @@
+{
+  "topSearch": [
+    {
+      "rank": 1,
+      "title": "大风吹"
+    },
+    {
+      "rank": 2,
+      "title": "小手拍拍"
+    },
+    {
+      "rank": 3,
+      "title": "热爱105°C的你"
+    },
+    {
+      "rank": 4,
+      "title": "宝贝宝贝"
+    }
+  ],
+  "topVideo": [
+    {
+      "img": "http:\/\/puui.qpic.cn\/vcover_hz_pic\/0\/2m021ws1bvnde4q1545872815\/0",
+      "extra": {
+        "duration": 0,
+        "score": 8.9,
+        "rawId": "2m021ws1bvnde4q",
+        "floatImg": "https:\/\/aicontent.alibabausercontent.com\/image\/video_icon\/pay_icon.png",
+        "source": "tencentvideo",
+        "clipImg": "https:\/\/aicontent.alibabausercontent.com\/image\/video_icon\/tecent_1.25.png"
+      },
+      "rank": 1,
+      "description": "混沌初开之时，世上的第一只妖降世，名元蒂，被奉为妖祖。千百万年后，昔日妖王孙悟空被唐僧从五行山下救出，悟空答应保护唐僧，前往西天取经。而传说中的妖祖元蒂再次现世，三界岌岌可危。两代妖王注定终极一战，但这次，孙悟空遇上了真正的劲敌。",
+      "id": "S772111349",
+      "title": "西游记之再世妖王",
+      "url": "txvideo:\/\/v.qq.com\/VideoDetailActivity?cid=2m021ws1bvnde4q&from=com.alibaba.ailabs.basedomain&pkg=com.tencent.qqlive.audiobox&recommandstate=list"
+    },
+    {
+      "img": "http:\/\/u7.iqiyipic.com\/image\/20210820\/26\/39\/pv_7856913666979700_d_601_480_270.jpg",
+      "extra": {
+        "duration": 0,
+        "score": 9.5,
+        "rawId": "7856913666979700",
+        "floatImg": null,
+        "source": "iqiyi",
+        "clipImg": "https:\/\/aicontent.alibabausercontent.com\/image\/video_icon\/iqiyi1.25.png"
+      },
+      "rank": 2,
+      "description": null,
+      "id": "S771266815",
+      "title": "奔跑吧兄弟",
+      "url": "iqiyi:\/\/com.qiyi.video.speaker\/app?command=play_history_from_id&param={aid=7856913666979700}&pkg=com.qiyi.video.speaker&recommandstate=list"
+    },
+    {
+      "img": "https:\/\/r4.ykimg.com\/050C000061160A2213EA3508D6ACF3BF",
+      "extra": {
+        "duration": 0,
+        "score": 8.8,
+        "rawId": "dcca4d52237a43a9a60a",
+        "floatImg": null,
+        "source": "youku_video",
+        "clipImg": "https:\/\/aicontent.alibabausercontent.com\/image\/video_icon\/youku_1.25.png"
+      },
+      "rank": 3,
+      "description": "《这！就是街舞》 第四季燃炸回归！“明星导师+专业舞者真人秀”的全新赛制，颠覆所有传统舞蹈节目模式，借街舞的内核重新定义年轻人的潮流文化，第四季全新升级为中外对抗，邀请全世界的知名舞者共同参与，同时将中国街舞文化反输出到全世界，为爱而战，Battle for peace！",
+      "id": "S716826248",
+      "title": "这！就是街舞 第四季",
+      "url": "ykiot:\/\/yingshi_detail?from=com.alibaba.ailabs.basedomain&isfull=true&id=dcca4d52237a43a9a60a&recommandstate=list"
+    },
+    {
+      "img": "http:\/\/u7.iqiyipic.com\/image\/20210821\/d9\/ed\/pv_4550386042784300_d_601_480_270.jpg",
+      "extra": {
+        "duration": 0,
+        "score": 8.9,
+        "rawId": "4550386042784300",
+        "floatImg": null,
+        "source": "iqiyi",
+        "clipImg": "https:\/\/aicontent.alibabausercontent.com\/image\/video_icon\/iqiyi1.25.png"
+      },
+      "rank": 4,
+      "description": "刘子行展露野心     时宜吃醋",
+      "id": "S771631349",
+      "title": "周生如故",
+      "url": "iqiyi:\/\/com.qiyi.video.speaker\/app?command=play_history_from_id&param={aid=4550386042784300}&pkg=com.qiyi.video.speaker&recommandstate=list"
+    }
+  ],
+  "underWave": {
+    "title": "天猫精灵2021新品"
+  },
+  "topMusic": [
+    {
+      "img": "http:\/\/img.xiami.net\/images\/album\/img9095\/4414\/1617793938788.jpg",
+      "authorNames": [
+        "阿肆"
+      ],
+      "extra": {
+        "itemType": "music",
+        "charge": false,
+        "releaseTime": 1562169600000,
+        "rawId": "2112372601",
+        "source": "xiami",
+        "sourceLogo": "https:\/\/gw.alicdn.com\/tfs\/TB1bJEpfYY1gK0jSZTEXXXDQVXa-246-246.jpg",
+        "type": "song",
+        "vip": false
+      },
+      "rank": 1,
+      "id": 511511748,
+      "title": "热爱105°C的你"
+    },
+    {
+      "img": "http:\/\/img.xiami.net\/images\/album\/img24490\/13278\/1623205808403.jpg",
+      "authorNames": [
+        "是七叔呢"
+      ],
+      "extra": {
+        "itemType": "music",
+        "charge": false,
+        "releaseTime": 1620921600000,
+        "rawId": "2115809742",
+        "source": "xiami",
+        "sourceLogo": "https:\/\/gw.alicdn.com\/tfs\/TB1bJEpfYY1gK0jSZTEXXXDQVXa-246-246.jpg",
+        "type": "song",
+        "vip": false
+      },
+      "rank": 2,
+      "id": 524192258,
+      "title": "半生雪"
+    },
+    {
+      "img": "http:\/\/img.xiami.net\/images\/album\/img12735\/15602\/1617776317961.jpg",
+      "authorNames": [
+        "王赫野"
+      ],
+      "extra": {
+        "itemType": "music",
+        "charge": false,
+        "releaseTime": 1615392000000,
+        "rawId": "2112221140",
+        "source": "xiami",
+        "sourceLogo": "https:\/\/gw.alicdn.com\/tfs\/TB1bJEpfYY1gK0jSZTEXXXDQVXa-246-246.jpg",
+        "type": "song",
+        "vip": false
+      },
+      "rank": 3,
+      "id": 511159563,
+      "title": "大风吹"
+    },
+    {
+      "img": "http:\/\/img.xiami.net\/images\/album\/img69\/7169\/50206528571590206235.jpg",
+      "authorNames": [
+        "文颖秋",
+        "郭德紫毅",
+        "张韶涵",
+        "赵瑟",
+        "曹德智"
+      ],
+      "extra": {
+        "itemType": "music",
+        "charge": false,
+        "releaseTime": 1590163200000,
+        "rawId": "2100592056",
+        "source": "xiami",
+        "sourceLogo": "https:\/\/gw.alicdn.com\/tfs\/TB1bJEpfYY1gK0jSZTEXXXDQVXa-246-246.jpg",
+        "type": "song",
+        "vip": false
+      },
+      "rank": 4,
+      "id": 442525023,
+      "title": "破茧"
+    }
+  ],
+  "topApp": [
+    {
+      "img": "https:\/\/ailabs.alibabausercontent.com\/images\/74b3ff22d338f6dbe66f7c24a8767162\/1602474331539.png",
+      "contentId": "2020082832062",
+      "rank": 1,
+      "description": "快手,国民短视频社区,记录和分享生活的平台。在这里,看到真实有趣的世界,找到自己感兴趣的人,也可以让世界发现真实有趣的自己。快手,记录世界记录你。",
+      "title": "快手",
+      "url": "genie:\/\/com.alibaba.genie.proxy\/launch?pkg=com.smile.gifmaker"
+    },
+    {
+      "img": "https:\/\/img.alicdn.com\/tfs\/TB1_jqUb2zO3e4jSZFxXXaP_FXa-136-136.png",
+      "contentId": "2020050978045",
+      "rank": 2,
+      "description": "爱奇艺APP是一款集视频、商城、购票、阅读、直播、泡泡粉丝社区等多种服务于一体的移动软件。爱奇艺为用户提供电影、电视剧、综艺、动漫、娱乐、热点资讯等内容，视频播放清晰流畅，操作界面简单友好。",
+      "title": "爱奇艺",
+      "url": "genie:\/\/com.alibaba.genie.proxy\/launch?pkg=com.qiyi.video.speaker"
+    },
+    {
+      "img": "https:\/\/img.alicdn.com\/tfs\/TB15qQBcWNj0u4jSZFyXXXgMVXa-136-136.png",
+      "contentId": "2020082832025",
+      "rank": 3,
+      "description": "\"宝宝巴士是一款学龄前儿童的早教启蒙APP，汇集孩子们喜欢的儿歌童谣、卡通动画、绘本故事、国学古诗、益智app等内容。\n\"",
+      "title": "宝宝巴士",
+      "url": "webapp:\/\/com.alibaba.ailabs.genie.webapps\/open?appId=2019071565800738&pkg=com.alibaba.ailabs.genie.webapps&vc=143&genieAppId=2020082832025"
+    }
+  ]
+}

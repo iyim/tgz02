@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="136.0dp" android:layout_height="wrap_content" android:layout_below="@id/tv_tts_to_exit_open_app"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/iv_tts_2_app_item" android:background="#2233ffff" android:layout_width="128.0dp" android:layout_height="128.0dp" android:layout_marginLeft="8.0dp" android:layout_marginTop="20.0dp" />
+    <TextView android:textSize="28.0sp" android:textColor="#ffffffff" android:gravity="center" android:id="@id/tv_tts_2_app_num" android:background="@drawable/shape_ovl_num" android:layout_width="48.0dp" android:layout_height="48.0dp" android:text="1" />
+    <TextView android:textSize="32.0sp" android:textColor="#ffffffff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8.0dp" android:text="哔哩哔哩" android:layout_below="@id/iv_tts_2_app_item" android:layout_centerHorizontal="true" />
+</RelativeLayout>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:layout_gravity="center" android:orientation="vertical" android:background="@color/genie_pay_color_623A0C" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="40.0sp" android:textColor="#000000" android:gravity="center" android:layout_gravity="center" android:id="@id/testBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="测试" />
+    <TextView android:textSize="40.0sp" android:textColor="#000000" android:gravity="center" android:layout_gravity="center" android:id="@id/isMemberTestBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="小程序会员付费测试" />
+    <TextView android:textSize="40.0sp" android:textColor="#000000" android:gravity="center" android:layout_gravity="center" android:id="@id/isNotMemberOneTestBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="小程序非会员专辑单篇付费测试" />
+    <TextView android:textSize="40.0sp" android:textColor="#000000" android:gravity="center" android:layout_gravity="center" android:id="@id/isNotMemberTestBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="小程序非会员专辑商品付费测试" />
+    <TextView android:textSize="40.0sp" android:textColor="#000000" android:gravity="center" android:layout_gravity="center" android:id="@id/isMemberNativeTestBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Native会员付费测试" />
+    <TextView android:textSize="40.0sp" android:textColor="#000000" android:gravity="center" android:layout_gravity="center" android:id="@id/isNotMemberOneNativeTestBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Native非会员专辑单篇付费测试" />
+    <TextView android:textSize="40.0sp" android:textColor="#000000" android:gravity="center" android:layout_gravity="center" android:id="@id/isNotMemberNativeTestBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Native非会员专辑商品付费测试" />
+    <TextView android:textSize="40.0sp" android:textColor="#000000" android:gravity="center" android:layout_gravity="center" android:id="@id/isMemberTestBtnByActivity" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="小程序会员付费测试-StartActivity" />
+</LinearLayout>

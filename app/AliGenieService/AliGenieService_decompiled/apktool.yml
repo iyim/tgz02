@@ -1,0 +1,16 @@
+version: 3.0.2
+apkFileName: AliGenieService.apk
+usesFramework:
+  ids:
+  - 1
+sdkInfo:
+  minSdkVersion: 27
+  targetSdkVersion: 30
+versionInfo:
+  versionCode: 253
+  versionName: 2.5.3
+resourcesInfo:
+  packageId: 127
+doNotCompress:
+- arsc
+- png

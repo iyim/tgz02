@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="vertical" android:background="@color/color_dialog_bg" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:id="@id/rl_msg_big_bg" android:visibility="visible" android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:layout_gravity="center" android:orientation="vertical" android:id="@id/rl_msg_content_bg" android:background="@drawable/conner_rect_bg_e5edf6" android:layout_width="@dimen/common_dialog_white_width" android:layout_height="wrap_content">
+            <TextView android:textSize="24.0sp" android:textColor="@color/color_tv_2b3852" android:gravity="center_horizontal" android:id="@id/tv_market_msg" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="32.0dp" android:layout_marginTop="40.0dp" android:layout_marginRight="32.0dp" android:layout_marginBottom="40.0dp" android:text="已停止服务，您可以点击管理删除图标。" android:includeFontPadding="true" android:lineSpacingExtra="12.0dp" />
+            <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/ll_btn_bottom" android:background="@drawable/conner_rect_text_bg_gray_bottom_left" android:layout_width="match_parent" android:layout_height="@dimen/common_dialog_bottom_btn_white_height">
+                <TextView android:textSize="22.0sp" android:textColor="#5a4a77" android:gravity="center" android:id="@id/tv_msg_sure_btn" android:background="@drawable/ripple_text_button_gray_b_whit_c" android:paddingLeft="20.0dp" android:paddingRight="20.0dp" android:layout_width="wrap_content" android:layout_height="44.0dp" android:text="我知道了" android:layout_centerInParent="true" />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+</RelativeLayout>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/rl_item_applist" android:background="@drawable/bg_skill_item_conner" android:layout_width="296.0dp" android:layout_height="264.0dp">
+        <RelativeLayout android:id="@id/rl_genie_tips" android:layout_width="296.0dp" android:layout_height="151.0dp">
+            <ImageView android:id="@id/iv_bg_title" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" />
+            <ImageView android:id="@id/iv_bg_title_cover" android:layout_width="match_parent" android:layout_height="match_parent" />
+            <ImageView android:background="@drawable/bg_skill_item_title_ripple_conner_top_bottom" android:layout_width="match_parent" android:layout_height="match_parent" />
+            <TextView android:textSize="28.0sp" android:textColor="@color/white" android:ellipsize="end" android:id="@id/tv_skill_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="本周新歌" android:maxLines="1" android:includeFontPadding="false" android:layout_centerInParent="true" />
+            <View android:background="@drawable/bg_sepak_content_wrapper" android:layout_width="12.0dp" android:layout_height="12.0dp" android:layout_marginTop="-1.0dp" android:layout_marginRight="5.0dp" android:layout_toLeftOf="@id/tv_skill_title" android:layout_alignTop="@id/tv_skill_title" />
+            <View android:background="@drawable/bg_sepak_content_wrapper" android:layout_width="12.0dp" android:layout_height="12.0dp" android:layout_marginLeft="5.0dp" android:layout_marginTop="-1.0dp" android:layout_toRightOf="@id/tv_skill_title" android:layout_alignTop="@id/tv_skill_title" />
+        </RelativeLayout>
+        <RelativeLayout android:id="@id/rl_icon" android:layout_width="56.0dp" android:layout_height="56.0dp" android:layout_marginLeft="16.0dp" android:layout_marginTop="-28.0dp" android:layout_below="@id/rl_genie_tips">
+            <ImageView android:background="@drawable/bg_skill_item_icon" android:layout_width="match_parent" android:layout_height="match_parent" />
+            <ImageView android:id="@id/iv_skill_icon" android:layout_width="40.0dp" android:layout_height="40.0dp" android:layout_centerInParent="true" />
+        </RelativeLayout>
+        <TextView android:textSize="28.0sp" android:textColor="@color/white" android:ellipsize="middle" android:id="@id/tv_skill_subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="22.0dp" android:layout_marginTop="6.0dp" android:text="一周新歌" android:singleLine="true" android:includeFontPadding="false" android:layout_below="@id/rl_icon" />
+        <RelativeLayout android:layout_width="56.0dp" android:layout_height="wrap_content" android:layout_marginLeft="20.0dp" android:layout_toRightOf="@id/tv_skill_subtitle" android:layout_alignTop="@id/tv_skill_subtitle" android:layout_alignBottom="@id/tv_skill_subtitle">
+            <FrameLayout android:id="@id/fl_hot" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent">
+                <TextView android:textSize="18.0sp" android:textColor="@color/white" android:gravity="center" android:layout_width="match_parent" android:layout_height="match_parent" android:text="HOT" />
+            </FrameLayout>
+            <FrameLayout android:id="@id/fl_new" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent">
+                <TextView android:textSize="18.0sp" android:textColor="@color/white" android:gravity="center" android:layout_width="match_parent" android:layout_height="match_parent" android:text="NEW" />
+            </FrameLayout>
+        </RelativeLayout>
+        <TextView android:textSize="24.0sp" android:textColor="#7383a2" android:id="@id/tv_skill_desc" android:paddingRight="22.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8.0dp" android:text="天猫精灵音乐推荐组" android:maxLines="1" android:includeFontPadding="false" android:layout_below="@id/tv_skill_subtitle" android:layout_alignLeft="@id/tv_skill_subtitle" />
+        <View android:background="@drawable/bg_skill_item_ripple_conner_top_bottom_all" android:layout_width="match_parent" android:layout_height="match_parent" />
+    </RelativeLayout>
+</RelativeLayout>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<inset android:insetLeft="@dimen/uik_mdButtonInsetHorizontal" android:insetRight="@dimen/uik_mdButtonInsetHorizontal" android:insetTop="@dimen/uik_mdButtonInsetVertical" android:insetBottom="@dimen/uik_mdButtonInsetVertical"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <shape android:shape="rectangle">
+        <corners android:radius="@dimen/uik_mdActionCornerRadius" />
+        <solid android:color="@color/uik_mdBtnSelected" />
+        <padding android:left="@dimen/uik_mdButtonPaddingHorizontal" android:top="@dimen/uik_mdButtonPaddingVertical" android:right="@dimen/uik_mdButtonPaddingHorizontal" android:bottom="@dimen/uik_mdButtonPaddingVertical" />
+    </shape>
+</inset>

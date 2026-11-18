@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="#ffffff" android:layout_width="1024.0dp" android:layout_height="470.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/bottem" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="24.0dp" android:layout_alignParentBottom="true">
+        <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/cancel" android:background="@drawable/whiteground_greyframe" android:layout_width="112.0dp" android:layout_height="56.0dp" android:layout_marginRight="8.0dp" android:text="取消" />
+        <Button android:textSize="24.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/confirm" android:background="@drawable/tintblue_background" android:layout_width="112.0dp" android:layout_height="56.0dp" android:layout_marginLeft="8.0dp" android:text="保存" />
+    </LinearLayout>
+    <com.alibaba.ailabs.childmode.ui.widget.numberpicker.NumberPicker android:id="@id/select_time_item_list" android:layout_width="262.0dp" android:layout_height="361.0dp" android:layout_marginTop="72.0dp" android:layout_marginBottom="19.0dp" android:layout_above="@id/bottem" android:layout_centerHorizontal="true" />
+</RelativeLayout>

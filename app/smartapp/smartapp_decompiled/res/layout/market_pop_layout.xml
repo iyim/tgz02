@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:background="@drawable/pop_bg" android:layout_width="wrap_content" android:layout_height="120.0dp" android:paddingStart="45.0dp" android:paddingEnd="20.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="20.0sp" android:textColor="@color/color_4a5a78" android:id="@id/tv_favorites" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="添加应用" />
+    <View android:background="@color/color_ececec" android:layout_width="81.0dp" android:layout_height="1.0dp" android:layout_marginTop="15.0dp" android:layout_marginBottom="20.0dp" />
+    <TextView android:textSize="20.0sp" android:textColor="@color/color_4a5a78" android:id="@id/tv_detail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="查看详情" />
+</LinearLayout>

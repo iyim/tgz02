@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:background="#ffffff" android:layout_width="276.0dp" android:layout_height="80.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <View android:id="@id/line1" android:background="#e6eaf2" android:layout_width="match_parent" android:layout_height="0.5dp" />
+    <TextView android:textSize="32.0sp" android:textColor="#7383a2" android:gravity="center" android:layout_gravity="center_vertical" android:id="@id/speedTvId" android:layout_width="match_parent" android:layout_height="79.0dp" />
+    <View android:background="#e6eaf2" android:layout_width="match_parent" android:layout_height="0.5dp" />
+</LinearLayout>

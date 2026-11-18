@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:id="@id/rl_item_recommend" android:focusable="true" android:clickable="true" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8.0dp" android:layout_marginBottom="48.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <include android:id="@id/item_recommend_1" android:layout_width="wrap_content" android:layout_height="wrap_content" layout="@layout/item_market_recommend_one" />
+    <include android:id="@id/item_recommend_2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="20.0dp" layout="@layout/item_market_recommend_one" />
+    <include android:id="@id/item_recommend_3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="20.0dp" layout="@layout/item_market_recommend_one" />
+    <include android:id="@id/item_recommend_4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="20.0dp" layout="@layout/item_market_recommend_one" />
+</LinearLayout>

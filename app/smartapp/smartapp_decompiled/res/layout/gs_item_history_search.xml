@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="48.0dp" android:foreground="?selectableItemBackgroundBorderless"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:background="@drawable/gs_item_history_shape" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginLeft="20.0dp">
+        <TextView android:textSize="22.0sp" android:textColor="#2b3852" android:ellipsize="end" android:id="@id/title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="24.0dp" android:maxWidth="173.0dp" android:singleLine="true" />
+        <ImageView android:id="@id/delete" android:layout_width="28.0dp" android:layout_height="28.0dp" android:layout_marginLeft="6.0dp" android:layout_marginRight="16.0dp" android:src="@drawable/gs_icon_back" android:scaleType="centerCrop" android:alpha="0.6" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="#010610" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <include android:id="@id/header_detail_topic" layout="@layout/header_market_page" />
+    <TextView android:textSize="22.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/tv_old_topic" android:background="@drawable/conner_rect_text_bg_blue_stroke" android:layout_width="132.0dp" android:layout_height="44.0dp" android:layout_marginTop="28.0dp" android:layout_marginRight="50.0dp" android:text="往期专题" android:layout_alignParentRight="true" />
+    <android.support.v7.widget.RecyclerView android:id="@id/rv_topic" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="50.0dp" android:layout_marginTop="28.0dp" android:layout_marginRight="50.0dp" android:layout_marginBottom="50.0dp" android:layout_below="@id/tv_old_topic" />
+</RelativeLayout>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="vertical" android:background="@color/transparent" android:focusable="true" android:clickable="true" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <include android:id="@id/header_1_4" layout="@layout/item_market3_recommend_item_title" />
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_below="@id/header_1_4">
+        <include android:id="@id/header_big_icon" android:layout_width="623.0dp" android:layout_height="332.0dp" layout="@layout/item_market3_623_322_one" />
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_toRightOf="@id/header_big_icon" android:layout_alignTop="@id/header_big_icon" android:layout_alignBottom="@id/header_big_icon">
+            <include android:id="@id/sub_item_1" android:layout_width="140.0dp" android:layout_height="156.0dp" android:layout_marginLeft="20.0dp" layout="@layout/item_market3_140_156_one" />
+            <include android:id="@id/sub_item_3" android:layout_width="140.0dp" android:layout_height="156.0dp" android:layout_marginLeft="20.0dp" android:layout_alignParentRight="true" layout="@layout/item_market3_140_156_one" />
+            <include android:id="@id/sub_item_2" android:layout_width="140.0dp" android:layout_height="156.0dp" android:layout_marginLeft="20.0dp" android:layout_alignParentLeft="true" android:layout_alignParentBottom="true" layout="@layout/item_market3_140_156_one" />
+            <include android:id="@id/sub_item_4" android:layout_width="140.0dp" android:layout_height="156.0dp" android:layout_marginLeft="20.0dp" android:layout_alignParentRight="true" android:layout_alignParentBottom="true" layout="@layout/item_market3_140_156_one" />
+        </RelativeLayout>
+    </RelativeLayout>
+</RelativeLayout>

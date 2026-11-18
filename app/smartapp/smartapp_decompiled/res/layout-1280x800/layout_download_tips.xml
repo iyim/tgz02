@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout android:tag="layout-1280x800/layout_download_tips_0" android:background="@drawable/download_gradient_bg" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <TextView android:textSize="@dimen/text_size_24" android:textColor="@android:color/white" android:id="@id/tv_invite_tips" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="228.0dp" android:text="@string/contacts_invite_tips" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintLeft_toLeftOf="parent" app:layout_constraintTop_toTopOf="parent" />
+    <TextView android:textSize="@dimen/text_size_20" android:textColor="@android:color/white" android:gravity="center" android:id="@id/tv_download_app" android:background="@drawable/btn_round_corner" android:layout_width="277.0dp" android:layout_height="48.0dp" android:text="@string/contacts_download_app" android:layout_marginStart="24.0dp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintLeft_toRightOf="@id/tv_invite_tips" app:layout_constraintRight_toRightOf="parent" app:layout_constraintTop_toTopOf="parent" />
+</android.support.constraint.ConstraintLayout>

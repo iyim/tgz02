@@ -1,0 +1,27 @@
+{
+  "name": "隔空手势",
+  "voice": "1",
+  "items": [{
+    "type": 1,
+    "key": "air_gesture",
+    "protocol":"https://terms.alicdn.com/legal-agreement/terms/suit_bu1_tmall/suit_bu1_tmall201902221638_17868.html",
+    "data" : [{
+      "title": "隔空手势",
+      "description": "隔空手势开启后，在0.3-1.5米内范围内，做出相关手势，即可在音乐、音频、视频、通话等页面实现屏幕隔空控制。"
+    }]
+  },{
+    "type": 5,
+    "data": [{
+      "title": "当前支持手势",
+      "description": "还想使用更多手势控制天猫精灵吗？敬请期待!",
+      "imgs": [
+        {"title":"退出","img_path": "dynamic_setting/imgs/gesture_exit.png"},
+        {"title":"播放/接听","img_path": "dynamic_setting/imgs/gesture_play.png"},
+        {"title":"点赞/收藏","img_path": "dynamic_setting/imgs/gesture_collection.png"},
+        {"title":"暂停/拒接","img_path": "dynamic_setting/imgs/gesture_stop.png"},
+        {"title":"上一首/上一个","img_path": "dynamic_setting/imgs/gesture_last.png"},
+        {"title":"下一首/下一个","img_path": "dynamic_setting/imgs/gesture_next.png"}
+      ]
+    }]
+  }]
+}

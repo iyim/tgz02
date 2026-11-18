@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center|bottom" android:orientation="horizontal" android:id="@id/standby_container" android:background="#000" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="@dimen/tips_text_size" android:textColor="#000" android:gravity="center" android:id="@id/ai_care_tips" android:background="@drawable/aicare_tips_bg" android:paddingLeft="130.0dp" android:paddingTop="35.0dp" android:paddingRight="130.0dp" android:visibility="invisible" android:layout_width="match_parent" android:layout_height="wrap_content" android:lines="1" />
+</LinearLayout>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/iv_current_topic" android:layout_width="453.0dp" android:layout_height="253.0dp" android:layout_marginLeft="50.0dp" />
+    <TextView android:textSize="46.0sp" android:textColor="#ffffff" android:ellipsize="end" android:id="@id/tv_topic_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginRight="50.0dp" android:text="睡前故事大集合！" android:layout_toRightOf="@id/iv_current_topic" android:layout_alignTop="@id/iv_current_topic" />
+    <TextView android:textSize="32.0sp" android:textColor="#ffffff" android:ellipsize="end" android:id="@id/tv_topic_title_desc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="6.0dp" android:layout_marginRight="50.0dp" android:text="10个适合宝宝的故事集锦" android:layout_toRightOf="@id/iv_current_topic" android:layout_below="@id/tv_topic_title" />
+    <TextView android:textSize="24.0sp" android:textColor="#ffffff" android:ellipsize="end" android:id="@id/tv_topic_desc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="18.0dp" android:layout_marginRight="50.0dp" android:text="快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试快来试一试" android:maxLines="5" android:layout_toRightOf="@id/iv_current_topic" android:layout_below="@id/tv_topic_title_desc" />
+</RelativeLayout>

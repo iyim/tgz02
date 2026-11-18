@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:background="@android:color/transparent" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:id="@id/uik_toast" android:background="@drawable/uik_toast_bg" android:clickable="false" android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <com.taobao.uikit.extend.feature.view.TIconFontTextView android:layout_gravity="center" android:id="@id/uik_toast_icon" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/uik_toast_icon" />
+        <TextView android:layout_gravity="center" android:id="@id/uik_toast_message" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/uik_toast_message" />
+        <TextView android:layout_gravity="center" android:id="@id/uik_toast_message2" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/uik_toast_message2" />
+    </LinearLayout>
+</FrameLayout>

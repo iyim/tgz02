@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:background="@drawable/transparent" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:lpq="http://schemas.android.com/apk/res-auto">
+    <LinearLayout android:gravity="center" android:layout_gravity="center_horizontal" android:id="@id/ll_detected" android:background="@drawable/open_gesture_bg" android:visibility="gone" android:layout_width="@dimen/detected_width" android:layout_height="@dimen/detected_height" android:alpha="0.0">
+        <ImageView android:layout_width="@dimen/detected_logo" android:layout_height="@dimen/detected_logo" android:src="@drawable/open_gesture" />
+        <TextView android:textSize="@dimen/detected_text_size" android:textColor="@color/before_text_color" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/detected_margin" android:text="隔空手势 已开启" />
+    </LinearLayout>
+    <FrameLayout android:layout_gravity="left|center" android:id="@id/fl_left" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_margin="@dimen/detected_before_margin">
+        <ImageView android:id="@id/iv_left" android:layout_width="@dimen/detected_before_bg" android:layout_height="@dimen/detected_before_bg" android:src="@drawable/dynamic_gestures_bg" />
+        <LinearLayout android:gravity="center" android:layout_gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <ImageView android:paddingRight="@dimen/detected_before_icon_padding" android:layout_width="@dimen/detected_before_icon" android:layout_height="@dimen/detected_before_icon" android:src="@drawable/dynamic_gestures_allow_left" />
+            <TextView android:textSize="@dimen/detected_before_text" android:textColor="@color/before_text_color" android:id="@id/tv_left" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="向左" android:ems="1" />
+        </LinearLayout>
+    </FrameLayout>
+    <FrameLayout android:layout_gravity="center|top" android:id="@id/fl_top" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_margin="@dimen/detected_before_margin">
+        <ImageView android:id="@id/iv_top" android:layout_width="@dimen/detected_before_bg" android:layout_height="@dimen/detected_before_bg" android:src="@drawable/dynamic_gestures_bg" />
+        <LinearLayout android:gravity="center" android:layout_gravity="center" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <ImageView android:paddingBottom="@dimen/detected_before_icon_padding" android:layout_width="@dimen/detected_before_icon" android:layout_height="@dimen/detected_before_icon" android:src="@drawable/dynamic_gestures_allow_top" />
+            <TextView android:textSize="@dimen/detected_before_text" android:textColor="@color/before_text_color" android:layout_gravity="center" android:id="@id/tv_top" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="向上" android:lineSpacingExtra="@dimen/letter_spacing_extra" />
+        </LinearLayout>
+    </FrameLayout>
+    <FrameLayout android:layout_gravity="right|center" android:id="@id/fl_right" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_margin="@dimen/detected_before_margin">
+        <ImageView android:id="@id/iv_right" android:layout_width="@dimen/detected_before_bg" android:layout_height="@dimen/detected_before_bg" android:src="@drawable/dynamic_gestures_bg" />
+        <LinearLayout android:gravity="center" android:layout_gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <TextView android:textSize="@dimen/detected_before_text" android:textColor="@color/before_text_color" android:layout_gravity="center" android:id="@id/tv_right" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="向右" android:ems="1" />
+            <ImageView android:paddingLeft="@dimen/detected_before_icon_padding" android:layout_width="@dimen/detected_before_icon" android:layout_height="@dimen/detected_before_icon" android:src="@drawable/dynamic_gestures_allow_right" />
+        </LinearLayout>
+    </FrameLayout>
+    <FrameLayout android:layout_gravity="center|bottom" android:id="@id/fl_bottom" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_margin="@dimen/detected_before_margin">
+        <ImageView android:id="@id/iv_bottom" android:layout_width="@dimen/detected_before_bg" android:layout_height="@dimen/detected_before_bg" android:src="@drawable/dynamic_gestures_bg" />
+        <LinearLayout android:gravity="center" android:layout_gravity="center" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <TextView android:textSize="@dimen/detected_before_text" android:textColor="@color/before_text_color" android:layout_gravity="center" android:id="@id/tv_bottom" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="向下" android:lineSpacingExtra="@dimen/letter_spacing_extra" />
+            <ImageView android:paddingTop="@dimen/detected_before_icon_padding" android:layout_width="@dimen/detected_before_icon" android:layout_height="@dimen/detected_before_icon" android:src="@drawable/dynamic_gestures_allow_bottom" />
+        </LinearLayout>
+    </FrameLayout>
+    <FrameLayout android:layout_gravity="left|center" android:id="@id/fl_after_left" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <ImageView android:id="@id/iv_after_left_bg" android:layout_width="@dimen/detected_after" android:layout_height="@dimen/detected_after" android:src="@drawable/dynamic_gestures_after_bg" />
+        <ImageView android:layout_gravity="center" android:id="@id/iv_after_left_green" android:layout_width="@dimen/detected_before_bg" android:layout_height="@dimen/detected_before_bg" android:src="@drawable/dynamic_gestures_bg" />
+        <LinearLayout android:gravity="center" android:layout_gravity="center" android:orientation="horizontal" android:id="@id/ll_after_left_allow" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <ImageView android:id="@id/iv_after_left_allow" android:paddingRight="@dimen/detected_before_icon_padding" android:layout_width="@dimen/detected_before_icon" android:layout_height="@dimen/detected_before_icon" android:src="@drawable/dynamic_gestures_allow_left" />
+            <TextView android:textSize="@dimen/detected_before_text" android:textColor="@color/before_text_color" android:id="@id/tv_after_left" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="向左" android:ems="1" />
+        </LinearLayout>
+    </FrameLayout>
+    <FrameLayout android:layout_gravity="center|top" android:id="@id/fl_after_top" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <ImageView android:id="@id/iv_after_top_bg" android:layout_width="@dimen/detected_after" android:layout_height="@dimen/detected_after" android:src="@drawable/dynamic_gestures_after_bg" />
+        <ImageView android:layout_gravity="center" android:id="@id/iv_after_top_green" android:layout_width="@dimen/detected_before_bg" android:layout_height="@dimen/detected_before_bg" android:src="@drawable/dynamic_gestures_bg" />
+        <LinearLayout android:gravity="center" android:layout_gravity="center" android:orientation="vertical" android:id="@id/ll_after_top_allow" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <ImageView android:id="@id/iv_after_top_allow" android:paddingBottom="@dimen/detected_before_icon_padding" android:layout_width="@dimen/detected_before_icon" android:layout_height="@dimen/detected_before_icon" android:src="@drawable/dynamic_gestures_allow_top" />
+            <TextView android:textSize="@dimen/detected_before_text" android:textColor="@color/before_text_color" android:layout_gravity="center" android:id="@id/tv_after_top" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="向上" android:lineSpacingExtra="@dimen/letter_spacing_extra" />
+        </LinearLayout>
+    </FrameLayout>
+    <FrameLayout android:layout_gravity="right|center" android:id="@id/fl_after_right" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <ImageView android:id="@id/iv_after_right_bg" android:layout_width="@dimen/detected_after" android:layout_height="@dimen/detected_after" android:src="@drawable/dynamic_gestures_after_bg" />
+        <ImageView android:layout_gravity="center" android:id="@id/iv_after_right_green" android:layout_width="@dimen/detected_before_bg" android:layout_height="@dimen/detected_before_bg" android:src="@drawable/dynamic_gestures_bg" />
+        <LinearLayout android:gravity="center" android:layout_gravity="center" android:orientation="horizontal" android:id="@id/ll_after_right_allow" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <TextView android:textSize="@dimen/detected_before_text" android:textColor="@color/before_text_color" android:layout_gravity="center" android:id="@id/tv_after_right" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="向右" android:ems="1" />
+            <ImageView android:id="@id/iv_after_right_allow" android:paddingLeft="@dimen/detected_before_icon_padding" android:layout_width="@dimen/detected_before_icon" android:layout_height="@dimen/detected_before_icon" android:src="@drawable/dynamic_gestures_allow_right" />
+        </LinearLayout>
+    </FrameLayout>
+    <FrameLayout android:layout_gravity="center|bottom" android:id="@id/fl_after_bottom" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <ImageView android:id="@id/iv_after_bottom_bg" android:layout_width="@dimen/detected_after" android:layout_height="@dimen/detected_after" android:src="@drawable/dynamic_gestures_after_bg" />
+        <ImageView android:layout_gravity="center" android:id="@id/iv_after_bottom_green" android:layout_width="@dimen/detected_before_bg" android:layout_height="@dimen/detected_before_bg" android:src="@drawable/dynamic_gestures_bg" />
+        <LinearLayout android:gravity="center" android:layout_gravity="center" android:orientation="vertical" android:id="@id/ll_after_bottom_allow" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <TextView android:textSize="@dimen/detected_before_text" android:textColor="@color/before_text_color" android:layout_gravity="center" android:id="@id/tv_after_bottom" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="向下" android:lineSpacingExtra="@dimen/letter_spacing_extra" />
+            <ImageView android:id="@id/iv_after_bottom_allow" android:paddingTop="@dimen/detected_before_icon_padding" android:layout_width="@dimen/detected_before_icon" android:layout_height="@dimen/detected_before_icon" android:src="@drawable/dynamic_gestures_allow_bottom" />
+        </LinearLayout>
+    </FrameLayout>
+    <FrameLayout android:layout_gravity="center" android:id="@id/fl_middle" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <ImageView android:id="@id/iv_middle_bg" android:layout_width="@dimen/detected_after" android:layout_height="@dimen/detected_after" android:src="@drawable/dynamic_gestures_after_bg" android:alpha="0.0" />
+        <ImageView android:layout_gravity="center" android:layout_width="@dimen/detected_middle_bg" android:layout_height="@dimen/detected_middle_bg" android:src="@drawable/static_gesture" />
+        <LinearLayout android:gravity="center_horizontal" android:layout_gravity="center" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <ImageView android:layout_gravity="center" android:id="@id/iv_middle_logo" android:layout_width="@dimen/detected_middle_logo" android:layout_height="@dimen/detected_middle_logo" />
+            <TextView android:textSize="@dimen/detected_text_size" android:id="@id/tv_middle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="OK" />
+        </LinearLayout>
+    </FrameLayout>
+    <com.alibaba.ailabs.genie.assistant.vision.FingerCursorView android:id="@id/v_finger_cursor" android:layout_width="@dimen/space_cursor_size" android:layout_height="@dimen/space_cursor_size" />
+</FrameLayout>

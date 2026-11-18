@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:background="@drawable/gs_item_search_suggest_shape" android:layout_width="wrap_content" android:layout_height="48.0dp" android:foreground="?selectableItemBackgroundBorderless"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:layout_width="20.0dp" android:layout_height="20.0dp" android:layout_marginLeft="30.0dp" android:layout_marginRight="16.0dp" android:src="@drawable/gs_icon_search" android:scaleType="centerCrop" />
+    <TextView android:textSize="24.0sp" android:textColor="#000000" android:ellipsize="end" android:id="@id/queryWord" android:layout_width="wrap_content" android:layout_height="wrap_content" android:singleLine="true" />
+    <TextView android:textSize="24.0sp" android:textColor="#7383a2" android:ellipsize="end" android:gravity="center_vertical" android:id="@id/suggest" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginRight="30.0dp" android:singleLine="true" />
+</LinearLayout>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:paddingTop="40.0dp" android:layout_width="match_parent" android:layout_height="94.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/rl_search_contaner" android:background="@color/transparent" android:layout_width="match_parent" android:layout_height="22.0dp">
+        <TextView android:textSize="22.0sp" android:textColor="#2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="精灵为您找到的相关应用" android:includeFontPadding="false" android:layout_centerVertical="true" android:fontFamily="NotoSansCJKsc-Regular" />
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/rl_instance_to_market" android:paddingLeft="20.0dp" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_alignParentRight="true">
+            <TextView android:textSize="22.0sp" android:textColor="#2b3852" android:id="@id/tv_market_desc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="应用商店" android:includeFontPadding="false" android:layout_alignParentRight="true" android:layout_centerVertical="true" android:fontFamily="NotoSansCJKsc-Regular" />
+            <ImageView android:layout_width="14.0dp" android:layout_height="14.0dp" android:layout_marginLeft="8.0dp" android:src="@drawable/iv_market_more" android:layout_toRightOf="@id/tv_market_desc" android:layout_centerVertical="true" />
+        </LinearLayout>
+    </RelativeLayout>
+</FrameLayout>

@@ -1,0 +1,14 @@
+{
+    "key": "mic_mute",
+    "descr": "mic静音",
+    "lightList": [
+        {
+            "type": "",
+            "time": 1000,
+            "loop": 1,
+            "dataList": [
+                "0 255 0"
+            ]
+        }
+    ]
+}

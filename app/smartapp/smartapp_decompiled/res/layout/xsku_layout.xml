@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:background="@android:color/white" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:orientation="vertical" android:id="@id/header" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <android.support.v7.widget.RecyclerView android:id="@id/body" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_weight="1.0" />
+        <LinearLayout android:orientation="vertical" android:id="@id/footer" android:layout_width="match_parent" android:layout_height="wrap_content" />
+    </LinearLayout>
+    <FrameLayout android:id="@id/alix_loading_container" android:focusable="true" android:visibility="gone" android:clickable="true" android:layout_width="match_parent" android:layout_height="match_parent">
+        <FrameLayout android:layout_gravity="center" android:background="@drawable/xsku_loading_bg_drawable" android:padding="20.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <ProgressBar android:layout_width="46.0dp" android:layout_height="46.0dp" android:indeterminate="true" style="@style/Alix.Sku.Ptr.Loading" />
+        </FrameLayout>
+    </FrameLayout>
+</FrameLayout>

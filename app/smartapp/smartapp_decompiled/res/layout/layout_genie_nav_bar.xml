@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="48.0dp" android:layout_width="match_parent" android:layout_height="@dimen/genie_nav_bar_h"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <ImageView android:id="@id/nav_bar_back_btn" android:layout_width="64.0dp" android:layout_height="64.0dp" android:foreground="@drawable/ripple_bg" android:src="@mipmap/icon_genie_nav_bar_back" android:scaleType="centerInside" />
+    <ImageView android:id="@id/nav_bar_home_btn" android:layout_width="64.0dp" android:layout_height="64.0dp" android:layout_marginRight="6.0dp" android:foreground="@drawable/ripple_bg" android:src="@mipmap/icon_genie_nav_bar_home" android:scaleType="centerInside" />
+    <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+        <android.support.design.widget.TabLayout android:id="@id/nav_bar_tab_layout" android:layout_width="match_parent" android:layout_height="match_parent" app:tabBackground="@android:color/transparent" app:tabGravity="fill" app:tabIndicatorHeight="0.0dp" app:tabMaxWidth="0.0dp" app:tabMinWidth="0.0dp" app:tabMode="scrollable" app:tabPaddingBottom="0.0dp" app:tabPaddingEnd="18.0dp" app:tabPaddingStart="18.0dp" app:tabPaddingTop="0.0dp" app:tabSelectedTextColor="@android:color/white" app:tabTextAppearance="@style/GenieNavBarTextAppearance" app:tabTextColor="#a5b0ba" />
+        <View android:layout_gravity="left|center" android:id="@id/nav_bar_mask_left_view" android:background="@drawable/bg_nav_bar_left_mask" android:visibility="gone" android:layout_width="23.0dp" android:layout_height="44.0dp" />
+        <View android:layout_gravity="right|center" android:id="@id/nav_bar_mask_right_view" android:background="@drawable/bg_nav_bar_right_mask" android:visibility="gone" android:layout_width="23.0dp" android:layout_height="44.0dp" />
+    </FrameLayout>
+</LinearLayout>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:gravity="center" android:layout_width="580.0dp" android:layout_height="wrap_content">
+        <LinearLayout android:gravity="center" android:orientation="vertical" android:background="@drawable/dialog_remind_radius_top_bg" android:paddingTop="38.0dp" android:paddingBottom="38.0dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_above="@id/dialog_bottom_btn" android:paddingStart="78.0dp" android:paddingEnd="78.0dp">
+            <TextView android:textSize="36.0sp" android:textColor="@color/white" android:ellipsize="end" android:gravity="center" android:id="@id/dialog_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="26.0dp" android:text="提示" android:maxLines="1" />
+            <TextView android:textSize="24.0sp" android:textColor="@color/dialog_text_white" android:ellipsize="end" android:gravity="center" android:id="@id/dialog_content" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="亲，为了你的隐私安全保障，支付宝相关订阅得先打开天猫精灵App完成相关授权流程精灵App完成相关授权流程精灵App完成相关授权流程" android:maxLines="4" android:lineSpacingExtra="38.0dp" />
+        </LinearLayout>
+        <LinearLayout android:orientation="horizontal" android:id="@id/dialog_bottom_btn" android:background="@drawable/dialog_remind_radius_bottom_bg" android:layout_width="match_parent" android:layout_height="88.0dp" android:layout_alignParentBottom="true">
+            <TextView android:textSize="28.0sp" android:textColor="#c5cfd7" android:gravity="center" android:id="@id/dialog_cancel" android:background="@drawable/back_text_selector_right" android:paddingTop="10.0dp" android:paddingBottom="10.0dp" android:layout_width="0.0dp" android:layout_height="match_parent" android:text="暂不取消" android:layout_weight="1.0" />
+            <View android:id="@id/dialog_line" android:background="@color/msg_background" android:layout_width="1.0px" android:layout_height="match_parent" />
+            <TextView android:textSize="28.0sp" android:textColor="#08a8ff" android:gravity="center" android:id="@id/dialog_confirm" android:background="@drawable/back_text_selector_left" android:paddingTop="10.0dp" android:paddingBottom="10.0dp" android:layout_width="0.0dp" android:layout_height="match_parent" android:text="取消订阅" android:layout_weight="1.0" />
+        </LinearLayout>
+    </RelativeLayout>
+</LinearLayout>

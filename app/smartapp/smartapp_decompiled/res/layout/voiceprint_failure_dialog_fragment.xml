@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_gravity="center_horizontal" android:orientation="vertical" android:background="#ff30373c" android:layout_width="744.0dp" android:layout_height="450.0dp" android:layout_marginTop="59.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="30.0sp" android:textColor="#ffffff" android:gravity="center" android:layout_gravity="center_horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="50.0dp" android:text="@string/tv_voiceprint_failure_str" android:includeFontPadding="false" />
+    <LinearLayout android:layout_gravity="center_horizontal" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp">
+        <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <ImageView android:layout_width="88.0dp" android:layout_height="88.0dp" android:src="@mipmap/net_not_connect" />
+            <LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="26.0dp">
+                <TextView android:textSize="12.0sp" android:textColor="@color/color_hei" android:gravity="center" android:background="@drawable/voiceprint_failure_num_white_bg" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1" />
+                <TextView android:textSize="14.0sp" android:textColor="#a5b0ba" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:text="@string/tv_voiceprint_failure_str1" />
+            </LinearLayout>
+            <TextView android:textSize="18.0sp" android:textColor="#ffffff" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="13.0dp" android:text="@string/tv_voiceprint_failure_str4" />
+        </LinearLayout>
+        <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="58.0dp">
+            <ImageView android:layout_width="88.0dp" android:layout_height="88.0dp" android:src="@mipmap/device_too_long" />
+            <LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="26.0dp">
+                <TextView android:textSize="12.0sp" android:textColor="@color/color_hei" android:gravity="center" android:background="@drawable/voiceprint_failure_num_white_bg" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2" />
+                <TextView android:textSize="14.0sp" android:textColor="#a5b0ba" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:text="@string/tv_voiceprint_failure_str2" />
+            </LinearLayout>
+            <TextView android:textSize="18.0sp" android:textColor="#ffffff" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="13.0dp" android:text="@string/tv_voiceprint_failure_str5" />
+        </LinearLayout>
+        <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="58.0dp">
+            <ImageView android:layout_width="88.0dp" android:layout_height="88.0dp" android:src="@mipmap/too_nosize" />
+            <LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="26.0dp">
+                <TextView android:textSize="12.0sp" android:textColor="@color/color_hei" android:gravity="center" android:background="@drawable/voiceprint_failure_num_white_bg" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="3" />
+                <TextView android:textSize="14.0sp" android:textColor="#a5b0ba" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:text="@string/tv_voiceprint_failure_str3" />
+            </LinearLayout>
+            <TextView android:textSize="18.0sp" android:textColor="#ffffff" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="13.0dp" android:text="@string/tv_voiceprint_failure_str6" />
+        </LinearLayout>
+    </LinearLayout>
+    <View android:background="#4f5d66" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_marginTop="40.0dp" />
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="86.0dp">
+        <TextView android:textSize="28.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/tv_giveup" android:layout_width="370.0dp" android:layout_height="match_parent" android:text="@string/tv_voiceprint_giveup_str" />
+        <View android:background="#4f5d66" android:layout_width="1.0dp" android:layout_height="match_parent" />
+        <TextView android:textSize="28.0sp" android:textColor="#3ca0ff" android:gravity="center" android:id="@id/tv_retry" android:layout_width="370.0dp" android:layout_height="match_parent" android:text="@string/tv_voiceprint_retry_str" />
+    </LinearLayout>
+</LinearLayout>

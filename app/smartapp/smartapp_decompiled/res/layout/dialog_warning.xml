@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/root1" android:background="#402b3852" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/root2" android:background="@drawable/dialog_whitebackground" android:layout_width="525.0dp" android:layout_height="252.0dp" android:layout_marginLeft="150.0dp" android:layout_marginRight="150.0dp" android:layout_centerInParent="true">
+        <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:id="@id/tv_keep_data_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="40.0dp" android:text="@string/forbidden_time_max_title" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:id="@id/tv_keep_data_tips" android:paddingRight="36.0dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="36.0dp" android:layout_marginTop="24.0dp" android:text="@string/forbidden_time_max_content" android:layout_below="@id/tv_keep_data_title" />
+        <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="41.0dp" android:layout_alignParentBottom="true">
+            <LinearLayout android:gravity="center" android:orientation="horizontal" android:background="@drawable/dialog_bottem_whitebackground" android:layout_width="match_parent" android:layout_height="91.0dp">
+                <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/btn_cancel" android:background="@drawable/whiteground_greyframe" android:layout_width="112.0dp" android:layout_height="56.0dp" android:text="@string/confirm" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+</RelativeLayout>

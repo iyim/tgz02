@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="436.0dp" android:layout_marginRight="33.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center_vertical" android:paddingLeft="20.0dp" android:layout_width="281.0dp" android:layout_height="36.0dp" android:layout_marginTop="25.0dp">
+        <ImageView android:id="@id/group_img" android:visibility="gone" android:layout_width="36.0dp" android:layout_height="36.0dp" android:layout_marginRight="4.0dp" android:src="@drawable/gs_default_white_logo" android:scaleType="centerCrop" />
+        <TextView android:textSize="28.0sp" android:textStyle="bold" android:textColor="#2b3753" android:ellipsize="end" android:gravity="center" android:id="@id/group_title" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginLeft="8.0dp" android:singleLine="true" />
+        <LinearLayout android:gravity="right|center" android:orientation="horizontal" android:id="@id/delete_all" android:visibility="visible" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5.0dp">
+            <TextView android:textSize="18.0sp" android:textColor="#4a5a78" android:ellipsize="end" android:gravity="center_vertical" android:layout_width="wrap_content" android:layout_height="24.0dp" android:text="删除历史" android:singleLine="true" />
+            <ImageView android:visibility="visible" android:layout_width="20.0dp" android:layout_height="20.0dp" android:layout_marginLeft="6.0dp" android:layout_marginRight="18.0dp" android:src="@drawable/gs_history_delete_icon" android:scaleType="centerCrop" />
+        </LinearLayout>
+    </LinearLayout>
+    <com.alibaba.ailabs.genie.globalsearch.widgets.FlowLayout android:id="@id/flow_layout" android:paddingTop="6.0dp" android:layout_width="wrap_content" android:layout_height="320.0dp" android:layout_marginTop="30.0dp" />
+</merge>

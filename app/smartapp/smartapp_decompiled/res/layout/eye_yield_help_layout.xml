@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_gravity="center" android:id="@id/root1" android:background="#9921262a" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/root2" android:background="@drawable/dialog_whitebackground" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="80.0dp" android:layout_marginTop="36.0dp" android:layout_marginRight="80.0dp" android:layout_marginBottom="36.0dp">
+        <TextView android:textSize="24.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:id="@id/text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="32.0dp" android:text="@string/what_eye_yield_mode" android:layout_alignParentTop="true" android:layout_centerHorizontal="true" />
+        <View android:id="@id/close" android:background="@drawable/close" android:layout_width="28.0dp" android:layout_height="28.0dp" android:layout_marginTop="24.0dp" android:layout_marginRight="24.0dp" android:layout_alignParentRight="true" />
+        <LinearLayout android:gravity="center_horizontal" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginTop="54.0dp" android:layout_below="@id/text">
+            <LinearLayout android:gravity="center|top" android:orientation="vertical" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_weight="1.0">
+                <ImageView android:background="#cccccc" android:layout_width="96.0dp" android:layout_height="96.0dp" />
+                <TextView android:textSize="22.0sp" android:textStyle="bold" android:textColor="#4a5a78" android:gravity="center" android:id="@id/blue_light" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24.0dp" android:text="@string/anti_blue_light" />
+                <TextView android:textSize="20.0sp" android:textColor="#4a5a78" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="24.0dp" android:layout_marginRight="40.0dp" android:text="@string/anti_blue_light_tip" android:layout_below="@id/blue_light" android:lineSpacingExtra="10.0dp" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center|top" android:orientation="vertical" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_weight="1.0">
+                <ImageView android:background="#cccccc" android:layout_width="96.0dp" android:layout_height="96.0dp" />
+                <TextView android:textSize="22.0sp" android:textStyle="bold" android:textColor="#4a5a78" android:gravity="center" android:id="@id/distance_tips" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24.0dp" android:text="@string/distance_remind" />
+                <TextView android:textSize="20.0sp" android:textColor="#4a5a78" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="24.0dp" android:layout_marginRight="40.0dp" android:text="@string/distance_remind_tip" android:lineSpacingExtra="10.0dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+</FrameLayout>

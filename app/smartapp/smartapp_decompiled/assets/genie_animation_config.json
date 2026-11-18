@@ -1,0 +1,202 @@
+{
+  "animations": [
+    {
+      "id": 0,
+      "type": 2,
+      "path": "default.zip",
+      "fps": 12,
+      "version": "1.0.19",
+      "count": 40
+    },
+    {
+      "id": 2,
+      "type": 2,
+      "path": "asr_bg.zip",
+      "version": "1.0.19",
+      "count": 54
+    },
+    {
+      "id": 3,
+      "type": 2,
+      "path": "tts_in.zip",
+      "version": "1.0.19",
+      "count": 9
+    },
+    {
+      "id": 4,
+      "type": 2,
+      "path": "tts.zip",
+      "version": "1.0.19",
+      "count": 54
+    },
+    {
+      "id": 6,
+      "type": 2,
+      "path": "mute.zip",
+      "version": "1.0.19",
+      "count": 1
+    },
+    {
+      "id": 7,
+      "type": 2,
+      "path": "default2asr.zip",
+      "version": "1.0.20",
+      "count": 11
+    },
+    {
+      "id": 8,
+      "type": 2,
+      "path": "default_normal.zip",
+      "version": "1.0.19",
+      "count": 1
+    }
+  ],
+  "status": [
+    {
+      "status": "default",
+      "type": 0,
+      "decoration": [
+      ],
+      "animation_set": [
+        {
+          "id": 0,
+          "loop": true
+        }
+      ]
+    },
+    {
+      "status": "asr",
+      "type": 0,
+      "decoration": [
+      ],
+      "animation_set": [
+        {
+          "id": 2,
+          "loop": true
+        }
+      ]
+    },
+    {
+      "status": "asr_and_tts",
+      "type": 0,
+      "decoration": [
+      ],
+      "animation_set": [
+        {
+          "id": 9,
+          "loop": false
+        },
+        {
+          "id": 2,
+          "loop": true
+        }
+      ]
+    },
+    {
+      "status": "tts",
+      "type": 0,
+      "decoration": [
+      ],
+      "animation_set": [
+        {
+          "id": 3,
+          "loop": false
+        },
+        {
+          "id": 4,
+          "loop": true
+        }
+      ]
+    },
+    {
+      "status": "session_end",
+      "type": 0,
+      "decoration": [
+      ],
+      "animation_set": [
+        {
+          "id": 0,
+          "loop": true
+        }
+      ]
+    },
+    {
+      "status": "mute",
+      "type": 0,
+      "decoration": [
+      ],
+      "animation_set": [
+        {
+          "id": 6,
+          "loop": true
+        }
+      ]
+    },
+    {
+      "status": "default_out",
+      "type": 0,
+      "decoration": [
+      ],
+      "animation_set": [
+        {
+          "id": 7,
+          "loop": false
+        }
+      ]
+    },
+    {
+      "status": "recognized",
+      "type": 1,
+      "decoration": [
+      ],
+      "animation_set": [
+        {
+          "id": 2,
+          "loop": true
+        }
+      ]
+    },
+    {
+      "status": "prompt_msg",
+      "type": 2,
+      "decoration": [
+      ],
+      "animation_set": [
+        {
+          "id": 2,
+          "loop": true
+        }
+      ]
+    },
+    {
+      "status": "default_normal",
+      "type": 0,
+      "decoration": [
+      ],
+      "animation_set": [
+        {
+          "id": 8,
+          "loop": true
+        }
+      ]
+    }
+  ],
+  "keep_ball_show": [
+    "com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.launcher.adult.AdultHomeActivity",
+    "com.alibaba.ailabs.genie.launcher/com.alibaba.ailabs.genie.launcher.activity.AdultHomeActivity"
+  ],
+  "disable_wakeup_recommend_packages": [
+    "com.alibaba.ailabs.genie.webapps",
+    "com.alipay.arome.app"
+  ],
+  "disable_wakeup_recommend_activities": [
+    "com.alibaba.ailabs.genie.smartapp/com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintGetOneActivity",
+    "com.alibaba.ailabs.genie.smartapp/com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintGetTwoActivity",
+    "com.alibaba.ailabs.genie.smartapp/com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintGuideActivity",
+    "com.alibaba.ailabs.genie.smartapp/com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintListActivity",
+    "com.alibaba.ailabs.genie.smartapp/com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintNickCreateActivity",
+    "com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.childrenmodel.home.view.ChildrenHomeActivity"
+  ],
+  "disable_message_window": [
+  ]
+}

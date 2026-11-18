@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:id="@id/forbidden_time_adapter_layout" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <View android:id="@id/view_line" android:background="#e6eaf2" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_marginLeft="40.0dp" android:layout_marginRight="40.0dp" />
+    <LinearLayout android:gravity="center" android:orientation="vertical" android:id="@id/forbidden_time_item" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20.0dp">
+        <LinearLayout android:gravity="left" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="32.0sp" android:textColor="@color/color_setting_main_title_text" android:id="@id/forbidden_item_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:text="禁用时间段1" android:layout_alignParentTop="true" />
+            <View android:background="#e6eaf2" android:layout_width="1.0dp" android:layout_height="match_parent" android:layout_marginLeft="40.0dp" android:layout_marginRight="40.0dp" />
+            <TextView android:textSize="32.0sp" android:textColor="@color/color_setting_main_title_text" android:id="@id/forbidden_item_week" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="周一 周二 周三" android:layout_alignParentTop="true" />
+        </LinearLayout>
+        <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/rly_time_begin" android:layout_width="match_parent" android:layout_height="100.0dp">
+            <LinearLayout android:gravity="left|center" android:orientation="horizontal" android:id="@id/forbidden_time_show" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_weight="8.0">
+                <ImageView android:layout_width="42.0dp" android:layout_height="42.0dp" android:layout_marginLeft="40.0dp" android:src="@drawable/timeout_hot" />
+                <TextView android:textSize="32.0sp" android:textColor="#7383a2" android:id="@id/start_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="10.0dp" android:text="@string/start_time" />
+                <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:id="@id/start_time_input" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="12.0dp" android:text="00:00" />
+                <ImageView android:layout_width="42.0dp" android:layout_height="42.0dp" android:layout_marginLeft="43.0dp" android:src="@drawable/play_hot" />
+                <TextView android:textSize="32.0sp" android:textColor="#7383a2" android:id="@id/end_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="10.0dp" android:text="@string/end_time" />
+                <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:id="@id/end_time_input" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="12.0dp" android:text="00:00" />
+            </LinearLayout>
+            <LinearLayout android:gravity="right|top" android:orientation="vertical" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_marginRight="40.0dp" android:layout_weight="2.0">
+                <com.alibaba.ailabs.genie.widgetui.widget_element.WidgetUISwitch android:id="@id/forbidden_switch" android:layout_width="@dimen/switch_btn_hot_zone_width" android:layout_height="@dimen/switch_btn_hot_zone_height" android:checked="false" android:switchMinWidth="@dimen/switch_btn_width" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

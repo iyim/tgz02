@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="vertical" android:background="@drawable/bg_market_main_item_ripple_conner_8_white" android:focusable="true" android:clickable="true" android:layout_width="462.0dp" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8.0dp" android:layout_marginBottom="8.0dp">
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <include android:id="@id/item_market_2_3_sub_1" layout="@layout/item_market3_358_68_one" />
+        </LinearLayout>
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <include android:id="@id/item_market_2_3_sub_2" layout="@layout/item_market3_358_68_one" />
+        </LinearLayout>
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <include android:id="@id/item_market_2_3_sub_3" layout="@layout/item_market3_358_68_one" />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout android:layout_width="@dimen/dp_190" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <Button android:layout_gravity="center" android:id="@id/backToMainBt" android:background="@drawable/icon_back_main" android:layout_width="@dimen/dp_75" android:layout_height="@dimen/dp_172" android:layout_marginStart="@dimen/dp_45" android:layout_marginEnd="@dimen/dp_25" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintLeft_toLeftOf="parent" app:layout_constraintTop_toTopOf="parent" />
+    <TextView android:textSize="22.0sp" android:textColor="#495979" android:layout_width="@dimen/dp_22" android:layout_height="wrap_content" android:text="回到播放器" android:includeFontPadding="false" android:layout_marginEnd="@dimen/dp_21" app:layout_constraintBottom_toBottomOf="@id/backToMainBt" app:layout_constraintRight_toRightOf="@id/backToMainBt" app:layout_constraintTop_toTopOf="@id/backToMainBt" />
+</android.support.constraint.ConstraintLayout>

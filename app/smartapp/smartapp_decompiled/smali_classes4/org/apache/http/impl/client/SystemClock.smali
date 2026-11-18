@@ -1,0 +1,32 @@
+.class Lorg/apache/http/impl/client/SystemClock;
+.super Ljava/lang/Object;
+.source "SystemClock.java"
+
+# interfaces
+.implements Lorg/apache/http/impl/client/Clock;
+
+
+# direct methods
+.method constructor <init>()V
+    .locals 0
+
+    .line 34
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    #disallowed odex opcode
+    #return-void-no-barrier
+    nop
+.end method
+
+
+# virtual methods
+.method public getCurrentTime()J
+    .locals 2
+
+    .line 38
+    invoke-static {}, Ljava/lang/System;->currentTimeMillis()J
+
+    move-result-wide v0
+
+    return-wide v0
+.end method

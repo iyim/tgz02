@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_background" android:background="@color/bg_alarm_list" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:background="@android:color/white" android:layout_width="match_parent" android:layout_height="68.0dp" android:layout_alignParentTop="true">
+        <View android:id="@id/view_back" android:layout_width="120.0dp" android:layout_height="match_parent" android:layout_alignParentLeft="true" />
+        <ImageView android:layout_width="14.0dp" android:layout_height="24.0dp" android:layout_marginLeft="45.0dp" android:src="@drawable/icon_alarm_back" android:layout_centerVertical="true" />
+        <TextView android:textSize="22.0dp" android:textStyle="bold" android:textColor="#2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="精灵闹钟" android:layout_centerInParent="true" />
+        <TextView android:textSize="20.0dp" android:textColor="@color/color_4A5A78" android:gravity="center" android:id="@id/tv_delete" android:background="@drawable/bg_title_bar_delete" android:paddingLeft="16.0dp" android:paddingRight="16.0dp" android:visibility="gone" android:layout_width="102.0dp" android:layout_height="36.0dp" android:layout_marginRight="40.0dp" android:text="删除" android:drawableLeft="@drawable/icon_titlebar_container_delete" android:drawablePadding="4.0dp" android:layout_alignParentRight="true" android:layout_centerVertical="true" />
+        <View android:background="#d8dbe6" android:layout_width="match_parent" android:layout_height="1.0px" android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+    <android.support.v7.widget.RecyclerView android:id="@id/rv_view" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginTop="@dimen/alarm_list_rv_view_margin_top" />
+</RelativeLayout>

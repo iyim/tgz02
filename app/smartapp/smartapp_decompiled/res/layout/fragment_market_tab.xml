@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@color/transparent" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ProgressBar android:id="@id/loading" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:indeterminate="true" android:layout_centerInParent="true" style="?android:progressBarStyleLarge" />
+    <com.alibaba.ailabs.appbox.view.RowScrollRecyclerView android:id="@id/rv_market_tab" android:paddingTop="15.0dp" android:layout_width="match_parent" android:layout_height="match_parent" />
+    <com.alibaba.ailabs.appbox.view.VerticalScrollBar android:id="@id/vertical_scroll_bar_tab" android:layout_width="@dimen/common_vertical_scroll_bar_width" android:layout_height="@dimen/common_vertical_scroll_bar_height" android:layout_marginRight="@dimen/common_vertical_scroll_bar_right_margin" android:layout_alignParentRight="true" android:layout_centerVertical="true" />
+</RelativeLayout>

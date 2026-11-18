@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <RelativeLayout android:id="@id/rl_item_genie_skill_rank" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/common_hori_list_left_right_margin" android:layout_marginRight="@dimen/common_hori_list_left_right_margin">
+        <RelativeLayout android:id="@id/rl_rank_header" android:layout_width="match_parent" android:layout_height="48.0dp">
+            <TextView android:textSize="28.0sp" android:textColor="@color/white" android:gravity="center_vertical" android:id="@id/tv_skill_rank_title1" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="match_parent" android:text="精灵排行" android:includeFontPadding="false" />
+            <TextView android:textSize="28.0sp" android:textColor="@color/white" android:gravity="center_vertical" android:id="@id/tv_skill_rank_title2" android:layout_width="wrap_content" android:layout_height="match_parent" android:text="本周最新" android:includeFontPadding="false" android:layout_toRightOf="@id/tv_skill_rank_title1" />
+            <TextView android:textSize="24.0sp" android:textColor="#d8d8d8" android:gravity="center_vertical" android:id="@id/tv_skill_rank_title3" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginLeft="28.0dp" android:text="本月最火" android:includeFontPadding="false" android:layout_toRightOf="@id/tv_skill_rank_title2" />
+            <TextView android:textSize="24.0sp" android:textColor="#d8d8d8" android:gravity="center" android:id="@id/tv_rankl_all" android:background="@drawable/bg_text_ripple_conner_45_no_stroke" android:layout_width="152.0dp" android:layout_height="48.0dp" android:text="全部排行" android:layout_alignParentRight="true" />
+        </RelativeLayout>
+        <android.support.v4.view.ViewPager android:id="@id/vp_skill_rank" android:layout_width="match_parent" android:layout_height="312.0dp" android:layout_marginTop="25.0dp" android:layout_below="@id/rl_rank_header" />
+        <RelativeLayout android:visibility="visible" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" android:layout_below="@id/vp_skill_rank">
+            <com.alibaba.ailabs.appbox.view.indicator.MagicIndicator android:id="@id/magic_ind_rank" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerHorizontal="true" />
+            <com.alibaba.ailabs.appbox.view.crindcator.CircleIndicator android:id="@id/skill_rank_circle_indicator" android:layout_width="wrap_content" android:layout_height="30.0dp" android:layout_marginTop="5.0dp" android:layout_centerHorizontal="true" app:cir_horizon_margin="10.0dp" app:cir_normalColor="#242832" app:cir_rect_width="20.0dp" app:cir_selectedColor="#3f4758" app:cir_size="10.0dp" app:cir_type="cirToRect" />
+        </RelativeLayout>
+    </RelativeLayout>
+</FrameLayout>

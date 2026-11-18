@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:tag="layout/delete_contacts_dialog_0" android:background="@drawable/dialog_center_background" android:layout_width="580.0dp" android:layout_height="300.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="30.0sp" android:textColor="#ffffff" android:id="@id/dialog_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="59.0dp" android:layout_marginBottom="20.0dp" android:text="确定删除这条通话记录吗" />
+    <TextView android:textSize="17.0sp" android:textColor="#ffffff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="通话记录删除后，在各个设备和手机中的通话记录" />
+    <TextView android:textSize="17.0sp" android:textColor="#ffffff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10.0dp" android:text="将被删除，且无法恢复" />
+    <View android:background="#cecece" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_marginTop="46.0dp" />
+    <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="77.0dp">
+        <TextView android:textSize="24.0sp" android:textColor="#f84d2b" android:gravity="center" android:id="@id/dialog_delete" android:layout_width="289.5dp" android:layout_height="match_parent" android:text="删除" />
+        <View android:background="#cecece" android:layout_width="1.0dp" android:layout_height="match_parent" />
+        <TextView android:textSize="24.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/dialog_cancle" android:layout_width="289.5dp" android:layout_height="match_parent" android:text="取消" />
+    </LinearLayout>
+</LinearLayout>

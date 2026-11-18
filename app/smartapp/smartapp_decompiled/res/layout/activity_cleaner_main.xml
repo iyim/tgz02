@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_activity_applist_root" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <RelativeLayout android:id="@id/rl_cleaner_main_header" android:background="@color/white" android:layout_width="match_parent" android:layout_height="@dimen/common_header_white_height">
+        <com.alibaba.ailabs.appbox.view.ClickImageView android:id="@id/iv_cleaner_main_back" android:paddingLeft="11.0dp" android:paddingTop="6.0dp" android:paddingRight="11.0dp" android:paddingBottom="6.0dp" android:layout_width="36.0dp" android:layout_height="36.0dp" android:layout_marginLeft="40.0dp" android:src="@drawable/icon_market_back" android:layout_centerVertical="true" />
+        <TextView android:textSize="22.0sp" android:textStyle="bold" android:textColor="@color/color_tv_2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="空间清理" android:includeFontPadding="true" android:layout_centerInParent="true" />
+        <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+    <android.support.v7.widget.RecyclerView android:id="@id/rv_clean_main" android:background="@drawable/shape_content_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_below="@id/rl_cleaner_main_header" />
+    <ScrollView android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_below="@id/rl_cleaner_main_header">
+        <LinearLayout android:orientation="vertical" android:paddingBottom="90.0dp" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <RelativeLayout android:id="@id/rl_genie_cleaner_tips" android:background="@color/transparent" android:layout_width="match_parent" android:layout_height="106.0dp">
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="40.0dp">
+                    <TextView android:textSize="24.0sp" android:textColor="#7383a2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="你可以说" />
+                    <LinearLayout android:orientation="horizontal" android:background="@drawable/bg_cleaner_genie_tips_iv" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="16.0dp">
+                        <TextView android:textSize="22.0sp" android:textColor="@color/color_tv_2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="天猫精灵，" android:fontFamily="NotoSansCJKsc-Regular" />
+                        <TextView android:textSize="22.0sp" android:textStyle="bold" android:textColor="@color/color_tv_2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="打开内存清理" android:fontFamily="NotoSansCJKsc-Bold" />
+                    </LinearLayout>
+                    <LinearLayout android:orientation="horizontal" android:background="@drawable/bg_cleaner_genie_tips_iv" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="20.0dp">
+                        <TextView android:textSize="22.0sp" android:textColor="@color/color_tv_2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="天猫精灵，" android:fontFamily="NotoSansCJKsc-Regular" />
+                        <TextView android:textSize="22.0sp" android:textStyle="bold" android:textColor="@color/color_tv_2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="清理空间" android:fontFamily="NotoSansCJKsc-Bold" />
+                    </LinearLayout>
+                </LinearLayout>
+            </RelativeLayout>
+            <RelativeLayout android:background="@color/white" android:layout_width="match_parent" android:layout_height="271.0dp" android:layout_below="@id/rl_genie_cleaner_tips">
+                <RelativeLayout android:id="@id/rl_cycle_clear" android:layout_width="240.0dp" android:layout_height="240.0dp" android:layout_marginLeft="15.0dp" android:layout_centerVertical="true">
+                    <com.alibaba.ailabs.base.view.CircularFillableLoaders android:layout_width="180.0dp" android:layout_height="180.0dp" android:src="@drawable/iv_clean_per_bg" android:layout_centerInParent="true" app:cfl_border="true" app:cfl_border_width="5.0dp" app:cfl_progress="80" app:cfl_wave_amplitude="0.03" app:cfl_wave_color="#00b3ff" />
+                    <TextView android:textSize="40.0sp" android:textStyle="bold" android:textColor="@color/color_tv_2b3852" android:id="@id/tv_use_per" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="86.0dp" android:text="95%" android:layout_centerHorizontal="true" android:fontFamily="DIN-Bold" />
+                    <TextView android:textSize="20.0sp" android:textColor="@color/color_4a5a78" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="146.0dp" android:text="已用空间" android:layout_centerHorizontal="true" android:fontFamily="NotoSansCJKsc-Regular" />
+                </RelativeLayout>
+                <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toRightOf="@id/rl_cycle_clear" android:layout_centerVertical="true">
+                    <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_tv_2b3852" android:id="@id/tv_can_clear_size" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="可清理垃圾：320M" android:includeFontPadding="false" android:fontFamily="NotoSansCJKsc-Bold" />
+                    <TextView android:textSize="24.0sp" android:textColor="@color/color_tv_4a5a78" android:id="@id/tv_free_count" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="28.0dp" android:text="剩余空间20M/4GB" android:includeFontPadding="false" android:layout_below="@id/tv_can_clear_size" />
+                </RelativeLayout>
+                <TextView android:textSize="20.0sp" android:textColor="@color/white" android:gravity="center" android:id="@id/tv_del_app_instance" android:background="@drawable/ripple_text_button_blur_b_whit_c" android:paddingLeft="28.0dp" android:paddingRight="28.0dp" android:clickable="true" android:layout_width="wrap_content" android:layout_height="56.0dp" android:layout_marginRight="40.0dp" android:text="一键清理" android:includeFontPadding="false" android:layout_alignParentRight="true" android:layout_centerVertical="true" android:fontFamily="PingFangSC-Regular" />
+            </RelativeLayout>
+            <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+            <RelativeLayout android:background="@color/white" android:layout_width="match_parent" android:layout_height="176.0dp">
+                <View android:background="@drawable/point_round_6dd400" android:layout_width="12.0dp" android:layout_height="12.0dp" android:layout_marginLeft="40.0dp" android:layout_marginTop="56.0dp" />
+                <TextView android:textSize="32.0sp" android:textColor="@color/color_tv_2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="80.0dp" android:layout_marginTop="46.0dp" android:text="应用的缓存数据" android:includeFontPadding="false" android:fontFamily="NotoSansCJKsc-Bold" />
+                <TextView android:textSize="24.0sp" android:textColor="@color/color_7383A2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="80.0dp" android:layout_marginTop="106.0dp" android:text="应用使用中的缓存文件和安装包" android:fontFamily="NotoSansCJKsc-Regular" />
+            </RelativeLayout>
+            <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+            <RelativeLayout android:background="@color/white" android:layout_width="match_parent" android:layout_height="176.0dp">
+                <View android:background="@drawable/point_round_f7b500" android:layout_width="12.0dp" android:layout_height="12.0dp" android:layout_marginLeft="40.0dp" android:layout_marginTop="56.0dp" />
+                <TextView android:textSize="32.0sp" android:textColor="@color/color_tv_2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="80.0dp" android:layout_marginTop="46.0dp" android:text="应用的下载文件" android:includeFontPadding="false" android:fontFamily="NotoSansCJKsc-Bold" />
+                <TextView android:textSize="24.0sp" android:textColor="@color/color_7383A2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="80.0dp" android:layout_marginTop="106.0dp" android:text="应用下载的视频音频等文件" android:fontFamily="NotoSansCJKsc-Regular" />
+            </RelativeLayout>
+            <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+            <RelativeLayout android:background="@color/white" android:layout_width="match_parent" android:layout_height="176.0dp">
+                <View android:background="@drawable/point_round_fa4f4f" android:layout_width="12.0dp" android:layout_height="12.0dp" android:layout_marginLeft="40.0dp" android:layout_marginTop="56.0dp" />
+                <TextView android:textSize="32.0sp" android:textColor="@color/color_tv_2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="80.0dp" android:layout_marginTop="46.0dp" android:text="其他可清理数据" android:includeFontPadding="false" android:fontFamily="NotoSansCJKsc-Bold" />
+                <TextView android:textSize="24.0sp" android:textColor="@color/color_7383A2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="80.0dp" android:layout_marginTop="106.0dp" android:text="系统和应用在使用中产生的其他数据" android:fontFamily="NotoSansCJKsc-Regular" />
+            </RelativeLayout>
+            <RelativeLayout android:background="@color/white" android:layout_width="match_parent" android:layout_height="176.0dp" android:layout_marginTop="20.0dp">
+                <TextView android:textSize="32.0sp" android:textColor="@color/color_tv_2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="80.0dp" android:layout_marginTop="46.0dp" android:text="应用管理" android:includeFontPadding="false" android:fontFamily="NotoSansCJKsc-Bold" />
+                <TextView android:textSize="24.0sp" android:textColor="@color/color_7383A2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="80.0dp" android:layout_marginTop="106.0dp" android:text="您可以卸载不常用的应用" android:fontFamily="NotoSansCJKsc-Regular" />
+            </RelativeLayout>
+            <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>

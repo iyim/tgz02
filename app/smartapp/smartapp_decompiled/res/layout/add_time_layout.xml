@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:layout_gravity="center_horizontal" android:id="@id/top" android:paddingTop="15.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <RelativeLayout android:background="@drawable/whole_bg_2" android:layout_width="510.0dp" android:layout_height="317.0dp" android:layout_marginTop="135.0dp">
+            <TextView android:textSize="28.0sp" android:textColor="#fff5f5f5" android:id="@id/title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="55.0dp" android:text="@string/opt_time" android:layout_alignParentTop="true" android:layout_centerHorizontal="true" />
+            <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/add_time" android:background="@drawable/blue_large_bg_2" android:layout_width="215.0dp" android:layout_height="90.0dp" android:layout_marginTop="10.0dp" android:layout_below="@id/title" android:layout_centerHorizontal="true">
+                <TextView android:textSize="40.0sp" android:textColor="#fff5f5f5" android:id="@id/number" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                <TextView android:textSize="26.0sp" android:textColor="#fff5f5f5" android:id="@id/unit" android:paddingTop="5.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="10.0dp" android:text="@string/minute" />
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="50.0dp" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true">
+                <Button android:textSize="22.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/cancel" android:background="@drawable/blue_large_bg_2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="10.0dp" android:text="@string/cancelex" />
+                <Button android:textSize="22.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/confirm" android:background="@drawable/blue_large_bg_3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="10.0dp" android:text="@string/conform" />
+            </LinearLayout>
+        </RelativeLayout>
+        <ImageView android:layout_gravity="center_horizontal" android:id="@id/cat" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/cat_up" />
+    </FrameLayout>
+</FrameLayout>

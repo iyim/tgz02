@@ -1,0 +1,59 @@
+.class public final Lcom/taobao/uikit/R$drawable;
+.super Ljava/lang/Object;
+.source "R.java"
+
+
+# annotations
+.annotation system Ldalvik/annotation/EnclosingClass;
+    value = Lcom/taobao/uikit/R;
+.end annotation
+
+.annotation system Ldalvik/annotation/InnerClass;
+    accessFlags = 0x19
+    name = "drawable"
+.end annotation
+
+
+# static fields
+.field public static final notification_action_background:I = 0x7f08041a
+
+.field public static final notification_bg:I = 0x7f08041b
+
+.field public static final notification_bg_low:I = 0x7f08041c
+
+.field public static final notification_bg_low_normal:I = 0x7f08041d
+
+.field public static final notification_bg_low_pressed:I = 0x7f08041e
+
+.field public static final notification_bg_normal:I = 0x7f08041f
+
+.field public static final notification_bg_normal_pressed:I = 0x7f080420
+
+.field public static final notification_icon_background:I = 0x7f080421
+
+.field public static final notification_template_icon_bg:I = 0x7f080422
+
+.field public static final notification_template_icon_low_bg:I = 0x7f080423
+
+.field public static final notification_tile_bg:I = 0x7f080424
+
+.field public static final notify_panel_notification_icon_bg:I = 0x7f080425
+
+.field public static final uik_arrow:I = 0x7f080522
+
+.field public static final uik_imagesave_btn:I = 0x7f080529
+
+.field public static final uik_list_logo:I = 0x7f08052b
+
+
+# direct methods
+.method private constructor <init>()V
+    .locals 0
+
+    .line 156
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    #disallowed odex opcode
+    #return-void-no-barrier
+    nop
+.end method

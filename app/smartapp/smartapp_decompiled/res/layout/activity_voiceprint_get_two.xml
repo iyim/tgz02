@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:gravity="center_horizontal" android:orientation="vertical" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <RelativeLayout android:id="@id/title_relayout" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="68.0dp">
+        <TextView android:textSize="20.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/ivLeftCloses" android:background="@drawable/whiteground_greyframe" android:layout_width="82.0dp" android:layout_height="36.0dp" android:layout_marginLeft="40.0dp" android:text="取消" android:layout_alignParentLeft="true" android:layout_centerInParent="true" />
+        <TextView android:textSize="22.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="验证声纹 (4/5)" android:layout_centerInParent="true" />
+    </RelativeLayout>
+    <View android:background="#cccccc" android:layout_width="match_parent" android:layout_height="0.100000024dp" android:layout_below="@id/title_relayout" />
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent">
+        <com.alibaba.genie.shopping.activity.WaveView android:layout_gravity="center_horizontal" android:id="@id/wave" android:layout_width="624.0dp" android:layout_height="624.0dp" android:layout_centerInParent="true" app:wave_color="#d0e9fe" app:wave_coreImageRadius="80" app:wave_width="90" />
+        <LinearLayout android:gravity="center" android:layout_gravity="center" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_centerInParent="true">
+            <TextView android:textSize="24.0sp" android:textColor="#2b3852" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="120.0dp" android:text="@string/va_add_sound_print_first_say" />
+            <TextView android:textSize="32.0sp" android:textColor="@color/color_0082ff" android:gravity="center" android:id="@id/tv_voiceprint_code1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="28.0dp" />
+            <TextView android:textSize="22.0sp" android:textColor="#7383a2" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="104.0dp" android:text="请保持周围安静，与设备最佳距离为一个手臂的长度" />
+        </LinearLayout>
+    </RelativeLayout>
+</RelativeLayout>

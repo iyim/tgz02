@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="vertical" android:background="@drawable/gs_item_bg_shape" android:layout_width="260.0dp" android:layout_height="204.0dp" android:foreground="?selectableItemBackgroundBorderless"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <ImageView android:id="@id/img_post" android:layout_width="260.0dp" android:layout_height="149.0dp" android:src="@drawable/gs_default_white_logo" android:scaleType="centerCrop" />
+    <TextView android:textSize="14.0sp" android:textColor="@android:color/white" android:gravity="center" android:id="@id/score" android:paddingLeft="10.0dp" android:paddingRight="5.0dp" android:layout_width="wrap_content" android:layout_height="24.0dp" android:layout_marginBottom="62.0dp" android:layout_alignParentRight="true" android:layout_alignParentBottom="true" />
+    <ImageView android:id="@id/source_img" android:layout_width="wrap_content" android:layout_height="24.0dp" android:layout_marginLeft="10.0dp" android:layout_marginBottom="62.0dp" android:layout_alignParentBottom="true" />
+    <ImageView android:id="@id/vip_img" android:layout_width="47.0dp" android:layout_height="24.0dp" android:scaleType="centerCrop" android:layout_alignParentRight="true" />
+    <TextView android:textSize="18.0sp" android:textColor="#2b3753" android:ellipsize="end" android:gravity="center_vertical" android:id="@id/title" android:paddingLeft="14.0dp" android:paddingRight="14.0dp" android:layout_width="match_parent" android:layout_height="56.0dp" android:singleLine="true" android:layout_alignParentBottom="true" />
+</RelativeLayout>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:gravity="center" android:background="@color/transparent" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:background="@drawable/bg_solid_white_12" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerInParent="true">
+        <TextView android:textSize="32.0sp" android:textColor="@color/color_2b3852" android:id="@id/dialog_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="36.0dp" android:layout_marginTop="40.0dp" android:layout_marginRight="30.0dp" android:text="充值到QQ音乐" />
+        <TextView android:textSize="24.0sp" android:textColor="@color/color_4a5a78" android:id="@id/dialog_content" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="36.0dp" android:layout_marginTop="22.0dp" android:layout_marginRight="30.0dp" android:text="选定后，本次及后续购买的权益将自动充值至该账户" />
+        <View android:background="@color/color_f0f2f7" android:layout_width="match_parent" android:layout_height="2.0dp" android:layout_marginTop="42.0dp" />
+        <RelativeLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16.0dp" android:layout_marginBottom="16.0dp">
+            <TextView android:textSize="24.0sp" android:textColor="@color/genie_pay_color_white" android:gravity="center" android:id="@id/dialog_confirm" android:background="@drawable/bg_solid_blue_28" android:layout_width="188.0dp" android:layout_height="56.0dp" android:layout_marginRight="36.0dp" android:text="激活QQ音乐" android:layout_alignParentEnd="true" />
+            <TextView android:textSize="24.0sp" android:textColor="@color/genie_pay_black" android:gravity="center" android:id="@id/dialog_cancel" android:background="@drawable/bg_solid_white_28" android:layout_width="188.0dp" android:layout_height="56.0dp" android:layout_marginRight="240.0dp" android:text="我再想想" android:layout_alignParentEnd="true" />
+        </RelativeLayout>
+    </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,1967 @@
+{
+  "blocks": [
+    {
+      "blockTypeEnum": "COMBINE",
+      "components": [
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_head}",
+            "head": "${sku_script.id_biz_head}"
+          },
+          "description": "SKU 头部信息区",
+          "event": {
+            "clickMainPicEvent": [
+              {
+                "fields": {
+                  "imageInfoList": "${sku_script.id_biz_head.imageInfoMap}",
+                  "mainDesc": "${sku_script.id_biz_head.mainDesc}",
+                  "mainPic": "${sku_script.id_biz_head.mainPic}"
+                },
+                "type": "click_main_pic_event"
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "viewHeadImage",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "closeSKU": [
+              {
+                "fields": {},
+                "type": "sku_dismiss"
+              }
+            ],
+            "switchMarkType": [
+              {
+                "fields": {},
+                "type": "switch_mark_type"
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "Header_Infos",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1581401269830/tb_sku_head_info.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1581401269830/tb_sku_head_info.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1581401269830/tb_sku_head_info.js"
+          },
+          "frontComponentId": 4123,
+          "frontComponentMD5": {
+            "android": "727e99002401a0efad0cd6ba08e46424",
+            "ios": "727e99002401a0efad0cd6ba08e46424",
+            "h5": "a13a0ce88e55929b7a37f5c130c4de59"
+          },
+          "frontComponentName": "tb_sku_head_info",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_head",
+          "key": "dinamic",
+          "name": "tb_sku_head_info",
+          "tag": "dinamic$tb_sku_head_info",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        },
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_size_chart}",
+            "size_chart": "${sku_script.id_biz_size_chart}"
+          },
+          "description": "sku_size_chart",
+          "event": {
+            "clickSizeChartEvent": [
+              {
+                "fields": {
+                  "pageType": "Native",
+                  "queryParams": {
+                    "itemId": "${sku_script.id_biz_size_chart.itemId}",
+                    "sellerId": "${sku_script.id_biz_size_chart.sellerId}"
+                  },
+                  "url": "https://sizechart.taobao.com/home.htm"
+                },
+                "type": "openUrl"
+              },
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "SizeChart",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "SizeChart",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1581926156869/tb_sku_size_chart.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1581926156869/tb_sku_size_chart.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1581926156869/tb_sku_size_chart.js"
+          },
+          "frontComponentId": 4124,
+          "frontComponentMD5": {
+            "android": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "ios": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "h5": "3f7e1477df083b018fb1ac6b8c1004a1"
+          },
+          "frontComponentName": "tb_sku_size_chart",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_size_chart",
+          "key": "dinamic",
+          "name": "sku_size_chart",
+          "tag": "dinamic$sku_size_chart",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        }
+      ],
+      "description": "头部区域",
+      "name": "头部区域",
+      "position": "header",
+      "window": "sku_root"
+    },
+    {
+      "blockTypeEnum": "COMBINE",
+      "components": [
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_maochao_cpu.skuBeans.skuItemBeans}",
+            "skuItemBeans": "${sku_script.id_biz_maochao_cpu.skuBeans.skuItemBeans}"
+          },
+          "description": "sku_chaoshi_detail_cpu",
+          "event": {
+            "updateItem": [
+              {
+                "fields": {
+                  "originalItemId": "${sku_script.global_data.itemId}",
+                  "targetItemId": "$subData[0]{itemId}",
+                  "areaId": "",
+                  "addressId": "",
+                  "params": "$subData[0]{params}"
+                },
+                "type": "sku_update_item"
+              },
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "Page_New_SKU_Button-cs_cpuSku",
+                  "args": {
+                    "locType": "$subData[0]{params.locType}",
+                    "itemId": "$subData[0]{itemId}",
+                    "preItemId": "${sku_script.id_biz_maochao_cpu.currentItem.itemId}",
+                    "groupId": "$subData[0]{groupId}"
+                  }
+                },
+                "type": "skuUserTrack"
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "Page_New_SKU_Show-cs_cpuSku",
+                  "args": {
+                    "itemId": "${sku_script.id_biz_maochao_cpu.currentItem.itemId}",
+                    "locType": "${sku_script.id_biz_maochao_cpu.currentItem.requestParams.locType}",
+                    "groupId": "${sku_script.id_biz_maochao_cpu.currentItem.groupId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1581926322533/sku_chaoshi_detail_cpu.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1581926322533/sku_chaoshi_detail_cpu.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1581926322533/sku_chaoshi_detail_cpu.js"
+          },
+          "frontComponentId": 4125,
+          "frontComponentMD5": {
+            "android": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "ios": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "h5": "3f7e1477df083b018fb1ac6b8c1004a1"
+          },
+          "frontComponentName": "sku_chaoshi_detail_cpu",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_maochao_cpu",
+          "key": "dinamic",
+          "name": "sku_chaoshi_detail_cpu",
+          "tag": "dinamic$sku_chaoshi_detail_cpu",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        },
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_relatedAuctions}",
+            "items": "${sku_script.id_biz_relatedAuctions.items}",
+            "title": "${sku_script.id_biz_relatedAuctions.title}"
+          },
+          "description": "sku_relatedAuctions",
+          "event": {
+            "clickItem": [
+              {
+                "fields": {
+                  "originalItemId": "${sku_script.global_data.itemId}",
+                  "targetItemId": "$subData[0]{itemId}",
+                  "areaId": "",
+                  "addressId": "",
+                  "params": "$subData[0]{params}"
+                },
+                "type": "sku_update_item"
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "RelatedAuctions",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "sku_relatedAuctions",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1586963294382/sku_relatedAuctions.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1586963294382/sku_relatedAuctions.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1586963294382/sku_relatedAuctions.js"
+          },
+          "frontComponentId": 4140,
+          "frontComponentMD5": {
+            "android": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "ios": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "h5": "3f7e1477df083b018fb1ac6b8c1004a1"
+          },
+          "frontComponentName": "sku_relatedAuctions",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_relatedAuctions",
+          "key": "dinamic",
+          "name": "sku_relatedAuctions",
+          "tag": "dinamic$sku_relatedAuctions",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        },
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_area}",
+            "area": "${sku_script.id_biz_area}"
+          },
+          "description": "sku_area",
+          "event": {
+            "selectAreaEvent": [
+              {
+                "fields": {
+                  "pageType": "Native",
+                  "queryParams": {
+                    "itemType": "${sku_script.id_biz_area.itemType}",
+                    "areaId": "${sku_script.id_biz_area.areaId}",
+                    "itemId": "${sku_script.id_biz_area.itemId}",
+                    "sellerId": "${sku_script.id_biz_area.sellerId}",
+                    "loadUrl": "${sku_script.id_biz_area.loadUrl}"
+                  },
+                  "url": "${sku_script.id_biz_area.wrapperUrl}"
+                },
+                "type": "openUrl"
+              },
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "SkuArea",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "SkuArea",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1581936117140/sku_area.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1581936117140/sku_area.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1581936117140/sku_area.js"
+          },
+          "frontComponentId": 4126,
+          "frontComponentMD5": {
+            "android": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "ios": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "h5": "3f7e1477df083b018fb1ac6b8c1004a1"
+          },
+          "frontComponentName": "sku_area",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_area",
+          "key": "dinamic",
+          "name": "sku_area",
+          "tag": "dinamic$sku_area",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        },
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_buy_method}",
+            "buyTypes": "${sku_script.id_biz_buy_method}"
+          },
+          "description": "sku_buy_types",
+          "event": {
+            "buyTypeChange": [
+              {
+                "type": "adjustState",
+                "fields": {
+                  "subType": "change_buy_types"
+                }
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "changeBuyTypes",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "sku_buy_types",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1581936494009/sku_buy_types.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1581936494009/sku_buy_types.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1581936494009/sku_buy_types.js"
+          },
+          "frontComponentId": 4127,
+          "frontComponentMD5": {
+            "android": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "ios": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "h5": "3f7e1477df083b018fb1ac6b8c1004a1"
+          },
+          "frontComponentName": "sku_buy_types",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_buy_method",
+          "key": "dinamic",
+          "name": "sku_buy_types",
+          "tag": "dinamic$sku_buy_types",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        },
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_buy_method_desc.buy_types_desc_credit}",
+            "buyTypesCreditDesc": "${sku_script.id_biz_buy_method_desc.buy_types_desc_credit}"
+          },
+          "description": "sku_buy_types_credit",
+          "event": {
+            "openBuyType": [
+              {
+                "type": "openUrl",
+                "fields": {
+                  "pageType": "Native",
+                  "queryParams": {
+                  },
+                  "url": "${sku_script.id_biz_buy_method_desc.buy_types_desc_credit.link}"
+                }
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "viewBuyTypesDesc",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "sku_buy_types_desc_credit",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1581936745303/sku_buy_types_credit.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1581936745303/sku_buy_types_credit.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1581936745303/sku_buy_types_credit.js"
+          },
+          "frontComponentId": 4128,
+          "frontComponentMD5": {
+            "android": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "ios": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "h5": "3f7e1477df083b018fb1ac6b8c1004a1"
+          },
+          "frontComponentName": "sku_buy_types_credit",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_buy_method_desc",
+          "key": "dinamic",
+          "name": "sku_buy_types_credit",
+          "tag": "dinamic$sku_buy_types_credit",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        },
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_buy_method_desc.buy_types_desc_shop}",
+            "buyTypesShopDesc": "${sku_script.id_biz_buy_method_desc.buy_types_desc_shop}"
+          },
+          "description": "sku_buy_types_shop",
+          "event": {
+            "openBuyType": [
+              {
+                "type": "openUrl",
+                "fields": {
+                  "pageType": "Native",
+                  "queryParams": {
+                  },
+                  "url": "${sku_script.id_biz_buy_method_desc.buy_types_desc_shop.link}"
+                }
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "viewBuyTypesDesc",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "sku_buy_types_desc_shop",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1581936825055/sku_buy_types_shop.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1581936825055/sku_buy_types_shop.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1581936825055/sku_buy_types_shop.js"
+          },
+          "frontComponentId": 4129,
+          "frontComponentMD5": {
+            "android": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "ios": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "h5": "3f7e1477df083b018fb1ac6b8c1004a1"
+          },
+          "frontComponentName": "sku_buy_types_shop",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_buy_method_desc",
+          "key": "dinamic",
+          "name": "sku_buy_types_shop",
+          "tag": "dinamic$sku_buy_types_shop",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        },
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_property.sku_property_big_img}",
+            "property": "${sku_script.id_biz_property.sku_property_big_img}"
+          },
+          "description": "sku_props_big_img",
+          "event": {
+            "viewBigPic": [
+              {
+                "fields": {
+                  "imageInfoList": "${sku_script.id_biz_head.imageInfoMap}"
+                },
+                "type": "click_main_pic_event"
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "viewBigPropImage",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "propChange": [
+              {
+                "type": "adjustState",
+                "fields": {
+                  "subType": "change_prop"
+                }
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "changeBigImageProp",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "sku_property_big_img",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1586957450852/sku_props_big_img.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1586957450852/sku_props_big_img.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1586957450852/sku_props_big_img.js"
+          },
+          "frontComponentId": 4136,
+          "frontComponentMD5": {
+            "android": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "ios": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "h5": "3f7e1477df083b018fb1ac6b8c1004a1"
+          },
+          "frontComponentName": "sku_props_big_img",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_property",
+          "key": "dinamic",
+          "name": "sku_props_big_img",
+          "tag": "dinamic$sku_props_big_img",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        },
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_property.sku_property}",
+            "property": "${sku_script.id_biz_property.sku_property}"
+          },
+          "description": "sku_props",
+          "event": {
+            "propChange": [
+              {
+                "type": "adjustState",
+                "fields": {
+                  "subType": "change_prop"
+                }
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "changeNormalProp",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "sku_property",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1586957362787/sku_props.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1586957362787/sku_props.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1586957362787/sku_props.js"
+          },
+          "frontComponentId": 4130,
+          "frontComponentMD5": {
+            "android": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "ios": "84d6bb1e1c4bb92843c2db00d944ce49",
+            "h5": "3f7e1477df083b018fb1ac6b8c1004a1"
+          },
+          "frontComponentName": "sku_props",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_property",
+          "key": "dinamic",
+          "name": "sku_props",
+          "tag": "dinamic$sku_props",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        },
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_quantity}",
+            "quantity": "${sku_script.id_biz_quantity}"
+          },
+          "description": "SKU数量变更组件",
+          "event": {
+            "decreaseEvent": [
+              {
+                "type": "adjustState",
+                "fields": {
+                  "subType": "decrease_num",
+                  "payload": {
+                    "enableDecrease": "${sku_script.id_biz_quantity.enableDecrease}",
+                    "lowerLimit": "${sku_script.id_biz_quantity.lowerLimit}",
+                    "selBuy": "${sku_script.id_biz_quantity.selBuy}",
+                    "unitBuy": "${sku_script.id_biz_quantity.unitBuy}"
+                  }
+                }
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "decreaseNum",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "beyondLowerLimitEvent": [
+              {
+                "type": "toast",
+                "fields": {
+                  "message": "数量低于范围~"
+                }
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "reachLowerNum",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "increaseEvent": [
+              {
+                "type": "adjustState",
+                "fields": {
+                  "subType": "increase_num",
+                  "payload": {
+                    "enableIncrease": "${sku_script.id_biz_quantity.enableIncrease}",
+                    "upperLimit": "${sku_script.id_biz_quantity.upperLimit}",
+                    "selBuy": "${sku_script.id_biz_quantity.selBuy}",
+                    "unitBuy": "${sku_script.id_biz_quantity.unitBuy}"
+                  }
+                }
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "increaseNum",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "beyondUpperLimitEvent": [
+              {
+                "type": "toast",
+                "fields": {
+                  "message": "数量超出范围~"
+                }
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "reachUpperNum",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "sku_quantity_alteration",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1586930875207/tb_sku_quantity_alteration.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1586930875207/tb_sku_quantity_alteration.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1586930875207/tb_sku_quantity_alteration.js"
+          },
+          "frontComponentId": 4131,
+          "frontComponentMD5": {
+            "android": "f91695a7bbbedb287f56c7ed2c5c486f",
+            "ios": "f91695a7bbbedb287f56c7ed2c5c486f",
+            "h5": "e8a6782bd669b5990168c4cbc098ffec"
+          },
+          "frontComponentName": "tb_sku_quantity_alteration",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_quantity",
+          "key": "dinamic",
+          "name": "tb_sku_quantity_alteration",
+          "tag": "dinamic$tb_sku_quantity_alteration",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        },
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_service}",
+            "service": "${sku_script.id_biz_service}"
+          },
+          "description": "SKU特色服务",
+          "event": {
+            "serviceChange": [
+              {
+                "type": "adjustState",
+                "fields": {
+                  "subType": "change_service",
+                  "payload": {}
+                }
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "changeService",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "sku_service",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1581937286929/sku_service.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1581937286929/sku_service.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1581937286929/sku_service.js"
+          },
+          "frontComponentId": 4132,
+          "frontComponentMD5": {
+            "android": "a5229de0bbaa9a319421bd9c385f16f4",
+            "ios": "a5229de0bbaa9a319421bd9c385f16f4",
+            "h5": "027f7db288b8d93207dac053b3b52a76"
+          },
+          "frontComponentName": "sku_service",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_service",
+          "key": "dinamic",
+          "name": "skuService",
+          "tag": "dinamic$skuService",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        },
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_installment}",
+            "installment": "${sku_script.id_biz_installment}"
+          },
+          "description": "SKU花呗分期",
+          "event": {
+            "installmentChange": [
+              {
+                "type": "adjustState",
+                "fields": {
+                  "subType": "change_installment",
+                  "payload": {}
+                }
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "changeInstallment",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "sku_installment",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1587027063937/sku_installment.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1587027063937/sku_installment.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1587027063937/sku_installment.js"
+          },
+          "frontComponentId": 4133,
+          "frontComponentMD5": {
+            "android": "a5229de0bbaa9a319421bd9c385f16f4",
+            "ios": "a5229de0bbaa9a319421bd9c385f16f4",
+            "h5": "027f7db288b8d93207dac053b3b52a76"
+          },
+          "frontComponentName": "sku_installment",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_installment",
+          "key": "dinamic",
+          "name": "skuInstallment",
+          "tag": "dinamic$skuInstallment",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        }
+      ],
+      "description": "内容区域",
+      "name": "内容区域",
+      "position": "body",
+      "window": "sku_root"
+    },
+    {
+      "blockTypeEnum": "COMBINE",
+      "components": [
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_bottom_tips}",
+            "bottomTips": "${sku_script.id_biz_bottom_tips}"
+          },
+          "description": "sku_bottom_tips",
+          "event": {
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "bottom_tips",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1581938264903/sku_bottom_tips.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1581938264903/sku_bottom_tips.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1581938264903/sku_bottom_tips.js"
+          },
+          "frontComponentId": 4134,
+          "frontComponentMD5": {
+            "android": "b4e90c247f42b1bb027dcc0d8a91a6b5",
+            "ios": "b4e90c247f42b1bb027dcc0d8a91a6b5",
+            "h5": "5dd95e2c3ed71dc431572473d670635a"
+          },
+          "frontComponentName": "sku_bottom_tips",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_bottom_tips",
+          "key": "dinamic",
+          "name": "sku_bottom_tips",
+          "tag": "dinamic$sku_bottom_tips",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        },
+        {
+          "bizCode": "ali.china.taobao",
+          "bizType": 1,
+          "data": {
+            "dependency": "${sku_script.id_biz_bottom}",
+            "items": "${sku_script.id_biz_bottom.items}",
+            "caseValue": {
+              "CONFIRM": "confirmEvent",
+              "ADDCART": "addCartEvent",
+              "ADDCART_JHS": "addCartWithJHSEvent",
+              "BUYNOW_JHS": "buyNowWithJHSEvent",
+              "BUYNOW": "buyNowEvent",
+              "BUYNOW_COUPON": "buyNowWithCouponEvent",
+              "REPLENISH": "needToReplenish",
+              "REPLENISHED": "alreadyReplenished"
+            }
+          },
+          "description": "detail_tb_sku_bottom_bar",
+          "event": {
+            "alreadyReplenished": [
+              {
+                "type": "toast",
+                "fields": {
+                  "message": "催过掌柜啦，正在补货中~"
+                }
+              },
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "alreadyReplenished",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              }
+            ],
+            "needToReplenish": [
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "replenishClicked",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              },
+              {
+                "type": "request",
+                "fields": {
+                  "mtopConfig": {
+                    "apiMethod": "mtop.bcpush.replenishment.remind.apply",
+                    "apiVersion": "1.0",
+                    "usePost": true,
+                    "isNeedWua": true,
+                    "data": {
+                      "itemId": "${sku_script.id_biz_bottom.itemId}",
+                      "skuId": "${sku_script.id_biz_bottom.skuId}",
+                      "sellerId": "${sku_script.id_biz_bottom.replenishParams.sellerId}"
+                    }
+                  },
+                  "next": {
+                    "success": [
+                      {
+                        "type": "userTrack",
+                        "fields": {
+                          "page": "Page_New_SKU",
+                          "eventId": "2101",
+                          "arg1": "replenishSuccess",
+                          "args": {
+                            "spm": "${sku_script.global_data.spm}",
+                            "itemId": "${sku_script.global_data.itemId}",
+                            "sellerId": "${sku_script.global_data.sellerId}"
+                          }
+                        }
+                      },
+                      {
+                        "type": "adjustState",
+                        "fields": {
+                          "subType": "update_replenish",
+                          "payload": {
+                            "skuId": "${sku_script.id_biz_bottom.skuId}"
+                          }
+                        }
+                      },
+                      {
+                        "type": "toast",
+                        "fields": {
+                          "message": "掌柜正在卖力补货~"
+                        }
+                      }
+                    ],
+                    "fail": [
+                      {
+                        "type": "userTrack",
+                        "fields": {
+                          "page": "Page_New_SKU",
+                          "eventId": "2101",
+                          "arg1": "replenishFailed",
+                          "args": {
+                            "spm": "${sku_script.global_data.spm}",
+                            "itemId": "${sku_script.global_data.itemId}",
+                            "sellerId": "${sku_script.global_data.sellerId}"
+                          }
+                        }
+                      },
+                      {
+                        "type": "toast",
+                        "fields": {
+                          "message": "系统开小差了,请稍后重试~"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "confirmEvent": [
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "confirmEvent",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              },
+              {
+                "type": "sku_callback",
+                "fields": {
+                  "inputMode": "${sku_script.id_biz_bottom.inputMode}",
+                  "addCart": {
+                    "itemId": "${sku_script.id_biz_bottom.itemId}",
+                    "skuId": "${sku_script.id_biz_bottom.skuId}",
+                    "quantity": "${sku_script.id_biz_bottom.cartQuantity}",
+                    "exParams": "${sku_script.id_biz_bottom.addCartParams.exParams}"
+                  }
+                }
+              },
+              {
+                "type": "sku_dismiss"
+              }
+            ],
+            "addCartEvent": [
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "addCartClicked",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              },
+              {
+                "type": "request",
+                "fields": {
+                  "mtopConfig": {
+                    "responseKey": "addBag",
+                    "apiMethod": "mtop.trade.addBag",
+                    "apiVersion": "3.1",
+                    "usePost": true,
+                    "isNeedWua": true,
+                    "data": {
+                      "itemId": "${sku_script.id_biz_bottom.itemId}",
+                      "skuId": "${sku_script.id_biz_bottom.skuId}",
+                      "quantity": "${sku_script.id_biz_bottom.cartQuantity}",
+                      "exParams": "${sku_script.id_biz_bottom.addCartParams.exParams}",
+                      "cartFrom": "taobao_client"
+                    }
+                  },
+                  "next": {
+                    "success": [
+                      {
+                        "type": "userTrack",
+                        "fields": {
+                          "page": "Page_New_SKU",
+                          "eventId": "2101",
+                          "arg1": "addCartSuccess",
+                          "args": {
+                            "spm": "${sku_script.global_data.spm}",
+                            "itemId": "${sku_script.global_data.itemId}",
+                            "sellerId": "${sku_script.global_data.sellerId}"
+                          }
+                        }
+                      },
+                      {
+                        "type": "sku_toast",
+                        "fields": {
+                          "text": "添加成功，在购物车等亲~",
+                          "type": "success"
+                        }
+                      },
+                      {
+                        "type": "sku_callback",
+                        "fields": {
+                          "inputMode": "${sku_script.id_biz_bottom.inputMode}",
+                          "addCart": {
+                            "success": true,
+                            "itemId": "${sku_script.id_biz_bottom.itemId}",
+                            "skuId": "${sku_script.id_biz_bottom.skuId}",
+                            "quantity": "${sku_script.id_biz_bottom.cartQuantity}",
+                            "exParams": "${sku_script.id_biz_bottom.addCartParams.exParams}"
+                          }
+                        }
+                      },
+                      {
+                        "type": "sku_dismiss"
+                      }
+                    ],
+                    "fail": [
+                      {
+                        "type": "userTrack",
+                        "fields": {
+                          "page": "Page_New_SKU",
+                          "eventId": "2101",
+                          "arg1": "addCartFailed",
+                          "args": {
+                            "errorMsg": "$response[addBag]{ret[0]}",
+                            "spm": "${sku_script.global_data.spm}",
+                            "itemId": "${sku_script.global_data.itemId}",
+                            "sellerId": "${sku_script.global_data.sellerId}"
+                          }
+                        }
+                      },
+                      {
+                        "type": "umbrellaAlarm",
+                        "fields": {
+                          "feature": "Main",
+                          "mainBiz": "New_Sku",
+                          "childBiz": "Main",
+                          "errorCode": "UME_SKU_002",
+                          "errorMsg": "$response[addBag]{ret[0]}",
+                          "args": {
+                            "spm": "${sku_script.global_data.spm}",
+                            "itemId": "${sku_script.global_data.itemId}",
+                            "sellerId": "${sku_script.global_data.sellerId}"
+                          }
+                        }
+                      },
+                      {
+                        "type": "sku_callback",
+                        "fields": {
+                          "inputMode": "${sku_script.id_biz_bottom.inputMode}",
+                          "addCart": {
+                            "success": false,
+                            "itemId": "${sku_script.id_biz_bottom.itemId}",
+                            "skuId": "${sku_script.id_biz_bottom.skuId}",
+                            "quantity": "${sku_script.id_biz_bottom.cartQuantity}",
+                            "exParams": "${sku_script.id_biz_bottom.addCartParams.exParams}"
+                          }
+                        }
+                      },
+                      {
+                        "type": "sku_toast",
+                        "fields": {
+                          "text": "小二很忙，系统很累，请稍后重试!",
+                          "type": "failed"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "addCartWithJHSEvent": [
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "addCartWithJHSClicked",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              },
+              {
+                "type": "sku_jhs_join_request",
+                "fields": {
+                  "mtopConfig": {
+                    "responseKey": "jhs",
+                    "apiMethod": "mtop.ju.group.join",
+                    "apiVersion": "5.0",
+                    "usePost": false,
+                    "isNeedWua": true,
+                    "tradeExParams": "${sku_script.id_biz_bottom.addCartParams.exParams}",
+                    "data": {
+                      "itemNumId": "${sku_script.id_biz_bottom.itemId}",
+                      "action": "add2Cart",
+                      "exParams": "${sku_script.id_biz_bottom.addCartJHSParams}"
+                    }
+                  },
+                  "next": {
+                    "success": [
+                      {
+                        "type": "request",
+                        "fields": {
+                          "mtopConfig": {
+                            "apiMethod": "mtop.trade.addBag",
+                            "apiVersion": "3.1",
+                            "usePost": true,
+                            "isNeedWua": true,
+                            "data": {
+                              "itemId": "${sku_script.id_biz_bottom.itemId}",
+                              "skuId": "${sku_script.id_biz_bottom.skuId}",
+                              "quantity": "${sku_script.id_biz_bottom.cartQuantity}",
+                              "exParams": "$response[jhs]{tradeExParams}",
+                              "cartFrom": "taobao_client"
+                            }
+                          },
+                          "next": {
+                            "success": [
+                              {
+                                "type": "userTrack",
+                                "fields": {
+                                  "page": "Page_New_SKU",
+                                  "eventId": "2101",
+                                  "arg1": "addCartWithJHSSuccess",
+                                  "args": {
+                                    "spm": "${sku_script.global_data.spm}",
+                                    "itemId": "${sku_script.global_data.itemId}",
+                                    "sellerId": "${sku_script.global_data.sellerId}"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "sku_toast",
+                                "fields": {
+                                  "text": "添加成功，在购物车等亲~",
+                                  "type": "success"
+                                }
+                              },
+                              {
+                                "type": "sku_callback",
+                                "fields": {
+                                  "inputMode": "${sku_script.id_biz_bottom.inputMode}",
+                                  "addCart": {
+                                    "success": true,
+                                    "itemId": "${sku_script.id_biz_bottom.itemId}",
+                                    "skuId": "${sku_script.id_biz_bottom.skuId}",
+                                    "quantity": "${sku_script.id_biz_bottom.cartQuantity}",
+                                    "exParams": "${sku_script.id_biz_bottom.addCartParams.exParams}"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "sku_dismiss"
+                              }
+                            ],
+                            "fail": [
+                              {
+                                "type": "userTrack",
+                                "fields": {
+                                  "page": "Page_New_SKU",
+                                  "eventId": "2101",
+                                  "arg1": "addCartWithJHSFailed",
+                                  "args": {
+                                    "errorMsg": "$response[jhs]{ret[0]}",
+                                    "spm": "${sku_script.global_data.spm}",
+                                    "itemId": "${sku_script.global_data.itemId}",
+                                    "sellerId": "${sku_script.global_data.sellerId}"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "umbrellaAlarm",
+                                "fields": {
+                                  "feature": "Main",
+                                  "mainBiz": "New_Sku",
+                                  "childBiz": "Main",
+                                  "errorCode": "UME_SKU_002",
+                                  "errorMsg": "$response[jhs]{ret[0]}",
+                                  "args": {
+                                    "spm": "${sku_script.global_data.spm}",
+                                    "itemId": "${sku_script.global_data.itemId}",
+                                    "sellerId": "${sku_script.global_data.sellerId}"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "sku_callback",
+                                "fields": {
+                                  "inputMode": "${sku_script.id_biz_bottom.inputMode}",
+                                  "addCart": {
+                                    "success": false,
+                                    "itemId": "${sku_script.id_biz_bottom.itemId}",
+                                    "skuId": "${sku_script.id_biz_bottom.skuId}",
+                                    "quantity": "${sku_script.id_biz_bottom.cartQuantity}",
+                                    "exParams": "${sku_script.id_biz_bottom.addCartParams.exParams}"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "sku_toast",
+                                "fields": {
+                                  "text": "小二很忙，系统很累，请稍后重试!",
+                                  "type": "failed"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ],
+                    "fail": [
+                      {
+                        "type": "userTrack",
+                        "fields": {
+                          "page": "Page_New_SKU",
+                          "eventId": "2101",
+                          "arg1": "addCartWithJHSFailed",
+                          "args": {
+                            "errorMsg": "$response[jhs]{ret[0]}",
+                            "spm": "${sku_script.global_data.spm}",
+                            "itemId": "${sku_script.global_data.itemId}",
+                            "sellerId": "${sku_script.global_data.sellerId}"
+                          }
+                        }
+                      },
+                      {
+                        "type": "umbrellaAlarm",
+                        "fields": {
+                          "feature": "Main",
+                          "mainBiz": "New_Sku",
+                          "childBiz": "Main",
+                          "errorCode": "UME_SKU_002",
+                          "errorMsg": "$response[jhs]{ret[0]}",
+                          "args": {
+                            "spm": "${sku_script.global_data.spm}",
+                            "itemId": "${sku_script.global_data.itemId}",
+                            "sellerId": "${sku_script.global_data.sellerId}"
+                          }
+                        }
+                      },
+                      {
+                        "type": "sku_toast",
+                        "fields": {
+                          "text": "小二很忙，系统很累，请稍后重试!",
+                          "type": "failed"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "buyNowWithJHSEvent": [
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "buyNowWithJHSClicked",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              },
+              {
+                "type": "sku_jhs_join_request",
+                "fields": {
+                  "mtopConfig": {
+                    "responseKey": "jhs",
+                    "apiMethod": "mtop.ju.group.join",
+                    "apiVersion": "5.0",
+                    "usePost": false,
+                    "isNeedWua": true,
+                    "tradeExParams": "${sku_script.id_biz_bottom.buyNowParams.exParams}",
+                    "data": {
+                      "itemNumId": "${sku_script.id_biz_bottom.itemId}",
+                      "action": "toBuy",
+                      "exParams": "${sku_script.id_biz_bottom.buyNowWithJHSParams}"
+                    }
+                  },
+                  "next": {
+                    "success": [
+                      {
+                        "type": "userTrack",
+                        "fields": {
+                          "page": "Page_New_SKU",
+                          "eventId": "2101",
+                          "arg1": "buyNowWithJHSSuccess",
+                          "args": {
+                            "spm": "${sku_script.global_data.spm}",
+                            "itemId": "${sku_script.global_data.itemId}",
+                            "sellerId": "${sku_script.global_data.sellerId}"
+                          }
+                        }
+                      },
+                      {
+                        "fields": {
+                          "pageType": "Native",
+                          "params": {
+                            "purchase_from": 2,
+                            "buildOrderParams": {
+                              "itemId": "${sku_script.id_biz_bottom.itemId}",
+                              "skuId": "${sku_script.id_biz_bottom.skuId}",
+                              "quantity": "${sku_script.id_biz_bottom.quantity}",
+                              "serviceId": "${sku_script.id_biz_bottom.buyNowParams.serviceId}",
+                              "tgKey": "${sku_script.id_biz_bottom.buyNowParams.tgKey}",
+                              "bookingDate": "${sku_script.id_biz_bottom.buyNowParams.bookingDate}",
+                              "entranceDate": "${sku_script.id_biz_bottom.buyNowParams.entranceDate}",
+                              "exParams": "$response[jhs]{tradeExParams}",
+                              "buyNow": "true"
+                            }
+                          },
+                          "queryParams": {
+                            "itemId": "${sku_script.id_biz_bottom.itemId}",
+                            "skuId": "${sku_script.id_biz_bottom.skuId}",
+                            "quantity": "${sku_script.id_biz_bottom.quantity}",
+                            "serviceId": "${sku_script.id_biz_bottom.buyNowParams.serviceId}",
+                            "tgKey": "${sku_script.id_biz_bottom.buyNowParams.tgKey}",
+                            "bookingDate": "${sku_script.id_biz_bottom.buyNowParams.bookingDate}",
+                            "entranceDate": "${sku_script.id_biz_bottom.buyNowParams.entranceDate}",
+                            "exParams": "$response[jhs]{tradeExParams}",
+                            "buyNow": "true"
+                          },
+                          "url": "${sku_script.id_biz_bottom.buyNowParams.targetUrl}"
+                        },
+                        "type": "openUrl"
+                      },
+                      {
+                        "type": "sku_dismiss"
+                      }
+                    ],
+                    "fail": [
+                      {
+                        "type": "userTrack",
+                        "fields": {
+                          "page": "Page_New_SKU",
+                          "eventId": "2101",
+                          "arg1": "buyNowWithJHSFailed",
+                          "args": {
+                            "errorMsg": "$response[jhs]{ret[0]}",
+                            "spm": "${sku_script.global_data.spm}",
+                            "itemId": "${sku_script.global_data.itemId}",
+                            "sellerId": "${sku_script.global_data.sellerId}"
+                          }
+                        }
+                      },
+                      {
+                        "type": "umbrellaAlarm",
+                        "fields": {
+                          "feature": "Main",
+                          "mainBiz": "New_Sku",
+                          "childBiz": "Main",
+                          "errorCode": "UME_SKU_002",
+                          "errorMsg": "$response[jhs]{ret[0]}",
+                          "args": {
+                            "spm": "${sku_script.global_data.spm}",
+                            "itemId": "${sku_script.global_data.itemId}",
+                            "sellerId": "${sku_script.global_data.sellerId}"
+                          }
+                        }
+                      },
+                      {
+                        "type": "sku_toast",
+                        "fields": {
+                          "text": "小二很忙，系统很累，请稍后重试!",
+                          "type": "failed"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "buyNowEvent": [
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "buyNowNormal",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              },
+              {
+                "fields": {
+                  "pageType": "Native",
+                  "params": {
+                    "purchase_from": 2,
+                    "buildOrderParams": {
+                      "itemId": "${sku_script.id_biz_bottom.itemId}",
+                      "skuId": "${sku_script.id_biz_bottom.skuId}",
+                      "quantity": "${sku_script.id_biz_bottom.quantity}",
+                      "serviceId": "${sku_script.id_biz_bottom.buyNowParams.serviceId}",
+                      "tgKey": "${sku_script.id_biz_bottom.buyNowParams.tgKey}",
+                      "bookingDate": "${sku_script.id_biz_bottom.buyNowParams.bookingDate}",
+                      "entranceDate": "${sku_script.id_biz_bottom.buyNowParams.entranceDate}",
+                      "exParams": "${sku_script.id_biz_bottom.buyNowParams.exParams}",
+                      "buyNow": "true"
+                    }
+                  },
+                  "queryParams": {
+                    "itemId": "${sku_script.id_biz_bottom.itemId}",
+                    "skuId": "${sku_script.id_biz_bottom.skuId}",
+                    "quantity": "${sku_script.id_biz_bottom.quantity}",
+                    "serviceId": "${sku_script.id_biz_bottom.buyNowParams.serviceId}",
+                    "tgKey": "${sku_script.id_biz_bottom.buyNowParams.tgKey}",
+                    "bookingDate": "${sku_script.id_biz_bottom.buyNowParams.bookingDate}",
+                    "entranceDate": "${sku_script.id_biz_bottom.buyNowParams.entranceDate}",
+                    "exParams": "${sku_script.id_biz_bottom.buyNowParams.exParams}",
+                    "buyNow": "true"
+                  },
+                  "url": "${sku_script.id_biz_bottom.buyNowParams.targetUrl}"
+                },
+                "type": "openUrl"
+              },
+              {
+                "type": "sku_dismiss"
+              }
+            ],
+            "buyNowWithCouponEvent": [
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "buyNowWithCoupon",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              },
+              {
+                "type": "request",
+                "fields": {
+                  "mtopConfig": {
+                    "apiMethod": "mtop.taobao.detail.multiApplyCoupon",
+                    "apiVersion": "1.0",
+                    "usePost": true,
+                    "isNeedWua": true,
+                    "data": {
+                      "sellerId": "${sku_script.id_biz_bottom.buyNowWithCouponParams.sellerId}",
+                      "itemApplyParams": "${sku_script.id_biz_bottom.buyNowWithCouponParams.itemApplyParams}",
+                      "asac": "${sku_script.id_biz_bottom.buyNowWithCouponParams.asac}"
+                    }
+                  },
+                  "next": {
+                    "success": [
+                      {
+                        "type": "userTrack",
+                        "fields": {
+                          "page": "Page_New_SKU",
+                          "eventId": "2101",
+                          "arg1": "buyNowWithCouponSuccess",
+                          "args": {
+                            "spm": "${sku_script.global_data.spm}",
+                            "itemId": "${sku_script.global_data.itemId}",
+                            "sellerId": "${sku_script.global_data.sellerId}"
+                          }
+                        }
+                      },
+                      {
+                        "fields": {
+                          "pageType": "Native",
+                          "params": {
+                            "purchase_from": 2,
+                            "buildOrderParams": {
+                              "itemId": "${sku_script.id_biz_bottom.itemId}",
+                              "skuId": "${sku_script.id_biz_bottom.skuId}",
+                              "quantity": "${sku_script.id_biz_bottom.quantity}",
+                              "serviceId": "${sku_script.id_biz_bottom.buyNowParams.serviceId}",
+                              "tgKey": "${sku_script.id_biz_bottom.buyNowParams.tgKey}",
+                              "bookingDate": "${sku_script.id_biz_bottom.buyNowParams.bookingDate}",
+                              "entranceDate": "${sku_script.id_biz_bottom.buyNowParams.entranceDate}",
+                              "exParams": "${sku_script.id_biz_bottom.buyNowParams.exParams}",
+                              "buyNow": "true"
+                            }
+                          },
+                          "queryParams": {
+                            "itemId": "${sku_script.id_biz_bottom.itemId}",
+                            "skuId": "${sku_script.id_biz_bottom.skuId}",
+                            "quantity": "${sku_script.id_biz_bottom.quantity}",
+                            "serviceId": "${sku_script.id_biz_bottom.buyNowParams.serviceId}",
+                            "tgKey": "${sku_script.id_biz_bottom.buyNowParams.tgKey}",
+                            "bookingDate": "${sku_script.id_biz_bottom.buyNowParams.bookingDate}",
+                            "entranceDate": "${sku_script.id_biz_bottom.buyNowParams.entranceDate}",
+                            "exParams": "${sku_script.id_biz_bottom.buyNowParams.exParams}",
+                            "buyNow": "true"
+                          },
+                          "url": "${sku_script.id_biz_bottom.buyNowParams.targetUrl}"
+                        },
+                        "type": "openUrl"
+                      },
+                      {
+                        "type": "sku_toast",
+                        "fields": {
+                          "text": "恭喜你，优惠券领取成功，请下单~",
+                          "type": "success"
+                        }
+                      },
+                      {
+                        "type": "sku_dismiss"
+                      }
+                    ],
+                    "fail": [
+                      {
+                        "type": "userTrack",
+                        "fields": {
+                          "page": "Page_New_SKU",
+                          "eventId": "2101",
+                          "arg1": "buyNowWithCouponFailed",
+                          "args": {
+                            "spm": "${sku_script.global_data.spm}",
+                            "itemId": "${sku_script.global_data.itemId}",
+                            "sellerId": "${sku_script.global_data.sellerId}"
+                          }
+                        }
+                      },
+                      {
+                        "fields": {
+                          "pageType": "Native",
+                          "params": {
+                            "purchase_from": 2,
+                            "buildOrderParams": {
+                              "itemId": "${sku_script.id_biz_bottom.itemId}",
+                              "skuId": "${sku_script.id_biz_bottom.skuId}",
+                              "quantity": "${sku_script.id_biz_bottom.quantity}",
+                              "serviceId": "${sku_script.id_biz_bottom.buyNowParams.serviceId}",
+                              "tgKey": "${sku_script.id_biz_bottom.buyNowParams.tgKey}",
+                              "bookingDate": "${sku_script.id_biz_bottom.buyNowParams.bookingDate}",
+                              "entranceDate": "${sku_script.id_biz_bottom.buyNowParams.entranceDate}",
+                              "exParams": "${sku_script.id_biz_bottom.buyNowParams.exParams}",
+                              "buyNow": "true"
+                            }
+                          },
+                          "queryParams": {
+                            "itemId": "${sku_script.id_biz_bottom.itemId}",
+                            "skuId": "${sku_script.id_biz_bottom.skuId}",
+                            "quantity": "${sku_script.id_biz_bottom.quantity}",
+                            "serviceId": "${sku_script.id_biz_bottom.buyNowParams.serviceId}",
+                            "tgKey": "${sku_script.id_biz_bottom.buyNowParams.tgKey}",
+                            "bookingDate": "${sku_script.id_biz_bottom.buyNowParams.bookingDate}",
+                            "entranceDate": "${sku_script.id_biz_bottom.buyNowParams.entranceDate}",
+                            "exParams": "${sku_script.id_biz_bottom.buyNowParams.exParams}",
+                            "buyNow": "true"
+                          },
+                          "url": "${sku_script.id_biz_bottom.buyNowParams.targetUrl}"
+                        },
+                        "type": "openUrl"
+                      },
+                      {
+                        "type": "sku_toast",
+                        "fields": {
+                          "text": "很遗憾，优惠券领取失败，请稍后重试~",
+                          "type": "failed"
+                        }
+                      },
+                      {
+                        "type": "sku_dismiss"
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "IntegrityVerificationEvent": [
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "bottomBarClickedWithNoSkuId",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              },
+              {
+                "type": "toast",
+                "fields": {
+                  "message": "${sku_script.id_biz_bottom.verificationTips}"
+                }
+              }
+            ],
+            "UnsupportedActionEvent": [
+              {
+                "type": "userTrack",
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2101",
+                  "arg1": "bottomBarClickedUnsupportedAction",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                }
+              },
+              {
+                "type": "toast",
+                "fields": {
+                  "message": "抱歉，不支持此操作~"
+                }
+              }
+            ],
+            "exposureItem": [
+              {
+                "fields": {
+                  "page": "Page_New_SKU",
+                  "eventId": "2201",
+                  "arg1": "bottom_bar",
+                  "args": {
+                    "spm": "${sku_script.global_data.spm}",
+                    "itemId": "${sku_script.global_data.itemId}",
+                    "sellerId": "${sku_script.global_data.sellerId}"
+                  }
+                },
+                "type": "userTrack"
+              }
+            ]
+          },
+          "frontComponentAddress": {
+            "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1576738505595/detail_tb_sku_bottom_bar.zip",
+            "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1576738505595/detail_tb_sku_bottom_bar.zip",
+            "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1576738505595/detail_tb_sku_bottom_bar.js"
+          },
+          "frontComponentId": 4135,
+          "frontComponentMD5": {
+            "android": "b4e90c247f42b1bb027dcc0d8a91a6b5",
+            "ios": "b4e90c247f42b1bb027dcc0d8a91a6b5",
+            "h5": "5dd95e2c3ed71dc431572473d670635a"
+          },
+          "frontComponentName": "detail_tb_sku_bottom_bar",
+          "frontComponentVersion": "1",
+          "componentId": "id_biz_bottom",
+          "key": "dinamic",
+          "name": "detail_tb_sku_bottom_bar",
+          "tag": "dinamic$detail_tb_sku_bottom_bar",
+          "templateId": 1563671440804,
+          "type": "dinamic"
+        }
+      ],
+      "description": "底部bar",
+      "name": "底部bar",
+      "position": "footer",
+      "window": "sku_root"
+    }
+  ],
+  "hierarchy": {
+    "nodes": {
+      "footer": {
+        "position": "footer",
+        "tag": "footer"
+      },
+      "header": {
+        "position": "header",
+        "tag": "header"
+      },
+      "body": {
+        "position": "字段名",
+        "tag": ""
+      },
+      "sku_root": {
+        "position": "",
+        "tag": ""
+      }
+    },
+    "root": "sku_root",
+    "structure": {
+      "sku_root": [
+        "header",
+        "body",
+        "footer"
+      ]
+    }
+  },
+  "name": "手淘 SKU 模板",
+  "scenario": "detail",
+  "templateId": 1563671440804
+}

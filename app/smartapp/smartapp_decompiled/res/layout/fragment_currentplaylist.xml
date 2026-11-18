@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:id="@id/flHeadControlView" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:background="#f9f9f9" android:layout_width="match_parent" android:layout_height="match_parent">
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="44.0dp" android:layout_marginTop="30.0dp">
+            <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/select" android:paddingLeft="5.0dp" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginLeft="35.0dp" android:foreground="@drawable/round_rectangle_bg" android:layout_alignParentLeft="true">
+                <TextView android:textSize="24.0sp" android:textColor="#2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="选集" />
+                <ImageView android:id="@id/select_icon" android:background="@drawable/icon_select_ji_down" android:layout_width="48.0dp" android:layout_height="48.0dp" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center" android:id="@id/current_collect" android:background="@drawable/bg_redcircle" android:layout_width="169.0dp" android:layout_height="44.0dp" android:layout_marginRight="40.0dp" android:foreground="@drawable/collect_album_fg" android:layout_alignParentRight="true" android:layout_centerInParent="true">
+                <TextView android:textSize="30.0sp" android:textColor="#fe2161" android:gravity="center" android:id="@id/addLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+" />
+                <TextView android:textSize="24.0sp" android:textColor="#fe2161" android:gravity="center" android:id="@id/addText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="3.0dp" android:text="收藏专辑" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/current_reverse" android:visibility="invisible" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginRight="35.0dp" android:foreground="@drawable/round_rectangle_bg" android:layout_toLeftOf="@id/current_collect" android:layout_centerInParent="true" android:paddingEnd="5.0dp">
+                <ImageView android:layout_gravity="center" android:id="@id/reverseIconId" android:background="@drawable/icon_not_reverse" android:layout_width="48.0dp" android:layout_height="48.0dp" />
+                <TextView android:textSize="24.0sp" android:textColor="#2b3852" android:gravity="center" android:id="@id/reverseTvId" android:layout_width="wrap_content" android:layout_height="match_parent" android:text="正序播放" android:includeFontPadding="false" />
+            </LinearLayout>
+        </RelativeLayout>
+        <GridView android:id="@id/current_gridview" android:visibility="gone" android:layout_width="match_parent" android:layout_height="380.0dp" android:layout_marginLeft="40.0dp" android:layout_marginTop="37.0dp" android:layout_marginRight="40.0dp" android:horizontalSpacing="20.0dp" android:verticalSpacing="20.0dp" android:numColumns="4" />
+        <com.alibaba.ailabs.genie.musicplayer.ui.widgets.LoadListView android:id="@id/listViewId" android:background="@android:color/transparent" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_marginTop="4.0dp" android:listSelector="#00000000" android:layout_weight="1.0" />
+    </LinearLayout>
+    <ImageView android:layout_gravity="bottom" android:background="@drawable/icon_list_meng" android:layout_width="match_parent" android:layout_height="52.0dp" />
+</FrameLayout>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="176.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:gravity="left|center" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="match_parent">
+            <LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp">
+                <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:id="@id/tv_voice_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="主人" />
+                <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:id="@id/tv_voice_name_des" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/tv_voice_name_str" />
+            </LinearLayout>
+            <TextView android:textSize="24.0sp" android:textColor="#7383a2" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="28.0dp" android:text="@string/tv_voice_pay_name_str" android:layout_alignParentLeft="true" android:layout_centerVertical="true" />
+        </LinearLayout>
+        <com.alibaba.genie.shopping.view.SettingSwitch android:theme="@style/white_switch" android:typeface="normal" android:id="@id/tv_voice_pay_open" android:layout_width="96.0dp" android:layout_height="40.0dp" android:layout_marginRight="40.0dp" android:checked="false" android:thumb="@drawable/select_white_switch_thumb" android:layout_alignParentRight="true" android:layout_centerInParent="true" android:switchMinWidth="96.0dp" />
+    </RelativeLayout>
+</LinearLayout>

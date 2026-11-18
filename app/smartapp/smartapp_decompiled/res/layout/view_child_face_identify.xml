@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <SurfaceView android:id="@id/surface_view" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_centerInParent="true" />
+    <ImageView android:id="@id/iv_anim_cover" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/ic_child_face_identify_main_cover" android:scaleType="centerCrop" />
+    <TextView android:textSize="22.0dp" android:textColor="@color/color_view_child_face_cancel_text" android:gravity="center" android:id="@id/tv_cancel" android:background="@drawable/bg_view_child_face_cancel" android:layout_width="112.0dp" android:layout_height="44.0dp" android:layout_marginLeft="47.0dp" android:layout_marginTop="28.0dp" android:text="@string/text_cancel" />
+    <TextView android:textSize="28.0dp" android:textColor="@android:color/white" android:id="@id/tv_title" android:layout_width="wrap_content" android:layout_height="32.0dp" android:layout_marginTop="34.0dp" android:text="@string/text_child_face_title" android:layout_centerHorizontal="true" />
+    <TextView android:textSize="22.0dp" android:textColor="@color/color_view_child_face_switch_password_text" android:gravity="center" android:id="@id/tv_switch_to_password" android:background="@drawable/bg_view_child_face_switch_password" android:layout_width="175.0dp" android:layout_height="44.0dp" android:layout_marginTop="28.0dp" android:layout_marginRight="49.0dp" android:text="@string/text_child_face_switch_to_password" android:layout_alignParentRight="true" />
+    <TextView android:textSize="24.0dp" android:textColor="@android:color/white" android:id="@id/tv_text_main_hint" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="38.0dp" android:text="@string/text_child_face_hint" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" />
+    <RelativeLayout android:id="@id/rl_anim" android:background="@android:color/transparent" android:layout_width="440.0dp" android:layout_height="440.0dp" android:layout_centerInParent="true">
+        <RelativeLayout android:id="@id/rl_anim_inner" android:background="@android:color/transparent" android:padding="10.0dp" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_centerInParent="true">
+            <RelativeLayout android:id="@id/rl_anim_the_most_inside" android:background="@android:color/transparent" android:padding="7.0dp" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_centerInParent="true" />
+        </RelativeLayout>
+    </RelativeLayout>
+    <ImageView android:id="@id/iv_tag_view" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerInParent="true" />
+    <TextView android:textSize="22.0dp" android:textColor="@android:color/white" android:id="@id/tv_fail_msg" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="222.0dp" android:text="@string/text_child_face_hint_fail" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" />
+</merge>

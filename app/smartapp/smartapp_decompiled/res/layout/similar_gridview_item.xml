@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:tag="layout/similar_gridview_item_0" android:layout_width="@dimen/dp_135" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/albumImgIvId" android:layout_width="@dimen/dp_135" android:layout_height="@dimen/dp_135" android:scaleType="fitCenter" />
+    <TextView android:textSize="@dimen/music_player_extend_grid_text_size" android:textColor="#2b3753" android:gravity="center_vertical" android:id="@id/titleId" android:layout_width="match_parent" android:layout_height="@dimen/dp_18" android:layout_marginTop="@dimen/dp_12" android:singleLine="true" android:includeFontPadding="false" />
+    <TextView android:textSize="@dimen/music_player_extend_grid_text_size" android:textColor="#7282a3" android:gravity="center_vertical" android:id="@id/subTitleId" android:layout_width="match_parent" android:layout_height="@dimen/dp_22" android:layout_marginTop="@dimen/dp_8" android:singleLine="true" android:includeFontPadding="false" />
+</LinearLayout>

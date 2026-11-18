@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout android:tag="layout/extend_other_0" android:background="@drawable/img_other" android:layout_width="@dimen/dp_664" android:layout_height="match_parent" android:layout_marginBottom="@dimen/dp_60"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <TextView android:textSize="@dimen/extend_title_size" android:textStyle="bold" android:textColor="@color/color_2B3753" android:gravity="center" android:id="@id/titleTvId" android:layout_width="wrap_content" android:layout_height="@dimen/dp_35" android:layout_marginLeft="@dimen/dp_30" android:layout_marginTop="@dimen/extend_title_margin_top" android:text="这些歌单也收录了这首歌" android:includeFontPadding="false" app:layout_constraintLeft_toLeftOf="parent" app:layout_constraintTop_toTopOf="parent" />
+    <android.support.v7.widget.RecyclerView android:id="@id/gridRyId" android:layout_width="@dimen/dp_604" android:layout_height="match_parent" android:layout_marginTop="@dimen/extend_grid_margin_top" android:layout_marginBottom="@dimen/dp_56" app:layout_constraintLeft_toLeftOf="parent" app:layout_constraintRight_toRightOf="parent" app:layout_constraintTop_toTopOf="parent" />
+</android.support.constraint.ConstraintLayout>

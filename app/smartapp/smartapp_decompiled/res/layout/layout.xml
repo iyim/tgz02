@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="right" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="@dimen/custom_title_bar_guide_tex_size" android:textColor="#a5b0ba" android:gravity="center" android:id="@id/nav_bar_tex_guide" android:background="@drawable/btn_green_video" android:layout_width="@dimen/custom_title_bar_guide_width" android:layout_height="@dimen/custom_title_bar_guide_height" android:layout_marginTop="@dimen/custom_title_bar_guide_margin_top" android:layout_marginRight="@dimen/custom_title_bar_guide_margin_right" android:text="操作指南" />
+</LinearLayout>

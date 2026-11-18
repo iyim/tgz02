@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/item_layout" android:layout_width="280.0dp" android:layout_height="80.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <View android:id="@id/item_bottom_line" android:background="@color/color_e6eaf2" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+    <LinearLayout android:gravity="center" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_above="@id/item_bottom_line">
+        <TextView android:textSize="32.0sp" android:textColor="@color/color_d8d9e0" android:gravity="center" android:id="@id/item_quality_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="2.0dp" android:layout_marginRight="2.0dp" />
+        <ImageView android:id="@id/music_vip_icon" android:layout_width="wrap_content" android:layout_height="30.0dp" android:layout_marginLeft="2.0dp" android:layout_marginRight="2.0dp" android:src="@drawable/icon_song_vip" android:adjustViewBounds="true" />
+    </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:focusable="false" android:layout_width="match_parent" android:layout_height="@dimen/genie_ui_height"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <FrameLayout android:layout_gravity="bottom" android:id="@id/genie_assistant_text_container" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="95.0dp" android:layout_marginLeft="8.0dp" android:layout_marginBottom="17.0dp">
+        <View android:layout_gravity="center_vertical" android:id="@id/asr_container_bg" android:background="@drawable/genie_ui_asr_container_bg" android:layout_width="@dimen/genie_ui_text_container_loading_width" android:layout_height="match_parent" android:layout_marginBottom="3.0dp" />
+        <TextView android:textSize="30.0sp" android:textColor="@color/ui_2B3852" android:ellipsize="start" android:gravity="left|center" android:layout_gravity="left|center" android:id="@id/genie_assistant_asr_view" android:paddingBottom="4.0dp" android:visibility="invisible" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginLeft="100.0dp" android:layout_marginRight="76.0dp" android:singleLine="true" android:includeFontPadding="false" />
+        <ImageView android:layout_gravity="center_vertical" android:id="@id/genie_assistant_loading_view" android:visibility="gone" android:layout_width="34.0dp" android:layout_height="match_parent" android:layout_marginLeft="100.0dp" android:src="@drawable/point" />
+    </FrameLayout>
+    <com.alibaba.ailabs.genie.genieui.widget.GenieAnimationView android:layout_gravity="bottom" android:id="@id/genie_assistant_view" android:layout_width="106.0dp" android:layout_height="106.0dp" android:layout_marginLeft="2.0dp" android:layout_marginBottom="10.0dp" />
+    <com.alibaba.ailabs.genie.genieui.widget.GenieAnimationView android:layout_gravity="bottom" android:id="@id/genie_assistant_decoration" android:visibility="gone" android:layout_width="106.0dp" android:layout_height="106.0dp" android:layout_marginLeft="2.0dp" android:layout_marginBottom="10.0dp" />
+    <FrameLayout android:layout_gravity="bottom" android:id="@id/genie_assistant_click_contianer" android:layout_width="106.0dp" android:layout_height="106.0dp" android:layout_marginLeft="2.0dp" android:layout_marginBottom="10.0dp">
+        <View android:id="@id/genie_assistant_click" android:layout_width="match_parent" android:layout_height="match_parent" />
+    </FrameLayout>
+</FrameLayout>

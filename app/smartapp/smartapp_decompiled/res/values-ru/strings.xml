@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="abc_action_bar_home_description">Перейти на главный экран</string>
+    <string name="abc_action_bar_up_description">Перейти вверх</string>
+    <string name="abc_action_menu_overflow_description">Другие параметры</string>
+    <string name="abc_action_mode_done">Готово</string>
+    <string name="abc_activity_chooser_view_see_all">Показать все</string>
+    <string name="abc_activitychooserview_choose_application">Выбрать приложение</string>
+    <string name="abc_capital_off">ОТКЛ.</string>
+    <string name="abc_capital_on">ВКЛ.</string>
+    <string name="abc_search_hint">Поиск</string>
+    <string name="abc_searchview_description_clear">Удалить запрос</string>
+    <string name="abc_searchview_description_query">Поисковый запрос</string>
+    <string name="abc_searchview_description_search">Поиск</string>
+    <string name="abc_searchview_description_submit">Отправить запрос</string>
+    <string name="abc_searchview_description_voice">Голосовой поиск</string>
+    <string name="abc_shareactionprovider_share_with">Открыть доступ</string>
+    <string name="abc_shareactionprovider_share_with_application">Открыть доступ приложению \"%s\"</string>
+    <string name="abc_toolbar_collapse_description">Свернуть</string>
+    <string name="alipay_keyboard">Пульт безопасности Alipay</string>
+    <string name="keyboard_alipay">Пульт безопасности Alipay</string>
+    <string name="keyboard_ok">OK</string>
+    <string name="keyboard_space">Пробел</string>
+    <string name="msp_secure_keyboard_already_del">Удалено</string>
+    <string name="msp_secure_keyboard_del">Удалить</string>
+    <string name="safepay_fp_cancel">Отмена</string>
+    <string name="safepay_fp_open">Пожалуйста, проверьте Touch ID, чтобы активировать Touch Pay</string>
+    <string name="safepay_fp_retry_tips">Совершено максимальное число попыток определения Touch ID, выйти</string>
+    <string name="safepay_fp_to_pwd">Введите пароль</string>
+    <string name="safepay_fp_to_pwd_pay">Оборот пароль платить</string>
+    <string name="safepay_fp_val_failed">Данные Touch ID не подтверждены, попробуйте еще раз</string>
+    <string name="safepay_fp_val_ok">Данные Touch ID подтверждены, идет передача…</string>
+    <string name="safepay_fp_validate_too_often">Проверка Touch ID</string>
+    <string name="safepay_fp_validating">Проверка Touch ID…</string>
+    <string name="safepay_fp_verify">Пожалуйста, проверьте Touch ID</string>
+    <string name="search_menu_title">Поиск</string>
+    <string name="status_bar_notification_info_overflow">>999</string>
+</resources>

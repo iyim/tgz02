@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/root" android:background="@android:color/transparent" android:layout_width="220.0dp" android:layout_height="220.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/background" android:background="@android:color/transparent" android:layout_width="220.0dp" android:layout_height="220.0dp" />
+    <View android:background="@drawable/text_bg" android:layout_width="match_parent" android:layout_height="70.0dp" android:layout_alignParentBottom="true" />
+    <TextView android:textSize="@dimen/baike_domain_result_list_item_meta_index_text_size" android:textColor="@color/baike_domain_result_list_item_meta_index_text_color" android:gravity="center" android:id="@id/index" android:background="@drawable/baike_domain_list_item_meta_index_bg" android:layout_width="@dimen/baike_domain_result_list_item_meta_index_width" android:layout_height="@dimen/baike_domain_result_list_item_meta_index_height" android:layout_marginLeft="10.0dp" android:layout_marginTop="145.0dp" android:text="18" />
+    <TextView android:textSize="20.0dp" android:textColor="@android:color/white" android:id="@id/title" android:layout_width="wrap_content" android:layout_height="23.0dp" android:layout_marginLeft="10.0dp" android:layout_marginTop="181.0dp" android:text="低俗小说" />
+</RelativeLayout>

@@ -1,0 +1,157 @@
+.class Lcom/airbnb/lottie/PolystarShape$Factory;
+.super Ljava/lang/Object;
+.source "PolystarShape.java"
+
+
+# annotations
+.annotation system Ldalvik/annotation/EnclosingClass;
+    value = Lcom/airbnb/lottie/PolystarShape;
+.end annotation
+
+.annotation system Ldalvik/annotation/InnerClass;
+    accessFlags = 0x8
+    name = "Factory"
+.end annotation
+
+
+# direct methods
+.method private constructor <init>()V
+    .locals 0
+
+    .line 57
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    #disallowed odex opcode
+    #return-void-no-barrier
+    nop
+.end method
+
+.method static newInstance(Lorg/json/JSONObject;Lcom/airbnb/lottie/LottieComposition;)Lcom/airbnb/lottie/PolystarShape;
+    .locals 12
+
+    const-string v0, "nm"
+
+    .line 61
+    invoke-virtual {p0, v0}, Lorg/json/JSONObject;->optString(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v2
+
+    const-string/jumbo v0, "sy"
+
+    .line 62
+    invoke-virtual {p0, v0}, Lorg/json/JSONObject;->optInt(Ljava/lang/String;)I
+
+    move-result v0
+
+    invoke-static {v0}, Lcom/airbnb/lottie/PolystarShape$Type;->forValue(I)Lcom/airbnb/lottie/PolystarShape$Type;
+
+    move-result-object v3
+
+    const-string v0, "pt"
+
+    .line 64
+    invoke-virtual {p0, v0}, Lorg/json/JSONObject;->optJSONObject(Ljava/lang/String;)Lorg/json/JSONObject;
+
+    move-result-object v0
+
+    const/4 v1, 0x0
+
+    invoke-static {v0, p1, v1}, Lcom/airbnb/lottie/AnimatableFloatValue$Factory;->newInstance(Lorg/json/JSONObject;Lcom/airbnb/lottie/LottieComposition;Z)Lcom/airbnb/lottie/AnimatableFloatValue;
+
+    move-result-object v4
+
+    const-string v0, "p"
+
+    .line 66
+    invoke-virtual {p0, v0}, Lorg/json/JSONObject;->optJSONObject(Ljava/lang/String;)Lorg/json/JSONObject;
+
+    move-result-object v0
+
+    .line 65
+    invoke-static {v0, p1}, Lcom/airbnb/lottie/AnimatablePathValue;->createAnimatablePathOrSplitDimensionPath(Lorg/json/JSONObject;Lcom/airbnb/lottie/LottieComposition;)Lcom/airbnb/lottie/AnimatableValue;
+
+    move-result-object v5
+
+    const-string/jumbo v0, "r"
+
+    .line 68
+    invoke-virtual {p0, v0}, Lorg/json/JSONObject;->optJSONObject(Ljava/lang/String;)Lorg/json/JSONObject;
+
+    move-result-object v0
+
+    invoke-static {v0, p1, v1}, Lcom/airbnb/lottie/AnimatableFloatValue$Factory;->newInstance(Lorg/json/JSONObject;Lcom/airbnb/lottie/LottieComposition;Z)Lcom/airbnb/lottie/AnimatableFloatValue;
+
+    move-result-object v6
+
+    const-string v0, "or"
+
+    .line 70
+    invoke-virtual {p0, v0}, Lorg/json/JSONObject;->optJSONObject(Ljava/lang/String;)Lorg/json/JSONObject;
+
+    move-result-object v0
+
+    invoke-static {v0, p1}, Lcom/airbnb/lottie/AnimatableFloatValue$Factory;->newInstance(Lorg/json/JSONObject;Lcom/airbnb/lottie/LottieComposition;)Lcom/airbnb/lottie/AnimatableFloatValue;
+
+    move-result-object v8
+
+    const-string v0, "os"
+
+    .line 72
+    invoke-virtual {p0, v0}, Lorg/json/JSONObject;->optJSONObject(Ljava/lang/String;)Lorg/json/JSONObject;
+
+    move-result-object v0
+
+    invoke-static {v0, p1, v1}, Lcom/airbnb/lottie/AnimatableFloatValue$Factory;->newInstance(Lorg/json/JSONObject;Lcom/airbnb/lottie/LottieComposition;Z)Lcom/airbnb/lottie/AnimatableFloatValue;
+
+    move-result-object v10
+
+    .line 76
+    sget-object v0, Lcom/airbnb/lottie/PolystarShape$Type;->Star:Lcom/airbnb/lottie/PolystarShape$Type;
+
+    const/4 v7, 0x0
+
+    if-ne v3, v0, :cond_0
+
+    const-string v0, "ir"
+
+    .line 78
+    invoke-virtual {p0, v0}, Lorg/json/JSONObject;->optJSONObject(Ljava/lang/String;)Lorg/json/JSONObject;
+
+    move-result-object v0
+
+    invoke-static {v0, p1}, Lcom/airbnb/lottie/AnimatableFloatValue$Factory;->newInstance(Lorg/json/JSONObject;Lcom/airbnb/lottie/LottieComposition;)Lcom/airbnb/lottie/AnimatableFloatValue;
+
+    move-result-object v0
+
+    const-string v7, "is"
+
+    .line 80
+    invoke-virtual {p0, v7}, Lorg/json/JSONObject;->optJSONObject(Ljava/lang/String;)Lorg/json/JSONObject;
+
+    move-result-object p0
+
+    invoke-static {p0, p1, v1}, Lcom/airbnb/lottie/AnimatableFloatValue$Factory;->newInstance(Lorg/json/JSONObject;Lcom/airbnb/lottie/LottieComposition;Z)Lcom/airbnb/lottie/AnimatableFloatValue;
+
+    move-result-object p0
+
+    move-object v9, p0
+
+    move-object v7, v0
+
+    goto :goto_0
+
+    :cond_0
+    move-object v9, v7
+
+    .line 85
+    :goto_0
+    new-instance p0, Lcom/airbnb/lottie/PolystarShape;
+
+    const/4 v11, 0x0
+
+    move-object v1, p0
+
+    invoke-direct/range {v1 .. v11}, Lcom/airbnb/lottie/PolystarShape;-><init>(Ljava/lang/String;Lcom/airbnb/lottie/PolystarShape$Type;Lcom/airbnb/lottie/AnimatableFloatValue;Lcom/airbnb/lottie/AnimatableValue;Lcom/airbnb/lottie/AnimatableFloatValue;Lcom/airbnb/lottie/AnimatableFloatValue;Lcom/airbnb/lottie/AnimatableFloatValue;Lcom/airbnb/lottie/AnimatableFloatValue;Lcom/airbnb/lottie/AnimatableFloatValue;Lcom/airbnb/lottie/PolystarShape$1;)V
+
+    return-object p0
+.end method

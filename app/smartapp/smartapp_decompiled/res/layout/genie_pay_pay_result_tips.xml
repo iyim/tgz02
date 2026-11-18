@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:orientation="vertical" android:background="@drawable/genie_pay_tg_pay_drawable_solid_3333_ffffff" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="200.0dp" android:layout_height="55.0dp">
+        <ImageView android:layout_gravity="center" android:id="@id/icon" android:background="@drawable/genie_pay_fail" android:layout_width="35.0dp" android:layout_height="35.0dp" />
+        <TextView android:textSize="@dimen/genie_pay_sub_title_text_size" android:textColor="@color/genie_pay_color_ffffff" android:gravity="center" android:id="@id/toast_msg" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="5.0dp" android:text="@string/pay_fail" />
+    </LinearLayout>
+</LinearLayout>

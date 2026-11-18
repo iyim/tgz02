@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:gravity="center_vertical" android:background="@color/widget_ui_shadow_white" android:layout_width="match_parent" android:layout_height="68.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.alibaba.ailabs.genie.widgetui.widget_element.WidgetUIButton android:textSize="20.0dp" android:gravity="center" android:id="@id/left_operation_btn" android:background="@color/widget_ui_transparent" android:layout_width="wrap_content" android:layout_height="36.0dp" android:layout_marginLeft="40.0dp" android:layout_marginTop="16.0dp" app:radius="18.0dp" />
+    <TextView android:textSize="@dimen/widget_ui_text_size2" android:textStyle="bold" android:textColor="@color/widget_ui_neutral_color_gray4" android:gravity="center_vertical" android:layout_gravity="center" android:id="@id/title" android:layout_width="wrap_content" android:layout_height="match_parent" />
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent">
+        <com.alibaba.ailabs.genie.widgetui.widget_element.WidgetUIButton android:textSize="20.0dp" android:gravity="center" android:id="@id/right_operation_btn" android:background="@color/widget_ui_transparent" android:layout_width="wrap_content" android:layout_height="36.0dp" android:layout_marginTop="16.0dp" android:layout_marginEnd="40.0dp" android:layout_alignParentEnd="true" app:radius="18.0dp" />
+        <View android:id="@id/space_line" android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+</FrameLayout>

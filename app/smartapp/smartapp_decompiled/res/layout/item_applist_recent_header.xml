@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="vertical" android:id="@id/rl_item_applist_recent_header" android:layout_width="wrap_content" android:layout_height="@dimen/app_list_height"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="22.0dp" android:textColor="@color/color_tv_2b3852" android:id="@id/tv_recent" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="48.0dp" android:layout_marginTop="32.0dp" android:text="最近使用" />
+    <LinearLayout android:orientation="horizontal" android:id="@id/ll_recent_app" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="57.0dp">
+        <LinearLayout android:orientation="vertical" android:id="@id/ll_recent_con_1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="34.0dp">
+            <include android:id="@id/ll_recent_item_1" android:layout_width="wrap_content" android:layout_height="wrap_content" layout="@layout/item_applist_square_item_one" />
+            <include android:id="@id/ll_recent_item_2" android:layout_width="wrap_content" android:layout_height="wrap_content" layout="@layout/item_applist_square_item_one" />
+            <include android:id="@id/ll_recent_item_3" android:layout_width="wrap_content" android:layout_height="wrap_content" layout="@layout/item_applist_square_item_one" />
+        </LinearLayout>
+        <LinearLayout android:orientation="vertical" android:id="@id/ll_recent_con_2" android:visibility="visible" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <include android:id="@id/ll_recent_item_4" android:layout_width="wrap_content" android:layout_height="wrap_content" layout="@layout/item_applist_square_item_one" />
+            <include android:id="@id/ll_recent_item_5" android:layout_width="wrap_content" android:layout_height="wrap_content" layout="@layout/item_applist_square_item_one" />
+            <include android:id="@id/ll_recent_item_6" android:layout_width="wrap_content" android:layout_height="wrap_content" layout="@layout/item_applist_square_item_one" />
+        </LinearLayout>
+    </LinearLayout>
+    <View android:background="@drawable/shape_split_line_recentapp" android:layout_width="1.0dp" android:layout_height="291.0dp" android:layout_marginTop="145.0dp" android:layout_toRightOf="@id/ll_recent_app" />
+</RelativeLayout>

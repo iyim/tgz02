@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="#ffffff" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/top" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="68.0dp">
+        <TextView android:textSize="22.0sp" android:textColor="@color/color_setting_main_title_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="订单支付" android:layout_centerInParent="true" />
+    </RelativeLayout>
+    <View android:id="@id/line" android:background="#cccccc" android:layout_width="match_parent" android:layout_height="0.100000024dp" android:layout_below="@id/top" />
+    <RelativeLayout android:id="@id/pay_success_layout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="23.0dp" android:layout_below="@id/line">
+        <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:background="@mipmap/pay_background" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerHorizontal="true">
+            <LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="29.0dp">
+                <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@mipmap/pay_success" />
+                <TextView android:textSize="28.0sp" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:id="@id/tv_pay_result" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="13.0dp" android:text="@string/tv_pay_success" android:includeFontPadding="false" android:drawablePadding="8.0dp" />
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="374.0dp" android:layout_height="wrap_content" android:layout_marginTop="24.0dp">
+                <TextView android:textSize="24.0sp" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/tv_trans_no" android:includeFontPadding="false" />
+                <TextView android:textSize="24.0sp" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:id="@id/tv_transaction_num" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:includeFontPadding="false" />
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="374.0dp" android:layout_height="wrap_content" android:layout_marginTop="12.0dp">
+                <TextView android:textSize="24.0sp" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/tv_recv_person" android:includeFontPadding="false" />
+                <TextView android:textSize="24.0sp" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:id="@id/tv_recv_person" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:includeFontPadding="false" />
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="374.0dp" android:layout_height="wrap_content" android:layout_marginTop="12.0dp">
+                <TextView android:textSize="24.0sp" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="收货地址：" android:includeFontPadding="false" />
+                <TextView android:textSize="24.0sp" android:textColor="@color/color_setting_main_title_text" android:ellipsize="end" android:gravity="left" android:id="@id/tv_recv_address" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxEms="9" android:singleLine="true" android:includeFontPadding="false" />
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="374.0dp" android:layout_height="wrap_content" android:layout_marginTop="12.0dp">
+                <TextView android:textSize="24.0sp" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/tv_paymount" android:includeFontPadding="false" />
+                <TextView android:textSize="24.0sp" android:textColor="#ff5000" android:gravity="center" android:id="@id/tv_paymount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:includeFontPadding="false" />
+            </LinearLayout>
+            <View android:background="#26757f84" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_marginTop="18.0dp" />
+            <LinearLayout android:gravity="center_horizontal" android:orientation="horizontal" android:layout_width="374.0dp" android:layout_height="wrap_content" android:layout_marginTop="18.0dp">
+                <TextView android:textSize="20.0sp" android:textColor="#acb7ce" android:gravity="center" android:id="@id/tv_taobaosname" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/tv_paystr1" android:includeFontPadding="false" />
+                <TextView android:textSize="20.0sp" android:textColor="#2a3033" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:text="@string/tv_paystr2" android:includeFontPadding="false" />
+                <TextView android:textSize="20.0sp" android:textColor="#acb7ce" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:text="@string/tv_paystr3" android:includeFontPadding="false" />
+            </LinearLayout>
+            <TextView android:textSize="22.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/tv_goon_buy" android:background="@drawable/tintblue_background" android:layout_width="181.0dp" android:layout_height="56.0dp" android:layout_marginTop="24.0dp" android:text="@string/tv_paystr4" android:includeFontPadding="false" />
+        </LinearLayout>
+    </RelativeLayout>
+    <RelativeLayout android:id="@id/pay_failure_layout" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_below="@id/line">
+        <TextView android:textSize="32.0sp" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:id="@id/tv_pay_failure" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="103.0dp" android:text="@string/tv_payfailure" android:includeFontPadding="false" android:layout_centerHorizontal="true" />
+        <LinearLayout android:gravity="center_horizontal" android:orientation="horizontal" android:id="@id/pay_failure_twolayout" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="34.0dp" android:layout_below="@id/tv_pay_failure" android:layout_centerHorizontal="true">
+            <TextView android:textSize="22.0sp" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:id="@id/tv_failure_taobaosname" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/tv_payfailure1" android:includeFontPadding="false" />
+            <TextView android:textSize="22.0sp" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:text="@string/tv_paystr2" android:includeFontPadding="false" />
+        </LinearLayout>
+        <TextView android:textSize="22.0sp" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:id="@id/paystatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10.0dp" android:text="@string/tv_payfailure2" android:includeFontPadding="false" android:layout_below="@id/pay_failure_twolayout" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="24.0sp" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:id="@id/payresult_iknow" android:background="@drawable/whiteground_greyframe" android:layout_width="152.0dp" android:layout_height="56.0dp" android:layout_marginTop="50.0dp" android:text="我知道了" android:layout_below="@id/paystatus" android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+</RelativeLayout>

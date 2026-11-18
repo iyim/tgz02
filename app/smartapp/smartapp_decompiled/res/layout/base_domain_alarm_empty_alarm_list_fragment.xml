@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@color/bg_base_domain_default_color" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.alibaba.ailabs.basedomain.ui.ExitView android:id="@id/layout_exit" android:layout_width="wrap_content" android:layout_height="100.0dp" />
+    <ImageView android:background="@drawable/alarm_domain_empty_list_icon" android:layout_width="@dimen/alarm_domain_empty_list_fragment_icon_width" android:layout_height="@dimen/alarm_domain_empty_list_fragment_icon_width" android:layout_marginTop="@dimen/alarm_domain_empty_list_fragment_icon_margin_top" android:layout_centerHorizontal="true" />
+    <TextView android:textSize="@dimen/alarm_domain_empty_list_fragment_text_text_size" android:textColor="@color/alarm_domain_empty_list_fragment_hint_text_color" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/alarm_domain_empty_list_fragment_text_margin_top" android:text="当前闹钟列表为空，你可以通过语音设置闹钟" android:layout_centerHorizontal="true" />
+</RelativeLayout>

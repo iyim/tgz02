@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:background="@drawable/pop_mask" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.alibaba.ailabs.genie.assistant.imageframe.ImageFrameView android:id="@id/pop_background" android:layout_width="648.0dp" android:layout_height="424.0dp" android:layout_marginLeft="137.0dp" android:layout_marginTop="181.0dp" />
+    <FrameLayout android:id="@id/pop_tips_container" android:paddingLeft="128.0dp" android:layout_width="648.0dp" android:layout_height="wrap_content" android:layout_marginLeft="137.0dp" android:layout_marginTop="340.0dp">
+        <TextView android:textSize="32.0dp" android:textColor="@android:color/white" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="一分钟掌握今日重点" android:alpha="0.8" />
+        <TextView android:textSize="32.0dp" android:textColor="@android:color/white" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="72.0dp" android:text="你可以对我说：" />
+        <TextView android:textSize="56.0dp" android:textColor="@android:color/white" android:id="@id/pop_corpus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="227.0dp" android:layout_marginTop="52.0dp" android:text="早上好" />
+    </FrameLayout>
+</FrameLayout>

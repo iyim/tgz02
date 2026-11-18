@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/iv_topic_appitem_icon" android:background="#9900ffff" android:layout_width="216.0dp" android:layout_height="216.0dp" android:text="学历史" />
+    <TextView android:textSize="24.0dp" android:textColor="#f0f0f0" android:id="@id/iv_topic_appitem_title" android:layout_width="216.0dp" android:layout_height="wrap_content" android:text="我是标题内容" android:layout_below="@id/iv_topic_appitem_icon" />
+    <ImageView android:id="@id/iv_topic_from_icon" android:background="#ff0000" android:layout_width="56.0dp" android:layout_height="56.0dp" android:layout_below="@id/iv_topic_appitem_title" />
+    <TextView android:textSize="24.0dp" android:textColor="#f0f0f0" android:gravity="center_vertical" android:id="@id/iv_topic_from" android:layout_width="160.0dp" android:layout_height="56.0dp" android:text="宝宝巴士" android:layout_toRightOf="@id/iv_topic_from_icon" android:layout_below="@id/iv_topic_appitem_title" />
+</RelativeLayout>

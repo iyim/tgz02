@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="vertical" android:background="@drawable/bg_market_main_item_ripple_conner_8_white" android:focusable="true" android:clickable="true" android:layout_width="623.0dp" android:layout_height="332.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.alibaba.ailabs.appbox.view.RounderImageView android:id="@id/iv_market3_623_322_icon" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/iv_default_icon" android:layout_centerHorizontal="true" app:radiusJS="12.0dp" />
+    <TextView android:textSize="32.0sp" android:textColor="@color/white" android:ellipsize="end" android:id="@id/tv_desc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="32.0dp" android:layout_marginRight="32.0dp" android:layout_marginBottom="44.0dp" android:text="" android:maxLines="1" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" android:fontFamily="NotoSansCJKsc-Regular" />
+</RelativeLayout>

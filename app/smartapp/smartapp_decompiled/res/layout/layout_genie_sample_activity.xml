@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.alibaba.ailabs.genie.widget.GenieNormalNavBar android:id="@id/sample_demo_genie_nav_bar_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" app:navBarTitle="测试标题默认" />
+    <com.alibaba.ailabs.genie.widget.GenieTabNavBar android:id="@id/sample_demo_genie_nav_bar_2" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dp" />
+    <com.alibaba.ailabs.genie.widget.GenieNormalNavBar android:id="@id/sample_demo_genie_nav_bar_3" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dp" app:navBarTitle="测试标题居中" app:navBarTitleGravity="center" />
+    <com.alibaba.ailabs.genie.widget.GenieNormalNavBar android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dp" app:navBarTitle="测试标题居左" app:navBarTitleGravity="start" />
+    <com.alibaba.ailabs.genie.widget.GenieNormalNavBar android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dp" app:navBarTitle="测试标题居右" app:navBarTitleGravity="end" />
+</LinearLayout>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_item_applist" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <RelativeLayout android:id="@id/rl_vp_skill_main_header" android:clipChildren="false" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_marginLeft="@dimen/common_hori_list_left_right_margin" android:layout_marginRight="@dimen/common_hori_list_left_right_margin" android:layout_centerHorizontal="true">
+        <android.support.v4.view.ViewPager android:id="@id/vp_skill_main_header" android:clipChildren="false" android:clipToPadding="false" android:layout_width="match_parent" android:layout_height="316.0dp" android:layout_centerInParent="true" />
+    </RelativeLayout>
+    <com.alibaba.ailabs.appbox.view.indicator.MagicIndicator android:id="@id/magic_ind_skill_header" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5.0dp" android:layout_below="@id/rl_vp_skill_main_header" android:layout_centerHorizontal="true" />
+    <com.alibaba.ailabs.appbox.view.crindcator.CircleIndicator android:id="@id/skill_banner_circle_indicator" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="30.0dp" android:layout_marginTop="5.0dp" android:layout_below="@id/rl_vp_skill_main_header" android:layout_centerHorizontal="true" app:cir_horizon_margin="10.0dp" app:cir_normalColor="#242832" app:cir_rect_width="20.0dp" app:cir_selectedColor="#3f4758" app:cir_size="10.0dp" app:cir_type="cirToRect" />
+</RelativeLayout>

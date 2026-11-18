@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/item_img" android:background="@drawable/shopping_put_order_img_bg" android:layout_width="362.0dp" android:layout_height="362.0dp" android:scaleType="centerInside" />
+    <ImageView android:id="@id/img_video_play_icon" android:visibility="gone" android:layout_width="362.0dp" android:layout_height="362.0dp" android:src="@mipmap/play_icon" android:scaleType="centerInside" />
+</FrameLayout>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:gravity="center_horizontal" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:background="#fafbfc" android:layout_width="match_parent" android:layout_height="match_parent">
+        <RelativeLayout android:id="@id/title_relayout" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="68.0dp">
+            <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="49.0dp" android:src="@mipmap/icon_title_bar_back" android:layout_alignParentLeft="true" android:layout_centerInParent="true" />
+            <TextView android:id="@id/tv_open_back" android:layout_width="120.0dp" android:layout_height="match_parent" android:layout_alignParentLeft="true" />
+            <TextView android:textSize="22.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="添加声纹" android:layout_centerInParent="true" />
+        </RelativeLayout>
+        <View android:id="@id/line" android:background="#cccccc" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_below="@id/title_relayout" />
+        <LinearLayout android:gravity="center_horizontal" android:orientation="horizontal" android:id="@id/content" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dp" android:layout_marginTop="40.0dp" android:layout_marginRight="20.0dp" android:layout_below="@id/line">
+            <LinearLayout android:gravity="center" android:orientation="vertical" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_weight="1.0">
+                <ImageView android:layout_width="160.0dp" android:layout_height="160.0dp" android:src="@mipmap/fast" />
+                <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/txt1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" android:text="@string/voiceprint_guide_des1" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center" android:orientation="vertical" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_weight="1.0">
+                <ImageView android:layout_width="160.0dp" android:layout_height="160.0dp" android:src="@mipmap/security" />
+                <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/txt2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" android:text="@string/voiceprint_guide_des2" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center" android:orientation="vertical" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_weight="1.0">
+                <ImageView android:layout_width="160.0dp" android:layout_height="160.0dp" android:src="@mipmap/user_pri" />
+                <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/txt3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" android:text="@string/voiceprint_guide_des3" />
+            </LinearLayout>
+        </LinearLayout>
+        <TextView android:textSize="24.0sp" android:textColor="#ffffff" android:gravity="center" android:id="@id/tv_open_start" android:background="@drawable/tintblue_background" android:layout_width="152.0dp" android:layout_height="56.0dp" android:layout_marginTop="86.0dp" android:text="立即添加" android:layout_below="@id/content" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="20.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/message" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16.0dp" android:text="@string/tv_voice_print_des" android:layout_below="@id/tv_open_start" android:layout_centerHorizontal="true" />
+        <View android:background="@drawable/open_voice_doalogbottem" android:layout_width="match_parent" android:layout_height="50.0dp" android:layout_below="@id/message" android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+</RelativeLayout>

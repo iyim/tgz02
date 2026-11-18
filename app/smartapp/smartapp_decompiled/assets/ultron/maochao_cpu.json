@@ -1,0 +1,71 @@
+{
+  "bizCode": "ali.china.taobao",
+  "bizType": 1,
+  "data": {
+    "dependency": "${sku_script.id_biz_maochao_cpu.skuBeans.skuItemBeans}",
+    "skuItemBeans": "${sku_script.id_biz_maochao_cpu.skuBeans.skuItemBeans}"
+  },
+  "description": "sku_chaoshi_detail_cpu",
+  "event": {
+    "updateItem": [
+      {
+        "fields": {
+          "originalItemId": "${sku_script.global_data.itemId}",
+          "targetItemId": "$subData[0]{itemId}",
+          "areaId": "",
+          "addressId": "",
+          "params": "$subData[0]{params}"
+        },
+        "type": "sku_update_item"
+      },
+      {
+        "fields": {
+          "page": "Page_New_SKU",
+          "eventId": "2101",
+          "arg1": "Page_New_SKU_Button-cs_cpuSku",
+          "args": {
+            "locType": "$subData[0]{params.locType}",
+            "itemId": "$subData[0]{itemId}",
+            "preItemId": "${sku_script.id_biz_maochao_cpu.currentItem.itemId}",
+            "groupId": "$subData[0]{groupId}"
+          }
+        },
+        "type": "skuUserTrack"
+      }
+    ],
+    "exposureItem": [
+      {
+        "fields": {
+          "page": "Page_New_SKU",
+          "eventId": "2201",
+          "arg1": "Page_New_SKU_Show-cs_cpuSku",
+          "args": {
+            "itemId": "${sku_script.id_biz_maochao_cpu.currentItem.itemId}",
+            "locType": "${sku_script.id_biz_maochao_cpu.currentItem.requestParams.locType}",
+            "groupId": "${sku_script.id_biz_maochao_cpu.currentItem.groupId}"
+          }
+        },
+        "type": "userTrack"
+      }
+    ]
+  },
+  "frontComponentAddress": {
+    "android": "https://ossgw.alicdn.com/rapid-oss-bucket/1581926322533/sku_chaoshi_detail_cpu.zip",
+    "ios": "https://ossgw.alicdn.com/rapid-oss-bucket/1581926322533/sku_chaoshi_detail_cpu.zip",
+    "h5": "https://ossgw.alicdn.com/rapid-oss-bucket/1581926322533/sku_chaoshi_detail_cpu.js"
+  },
+  "frontComponentId": 4125,
+  "frontComponentMD5": {
+    "android": "84d6bb1e1c4bb92843c2db00d944ce49",
+    "ios": "84d6bb1e1c4bb92843c2db00d944ce49",
+    "h5": "3f7e1477df083b018fb1ac6b8c1004a1"
+  },
+  "frontComponentName": "sku_chaoshi_detail_cpu",
+  "frontComponentVersion": "1",
+  "componentId": "id_biz_maochao_cpu",
+  "key": "dinamic",
+  "name": "sku_chaoshi_detail_cpu",
+  "tag": "dinamic$sku_chaoshi_detail_cpu",
+  "templateId": 1563671440804,
+  "type": "dinamic"
+}

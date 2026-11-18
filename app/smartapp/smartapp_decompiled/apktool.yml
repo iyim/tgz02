@@ -1,0 +1,59 @@
+version: 3.0.2
+apkFileName: smartapp.apk
+usesFramework:
+  ids:
+  - 1
+sdkInfo:
+  minSdkVersion: 19
+  targetSdkVersion: 27
+versionInfo:
+  versionCode: 2102087118
+  versionName: 8.7.1.18
+resourcesInfo:
+  packageId: 127
+doNotCompress:
+- arsc
+- gif
+- jpg
+- mp3
+- ogg
+- png
+- wav
+- webp
+- META-INF/android.arch.core_runtime.version
+- META-INF/android.arch.lifecycle_extensions.version
+- META-INF/android.arch.lifecycle_livedata-core.version
+- META-INF/android.arch.lifecycle_livedata.version
+- META-INF/android.arch.lifecycle_runtime.version
+- META-INF/android.arch.lifecycle_viewmodel.version
+- META-INF/androidx.arch.core_core-runtime.version
+- META-INF/androidx.room_room-runtime.version
+- META-INF/androidx.sqlite_sqlite-framework.version
+- META-INF/androidx.sqlite_sqlite.version
+- META-INF/com.android.databinding_baseAdapters.version
+- META-INF/com.android.databinding_library.version
+- META-INF/com.android.support_animated-vector-drawable.version
+- META-INF/com.android.support_appcompat-v7.version
+- META-INF/com.android.support_cardview-v7.version
+- META-INF/com.android.support_design.version
+- META-INF/com.android.support_exifinterface.version
+- META-INF/com.android.support_gridlayout-v7.version
+- META-INF/com.android.support_recyclerview-v7.version
+- META-INF/com.android.support_support-compat.version
+- META-INF/com.android.support_support-core-ui.version
+- META-INF/com.android.support_support-core-utils.version
+- META-INF/com.android.support_support-fragment.version
+- META-INF/com.android.support_support-media-compat.version
+- META-INF/com.android.support_support-v13.version
+- META-INF/com.android.support_support-v4.version
+- META-INF/com.android.support_support-vector-drawable.version
+- META-INF/com.android.support_transition.version
+- androidsupportmultidexversion.txt
+- assets/data/smartbox/odok.encrypt
+- assets/data/smartbox/prod_secret.encrypt
+- assets/data/smartbox/speech_secret.encrypt
+- assets/data/smartbox/usertrack_secret.encrypt
+- assets/debug.mg
+- assets/msoac.json
+- assets/msoap.json
+- versioninfo.properties

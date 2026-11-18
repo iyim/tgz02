@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@drawable/whole_bg_0" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:background="@drawable/forbidden_time_content_bg" android:layout_width="match_parent" android:layout_height="match_parent">
+        <ImageView android:gravity="center" android:id="@id/unlock_image_view" android:layout_width="80.0dp" android:layout_height="80.0dp" android:layout_marginRight="36.0dp" android:layout_marginBottom="20.0dp" android:src="@drawable/child_lock_icon" android:layout_alignParentRight="true" android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+</RelativeLayout>

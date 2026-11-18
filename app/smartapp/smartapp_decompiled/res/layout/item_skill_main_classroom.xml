@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="match_parent" android:layout_height="325.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/rl_item_applist" android:layout_width="match_parent" android:layout_height="325.0dp" android:layout_marginLeft="@dimen/common_hori_list_left_right_margin" android:layout_marginRight="@dimen/common_hori_list_left_right_margin">
+        <RelativeLayout android:id="@id/rl_class_header" android:layout_width="match_parent" android:layout_height="48.0dp">
+            <TextView android:textSize="28.0sp" android:textColor="@color/white" android:gravity="center_vertical" android:id="@id/tv_skill_class_title1" android:layout_width="wrap_content" android:layout_height="match_parent" android:text="精灵教室" android:includeFontPadding="false" />
+        </RelativeLayout>
+        <android.support.v7.widget.RecyclerView android:id="@id/rv_skill_classroom" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginTop="16.0dp" android:layout_below="@id/rl_class_header" />
+    </RelativeLayout>
+</FrameLayout>

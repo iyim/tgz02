@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:paddingLeft="@dimen/uik_mdDialogFrameMargin" android:paddingRight="@dimen/uik_mdDialogFrameMargin" android:descendantFocusability="blocksDescendants" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/uik_mdListItemHeight" android:paddingStart="@dimen/uik_mdDialogFrameMargin" android:paddingEnd="@dimen/uik_mdDialogFrameMargin"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RadioButton android:gravity="center_vertical" android:id="@id/uik_mdControl" android:focusable="false" android:focusableInTouchMode="false" android:clickable="false" android:layout_width="wrap_content" android:layout_height="match_parent" android:button="@drawable/abc_btn_radio_material" />
+    <TextView android:textSize="@dimen/uik_mdListItemTextSize" android:gravity="center_vertical" android:id="@id/uik_mdTitle" android:paddingLeft="@dimen/uik_mdListItemControlMargin" android:paddingTop="@dimen/uik_mdListItemVerticalMarginChoice" android:paddingBottom="@dimen/uik_mdListItemVerticalMarginChoice" android:layout_width="wrap_content" android:layout_height="match_parent" android:minHeight="@dimen/uik_mdListItemHeight" android:paddingStart="@dimen/uik_mdListItemControlMargin" />
+</LinearLayout>

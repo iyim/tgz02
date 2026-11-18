@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout android:id="@id/listItemId" android:layout_width="match_parent" android:layout_height="@dimen/dp_56"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <TextView android:textSize="@dimen/backToMainBt_f" android:textColor="#2b3753" android:gravity="center" android:id="@id/songTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxWidth="@dimen/dp_370" android:singleLine="true" android:includeFontPadding="false" android:layout_marginStart="@dimen/dp_30" app:layout_constraintLeft_toLeftOf="parent" app:layout_constraintTop_toTopOf="parent" />
+    <TextView android:textSize="@dimen/backToMainBt_f" android:textColor="#7282a3" android:gravity="center" android:id="@id/singerTvId" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxWidth="@dimen/dp_100" android:text="123445" android:singleLine="true" android:includeFontPadding="false" android:layout_marginEnd="@dimen/dp_30" app:layout_constraintBottom_toBottomOf="@id/songTitle" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@id/songTitle" />
+</android.support.constraint.ConstraintLayout>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:orientation="vertical" android:id="@id/rl_main" android:background="@drawable/bg" android:layout_width="match_parent" android:layout_height="match_parent">
+        <FrameLayout android:id="@id/blockTop" android:layout_width="match_parent" android:layout_height="@dimen/block_view_margin_top" />
+        <RelativeLayout android:orientation="horizontal" android:id="@id/re_center" android:layout_width="@dimen/bind_rel_width" android:layout_height="@dimen/bind_rel_height" android:layout_marginTop="@dimen/bind_account_margin_top_lin" android:layout_below="@id/blockTop" android:layout_centerHorizontal="true">
+            <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginBottom="@dimen/bind_img_marginBottom" android:src="@drawable/bind_img" android:scaleType="centerCrop" android:layout_centerHorizontal="true" />
+            <LinearLayout android:gravity="center" android:orientation="vertical" android:id="@id/ll_tips_text" android:layout_width="@dimen/bind_lin_width" android:layout_height="@dimen/bind_lin_height" android:layout_marginLeft="@dimen/bind_lin_marginLeft">
+                <TextView android:textSize="@dimen/bind_account_title_size" android:textColor="@color/white" android:id="@id/tips_title_tx" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/activated_tmall" />
+                <TextView android:textColor="@color/white_gray" android:id="@id/tips_content_tx" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="17.0dp" android:text="@string/open_tmall_sweeping" style="@style/MyItemTextSizeView" />
+            </LinearLayout>
+        </RelativeLayout>
+    </RelativeLayout>
+    <FrameLayout android:id="@id/loading" android:layout_width="match_parent" android:layout_height="match_parent">
+        <ProgressBar android:layout_gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" style="?android:progressBarStyleLarge" />
+    </FrameLayout>
+    <ImageView android:id="@id/qr_img" android:layout_width="@dimen/qr_img_width" android:layout_height="@dimen/qr_img_width" android:scaleType="fitXY" />
+    <LinearLayout android:gravity="center" android:id="@id/refresh" android:background="#fa222222" android:visibility="gone" android:layout_width="@dimen/qr_img_width" android:layout_height="@dimen/qr_img_width" android:layout_marginLeft="@dimen/bind_qr_img_marginLeft" android:layout_marginTop="@dimen/bind_qr_img_marginTop" android:onClick="onQrRefresh">
+        <TextView android:textSize="18.0sp" android:textColor="@color/white" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="点击刷新二维码" android:drawableLeft="@drawable/ic_refresh" android:drawablePadding="8.0dp" />
+    </LinearLayout>
+    <ImageView android:layout_gravity="bottom" android:id="@id/bottom_bar" android:background="@drawable/lead_bottom" android:layout_width="match_parent" android:layout_height="@dimen/bottom_banner_height" android:scaleType="fitXY" android:layout_alignParentBottom="true" />
+</merge>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="38.0dp">
+        <TextView android:textSize="26.0sp" android:textStyle="bold" android:textColor="#2b3753" android:gravity="center_vertical" android:id="@id/group_title" android:layout_width="match_parent" android:layout_height="match_parent" />
+        <TextView android:textSize="16.0sp" android:textColor="#4a5a78" android:id="@id/has_more" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="更多" android:layout_alignBaseline="@id/group_title" android:layout_alignParentRight="true" />
+    </RelativeLayout>
+    <com.alibaba.ailabs.genie.globalsearch.widgets.FlowLayout android:id="@id/flow_layout" android:layout_width="wrap_content" android:layout_height="430.0dp" android:layout_marginTop="15.0dp" />
+</merge>

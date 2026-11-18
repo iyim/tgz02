@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge android:background="@drawable/xsku_toast_bg"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.taobao.android.sku.widget.IconFontView android:textSize="35.0dp" android:textColor="#ff5000" android:gravity="center" android:id="@id/detail_toast_icon" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minWidth="43.0dp" android:minHeight="30.0dp" android:layout_centerHorizontal="true" />
+    <TextView android:textSize="14.0dp" android:textColor="#ffffff" android:ellipsize="end" android:gravity="center" android:id="@id/detail_toast_tip" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="9.0dp" android:maxLines="2" android:layout_below="@id/detail_toast_icon" android:layout_centerHorizontal="true" />
+</merge>

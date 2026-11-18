@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:id="@id/layout_genie_wakeup_corpus_new" android:paddingBottom="30.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:background="@drawable/genie_wakeup_courpus_bg" android:paddingTop="20.0dp" android:paddingBottom="28.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <TextView android:textSize="18.0sp" android:textColor="#8b99b3" android:paddingBottom="12.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="6.0dp" android:text="你还可以说：" />
+        <LinearLayout android:orientation="vertical" android:id="@id/genie_wakeup_container_new" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+    </LinearLayout>
+    <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="-17.0dp" android:src="@drawable/genie_wakeup_1" />
+</LinearLayout>

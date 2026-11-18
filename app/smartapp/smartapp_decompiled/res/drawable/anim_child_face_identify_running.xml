@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list android:oneshot="false"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_1" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_2" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_3" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_4" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_5" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_6" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_7" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_8" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_9" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_10" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_11" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_12" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_13" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_14" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_15" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_16" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_17" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_18" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_19" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_20" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_21" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_22" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_23" />
+    <item android:duration="125" android:drawable="@drawable/ic_anim_child_face_identify_running_24" />
+</animation-list>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="@dimen/genie_nav_bar_title_text_view_size" android:textColor="@drawable/selector_genie_nav_bar_tab_name_item_view" android:layout_gravity="center_vertical" android:id="@id/genie_nav_bar_tab_name_item_view" android:paddingLeft="@dimen/genie_nav_bar_tab_item_text_view_padding_left" android:paddingRight="@dimen/genie_nav_bar_tab_item_text_view_padding_right" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" />
+</FrameLayout>

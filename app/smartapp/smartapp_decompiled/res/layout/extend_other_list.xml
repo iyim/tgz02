@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout android:layout_width="@dimen/dp_190" android:layout_height="@dimen/dp_190"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <ImageView android:id="@id/albumImgIvId" android:layout_width="match_parent" android:layout_height="match_parent" />
+    <ImageButton android:background="@drawable/icon_music_play_extend" android:layout_width="@dimen/dp_36" android:layout_height="@dimen/dp_36" android:layout_marginBottom="@dimen/dp_18" android:layout_marginStart="@dimen/dp_16" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintLeft_toLeftOf="parent" />
+    <TextView android:textSize="17.0sp" android:textColor="#ffffff" android:id="@id/titleTvId" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxWidth="@dimen/dp_170" android:includeFontPadding="false" android:layout_marginStart="@dimen/dp_16" app:layout_constraintLeft_toLeftOf="parent" app:layout_constraintTop_toTopOf="parent" />
+    <TextView android:textSize="11.0sp" android:textColor="#ffffff" android:id="@id/subTitleTvId" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/dp_2" android:maxWidth="@dimen/dp_170" android:includeFontPadding="false" app:layout_constraintLeft_toLeftOf="@id/titleTvId" app:layout_constraintTop_toBottomOf="@id/titleTvId" />
+</android.support.constraint.ConstraintLayout>

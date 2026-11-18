@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="#30373c" android:layout_width="1024.0dp" android:layout_height="470.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.alibaba.ailabs.childmode.ui.widget.numberpicker.NumberPicker android:id="@id/select_time_item_list" android:layout_width="262.0dp" android:layout_height="361.0dp" android:layout_marginLeft="443.0dp" android:layout_marginTop="72.0dp" android:layout_marginBottom="19.0dp" android:layout_centerHorizontal="true" />
+    <Button android:textSize="28.0sp" android:textColor="@android:color/white" android:id="@id/cancel" android:background="@android:color/transparent" android:layout_width="72.0dp" android:layout_height="45.0dp" android:layout_marginLeft="51.0dp" android:layout_marginTop="80.0dp" android:text="取消" />
+    <Button android:textSize="28.0sp" android:textColor="@android:color/white" android:gravity="center" android:id="@id/confirm" android:background="@android:color/transparent" android:layout_width="106.0dp" android:layout_height="45.0dp" android:layout_marginLeft="899.0dp" android:layout_marginTop="80.0dp" android:text="确定" />
+</RelativeLayout>

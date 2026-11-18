@@ -1,0 +1,71 @@
+.class Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext$3;
+.super Ljava/lang/Object;
+.source "MicroModuleContext.java"
+
+# interfaces
+.implements Ljava/lang/Runnable;
+
+
+# instance fields
+.field final synthetic this$0:Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext;
+
+.field final synthetic val$token:Ljava/lang/String;
+
+.field final synthetic val$verifyId:Ljava/lang/String;
+
+
+# direct methods
+.method constructor <init>(Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext;Ljava/lang/String;Ljava/lang/String;)V
+    .locals 0
+
+    .line 433
+    iput-object p1, p0, Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext$3;->this$0:Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext;
+
+    iput-object p2, p0, Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext$3;->val$verifyId:Ljava/lang/String;
+
+    iput-object p3, p0, Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext$3;->val$token:Ljava/lang/String;
+
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    sget-object p1, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
+
+    invoke-virtual {p1}, Ljava/lang/Boolean;->booleanValue()Z
+
+    move-result p1
+
+    if-eqz p1, :cond_0
+
+    const-class p1, Lcom/alipay/android/hackbyte/ClassVerifier;
+
+    invoke-virtual {p1}, Ljava/lang/Class;->toString()Ljava/lang/String;
+
+    move-result-object p1
+
+    const-string p2, "hackbyte "
+
+    invoke-static {p2, p1}, Landroid/util/Log;->v(Ljava/lang/String;Ljava/lang/String;)I
+
+    :cond_0
+    return-void
+.end method
+
+
+# virtual methods
+.method public run()V
+    .locals 3
+
+    .line 437
+    iget-object v0, p0, Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext$3;->this$0:Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext;
+
+    invoke-static {v0}, Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext;->access$000(Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext;)Lcom/alipay/mobile/verifyidentity/engine/ModuleManager;
+
+    move-result-object v0
+
+    iget-object v1, p0, Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext$3;->val$verifyId:Ljava/lang/String;
+
+    iget-object v2, p0, Lcom/alipay/mobile/verifyidentity/engine/MicroModuleContext$3;->val$token:Ljava/lang/String;
+
+    invoke-virtual {v0, v1, v2}, Lcom/alipay/mobile/verifyidentity/engine/ModuleManager;->finishTask(Ljava/lang/String;Ljava/lang/String;)V
+
+    return-void
+.end method

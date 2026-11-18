@@ -1,0 +1,38 @@
+{
+  "version": "20180328",
+  "featureList": {
+    "otaUpdate": 1,
+    "countDown": 1,
+    "utpControl": 1,
+    "askCmdQueue": 1,
+    "voiceMessage": 1,
+    "deviceSetting": 1,
+    "iotSubDevice": 1,
+    "clockTimer": 1,
+    "operation": 1,
+    "workDayAlarm": 1,
+    "allPowerfulAlarmExcludeScene": 1,
+    "protocolVersion": "3.0",
+    "cmdReturnType": "list",
+    "serverVad": 1,
+    "nearbyWakeup": 1,
+    "childFaceRecognize": 1,
+    "multiModeWakeup": 1,
+    "smartCare": 1,
+    "ultrasonicControl": 1,
+    "fullDuplexDialog": 1,
+    "gestureControl": 1,
+    "fullDuplexRenew": 1,
+    "localASR00": 1,
+    "fastIotControl":1,
+    "queryMakeSense":1,
+    "supportLongRecord":1,
+    "deviceMirror":1,
+    "cmdGroupStream":1,
+    "developerStartListen":1,
+    "multiWifiNearbyWakeup":1
+  },
+  "system": {
+    "volume": 60
+  }
+}

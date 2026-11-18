@@ -1,0 +1,62 @@
+{
+  "tb_sku_head_info": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/tb_sku_head_info/1/main.dx"
+  },
+  "sku_chaoshi_detail_cpu": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/sku_chaoshi_detail_cpu/1/main.dx"
+  },
+  "sku_relatedAuctions": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/sku_relatedAuctions/1/main.dx"
+  },
+  "sku_bottom_tips": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/sku_bottom_tips/1/main.dx"
+  },
+  "detail_tb_sku_bottom_bar": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/detail_tb_sku_bottom_bar/1/main.dx"
+  },
+  "sku_buy_types_shop": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/sku_buy_types_shop/1/main.dx"
+  },
+  "sku_buy_types": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/sku_buy_types/1/main.dx"
+  },
+  "sku_installment": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/sku_installment/1/main.dx"
+  },
+  "tb_sku_size_chart": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/tb_sku_size_chart/1/main.dx"
+  },
+  "sku_props_big_img": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/sku_props_big_img/1/main.dx"
+  },
+  "tb_sku_quantity_alteration": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/tb_sku_quantity_alteration/1/main.dx"
+  },
+  "sku_service": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/sku_service/1/main.dx"
+  },
+  "sku_buy_types_credit": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/sku_buy_types_credit/1/main.dx"
+  },
+  "sku_area": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/sku_area/1/main.dx"
+  },
+  "sku_props": {
+    "version": 1,
+    "main.dx": "template/taobao_sku/sku_props/1/main.dx"
+  }
+}

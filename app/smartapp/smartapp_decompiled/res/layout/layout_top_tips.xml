@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:id="@id/container" android:background="#f2f4f4f4" android:layout_width="1024.0px" android:layout_height="74.0px">
+        <LinearLayout android:layout_gravity="center" android:orientation="horizontal" android:id="@id/localView" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <TextView android:textSize="24.0px" android:textColor="#2b3852" android:gravity="center" android:layout_gravity="center_vertical" android:id="@id/msg" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="20.0px" android:text="@string/top_tips_first_open" />
+        </LinearLayout>
+    </FrameLayout>
+</FrameLayout>

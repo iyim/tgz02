@@ -1,0 +1,41 @@
+{
+  "system": {
+    "biz_type": "AILABS",
+    "biz_group": "S6",
+    "param_file": "/data/data/com.alibaba.ailabs.genie.smartapp/files/smartbox/param.json",
+    "dev_secret": "/data/smartbox/prod_secret.encrypt",
+    "speech_secret": "/data/smartbox/speech_secret.encrypt",
+    "cloud_config": "/data/smartbox/cloud.json",
+    "runtime_config": "/data/data/com.alibaba.ailabs.genie.smartapp/files/smartbox/runtime.json",
+    "prompt_dir": "/data/data/com.alibaba.ailabs.genie.smartapp/files/smartbox/prompt",
+    "led_dir": "/data/smartbox/led",
+    "operation_dir": "/data/data/com.alibaba.ailabs.genie.smartapp/files/smartbox/operation",
+    "alarmclock_config": "/data/data/com.alibaba.ailabs.genie.smartapp/files/smartbox/alarmclock.json"
+  },
+  "speech":{
+    "audio_type": "ogg"
+  },
+  "featureList":
+  {
+    "otaUpdate": 1,
+    "countDown": 1,
+    "utpControl": 1,
+    "askCmdQueue": 1,
+    "voiceMessage": 1,
+    "deviceSetting": 1,
+    "iotSubDevice": 1,
+    "clockTimer": 1,
+    "operation": 1,
+    "workDayAlarm":1,
+    "allPowerfulAlarmExcludeScene":1,
+    "protocolVersion": "3.0",
+    "cmdReturnType": "list",
+    "serverVad": 1,
+    "nearbyWakeup": 1,
+    "childFaceRecognize": 1,
+    "ultrasonicControl": 1,
+    "fullDuplexDialog": 1,
+    "fullDuplexRenew": 1,
+    "queryMakeSense":1
+  }
+}

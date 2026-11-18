@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/search_root" android:background="@drawable/gs_search_header_bg_shape" android:paddingRight="28.0dp" android:layout_width="match_parent" android:layout_height="84.0dp">
+        <ImageView android:id="@id/icon_back" android:layout_width="31.0dp" android:layout_height="31.0dp" android:layout_marginLeft="23.0dp" android:foreground="?selectableItemBackgroundBorderless" android:src="@drawable/gs_icon_back" />
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:background="@drawable/gs_search_header_inner_shape" android:paddingRight="20.0dp" android:layout_width="match_parent" android:layout_height="56.0dp" android:layout_marginLeft="15.0dp" android:layout_marginRight="23.0dp" android:layout_weight="1.0">
+            <ImageView android:layout_width="24.0dp" android:layout_height="24.0dp" android:layout_marginLeft="18.0dp" android:src="@drawable/gs_icon_search" />
+            <EditText android:textSize="20.0sp" android:textColor="#2b3825" android:textColorHint="#642b3825" android:gravity="center_vertical" android:id="@id/edit_text" android:background="@null" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="16.0dp" android:maxLines="1" />
+        </LinearLayout>
+        <LinearLayout android:orientation="horizontal" android:id="@id/tab_list" android:paddingRight="13.0dp" android:layout_width="wrap_content" android:layout_height="34.0dp" />
+    </LinearLayout>
+    <com.alibaba.ailabs.genie.globalsearch.widgets.FlowLayout android:id="@id/searchSuggest" android:paddingLeft="40.0dp" android:paddingRight="40.0dp" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="36.0dp" />
+</merge>

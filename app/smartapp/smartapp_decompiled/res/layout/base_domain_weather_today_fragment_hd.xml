@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/root" android:background="@color/bg_base_domain_default_color" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.alibaba.ailabs.basedomain.ui.ExitView android:id="@id/layout_exit" android:layout_width="wrap_content" android:layout_height="100.0dp" />
+    <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:paddingTop="94.0dp" android:layout_width="match_parent" android:layout_height="match_parent">
+        <TextView android:textSize="44.0dp" android:textColor="@android:color/white" android:id="@id/date_location" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="128.0dp" android:text="2018.08.20    星期一    杭州" android:layout_centerHorizontal="true" />
+        <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="60.0dp" android:layout_marginBottom="48.0dp" android:layout_centerHorizontal="true">
+            <TextView android:textSize="172.0dp" android:textColor="@android:color/white" android:gravity="center_vertical" android:id="@id/temperature" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="-43" android:includeFontPadding="false" />
+            <TextView android:textSize="76.0dp" android:textColor="@android:color/white" android:gravity="center_vertical" android:id="@id/degree" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="°C" android:includeFontPadding="false" android:layout_toRightOf="@id/temperature" android:layout_alignBaseline="@id/temperature" />
+        </RelativeLayout>
+        <RelativeLayout android:layout_width="wrap_content" android:layout_height="76.0dp" android:layout_centerHorizontal="true">
+            <TextView android:textSize="54.0dp" android:textColor="@android:color/white" android:ellipsize="end" android:gravity="center" android:id="@id/weather_name" android:layout_width="344.0dp" android:layout_height="match_parent" android:text="大暴雨到特大暴雨" />
+            <TextView android:textSize="54.0dp" android:textColor="@android:color/white" android:gravity="center_vertical" android:id="@id/wind" android:layout_width="344.0dp" android:layout_height="match_parent" android:text="东南风17-18级" android:layout_toRightOf="@id/weather_name" />
+            <FrameLayout android:layout_width="344.0dp" android:layout_height="match_parent" android:layout_toRightOf="@id/wind">
+                <ImageView android:layout_gravity="center" android:id="@id/aqi_bg" android:layout_width="268.0dp" android:layout_height="match_parent" android:scaleType="fitXY" />
+                <TextView android:textSize="44.0dp" android:textColor="@android:color/white" android:gravity="center" android:layout_gravity="center" android:id="@id/aqi" android:layout_width="268.0dp" android:layout_height="match_parent" android:text="轻度污染 | 720" />
+            </FrameLayout>
+        </RelativeLayout>
+    </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout android:orientation="vertical" android:tag="layout/tab_call_record_0" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.alibaba.ailabs.genie.contacts.view.CustomRecyclerView android:id="@id/call_record_recyclerview" android:paddingBottom="100.0dp" android:visibility="gone" android:clipToPadding="false" android:layout_width="match_parent" android:layout_height="match_parent" />
+    <com.alibaba.ailabs.genie.contacts.test.VerticalScrollBar android:layout_gravity="right" android:id="@id/vertical_scroll_bar" android:visibility="gone" android:layout_width="10.0dp" android:layout_height="240.0dp" android:layout_marginTop="74.0dp" android:layout_marginRight="30.0dp" app:layout_constraintRight_toRightOf="parent" app:layout_constraintTop_toTopOf="parent" />
+    <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:id="@id/no_call_record_ll" android:paddingBottom="135.0dp" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent">
+        <ImageView android:id="@id/no_call_record_image" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/no_call_record" />
+        <TextView android:textSize="26.0sp" android:textColor="@color/contacts_white_color" android:id="@id/no_call_record_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="25.0dp" android:text="无通话记录" />
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

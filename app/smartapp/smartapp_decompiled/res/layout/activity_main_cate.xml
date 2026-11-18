@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@drawable/bg_market_category" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <RelativeLayout android:id="@id/rl_market_header" android:background="@color/white" android:layout_width="match_parent" android:layout_height="@dimen/common_header_white_height">
+        <com.alibaba.ailabs.appbox.view.ClickImageView android:id="@id/iv_market_back" android:paddingLeft="11.0dp" android:paddingTop="6.0dp" android:paddingRight="11.0dp" android:paddingBottom="6.0dp" android:layout_width="36.0dp" android:layout_height="36.0dp" android:layout_marginLeft="40.0dp" android:src="@drawable/icon_market_back" android:layout_centerVertical="true" />
+        <TextView android:textSize="20.0sp" android:textColor="@color/color_4a5a78" android:id="@id/tv_my_apps" android:background="@drawable/ripple_text_button_gray_b_whit_c" android:paddingLeft="20.0dp" android:paddingTop="7.0dp" android:paddingRight="20.0dp" android:clickable="true" android:layout_width="wrap_content" android:layout_height="36.0dp" android:layout_marginTop="16.0dp" android:layout_marginRight="40.0dp" android:text="我的应用" android:includeFontPadding="false" android:layout_alignParentRight="true" android:fontFamily="PingFangSC-Regular" />
+        <ImageView android:background="@drawable/iv_tab_right" android:visibility="gone" android:layout_width="50.0dp" android:layout_height="36.0dp" android:layout_marginTop="15.0dp" android:layout_toLeftOf="@id/tv_my_apps" />
+    </RelativeLayout>
+    <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignBottom="@id/rl_market_header" />
+    <View android:background="@drawable/shape_content_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_below="@id/rl_market_header" />
+    <RelativeLayout android:background="#00ffffff" android:paddingLeft="184.0dp" android:paddingRight="195.0dp" android:layout_width="match_parent" android:layout_height="68.0dp">
+        <android.support.design.widget.TabLayout android:id="@id/tl_market_main_vp" android:fadingEdgeLength="25.0dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="22.0dp" android:layout_centerVertical="true" android:overScrollMode="always" android:requiresFadingEdge="horizontal" app:tabBackground="@android:color/transparent" app:tabIndicatorHeight="0.0dp" app:tabMaxWidth="0.0dp" app:tabMinWidth="0.0dp" app:tabPaddingEnd="22.0dp" app:tabSelectedTextColor="#2b3852" app:tabTextAppearance="@style/MarketTab" app:tabTextColor="#4a5a78" />
+    </RelativeLayout>
+    <android.support.v4.view.ViewPager android:id="@id/vp_market_main_container" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_below="@id/rl_market_header" />
+</RelativeLayout>

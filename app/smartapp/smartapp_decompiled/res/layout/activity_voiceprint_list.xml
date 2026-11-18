@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@color/color_setting_main_background" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/title_relayout" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="68.0dp">
+        <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="49.0dp" android:src="@mipmap/icon_title_bar_back" android:layout_alignParentLeft="true" android:layout_centerInParent="true" />
+        <View android:id="@id/iv_back" android:layout_width="120.0dp" android:layout_height="match_parent" android:layout_alignParentLeft="true" />
+        <TextView android:textSize="22.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="声纹设置" android:layout_centerInParent="true" />
+        <TextView android:textSize="20.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/voice_setup" android:background="@drawable/whiteground_greyframe" android:layout_width="82.0dp" android:layout_height="36.0dp" android:layout_marginRight="40.0dp" android:text="管理" android:layout_alignParentRight="true" android:layout_centerInParent="true" />
+    </RelativeLayout>
+    <RelativeLayout android:id="@id/header_layout" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="176.0dp" android:layout_marginTop="20.0dp" android:layout_below="@id/title_relayout" android:layout_centerHorizontal="true">
+        <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:gravity="center" android:id="@id/tv_voiceprint_add_str" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="46.0dp" android:text="@string/tv_voiceprint_add_str" />
+        <TextView android:textSize="24.0sp" android:textColor="#7383a2" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="28.0dp" android:text="@string/tv_voiceprint_add_str1" android:layout_below="@id/tv_voiceprint_add_str" />
+        <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/voice_add_img" android:background="@drawable/whiteground_greyframe" android:layout_width="174.0dp" android:layout_height="56.0dp" android:layout_marginRight="40.0dp" android:text="添加新账号" android:layout_alignParentRight="true" android:layout_centerVertical="true" />
+    </RelativeLayout>
+    <ProgressBar android:id="@id/progress" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="350.0dp" android:layout_centerHorizontal="true" />
+    <LinearLayout android:orientation="horizontal" android:id="@id/voice_list_recyclerView_layout" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginTop="20.0dp" android:layout_below="@id/header_layout">
+        <android.support.v7.widget.RecyclerView android:id="@id/voice_list_recyclerView" android:paddingBottom="30.0dp" android:clipToPadding="false" android:layout_width="match_parent" android:layout_height="match_parent" android:horizontalSpacing="16.0dp" android:verticalSpacing="16.0dp" android:stretchMode="columnWidth" android:numColumns="2" android:fadeScrollbars="true" />
+    </LinearLayout>
+</RelativeLayout>

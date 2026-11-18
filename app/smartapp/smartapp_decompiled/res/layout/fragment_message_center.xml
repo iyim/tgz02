@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <LinearLayout android:gravity="center" android:layout_gravity="center" android:orientation="vertical" android:id="@id/msg_list_linear_empty" android:background="@color/message_bg" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent">
+        <ImageView android:id="@id/msg_list_image_empty" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@mipmap/image_message_net_error" android:scaleType="centerInside" />
+        <TextView android:textSize="28.0sp" android:textColor="#a5b0ba" android:gravity="center" android:id="@id/msg_list_tv_empty" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/tv_message_empty_content" android:includeFontPadding="false" android:layout_marginStart="40.0dp" />
+    </LinearLayout>
+    <com.alibaba.ailabs.genie.message.refresh.SmartRefreshLayout android:id="@id/msg_list_smart_refresh" android:layout_width="match_parent" android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView android:id="@id/msg_list_view" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginStart="48.0dp" android:layout_marginEnd="48.0dp" />
+    </com.alibaba.ailabs.genie.message.refresh.SmartRefreshLayout>
+</LinearLayout>

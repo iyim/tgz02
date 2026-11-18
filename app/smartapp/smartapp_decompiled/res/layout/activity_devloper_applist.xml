@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_activity_applist_root" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/rl_cleaner_main_header" android:background="@color/white" android:layout_width="match_parent" android:layout_height="@dimen/common_header_white_height">
+        <com.alibaba.ailabs.appbox.view.ClickImageView android:id="@id/iv_devloper_main_back" android:paddingLeft="11.0dp" android:paddingTop="6.0dp" android:paddingRight="11.0dp" android:paddingBottom="6.0dp" android:layout_width="36.0dp" android:layout_height="36.0dp" android:layout_marginLeft="40.0dp" android:src="@drawable/icon_market_back" android:layout_centerVertical="true" />
+        <TextView android:textSize="22.0sp" android:textStyle="bold" android:textColor="@color/color_tv_2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="设备应用（仅供开发）" android:includeFontPadding="true" android:layout_centerInParent="true" />
+        <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+    <android.support.v7.widget.RecyclerView android:id="@id/rv_devloper_main" android:background="@drawable/shape_content_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_below="@id/rl_cleaner_main_header" />
+</RelativeLayout>

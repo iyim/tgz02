@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:id="@id/root_layout" android:layout_width="match_parent" android:layout_height="match_parent" />
+    <com.alibaba.ailabs.basedomain.ui.planet.BaikeInfoPlanetBtn android:layout_gravity="right|top" android:id="@id/baike_infoplanet_btn" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" android:layout_marginRight="50.0dp" />
+</FrameLayout>

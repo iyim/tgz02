@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:id="@id/rl_msg_big_bg" android:background="#33000000" android:visibility="visible" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:layout_gravity="center" android:background="@drawable/conner_rect_text_bg_gray" android:layout_width="@dimen/common_dialog_width" android:layout_height="@dimen/common_dialog_height">
+        <TextView android:textSize="36.0sp" android:textColor="@color/white" android:id="@id/tv_oom_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="64.0dp" android:text="尚未添加#应用名称" android:includeFontPadding="false" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="24.0sp" android:textColor="#92a4b0" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" android:maxWidth="424.0dp" android:text="您需要先将 XXXX 添加至「我的应用」后，才能开启使用" android:layout_below="@id/tv_oom_title" android:layout_centerHorizontal="true" />
+        <LinearLayout android:orientation="horizontal" android:background="@drawable/conner_rect_text_bg_gray_bottom_left" android:layout_width="match_parent" android:layout_height="@dimen/common_dialog_bottom_btn_height" android:layout_alignParentBottom="true">
+            <TextView android:textSize="28.0sp" android:textColor="@color/white" android:gravity="center" android:id="@id/tv_sure_storage" android:background="@drawable/ripple_bottom_btn_right" android:layout_width="289.5dp" android:layout_height="match_parent" android:text="下次再说" />
+            <View android:background="#5fd8d8d8" android:layout_width="1.0dp" android:layout_height="match_parent" />
+            <TextView android:textSize="28.0sp" android:textColor="#0082ff" android:gravity="center" android:id="@id/tv_to_delete_storage" android:background="@drawable/ripple_bottom_btn_left" android:layout_width="289.5dp" android:layout_height="match_parent" android:text="前往添加" />
+        </LinearLayout>
+    </RelativeLayout>
+</FrameLayout>

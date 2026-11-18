@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:height="20.0dp" android:width="20.0dp" android:drawable="@drawable/icon_title_bar_delete" />
+</layer-list>

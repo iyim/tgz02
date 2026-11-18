@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/contacts_item" android:tag="layout-1280x800/select_item_layout_0" android:layout_width="220.0dp" android:layout_height="225.0dp" android:layout_marginTop="28.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/avatar" android:layout_width="140.0dp" android:layout_height="140.0dp" android:layout_centerHorizontal="true" />
+    <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="160.0dp" android:layout_centerHorizontal="true">
+        <ImageView android:id="@id/index" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/bg_item_more_than_one_contacts" />
+        <TextView android:textSize="@dimen/text_size_22" android:textColor="#0082ff" android:gravity="center" android:id="@id/index_count" android:layout_width="35.0dp" android:layout_height="35.0dp" />
+        <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:layout_toRightOf="@id/index">
+            <TextView android:textSize="@dimen/text_size_28" android:textColor="@color/contacts_white_color" android:ellipsize="end" android:id="@id/nick_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" android:layout_centerHorizontal="true" />
+            <TextView android:textSize="@dimen/text_size_22" android:textColor="@color/con_grey" android:id="@id/relation_ship" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="37.0dp" android:layout_centerHorizontal="true" />
+        </RelativeLayout>
+    </RelativeLayout>
+</RelativeLayout>

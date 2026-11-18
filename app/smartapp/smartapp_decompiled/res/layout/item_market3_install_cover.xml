@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_one_three_contaner" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/rl_market_app_install_ing" android:background="@drawable/bg_market_main_item_ripple_conner_8_1a7383a2" android:visibility="visible" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_alignParentBottom="true" android:layout_centerVertical="true">
+        <com.alibaba.ailabs.appbox.view.RoundedProgressBar android:id="@id/pg_item_market_app_download" android:layout_width="match_parent" android:layout_height="3.0dp" android:layout_marginLeft="6.0dp" android:layout_marginRight="6.0dp" android:layout_marginBottom="1.0dp" android:progressDrawable="@drawable/progress_bar_gradient" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" style="?android:progressBarStyleHorizontal" />
+        <TextView android:textSize="12.0sp" android:textColor="@color/white" android:gravity="center" android:id="@id/tv_app_item_status_install_ing" android:background="@drawable/shape_install_state_in_card" android:layout_width="48.0dp" android:layout_height="21.0dp" android:text="安装中" android:layout_alignParentRight="true" android:layout_alignParentBottom="true" android:fontFamily="NotoSans CJK SC" />
+    </RelativeLayout>
+</RelativeLayout>

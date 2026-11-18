@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="12.0dp" android:layout_height="match_parent" android:layout_marginLeft="65.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:layout_gravity="center_horizontal" android:layout_width="2.0dp" android:layout_height="match_parent" android:src="@drawable/gs_img_divider" android:scaleType="fitXY" />
+    <TextView android:textSize="12.0sp" android:textColor="#4a5a78" android:layout_gravity="center_vertical" android:id="@id/dividerTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="左滑发现相关内容" android:lineSpacingMultiplier="1.3" />
+</FrameLayout>

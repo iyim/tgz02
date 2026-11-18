@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/layout_genie_inside_corpus" android:layout_width="wrap_content" android:layout_height="40.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="24.0sp" android:id="@id/genie_tmjl_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:text="@string/quot1" />
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/genie_inside_app_container" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+    <TextView android:textSize="24.0sp" android:id="@id/genie_tmjl_text2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="-10.0dp" android:text="@string/quot2" />
+    <ImageView android:id="@id/genie_close" android:layout_width="36.0dp" android:layout_height="36.0dp" android:layout_marginLeft="36.0dp" android:layout_marginRight="24.0dp" android:src="@drawable/genie_inside_close" />
+</LinearLayout>

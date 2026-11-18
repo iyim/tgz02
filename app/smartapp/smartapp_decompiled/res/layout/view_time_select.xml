@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_background" android:background="#662b3852" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/rl_main_view" android:background="#fafbfc" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginTop="83.0dp">
+        <TextView android:textSize="32.0dp" android:textStyle="bold" android:textColor="#2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="197.0dp" android:layout_marginTop="32.0dp" android:text="响铃时间" />
+        <TextView android:textSize="32.0dp" android:textStyle="bold" android:textColor="#2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="32.0dp" android:layout_marginRight="223.0dp" android:text="响铃周期" android:layout_alignParentRight="true" />
+        <android.widget.TimePicker android:theme="@style/BaseDomainMyTimePicker" android:id="@id/tp_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="170.0dp" android:layout_marginTop="@dimen/view_time_select_second_line_margin_top" android:layout_alignParentLeft="true" />
+        <LinearLayout android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/view_time_select_second_line_margin_top2" android:layout_marginRight="71.0dp" android:layout_alignParentRight="true">
+            <RelativeLayout android:id="@id/rl_pick_once" android:layout_width="392.0dp" android:layout_height="80.0dp">
+                <ImageView android:id="@id/iv_icon_pick_once" android:layout_width="36.0dp" android:layout_height="36.0dp" android:layout_marginLeft="55.0dp" android:src="@drawable/icon_single_weekly_unselected" android:layout_centerVertical="true" />
+                <TextView android:textSize="32.0dp" android:textColor="#2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="145.0dp" android:text="单次" android:layout_centerVertical="true" />
+            </RelativeLayout>
+            <RelativeLayout android:id="@id/rl_pick_statutory" android:layout_width="392.0dp" android:layout_height="80.0dp">
+                <ImageView android:id="@id/iv_icon_pick_statutory" android:layout_width="36.0dp" android:layout_height="36.0dp" android:layout_marginLeft="55.0dp" android:src="@drawable/icon_single_weekly_unselected" android:layout_centerVertical="true" />
+                <TextView android:textSize="32.0dp" android:textColor="#2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="145.0dp" android:text="法定工作日" android:layout_centerVertical="true" />
+            </RelativeLayout>
+            <RelativeLayout android:id="@id/rl_pick_everyday" android:visibility="gone" android:layout_width="392.0dp" android:layout_height="80.0dp">
+                <ImageView android:id="@id/iv_icon_pick_everyday" android:layout_width="36.0dp" android:layout_height="36.0dp" android:layout_marginLeft="55.0dp" android:src="@drawable/icon_single_weekly_unselected" android:layout_centerVertical="true" />
+                <TextView android:textSize="32.0dp" android:textColor="#2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="145.0dp" android:text="每天" android:layout_centerVertical="true" />
+            </RelativeLayout>
+            <RelativeLayout android:id="@id/rl_pick_custom" android:layout_width="392.0dp" android:layout_height="80.0dp">
+                <ImageView android:id="@id/iv_icon_pick_custom" android:layout_width="36.0dp" android:layout_height="36.0dp" android:layout_marginLeft="55.0dp" android:src="@drawable/icon_single_weekly_unselected" android:layout_centerVertical="true" />
+                <TextView android:textSize="32.0dp" android:textColor="#2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="145.0dp" android:text="自定义" android:layout_centerVertical="true" />
+            </RelativeLayout>
+        </LinearLayout>
+        <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0px" android:layout_marginBottom="104.0dp" android:layout_alignParentBottom="true" />
+        <View android:id="@id/view_anchor" android:layout_width="1.0px" android:layout_height="1.0px" android:layout_marginBottom="36.0dp" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="24.0dp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/tv_cancel" android:background="@drawable/bg_text_cancel" android:layout_width="112.0dp" android:layout_height="56.0dp" android:layout_marginRight="8.0dp" android:layout_marginBottom="24.0dp" android:text="取消" android:layout_toLeftOf="@id/view_anchor" android:layout_alignParentBottom="true" />
+        <TextView android:textSize="24.0dp" android:textColor="@android:color/white" android:gravity="center" android:id="@id/tv_save" android:background="@drawable/bg_text_save" android:layout_width="112.0dp" android:layout_height="56.0dp" android:layout_marginLeft="8.0dp" android:layout_marginBottom="24.0dp" android:text="保存" android:layout_toRightOf="@id/view_anchor" android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+</RelativeLayout>

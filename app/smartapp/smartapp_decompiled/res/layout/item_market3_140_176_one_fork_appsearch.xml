@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:gravity="center_horizontal" android:focusable="true" android:clickable="true" android:layout_width="match_parent" android:layout_height="140.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <RelativeLayout android:orientation="vertical" android:id="@id/rl_root_1_6" android:background="@drawable/ripple_applist_item" android:focusable="true" android:clickable="true" android:layout_width="160.0dp" android:layout_height="140.0dp">
+        <com.alibaba.ailabs.appbox.view.RounderImageView android:id="@id/iv_market3_icon" android:layout_width="@dimen/app_icon_size" android:layout_height="@dimen/app_icon_size" android:layout_marginTop="20.0dp" android:src="@drawable/iv_default_icon" android:layout_centerHorizontal="true" app:radiusJS="12.0dp" />
+        <include android:id="@id/iv_cloud_tag" android:layout_width="@dimen/app_icon_size" android:layout_height="@dimen/app_icon_size" android:layout_marginLeft="@dimen/app_icon_left_margin" android:layout_marginTop="20.0dp" android:layout_centerHorizontal="true" layout="@layout/item_market_cloud_tag" />
+        <TextView android:textSize="20.0sp" android:textColor="@color/color_tv_2b3852" android:ellipsize="end" android:gravity="center" android:id="@id/iv_market3_title" android:layout_width="140.0dp" android:layout_height="wrap_content" android:layout_marginTop="8.0dp" android:text="天猫精灵应用" android:maxLines="1" android:includeFontPadding="false" android:layout_below="@id/iv_market3_icon" android:layout_centerHorizontal="true" />
+        <ImageView android:id="@id/iv_market3_collect" android:background="@drawable/icon_collect" android:visibility="invisible" android:layout_width="@dimen/market3_collect_icon_wid" android:layout_height="@dimen/market3_collect_icon_wid" android:layout_marginTop="8.0dp" android:layout_marginRight="5.0dp" android:layout_alignParentRight="true" />
+        <TextView android:textSize="12.0sp" android:textColor="#acb7cf" android:gravity="center" android:id="@id/tv_market3_collected" android:background="@drawable/shape_collecte_state_in_card" android:visibility="invisible" android:layout_width="48.0dp" android:layout_height="21.0dp" android:text="已收藏" android:layout_alignParentRight="true" />
+        <include android:id="@id/rl_market_app_install_ing" android:visibility="gone" layout="@layout/item_market3_install_cover" />
+    </RelativeLayout>
+</RelativeLayout>

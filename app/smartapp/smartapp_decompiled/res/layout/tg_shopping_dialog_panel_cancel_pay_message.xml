@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="13.0dp">
+        <TextView android:textSize="20.0sp" android:textColor="@color/color_white" android:gravity="left" android:id="@id/tv_orderId" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="60.0dp" android:layout_marginRight="15.0dp" />
+    </LinearLayout>
+    <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16.0dp">
+        <TextView android:textSize="14.0sp" android:textColor="#a5b0ba" android:gravity="left" android:id="@id/tv_nikeName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="60.0dp" />
+        <TextView android:textSize="14.0sp" android:textColor="@color/color_white" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:text="@string/tv_voice_pay_cancel_content3" />
+        <TextView android:textSize="14.0sp" android:textColor="#a5b0ba" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="8.0dp" android:text="@string/tv_voice_pay_cancel_content4" />
+    </LinearLayout>
+</LinearLayout>

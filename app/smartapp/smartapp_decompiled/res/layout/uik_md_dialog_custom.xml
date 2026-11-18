@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.taobao.uikit.extend.component.unify.Dialog.TBDialogRootLayout android:orientation="vertical" android:id="@id/uik_mdRoot" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <include layout="@layout/uik_md_stub_titleframe" />
+    <FrameLayout android:id="@id/uik_mdCustomViewFrame" android:layout_width="match_parent" android:layout_height="wrap_content" />
+    <include layout="@layout/uik_md_stub_actionbuttons" />
+    <ImageView android:id="@id/uik_mdButtonClose" android:layout_width="@dimen/uik_mdCloseBtnSize" android:layout_height="@dimen/uik_mdCloseBtnSize" android:src="@drawable/uik_md_close" android:scaleType="centerInside" />
+</com.taobao.uikit.extend.component.unify.Dialog.TBDialogRootLayout>

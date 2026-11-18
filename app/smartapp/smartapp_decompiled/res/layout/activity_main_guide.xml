@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+        <WebView android:id="@id/web_guide" android:visibility="visible" android:layout_width="match_parent" android:layout_height="match_parent" />
+        <View android:id="@id/guide_view" android:background="@color/con_third_page_bg" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent" />
+    </FrameLayout>
+    <com.alibaba.ailabs.genie.contacts.common.view.ContactsExitView android:id="@id/layout_exit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:alpha="0.5" app:con_backVisible="true" app:con_homeVisible="true" />
+</FrameLayout>

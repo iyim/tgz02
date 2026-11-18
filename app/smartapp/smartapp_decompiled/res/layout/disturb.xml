@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@color/color_setting_main_background" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.alibaba.ailabs.genie.widgetui.WidgetUINavigationBar android:id="@id/home_nav_bar" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="68.0dp" android:layout_alignParentTop="true" />
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent" android:layout_below="@id/home_nav_bar">
+        <com.alibaba.ailabs.childmode.ui.widget.ScrollMiniBar android:gravity="center_horizontal" android:id="@id/scroll_content" android:scrollbars="none" android:layout_width="match_parent" android:layout_height="match_parent">
+            <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
+                <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="48.0dp" android:layout_marginLeft="40.0dp" android:layout_marginTop="40.0dp">
+                    <TextView android:textSize="24.0sp" android:textColor="#7383a2" android:gravity="center_vertical" android:layout_width="wrap_content" android:layout_height="match_parent" android:text="@string/you_can_say" />
+                    <LinearLayout android:gravity="center" android:orientation="horizontal" android:background="@drawable/white_bubble" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="16.0dp" android:layout_marginRight="20.0dp">
+                        <TextView android:textSize="22.0sp" android:textColor="#2b3852" android:gravity="center_vertical" android:paddingLeft="20.0dp" android:paddingTop="10.0dp" android:paddingBottom="10.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="天猫精灵，" />
+                        <TextView android:textSize="22.0sp" android:textStyle="bold" android:textColor="#2b3852" android:gravity="center_vertical" android:paddingTop="10.0dp" android:paddingRight="20.0dp" android:paddingBottom="10.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="开启勿扰模式" />
+                    </LinearLayout>
+                    <LinearLayout android:gravity="center" android:orientation="horizontal" android:background="@drawable/white_bubble" android:layout_width="wrap_content" android:layout_height="wrap_content">
+                        <TextView android:textSize="22.0sp" android:textColor="#2b3852" android:gravity="center_vertical" android:paddingLeft="20.0dp" android:paddingTop="10.0dp" android:paddingBottom="10.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="天猫精灵，" />
+                        <TextView android:textSize="22.0sp" android:textStyle="bold" android:textColor="#2b3852" android:gravity="center_vertical" android:paddingTop="10.0dp" android:paddingRight="20.0dp" android:paddingBottom="10.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="关闭勿扰模式" />
+                    </LinearLayout>
+                </LinearLayout>
+                <RelativeLayout android:background="#ffffff" android:layout_width="match_parent" android:layout_height="212.0dp" android:layout_marginTop="20.0dp">
+                    <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:id="@id/nodis_tutle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="46.0dp" android:text="@string/not_disturb" android:layout_alignParentTop="true" />
+                    <TextView android:textSize="24.0sp" android:textColor="#7383a2" android:id="@id/manual_start_introdue_1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="22.0dp" android:maxWidth="700.0dp" android:text="@string/manual_start_introdue_1" android:layout_below="@id/nodis_tutle" android:lineSpacingExtra="5.0dp" />
+                    <com.alibaba.ailabs.genie.widgetui.widget_element.WidgetUISwitch android:id="@id/disturb_enable_switch" android:layout_width="@dimen/switch_btn_hot_zone_width" android:layout_height="@dimen/switch_btn_hot_zone_height" android:layout_marginTop="48.0dp" android:layout_marginRight="@dimen/switch_btn_margin_right" android:checked="false" android:layout_alignParentRight="true" android:switchMinWidth="@dimen/switch_btn_width" />
+                </RelativeLayout>
+                <RelativeLayout android:id="@id/ly_time_setting" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20.0dp">
+                    <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:id="@id/timing_start" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="46.0dp" android:text="@string/timing_start" android:layout_alignParentTop="true" />
+                    <TextView android:textSize="24.0sp" android:textColor="#7383a2" android:id="@id/timing_start_introdue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="21.0dp" android:text="@string/timing_start_introdue" android:layout_below="@id/timing_start" android:layout_alignParentLeft="true" />
+                    <com.alibaba.ailabs.genie.widgetui.widget_element.WidgetUISwitch android:id="@id/disturb_timed" android:layout_width="@dimen/switch_btn_hot_zone_width" android:layout_height="@dimen/switch_btn_hot_zone_height" android:layout_marginTop="48.0dp" android:layout_marginRight="@dimen/switch_btn_margin_right" android:checked="false" android:layout_alignParentRight="true" android:switchMinWidth="@dimen/switch_btn_width" />
+                    <View android:id="@id/view_line" android:background="#e6eaf2" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_marginLeft="40.0dp" android:layout_marginTop="40.0dp" android:layout_below="@id/timing_start_introdue" />
+                    <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/rly_time_begin" android:layout_width="match_parent" android:layout_height="140.0dp" android:layout_below="@id/view_line">
+                        <LinearLayout android:gravity="left|center" android:orientation="horizontal" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_weight="8.0">
+                            <ImageView android:layout_width="42.0dp" android:layout_height="42.0dp" android:layout_marginLeft="40.0dp" android:src="@drawable/timeout_hot" />
+                            <TextView android:textSize="32.0sp" android:textColor="#7383a2" android:id="@id/start_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="10.0dp" android:text="@string/start_time" />
+                            <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:id="@id/start_time_input" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="12.0dp" android:text="00:00" />
+                            <ImageView android:layout_width="42.0dp" android:layout_height="42.0dp" android:layout_marginLeft="43.0dp" android:src="@drawable/play_hot" />
+                            <TextView android:textSize="32.0sp" android:textColor="#7383a2" android:id="@id/end_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="10.0dp" android:text="@string/end_time" />
+                            <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:id="@id/end_time_input" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="12.0dp" android:text="00:00" />
+                        </LinearLayout>
+                        <LinearLayout android:gravity="right|center" android:orientation="vertical" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_marginRight="40.0dp" android:layout_weight="2.0">
+                            <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/end_time_setup" android:background="@drawable/whiteground_greyframe" android:layout_width="108.0dp" android:layout_height="56.0dp" android:text="编辑" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </RelativeLayout>
+                <LinearLayout android:orientation="vertical" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" android:layout_marginBottom="38.0dp">
+                    <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="205.0dp">
+                        <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="@color/color_setting_main_title_text" android:id="@id/andvance_setup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="46.0dp" android:text="@string/andvance_setup" />
+                        <RelativeLayout android:layout_width="match_parent" android:layout_height="121.0dp">
+                            <TextView android:textSize="32.0sp" android:textColor="@color/color_setting_main_title_text" android:id="@id/auto_off_txt" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:text="@string/oneminute_enter_screen_saver" android:layout_alignParentLeft="true" android:layout_centerVertical="true" />
+                            <com.alibaba.ailabs.genie.widgetui.widget_element.WidgetUISwitch android:id="@id/screen_off" android:layout_width="@dimen/switch_btn_hot_zone_width" android:layout_height="@dimen/switch_btn_hot_zone_height" android:layout_marginRight="@dimen/switch_btn_margin_right" android:checked="false" android:layout_alignParentRight="true" android:layout_centerVertical="true" android:switchMinWidth="@dimen/switch_btn_width" />
+                        </RelativeLayout>
+                    </LinearLayout>
+                    <View android:background="#e6eaf2" android:layout_width="match_parent" android:layout_height="1.0dp" />
+                    <RelativeLayout android:layout_width="match_parent" android:layout_height="121.0dp">
+                        <TextView android:textSize="32.0sp" android:textColor="@color/color_setting_main_title_text" android:id="@id/message_silence_txt" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:text="@string/message_mute" android:layout_alignParentLeft="true" android:layout_centerVertical="true" />
+                        <com.alibaba.ailabs.genie.widgetui.widget_element.WidgetUISwitch android:id="@id/message_quiet" android:layout_width="@dimen/switch_btn_hot_zone_width" android:layout_height="@dimen/switch_btn_hot_zone_height" android:layout_marginRight="@dimen/switch_btn_margin_right" android:checked="false" android:layout_alignParentRight="true" android:layout_centerVertical="true" android:switchMinWidth="@dimen/switch_btn_width" />
+                    </RelativeLayout>
+                    <View android:background="#e6eaf2" android:layout_width="match_parent" android:layout_height="1.0dp" />
+                    <RelativeLayout android:layout_width="match_parent" android:layout_height="121.0dp">
+                        <TextView android:textSize="32.0sp" android:textColor="@color/color_setting_main_title_text" android:id="@id/call_silence_txt" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:text="@string/ring_mute" android:layout_alignParentLeft="true" android:layout_centerVertical="true" />
+                        <com.alibaba.ailabs.genie.widgetui.widget_element.WidgetUISwitch android:id="@id/call_quiet" android:layout_width="@dimen/switch_btn_hot_zone_width" android:layout_height="@dimen/switch_btn_hot_zone_height" android:layout_marginRight="@dimen/switch_btn_margin_right" android:checked="false" android:layout_alignParentRight="true" android:layout_centerVertical="true" android:switchMinWidth="@dimen/switch_btn_width" />
+                    </RelativeLayout>
+                    <View android:background="#e6eaf2" android:layout_width="match_parent" android:layout_height="1.0dp" />
+                    <RelativeLayout android:layout_width="match_parent" android:layout_height="121.0dp">
+                        <TextView android:textSize="32.0sp" android:textColor="@color/color_setting_main_title_text" android:id="@id/reduce_sencitiy_txt" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:text="@string/reduce_sensitive" android:layout_alignParentLeft="true" android:layout_centerVertical="true" />
+                        <com.alibaba.ailabs.genie.widgetui.widget_element.WidgetUISwitch android:id="@id/sensitive_low" android:layout_width="@dimen/switch_btn_hot_zone_width" android:layout_height="@dimen/switch_btn_hot_zone_height" android:layout_marginRight="@dimen/switch_btn_margin_right" android:checked="false" android:layout_alignParentRight="true" android:layout_centerVertical="true" android:switchMinWidth="@dimen/switch_btn_width" />
+                    </RelativeLayout>
+                    <LinearLayout android:orientation="horizontal" android:background="@color/color_setting_main_background" android:layout_width="match_parent" android:layout_height="110.0dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.alibaba.ailabs.childmode.ui.widget.ScrollMiniBar>
+    </RelativeLayout>
+    <LinearLayout android:layout_gravity="right|center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentRight="true" android:layout_centerVertical="true">
+        <com.alibaba.ailabs.childmode.ui.widget.WhiteVerticalScrollBar android:id="@id/vertical_scroll_bar" android:layout_width="56.0dp" android:layout_height="370.0dp" android:layout_marginRight="-10.0dp" />
+    </LinearLayout>
+</RelativeLayout>

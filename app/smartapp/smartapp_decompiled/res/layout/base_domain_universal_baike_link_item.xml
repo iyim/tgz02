@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:id="@id/root_layout" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:background="@drawable/base_domain_baike_link_item_bg" android:layout_width="wrap_content" android:layout_height="49.0dp" android:layout_marginLeft="6.0dp">
+        <ImageView android:id="@id/icon" android:background="@drawable/base_domain_baike_link_icon_video" android:layout_width="33.0dp" android:layout_height="33.0dp" android:layout_marginLeft="20.0dp" android:layout_marginTop="8.0dp" android:layout_marginRight="4.0dp" android:layout_marginBottom="8.0dp" />
+        <TextView android:textSize="24.0dp" android:textColor="@android:color/white" android:gravity="center_vertical" android:layout_gravity="center_vertical" android:id="@id/name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="4.0dp" android:layout_marginRight="12.0dp" android:text="播放《黑鲸》" android:singleLine="true" />
+    </LinearLayout>
+</LinearLayout>

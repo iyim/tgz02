@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="130.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:layout_gravity="center_horizontal" android:id="@id/emptyImg" android:layout_width="192.0dp" android:layout_height="148.0dp" android:src="@drawable/gs_res_no_data" />
+    <TextView android:textSize="20.0sp" android:textColor="#4a5a78" android:gravity="center_horizontal" android:id="@id/emptyTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="25.0dp" android:text="暂时没有找到合适的结果" android:lineSpacingMultiplier="1.1" />
+</LinearLayout>

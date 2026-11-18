@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/forbidden_mode_view" android:background="@drawable/forbidden_time_120" android:layout_width="match_parent" android:layout_height="match_parent">
+        <ImageView android:gravity="center" android:id="@id/unlock_image_view" android:layout_width="160.0dp" android:layout_height="160.0dp" android:layout_marginRight="14.0dp" android:layout_marginBottom="10.0dp" android:src="@drawable/lock" android:layout_alignParentRight="true" android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+    <RelativeLayout android:id="@id/forbidden_mode_break_time_view" android:background="@drawable/forbidden_mode_single_time" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent">
+        <ImageView android:id="@id/forbidden_mode_break_time__unlock" android:layout_width="200.0dp" android:layout_height="80.0dp" android:layout_marginTop="370.0dp" android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+    <RelativeLayout android:id="@id/forbidden_mode_setting_view" android:background="@drawable/forbidden_mode_setting_view" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent">
+        <ImageView android:id="@id/center_point" android:layout_width="1.0dp" android:layout_height="1.0dp" android:layout_centerInParent="true" />
+        <TextView android:textSize="44.0dp" android:textColor="#6a95eb" android:id="@id/forbidden_time_display" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="280.0dp" android:layout_centerHorizontal="true" />
+        <ImageView android:id="@id/forbidden_mode_left_button_setting" android:layout_width="178.0dp" android:layout_height="68.0dp" android:layout_marginTop="380.0dp" android:layout_marginRight="20.0dp" android:layout_toLeftOf="@id/center_point" />
+        <ImageView android:id="@id/forbidden_mode_right_button_unlock" android:layout_width="178.0dp" android:layout_height="68.0dp" android:layout_marginTop="380.0dp" android:layout_toRightOf="@id/center_point" />
+    </RelativeLayout>
+    <FrameLayout android:id="@id/forbidden_mode_password_view" android:background="@drawable/forbidden_mode_bg" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent">
+        <FrameLayout android:layout_gravity="center" android:id="@id/top" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <RelativeLayout android:background="@drawable/forbidden_mode_password" android:layout_width="680.0dp" android:layout_height="439.0dp">
+                <TextView android:textSize="26.0sp" android:textColor="#6a95eb" android:id="@id/subtitle" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="93.0dp" android:text="忘记密码" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" />
+                <com.alibaba.ailabs.childmode.ui.widget.PasswordEditText android:id="@id/password_edit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="140.0dp" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" />
+            </RelativeLayout>
+        </FrameLayout>
+        <com.alibaba.ailabs.childmode.ui.widget.numberinput.NumberInputKeyView android:layout_gravity="bottom" android:id="@id/number_input_key_view" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content" />
+    </FrameLayout>
+</RelativeLayout>

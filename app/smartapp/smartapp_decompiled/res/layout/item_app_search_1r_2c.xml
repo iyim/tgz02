@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:id="@id/rl_search_contaner" android:background="@color/transparent" android:paddingTop="20.0dp" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <include android:id="@id/rl_search_sub_1" android:layout_width="wrap_content" android:layout_height="@dimen/market3_appsearch_search_item_hei" android:layout_weight="1.0" layout="@layout/item_app_search_462_144_one_conner" />
+    <View android:layout_width="20.0dp" android:layout_height="20.0dp" />
+    <include android:id="@id/rl_search_sub_2" android:visibility="invisible" android:layout_width="wrap_content" android:layout_height="@dimen/market3_appsearch_search_item_hei" android:layout_weight="1.0" layout="@layout/item_app_search_462_144_one_conner" />
+</LinearLayout>

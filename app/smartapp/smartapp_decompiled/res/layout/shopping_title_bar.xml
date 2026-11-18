@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rlCommenTitle" android:background="@color/color_transparent" android:paddingLeft="38.0dp" android:paddingTop="18.0dp" android:layout_width="match_parent" android:layout_height="82.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/ivTitleBtnLeft" android:layout_width="64.0dp" android:layout_height="64.0dp" android:foreground="@drawable/ripple_bg" android:src="@mipmap/go_back_img" android:scaleType="centerInside" android:layout_alignParentLeft="true" />
+    <ImageView android:id="@id/ivTitleBtnHome" android:layout_width="64.0dp" android:layout_height="64.0dp" android:foreground="@drawable/ripple_bg" android:src="@mipmap/go_home_img" android:scaleType="centerInside" android:layout_toRightOf="@id/ivTitleBtnLeft" />
+    <TextView android:textSize="24.0dp" android:textColor="@color/color_bai" android:ellipsize="end" android:gravity="center" android:id="@id/ivTitleName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="18.0dp" android:layout_marginTop="17.0dp" android:text="商品详情" android:singleLine="true" android:includeFontPadding="false" android:layout_toRightOf="@id/ivTitleBtnHome" />
+</RelativeLayout>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:background="@color/bg_base_domain_default_color" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.alibaba.ailabs.basedomain.ui.ExitView android:id="@id/layout_exit" android:clipChildren="false" android:clipToPadding="false" android:layout_width="wrap_content" android:layout_height="100.0dp" />
+    <ListView android:id="@id/list_view" android:layout_width="match_parent" android:layout_height="wrap_content" android:divider="#2b2e32" android:dividerHeight="2.0dp" />
+</LinearLayout>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/rl_item_applist" android:background="@drawable/bg_market_instance" android:layout_width="120.0dp" android:layout_height="440.0dp" android:layout_marginLeft="35.0dp" android:layout_marginRight="20.0dp">
+        <TextView android:textSize="36.0sp" android:textColor="#ffffff" android:gravity="center_horizontal" android:id="@id/tv_market_instance" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" android:text="精灵\n市场" />
+        <ImageView android:id="@id/iv_app_list_new" android:background="@drawable/iv_market_new" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="15.0dp" android:layout_below="@id/tv_market_instance" android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+</FrameLayout>

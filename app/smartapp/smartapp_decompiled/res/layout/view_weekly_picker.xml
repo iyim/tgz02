@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_background" android:background="#662b3852" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <RelativeLayout android:id="@id/rl_main_view" android:background="#fafbfc" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginTop="83.0dp">
+        <TextView android:textSize="32.0dp" android:textStyle="bold" android:textColor="#2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="31.0dp" android:text="重复时段" android:layout_centerHorizontal="true" />
+        <LinearLayout android:orientation="horizontal" android:paddingLeft="@dimen/view_weekly_picker_layout_pad_left" android:layout_width="match_parent" android:layout_height="@dimen/view_weekly_picker_layout_height" android:layout_marginTop="96.0dp">
+            <com.alibaba.genie.alarm.view.SingleWeeklyView android:id="@id/swv_one" android:layout_width="@dimen/view_weekly_picker_single_width" android:layout_height="@dimen/view_weekly_picker_single_height" app:tab_name="周一" />
+            <com.alibaba.genie.alarm.view.SingleWeeklyView android:id="@id/swv_two" android:layout_width="@dimen/view_weekly_picker_single_width" android:layout_height="@dimen/view_weekly_picker_single_height" android:layout_marginLeft="20.0dp" app:tab_name="周二" />
+            <com.alibaba.genie.alarm.view.SingleWeeklyView android:id="@id/swv_three" android:layout_width="@dimen/view_weekly_picker_single_width" android:layout_height="@dimen/view_weekly_picker_single_height" android:layout_marginLeft="20.0dp" app:tab_name="周三" />
+            <com.alibaba.genie.alarm.view.SingleWeeklyView android:id="@id/swv_four" android:layout_width="@dimen/view_weekly_picker_single_width" android:layout_height="@dimen/view_weekly_picker_single_height" android:layout_marginLeft="20.0dp" app:tab_name="周四" />
+        </LinearLayout>
+        <LinearLayout android:orientation="horizontal" android:paddingLeft="@dimen/view_weekly_picker_layout_pad_left" android:layout_width="match_parent" android:layout_height="@dimen/view_weekly_picker_layout_height" android:layout_marginTop="@dimen/view_weekly_picker_second_layout_margin_top">
+            <com.alibaba.genie.alarm.view.SingleWeeklyView android:id="@id/swv_five" android:layout_width="@dimen/view_weekly_picker_single_width" android:layout_height="@dimen/view_weekly_picker_single_height" app:tab_name="周五" />
+            <com.alibaba.genie.alarm.view.SingleWeeklyView android:id="@id/swv_six" android:layout_width="@dimen/view_weekly_picker_single_width" android:layout_height="@dimen/view_weekly_picker_single_height" android:layout_marginLeft="20.0dp" app:tab_name="周六" />
+            <com.alibaba.genie.alarm.view.SingleWeeklyView android:id="@id/swv_seven" android:layout_width="@dimen/view_weekly_picker_single_width" android:layout_height="@dimen/view_weekly_picker_single_height" android:layout_marginLeft="20.0dp" app:tab_name="周日" />
+        </LinearLayout>
+        <View android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="1.0px" android:layout_marginBottom="104.0dp" android:layout_alignParentBottom="true" />
+        <View android:id="@id/view_anchor" android:layout_width="1.0px" android:layout_height="1.0px" android:layout_marginBottom="36.0dp" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="24.0dp" android:textColor="#4a5a78" android:gravity="center" android:id="@id/tv_cancel" android:background="@drawable/bg_text_cancel" android:layout_width="112.0dp" android:layout_height="56.0dp" android:layout_marginRight="8.0dp" android:layout_marginBottom="24.0dp" android:text="取消" android:layout_toLeftOf="@id/view_anchor" android:layout_alignParentBottom="true" />
+        <TextView android:textSize="24.0dp" android:textColor="@android:color/white" android:gravity="center" android:id="@id/tv_save" android:background="@drawable/bg_text_save" android:layout_width="112.0dp" android:layout_height="56.0dp" android:layout_marginLeft="8.0dp" android:layout_marginBottom="24.0dp" android:text="保存" android:layout_toRightOf="@id/view_anchor" android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+</RelativeLayout>

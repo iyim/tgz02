@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HorizontalScrollView android:id="@id/scroll_view" android:scrollbars="none" android:layout_width="2048.0dp" android:layout_height="@dimen/alarm_domain_list_item_height"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="@dimen/alarm_domain_list_item_height">
+        <RelativeLayout android:id="@id/item_bg" android:background="@drawable/alarm_domain_list_item_delete_highlight" android:layout_width="1024.0dp" android:layout_height="match_parent">
+            <TextView android:textSize="@dimen/alarm_domain_list_item_index_text_size" android:textColor="@color/alarm_domain_alarm_list_index_text_color" android:gravity="center" android:id="@id/index" android:background="@drawable/alarm_list_item_index_bg" android:layout_width="@dimen/alarm_domain_list_item_index_width" android:layout_height="@dimen/alarm_domain_list_item_index_height" android:layout_marginLeft="@dimen/alarm_domain_list_item_index_margin_left" android:text="1" android:layout_centerVertical="true" />
+            <TextView android:textSize="@dimen/alarm_domain_list_item_time_text_size" android:textColor="@android:color/white" android:id="@id/time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="310.0dp" android:text="07:30" android:layout_centerVertical="true" />
+            <TextView android:textSize="@dimen/alarm_domain_list_item_repeat_text_size" android:textColor="@android:color/white" android:gravity="right" android:id="@id/repeat" android:layout_width="120.0dp" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/alarm_domain_list_item_repeat_margin_left" android:text="十二月二日" android:layout_centerVertical="true" />
+            <TextView android:textSize="@dimen/alarm_domain_list_item_ring_text_size" android:textColor="#63727a" android:id="@id/ring" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="570.0dp" android:text="莫斯科郊外的晚上" android:layout_centerVertical="true" />
+        </RelativeLayout>
+        <LinearLayout android:gravity="center_vertical" android:id="@id/delete_item" android:background="@drawable/alarm_domain_list_item_delete_bg" android:layout_width="1024.0dp" android:layout_height="match_parent">
+            <ImageView android:background="@drawable/alarm_domain_list_item_delete" android:layout_width="64.0dp" android:layout_height="64.0dp" android:layout_marginLeft="@dimen/alarm_domain_list_item_delete_icon_margin_left" android:layout_centerVertical="true" />
+        </LinearLayout>
+    </LinearLayout>
+</HorizontalScrollView>

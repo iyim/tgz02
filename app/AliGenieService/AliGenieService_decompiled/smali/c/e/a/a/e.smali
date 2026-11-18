@@ -1,0 +1,640 @@
+.class public Lc/e/a/a/e;
+.super Ljava/lang/Object;
+.source ""
+
+
+# static fields
+.field public static volatile a:Landroid/os/HandlerThread;
+
+.field public static volatile b:Landroid/os/HandlerThread;
+
+.field public static volatile c:Landroid/os/HandlerThread;
+
+.field public static d:Landroid/os/Handler;
+
+.field public static e:Landroid/os/Handler;
+
+.field public static f:Landroid/os/Handler;
+
+.field public static g:Landroid/os/Handler;
+
+.field public static final h:Ljava/util/HashMap;
+    .annotation system Ldalvik/annotation/Signature;
+        value = {
+            "Ljava/util/HashMap<",
+            "Ljava/lang/Object;",
+            "[",
+            "Ljava/lang/Object;",
+            ">;"
+        }
+    .end annotation
+.end field
+
+.field public static final synthetic i:Z
+
+
+# direct methods
+.method public static constructor <clinit>()V
+    .locals 1
+
+    const-class v0, Lc/e/a/a/e;
+
+    invoke-virtual {v0}, Ljava/lang/Class;->desiredAssertionStatus()Z
+
+    move-result v0
+
+    xor-int/lit8 v0, v0, 0x1
+
+    sput-boolean v0, Lc/e/a/a/e;->i:Z
+
+    new-instance v0, Ljava/util/HashMap;
+
+    invoke-direct {v0}, Ljava/util/HashMap;-><init>()V
+
+    sput-object v0, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    return-void
+.end method
+
+.method public constructor <init>()V
+    .locals 0
+
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    return-void
+.end method
+
+.method public static a(I)Landroid/os/Handler;
+    .locals 3
+
+    if-eqz p0, :cond_6
+
+    const/4 v0, 0x1
+
+    if-eq p0, v0, :cond_4
+
+    const/4 v0, 0x2
+
+    if-eq p0, v0, :cond_2
+
+    const/4 v0, 0x3
+
+    if-ne p0, v0, :cond_1
+
+    sget-object p0, Lc/e/a/a/e;->g:Landroid/os/Handler;
+
+    if-nez p0, :cond_0
+
+    invoke-static {}, Lc/e/a/a/e;->c()V
+
+    :cond_0
+    sget-object p0, Lc/e/a/a/e;->g:Landroid/os/Handler;
+
+    goto :goto_0
+
+    :cond_1
+    new-instance v0, Ljava/lang/RuntimeException;
+
+    new-instance v1, Ljava/lang/StringBuilder;
+
+    const-string v2, "unknown thread type: "
+
+    invoke-direct {v1, v2}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
+
+    invoke-virtual {v1, p0}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object p0
+
+    invoke-direct {v0, p0}, Ljava/lang/RuntimeException;-><init>(Ljava/lang/String;)V
+
+    throw v0
+
+    :cond_2
+    sget-object p0, Lc/e/a/a/e;->f:Landroid/os/Handler;
+
+    if-nez p0, :cond_3
+
+    new-instance p0, Landroid/os/Handler;
+
+    invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
+
+    move-result-object v0
+
+    invoke-direct {p0, v0}, Landroid/os/Handler;-><init>(Landroid/os/Looper;)V
+
+    sput-object p0, Lc/e/a/a/e;->f:Landroid/os/Handler;
+
+    :cond_3
+    sget-object p0, Lc/e/a/a/e;->f:Landroid/os/Handler;
+
+    goto :goto_0
+
+    :cond_4
+    sget-object p0, Lc/e/a/a/e;->b:Landroid/os/HandlerThread;
+
+    if-nez p0, :cond_5
+
+    invoke-static {}, Lc/e/a/a/e;->b()V
+
+    :cond_5
+    sget-object p0, Lc/e/a/a/e;->e:Landroid/os/Handler;
+
+    goto :goto_0
+
+    :cond_6
+    sget-object p0, Lc/e/a/a/e;->a:Landroid/os/HandlerThread;
+
+    if-nez p0, :cond_7
+
+    invoke-static {}, Lc/e/a/a/e;->a()V
+
+    :cond_7
+    sget-object p0, Lc/e/a/a/e;->d:Landroid/os/Handler;
+
+    :goto_0
+    return-object p0
+.end method
+
+.method public static declared-synchronized a()V
+    .locals 4
+
+    const-class v0, Lc/e/a/a/e;
+
+    monitor-enter v0
+
+    :try_start_0
+    sget-object v1, Lc/e/a/a/e;->a:Landroid/os/HandlerThread;
+
+    if-nez v1, :cond_0
+
+    new-instance v1, Landroid/os/HandlerThread;
+
+    const-string v2, "CrashSDKBkgdHandler"
+
+    const/16 v3, 0xa
+
+    invoke-direct {v1, v2, v3}, Landroid/os/HandlerThread;-><init>(Ljava/lang/String;I)V
+
+    sput-object v1, Lc/e/a/a/e;->a:Landroid/os/HandlerThread;
+
+    invoke-virtual {v1}, Landroid/os/HandlerThread;->start()V
+
+    new-instance v1, Landroid/os/Handler;
+
+    sget-object v2, Lc/e/a/a/e;->a:Landroid/os/HandlerThread;
+
+    invoke-virtual {v2}, Landroid/os/HandlerThread;->getLooper()Landroid/os/Looper;
+
+    move-result-object v2
+
+    invoke-direct {v1, v2}, Landroid/os/Handler;-><init>(Landroid/os/Looper;)V
+
+    sput-object v1, Lc/e/a/a/e;->d:Landroid/os/Handler;
+    :try_end_0
+    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+
+    :cond_0
+    monitor-exit v0
+
+    return-void
+
+    :catchall_0
+    move-exception v1
+
+    monitor-exit v0
+
+    throw v1
+.end method
+
+.method public static a(I[Ljava/lang/Object;)V
+    .locals 1
+
+    const/16 v0, 0xa
+
+    if-eq p0, v0, :cond_1
+
+    sget-boolean p0, Lc/e/a/a/e;->i:Z
+
+    if-eqz p0, :cond_0
+
+    return-void
+
+    :cond_0
+    new-instance p0, Ljava/lang/AssertionError;
+
+    invoke-direct {p0}, Ljava/lang/AssertionError;-><init>()V
+
+    throw p0
+
+    :cond_1
+    sget-boolean p0, Lc/e/a/a/e;->i:Z
+
+    if-nez p0, :cond_3
+
+    if-eqz p1, :cond_2
+
+    goto :goto_0
+
+    :cond_2
+    new-instance p0, Ljava/lang/AssertionError;
+
+    invoke-direct {p0}, Ljava/lang/AssertionError;-><init>()V
+
+    throw p0
+
+    :cond_3
+    :goto_0
+    const/4 p0, 0x0
+
+    aget-object p0, p1, p0
+
+    check-cast p0, Ljava/lang/Runnable;
+
+    sget-object p1, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    monitor-enter p1
+
+    :try_start_0
+    sget-object v0, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    invoke-virtual {v0, p0}, Ljava/util/HashMap;->get(Ljava/lang/Object;)Ljava/lang/Object;
+
+    move-result-object v0
+
+    if-eqz v0, :cond_4
+
+    sget-object v0, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    invoke-virtual {v0, p0}, Ljava/util/HashMap;->remove(Ljava/lang/Object;)Ljava/lang/Object;
+
+    :cond_4
+    monitor-exit p1
+    :try_end_0
+    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+
+    invoke-interface {p0}, Ljava/lang/Runnable;->run()V
+
+    return-void
+
+    :catchall_0
+    move-exception p0
+
+    :try_start_1
+    monitor-exit p1
+    :try_end_1
+    .catchall {:try_start_1 .. :try_end_1} :catchall_0
+
+    throw p0
+.end method
+
+.method public static a(Ljava/lang/Runnable;)V
+    .locals 4
+
+    if-nez p0, :cond_0
+
+    return-void
+
+    :cond_0
+    sget-object v0, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    monitor-enter v0
+
+    :try_start_0
+    sget-object v1, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    invoke-virtual {v1, p0}, Ljava/util/HashMap;->get(Ljava/lang/Object;)Ljava/lang/Object;
+
+    move-result-object v1
+
+    check-cast v1, [Ljava/lang/Object;
+
+    monitor-exit v0
+    :try_end_0
+    .catchall {:try_start_0 .. :try_end_0} :catchall_1
+
+    if-nez v1, :cond_1
+
+    return-void
+
+    :cond_1
+    const/4 v0, 0x1
+
+    aget-object v2, v1, v0
+
+    check-cast v2, Ljava/lang/Integer;
+
+    invoke-virtual {v2}, Ljava/lang/Integer;->intValue()I
+
+    move-result v2
+
+    const/4 v3, 0x0
+
+    if-eqz v2, :cond_4
+
+    if-eq v2, v0, :cond_3
+
+    const/4 v0, 0x2
+
+    if-eq v2, v0, :cond_2
+
+    goto :goto_0
+
+    :cond_2
+    sget-object v3, Lc/e/a/a/e;->f:Landroid/os/Handler;
+
+    goto :goto_0
+
+    :cond_3
+    sget-object v3, Lc/e/a/a/e;->e:Landroid/os/Handler;
+
+    goto :goto_0
+
+    :cond_4
+    sget-object v3, Lc/e/a/a/e;->d:Landroid/os/Handler;
+
+    :goto_0
+    if-eqz v3, :cond_5
+
+    const/4 v0, 0x0
+
+    aget-object v0, v1, v0
+
+    check-cast v0, Ljava/lang/Runnable;
+
+    invoke-virtual {v3, v0}, Landroid/os/Handler;->removeCallbacks(Ljava/lang/Runnable;)V
+
+    :cond_5
+    sget-object v1, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    monitor-enter v1
+
+    :try_start_1
+    sget-object v0, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    invoke-virtual {v0, p0}, Ljava/util/HashMap;->get(Ljava/lang/Object;)Ljava/lang/Object;
+
+    move-result-object v0
+
+    if-eqz v0, :cond_6
+
+    sget-object v0, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    invoke-virtual {v0, p0}, Ljava/util/HashMap;->remove(Ljava/lang/Object;)Ljava/lang/Object;
+
+    :cond_6
+    monitor-exit v1
+
+    return-void
+
+    :catchall_0
+    move-exception p0
+
+    monitor-exit v1
+    :try_end_1
+    .catchall {:try_start_1 .. :try_end_1} :catchall_0
+
+    throw p0
+
+    :catchall_1
+    move-exception p0
+
+    :try_start_2
+    monitor-exit v0
+    :try_end_2
+    .catchall {:try_start_2 .. :try_end_2} :catchall_1
+
+    throw p0
+.end method
+
+.method public static a(ILjava/lang/Runnable;)Z
+    .locals 2
+
+    const-wide/16 v0, 0x0
+
+    invoke-static {p0, p1, v0, v1}, Lc/e/a/a/e;->a(ILjava/lang/Runnable;J)Z
+
+    move-result p0
+
+    return p0
+.end method
+
+.method public static a(ILjava/lang/Runnable;J)Z
+    .locals 7
+
+    const/4 v0, 0x0
+
+    if-nez p1, :cond_0
+
+    return v0
+
+    :cond_0
+    invoke-static {p0}, Lc/e/a/a/e;->a(I)Landroid/os/Handler;
+
+    move-result-object v1
+
+    if-nez v1, :cond_1
+
+    return v0
+
+    :cond_1
+    new-instance v2, Lc/e/a/a/d;
+
+    const/16 v3, 0xa
+
+    const/4 v4, 0x1
+
+    new-array v5, v4, [Ljava/lang/Object;
+
+    aput-object p1, v5, v0
+
+    invoke-direct {v2, v3, v5}, Lc/e/a/a/d;-><init>(I[Ljava/lang/Object;)V
+
+    sget-object v3, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    monitor-enter v3
+
+    :try_start_0
+    sget-object v5, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    const/4 v6, 0x2
+
+    new-array v6, v6, [Ljava/lang/Object;
+
+    aput-object v2, v6, v0
+
+    invoke-static {p0}, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
+
+    move-result-object p0
+
+    aput-object p0, v6, v4
+
+    invoke-virtual {v5, p1, v6}, Ljava/util/HashMap;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+
+    monitor-exit v3
+    :try_end_0
+    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+
+    invoke-virtual {v1, v2, p2, p3}, Landroid/os/Handler;->postDelayed(Ljava/lang/Runnable;J)Z
+
+    move-result p0
+
+    return p0
+
+    :catchall_0
+    move-exception p0
+
+    :try_start_1
+    monitor-exit v3
+    :try_end_1
+    .catchall {:try_start_1 .. :try_end_1} :catchall_0
+
+    throw p0
+.end method
+
+.method public static declared-synchronized b()V
+    .locals 4
+
+    const-class v0, Lc/e/a/a/e;
+
+    monitor-enter v0
+
+    :try_start_0
+    sget-object v1, Lc/e/a/a/e;->b:Landroid/os/HandlerThread;
+
+    if-nez v1, :cond_0
+
+    new-instance v1, Landroid/os/HandlerThread;
+
+    const-string v2, "CrashSDKNormalHandler"
+
+    const/4 v3, 0x0
+
+    invoke-direct {v1, v2, v3}, Landroid/os/HandlerThread;-><init>(Ljava/lang/String;I)V
+
+    sput-object v1, Lc/e/a/a/e;->b:Landroid/os/HandlerThread;
+
+    invoke-virtual {v1}, Landroid/os/HandlerThread;->start()V
+
+    new-instance v1, Landroid/os/Handler;
+
+    sget-object v2, Lc/e/a/a/e;->b:Landroid/os/HandlerThread;
+
+    invoke-virtual {v2}, Landroid/os/HandlerThread;->getLooper()Landroid/os/Looper;
+
+    move-result-object v2
+
+    invoke-direct {v1, v2}, Landroid/os/Handler;-><init>(Landroid/os/Looper;)V
+
+    sput-object v1, Lc/e/a/a/e;->e:Landroid/os/Handler;
+    :try_end_0
+    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+
+    :cond_0
+    monitor-exit v0
+
+    return-void
+
+    :catchall_0
+    move-exception v1
+
+    monitor-exit v0
+
+    throw v1
+.end method
+
+.method public static b(Ljava/lang/Runnable;)Z
+    .locals 3
+
+    const/4 v0, 0x0
+
+    if-nez p0, :cond_0
+
+    return v0
+
+    :cond_0
+    sget-object v1, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    monitor-enter v1
+
+    :try_start_0
+    sget-object v2, Lc/e/a/a/e;->h:Ljava/util/HashMap;
+
+    invoke-virtual {v2, p0}, Ljava/util/HashMap;->get(Ljava/lang/Object;)Ljava/lang/Object;
+
+    move-result-object p0
+
+    check-cast p0, [Ljava/lang/Object;
+
+    monitor-exit v1
+
+    if-eqz p0, :cond_1
+
+    const/4 p0, 0x1
+
+    return p0
+
+    :cond_1
+    return v0
+
+    :catchall_0
+    move-exception p0
+
+    monitor-exit v1
+    :try_end_0
+    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+
+    throw p0
+.end method
+
+.method public static declared-synchronized c()V
+    .locals 4
+
+    const-class v0, Lc/e/a/a/e;
+
+    monitor-enter v0
+
+    :try_start_0
+    sget-object v1, Lc/e/a/a/e;->c:Landroid/os/HandlerThread;
+
+    if-nez v1, :cond_0
+
+    new-instance v1, Landroid/os/HandlerThread;
+
+    const-string v2, "CrashSDKAnrHandler"
+
+    const/4 v3, 0x0
+
+    invoke-direct {v1, v2, v3}, Landroid/os/HandlerThread;-><init>(Ljava/lang/String;I)V
+
+    sput-object v1, Lc/e/a/a/e;->c:Landroid/os/HandlerThread;
+
+    invoke-virtual {v1}, Landroid/os/HandlerThread;->start()V
+
+    new-instance v1, Landroid/os/Handler;
+
+    sget-object v2, Lc/e/a/a/e;->c:Landroid/os/HandlerThread;
+
+    invoke-virtual {v2}, Landroid/os/HandlerThread;->getLooper()Landroid/os/Looper;
+
+    move-result-object v2
+
+    invoke-direct {v1, v2}, Landroid/os/Handler;-><init>(Landroid/os/Looper;)V
+
+    sput-object v1, Lc/e/a/a/e;->g:Landroid/os/Handler;
+    :try_end_0
+    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+
+    :cond_0
+    monitor-exit v0
+
+    return-void
+
+    :catchall_0
+    move-exception v1
+
+    monitor-exit v0
+
+    throw v1
+.end method

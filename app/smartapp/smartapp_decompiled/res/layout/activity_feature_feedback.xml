@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:id="@id/feature_feedback_root" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <android.support.v7.widget.CardView android:layout_gravity="center" android:layout_width="658.0dp" android:layout_height="wrap_content" app:cardBackgroundColor="@color/bg_color_fafbfc" app:cardCornerRadius="12.0dp" app:cardElevation="0.0dp">
+        <LinearLayout android:orientation="vertical" android:id="@id/feature_feedback_content" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="32.0sp" android:textColor="#2b3852" android:gravity="center" android:layout_gravity="center_horizontal" android:id="@id/feature_feedback_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="40.0dp" />
+            <LinearLayout android:orientation="vertical" android:id="@id/feature_feedback_template_first" android:layout_width="match_parent" android:layout_height="wrap_content">
+                <TextView android:textSize="22.0sp" android:textColor="@color/text_color_7383a2" android:gravity="center" android:layout_gravity="center_horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="36.0dp" android:text="@string/we_have_recently_made_some_updates" />
+                <android.support.v7.widget.CardView android:layout_gravity="center_horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16.0dp" app:cardBackgroundColor="@color/bg_e6eaf2" app:cardCornerRadius="18.0dp">
+                    <TextView android:textSize="20.0sp" android:textColor="#7383a2" android:id="@id/feature_feedback_new_version_desc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8.0dp" android:layout_marginBottom="8.0dp" android:lines="1" android:layout_marginStart="24.0dp" android:layout_marginEnd="24.0dp" />
+                </android.support.v7.widget.CardView>
+                <com.alibaba.genie.waft.gcs.featurefeedback.view.StarAppraiseLayout android:layout_gravity="center_horizontal" android:id="@id/feature_feedback_template_first_appraise" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="56.0dp" android:layout_marginBottom="56.0dp" app:star_appraise_divider="@drawable/feature_feedback_appraise_divider_first" app:star_appraise_star_height="48.0dp" app:star_appraise_star_like_res="@drawable/ic_like_large" app:star_appraise_star_unlike_res="@drawable/ic_unlike_large" app:star_appraise_star_width="54.0dp" />
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:id="@id/feature_feedback_template_again" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content">
+                <TextView android:textSize="22.0sp" android:textColor="@color/text_color_7383a2" android:layout_gravity="center_horizontal" android:id="@id/feature_feedback_template_again_appraise_desc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="32.0dp" />
+                <com.alibaba.genie.waft.gcs.featurefeedback.view.StarAppraiseLayout android:layout_gravity="center_horizontal" android:id="@id/feature_feedback_template_again_appraise" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" app:star_appraise_divider="@drawable/feature_feedback_appraise_divider_again" app:star_appraise_star_height="37.0dp" app:star_appraise_star_like_res="@drawable/ic_like_small" app:star_appraise_star_unlike_res="@drawable/ic_unlike_small" app:star_appraise_star_width="42.0dp" />
+                <FrameLayout android:layout_gravity="center" android:layout_width="match_parent" android:layout_height="110.0dp" android:layout_marginTop="32.0dp">
+                    <ScrollView android:layout_gravity="center" android:scrollbars="none" android:layout_width="530.0dp" android:layout_height="wrap_content">
+                        <com.google.android.flexbox.FlexboxLayout android:id="@id/feature_feedback_template_again_tags" android:layout_width="match_parent" android:layout_height="wrap_content" app:dividerDrawable="@drawable/feature_feedback_tags_divider" app:flexDirection="row" app:flexWrap="wrap" app:justifyContent="center" app:showDivider="middle" />
+                    </ScrollView>
+                </FrameLayout>
+                <FrameLayout android:background="@color/white" android:layout_width="match_parent" android:layout_height="88.0dp" android:layout_marginTop="5.0dp">
+                    <android.support.v7.widget.CardView android:layout_gravity="center" android:id="@id/feature_feedback_sure" android:layout_width="157.0dp" android:layout_height="56.0dp" app:cardBackgroundColor="@color/bg_color_00b3ff" app:cardCornerRadius="28.0dp" app:cardElevation="0.0dp">
+                        <TextView android:textSize="24.0sp" android:textColor="@color/white" android:layout_gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/feedback_complete" />
+                    </android.support.v7.widget.CardView>
+                </FrameLayout>
+            </LinearLayout>
+        </LinearLayout>
+        <ImageView android:layout_gravity="end" android:id="@id/feature_feedback_close" android:layout_width="20.0dp" android:layout_height="20.0dp" android:layout_marginTop="19.0dp" android:src="@drawable/ic_close" android:layout_marginEnd="19.0dp" />
+    </android.support.v7.widget.CardView>
+</FrameLayout>

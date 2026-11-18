@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout android:tag="layout/fragment_mine_details_0" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.alibaba.ailabs.genie.contacts.common.view.ContactsExitView android:id="@id/layout_exit" android:layout_width="wrap_content" android:layout_height="wrap_content" app:con_backVisible="true" app:con_homeVisible="true" />
+    <com.alibaba.ailabs.genie.contacts.details.view.ContactsInfoView android:id="@id/layout_mine_info" android:layout_width="match_parent" android:layout_height="match_parent" app:layout_constraintLeft_toLeftOf="parent" app:layout_constraintTop_toTopOf="parent" />
+    <com.alibaba.ailabs.genie.contacts.details.view.DetailsDialView android:id="@id/layout_mine_dial" android:layout_width="wrap_content" android:layout_height="match_parent" app:layout_constraintLeft_toLeftOf="parent" app:layout_constraintRight_toRightOf="parent" />
+</android.support.constraint.ConstraintLayout>

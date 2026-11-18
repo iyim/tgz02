@@ -1,0 +1,14 @@
+{
+    "key": "mic_unmute",
+    "descr": "mic取消静音",
+    "lightList": [
+        {
+            "type": "",
+            "time": 500,
+            "loop": 1,
+            "dataList": [
+                "0 0 0"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:orientation="vertical" android:id="@id/pay_item_view" android:padding="24.0dp" android:layout_width="340.0dp" android:layout_height="match_parent" android:layout_marginLeft="12.0dp" android:layout_marginRight="12.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="@dimen/genie_pay_button_text_size" android:textColor="@color/genie_pay_color_623A0C" android:ellipsize="end" android:gravity="center_horizontal" android:id="@id/pay_item_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5.0dp" android:text="@string/pay_item_title" android:maxLines="2" />
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5.0dp">
+        <TextView android:textSize="@dimen/genie_pay_text_size_54" android:textColor="@color/genie_pay_color_623A0C" android:gravity="center_horizontal" android:id="@id/pay_item_price" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pay_item_price" />
+        <TextView android:textSize="@dimen/genie_pay_button_text_size" android:textColor="@color/genie_pay_color_623A0C" android:gravity="center_horizontal" android:id="@id/yuan" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="5.0dp" android:text="@string/pay_item_price" />
+    </LinearLayout>
+</LinearLayout>

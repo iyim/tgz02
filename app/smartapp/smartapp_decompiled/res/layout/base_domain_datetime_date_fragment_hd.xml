@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/root" android:background="@color/bg_base_domain_default_color" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.alibaba.ailabs.basedomain.ui.ExitView android:id="@id/layout_exit" android:layout_width="wrap_content" android:layout_height="100.0dp" />
+    <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_centerInParent="true">
+        <TextView android:textSize="44.0dp" android:textColor="@android:color/white" android:id="@id/city" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="杭州市" android:includeFontPadding="false" />
+        <TextView android:textSize="156.0dp" android:textColor="@android:color/white" android:id="@id/big" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="48.0dp" android:layout_marginBottom="68.0dp" android:includeFontPadding="false" />
+        <TextView android:textSize="54.0dp" android:textColor="@color/datetime_domain_ampm_bright_color" android:id="@id/am" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="上午" android:includeFontPadding="false" />
+        <TextView android:textSize="54.0dp" android:textColor="@color/datetime_domain_ampm_dead_color" android:id="@id/pm" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="下午" />
+        <LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <TextView android:textSize="54.0dp" android:textColor="@android:color/white" android:id="@id/small1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="上午 03：59" android:includeFontPadding="false" />
+            <TextView android:textSize="54.0dp" android:textColor="@android:color/white" android:id="@id/small2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="102.0dp" android:text="星期一" android:includeFontPadding="false" />
+            <TextView android:textSize="54.0dp" android:textColor="@android:color/white" android:id="@id/small3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="102.0dp" android:text="七月廿四" android:includeFontPadding="false" />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

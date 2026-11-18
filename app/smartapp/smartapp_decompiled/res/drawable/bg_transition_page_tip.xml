@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <bitmap android:src="@drawable/bg_genie_tips" />
+    </item>
+    <item android:left="9.0dp" android:top="9.0dp" android:right="9.0dp" android:bottom="9.0dp">
+        <shape>
+            <corners android:topLeftRadius="38.0dp" android:topRightRadius="38.0dp" android:bottomLeftRadius="8.0dp" android:bottomRightRadius="38.0dp" />
+            <solid android:color="@color/transparent" />
+            <stroke android:width="1.0dp" android:color="@color/white" />
+        </shape>
+    </item>
+</layer-list>

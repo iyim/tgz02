@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:orientation="vertical" android:background="@drawable/voiceprint_guide_header_bg" android:layout_width="904.0dp" android:layout_height="90.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+        <View android:layout_gravity="center_horizontal" android:id="@id/line_1" android:background="#d1dde9" android:layout_width="160.0dp" android:layout_height="3.0dp" android:layout_marginTop="27.0dp" android:layout_marginRight="270.0dp" />
+        <View android:layout_gravity="center_horizontal" android:id="@id/line_2" android:background="#d1dde9" android:layout_width="166.0dp" android:layout_height="3.0dp" android:layout_marginTop="27.0dp" android:layout_marginRight="80.0dp" />
+        <View android:layout_gravity="center_horizontal" android:id="@id/line_3" android:background="#d1dde9" android:layout_width="164.0dp" android:layout_height="3.0dp" android:layout_marginLeft="113.0dp" android:layout_marginTop="27.0dp" />
+        <View android:layout_gravity="center_horizontal" android:id="@id/line_4" android:background="#d1dde9" android:layout_width="141.0dp" android:layout_height="3.0dp" android:layout_marginLeft="297.0dp" android:layout_marginTop="27.0dp" />
+        <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/top" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="122.0dp">
+                <TextView android:textSize="16.0dp" android:textColor="@color/color_white" android:gravity="center" android:id="@id/index_1" android:background="@drawable/voiceprint_guide_header_num_blue_bg" android:layout_width="32.0dp" android:layout_height="32.0dp" android:layout_marginTop="12.0dp" android:layout_marginBottom="12.0dp" android:text="1" />
+                <TextView android:textSize="16.0sp" android:textColor="#0082ff" android:gravity="center" android:id="@id/name_1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12.0dp" android:text="设置昵称" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="122.0dp">
+                <TextView android:textSize="16.0dp" android:textColor="@color/color_white" android:gravity="center" android:id="@id/index_2" android:background="@drawable/voiceprint_guide_header_num_white_bg" android:layout_width="32.0dp" android:layout_height="32.0dp" android:layout_marginTop="12.0dp" android:layout_marginBottom="12.0dp" android:text="2" />
+                <TextView android:textSize="16.0sp" android:textColor="#a5b0ba" android:gravity="center" android:id="@id/name_2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12.0dp" android:text="声纹采集" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="122.0dp">
+                <TextView android:textSize="16.0dp" android:textColor="@color/color_white" android:gravity="center" android:id="@id/index_3" android:background="@drawable/voiceprint_guide_header_num_white_bg" android:layout_width="32.0dp" android:layout_height="32.0dp" android:layout_marginTop="12.0dp" android:layout_marginBottom="12.0dp" android:text="3" />
+                <TextView android:textSize="16.0sp" android:textColor="#a5b0ba" android:gravity="center" android:id="@id/name_3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12.0dp" android:text="支付宝授权" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="122.0dp">
+                <TextView android:textSize="16.0dp" android:textColor="@color/color_white" android:gravity="center" android:id="@id/index_4" android:background="@drawable/voiceprint_guide_header_num_white_bg" android:layout_width="32.0dp" android:layout_height="32.0dp" android:layout_marginTop="12.0dp" android:layout_marginBottom="12.0dp" android:text="4" />
+                <TextView android:textSize="16.0sp" android:textColor="#a5b0ba" android:gravity="center" android:id="@id/name_4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12.0dp" android:text="验证声纹" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content">
+                <TextView android:textSize="16.0dp" android:textColor="@color/color_white" android:gravity="center" android:id="@id/index_5" android:background="@drawable/voiceprint_guide_header_num_white_bg" android:layout_width="32.0dp" android:layout_height="32.0dp" android:layout_marginTop="12.0dp" android:layout_marginBottom="12.0dp" android:text="5" />
+                <TextView android:textSize="16.0sp" android:textColor="#a5b0ba" android:gravity="center" android:id="@id/name_5" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12.0dp" android:text="完成" />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

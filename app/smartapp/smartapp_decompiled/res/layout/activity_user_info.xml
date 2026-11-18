@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:background="#f0f2f7" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.alibaba.ailabs.genie.widgetui.WidgetUINavigationBar android:id="@id/home_nav_bar" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="68.0dp" android:layout_alignParentTop="true" />
+    <ScrollView android:scrollbars="none" android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
+            <RelativeLayout android:orientation="horizontal" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="200.0dp">
+                <LinearLayout android:gravity="left|center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginTop="20.0dp" android:layout_alignParentLeft="true">
+                    <com.alibaba.ailabs.genie.assistant.ui.CircleImageView android:id="@id/user_avatar" android:layout_width="120.0dp" android:layout_height="120.0dp" android:layout_marginLeft="40.0dp" />
+                    <LinearLayout android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="20.0dp">
+                        <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content">
+                            <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="#2b3852" android:id="@id/user_nickname" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" />
+                            <TextView android:textSize="20.0dp" android:textColor="#64452d" android:gravity="center" android:id="@id/tv_open_vip" android:background="@drawable/bg_ripple_open_vip_icon" android:visibility="gone" android:layout_width="160.0dp" android:layout_height="39.0dp" android:layout_marginLeft="12.0dp" android:text="开通超级会员" android:layout_toRightOf="@id/user_nickname" />
+                            <ImageView android:id="@id/iv_vip_entrance" android:visibility="gone" android:layout_width="128.0dp" android:layout_height="32.0dp" android:layout_marginLeft="12.0dp" android:src="@drawable/bg_ripple_super_vip" android:layout_toRightOf="@id/user_nickname" />
+                        </RelativeLayout>
+                        <LinearLayout android:gravity="left|center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="27.0dp">
+                            <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/logintime" android:includeFontPadding="false" />
+                            <TextView android:textSize="24.0sp" android:textColor="#4a5a78" android:id="@id/user_logintime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+                <LinearLayout android:gravity="right|center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_alignParentRight="true">
+                    <Button android:textSize="24.0sp" android:textColor="@color/white" android:id="@id/logout_btn" android:background="@drawable/red_background" android:layout_width="154.0dp" android:layout_height="56.0dp" android:layout_marginRight="40.0dp" android:text="切换账号" />
+                </LinearLayout>
+            </RelativeLayout>
+            <LinearLayout android:orientation="vertical" android:background="#ffffff" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" android:layout_marginBottom="60.0dp">
+                <TextView android:textSize="32.0sp" android:textStyle="bold" android:textColor="#2b3852" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="48.0dp" android:text="账号信息" />
+                <LinearLayout android:gravity="left|center" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="40.0dp">
+                    <TextView android:textSize="28.0sp" android:textColor="#7383a2" android:id="@id/nickname_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/nickname" />
+                    <TextView android:textSize="28.0sp" android:textColor="#2b3852" android:id="@id/nickname_content" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="28.0dp" />
+                </LinearLayout>
+                <LinearLayout android:gravity="left|center" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="32.0dp">
+                    <TextView android:textSize="28.0sp" android:textColor="#7383a2" android:id="@id/mobile_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="绑定手机" />
+                    <TextView android:textSize="28.0sp" android:textColor="#2b3852" android:id="@id/mobile_content" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="28.0dp" />
+                </LinearLayout>
+                <LinearLayout android:gravity="left|center" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="32.0dp">
+                    <TextView android:textSize="28.0sp" android:textColor="#7383a2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="服务地址" />
+                    <TextView android:textSize="28.0sp" android:textColor="#2b3852" android:id="@id/location_content" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="28.0dp" />
+                </LinearLayout>
+                <LinearLayout android:gravity="left|center" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="40.0dp" android:layout_marginTop="50.0dp" android:layout_marginBottom="50.0dp">
+                    <ImageView android:layout_width="24.0dp" android:layout_height="24.0dp" android:src="@drawable/information" />
+                    <TextView android:textSize="20.0sp" android:textColor="#7383a2" android:id="@id/tips" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="2.0dp" android:text="@string/update_tip" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

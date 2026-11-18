@@ -1,0 +1,1107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:sharedUserId="android.uid.system" package="com.alibaba.ailabs.genie.smartapp">
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.GET_TASKS"/>
+    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES"/>
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS"/>
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"/>
+    <uses-permission android:name="android.permission.READ_NETWORK_USAGE_HISTORY"/>
+    <protected-broadcast android:name="com.alibaba.ailabs.genie.webapps.INIT"/>
+    <protected-broadcast android:name="com.alibaba.ailabs.genie.action.BOOT_COMPLETED"/>
+    <protected-broadcast android:name="com.alibaba.ailabs.genie.webapps.RELEASE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <permission android:name="android.permission.BIND_DREAM_SERVICE"/>
+    <uses-permission android:name="android.permission.INJECT_EVENTS"/>
+    <uses-permission android:name="android.permission.BIND_DREAM_SERVICE"/>
+    <uses-permission android:name="android.permission.INSTALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE"/>
+    <uses-permission android:name="android.permission.MODIFY_ACCESSIBILITY_DATA"/>
+    <uses-permission android:name="com.alibaba.ailabs.genie.intent.permission.RtcReceiver"/>
+    <uses-permission android:name="com.yunos.tv.alitvasr.permission.SERVICE_LISTEN"/>
+    <uses-permission android:name="com.yunos.tv.alitvasr.permission.CONTROL"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.BROADCAST_STICKY"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.hardware.sensor.accelerometer"/>
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"/>
+    <permission android:name="com.alibaba.genie.waft.gcs.rpc.SERVICE_REGISTRY" android:protectionLevel="normal"/>
+    <uses-permission android:name="android.permission.GET_PACKAGE_SIZE"/>
+    <uses-permission android:name="android.permission.DELETE_PACKAGES"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <permission android:name="com.alibaba.ailabs.genie.contacts.course.read" android:protectionLevel="normal"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="true"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.FLASHLIGHT"/>
+    <protected-broadcast android:name="com.alibaba.ailabs.genie.message.ACTION_STATUS_NOTIFY"/>
+    <uses-permission android:name="com.aliyun.permission.TYID_SERVICE"/>
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <permission android:name="com.alibaba.ailabs.genie.datacenter.permission" android:protectionLevel="normal"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.READ_LOGS"/>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.READ_SETTINGS"/>
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.READ_FRAME_BUFFER"/>
+    <uses-permission android:name="android.permission.INSTALL_LOCATION_PROVIDER"/>
+    <uses-permission android:name="android.permission.READ_DREAM_STATE"/>
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL"/>
+    <uses-permission android:name="android.permission.BROADCAST_PACKAGE_REMOVED"/>
+    <uses-permission android:name="android.permission.STOP_APP_SWITCHES"/>
+    <uses-permission android:name="android.permission.SET_ACTIVITY_WATCHER"/>
+    <uses-permission android:name="android.permission.EXPAND_STATUS_BAR"/>
+    <uses-permission android:name="android.permission.REAL_GET_TASKS"/>
+    <uses-permission android:name="android.permission.DEVICE_POWER"/>
+    <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
+    <uses-permission android:name="android.hardware.usb.host"/>
+    <uses-permission android:name="android.hardware.usb.accessory"/>
+    <uses-permission android:name="android.permission.STATUS_BAR"/>
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
+    <protected-broadcast android:name="com.alibaba.ailabs.genie.musicplayer.cmd"/>
+    <protected-broadcast android:name="com.alibaba.ailabs.genie.musicplayer.pay"/>
+    <permission android:name="com.yunos.tv.alitvasr.permission.SESSION_INFO" android:protectionLevel="signatureOrSystem"/>
+    <permission android:name="com.yunos.tv.alitvasr.permission.CONTROL" android:protectionLevel="signatureOrSystem"/>
+    <permission android:name="com.yunos.cloudapp.permission.SERVER_RECEIVER"/>
+    <uses-permission android:name="com.alibaba.ailabs.genie.setting.SWITCH_REGISTRY"/>
+    <uses-permission android:name="com.yunos.cloudapp.permission.SERVER_RECEIVER"/>
+    <uses-permission android:name="com.yunos.tv.permission.InterDeviceCommunicatorService"/>
+    <uses-permission android:name="com.yunos.tv.homeshell.permission.RECV_ITEMKEYS"/>
+    <uses-permission android:name="com.yunos.tv.advertise.pushcenter.Provider.permission.DiTingMessage"/>
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS"/>
+    <uses-permission android:name="com.yunos.tv.settings.permission.QUERY_CURRENT_LOCATION"/>
+    <uses-permission android:name="com.yunos.tv.homeshell.permission.SWITCH_MODE"/>
+    <protected-broadcast android:name="com.alibaba.ailabs.genie.assistant.BINDUSER"/>
+    <protected-broadcast android:name="com.alibaba.ailabs.genie.assistant.UNBINDUSER"/>
+    <protected-broadcast android:name="com.aliyun.cloudapp.FOTA_UPDATE"/>
+    <protected-broadcast android:name="com.alibaba.ailabs.genie.assistant.ONLINE"/>
+    <uses-permission android:name="com.alibaba.genie.waft.gcs.rpc.SERVICE_REGISTRY"/>
+    <uses-permission android:name="android.permission.GET_TOP_ACTIVITY_INFO"/>
+    <application android:allowBackup="false" android:hardwareAccelerated="true" android:icon="@mipmap/ic_launcher" android:label="@string/smartapp_app_name" android:largeHeap="true" android:name="com.alibaba.ailabs.genie.smartapp.SmartAppApplication" android:networkSecurityConfig="@xml/network_config" android:roundIcon="@mipmap/ic_launcher_round" android:supportsRtl="true" android:theme="@style/AppTheme" android:value="com.alibaba.ailabs.genie.smartapp">
+        <service android:exported="false" android:name="com.alibaba.analytics.AnalyticsService"/>
+        <service android:exported="true" android:name="com.alibaba.ailabs.genie.smartapp.service.GenieManageServerService">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.smartapp.manage.service.action"/>
+            </intent-filter>
+        </service>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.smartapp.service.JobWakeUpService" android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <service android:exported="false" android:name="anetwork.channel.aidl.NetworkService">
+            <intent-filter>
+                <action android:name="anetwork.channel.aidl.IRemoteNetworkGetter"/>
+            </intent-filter>
+        </service>
+        <service android:exported="false" android:name="mtopsdk.xstate.XStateService">
+            <intent-filter>
+                <action android:name="mtopsdk.xstate.aidl.IXState"/>
+            </intent-filter>
+        </service>
+        <service android:enabled="true" android:name="com.alibaba.ailabs.genie.smartapp.task.core.ScheduleJobService">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.task.action.SCHEDULE_JOB"/>
+            </intent-filter>
+        </service>
+        <meta-data android:name="com.alibaba.ailabs.genie.task.TaskApplication" android:value="com.alibaba.ailabs.genie.smartapp"/>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.task.TaskService">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.task" android:path="/notify" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.TaskService"/>
+            </intent-filter>
+        </service>
+        <service android:name="com.alibaba.ailabs.genie.task.AbcService" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/keyevent_accessibility"/>
+        </service>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.task.aicare.ui.MsgShowActivity"/>
+        <receiver android:name="com.alibaba.ailabs.genie.rtc.comon.register.RegisterReceiver">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.assistant.BINDUSER"/>
+            </intent-filter>
+        </receiver>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.genie.globalsearch.MainActivity" android:process=":business" android:screenOrientation="landscape" android:theme="@style/GlobalSearch">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.globalsearch" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.smartapp"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <provider android:authorities="com.alibaba.ailabs.genie.smartapp.GenieServicePublisher" android:enabled="true" android:exported="true" android:name="com.alibaba.genie.waft.gcs.rpc.GenieServicePublisher" android:process="">
+            <meta-data android:name="com.alibaba.genie.waft.gcs.ut.api.IUt" android:value="com.alibaba.genie.waft.gcs.ut.imp.UtImp"/>
+            <meta-data android:name="com.alibaba.genie.waft.gcs.featurefeedback.api.IFeatureFeedback" android:value="com.alibaba.genie.waft.gcs.featurefeedback.impl.FeatureFeedbackImpl"/>
+            <meta-data android:name="com.alibaba.tmall.genie.waft.gcs.jsworker.api.IGenieJsApiWorker" android:value="com.alibaba.tmall.genie.waft.gcs.jsworker.imp.GenieJsApiWorker"/>
+            <meta-data android:name="com.alibaba.genie.waft.gcs.network.api.Network" android:value="com.alibaba.genie.waft.gcs.network.NetworkImpl"/>
+            <meta-data android:name="com.alibaba.ailabs.genie.authservice.api.IRequestPermissions" android:value="com.alibaba.ailabs.genie.authservice.RequestPermissionsImpl"/>
+        </provider>
+        <meta-data android:name="com.alibaba.genie.waft.gcs.featurefeedback.FeatureFeedbackApplication" android:value="com.alibaba.ailabs.genie.smartapp"/>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.genie.waft.gcs.featurefeedback.activity.FeatureFeedbackActivity" android:process="com.alibaba.ailabs.genie.smartapp" android:theme="@style/ActivityDialog">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <provider android:authorities="com.alibaba.ailabs.genie.smartapp.GenieRegistryInstaller" android:enabled="true" android:exported="true" android:name="com.alibaba.genie.waft.gcs.registry.GenieRegistryInstaller" android:process="com.alibaba.ailabs.genie.smartapp"/>
+        <activity android:configChanges="keyboardHidden|orientation" android:exported="true" android:launchMode="singleTask" android:name="com.alibaba.ailabs.appbox.activity.TransitionPageActivity" android:process="@string/market_store_process" android:screenOrientation="user" android:theme="@style/Theme.AppCompat">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/transition" android:scheme="market"/>
+            </intent-filter>
+        </activity>
+        <meta-data android:name="com.alibaba.ailabs.appbox.BoxApplication" android:value=":business;:download;com.alibaba.ailabs.genie.smartapp;"/>
+        <activity android:exported="true" android:launchMode="singleTask" android:name="com.alibaba.ailabs.appbox.activity.MarketMainActivity" android:process="@string/market_store_process">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/main" android:scheme="market"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/main" android:scheme="http"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/main" android:scheme="https"/>
+            </intent-filter>
+        </activity>
+        <activity android:configChanges="keyboardHidden|orientation" android:exported="true" android:launchMode="singleTask" android:name="com.alibaba.ailabs.appbox.activity.DeveloperApplistActivity" android:process="@string/market_store_process" android:screenOrientation="user" android:theme="@style/Theme.AppCompat"/>
+        <activity android:configChanges="keyboardHidden|orientation" android:exported="true" android:launchMode="singleTask" android:name="com.alibaba.ailabs.appbox.activity.ApplistActivity" android:process="@string/market_store_process" android:screenOrientation="user" android:theme="@style/Theme.AppCompat">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/applist" android:scheme="market"/>
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:launchMode="singleTask" android:name="com.alibaba.ailabs.appbox.activity.DetailsActivity" android:process="@string/market_store_process">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/details" android:scheme="market"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/topic" android:scheme="market"/>
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:launchMode="singleInstance" android:name="com.alibaba.ailabs.appbox.activity.SkillDetailsActivity" android:process="@string/market_store_process">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/skill_detail" android:scheme="market"/>
+            </intent-filter>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.appbox.activity.DialogOpenAppActivity" android:process="@string/market_store_process" android:theme="@style/DialogActivityTheme">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/dialog_open" android:scheme="market"/>
+            </intent-filter>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.appbox.activity.DialogTry2AddAppActivity" android:process="@string/market_store_process" android:theme="@style/DialogActivityTheme">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/try2add" android:scheme="market"/>
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:name="com.alibaba.ailabs.base.router.MarketBlankActivity" android:process="@string/market_store_process" android:theme="@style/Theme.AppCompat">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="com.alibaba.ailabs.genie.market" android:path="/router" android:scheme="market"/>
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:launchMode="singleTask" android:name="com.alibaba.ailabs.appbox.activity.SkillActivity" android:process="@string/market_store_process">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/skill" android:scheme="market"/>
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:launchMode="singleTop" android:name="com.alibaba.ailabs.appbox.activity.MarketVideoActivity" android:process="@string/market_store_process">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/video" android:scheme="market"/>
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:launchMode="singleTop" android:name="com.alibaba.ailabs.appbox.activity.GenieSkillRankActivity" android:process="@string/market_store_process">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.appbox.childmodel.ChildAppMarketActivity" android:process="@string/market_store_process">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.childrenmodel" android:path="/applist" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <receiver android:name="com.alibaba.ailabs.appbox.broadcast.MemoryBroadcastReceiver" android:process="@string/market_store_process">
+            <intent-filter android:priority="1000">
+                <action android:name="android.intent.action.DEVICE_STORAGE_LOW"/>
+                <action android:name="android.intent.action.DEVICE_STORAGE_OK"/>
+            </intent-filter>
+        </receiver>
+        <service android:exported="true" android:name="com.alibaba.ailabs.appbox.service.MarketDownloadService" android:process="@string/market_store_process">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.market.preinstall"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.market" android:path="/checkapp" android:scheme="genie"/>
+            </intent-filter>
+        </service>
+        <service android:exported="true" android:name="com.alibaba.ailabs.searchbox.service.AppSearchService" android:process="@string/market_store_process">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.genie.searchbox" android:path="/appsearch" android:scheme="genie"/>
+            </intent-filter>
+        </service>
+        <activity android:exported="true" android:launchMode="singleTop" android:name="com.alibaba.ailabs.searchbox.activity.AppSearchActivity" android:process="@string/market_store_process" android:theme="@style/Transparent">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <meta-data android:name="packageName" android:value="com.alibaba.genie.appsearch"/>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.alibaba.genie.searchbox" android:path="/appsearch" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <service android:exported="true" android:name="com.alibaba.ailabs.appbox.service.GenieRouterService" android:process="@string/market_store_process">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/download_or_open" android:scheme="genie"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/download_and_open" android:scheme="genie"/>
+            </intent-filter>
+        </service>
+        <service android:exported="true" android:name="com.alibaba.ailabs.apkupdate.service.ApkUpdateService" android:process="@string/market_store_process">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.genie.market" android:path="/bgUpdate" android:scheme="genie"/>
+            </intent-filter>
+        </service>
+        <activity android:exported="true" android:name="com.alibaba.ailabs.appbox.service.ServiceActivity" android:process="@string/market_store_process">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/download_or_open" android:scheme="genie"/>
+                <data android:host="com.alibaba.ailabs.geniemarket" android:path="/download_and_open" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:launchMode="singleTask" android:name="com.alibaba.ailabs.cleaner.activity.CleanerMainActivity" android:process="@string/market_store_process">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.alibaba.genie.market" android:path="/clean" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <provider android:authorities="com.alibaba.ailabs.genie.smartapp.provider" android:exported="false" android:grantUriPermissions="true" android:name="android.support.v4.content.FileProvider" android:process="@string/market_store_process">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths"/>
+        </provider>
+        <receiver android:name="com.alibaba.ailabs.appbox.common.installafter9.InstallAfter9$InstallResultReceiver" android:process="@string/market_task_process">
+            <intent-filter>
+                <action android:name="com.alibaba.genie.market.AppInstall.SESSION_API_PACKAGE_INSTALLED"/>
+            </intent-filter>
+        </receiver>
+        <provider android:authorities="com.alibaba.ailabs.genie.market.ipc" android:exported="true" android:name="com.alibaba.ailabs.appbox.remote.server.MarketServerProvider" android:process="@string/market_task_process"/>
+        <service android:exported="true" android:name="com.alibaba.ailabs.appbox.service.AccessibilityServiceGesture" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" android:process="@string/market_store_process">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+        </service>
+        <service android:directBootAware="true" android:exported="false" android:name="androidx.room.MultiInstanceInvalidationService"/>
+        <meta-data android:name="com.alibaba.ailabs.genie.time.statistics.StatisticsApplication" android:value="com.alibaba.ailabs.genie.smartapp"/>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.time.service.TimerService"/>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.childmode.ui.page.ValidateLockActivity" android:screenOrientation="landscape" android:theme="@style/TranslucentTheme">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.datacenter" android:path="/password" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.childmode.ui.page.MinorModeActivity" android:screenOrientation="landscape" android:theme="@style/TranslucentTheme">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.datacenter" android:path="/minor" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.childmode.ui.page.ApiActivity" android:theme="@style/ApiActivityTheme">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.datacenter" android:path="/childmode" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.childmode.ui.page.ChildFaceActivity" android:screenOrientation="landscape" android:theme="@style/TranslucentTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.datacenter" android:path="/childface" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <meta-data android:name="com.alibaba.ailabs.genie.contacts.app.ContactsApplication" android:value=":business"/>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.contacts.view.MainGuideActivity" android:process=":business" android:screenOrientation="landscape"/>
+        <meta-data android:name="CONTACTS_RUN_PROCESS_NAME" android:value=":business"/>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.contacts.MainActivity" android:process=":business" android:taskAffinity=".contact">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/home" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/history" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/dial" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.contacts"/>
+        </activity>
+        <activity android:name="com.alibaba.ailabs.genie.contacts.avatar.TakePhotoActivity" android:process=":business" android:screenOrientation="landscape">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.contacts"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.contacts.details.DetailsActivity" android:process=":business" android:screenOrientation="landscape">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.contacts"/>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.genie.contacts.add.AddContactsActivity" android:process=":business" android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/add" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.contacts"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.contacts.cmd.transform.VoipToPstnActivity" android:process=":business" android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/voip_to_pstn" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.contacts"/>
+        </activity>
+        <activity android:name="com.alibaba.ailabs.genie.contacts.add.RelationshipActivity" android:process=":business" android:screenOrientation="landscape">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.contacts"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.contacts.details.DownloadTipsActivity" android:process=":business" android:screenOrientation="landscape">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.contacts"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.contacts.details.DownloadTipsMiniActivity" android:process=":business" android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/download_tips_mini" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.contacts"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.contacts.husky.HuskyDetailsActivity" android:process=":business" android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/call_husky" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.contacts"/>
+        </activity>
+        <service android:name="com.alibaba.ailabs.genie.contacts.cmd.CmdDispatchService" android:process=":business">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/contacts_detail" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/contacts_select_list" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/call_select_list" android:scheme="genie"/>
+            </intent-filter>
+        </service>
+        <activity android:name="com.alibaba.ailabs.genie.contacts.cmd.CmdDispatchActivity" android:process=":business" android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/contacts_detail" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/contacts_select_list" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.contacts" android:path="/page/call_select_list" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.contacts"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.contacts.cmd.selectlist.call.VCallListActivity" android:process=":business" android:screenOrientation="landscape">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.contacts"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.contacts.cmd.selectlist.contacts.VContactListActivity" android:process=":business" android:screenOrientation="landscape">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.contacts"/>
+        </activity>
+        <receiver android:name="com.alibaba.ailabs.genie.contacts.app.RegisterReceiver" android:process=":business">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.assistant.UNBINDUSER"/>
+            </intent-filter>
+        </receiver>
+        <provider android:authorities="com.alibaba.ailabs.genie.contacts" android:exported="true" android:name="com.alibaba.ailabs.genie.contacts.databases.DataProvider" android:process=":business" android:readPermission="com.alibaba.ailabs.genie.contacts.course.read"/>
+        <meta-data android:name="com.alibaba.ailabs.genie.genieboot.BootApplication" android:value="com.alibaba.ailabs.genie.smartapp"/>
+        <activity android:directBootAware="true" android:name="com.alibaba.ailabs.genie.genieboot.activity.BootHomeActivity" android:screenOrientation="landscape" android:theme="@style/AdultHomeTranslucentTheme">
+            <intent-filter android:priority="11">
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.HOME"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.alibaba.ailabs.genie.launcher" android:path="/home" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <service android:name="com.alibaba.ailabs.genie.genieboot.task.AppUpdateJob" android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <meta-data android:name="com.alibaba.ailabs.genie.message.MessageCenterApplication" android:value="com.alibaba.ailabs.genie.smartapp"/>
+        <activity android:exported="true" android:label="@string/title_activity_message_center" android:name="com.alibaba.ailabs.genie.message.ui.MessageCenterActivity" android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.alibaba.ailabs.genie.message" android:path="/page" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.message.ui.MessageActivityP0" android:taskAffinity=".message" android:theme="@style/transparent_activity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.alibaba.ailabs.genie.message_p0" android:path="/page" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.message.service.MessageCenterService">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.message" android:path="/notify" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.messagecenter.ACTION_NOTIFY"/>
+            </intent-filter>
+        </service>
+        <receiver android:name="com.alibaba.ailabs.genie.message.receive.ConnectionStatusReceiver">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.assistant.ONLINE"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.alibaba.ailabs.genie.message.receive.RefreshMessageStatusReceiver">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.message.ACTION_STATUS_NOTIFY"/>
+            </intent-filter>
+        </receiver>
+        <meta-data android:name="com.bumptech.glide.integration.okhttp3.OkHttpGlideModule" android:value="GlideModule"/>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.genie.shopping.voiceprint.open.activity.VoiceSetUpActivity" android:process=":business" android:theme="@style/TranslucentFullScreenTheme">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <meta-data android:name="SHOPPING_RUN_PROCESS_NAME" android:value=":business"/>
+        <meta-data android:name="com.alibaba.genie.shopping.ShoppingApplication" android:value=":business;:temp;com.alibaba.ailabs.genie.smartapp"/>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.genie.shopping.activity.ShoppingSearchActivity" android:process=":business" android:screenOrientation="landscape" android:taskAffinity="com.alibaba.genie.shopping.alonetask" android:theme="@style/TranslucentFullScreenTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.shopping" android:path="/shoppingSearch" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintGuideActivity" android:process=":business" android:theme="@style/TranslucentFullScreenTheme">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:name="com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintNickCreateActivity" android:process=":business" android:theme="@style/TranslucentFullScreenTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.shopping" android:path="/voicePrintNickCreate" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:name="com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintGetOneActivity" android:process=":business" android:theme="@style/TranslucentFullScreenTheme">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:name="com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintGetTwoActivity" android:process=":business" android:theme="@style/TranslucentFullScreenTheme">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:name="com.alibaba.genie.shopping.activity.OrderPayActivity" android:process=":business" android:taskAffinity="com.alibaba.genie.shopping.alonetask" android:theme="@style/TranslucentFullScreenTheme">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.genie.shopping.activity.OrderDetailActivity" android:process=":business" android:taskAffinity="com.alibaba.genie.shopping.alonetask" android:theme="@style/TranslucentFullScreenTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.shopping" android:path="/orderDetail" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="h5.m.taobao.com" android:path="/awp/base/buy.htm" android:scheme="https"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.genie.shopping.activity.OrderDetailErrorActivity" android:process=":business" android:taskAffinity="com.alibaba.genie.shopping.alonetask" android:theme="@style/TranslucentFullScreenTheme">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:name="com.alibaba.genie.shopping.activity.PayResultActivity" android:process=":business" android:taskAffinity="com.alibaba.genie.shopping.alonetask" android:theme="@style/TranslucentFullScreenTheme">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:name="com.alibaba.genie.shopping.activity.ShoppingBlankActivity" android:process=":business" android:theme="@style/TranslucentFullScreenTheme">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:name="com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintPayOpenSuccessActivity" android:process=":business" android:theme="@style/TranslucentFullScreenTheme">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:name="com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintAlipayStartActivity" android:theme="@style/TranslucentFullScreenTheme">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintListActivity" android:process=":business" android:theme="@style/TranslucentFullScreenTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.shopping" android:path="/voicePrintList" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.genie.shopping.activity.ShoppingDetailActivity" android:process=":temp" android:taskAffinity="com.alibaba.genie.shopping.alonetask" android:theme="@style/TranslucentFullScreenTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.shopping" android:path="/goodDetail" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.genie.shopping.activity.ShoppingDetailVideoActivity" android:process=":temp" android:taskAffinity="com.alibaba.genie.shopping.alonetask" android:theme="@style/AppTheme.Half.Translucent">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:name="android.taobao.windvane.runtimepermission.PermissionActivity" android:process=":temp" android:theme="@style/TranslucentFullScreenTheme">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.shopping"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:configChanges="locale|keyboardHidden|orientation|layoutDirection" android:exported="false" android:launchMode="singleTop" android:name="com.taobao.android.preview.DXTemplatePreviewActivity" android:screenOrientation="portrait" android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity android:configChanges="keyboardHidden|orientation" android:exported="false" android:hardwareAccelerated="true" android:name="com.alibaba.android.ultron.engine.TemplateMockActivity" android:screenOrientation="portrait" android:theme="@android:style/Theme.Light.NoTitleBar" android:windowSoftInputMode="stateHidden|adjustPan">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="test.taobao.com" android:path="/newultron/mockTemplate.htm" android:scheme="http"/>
+            </intent-filter>
+        </activity>
+        <activity android:configChanges="keyboardHidden|orientation" android:exported="false" android:name="com.alibaba.android.ultron.engine.TemplateDownloadActivity" android:screenOrientation="portrait" android:theme="@android:style/Theme.Light.NoTitleBar" android:windowSoftInputMode="stateHidden|adjustPan">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="pre-ultronage2.alibaba-inc.com" android:path="/gw/nobuc/template/getCache" android:scheme="http"/>
+            </intent-filter>
+        </activity>
+        <service android:name="com.taobao.android.service.AidlBridgeService"/>
+        <activity android:configChanges="keyboardHidden|navigation|orientation" android:multiprocess="true" android:name="com.alipay.mobile.verifyidentity.ui.helper.DialogActivity" android:screenOrientation="portrait" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+        <activity android:configChanges="keyboardHidden|navigation|orientation" android:multiprocess="true" android:name="com.alipay.mobile.verifyidentity.ui.helper.NoticeActivity" android:screenOrientation="portrait" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+        <activity android:configChanges="keyboardHidden|navigation|orientation" android:multiprocess="true" android:name="com.alipay.mobile.verifyidentity.module.password.pay.ui.PayPwdHalfActivity" android:screenOrientation="portrait" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:windowSoftInputMode="stateHidden|adjustPan"/>
+        <activity android:configChanges="keyboardHidden|navigation|orientation" android:multiprocess="true" android:name="com.alipay.mobile.verifyidentity.module.password.pay.ui.PayPwdFullActivity" android:screenOrientation="portrait" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:windowSoftInputMode="stateHidden|adjustPan"/>
+        <activity android:configChanges="keyboardHidden|navigation|orientation" android:multiprocess="true" android:name="com.alipay.mobile.verifyidentity.module.menu.ui.MenuActivity" android:screenOrientation="portrait" android:windowSoftInputMode="stateHidden|adjustPan"/>
+        <activity android:configChanges="keyboardHidden|navigation|orientation" android:multiprocess="true" android:name="com.alipay.mobile.verifyidentity.module.sms.ui.SmsActivity" android:screenOrientation="portrait" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:windowSoftInputMode="stateHidden|adjustPan"/>
+        <activity android:name="com.taobao.android.tbsku.TBXSkuActivity" android:theme="@style/XSku.Dialog.Activity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="sku.taobao.com" android:path="/index.htm" android:scheme="http"/>
+                <data android:host="sku.taobao.com" android:path="/index.htm" android:scheme="https"/>
+            </intent-filter>
+        </activity>
+        <activity android:configChanges="keyboardHidden|orientation" android:exported="false" android:hardwareAccelerated="true" android:name="com.taobao.android.ultron.common.UltronSwitchActivity" android:screenOrientation="portrait" android:theme="@android:style/Theme.Light.NoTitleBar" android:windowSoftInputMode="stateHidden|adjustPan">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="test.taobao.com" android:path="/newultron/switch.htm" android:scheme="http"/>
+            </intent-filter>
+        </activity>
+        <receiver android:name="com.taobao.android.ultron.common.UltronTestReceiver">　　　　　　　　 
+            <intent-filter>
+                <action android:name="com.taobao.mobius"/>
+            </intent-filter> 　　　　　　 </receiver>
+        <provider android:authorities="com.alibaba.ailabs.genie.datacenter.DataCenterProvider" android:exported="true" android:name="com.alibaba.ailabs.genie.datacenter.DataCenterProvider"/>
+        <provider android:authorities="com.alibaba.ailabs.genie.smartapp.data.provider" android:enabled="true" android:exported="true" android:name="com.alibaba.genie.dataprovider.GenieContentProvider"/>
+        <meta-data android:name="com.alibaba.ailabs.genie.pay.GeniePayAudioApplication" android:value=":business"/>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.genie.pay.activity.MainActivity" android:process=":business" android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.alibaba.ailabs.genie.pay" android:path="/payTest" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.genie.pay.activity.GeniePayApiActivity" android:process=":business" android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.alibaba.ailabs.genie.pay" android:path="/payApi" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.genie.pay.activity.GenieProductsActivity" android:process=":business" android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.alibaba.ailabs.genie.pay" android:path="/products" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.genie.pay.activity.GeniePayActivity" android:process=":business" android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.alibaba.ailabs.genie.pay" android:path="/pay" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.commonpay.qrcode.QrcodePayActivity" android:process=":h5game" android:taskAffinity="com.alibaba.ailabs.genie.commonpay" android:theme="@style/commonPayCommonDialog">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.commonpay.qrcode.QrcodePayFromWebappsActivity" android:taskAffinity="com.alibaba.ailabs.genie.commonpay" android:theme="@style/commonPayCommonDialog">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.commonpay" android:path="/qrcode" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:name="com.alibaba.ailabs.genie.commonpay.activity.MainActivity"/>
+        <activity android:name="com.alibaba.ailabs.genie.logger.activity.PermissionActivity"/>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.logger.service.LogService">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.logger.LogService.action"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.logger.LogService.upload"/>
+                <data android:host="upload" android:scheme="logservice"/>
+            </intent-filter>
+        </service>
+        <meta-data android:name="com.alibaba.ailabs.genie.config.ConfigApplication" android:value=":business"/>
+        <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES" android:value="1"/>
+        <meta-data android:name="org.chromium.content.browser.SANDBOXED_SERVICES_NAME" android:value="com.taobao.uc.service.SandboxedProcessService"/>
+        <service android:isolatedProcess="true" android:name="com.taobao.uc.service.SandboxedProcessService0" android:process=":sandboxed_process0"/>
+        <meta-data android:name="org.chromium.content.browser.SANDBOXED_PRIVILEGED_SERVICES_NAME" android:value="com.taobao.uc.service.SandboxedPrivilegedProcessService"/>
+        <service android:isolatedProcess="false" android:name="com.taobao.uc.service.SandboxedPrivilegedProcessService0" android:process=":sandboxed_privilege_process0"/>
+        <meta-data android:name="org.chromium.content.browser.NUM_GPU_SERVICES" android:value="1"/>
+        <meta-data android:name="org.chromium.content.browser.GPU_SERVICES_NAME" android:value="com.taobao.uc.service.GpuProcessService"/>
+        <service android:isolatedProcess="false" android:name="com.taobao.uc.service.GpuProcessService0" android:process=":gpu_process"/>
+        <provider android:authorities="com.alibaba.ailabs.genie.smartapp.ipc.second.server" android:exported="true" android:name="com.alibaba.ailabs.genie.second.gcs.service.SecondInstaller"/>
+        <meta-data android:name="com.alibaba.ailabs.genie.adv.AdvApplication" android:value="com.alibaba.ailabs.genie.smartapp"/>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.geniesdk.NativeService" android:process=":core">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.tg.ACTION_BIND"/>
+                <action android:name="com.yunos.tv.alitvasr.service"/>
+                <action android:name="com.alibaba.ailabs.genie.assistant.autotest"/>
+            </intent-filter>
+        </service>
+        <provider android:authorities="com.alibaba.ailabs.genie.assistant.provider" android:exported="true" android:name="com.alibaba.ailabs.geniesdk.provider.StatusProvider" android:process=":core"/>
+        <provider android:authorities="com.alibaba.ailabs.genie.assistant.server" android:exported="true" android:name="com.alibaba.ailabs.geniesdk.AgisProvider" android:process=":core"/>
+        <receiver android:name="com.alibaba.ailabs.comm.receiver.SystemLaunchForceStopReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.assistant.ONLINE"/>
+            </intent-filter>
+        </receiver>
+        <meta-data android:name="MUSIC_RUN_PROCESS_NAME" android:value=":business"/>
+        <meta-data android:name="com.alibaba.ailabs.genie.musicplayer.App" android:value=":business"/>
+        <meta-data android:name="features_pkg" android:value="ailabs.genie.musicplayer"/>
+        <meta-data android:name="ailabs.genie.musicplayer" android:value="tme/not_validate_business"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.musicplayer.activity.MainActivity" android:process=":business" android:screenOrientation="landscape" android:taskAffinity=".musicplayer">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.alibaba.ailabs.genie.musicplayer" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="ut.24995425"/>
+            </intent-filter>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.musicplayer"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:launchMode="singleInstance" android:name="com.alibaba.ailabs.genie.musicplayer.activity.PlayListActivity" android:process=":business" android:screenOrientation="landscape">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.musicplayer"/>
+        </activity>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:excludeFromRecents="true" android:exported="true" android:name="com.alibaba.ailabs.genie.musicplayer.tme.TMEMainActivity" android:process=":business" android:screenOrientation="landscape" android:taskAffinity=".musicplayer.tme" android:theme="@style/MyAppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.musicplayer.tme" android:path="/page/tme_main" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="ut.24995429"/>
+            </intent-filter>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.musicplayer"/>
+        </activity>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:launchMode="singleInstance" android:name="com.alibaba.ailabs.genie.musicplayer.tme.TMEWebViewActivity" android:process=":business" android:screenOrientation="landscape" android:theme="@style/transparent_activity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.musicplayer.tme" android:path="/page/tme_web_view" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.musicplayer"/>
+        </activity>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:launchMode="singleInstance" android:name="com.alibaba.ailabs.genie.musicplayer.activity.SpeedActivity" android:process=":business" android:screenOrientation="landscape" android:theme="@style/transparent_activity">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.musicplayer"/>
+        </activity>
+        <service android:exported="true" android:name="com.alibaba.ailabs.genie.musicplayer.service.MusicService" android:process=":business">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.alibaba.ailabs.genie.musicplayer.service" android:scheme="genie"/>
+            </intent-filter>
+        </service>
+        <activity android:exported="true" android:name="com.alibaba.ailabs.genie.musicplayer.activity.PayCallBackActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.alibaba.ailabs.genie.musicplayer.pay" android:path="/page/callback" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <meta-data android:name="com.alibaba.ailabs.genie.genieui.GenieUiApplication" android:value="com.alibaba.ailabs.genie.smartapp"/>
+        <meta-data android:name="com.alibaba.ailabs.genie.genieui.GenieBallApplication" android:value="com.alibaba.ailabs.genie.smartapp"/>
+        <service android:exported="true" android:name="com.alibaba.ailabs.genie.genieui.GenieAssistantUiService">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.tg.UI_SERVICE"/>
+            </intent-filter>
+        </service>
+        <service android:name="com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+        </service>
+        <meta-data android:name="com.amap.api.v2.apikey" android:value="64243f82261889283a42d6ce2f4c75d1"/>
+        <meta-data android:name="AGIS_RUN_PROCESS_NAME" android:value=":core"/>
+        <meta-data android:name="com.alibaba.ailabs.genie.assistant.MainApplication" android:value=":core"/>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.assistant.vision.AVEManagerService" android:process=":core"/>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.assistant.vision.AVEProxyService" android:process=":core"/>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.assistant.vision.VisionWakeUpService" android:process=":core"/>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.assistant.vision.DistanceDetectService" android:process=":core"/>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.assistant.vision.ChildFaceDetectService" android:process=":core"/>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.assistant.vision.GestureDetectService" android:process=":core"/>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.assistant.vision.VoiceDataProxyService" android:process=":core"/>
+        <activity android:name="com.alibaba.ailabs.genie.assistant.ui.UserInfoActivity" android:process=":core" android:screenOrientation="landscape" android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.yunos.tv.alitvasr" android:path="/userinfo" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <service android:name="com.alibaba.ailabs.genie.assistant.service.AccessibilityMonitorService" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" android:process=":core">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/accessibility"/>
+        </service>
+        <service android:name="com.amap.api.location.APSService"/>
+        <receiver android:name="com.alibaba.ailabs.genie.assistant.PackageReceiver" android:process=":core">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED"/>
+                <action android:name="android.intent.action.PACKAGE_REMOVED"/>
+                <data android:scheme="package"/>
+            </intent-filter>
+        </receiver>
+        <meta-data android:name="genie_setting" android:value="@string/setting_config"/>
+        <meta-data android:name="com.alibaba.ailabs.genie.custom.contacts.app.ContactsApplication" android:value=":business"/>
+        <activity android:name="com.alibaba.ailabs.genie.custom.contacts.main.MainGuideActivity" android:screenOrientation="landscape" android:value=":business">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.custom.contacts.main.MainActivity" android:value=":business">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.custom.contacts" android:path="/page/home" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.custom.contacts" android:path="/page/history" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.custom.contacts"/>
+        </activity>
+        <activity android:name="com.alibaba.ailabs.genie.custom.contacts.detail.ContactDetailActivity" android:value=":business">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.custom.contacts"/>
+        </activity>
+        <activity android:name="com.alibaba.ailabs.genie.custom.contacts.detail.CuContactDetailActivity" android:value=":business">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.custom.contacts"/>
+        </activity>
+        <service android:name="com.alibaba.ailabs.genie.custom.contacts.asr.CmdDispatchService" android:value=":business">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.custom.contacts" android:path="/page/contacts_detail" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.custom.contacts" android:path="/page/contacts_select_list" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.custom.contacts" android:path="/page/call_select_list" android:scheme="genie"/>
+            </intent-filter>
+        </service>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.custom.contacts.asr.call.VCallListActivity" android:screenOrientation="landscape" android:value=":business">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.genie.custom.contacts"/>
+        </activity>
+        <receiver android:name="com.alibaba.ailabs.genie.custom.contacts.common.receiver.RegisterReceiver" android:value=":business">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.assistant.BINDUSER"/>
+                <action android:name="com.alibaba.ailabs.genie.assistant.UNBINDUSER"/>
+            </intent-filter>
+        </receiver>
+        <meta-data android:name="com.alibaba.ailabs.basedomain.MainApplication" android:value="com.alibaba.ailabs.genie.smartapp:business"/>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.basedomain.ui.MainActivity" android:process=":business" android:screenOrientation="landscape" android:theme="@style/AppTheme">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.basedomain"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.basedomain.ui.BaseService" android:process=":business">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.basedomain" android:scheme="genie"/>
+            </intent-filter>
+        </service>
+        <receiver android:name="com.alibaba.ailabs.basedomain.ui.alarm.AlarmReceiver" android:process=":business"/>
+        <receiver android:exported="true" android:name="com.alibaba.ailabs.basedomain.ui.alarm.AlarmQueryReceiver" android:process=":business">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.action.AlarmQuery"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.alibaba.ailabs.basedomain.ui.alarm.AlarmScheduleSyncDataReceiver" android:process=":business"/>
+        <receiver android:name="com.alibaba.ailabs.basedomain.ui.alarm.AutoStartBroadcastReceiver" android:process=":business">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <category android:name="android.intent.category.HOME"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.alibaba.ailabs.basedomain.common.UserInfoChangeReceiver" android:process=":business">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.assistant.BINDUSER"/>
+                <action android:name="com.alibaba.ailabs.genie.assistant.UNBINDUSER"/>
+                <action android:name="com.alibaba.ailabs.genie.assistant.ONLINE"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.basedomain.ui.alarm.AlarmDismissReceiver" android:process=":business">
+            <intent-filter>
+                <action android:name="com.android.deskclock.ALARM_DISMISS"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.alibaba.ailabs.basedomain.ui.alarm.NetWorkChangeReceiver" android:process=":business">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
+                <action android:name="android.net.wifi.STATE_CHANGE"/>
+            </intent-filter>
+        </receiver>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.basedomain.ui.alarm.OnePixelActivity" android:process=":business" android:screenOrientation="landscape" android:theme="@style/OnePixelActivity">
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.basedomain"/>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.genie.alarm.ui.AlarmListActivity" android:process=":business" android:screenOrientation="landscape" android:theme="@style/AppTheme">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <meta-data android:name="packageName" android:value="com.alibaba.ailabs.basedomain"/>
+        </activity>
+        <provider android:authorities="com.alibaba.ailabs.genie.smartapp.lifecycle-trojan" android:exported="false" android:multiprocess="true" android:name="android.arch.lifecycle.ProcessLifecycleOwnerInitializer"/>
+        <meta-data android:name="com.alibaba.genie.tradepay.WebTradePayApplication" android:value="com.alibaba.ailabs.genie.smartapp"/>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.genie.webshopping.activity.TradePayActivity" android:process="com.alibaba.ailabs.genie.smartapp" android:taskAffinity="com.alibaba.ailabs.genie.smartapp" android:theme="@style/TranslucentFullScreenTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.webapps_shopping_sdk_forampe" android:path="/open" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:name="com.alibaba.ailabs.genie.image.viewpager.view.ImagePreviewActivity" android:process=":temp" android:theme="@style/Theme.ImagePreview"/>
+        <meta-data android:name="AUTH_SERVICE_RUN_PROCESS_NAME" android:value=""/>
+        <meta-data android:name="com.alibaba.ailabs.genie.authservice.AuthApplication" android:value=""/>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.authservice.service.AuthPermissionService" android:process="">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="com.alibaba.ailabs.genie.authservice.intent.action.AuthPermissionService"/>
+            </intent-filter>
+        </service>
+        <activity android:enabled="true" android:exported="true" android:launchMode="singleInstance" android:name="com.alibaba.ailabs.genie.authservice.activity.AuthPermissionActivity" android:process="" android:theme="@style/bottom_dialog">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="com.alibaba.ailabs.genie.authservice.intent.action.AuthPermissionActivity"/>
+            </intent-filter>
+        </activity>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.authservice.service.ProxyService" android:process="">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:host="com.alibaba.ailabs.genie.authservice.service" android:path="/ProxyService" android:scheme="genie"/>
+            </intent-filter>
+        </service>
+        <meta-data android:name="com.alibaba.ailabs.genie.router.GenieAIRouterApplicaction" android:value="com.alibaba.ailabs.genie.smartapp"/>
+        <activity android:launchMode="singleTask" android:name="com.alibaba.ailabs.genie.router.view.LoadActivity" android:taskAffinity="com.alibaba.ailabs.genie.router" android:theme="@style/APPTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.router" android:path="/open" android:scheme="genie"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.router" android:path="/openByPackageName" android:scheme="genie"/>
+            </intent-filter>
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <provider android:authorities="com.alibaba.ailabs.genie.router.ipc.service" android:exported="true" android:name="com.alibaba.ailabs.genie.router.service.RouterProvider"/>
+        <meta-data android:name="GenieSetting_RUN_PROCESS_NAME" android:value="com.alibaba.ailabs.genie.smartapp"/>
+        <meta-data android:name="com.alibaba.ailabs.genie.datacenter.GenieSettingApplication" android:value="com.alibaba.ailabs.genie.smartapp"/>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.childmode.ui.page.HelpActivity" android:process="com.alibaba.ailabs.genie.smartapp" android:screenOrientation="landscape" android:theme="@style/AppTheme3">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.datacenter" android:path="/helpPage" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.childmode.ui.page.ShotcutSettingActivity" android:process="com.alibaba.ailabs.genie.smartapp" android:screenOrientation="landscape" android:theme="@style/SettingTheme">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.alibaba.ailabs.genie.datacenter" android:path="/shotcutSettingPage" android:scheme="genie"/>
+            </intent-filter>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.genie.nodisturb.NotDisturbActivity" android:process="com.alibaba.ailabs.genie.smartapp" android:theme="@style/DNDModeAppTheme">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <activity android:launchMode="singleInstance" android:name="com.alibaba.ailabs.genie.nodisturb.TimeDisturbActivity" android:process="com.alibaba.ailabs.genie.smartapp" android:theme="@style/SettingTheme">
+            <meta-data android:name="AUTO_SIZE" android:value="true"/>
+        </activity>
+        <receiver android:name="com.alibaba.ailabs.genie.datacenter.DataCenterReceiver" android:permission="com.alibaba.ailabs.genie.datacenter.permission" android:process="com.alibaba.ailabs.genie.smartapp">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.TIME_SET"/>
+                <action android:name="android.net.wifi.STATE_CHANGE"/>
+                <action android:name="com.alibaba.ailabs.genie.assistant.BINDUSER"/>
+            </intent-filter>
+        </receiver>
+        <service android:enabled="true" android:exported="true" android:name="com.alibaba.ailabs.genie.datacenter.DataCenterService" android:process="com.alibaba.ailabs.genie.smartapp"/>
+        <provider android:authorities="com.alibaba.ailabs.childmode.provider" android:exported="true" android:name="com.alibaba.ailabs.childmode.provider.ChildModeProvider" android:process="com.alibaba.ailabs.genie.smartapp"/>
+        <receiver android:name="com.alibaba.ailabs.childmode.common.UserInfoChangeReceiver" android:process="com.alibaba.ailabs.genie.smartapp">
+            <intent-filter>
+                <action android:name="com.alibaba.ailabs.genie.assistant.BINDUSER"/>
+                <action android:name="com.alibaba.ailabs.genie.assistant.UNBINDUSER"/>
+                <action android:name="com.alibaba.ailabs.genie.assistant.ONLINE"/>
+            </intent-filter>
+        </receiver>
+        <meta-data android:name="multidex_enable" android:value="true"/>
+    </application>
+</manifest>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <drawable name="alipay_template_channel_bg">#e5e5e5</drawable>
+    <drawable name="bg">#010610</drawable>
+    <drawable name="genie_pay_transparent">#00000000</drawable>
+    <drawable name="mini_keyboard_bg">#282931</drawable>
+    <drawable name="notification_template_icon_bg">#3333b5e5</drawable>
+    <drawable name="notification_template_icon_low_bg">#0cffffff</drawable>
+    <drawable name="safepay_fp_btn_bg_normal">#ffffff</drawable>
+    <drawable name="safepay_fp_btn_bg_press">#e3e3e3</drawable>
+    <drawable name="safepay_fp_dialog_bg">#ffffff</drawable>
+    <drawable name="safepay_wear_dialog_bg">#ffffff</drawable>
+    <drawable name="transparent">#00000000</drawable>
+</resources>

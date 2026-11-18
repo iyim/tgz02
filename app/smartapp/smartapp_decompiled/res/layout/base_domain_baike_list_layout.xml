@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="vertical" android:id="@id/root" android:background="@color/bg_base_domain_default_color" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.alibaba.ailabs.basedomain.ui.ExitView android:id="@id/layout_exit" android:layout_width="wrap_content" android:layout_height="100.0dp" />
+    <TextView android:textSize="24.0dp" android:textColor="@android:color/white" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="50.0dp" android:layout_marginTop="81.0dp" android:text="为您搜索到相关内容：" />
+    <FrameLayout android:paddingTop="134.0dp" android:layout_width="match_parent" android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView android:id="@id/list" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="50.0dp" android:layout_marginRight="50.0dp" />
+    </FrameLayout>
+</RelativeLayout>

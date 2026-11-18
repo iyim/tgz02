@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_width="288.0dp" android:layout_height="wrap_content" android:foreground="?selectableItemBackgroundBorderless"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:background="@drawable/gs_text_bg_shape_56" android:paddingLeft="20.0dp" android:paddingRight="20.0dp" android:layout_width="wrap_content" android:layout_height="56.0dp" android:layout_marginLeft="27.0dp">
+        <TextView android:textSize="20.0sp" android:textColor="#fff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="“" android:singleLine="true" />
+        <TextView android:textSize="20.0sp" android:textColor="#fff" android:ellipsize="end" android:id="@id/title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxWidth="180.0dp" android:singleLine="true" />
+        <TextView android:textSize="20.0sp" android:textColor="#fff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="”" android:singleLine="true" />
+    </LinearLayout>
+</LinearLayout>

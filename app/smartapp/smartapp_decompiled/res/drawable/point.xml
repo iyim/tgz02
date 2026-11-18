@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:duration="130" android:drawable="@drawable/loading_point_00" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_01" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_02" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_03" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_04" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_05" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_06" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_07" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_08" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_09" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_10" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_11" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_12" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_13" />
+    <item android:duration="130" android:drawable="@drawable/loading_point_14" />
+</animation-list>

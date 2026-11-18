@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="30" android:compileSdkVersionCodename="11" android:sharedUserId="android.uid.system" package="com.aligenie.ags" platformBuildVersionCode="30" platformBuildVersionName="11">
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="permission.CLEAR_APP_USER_DATA"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_ROUTING"/>
+    <uses-permission android:name="android.permission.READ_LOGS"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.GET_TASKS"/>
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <uses-permission android:name="com.aliyun.permission.TYID_SERVICE"/>
+    <uses-permission android:name="com.aliyun.permission.TYID_MGR_SERVICE"/>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.DIAGNOSTIC"/>
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <application android:allowBackup="false" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:extractNativeLibs="true" android:icon="@mipmap/ic_launcher" android:label="@string/app_name" android:name="com.aligenie.ags.AgsApp" android:roundIcon="@mipmap/ic_launcher_round" android:supportsRtl="true" android:theme="@style/Theme.Ags" android:usesCleartextTraffic="true">
+        <provider android:authorities="com.aligenie.ic.icProvider" android:enabled="true" android:exported="true" android:name="com.aligenie.ags.analytics.AliICProvider"/>
+        <uses-library android:name="libsetting" android:required="false"/>
+        <receiver android:name="com.aligenie.ags.analytics.ICBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_REMOVED"/>
+                <action android:name="android.intent.action.PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.PACKAGE_ADDED"/>
+                <data android:scheme="package"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.aligenie.ic.COLLECTOR_ALARM"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.TIME_SET"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="ACTION_SCREEN_SAVER"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.HDMI_PLUGGED"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.DEVICE_STORAGE_LOW"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.bluetooth.device.action.BOND_STATE_CHANGED"/>
+                <action android:name="android.bluetooth.adapter.action.CONNECTION_STATE_CHANGED"/>
+            </intent-filter>
+        </receiver>
+        <service android:enabled="true" android:exported="true" android:name="com.aligenie.ags.analytics.AliicxService">
+            <intent-filter android:priority="1000">
+                <action android:name="com.yunos.tv.device.ALIICX_SERVICE"/>
+                <action android:name="com.yunos.tv.device.ALIICX_HEART_BEAT_START"/>
+            </intent-filter>
+        </service>
+        <service android:name="com.aligenie.ags.analytics.service.ICJobService" android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <service android:name="com.aligenie.ags.analytics.service.AccService" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/icaccessibility"/>
+        </service>
+        <service android:enabled="true" android:exported="false" android:name="com.aligenie.ags.analytics.service.ICService">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="com.aligenie.ic" android:path="/ras" android:scheme="@string/scheme_ic"/>
+            </intent-filter>
+        </service>
+        <service android:name="org.eclipse.paho.android.service.MqttService"/>
+        <receiver android:enabled="true" android:exported="true" android:name="com.aligenie.ags.access.AccessBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+        <activity android:label="@string/title_activity_main" android:name="com.aligenie.ags.access.MainActivity"/>
+        <service android:name="com.aligenie.ags.access.AccessService" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/accessibility"/>
+        </service>
+        <service android:enabled="true" android:exported="true" android:name="com.aligenie.ags.DeviceService"/>
+    </application>
+</manifest>

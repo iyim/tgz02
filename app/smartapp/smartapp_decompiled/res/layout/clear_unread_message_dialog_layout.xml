@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:gravity="center" android:orientation="vertical" android:layout_width="436.0dp" android:layout_height="112.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/dialog_layout" android:background="@mipmap/clear_com_unread_message" android:layout_width="match_parent" android:layout_height="match_parent">
+        <ImageView android:layout_width="92.0dp" android:layout_height="92.0dp" android:layout_marginBottom="8.0dp" android:src="@mipmap/icon_clear_un_read" />
+        <TextView android:textSize="36.0sp" android:textColor="#486590" android:id="@id/dialog_confirm" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="8.0dp" android:text="全部消息皆已读" android:layout_marginStart="16.0dp" />
+    </LinearLayout>
+</RelativeLayout>

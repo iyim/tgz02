@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@drawable/shopping_activity_content_bg" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="62.0dp" android:layout_marginBottom="38.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/img_close_dialog_layout" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <ImageView android:id="@id/img_close_dialog" android:layout_width="25.0dp" android:layout_height="25.0dp" android:layout_marginTop="16.0dp" android:layout_marginRight="16.0dp" android:src="@mipmap/img_close" android:scaleType="centerInside" android:layout_alignParentTop="true" android:layout_alignParentRight="true" />
+    </RelativeLayout>
+    <ScrollView android:scrollbarSize="10.0dp" android:scrollbarThumbVertical="@drawable/scrollbar" android:scrollbarTrackVertical="@drawable/scrollbar_background" android:scrollbarStyle="outsideInset" android:paddingRight="20.0dp" android:scrollbars="vertical" android:layout_width="match_parent" android:layout_height="373.0dp" android:layout_below="@id/img_close_dialog_layout" android:fadeScrollbars="false">
+        <ImageView android:id="@id/img_protocal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@mipmap/shopping_protocal_notice_img" android:scaleType="fitXY" />
+    </ScrollView>
+</RelativeLayout>

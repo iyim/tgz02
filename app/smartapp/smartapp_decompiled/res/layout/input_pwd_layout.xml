@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_gravity="center_horizontal" android:id="@id/root_view" android:background="@drawable/whole_bg_0" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:layout_gravity="center" android:id="@id/top" android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <RelativeLayout android:background="@drawable/whole_bg_1" android:layout_width="680.0dp" android:layout_height="424.0dp">
+            <com.alibaba.ailabs.childmode.ui.widget.PasswordEditText android:id="@id/password_edit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="108.0dp" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" />
+            <TextView android:textSize="20.0sp" android:textColor="#b2f5f5f5" android:id="@id/temporary_no_setting" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="20.0dp" android:text="@string/temporary_no_setting" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" />
+        </RelativeLayout>
+    </FrameLayout>
+    <com.alibaba.ailabs.childmode.ui.widget.numberinput.NumberInputKeyView android:layout_gravity="bottom" android:id="@id/number_input_key_view" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content" />
+</FrameLayout>

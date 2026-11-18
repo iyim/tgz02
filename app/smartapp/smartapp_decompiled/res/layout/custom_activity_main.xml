@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout android:orientation="vertical" android:tag="layout/custom_activity_main_0" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.alibaba.ailabs.genie.widget.GenieTabNavBar android:id="@id/nav_bar" android:layout_width="match_parent" android:layout_height="wrap_content" app:navBarTitleGravity="start" />
+    <com.alibaba.ailabs.genie.custom.contacts.main.MainViewPager android:id="@id/content_vp" android:layout_width="match_parent" android:layout_height="wrap_content" app:layout_constraintTop_toBottomOf="@id/nav_bar" />
+</android.support.constraint.ConstraintLayout>

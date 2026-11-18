@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="87.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <Button android:textSize="28.0sp" android:textColor="#f84d2b" android:layout_gravity="center" android:id="@id/tg_dialog_left_button" android:background="@android:color/transparent" android:layout_width="0.0dp" android:layout_height="48.0dp" android:layout_marginLeft="10.0dp" android:layout_marginRight="10.0dp" android:layout_weight="1.0" style="?android:borderlessButtonStyle" />
+    <View android:id="@id/va_dialog_line" android:background="#4f5d66" android:layout_width="1.0dp" android:layout_height="match_parent" />
+    <Button android:textSize="28.0sp" android:textColor="#ffffff" android:layout_gravity="center" android:id="@id/tg_dialog_right_button_smartapp" android:background="@android:color/transparent" android:layout_width="0.0dp" android:layout_height="48.0dp" android:layout_marginLeft="10.0dp" android:layout_marginRight="10.0dp" android:layout_weight="1.0" style="?android:borderlessButtonStyle" />
+</LinearLayout>

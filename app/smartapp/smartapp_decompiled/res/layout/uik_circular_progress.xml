@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:layout_gravity="center_horizontal" android:id="@id/uik_circularProgress" android:layout_width="@dimen/uik_ringSize" android:layout_height="@dimen/uik_ringSize" android:layout_marginTop="@dimen/uik_progressBarMarginTop" android:layout_marginBottom="@dimen/uik_progressBarMarginBottom" />
+    <TextView android:textSize="@dimen/uik_progressTextSize" android:textColor="@color/uik_progressTextColor" android:layout_gravity="center_horizontal" android:id="@id/uik_progressText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/uik_progressText" />
+</merge>

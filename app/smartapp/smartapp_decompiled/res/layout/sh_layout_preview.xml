@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rootView" android:background="#000000" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.alibaba.ailabs.genie.image.viewpager.view.HackyViewPager android:id="@id/viewPager" android:layout_width="match_parent" android:layout_height="match_parent" />
+    <TextView android:textSize="15.0sp" android:textColor="#ffffff" android:id="@id/tv_indicator" android:paddingLeft="10.0dp" android:paddingRight="10.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="40.0dp" android:text="1/4" android:layout_alignParentTop="true" android:layout_centerHorizontal="true" />
+    <FrameLayout android:id="@id/fm_image_show_origin_container" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="20.0dp" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true">
+        <Button android:textColor="#ffffff" android:gravity="center" android:id="@id/btn_show_origin" android:background="@drawable/gray_square_circle_bg_white_stroke" android:paddingLeft="10.0dp" android:paddingTop="5.0dp" android:paddingRight="10.0dp" android:paddingBottom="5.0dp" android:layout_width="100.0dp" android:layout_height="30.0dp" android:text="查看原图" />
+    </FrameLayout>
+    <FrameLayout android:id="@id/fm_center_progress_container" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerInParent="true" />
+    <ImageView android:layout_gravity="left|bottom" android:id="@id/imgCloseButton" android:padding="3.0dp" android:layout_width="35.0dp" android:layout_height="35.0dp" android:layout_marginLeft="20.0dp" android:layout_marginBottom="20.0dp" android:src="@drawable/ic_action_close" android:layout_alignParentLeft="true" android:layout_alignParentBottom="true" android:layout_marginStart="20.0dp" android:layout_alignParentStart="true" />
+    <ImageView android:layout_gravity="right|bottom" android:id="@id/img_download" android:padding="3.0dp" android:layout_width="35.0dp" android:layout_height="35.0dp" android:layout_marginRight="20.0dp" android:layout_marginBottom="20.0dp" android:src="@drawable/icon_download_new" android:layout_alignParentRight="true" android:layout_alignParentBottom="true" android:layout_marginEnd="20.0dp" android:layout_alignParentEnd="true" />
+</RelativeLayout>
