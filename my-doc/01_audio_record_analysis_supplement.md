@@ -1,4 +1,4 @@
-# 补充分析：PCM 回调最终流向（OpenSL ES → 语音处理消费者）
+﻿# 补充分析：PCM 回调最终流向（OpenSL ES → 语音处理消费者）
 
 对象：TG-Z02（CCH）/ MT8167S / smartapp v?（`com.alibaba.ailabs.genie.smartapp`）
 方法：纯静态 · native ELF/ARM 反汇编 + 重定位/vtable 重建 + PLT 交叉引用 · **未修改任何文件**
@@ -144,7 +144,7 @@
 
 - `recordId` 语义：`registerRecordDevice()` 返回并存入 `this->[0x20]`，feed 用它做 `this->[0x50]` 与 map key 的双重校验。【已确认】
 - 分叉条件：map 中该 record 的 value `== 7` → 唤醒；否则 → 识别。【已确认（数值）／推断（7 的枚举含义）】
-- `WakeupEngineWrapper::feed` @ `0xe1cd0`（676B，libsmartbox 内，包装 `libwakeup_sync_api_*.so`）。【已确认地址】
+- `WakeupEngineWrapper::feed` @ `0xe1c90`（676B，libsmartbox 内，包装 `libwakeup_sync_api_*.so`）。【已确认地址】
 - `SpeechDispatcher::write(char const*, int, AGWakeupAudioStatus, int)` @ `0x0dd464`（284B）。【已确认】
 
 ---
@@ -235,7 +235,7 @@ AGSpeechEngineProxy::onRecordData(void const*, int)              libsmartbox 0xe
   │  tail-call: this->[0x1c]->vptr[+0x24](id=this->[0x20], ptr, len)
   ▼
 AGSpeechEngine::feed(uint recordId, void const*, int)             libsmartbox 0xd455c
-  ├─[map[recordId]==7]→ WakeupEngineWrapper::feed(obj, ptr, len)  libsmartbox 0xe1cd0
+  ├─[map[recordId]==7]→ WakeupEngineWrapper::feed(obj, ptr, len)  libsmartbox 0xe1c90
   │                       └─ libwakeup_sync_api_S1/L_S3.so（唤醒词）
   └─[else]────────────→ SpeechDispatcher::write(ptr, len, 0x64, 0) libsmartbox 0xdd464
                           │ SpeechBufferBase::write + cond_signal
@@ -314,7 +314,7 @@ GOT 解析：`GOT[0xce08] → _ZN21AGModuleFactoryHelper10m_InstanceE (R_ARM_GLO
 （libsaladapter `0x473c`，16 ms 周期）→ listener（`AGSpeechEngineProxy` 的 `AGRecordEngineListener` 子对象，
 vptr `0x1ebe1c`，由 `AGSpeechEngineProxy::init` 在 `0x0e887c` 通过 `engine->setRecordEngineListener(&this[0x0c])` 注入）
 → `AGSpeechEngineProxy::onRecordData`（`0xea8c4`）→ `AGSpeechEngine::feed`（`0xd455c`，按 `recordId` 与
-`map value==7` 分叉）→ 唤醒支路 `WakeupEngineWrapper::feed`（`0xe1cd0` → `libwakeup_sync_api*.so`）
+`map value==7` 分叉）→ 唤醒支路 `WakeupEngineWrapper::feed`（`0xe1c90` → `libwakeup_sync_api*.so`）
 或识别支路 `SpeechDispatcher::write`（`0xdd464` → `SpeechBufferBase` → `threadLoop` `0xdd080` → `onFeed` `0xdd2cc`）
 → 扇出到 4 个 `SpeechConsumer`：`CloudASRManager` / `LocalASRManager`（libaceAsr.so）/ `VADManager`（libvad_api.so）/
 `UnconvWakeupManager`（libsed_api.so）。
