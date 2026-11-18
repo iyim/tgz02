@@ -149,23 +149,27 @@ SCENARIOS = {
     # stall/naive shrink both socket buffers so a 3 s receiver freeze really
     # overflows them: the ring design must drop, the naive one must block.
     "baseline": ([], []),
-    "stall":    (["--rcvbuf", "8192", "--stall-at", "8", "--stall-len", "3"],
-                 ["--sndbuf", "8192"]),
-    "naive":    (["--rcvbuf", "8192", "--stall-at", "8", "--stall-len", "3"],
-                 ["--sndbuf", "8192", "--naive"]),
+    "stall":    (["--max-age-ms", "0", "--rcvbuf", "8192",
+                  "--stall-at", "8", "--stall-len", "3"], ["--sndbuf", "8192"]),
+    "naive":    (["--max-age-ms", "0", "--rcvbuf", "8192",
+                  "--stall-at", "8", "--stall-len", "3"], ["--sndbuf", "8192", "--naive"]),
+    # 生产语义：超过 200 ms 的帧直接丢，验证"不堆积旧语音"
+    "stale":    (["--max-age-ms", "200", "--rcvbuf", "8192",
+                  "--stall-at", "6", "--stall-len", "3"], ["--sndbuf", "8192"]),
     "skip":     ([], ["--skip-every", "100"]),
     "ringfull": ([], ["--ring", "4", "--consumer-pause-at", "5",
                       "--consumer-pause-ms", "1000"]),
-    "slow":     (["--slow-us", "60000"], []),
+    "slow":     (["--max-age-ms", "0", "--slow-us", "60000"], []),
     # same slow consumer, but the SEND buffer is capped at ~6 frames:
     # the queue lives in the kernel send buffer, so that is the knob that sets
     # the latency ceiling (measured below).
-    "slowbuf":  (["--slow-us", "60000"], ["--sndbuf", "8192"]),
+    "slowbuf":  (["--max-age-ms", "0", "--slow-us", "60000"], ["--sndbuf", "8192"]),
 }
 
 DEFAULT_SECS = {
     "baseline": 600,
     "stall": 40,
+    "stale": 30,
     "naive": 40,
     "skip": 20,
     "ringfull": 20,

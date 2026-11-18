@@ -1,0 +1,4 @@
+READY {"role":"client","mode":"abstract","name":"tgz2pcm","sndbuf_req":8192,"sndbuf_eff":16384,"blocking":0}
+STAT {"produced":125,"ok":83,"eagain":42,"enobufs":0,"other":0,"tick_late_max_us":15906,"send_us_max":799}
+STAT {"produced":250,"ok":208,"eagain":42,"enobufs":0,"other":0,"tick_late_max_us":15906,"send_us_max":4761}
+SUMMARY {"role":"client","mode":"abstract","dur_s":12.000,"epoch":798278623,"blocking":0,"produced":300,"ok":258,"eagain":42,"enobufs":0,"other":0,"partial":0,"last_errno":11,"tick_late_max_us":15906,"tick_late_avg_us":221.1,"tick_missed":0,"send_us_max":5168,"rate_kib_s":27.71}

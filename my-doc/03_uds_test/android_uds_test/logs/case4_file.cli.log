@@ -1,0 +1,4 @@
+READY {"role":"client","mode":"file","name":"/data/local/tmp/tgz2_uds/tgz2pcm.sock","sndbuf_req":8192,"sndbuf_eff":16384,"blocking":0}
+STAT {"produced":125,"ok":125,"eagain":0,"enobufs":0,"other":0,"tick_late_max_us":1356,"send_us_max":1237}
+STAT {"produced":250,"ok":250,"eagain":0,"enobufs":0,"other":0,"tick_late_max_us":32994,"send_us_max":7237}
+SUMMARY {"role":"client","mode":"file","dur_s":10.000,"epoch":761773211,"blocking":0,"produced":250,"ok":250,"eagain":0,"enobufs":0,"other":0,"partial":0,"last_errno":0,"tick_late_max_us":32994,"tick_late_avg_us":262.9,"tick_missed":0,"send_us_max":7237,"rate_kib_s":32.22}

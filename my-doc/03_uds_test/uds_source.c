@@ -44,6 +44,9 @@ typedef struct {
     uint64_t   tick_n;
     uint64_t   tick_missed;
     uint32_t   depth_max;
+    uint32_t   epoch;
+    uint64_t   reconnects;
+    uint32_t   need_reopen;
     uint64_t   send_ok;
     uint64_t   send_bytes;
     uint64_t   send_drop_wb;
@@ -73,6 +76,20 @@ static void pause_window(ctx *c, double elapsed_s)
     }
 }
 
+/* 对端消失后的重连：关闭 -> 重建 -> connect -> 转非阻塞，失败就返回 0（下轮再试） */
+static int reopen(ctx *c)
+{
+    if (c->sock != TGZ2_BADF) tgz2_sock_close(c->sock);
+    c->sock = socket(AF_UNIX, c->proto ? SOCK_DGRAM : SOCK_STREAM, 0);
+    if (c->sock == TGZ2_BADF) return 0;
+    if (c->proto) { tgz2_set_nonblock(c->sock); c->reconnects++; return 1; }
+    if (connect(c->sock, (struct sockaddr *)&c->addr, sizeof(c->addr)) != 0) {
+        tgz2_sock_close(c->sock); c->sock = TGZ2_BADF; return 0;
+    }
+    if (c->naive) tgz2_set_block(c->sock); else tgz2_set_nonblock(c->sock);
+    c->reconnects++;
+    return 1;
+}
 static int push_one(ctx *c, const uint8_t *msg)
 {
     int sent;
@@ -85,7 +102,10 @@ static int push_one(ctx *c, const uint8_t *msg)
     if (sent == TGZ2_MSG) { c->send_ok++; c->send_bytes += TGZ2_MSG; return 1; }
     if (sent < 0) {
         if (tgz2_would_block()) c->send_drop_wb++;
-        else c->send_err_other++;
+        else {
+            c->send_err_other++;
+            if (tgz2_peer_gone()) c->need_reopen = 1;   /* 对端没了：下轮重连 */
+        }
         return 0;
     }
     /* stream half-frame: never chase the remainder (that would block);
@@ -100,6 +120,10 @@ static void consumer_loop(ctx *c)
     static uint8_t msg[TGZ2_MSG];
     while (!c->stop) {
         pause_window(c, (double)(tgz2_now_us() - c->t0) / 1e6);
+        if (c->need_reopen) {
+            c->need_reopen = 0;
+            if (!reopen(c)) { tgz2_sleep_us(200000); continue; }   /* 200 ms 后再试 */
+        }
         if (!tgz2_ring_pop(&c->ring, msg)) {
             tgz2_sleep_us(1000);      /* idle poll 1 ms; NOT a blocking send */
             continue;
@@ -165,6 +189,7 @@ int main(int argc, char **argv)
 
     ctx C;
     memset(&C, 0, sizeof(C));
+    C.epoch = ((uint32_t)tgz2_now_us() ^ 0x5A5A5A5Au) | 1u;   /* 本实例标识 */
     tgz2_ring_init(&C.ring, (uint32_t)ring_cap);
     C.proto = proto;
     C.consumer_pause_at = pause_at;
@@ -235,7 +260,7 @@ int main(int argc, char **argv)
         tgz2_hdr h;
         h.seq = seq;
         h.ts_us = now;
-        h.frames_total = frames_total + 1;
+        h.epoch = C.epoch;
         h.flags = TGZ2_FLAG_SYNTHETIC;
         h.payload_len = TGZ2_PAYLOAD;
         h.crc = tgz2_fnv1a(payload, TGZ2_PAYLOAD);
@@ -334,7 +359,7 @@ int main(int argc, char **argv)
            "\"tick_n\":%llu,\"tick_late_max_us\":%llu,\"tick_late_avg_us\":%.1f,"
            "\"tick_missed\":%llu,\"push_us_max\":%llu,\"push_us_avg_us\":%.2f,"
            "\"ts_delta_ms\":{\"min\":%.2f,\"max\":%.2f},"
-           "\"naive\":%d,\"ring_cap\":%d,\"rate_kib_s\":%.2f}\n",
+           "\"naive\":%d,\"epoch\":%u,\"reconnects\":%llu,\"ring_cap\":%d,\"rate_kib_s\":%.2f}\n",
            proto ? "dgram" : "stream", dur,
            cpu, dur > 0 ? cpu / dur * 100.0 : 0.0,
            (unsigned long long)C.produced, (unsigned long long)C.push_ok,
@@ -347,7 +372,7 @@ int main(int argc, char **argv)
            (unsigned long long)C.tick_missed, (unsigned long long)C.push_us_max,
            C.produced ? (double)C.push_us_sum / (double)C.produced : 0.0,
            (double)C.ts_delta_min / 1000.0, (double)C.ts_delta_max / 1000.0,
-           C.naive, C.ring.cap,
+           C.naive, C.epoch, (unsigned long long)C.reconnects, C.ring.cap,
            dur > 0 ? (double)C.send_bytes / 1024.0 / dur : 0.0);
 
 #ifdef _WIN32

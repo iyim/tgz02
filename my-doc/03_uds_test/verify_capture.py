@@ -1,24 +1,27 @@
 #!/usr/bin/env python3
 """verify_capture.py -- independent offline check of a .cap file written by uds_sink.
 
-It re-implements the wire format in Python (no C code reused), so it also
-proves the protocol description is precise enough to reimplement:
+The wire format is re-implemented here in Python (no C code reused), so this
+also proves the protocol description is precise enough to reimplement:
 
     python verify_capture.py _run/baseline.cap
 
-Checks: magic/version/length fields, FNV-1a CRC, deterministic payload compare,
-sequence continuity (gaps = dropped frames), and capture-timestamp cadence.
+Checks, per file: magic / ver / header length / rate / ch / bits / payload
+length, FNV-1a CRC, deterministic payload compare, per-epoch sequence
+continuity (gaps = dropped frames), and capture-timestamp cadence.
 """
 import argparse
-import statistics
 import struct
 import sys
 
 MAGIC = 0x325A4754
+VER = 2
 HDR = 40
 PAYLOAD = 1280
 MSG = HDR + PAYLOAD
 SPF = 640
+
+HDR_FMT = "<IBBH I Q I I H H I I".replace(" ", "")   # 12 fields = 40 bytes, no padding
 
 
 def fnv1a(b):
@@ -64,16 +67,15 @@ def main():
         return 1
 
     bad = {"magic": 0, "ver": 0, "hdr": 0, "len": 0, "crc": 0, "payload": 0}
-    seqs = []
-    tss = []
+    epochs = []          # [(epoch, [seq...], [ts...])]
     for i in range(n):
         m = blob[i * MSG:(i + 1) * MSG]
-        magic, ver, flags, hlen, seq, ts, ftot, rate, ch, bits, plen, crc = \
-            struct.unpack_from("<IBBH I Q I I H H I I".replace(" ", ""), m, 0)
+        magic, ver, flags, hlen, seq, ts, epoch, rate, ch, bits, plen, crc = \
+            struct.unpack_from(HDR_FMT, m, 0)
         if magic != MAGIC:
             bad["magic"] += 1
             continue
-        if ver != 1:
+        if ver != VER:
             bad["ver"] += 1
         if hlen != HDR:
             bad["hdr"] += 1
@@ -84,25 +86,37 @@ def main():
             bad["crc"] += 1
         if not args.no_payload_check and expect_payload(seq) != body:
             bad["payload"] += 1
-        seqs.append(seq)
-        tss.append(ts)
 
-    gaps = [b - a for a, b in zip(seqs, seqs[1:]) if b - a > 1]
-    dups = sum(1 for a, b in zip(seqs, seqs[1:]) if b == a)
-    back = sum(1 for a, b in zip(seqs, seqs[1:]) if b < a)
-    dt = [(b - a) / 1000.0 for a, b in zip(tss, tss[1:])]
+        if not epochs or epochs[-1][0] != epoch:
+            epochs.append((epoch, [], []))
+        epochs[-1][1].append(seq)
+        epochs[-1][2].append(ts)
 
-    print(f"seq        : first={seqs[0]} last={seqs[-1]} count={len(seqs)}")
-    print(f"gaps       : {len(gaps)} events, missing={sum(g - 1 for g in gaps)} frames")
-    if gaps:
-        print(f"             sizes={sorted(set(gaps))[:10]}")
-    print(f"dup={dups} reorder={back}")
+    print(f"epochs     : {len(epochs)}  {[e[0] for e in epochs][:6]}")
+    total_gap = 0
+    total_dup = 0
+    total_back = 0
+    for k, (ep, seqs, tss) in enumerate(epochs):
+        gaps = [b - a for a, b in zip(seqs, seqs[1:]) if b - a > 1]
+        dups = sum(1 for a, b in zip(seqs, seqs[1:]) if b == a)
+        back = sum(1 for a, b in zip(seqs, seqs[1:]) if b < a)
+        miss = sum(g - 1 for g in gaps)
+        total_gap += miss
+        total_dup += dups
+        total_back += back
+        print(f"  session {k}: epoch=0x{ep:08x} first={seqs[0]} last={seqs[-1]} "
+              f"count={len(seqs)} missing={miss} dup={dups} reorder={back}")
+        if gaps:
+            print(f"             gap sizes={sorted(set(gaps))[:10]}")
+        dt = [(b - a) / 1000.0 for a, b in zip(tss, tss[1:])]
+        if dt:
+            dts = sorted(dt)
+            print(f"             cadence mean={sum(dt)/len(dt):.2f}ms min={min(dt):.2f}ms "
+                  f"p95={dts[int(0.95*(len(dts)-1))]:.2f}ms max={max(dt):.2f}ms")
+
+    print(f"dup={total_dup} reorder={total_back} missing_total={total_gap}")
     print(f"rejects    : {bad}")
-    if dt:
-        print(f"cadence    : mean={statistics.mean(dt):.2f}ms "
-              f"min={min(dt):.2f}ms max={max(dt):.2f}ms "
-              f"p95={sorted(dt)[int(0.95 * (len(dt) - 1))]:.2f}ms")
-    ok = (not any(bad.values())) and dups == 0 and back == 0
+    ok = (not any(bad.values())) and total_dup == 0 and total_back == 0
     print("RESULT     :", "PASS" if ok else "FAIL")
     return 0 if ok else 1
 

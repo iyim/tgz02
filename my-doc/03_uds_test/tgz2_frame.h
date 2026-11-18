@@ -11,7 +11,7 @@
  *   6    2     hdr_len      40
  *   8    4     seq          生产序号，从 0 起，单调 +1（缺口 = 丢帧）
  *   12   8     ts_us        采集时刻，同一台机器内的单调微秒（跨进程可直接相减）
- *   20   4     frames_total 生产端累计帧数（= seq+1，用于识别环形缓冲丢帧）
+ *   20   4     epoch        发送端实例标识（重启即变）
  *   24   4     rate         16000
  *   28   2     ch           1
  *   30   2     bits         16
@@ -56,7 +56,7 @@
 #endif
 
 #define TGZ2_MAGIC        0x325A4754u
-#define TGZ2_VER          1
+#define TGZ2_VER          2
 #define TGZ2_HDR_LEN      40
 #define TGZ2_RATE         16000
 #define TGZ2_CH           1
@@ -139,7 +139,7 @@ static inline int tgz2_check_payload(uint32_t seq, const uint8_t *in)
 typedef struct {
     uint32_t seq;
     uint64_t ts_us;
-    uint32_t frames_total;
+    uint32_t epoch;          /* 发送端实例标识，重启即变，用于识别"新会话" */
     uint8_t  flags;
     uint32_t payload_len;
     uint32_t crc;
@@ -153,7 +153,7 @@ static inline void tgz2_pack(uint8_t *msg, const tgz2_hdr *h, const uint8_t *pay
     tgz2_put_u16(msg + 6, TGZ2_HDR_LEN);
     tgz2_put_u32(msg + 8, h->seq);
     tgz2_put_u64(msg + 12, h->ts_us);
-    tgz2_put_u32(msg + 20, h->frames_total);
+    tgz2_put_u32(msg + 20, h->epoch);
     tgz2_put_u32(msg + 24, TGZ2_RATE);
     tgz2_put_u16(msg + 28, TGZ2_CH);
     tgz2_put_u16(msg + 30, TGZ2_BITS);
@@ -170,7 +170,7 @@ static inline int tgz2_unpack(const uint8_t *msg, tgz2_hdr *h)
     if (tgz2_get_u16(msg + 6) != TGZ2_HDR_LEN) return -3;  /* bad hdr   */
     h->seq          = tgz2_get_u32(msg + 8);
     h->ts_us        = tgz2_get_u64(msg + 12);
-    h->frames_total = tgz2_get_u32(msg + 20);
+    h->epoch        = tgz2_get_u32(msg + 20);
     h->flags        = msg[5];
     h->payload_len  = tgz2_get_u32(msg + 32);
     h->crc          = tgz2_get_u32(msg + 36);
@@ -284,6 +284,17 @@ static inline int tgz2_last_err(void)
     return WSAGetLastError();
 #else
     return errno;
+#endif
+}
+
+/* 对端消失类错误：值得重连（与"缓冲满"区分开） */
+static inline int tgz2_peer_gone(void)
+{
+#ifdef _WIN32
+    int e = WSAGetLastError();
+    return e == WSAECONNRESET || e == WSAENOTCONN || e == WSAECONNREFUSED || e == WSAESHUTDOWN;
+#else
+    return errno == EPIPE || errno == ECONNRESET || errno == ENOTCONN || errno == ECONNREFUSED;
 #endif
 }
 

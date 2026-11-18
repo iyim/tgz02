@@ -1,0 +1,6 @@
+READY {"role":"server","mode":"abstract","name":"tgz2pcm","rcvbuf_req":8192,"rcvbuf_eff":16384}
+PAUSE_BEGIN {"len_s":2.00}
+PAUSE_END {}
+STAT {"accepted":76,"missing":50,"stale":8,"lat_avg_us":151.0}
+STAT {"accepted":175,"missing":50,"stale":8,"lat_avg_us":165.6}
+SUMMARY {"role":"server","mode":"abstract","dur_s":14.022,"msgs":258,"accepted":250,"bytes":340560,"stale":8,"paused":1,"bad":{"magic":0,"ver":0,"len":0,"crc":0,"payload":0},"seq_first":0,"seq_last":299,"missing":50,"dup":0,"reorder":0,"lat_us":{"avg":206.7,"max":8415},"tsgap_ms":{"min":34.92,"max":2039.77},"epoch":798278623}

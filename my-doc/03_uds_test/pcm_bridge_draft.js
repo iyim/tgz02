@@ -1,201 +1,328 @@
 'use strict';
 /*
- * pcm_bridge_draft.js -- 方案 A 草稿（真机短时验证用）
+ * pcm_bridge_draft.js -- 方案 A 草稿（真机短时验证用 · 修订 2）
  *
- * 状态：**未在设备上运行过**。第二阶段只验证了 feed 偏移与 PCM 参数，
- *       这个脚本的 socket 部分只在本机的 C/JS 等价实现上验证过语义。
+ * 状态：**仍未在 TG-Z02 上运行过**。PC 侧传输语义由 03_uds_test 的 C 原型验证；
+ *       本文件只回答"hook 内怎么做才安全"，按 03_pcm_bridge_review.md 的 9 条逐条修。
  *
- * 设计约束（必须保持）：
- *   - onEnter 里只做 readByteArray + 抽 ch0 + 入环，绝不 send/sleep/connect
- *   - 抽帧与发送都在 setInterval 回调里（Frida 自己的线程，不是音频线程）
- *   - 任何一步失败就整体静默失效，原厂链路零影响
+ * 修订 2 改动（编号与 review 文档一致）：
+ *   R1 非阻塞设置失败 ⇒ close(fd) + 永久禁用旁路，绝不使用可能阻塞的 socket
+ *   R2 连接失败不泄漏 fd：失败即 close，下轮从 -1 重建
+ *   R3 建立/断开/重连/关闭四态完整，脚本卸载时释放 fd
+ *   R4 FNV-1a 真算（逐样本累加），不再写 0
+ *   R5 时间戳 clock_gettime(CLOCK_MONOTONIC)，不用 Date.now()
+ *   R6 头/载荷缓冲区全部预分配，hook 内零 Memory.alloc
+ *   R7 PCM 抽取 readS16/writeS16 直入环形槽，**不创建任何 Uint8Array / ArrayBuffer**
+ *   R8 读取失败 / hook 异常 / 发送异常 / socket 失败 分开计数
+ *   R9 一切异常都吞在 try/catch 里，绝不触碰 r0~r3、返回值与栈
  *
  * 用法：
- *   frida -H 127.0.0.1:27042 -n com.alibaba.ailabs.genie.smartapp:core \
- *          -l pcm_bridge_draft.js --runtime=v8
- *   参数：SOCK_PATH / DRY_RUN / EXPECT_OFF / SIG
+ *   frida -H 127.0.0.1:27042 -n com.alibaba.ailabs.genie.smartapp:core -l pcm_bridge_draft.js
  */
 
-/* ---------------- 配置 ---------------- */
-var SOCK_PATH = '/data/local/tmp/tgz2_pcm.sock';
-var DRY_RUN   = false;          /* true = 只统计不发送（对应设计文档 §7 闸 4） */
-var F_OFF     = 0xd455c;        /* 本固件 libsmartbox.so 的 AGSpeechEngine::feed */
-var SYM       = '_ZN14AGSpeechEngine4feedEjPKvi';
-var SIG = [0xf0, 0x48, 0x2d, 0xe9, 0x10, 0xb0, 0x8d, 0xe2,
-           0x08, 0xd0, 0x4d, 0xe2, 0x03, 0x70, 0xa0, 0xe1];
+/* ============ 配置 ============ */
+var DRY_RUN       = false;         // true = 只统计不发送（设计文档 §7 闸 4）
+var SOCK_ABSTRACT = true;          // 抽象命名空间优先：不落盘、无 SELinux 文件标签问题
+var SOCK_PATH     = 'tgz2_pcm';    // 抽象名；SOCK_ABSTRACT=false 时当文件路径
+var MAX_AGE_MS    = 500;           // 过期帧丢弃，绝不把 0.5 s 前的语音送给 ASR
+var RETRY_MS      = 500;           // 重连间隔
+var DRAIN_BURST   = 8;             // 每 tick 最多发几帧
+var TICK_MS       = 20;
+var RING_CAP      = 64;
+var FRAME_IN      = 5120;          // 16k * 0.04s * 4ch * 2B
+var STRIDE        = 8;             // 4ch * 2B
+var SPF           = 640;           // 每通道每帧样本数
+var FRAME_OUT     = 1280;
+var HDR_LEN       = 40;
+var MSG_LEN       = HDR_LEN + FRAME_OUT;
+var MAGIC         = 0x325A4754;
+var VER           = 2;
+var F_OFF         = 0xd455c;
+var SYM           = '_ZN14AGSpeechEngine4feedEjPKvi';
+var SIG_BYTES     = [0xf0, 0x48, 0x2d, 0xe9, 0x10, 0xb0, 0x8d, 0xe2,
+                     0x08, 0xd0, 0x4d, 0xe2, 0x03, 0x70, 0xa0, 0xe1];
 
-var FRAME_IN   = 5120;          /* 16k * 0.04 * 4ch * 2B */
-var STRIDE     = 8;             /* 4ch * 2B */
-var FRAME_OUT  = 1280;          /* 640 samples * 2B = ch0 */
-var RING_CAP   = 64;
-var RING_BYTES = RING_CAP * FRAME_OUT;
-var HDR_LEN    = 40;
-var MAGIC      = 0x325A4754;
+var AF_UNIX = 1, SOCK_DGRAM = 2;
+var F_GETFL = 3, F_SETFL = 4, O_NONBLOCK = 0x800;   /* arm32: 0o4000 */
+var CLOCK_MONOTONIC = 1;
+var EAGAIN = 11, ENOBUFS = 105, EPIPE = 32, ECONNRESET = 104,
+    ENOTCONN = 107, ECONNREFUSED = 111;
 
-/* ---------------- 统计 ---------------- */
-var S = {
-  framesIn: 0, framesOut: 0, lenBad: 0,
-  ringDrop: 0, sendOk: 0, sendDrop: 0, sendErr: 0,
-  seq: 0, depthMax: 0, enabled: true, disabledWhy: null,
-  sockFd: -1, threads: {}
+/* ============ 统计 ============ */
+var st = {
+  enabled: false, why: 'init', epoch: 0, seq: 0, sockFd: -1, nextTry: 0,
+  frames: 0, sent: 0, stale: 0, ringDrop: 0, lenBad: 0,
+  readFail: 0, hookEx: 0, sendDrop: 0, sendErr: 0,
+  connectFail: 0, reconnects: 0, sessions: 0, disables: 0,
+  depthMax: 0, tids: {}
 };
 
-/* ---------------- 1) 定位并校验 feed ---------------- */
-var base = Module.findBaseAddress('libsmartbox.so');
-if (base === null) {
-  send({ t: 'fatal', msg: 'libsmartbox.so 未加载（是否在 :core 里？）' });
-  S.enabled = false; S.disabledWhy = 'no-module';
-}
+function report(o) { try { send(o); } catch (e) { } }
+function errno() { try { return libc.errno ? libc.errno().readS32() : 0; } catch (e) { return 0; } }
 
+/* ============ 1) 三级闸门定位 feed ============ */
+var base = Module.findBaseAddress('libsmartbox.so');
 var feed = null;
-if (S.enabled) {
+if (base === null) {
+  st.why = 'no-module';
+} else {
   feed = Module.findExportByName('libsmartbox.so', SYM);
   if (feed === null) {
-    S.enabled = false; S.disabledWhy = 'no-symbol';
-    send({ t: 'fatal', msg: '符号缺失: ' + SYM });
+    st.why = 'no-symbol';
   } else {
     var off = feed.sub(base).toInt32();
     if (off !== F_OFF) {
-      S.enabled = false; S.disabledWhy = 'offset:' + off.toString(16);
-      send({ t: 'fatal', msg: '偏移不符 期望=' + F_OFF.toString(16) + ' 实际=' + off.toString(16) });
+      st.why = 'offset:' + off.toString(16);
+      feed = null;
+    } else {
+      var sigOk = true;
+      try {
+        var pro = new Uint8Array(feed.readByteArray(16));
+        for (var i = 0; i < 16; i++) {
+          if (pro[i] !== SIG_BYTES[i]) { sigOk = false; st.why = 'sig@' + i; break; }
+        }
+      } catch (e) { sigOk = false; st.why = 'sig-read'; }
+      if (!sigOk) feed = null;
     }
   }
 }
+st.enabled = (feed !== null);
 
-if (S.enabled) {
-  var pro = new Uint8Array(feed.readByteArray(16));
-  for (var i = 0; i < 16; i++) {
-    if (pro[i] !== SIG[i]) {
-      S.enabled = false; S.disabledWhy = 'sig@' + i;
-      send({ t: 'fatal', msg: '机器码签名不符 @' + i });
-      break;
+/* ============ 2) libc + 单调时钟（R5） ============ */
+var libc = null;
+function bindLibc() {
+  function g(n) { return Module.getExportByName('libc.so', n); }
+  libc = {
+    socket:   new NativeFunction(g('socket'),  'int',  ['int', 'int', 'int']),
+    connect:  new NativeFunction(g('connect'), 'int',  ['int', 'pointer', 'int']),
+    sendto:   new NativeFunction(g('sendto'),  'long', ['int', 'pointer', 'ulong', 'int', 'pointer', 'int']),
+    fcntl:    new NativeFunction(g('fcntl'),   'int',  ['int', 'int', 'int']),
+    close:    new NativeFunction(g('close'),   'int',  ['int']),
+    clock_gettime: new NativeFunction(g('clock_gettime'), 'int', ['int', 'pointer'])
+  };
+  var ep = Module.findExportByName('libc.so', '__errno') ||
+           Module.findExportByName('libc.so', '__errno_location');
+  libc.errno = ep ? new NativeFunction(ep, 'pointer', []) : null;
+}
+
+var tsMem = Memory.alloc(8);                 /* arm32 timespec: sec@0, nsec@4 */
+function nowUs() {
+  try {
+    if (libc.clock_gettime(CLOCK_MONOTONIC, tsMem) !== 0) return 0;
+    var s = tsMem.readS32(), n = tsMem.readS32();
+    return s * 1000000 + ((n / 1000) | 0);
+  } catch (e) { return 0; }
+}
+
+/* ============ 3) 预分配：环里直接放"完整消息"（头+载荷）(R6/R7) ============ */
+var ring = Memory.alloc(RING_CAP * MSG_LEN);
+var crcArr = new Int32Array(RING_CAP);
+var tsArr = new Float64Array(RING_CAP);
+var idx = { head: 0, tail: 0 };
+
+function fnvStep(h, byte) { return ((h ^ byte) * 16777619) >>> 0; }
+
+/* ============ 4) 地址与 socket 状态机（R1/R2/R3） ============ */
+var saMem = null, saLen = 0;
+
+function buildAddr() {
+  if (saMem !== null) return true;
+  try {
+    saMem = Memory.alloc(110);
+    saMem.writeU16(AF_UNIX);
+    if (SOCK_ABSTRACT) {
+      saMem.add(2).writeU8(0);
+      saMem.add(3).writeUtf8String(SOCK_PATH);
+      saLen = 3 + SOCK_PATH.length;
+    } else {
+      saMem.add(2).writeUtf8String(SOCK_PATH);
+      saLen = 3 + SOCK_PATH.length;
     }
+    return true;
+  } catch (e) { st.why = 'addr'; return false; }
+}
+
+function closeSock() {
+  if (st.sockFd >= 0) { try { libc.close(st.sockFd); } catch (e) { } }
+  st.sockFd = -1;
+}
+
+function disable(why) {
+  st.why = why;
+  st.disables++;
+  st.enabled = false;          /* 旁路整体失效，原厂 feed 不受影响 */
+}
+
+function ensureSock(now) {
+  if (DRY_RUN) return false;
+  if (st.sockFd >= 0) return true;
+  if (now < st.nextTry) return false;
+  st.nextTry = now + RETRY_MS * 1000;
+
+  var fd = -1;
+  try {
+    if (libc === null) bindLibc();
+    if (!buildAddr()) return false;
+
+    fd = libc.socket(AF_UNIX, SOCK_DGRAM, 0);
+    if (fd < 0) { st.sendErr++; return false; }
+
+    /* R1：非阻塞必须成功，且回读确认；否则关掉 fd 并永久禁用 */
+    if (libc.fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
+      libc.close(fd); disable('nonblock-set-fail'); return false;
+    }
+    var fl = libc.fcntl(fd, F_GETFL, 0);
+    if (fl < 0 || (fl & O_NONBLOCK) === 0) {
+      libc.close(fd); disable('nonblock-not-set'); return false;
+    }
+
+    if (libc.connect(fd, saMem, saLen) < 0) {
+      st.connectFail++;                 /* R2：失败即回收，绝不留下悬挂 fd */
+      libc.close(fd);
+      return false;
+    }
+    st.sockFd = fd;
+    st.sessions++;
+    return true;
+  } catch (e) {
+    st.sendErr++;
+    try { if (fd >= 0) libc.close(fd); } catch (e2) { }
+    return false;
   }
 }
 
-/* ---------------- 2) 建档：环形缓冲 + socket ---------------- */
-var ringMem = null, ridx = { head: 0, tail: 0 };
-var libc = {};
-
-function initLibc() {
-  var g = function (n) { return Module.getExportByName('libc.so', n); };
-  libc.socket  = new NativeFunction(g('socket'),  'int',  ['int', 'int', 'int']);
-  libc.connect = new NativeFunction(g('connect'), 'int',  ['int', 'pointer', 'int']);
-  libc.sendto  = new NativeFunction(g('sendto'),  'long', ['int', 'pointer', 'ulong', 'int', 'pointer', 'int']);
-  libc.fcntl   = new NativeFunction(g('fcntl'),   'int',  ['int', 'int', 'int']);
-  libc.close   = new NativeFunction(g('close'),   'int',  ['int']);
-  libc.memcpy  = new NativeFunction(g('memcpy'),  'pointer', ['pointer', 'pointer', 'ulong']);
-}
-
-function openUds() {
-  /* AF_UNIX = 1, SOCK_DGRAM = 2；dgram 有帧边界、满了返回 ENOBUFS，最省事 */
-  var fd = libc.socket(1, 2, 0);
-  if (fd < 0) { S.disabledWhy = 'socket()'; S.enabled = false; return -1; }
-  var sa = Memory.alloc(110);
-  sa.writeU16(1);                       /* sun_family，小端 */
-  sa.add(2).writeUtf8String(SOCK_PATH);
-  /* arm32: O_NONBLOCK = 0o4000 = 0x800, F_SETFL = 4 */
-  if (libc.fcntl(fd, 4, 0x800) < 0) { /* 非阻塞设不上就干脆不用 */ }
-  var r = libc.connect(fd, sa, 110);
-  if (r < 0) {
-    /* 助手进程没起来：不算致命，发送线程会重试 */
-    send({ t: 'warn', msg: 'connect 失败（助手未启动？），稍后重试' });
-  }
-  S.sockFd = fd;
-  return fd;
-}
-
-if (S.enabled) {
-  ringMem = Memory.alloc(RING_BYTES);
-  if (!DRY_RUN) {
-    try { initLibc(); openUds(); }
-    catch (e) { S.enabled = false; S.disabledWhy = 'libc:' + e; }
-  }
-}
-
-/* ---------------- 3) hook：只抽 ch0，绝不做别的事 ---------------- */
-if (S.enabled) {
+/* ============ 5) hook：拷贝 + 入环（R7/R9） ============ */
+function installHook() {
   Interceptor.attach(feed, {
     onEnter: function (args) {
-      if (!S.enabled) return;
-      var tid = Process.getCurrentThreadId();
-      if (!S.threads[tid]) S.threads[tid] = 0;
-      S.threads[tid]++;
+      if (!st.enabled) return;
+      try {
+        var tid = Process.getCurrentThreadId();
+        st.tids[tid] = (st.tids[tid] || 0) + 1;
 
-      var data = args[2];
-      var len = args[3].toInt32();
-      if (len !== FRAME_IN) { S.lenBad++; return; }      /* 通道数变了就安全退出 */
+        var len = args[3].toInt32();
+        if (len !== FRAME_IN) { st.lenBad++; return; }        /* 通道布局变了就安全退出 */
 
-      var src = data.readByteArray(FRAME_IN);            /* 一次拷贝，5119B 之外的活都在这里之外做 */
-      if (src === null) return;
-      var u8 = new Uint8Array(src);
-      var depth = ridx.tail - ridx.head;
-      if (depth >= RING_CAP) { S.ringDrop++; S.framesIn++; return; }
+        var depth = (idx.tail - idx.head) | 0;
+        if (depth >= RING_CAP) { st.ringDrop++; return; }     /* 环满：丢，不等 */
 
-      var slot = ringMem.add((ridx.tail % RING_CAP) * FRAME_OUT);
-      var out = new Uint8Array(FRAME_OUT);
-      for (var i = 0, j = 0; i < FRAME_OUT; i += 2, j += STRIDE) {
-        out[i] = u8[j];
-        out[i + 1] = u8[j + 1];
+        var src = args[2];
+        if (src.isNull()) { st.readFail++; return; }
+
+        var slotNo = idx.tail % RING_CAP;
+        var slot = ring.add(slotNo * MSG_LEN);
+        var dst = slot.add(HDR_LEN);                          /* 载荷写在头后面 */
+        var h = 2166136261 >>> 0;
+        for (var i = 0; i < SPF; i++) {
+          var v = src.add(i * STRIDE).readS16();              /* ch0 = 每 8 字节的头 2 字节 */
+          dst.add(i * 2).writeS16(v);
+          h = fnvStep(h, v & 0xFF);
+          h = fnvStep(h, (v >> 8) & 0xFF);
+        }
+        crcArr[slotNo] = h | 0;
+        tsArr[slotNo] = nowUs();
+        idx.tail++;
+        st.frames++;
+        if (depth > st.depthMax) st.depthMax = depth;
+      } catch (e) {
+        st.hookEx++;                       /* R9：计数器吞异常，绝不让它穿出 hook */
       }
-      slot.writeByteArray(out.buffer);
-      ridx.tail++;
-      S.framesIn++;
-      if (depth > S.depthMax) S.depthMax = depth;
     }
   });
-  send({ t: 'ready', base: base.toString(), feed: feed.toString(),
-         off: feed.sub(base).toInt32().toString(16), dry: DRY_RUN, sock: SOCK_PATH });
 }
 
-/* ---------------- 4) 发送线程：Frida 自己的线程，不是音频线程 ---------------- */
-var hdrMem = Memory.alloc(HDR_LEN);
-var tsBase = Date.now();
-
-function nowUs() { return (Date.now() - tsBase) * 1000; }   /* 粗略：JS 侧只有毫秒 */
-
+/* ============ 6) 发送线程 ============ */
 function drain() {
-  if (!S.enabled) return;
-  if (S.sockFd < 0 && !DRY_RUN) { try { openUds(); } catch (e) { return; } }
-  var budget = 8;                       /* 每次最多搬 8 帧，单次上限 320 ms 的数据量 */
-  while (budget-- > 0 && ridx.head < ridx.tail) {
-    var slot = ringMem.add((ridx.head % RING_CAP) * FRAME_OUT);
-    S.seq++;
-    /* 40B 头：手工小端 */
-    hdrMem.writeU32(MAGIC);
-    hdrMem.add(4).writeU8(1);
-    hdrMem.add(5).writeU8(1);
-    hdrMem.add(6).writeU16(HDR_LEN);
-    hdrMem.add(8).writeU32(S.seq);
-    hdrMem.add(12).writeU64(nowUs().valueOf());
-    hdrMem.add(20).writeU32(S.seq);
-    hdrMem.add(24).writeU32(16000);
-    hdrMem.add(28).writeU16(1);
-    hdrMem.add(30).writeU16(16);
-    hdrMem.add(32).writeU32(FRAME_OUT);
-    hdrMem.add(36).writeU32(0);          /* crc 留给助手进程按需校验 */
+  if (!st.enabled) return;
+  var now = nowUs();
 
-    if (!DRY_RUN && S.sockFd >= 0) {
-      /* 两段写：这里简单起见把头和载荷拼一块，避免两次 syscall */
-      var msg = Memory.alloc(HDR_LEN + FRAME_OUT);
-      libc.memcpy(msg, hdrMem, HDR_LEN);
-      libc.memcpy(msg.add(HDR_LEN), slot, FRAME_OUT);
-      var n = libc.sendto(S.sockFd, msg, HDR_LEN + FRAME_OUT, 0, ptr(0), 0);
-      if (n === HDR_LEN + FRAME_OUT) S.sendOk++;
-      else if (n < 0) S.sendDrop++;
-      else S.sendErr++;
+  /* DRY_RUN 下不建 socket，但仍然消费环形缓冲并计数（用于闸 4 的"只统计"验证） */
+  if (!DRY_RUN && !ensureSock(now)) {
+    /* 没连上：环里的帧按过期处理，恢复后不倾泻旧语音 */
+    while (idx.head < idx.tail) { idx.head++; st.stale++; }
+    return;
+  }
+
+  var burst = DRAIN_BURST;
+  while (burst-- > 0 && idx.head < idx.tail) {
+    var slotNo = idx.head % RING_CAP;
+    var slot = ring.add(slotNo * MSG_LEN);
+    try {
+      if (now - tsArr[slotNo] > MAX_AGE_MS * 1000) { st.stale++; idx.head++; continue; }
+
+      st.seq++;
+      slot.writeU32(MAGIC);
+      slot.add(4).writeU8(VER);
+      slot.add(5).writeU8(0);
+      slot.add(6).writeU16(HDR_LEN);
+      slot.add(8).writeU32(st.seq);
+      slot.add(12).writeU64(tsArr[slotNo]);
+      slot.add(20).writeU32(st.epoch);
+      slot.add(24).writeU32(16000);
+      slot.add(28).writeU16(1);
+      slot.add(30).writeU16(16);
+      slot.add(32).writeU32(FRAME_OUT);
+      slot.add(36).writeU32(crcArr[slotNo] >>> 0);
+
+      if (DRY_RUN) {
+        st.sent++;
+      } else {
+        var n = libc.sendto(st.sockFd, slot, MSG_LEN, 0, ptr(0), 0);
+        if (n === MSG_LEN) {
+          st.sent++;
+        } else if (n < 0) {
+          var e = errno();
+          if (e === EAGAIN || e === ENOBUFS) {
+            st.sendDrop++;                     /* 缓冲满：丢，不重试 */
+          } else {
+            st.sendErr++;
+            if (e === EPIPE || e === ECONNRESET || e === ENOTCONN || e === ECONNREFUSED) {
+              closeSock();                     /* 对端没了：关掉，下轮重连 */
+              st.reconnects++;
+            }
+          }
+        } else {
+          st.sendErr++;                        /* dgram 不该出现半包 */
+        }
+      }
+      idx.head++;
+    } catch (e) {
+      st.sendErr++;
+      idx.head++;                              /* 跳过坏帧，绝不卡死 */
     }
-    ridx.head++;
-    S.framesOut++;
   }
 }
 
-setInterval(drain, 20);
+/* ============ 7) 启动 ============ */
+if (st.enabled) {
+  try {
+    bindLibc();                                   /* 时钟要用，DRY_RUN 也要绑 */
+    st.epoch = ((nowUs() & 0xFFFFFFFF) ^ 0x5A5A5A5A) >>> 0;   /* 实例标识，供接收端识别重启 */
+    installHook();
+    st.why = 'ok';
+  } catch (e) {
+    st.enabled = false;
+    st.why = 'install';
+  }
+}
 
-/* ---------------- 5) 状态上报：只上报，不落盘 ---------------- */
-setInterval(function () {
-  send({ t: 'stat', framesIn: S.framesIn, framesOut: S.framesOut, lenBad: S.lenBad,
-         ringDrop: S.ringDrop, sendOk: S.sendOk, sendDrop: S.sendDrop, sendErr: S.sendErr,
-         seq: S.seq, depthMax: S.depthMax, enabled: S.enabled, why: S.disabledWhy,
-         threads: S.threads });
+var tick = setInterval(function () { try { drain(); } catch (e) { st.sendErr++; } }, TICK_MS);
+
+var stat = setInterval(function () {
+  report({ t: 'stat', enabled: st.enabled, why: st.why, epoch: st.epoch, seq: st.seq,
+           frames: st.frames, sent: st.sent, stale: st.stale, ringDrop: st.ringDrop,
+           lenBad: st.lenBad, readFail: st.readFail, hookEx: st.hookEx,
+           sendDrop: st.sendDrop, sendErr: st.sendErr, connectFail: st.connectFail,
+           reconnects: st.reconnects, sessions: st.sessions, disables: st.disables,
+           depthMax: st.depthMax, tids: st.tids, sock: st.sockFd });
 }, 5000);
+
+try {
+  Script.bindWeak({}, function () {          /* R3：卸载时释放 */
+    try { clearInterval(tick); clearInterval(stat); } catch (e) { }
+    try { closeSock(); } catch (e) { }
+  });
+} catch (e) { }
+
+report({ t: 'ready', enabled: st.enabled, why: st.why, epoch: st.epoch, dry: DRY_RUN,
+         feed: feed ? feed.toString() : null });

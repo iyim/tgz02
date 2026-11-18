@@ -51,6 +51,11 @@ typedef struct {
     uint64_t  tsgap_min_us;
     int       stalled_count;
     uint64_t  stall_total_us;
+    uint32_t  epoch;
+    int       have_epoch;
+    uint64_t  epochs;
+    uint64_t  stale;
+    uint64_t  max_age_us;
 } stats;
 
 static volatile sig_atomic_t g_stop = 0;
@@ -109,6 +114,22 @@ static void account(stats *s, const uint8_t *msg, const tgz2_hdr *h, uint64_t rx
 {
     uint32_t lat;
 
+    /* 过期帧：宁可丢，也不把几分钟前的语音送进 ASR */
+    if (s->max_age_us && rx_us > h->ts_us && (rx_us - h->ts_us) > s->max_age_us) {
+        s->stale++;
+        return;
+    }
+
+    /* 发送端重启：epoch 变了就重开一个会话，不把序号跳变算成丢帧 */
+    if (!s->have_epoch) {
+        s->epoch = h->epoch;
+        s->have_epoch = 1;
+    } else if (h->epoch != s->epoch) {
+        s->epoch = h->epoch;
+        s->epochs++;
+        s->have_seq = 0;
+    }
+
     s->accepted++;
     s->msgs++;
 
@@ -156,6 +177,7 @@ int main(int argc, char **argv)
     double stall_at = -1.0, stall_len = 0.5;
     uint32_t slow_us = 0;
     int rcvbuf = 0;
+    int max_age_ms = 500;
     int i;
 
     for (i = 1; i < argc; i++) {
@@ -167,6 +189,7 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--stall-len") && i + 1 < argc) stall_len = atof(argv[++i]);
         else if (!strcmp(argv[i], "--slow-us") && i + 1 < argc) slow_us = (uint32_t)atoi(argv[++i]);
         else if (!strcmp(argv[i], "--rcvbuf") && i + 1 < argc) rcvbuf = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--max-age-ms") && i + 1 < argc) max_age_ms = atoi(argv[++i]);
         else {
             fprintf(stderr, "usage: %s --path P [--proto stream|dgram] [--secs N] [--capture F]\n"
                             "          [--stall-at SEC --stall-len SEC] [--slow-us US] [--rcvbuf BYTES]\n", argv[0]);
@@ -231,6 +254,7 @@ int main(int argc, char **argv)
 
     stats S;
     memset(&S, 0, sizeof(S));
+    S.max_age_us = max_age_ms > 0 ? (uint64_t)max_age_ms * 1000ull : 0;
     uint64_t t0 = tgz2_now_us();
     uint64_t t_next_stat = t0 + 5000000ULL;
     uint64_t t_end = secs > 0 ? t0 + (uint64_t)(secs * 1e6) : 0;
@@ -278,7 +302,22 @@ int main(int argc, char **argv)
         if (rn < TGZ2_MSG) { acc_len = 0; rn = (int)sizeof(rbuf); }
         int n = (int)recv(cli, (char *)(proto ? rbuf : (acc + acc_len)), rn, 0);
         if (n <= 0) {
-            if (n == 0 && !proto) { printf("PEER_CLOSED {}\n"); fflush(stdout); break; }
+            if (n == 0 && !proto) {
+                /* 对端关闭：重新 accept，而不是退出（否则发送端重启后就再也收不到） */
+                printf("PEER_CLOSED {}\n"); fflush(stdout);
+                tgz2_sock_close(cli);
+                cli = TGZ2_BADF;
+                acc_len = 0;
+                while (cli == TGZ2_BADF && !g_stop) {
+                    if (t_end && tgz2_now_us() >= t_end) break;
+                    cli = accept(srv, NULL, NULL);
+                    if (cli == TGZ2_BADF) tgz2_sleep_us(20000);
+                }
+                if (cli == TGZ2_BADF) break;
+                tgz2_set_nonblock(cli);
+                printf("REACCEPT {}\n"); fflush(stdout);
+                continue;
+            }
             continue;
         }
         uint64_t rx_us = tgz2_now_us();
@@ -342,6 +381,7 @@ int main(int argc, char **argv)
            "\"lat_us\":{\"avg\":%.1f,\"p50\":%u,\"p95\":%u,\"p99\":%u,\"max\":%u},"
            "\"gap_max_ms\":%.2f,\"stalls\":%d,\"stall_total_ms\":%.1f,"
            "\"tsgap_ms\":{\"min\":%.2f,\"max\":%.2f},"
+           "\"stale\":%llu,\"epoch\":%u,\"epochs\":%llu,\"max_age_ms\":%d,"
            "\"rate_kib_s\":%.2f}\n",
            proto ? "dgram" : "stream", dur,
            cpu, dur > 0 ? cpu / dur * 100.0 : 0.0,
@@ -360,6 +400,8 @@ int main(int argc, char **argv)
            (double)S.gap_max_us / 1000.0, S.stalled_count,
            (double)S.stall_total_us / 1000.0,
            (double)S.tsgap_min_us / 1000.0, (double)S.tsgap_max_us / 1000.0,
+           (unsigned long long)S.stale, S.epoch, (unsigned long long)S.epochs,
+           (int)(S.max_age_us / 1000),
            dur > 0 ? (double)(S.accepted * TGZ2_PAYLOAD) / 1024.0 / dur : 0.0);
 
     tgz2_sock_close(cli);

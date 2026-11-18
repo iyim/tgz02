@@ -4,9 +4,15 @@
 目标进程：`com.alibaba.ailabs.genie.smartapp:core`
 前置文档：`01_audio_record_analysis.md`、`01_audio_record_analysis_supplement.md`、`02_runtime_pcm_verification.md`
 
-标记说明：
-**【实测·设备】** 第二阶段在真机上量到的　**【实测·电脑】** 本阶段在电脑上跑出来的
-**【静态】** 反汇编/ELF 证据　**【待验证】** 尚未闭环，不许当结论用
+标记说明（全文统一，见 `03_pcm_bridge_review.md`）：
+
+| 标记 | 含义 |
+|---|---|
+| **W-PC** | Windows 主机实测（AF_UNIX SOCK_STREAM） |
+| **A-SHELL** | Android 普通进程实测（TG-Z02 `/data/local/tmp`，shell 域，不注入） |
+| **T-DEV** | TG-Z02 **原厂进程内**实测（`smartapp:core` + hook）—— 本轮为 0 |
+| **S-RE** | 静态逆向证据（反汇编 / ELF） |
+| **U** | 尚未验证 |
 
 本阶段**不改原厂 APK / SO / 系统分区**，也**不在真机上落地本方案**，只交付设计与电脑端原型。
 
@@ -235,22 +241,26 @@ libc.connect(fd, sa, 110);            // dgram 也可以不 connect，改用 sen
 
 ## 5. UDS 协议与传输细节
 
-### 5.1 帧格式（40 B 头 + 1280 B 载荷 = 1320 B）
+### 5.1 帧格式（40 B 头 + 1280 B 载荷 = 1320 B，协议 **v2**）
 
 | off | size | 字段 | 说明 |
 |---|---|---|---|
 | 0 | 4 | magic | `'TGZ2'` = `0x325A4754` |
-| 4 | 1 | ver | =1 |
+| 4 | 1 | ver | **=2**（v1→v2 的唯一变化：字段 20 语义） |
 | 5 | 1 | flags | bit0 合成数据（原型用），bit1 语音活动 |
 | 6 | 2 | hdr_len | =40 |
-| 8 | 4 | seq | 生产序号，单调 +1，**缺口即丢帧** |
-| 12 | 8 | ts_us | 采集时刻，`CLOCK_MONOTONIC` 微秒 |
-| 20 | 4 | frames_total | 生产端累计数（= seq+1），用于区分丢在谁手上 |
+| 8 | 4 | seq | 生产序号，**每个 epoch 内**单调 +1，**缺口即丢帧** |
+| 12 | 8 | ts_us | 采集时刻，`CLOCK_MONOTONIC` 微秒（跨进程同机可直接相减） |
+| 20 | 4 | epoch | **发送端实例标识**，进程重启即变；接收端据此重开会话 |
 | 24 | 4 | rate | 16000 |
 | 28 | 2 | ch | 1 |
 | 30 | 2 | bits | 16 |
 | 32 | 4 | payload_len | 1280 |
 | 36 | 4 | crc | FNV-1a(payload) |
+
+v1 的字段 20 是 `frames_total`（= seq+1，与 seq 重复）。改成 `epoch` 之后，
+**"发送端重启导致的序号跳变"与"真的丢帧"就能分开**；`ver` 同时提到 2，
+老接收端会明确拒收而不是误读 —— 这一点由 W-PC 与 A-SHELL 两侧的独立校验器验证。
 
 全部**手工小端序列化**，不用 `struct`：ARM EABI 会把 `uint64` 对齐到 8 字节，`packed` 前的结构体是 48 字节不是 40。
 电脑端原型与 Python 校验器就是按这张表各自独立实现的，`verify_capture.py` 能对上 = 这张表没写错。
@@ -266,6 +276,14 @@ libc.connect(fd, sa, 110);            // dgram 也可以不 connect，改用 sen
 
 选择规则：Android/Linux 用 **dgram**；只有 Windows 原型被迫用 stream（也因此把 stream 这条更脆的路先跑通、先测透）。
 接收端无论如何都要实现 magic 重同步，因为助手进程可能被 kill 后重启，残帧会留在缓冲里。
+
+**A-SHELL 实测（TG-Z02 普通进程，`android_uds_test/`）——两条推翻原先假设的事实：**
+
+1. **满缓冲报的是 `EAGAIN`（errno 11），不是 `ENOBUFS`。** 接收端冻结 2 秒、收发缓冲各 8 KB 时：
+   客户端 `ok=258 / eagain=42 / enobufs=0 / other=0`。`ENOBUFS` 是 netlink/packet 套接字才常见的错误。
+   → 代码两者都判，但文档与注释以 `EAGAIN` 为准。
+2. **`SO_SNDBUF/SO_RCVBUF` 请求 8192 → 内核回读 16384。** Linux 把设置值翻倍，实际可用约 10 帧（1320 B/帧）。
+   → "把缓冲设成 8 KB"要按"内核报告 ~16 KB"来估算延迟上限（16384 / 31.25 KB/s ≈ 0.5 s）。
 
 ### 5.3 非阻塞的准确含义
 
@@ -414,15 +432,17 @@ boot → Magisk post-fs-data → Zygisk 加载 → 系统起 zygote
 
 ## 10. 尚未验证（不许写成结论）
 
-| # | 未验证项 | 为什么重要 | 怎么才能闭环 |
-|---|---|---|---|
-| 1 | Android 上 AF_UNIX **SOCK_DGRAM** 的实际丢帧语义 | 原型只在 Windows 上验了 STREAM | 设备上跑一次 `--proto dgram` 自测 |
-| 2 | 抽象命名空间在 `:core` 与助手进程之间的可达性 | 决定要不要落盘 socket 文件 | 设备上试 `\0tgz2_pcm` |
-| 3 | `feed` 的调用线程是否恒为同一个（`AG-audio_record`） | 若不是，SPSC 的"单生产者"假设不成立 | 真机打印 `gettid()` 统计 |
-| 4 | Zygisk 注入后 `libsmartbox.so` 的加载时序 | 决定用 dlopen 回调还是轮询 | 真机 dry-run 日志 |
-| 5 | 旁路对 `:core` CPU 占用的实际影响 | 任务书要求量化 | 30 秒短测前后对比 `top -H -p <pid>` |
-| 6 | 原厂 TTS 回采是否会被助手侧 VAD 误触发 | 25 s 处的疑似 TTS 峰（见 02 文档 §6） | 本阶段不做，留给 VAD 阶段 |
-| 7 | 固件升级后签名是否仍匹配 | 决定 §7 闸门是否真的拦得住 | 每次 OTA 后重跑闸 1~3 |
+| # | 未验证项 | 等级 | 为什么重要 | 怎么才能闭环 |
+|---|---|---|---|---|
+| 1 | `feed` 是否**单线程**调用（SPSC 前提） | U | 多生产者会让无锁 SPSC 静默丢帧/写坏 | 跑 `thread_probe.js`（只读，30 s） |
+| 2 | 原厂进程内的真实行为（hook 耗时、唤醒成功率） | U | 唯一能证明"不破坏原厂" | 30 秒短测（§9 步骤 2） |
+| 3 | 抽象命名空间在 `:core` 与助手进程间是否可达 | U | 决定 socket 要不要落盘 | 真机 A+助手进程联调（A-SHELL 只证明了 shell↔shell 可行） |
+| 4 | 固件升级后签名是否仍匹配 | U | 决定 §7 闸门是否真的拦得住 | 每次 OTA 后重跑闸 1~3 |
+| 5 | 旁路对 `:core` CPU 的实际增量 | U | 任务书要求量化 | 短测前后 `top -H -p <pid>` |
+| 6 | 原厂 TTS 回采是否会被助手侧 VAD 误触发 | U | 25 s 处的疑似 TTS 峰（见 02 文档 §6） | 留给 VAD 阶段 |
+
+已由本轮闭环的：DGRAM 语义（A-SHELL）、协议 v2 的 epoch/过期/重连（W-PC + A-SHELL）、
+PC 侧 10 分钟长稳（W-PC）。
 
 ---
 
@@ -431,13 +451,16 @@ boot → Magisk post-fs-data → Zygisk 加载 → 系统起 zygote
 | 文件 | 作用 |
 |---|---|
 | `tgz2_frame.h` | 协议 + 时间戳 + 无锁 SPSC 环 + socket 封装（可交叉编译到 arm） |
-| `uds_sink.c` | 接收端：校验/统计/延迟分位/停摆注入 |
-| `uds_source.c` | 合成发送端：40 ms 铁定时节拍 + 有界环 + 非阻塞发送 + `--naive` 对照组 |
-| `run_test.py` | 场景编排（baseline/stall/naive/skip/ringfull/slow） |
-| `verify_capture.py` | 独立离线校验（Python 重新实现协议，验证协议描述无歧义） |
-| `probe_afunix.c` / `probe_dgram.c` | 本机 AF_UNIX 能力探针（STREAM 可用 / DGRAM 不可用） |
-| `pcm_bridge_draft.js` | 真机 A 方案草稿（**未在设备上运行过**，见 §10） |
+| `uds_sink.c` | 接收端：校验/统计/延迟分位/停摆注入/过期帧丢弃/epoch 会话切换 |
+| `uds_source.c` | 合成发送端：40 ms 铁定时节拍 + 有界环 + 非阻塞发送 + 断线重连 + `--naive` 对照组 |
+| `run_test.py` | 场景编排（baseline/stall/naive/stale/skip/ringfull/slow/slowbuf） |
+| `verify_capture.py` | 独立离线校验（Python 重新实现协议，按 epoch 分组核对连续性） |
+| `probe_afunix.c` / `probe_dgram.c` | 本机 AF_UNIX 能力探针（W-PC：STREAM 可用 / DGRAM 不可用） |
+| `pcm_bridge_draft.js` | 真机 A 方案草稿（修订 2，**仍未在设备上运行**） |
+| `thread_probe.js` | 只读线程探针：验证 `feed` 是否单生产者（SPSC 前提），**未执行** |
+| `android_uds_test/` | Android armv7 DGRAM 测试（server/client/build/run 脚本），A-SHELL 已跑 |
 | `README.md` | 编译、运行、各字段含义 |
 | `.gitignore` | 二进制、`_run/`、`.cap` 不入库 |
 | `03_pcm_bridge_test.md` | 实测数据与结论 |
+| `03_pcm_bridge_review.md` | 审查回执：9 项修正 + 证据等级定义 |
 | `03_script_audit.md` | 第二阶段既有脚本的审查清单与修改记录 |

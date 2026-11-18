@@ -1,0 +1,4 @@
+READY {"role":"server","mode":"file","name":"/data/local/tmp/tgz2_uds/tgz2pcm.sock","rcvbuf_req":8192,"rcvbuf_eff":16384}
+STAT {"accepted":100,"missing":0,"stale":0,"lat_avg_us":247.6}
+STAT {"accepted":225,"missing":0,"stale":0,"lat_avg_us":254.8}
+SUMMARY {"role":"server","mode":"file","dur_s":12.024,"msgs":250,"accepted":250,"bytes":330000,"stale":0,"paused":0,"bad":{"magic":0,"ver":0,"len":0,"crc":0,"payload":0},"seq_first":0,"seq_last":249,"missing":0,"dup":0,"reorder":0,"lat_us":{"avg":253.3,"max":7300},"tsgap_ms":{"min":11.40,"max":72.99},"epoch":761773211}
