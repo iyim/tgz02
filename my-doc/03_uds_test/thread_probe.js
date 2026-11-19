@@ -70,26 +70,39 @@ function verdict() {
   }
 }
 
-/* 唯一的收尾路径：打印 FINAL -> 摘掉 hook -> 清掉定时器 */
+/* 唯一的收尾路径：打印 FINAL -> 摘掉 hook -> 清掉定时器
+ * 顺序固定，且每一步独立 try：任何一步抛异常都不许跳过后续清理。
+ * 只对"确实创建成功"的资源调用清理函数；listener 无效时不调用 detach。
+ */
 function finish(reason) {
   if (stopped) return;
   stopped = true;
 
-  dump('FINAL');
-  verdict();
+  try { dump('FINAL'); } catch (e) { console.log('[!] dump failed: ' + e); }
+  try { verdict(); } catch (e) { console.log('[!] verdict failed: ' + e); }
 
-  if (listener !== null) {
-    try { listener.detach(); console.log('[i] Interceptor listener detached'); }
-    catch (e) { console.log('[!] detach failed: ' + e); }
+  if (listener !== null && listener !== undefined && typeof listener.detach === 'function') {
+    var l = listener;
     listener = null;
+    try { l.detach(); console.log('[i] Interceptor listener detached'); }
+    catch (e) { console.log('[!] detach failed: ' + e); }
   } else {
-    console.log('[i] 没有安装 listener，无需 detach');
+    listener = null;
+    console.log('[i] 没有有效的 listener，无需 detach');
   }
 
-  if (dumpTimer !== null) { try { clearInterval(dumpTimer); } catch (e) { } dumpTimer = null; }
-  if (stopTimer !== null) { try { clearTimeout(stopTimer); } catch (e) { } stopTimer = null; }
+  if (dumpTimer !== null && dumpTimer !== undefined) {
+    var it = dumpTimer;
+    dumpTimer = null;
+    try { clearInterval(it); } catch (e) { console.log('[!] clearInterval failed: ' + e); }
+  }
+  if (stopTimer !== null && stopTimer !== undefined) {
+    var to = stopTimer;
+    stopTimer = null;
+    try { clearTimeout(to); } catch (e) { console.log('[!] clearTimeout failed: ' + e); }
+  }
 
-  console.log('[i] probe stopped (' + reason + '), timers cleared, hook released');
+  console.log('[i] probe stopped (' + reason + ')');
 }
 
 /* ---- 三级闸门：符号 -> 偏移 -> 机器码。任一不符都不装 hook，也不留定时器 ---- */
@@ -106,7 +119,15 @@ function install() {
     return finish('offset-mismatch');
   }
 
-  var pro = new Uint8Array(feed.readByteArray(16));
+  var pro;
+
+  try {
+    pro = new Uint8Array(feed.readByteArray(16));
+  } catch (e) {
+    console.log('[!] 机器码读取失败: ' + e);
+    return finish('sig-read-failed');
+  }
+
   for (var i = 0; i < 16; i++) {
     if (pro[i] !== SIG_BYTES[i]) { console.log('[!] 机器码签名不符 @' + i); return finish('sig-mismatch'); }
   }
@@ -133,11 +154,37 @@ function install() {
     return finish('attach-failed');
   }
 
+  /* 返回值必须真的能 detach；否则不进入定时器阶段，也不谎称已经卸载 Hook */
+  if (!listener || typeof listener.detach !== 'function') {
+    console.log('[!] attach 返回无效 listener');
+    listener = null;
+    return finish('invalid-listener');
+  }
+
   console.log('[i] probe installed @0x' + off.toString(16) + ' (' + feed + ')');
   console.log('[i] 只统计线程与长度，不读 PCM、不做 IPC；' + (RUN_MS / 1000) + ' 秒后自动 detach');
 
-  dumpTimer = setInterval(function () { if (!stopped) dump('RUN'); }, DUMP_MS);
-  stopTimer = setTimeout(function () { finish('timeout'); }, RUN_MS);
+  try {
+    dumpTimer = setInterval(function () {
+      if (!stopped) dump('RUN');
+    }, DUMP_MS);
+
+    if (dumpTimer === null || dumpTimer === undefined) {
+      throw new Error('setInterval returned invalid handle');
+    }
+
+    stopTimer = setTimeout(function () {
+      finish('timeout');
+    }, RUN_MS);
+
+    if (stopTimer === null || stopTimer === undefined) {
+      throw new Error('setTimeout returned invalid handle');
+    }
+
+  } catch (e) {
+    console.log('[!] 定时器创建失败: ' + e);
+    finish('timer-setup-failed');
+  }
 }
 
 install();

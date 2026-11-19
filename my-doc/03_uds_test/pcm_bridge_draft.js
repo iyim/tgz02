@@ -322,8 +322,9 @@ function installHook() {
     }
   });
 
-  if (hookListener === null || hookListener === undefined) {
-    throw new Error('attach-returned-null');
+  if (!hookListener || typeof hookListener.detach !== 'function') {
+    hookListener = null;
+    throw new Error('attach-returned-invalid-listener');
   }
 }
 
@@ -420,18 +421,33 @@ function startTimers() {
 }
 
 try {
-  if (!LIFECYCLE.alive) throw new Error('lifecycle-not-active');
+  if (!LIFECYCLE.alive) {
+    throw new Error('lifecycle-not-active');
+  }
+
   if (st.enabled) {
     bindLibc();                                            /* 时钟需要，DRY_RUN 也绑 */
+
     st.epoch = ((nowUs() & 0xFFFFFFFF) ^ 0x5A5A5A5A) >>> 0;
+
     installHook();
+
     st.why = 'ok';
+
+    /*
+     * 只有预检和 Hook 安装全部成功后，
+     * 才允许创建 tick/stat 定时器。
+     */
+    startTimers();
   }
-  startTimers();
 } catch (e) {
-  /* 初始化失败：统一回滚已经创建的资源（listener / 定时器 / socket），不留半成品 */
   st.enabled = false;
   st.why = 'install:' + String(e && e.message ? e.message : e);
+
+  /*
+   * 统一回滚已经创建的资源。
+   * teardown 必须保持幂等。
+   */
   teardown();
 }
 

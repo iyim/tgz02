@@ -394,3 +394,75 @@ T9 最初断言"socket 仍然被关闭"，但该用例从未建过 socket（`fd=
 | 4 | frida-server 被 `kill -9` 时的 fd 归属 | 设计上残留到目标进程退出 |
 
 > 再次声明：§8 全部为 **W-PC**，`T-DEV = 0`。
+
+---
+
+## 8.8 修订 5 补充审查：初始化失败路径
+
+依据 `11.txt` 的补充要求，补上"初始化失败时资源未清理干净"的缺口。基线：`main @ b9434fdc`，
+`pcm_bridge_draft.js` blob `6c7277f4…`、`thread_probe.js` blob `46fb3409…`（改前已核对一致）。
+
+### 8.8.1 代码已修改（本轮实际改动）
+
+| # | 文件 | 改动 | 状态 |
+|---|---|---|---|
+| 1 | `pcm_bridge_draft.js` | `installHook()` 尾部：`if (hookListener === null \|\| undefined)` → `if (!hookListener \|\| typeof hookListener.detach !== 'function')`，并把 `hookListener` 置空后抛 `attach-returned-invalid-listener`。**无效 listener 不再被当成"已卸载"** | 已改 |
+| 2 | `pcm_bridge_draft.js` | 启动块：`startTimers()` 移进 `if (st.enabled)` 内部。模块缺失/符号缺失/偏移不符/签名不符时**根本不会创建 tick/stat** | 已改 |
+| 3 | `thread_probe.js` | `feed.readByteArray(16)` 包 `try/catch` → `finish('sig-read-failed')`，不再可能异常退出 | 已改 |
+| 4 | `thread_probe.js` | attach 后校验 `typeof listener.detach === 'function'`，否则 `listener = null` + `finish('invalid-listener')`；无效 listener 不进入定时器阶段 | 已改 |
+| 5 | `thread_probe.js` | 两个定时器创建包 `try/catch` + 句柄校验 → `finish('timer-setup-failed')`；`finish()` 改为每一步独立 `try`，且只清理"确实创建成功"的资源 | 已改 |
+
+未触碰：PCM 抽取、FNV/CRC、时间戳、socket 协议、`drain()`、`teardown()` 清理顺序、帧格式/采样参数/通道抽取。
+
+### 8.8.2 一处行为说明（不是遗漏）
+
+`startTimers()` 内部两个 `setInterval` 之间**没有**提前返回：若第 1 个返回 `null/undefined`（而不是抛异常），
+第 2 个仍会被调用，随后由合并守卫抛错并交给 `teardown()` 清理。
+结果是**没有存活的定时器**（`tickActive=false && statActive=false`），只是多了一次创建 + 一次清理。
+本轮按"不扩大修改范围"的要求没有改这个执行流，单测改为断言"存活定时器数量 = 0"而不是断言"第二次没有被调用"。
+
+### 8.8.3 测试已运行且通过（W-PC）
+
+| 命令 | 结果 |
+|---|---|
+| `node --check pcm_bridge_draft.js` | exit 0 |
+| `node --check thread_probe.js` | exit 0 |
+| `node --check tests/bridge_unit_test.js` | exit 0 |
+| `node --check tests/probe_detach_test.js` | exit 0 |
+| `node tests/bridge_unit_test.js` | **153 passed / 0 failed**（上一轮 92，新增 61 条） |
+| `node tests/probe_detach_test.js` | **91 passed / 0 failed**（上一轮 44，新增 47 条） |
+| `python crc_crosscheck/run_crosscheck.py` | **RESULT: PASS，18/18 与 C 一致**（反面对照 17/18 不一致） |
+
+完整日志：`my-doc/03_uds_test/_run/round5_supplement_test_output.txt`（已入库）。
+
+### 8.8.4 bridge 单测新增项
+
+| 用例 | 覆盖 |
+|---|---|
+| T12 预检失败 ×4 | 模块缺失 / 符号缺失 / 偏移不符 / 签名不符：`Hook=0`、`interval 创建=0`（`setInterval` 根本没被调用）、`stats.enabled=false` |
+| T13 无效 listener ×2 | 返回 `null` 与 `{}`：`enabled=false`、`why=install:attach-returned-invalid-listener`、`interval=0`、`detachCount=0`（**不声称已卸载**）、`stop()` 可安全调用、重复 `stop()` 不重复清理 |
+| T14 定时器失败 ×4 | 第 1 次 `setInterval` 抛异常（detach 1、clear 0）；第 2 次抛异常（detach 1、clear 1、`fd=-1`、重复 stop 不重复清理）；第 1/2 次返回 `null`（存活定时器 = 0） |
+
+### 8.8.5 probe_detach_test 新增项（P5）
+
+| 用例 | 断言要点 |
+|---|---|
+| P5.1 读签名抛异常 | `reason=sig-read-failed`；Hook/interval/timeout/detach 全 0；`finish` 只执行一次 |
+| P5.2 attach 返回 null | `reason=invalid-listener`；同上全 0 |
+| P5.3 attach 返回 `{}` | `reason=invalid-listener`；同上全 0 |
+| P5.4 `setInterval` 抛异常 | detach=1、clearInterval=0、clearTimeout=0 |
+| P5.5 `setInterval` 返回 null | detach=1、**未创建 timeout**、无残留 interval |
+| P5.6 `setTimeout` 抛异常 | detach=1、clearInterval=1、clearTimeout=0 |
+| P5.7 `setTimeout` 返回 null | detach=1、clearInterval=1、无残留 timeout |
+| P5.8 重复触发 | 正常路径与失败路径都：detach 不重复、clear 不重复、`probe stopped` 只打印一次 |
+
+### 8.8.6 尚未验证（U，保持不变）
+
+| # | 项 | 说明 |
+|---|---|---|
+| 1 | 真机行为（hook 耗时、detach 实效、唤醒成功率） | **T-DEV = 0**，本轮未运行 frida-server / thread_probe / bridge |
+| 2 | 测试环境是假 Frida | `Interceptor`/`Memory`/`NativeFunction` 全是桩，只证明"代码路径与资源处置逻辑正确" |
+| 3 | `feed` 是否单生产者 | 仍需真机探针；当前只有运行时守卫 |
+| 4 | `kill -9 frida-server` 时 fd 归属 | 设计上残留到目标进程退出 |
+
+> 本节所有"已通过"均为 **W-PC**。是否进入真机验证由你决定。

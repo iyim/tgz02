@@ -55,12 +55,17 @@ function mkPtr(value) { const m = new Mem(Buffer.alloc(8), 0); m.value = value; 
 
 /* ---------------- 假 Frida 环境 ---------------- */
 function makeEnv(opts) {
+  opts = opts || {};
   const env = {
     allocs: [], sends: [], timers: { interval: [], timeout: [] },
     hooks: [], detachCount: 0, weakBinds: [],
     clearedIntervals: 0, clearedTimeouts: 0,
-    attachThrows: !!(opts && opts.attachThrows),
-    detachThrows: !!(opts && opts.detachThrows),
+    attachThrows: !!opts.attachThrows,
+    detachThrows: !!opts.detachThrows,
+    invalidListener: opts.invalidListener || null,   /* 'null' | 'empty' */
+    intervalThrows: opts.intervalThrows || 0,        /* 1-based 调用序号 */
+    intervalNull: opts.intervalNull || 0,            /* 1-based 调用序号 */
+    intervalCalls: 0,
     syscalls: { socket: 0, connect: 0, sendto: 0, fcntl: 0, close: 0 },
     clock: { mode: opts.clockMode || 'ok', sec: opts.sec, nsec: opts.nsec, calls: 0 },
     tid: opts.tid || 4242
@@ -73,13 +78,18 @@ function makeEnv(opts) {
   const feedPtr = new Mem(Buffer.alloc(64), 0);
   const sig = [0xf0, 0x48, 0x2d, 0xe9, 0x10, 0xb0, 0x8d, 0xe2,
                0x08, 0xd0, 0x4d, 0xe2, 0x03, 0x70, 0xa0, 0xe1];
+  if (opts.badSig) sig[3] = 0x00;
   sig.forEach((b, i) => feedPtr.buf.writeUInt8(b, i));
-  feedPtr.sub = () => ({ toInt32: () => 0xd455c });
+  feedPtr.sub = () => ({ toInt32: () => (opts.badOffset ? 0xdead : 0xd455c) });
   feedPtr.toString = () => '0xfakefeed';
 
   const ModuleStub = {
-    findBaseAddress(name) { return name === 'libsmartbox.so' ? new Mem(Buffer.alloc(8), 0) : null; },
+    findBaseAddress(name) {
+      if (opts.noModule) return null;
+      return name === 'libsmartbox.so' ? new Mem(Buffer.alloc(8), 0) : null;
+    },
     findExportByName(mod, sym) {
+      if (opts.noSymbol) return null;
       if (mod === 'libsmartbox.so' && sym === '_ZN14AGSpeechEngine4feedEjPKvi') return feedPtr;
       return null;
     },
@@ -117,6 +127,8 @@ function makeEnv(opts) {
     Interceptor: {
       attach(addr, cbs) {
         if (env.attachThrows) throw new Error('attach failed (injected)');
+        if (env.invalidListener === 'null') return null;
+        if (env.invalidListener === 'empty') return {};
         env.hooks.push(cbs);
         return {
           detach() {
@@ -129,7 +141,13 @@ function makeEnv(opts) {
     NativeFunction: function (tag, ret, args) { return function (...a) { return libcImpl[tag.__libc](...a); }; },
     ptr: (v) => mkPtr(v),
     send: (o) => { env.sends.push(o); },
-    setInterval: (fn) => { env.timers.interval.push(fn); return env.timers.interval.length; },
+    setInterval: (fn) => {
+      env.intervalCalls++;
+      if (env.intervalThrows === env.intervalCalls) throw new Error('setInterval failed (injected)');
+      if (env.intervalNull === env.intervalCalls) return null;
+      env.timers.interval.push(fn);
+      return env.timers.interval.length;
+    },
     clearInterval: () => { env.clearedIntervals++; },
     setTimeout: (fn, ms) => { env.timers.timeout.push(fn); return env.timers.timeout.length; },
     clearTimeout: () => { env.clearedTimeouts++; },
@@ -419,6 +437,90 @@ function testStopAfterSocketClose() {
   eq(env.syscalls.sendto, sent, 'stop 之后不再 sendto');
 }
 
+/* ---------------- T12–T14: 预检失败 / 无效 listener / 定时器创建失败 ---------------- */
+function testPrecheckNoTimers() {
+  console.log('\n[T12] 预检失败：不装 hook、不建定时器（四种预检各跑一遍）');
+  const cases = [
+    ['模块缺失', { noModule: true }],
+    ['符号缺失', { noSymbol: true }],
+    ['偏移不符', { badOffset: true }],
+    ['签名不符', { badSig: true }]
+  ];
+  for (const [label, opt] of cases) {
+    const { env, exports } = mount(opt);
+    const st = exports.stats();
+    eq(env.hooks.length, 0, `${label}: Hook 数量 = 0`);
+    eq(env.timers.interval.length, 0, `${label}: interval 创建数量 = 0`);
+    eq(env.intervalCalls, 0, `${label}: 根本没有调用过 setInterval`);
+    eq(st.enabled, false, `${label}: stats.enabled = false`);
+  }
+}
+
+function testInvalidListener() {
+  console.log('\n[T13] attach 返回无效 listener：不允许启动，也不谎称已卸载');
+  for (const kind of ['null', 'empty']) {
+    const { env, exports } = mount({ invalidListener: kind });
+    const st = exports.stats();
+    eq(st.enabled, false, `${kind}: enabled = false`);
+    eq(/^install:attach-returned-invalid-listener/.test(st.why), true, `${kind}: why -> ${st.why}`);
+    eq(env.timers.interval.length, 0, `${kind}: interval 创建数量 = 0`);
+    eq(env.detachCount, 0, `${kind}: 没有成功 detach（无效 listener 无法 detach）`);
+
+    const s1 = exports.stop();
+    eq(s1.stopped, true, `${kind}: stop() 可安全调用`);
+    eq(s1.hookDetachAttempted, false, `${kind}: 未尝试 detach`);
+    eq(s1.hookDetached, false, `${kind}: 未声称 detach 成功`);
+    const s2 = exports.stop();
+    eq(s2.stopped, true, `${kind}: 重复 stop 返回 stopped`);
+    eq(env.detachCount, 0, `${kind}: 重复 stop 也没有 detach`);
+    eq(env.clearedIntervals, 0, `${kind}: 没有定时器需要清理`);
+  }
+}
+
+function testTimerSetupFailure() {
+  console.log('\n[T14] 定时器创建失败：回滚已创建资源');
+
+  /* 第 1 个 setInterval（tick）就抛异常 */
+  {
+    const { env, exports } = mount({ intervalThrows: 1 });
+    const st = exports.stats();
+    eq(env.detachCount, 1, '第 1 次 setInterval 抛异常: listener detach 1 次');
+    eq(env.clearedIntervals, 0, '第 1 次抛异常: 没有 interval 需要清理');
+    eq(st.enabled, false, '第 1 次抛异常: enabled = false');
+    eq(st.lifecycle.stopped, true, '第 1 次抛异常: teardown = stopped');
+  }
+
+  /* 第 2 个 setInterval（stat）抛异常：tick 已建出来，必须被清理 */
+  {
+    const { env, exports } = mount({ intervalThrows: 2 });
+    eq(env.timers.interval.length, 1, '第 2 次抛异常: 只创建成功 1 个 interval');
+    eq(env.detachCount, 1, '第 2 次抛异常: listener detach 1 次');
+    eq(env.clearedIntervals, 1, '第 2 次抛异常: 已创建的 interval 被清理 1 次');
+    eq(exports.stats().fd, -1, '第 2 次抛异常: 没有 socket 残留');
+    eq(exports.stats().lifecycle.stopped, true, '第 2 次抛异常: teardown = stopped');
+    exports.stop();
+    eq(env.detachCount, 1, '第 2 次抛异常: 重复 stop 不重复 detach');
+    eq(env.clearedIntervals, 1, '第 2 次抛异常: 重复 stop 不重复 clearInterval');
+  }
+
+  /* setInterval 返回 null（第 1 次 / 第 2 次）
+   * 注意：返回 null 不会中断 startTimers 的执行流，第二个 setInterval 仍会被调用，
+   * 随后统一由守卫抛错并 teardown。因此这里断言的是"清理后没有仍然存活的定时器"，
+   * 用 lifecycle.tickActive/statActive 判断，而不是用桩函数的历史数组。 */
+  for (const n of [1, 2]) {
+    const { env, exports } = mount({ intervalNull: n });
+    const st = exports.stats();
+    eq(env.detachCount, 1, `第 ${n} 个 setInterval 返回 null: detach 1 次`);
+    eq(st.lifecycle.stopped, true, `第 ${n} 个返回 null: teardown = stopped`);
+    eq(st.lifecycle.tickActive, false, `第 ${n} 个返回 null: 没有残留 tick`);
+    eq(st.lifecycle.statActive, false, `第 ${n} 个返回 null: 没有残留 stat`);
+    eq((st.lifecycle.tickActive ? 1 : 0) + (st.lifecycle.statActive ? 1 : 0), 0,
+       `第 ${n} 个返回 null: 存活定时器数量 = 0`);
+    eq(env.intervalCalls, 2, `第 ${n} 个返回 null: 两次 setInterval 都被调用过`);
+    eq(st.enabled, false, `第 ${n} 个返回 null: enabled = false`);
+  }
+}
+
 /* ---------------- 跑 ---------------- */
 console.log('bridge_unit_test.js  (source: ' + path.basename(BRIDGE) + ', ' + SRC.split('\n').length + ' lines)');
 testTimespec();
@@ -433,6 +535,9 @@ testStopIdempotent();
 testDetachFailure();
 testAttachFailure();
 testStopAfterSocketClose();
+testPrecheckNoTimers();
+testInvalidListener();
+testTimerSetupFailure();
 
 console.log(`\n=== ${pass} passed, ${fail} failed ===`);
 if (fail) { console.log(failures.map(f => '  - ' + f).join('\n')); process.exit(1); }
