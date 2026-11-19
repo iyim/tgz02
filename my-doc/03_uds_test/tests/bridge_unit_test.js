@@ -563,21 +563,117 @@ function testRingFull() {
 
 /* ================================================================= T14 */
 function testMultiProducer() {
-  console.log('\n[T14] 第二个生产线程 -> 立即禁用旁路');
-  const { env, exports } = mount();
-  feed(env, makePcm());
-  eq(exports.stats().enabled, true, '首个 tid 后仍 enabled');
-  env.tid = 9999;
-  feed(env, makePcm());
-  let st = exports.stats();
-  eq(st.enabled, false, '第二个 tid 后 enabled = false');
-  eq(/multi-producer/.test(st.why), true, 'why 记录 multi-producer');
-  eq(st.produced, 1, '第二线程的帧没有入环');
-  eq(st.producerTid, 4242, 'producerTid 仍是原线程');
-  eq(st.tids['4242'], 1, 'tids 记录原线程调用次数');
-  const sentBefore = env.syscalls.sendto;
-  tick(env);
-  eq(env.syscalls.sendto, sentBefore, '禁用后消费端不再发送');
+  console.log('\n[T14] 多生产者线程：TID 变化不禁用，帧照常入环（T3-08）');
+
+  /* ---- T14a：单 TID 连续调用 ---- */
+  {
+    const { env, exports } = mount({ tid: 4242 });
+    const pcm = makePcm();
+    for (let k = 0; k < 5; k++) feed(env, pcm);
+    const st = exports.stats();
+    eq(st.enabled, true, 'T14a 单 TID: 仍 enabled');
+    eq(st.disables, 0, 'T14a 单 TID: disables = 0');
+    eq(st.frames, 5, 'T14a 单 TID: frames = 5');
+    eq(st.produced, 5, 'T14a 单 TID: produced = 5');
+    eq(st.tidCount, 1, 'T14a 单 TID: tidCount = 1');
+    eq(st.producerTid, 4242, 'T14a 单 TID: producerTid = 4242');
+    eq(st.tids['4242'], 5, 'T14a 单 TID: 该线程调用 5 次');
+    eq(st.otherTidCalls, 0, 'T14a 单 TID: otherTidCalls = 0');
+    ok(st.pendingEq, 'T14a 单 TID: frames-produced 不变式成立');
+  }
+
+  /* ---- T14b：两个 TID 交替（复现真机 19873 / 14171） ---- */
+  {
+    const { env, exports } = mount({ tid: 19873 });
+    const pcm = makePcm();
+    for (let k = 0; k < 6; k++) {
+      env.tid = (k % 2 === 0) ? 19873 : 14171;
+      feed(env, pcm);
+    }
+    const st = exports.stats();
+    eq(st.enabled, true, 'T14b 两 TID 交替: 仍 enabled（不再自禁用）');
+    eq(st.disables, 0, 'T14b 两 TID 交替: disables = 0');
+    eq(/multi-producer/.test(String(st.why)), false, 'T14b: why 里没有 multi-producer');
+    eq(st.frames, 6, 'T14b: frames = 6');
+    eq(st.produced, 6, 'T14b: produced = 6');
+    eq(st.ringDrop, 0, 'T14b: ringDrop = 0');
+    eq(st.tidCount, 2, 'T14b: tidCount = 2');
+    eq(st.producerTid, 19873, 'T14b: producerTid 仍是首个线程（诊断用）');
+    eq(st.tids['19873'], 3, 'T14b: TID 19873 调用 3 次');
+    eq(st.tids['14171'], 3, 'T14b: TID 14171 调用 3 次');
+    eq(st.tids.firstTid, 19873, 'T14b: tids 里附带 firstTid');
+    eq(Object.keys(st.tids).length, 3, 'T14b: tids = 2 个线程 + firstTid');
+    eq(st.otherTidCalls, 3, 'T14b: otherTidCalls = 3');
+    ok(st.pendingEq, 'T14b: frames-produced 不变式成立');
+
+    tick(env);
+    eq(st.tids && exports.stats().sent > 0, true, 'T14b: 消费端仍在发送（没被禁用）');
+    const after = exports.stats();
+    eq(after.crcFrames, after.sent, 'T14b: 发出的每帧都算了 CRC');
+  }
+
+  /* ---- T14c：多个 TID 轮转 + 载荷完整性（无环交错/覆盖） ---- */
+  {
+    const tids = [101, 202, 303, 404, 505];
+    const { env, exports } = mount({ tid: tids[0] });
+    const pcm = makePcm();
+    for (let k = 0; k < 10; k++) {
+      env.tid = tids[k % tids.length];
+      feed(env, pcm);
+    }
+    const st = exports.stats();
+    eq(st.enabled, true, 'T14c 多 TID: 仍 enabled');
+    eq(st.disables, 0, 'T14c 多 TID: disables = 0');
+    eq(st.frames, 10, 'T14c: frames = 10');
+    eq(st.produced, 10, 'T14c: produced = 10');
+    eq(st.tidCount, 5, 'T14c: tidCount = 5');
+    eq(st.otherTidCalls, 8, 'T14c: otherTidCalls = 8（10 帧里 8 帧不是首线程）');
+    for (const t of tids) eq(st.tids[String(t)], 2, 'T14c: TID ' + t + ' 调用 2 次');
+
+    tick(env); tick(env);            /* DRAIN_BURST = 8，两个 tick 才能排空 10 帧 */
+    const sentAll = exports.stats().sent;
+    eq(sentAll, 10, 'T14c: 10 帧全部发出（两个 tick）');
+    eq(env.frames.length, 10, 'T14c: mock 收到 10 个数据报');
+    const ref = lane0Ref();
+    let payloadOk = 0, seqOk = 0;
+    for (let k = 0; k < env.frames.length; k++) {
+      const buf = env.frames[k].buf;
+      if (buf.subarray(40, 40 + 1280).equals(ref)) payloadOk++;
+      if (buf.readUInt32LE(8) === (k + 1)) seqOk++;      /* TGZ2 v2: off 8 = seq */
+    }
+    eq(payloadOk, 10, 'T14c: 10 帧载荷全部等于 lane0 参考数据（无交错/无覆盖）');
+    eq(seqOk, 10, 'T14c: 序号 1..10 连续');
+  }
+}
+
+/* ================================================================= T14b */
+function testHookReentry() {
+  console.log('\n[T14d] 真正的重入仍被 inHook 拦住（同一线程在回调内再次 feed）');
+  const { env, exports } = mount({ tid: 777 });
+  const hook = env.hooks[0];
+  const pcm = makePcm();
+  const origCopy = env.obj.Memory.copy;
+
+  let nested = 0;
+  env.obj.Memory.copy = function (dst, src, n) {
+    /* 在 onEnter 内部再触发一次 onEnter：模拟同一线程的重入 */
+    if (nested === 0) {
+      nested++;
+      hook.onEnter([null, null, new Mem(pcm, 0), { toInt32: () => 5120 }]);
+    }
+    return origCopy(dst, src, n);
+  };
+
+  feed(env, pcm);
+  env.obj.Memory.copy = origCopy;
+
+  const st = exports.stats();
+  eq(nested, 1, '重入确实被触发了一次');
+  eq(st.hookReentry, 1, 'hookReentry = 1（被 inHook 拦住）');
+  eq(st.frames, 1, 'frames 只算外层 1 次（重入未计数）');
+  eq(st.produced, 1, 'produced = 1（重入帧没入环）');
+  eq(st.hookEx, 0, '没有异常逃逸');
+  ok(st.pendingEq, '不变式仍成立');
 }
 
 /* ================================================================= T15 */
@@ -753,6 +849,7 @@ testStale();
 testClockFail();
 testRingFull();
 testMultiProducer();
+testHookReentry();
 testStopIdempotent();
 testInitRollback();
 testDryRun();

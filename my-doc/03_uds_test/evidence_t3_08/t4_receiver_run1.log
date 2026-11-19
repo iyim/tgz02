@@ -1,0 +1,60 @@
+receiver pid=19138 case=T308 window=300s out=/data/local/tmp/t4/acc_T308
+bridge rc=0 (303.4s)
+
+SEGMENTS (32):
+  #1 seq 606..668 63 frames 2520 ms rms_avg=414.1 rms_max=1720.6 end=silence file=seg_1dcbc251_0001_606.wav
+  #2 seq 815..884 70 frames 2800 ms rms_avg=419.8 rms_max=2100.3 end=silence file=seg_1dcbc251_0002_815.wav
+  #3 seq 1045..1112 68 frames 2720 ms rms_avg=441.6 rms_max=1955.1 end=silence file=seg_1dcbc251_0003_1045.wav
+  #4 seq 1326..1392 67 frames 2680 ms rms_avg=441.0 rms_max=2044.6 end=silence file=seg_1dcbc251_0004_1326.wav
+  #5 seq 1580..1642 63 frames 2520 ms rms_avg=452.6 rms_max=1834.5 end=silence file=seg_1dcbc251_0005_1580.wav
+  #6 seq 1824..1890 67 frames 2680 ms rms_avg=467.3 rms_max=2097.5 end=silence file=seg_1dcbc251_0006_1824.wav
+  #7 seq 2074..2138 65 frames 2600 ms rms_avg=477.2 rms_max=1987.7 end=silence file=seg_1dcbc251_0007_2074.wav
+  #8 seq 2335..2401 67 frames 2680 ms rms_avg=427.9 rms_max=1919.6 end=silence file=seg_1dcbc251_0008_2335.wav
+  #9 seq 2597..2660 64 frames 2560 ms rms_avg=452.9 rms_max=2102.8 end=silence file=seg_1dcbc251_0009_2597.wav
+  #10 seq 3318..3338 21 frames 840 ms rms_avg=121.8 rms_max=660.4 end=silence file=seg_1dcbc251_0010_3318.wav
+  #11 seq 3362..3386 25 frames 1000 ms rms_avg=109.6 rms_max=404.4 end=silence file=seg_1dcbc251_0011_3362.wav
+  #12 seq 4536..4555 20 frames 800 ms rms_avg=95.2 rms_max=317.7 end=silence file=seg_1dcbc251_0012_4536.wav
+  #13 seq 5055..5167 113 frames 4520 ms rms_avg=282.0 rms_max=1172.1 end=silence file=seg_1dcbc251_0013_5055.wav
+  #14 seq 5198..5223 26 frames 1040 ms rms_avg=184.4 rms_max=911.1 end=silence file=seg_1dcbc251_0014_5198.wav
+  #15 seq 5221..5276 56 frames 2240 ms rms_avg=277.6 rms_max=949.3 end=silence file=seg_1dcbc251_0015_5221.wav
+  #16 seq 5312..5331 20 frames 800 ms rms_avg=132.9 rms_max=727.7 end=silence file=seg_1dcbc251_0016_5312.wav
+  #17 seq 5343..5403 61 frames 2440 ms rms_avg=223.0 rms_max=949.5 end=silence file=seg_1dcbc251_0017_5343.wav
+  #18 seq 5408..5461 54 frames 2160 ms rms_avg=202.7 rms_max=1060.4 end=silence file=seg_1dcbc251_0018_5408.wav
+  #19 seq 5468..5489 22 frames 880 ms rms_avg=194.8 rms_max=1067.6 end=silence file=seg_1dcbc251_0019_5468.wav
+  #20 seq 5490..5521 32 frames 1280 ms rms_avg=253.9 rms_max=1556.8 end=silence file=seg_1dcbc251_0020_5490.wav
+  #21 seq 5570..5593 24 frames 960 ms rms_avg=135.9 rms_max=537.2 end=silence file=seg_1dcbc251_0021_5570.wav
+  #22 seq 5764..5857 94 frames 3760 ms rms_avg=281.6 rms_max=928.6 end=silence file=seg_1dcbc251_0022_5764.wav
+  #23 seq 5856..5899 44 frames 1760 ms rms_avg=245.3 rms_max=1060.7 end=silence file=seg_1dcbc251_0023_5856.wav
+  #24 seq 6063..6092 30 frames 1200 ms rms_avg=138.3 rms_max=630.6 end=silence file=seg_1dcbc251_0024_6063.wav
+  #25 seq 6110..6131 22 frames 880 ms rms_avg=146.5 rms_max=1082.7 end=silence file=seg_1dcbc251_0025_6110.wav
+  #26 seq 6131..6207 77 frames 3080 ms rms_avg=301.1 rms_max=1111.0 end=silence file=seg_1dcbc251_0026_6131.wav
+  #27 seq 6207..6241 35 frames 1400 ms rms_avg=174.7 rms_max=835.1 end=silence file=seg_1dcbc251_0027_6207.wav
+  #28 seq 6261..6292 32 frames 1280 ms rms_avg=163.7 rms_max=437.7 end=silence file=seg_1dcbc251_0028_6261.wav
+  #29 seq 6954..6984 31 frames 1240 ms rms_avg=124.8 rms_max=618.7 end=silence file=seg_1dcbc251_0029_6954.wav
+  #30 seq 7061..7103 43 frames 1720 ms rms_avg=221.9 rms_max=907.0 end=silence file=seg_1dcbc251_0030_7061.wav
+  #31 seq 7102..7159 58 frames 2320 ms rms_avg=182.7 rms_max=953.6 end=silence file=seg_1dcbc251_0031_7102.wav
+  #32 seq 7159..7291 133 frames 5320 ms rms_avg=327.9 rms_max=1875.4 end=silence file=seg_1dcbc251_0032_7159.wav
+
+SUMMARY {"received": 7504, "accepted": 7504, "processed": 7504, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 3, "queue_depth": 0, "vad_speech_frames": 1539, "segments": 32, "segment_write_errors": 0, "noise_rms": 77.18, "dur_s": 308.03, "epoch": 3258825407, "seq_first": 1, "seq_last": 7504}
+
+WAV files: 32
+  seg_1dcbc251_0001_606.wav 80684 B
+  seg_1dcbc251_0002_815.wav 89644 B
+  seg_1dcbc251_0003_1045.wav 87084 B
+  seg_1dcbc251_0004_1326.wav 85804 B
+  seg_1dcbc251_0005_1580.wav 80684 B
+  seg_1dcbc251_0006_1824.wav 85804 B
+  seg_1dcbc251_0007_2074.wav 83244 B
+  seg_1dcbc251_0008_2335.wav 85804 B
+  seg_1dcbc251_0009_2597.wav 81964 B
+  seg_1dcbc251_0010_3318.wav 26924 B
+  seg_1dcbc251_0011_3362.wav 32044 B
+  seg_1dcbc251_0012_4536.wav 25644 B
+  seg_1dcbc251_0013_5055.wav 144684 B
+  seg_1dcbc251_0014_5198.wav 33324 B
+  seg_1dcbc251_0015_5221.wav 71724 B
+  seg_1dcbc251_0016_5312.wav 25644 B
+  seg_1dcbc251_0017_5343.wav 78124 B
+  seg_1dcbc251_0018_5408.wav 69164 B
+  seg_1dcbc251_0019_5468.wav 28204 B
+  seg_1dcbc251_0020_5490.wav 41004 B

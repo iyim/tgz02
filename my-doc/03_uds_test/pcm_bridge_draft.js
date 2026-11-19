@@ -122,6 +122,7 @@ var st = {
   clockFail: 0, clockDrop: 0, noClockTicks: 0,
   connectFail: 0, reconnects: 0, sessions: 0, disables: 0,
   depthMax: 0, producerTid: 0, producerCalls: 0, wantsClose: false,
+  tidCalls: {}, tidCount: 0, otherTidCalls: 0,
   crcFrames: 0, reentryHook: 0, reentryDrain: 0, drainEx: 0,
   lastErrno: 0, nonblockVerified: false,
   hashSum: 0, hashN: 0
@@ -377,7 +378,10 @@ function ensureSock(now) {
   }
 }
 
-/* ============ 7) Hook（只做：闸门 + 整帧复制 + 序号/时间戳 + 推进 tail） ============ */
+/* ============ 7) Hook（只做：闸门 + 整帧复制 + 序号/时间戳 + 推进 tail） ============
+ * T3-08：接受多个原生生产者线程（TID 只做统计，不再触发 disable）。
+ * 安全性依赖 Frida 单线程 JS 运行时 + inHook/inDrain 双保护，详见闸门 2 的注释。
+ */
 function installHook() {
   if (teardownDone || !LIFECYCLE.alive || !st.enabled) {
     throw new Error('lifecycle-not-active');
@@ -391,15 +395,29 @@ function installHook() {
       if (inHook) { st.reentryHook++; return; }
       inHook = true;
       try {
-        /* 闸门 2：单生产者（SPSC 前提）。出现第二个线程立刻禁用，不硬写环 */
+        /*
+         * 闸门 2：多生产者（T3-08）。
+         * 真机证明原厂音频管线会从**不同线程**调用 AGSpeechEngine::feed
+         * （实测 TID 19873 与 14171 交替出现），所以"同一生产者线程"不能再当作硬条件。
+         *
+         * 为什么允许多个 TID 仍然安全：
+         *   1) Frida 的 JS 运行时是单线程的：同一脚本的 Interceptor 回调互斥执行
+         *      （进入回调时持有脚本锁），两个原生线程不可能同时停留在下面的 JS 代码里；
+         *   2) 因此"复制整帧 -> 写 slotCapSeq/slotTsUs -> idx.tail++"这一串仍然是
+         *      串行完成的，不会交错；消费端 tick 与它同样串行（另有 inDrain 保护）；
+         *   3) 生产者只写 tail 与其槽位，消费者只读 tail、写 head 与其槽位，
+         *      SPSC 的"不互相触碰对方槽位"前提继续成立。
+         * 真正的重入（同一线程在回调内部再次调用 feed，JS 锁可重入）仍由 inHook 拦住。
+         */
         var tid = Process.getCurrentThreadId();
-        if (st.producerTid === 0) {
-          st.producerTid = tid;
-        } else if (tid !== st.producerTid) {
-          disable('multi-producer:' + tid);
-          return;
-        }
         st.producerCalls++;
+        if (st.producerTid === 0) st.producerTid = tid;      /* 首个线程：仅作诊断 */
+        if (st.tidCalls[tid] === undefined) {
+          st.tidCalls[tid] = 0;
+          st.tidCount++;
+        }
+        st.tidCalls[tid]++;
+        if (tid !== st.producerTid) st.otherTidCalls++;
         st.frames++;
 
         /* 闸门 3：参数位置与长度（T2 已验证：args[3] 必须等于 5120） */
@@ -537,7 +555,10 @@ function pending() { return (idx.tail - idx.head) | 0; }
 
 function tidsObj() {
   var o = {};
-  if (st.producerTid !== 0) o[String(st.producerTid)] = st.producerCalls;
+  for (var k in st.tidCalls) {
+    if (Object.prototype.hasOwnProperty.call(st.tidCalls, k)) o[k] = st.tidCalls[k];
+  }
+  if (st.producerTid !== 0) o.firstTid = st.producerTid;
   return o;
 }
 
@@ -561,7 +582,8 @@ function statLine(tag) {
          ' hookEx=' + st.hookEx + ' drainEx=' + st.drainEx +
          ' reentry=' + st.reentryHook + '/' + st.reentryDrain +
          ' sessions=' + st.sessions + ' reconnects=' + st.reconnects +
-         ' connectFail=' + st.connectFail + ' fd=' + st.fd + ' tid=' + st.producerTid +
+         ' connectFail=' + st.connectFail + ' fd=' + st.fd +
+         ' tid=' + st.producerTid + ' tids=' + st.tidCount + ' otherTid=' + st.otherTidCalls +
          ' nb=' + st.nonblockVerified + ' lastErrno=' + st.lastErrno;
 }
 
@@ -663,6 +685,7 @@ function summary() {
     noClockTicks: st.noClockTicks, connectFail: st.connectFail,
     reconnects: st.reconnects, sessions: st.sessions, disables: st.disables,
     depthMax: st.depthMax, pending: pending(), producerTid: st.producerTid,
+    tidCount: st.tidCount, otherTidCalls: st.otherTidCalls,
     tids: tidsObj(), fd: st.fd, nonblockVerified: st.nonblockVerified,
     crcFrames: st.crcFrames, hashSum: st.hashSum, dry: DRY_RUN,
     latP50_us: latPct(0.50), latP99_us: latPct(0.99),

@@ -1,0 +1,85 @@
+receiver pid=20600 case=T308E window=300s out=/data/local/tmp/t4/acc_T308E
+bridge rc=0 (302.8s)
+
+SEGMENTS (57):
+  #1 seq 40..76 37 frames 1480 ms rms_avg=610.8 rms_max=1681.2 end=silence file=seg_6552936b_0001_40.wav
+  #2 seq 75..128 54 frames 2160 ms rms_avg=427.2 rms_max=1438.7 end=silence file=seg_6552936b_0002_75.wav
+  #3 seq 464..672 209 frames 8360 ms rms_avg=434.0 rms_max=1074.0 end=silence file=seg_6552936b_0003_464.wav
+  #4 seq 1094..1188 95 frames 3800 ms rms_avg=541.3 rms_max=2037.7 end=silence file=seg_6552936b_0004_1094.wav
+  #5 seq 1207..1292 86 frames 3440 ms rms_avg=187.4 rms_max=479.8 end=silence file=seg_6552936b_0005_1207.wav
+  #6 seq 1296..1385 90 frames 3600 ms rms_avg=202.2 rms_max=546.8 end=silence file=seg_6552936b_0006_1296.wav
+  #7 seq 1497..1542 46 frames 1840 ms rms_avg=363.6 rms_max=1076.2 end=silence file=seg_6552936b_0007_1497.wav
+  #8 seq 1546..1578 33 frames 1320 ms rms_avg=362.8 rms_max=946.3 end=silence file=seg_6552936b_0008_1546.wav
+  #9 seq 1578..1644 67 frames 2680 ms rms_avg=343.2 rms_max=1333.6 end=silence file=seg_6552936b_0009_1578.wav
+  #10 seq 1661..1719 59 frames 2360 ms rms_avg=354.1 rms_max=1177.4 end=silence file=seg_6552936b_0010_1661.wav
+  #11 seq 1720..1771 52 frames 2080 ms rms_avg=344.5 rms_max=1081.6 end=silence file=seg_6552936b_0011_1720.wav
+  #12 seq 1777..1802 26 frames 1040 ms rms_avg=215.2 rms_max=694.6 end=silence file=seg_6552936b_0012_1777.wav
+  #13 seq 1810..1866 57 frames 2280 ms rms_avg=369.1 rms_max=975.4 end=silence file=seg_6552936b_0013_1810.wav
+  #14 seq 1934..2034 101 frames 4040 ms rms_avg=425.6 rms_max=1279.7 end=silence file=seg_6552936b_0014_1934.wav
+  #15 seq 2036..2317 282 frames 11280 ms rms_avg=359.5 rms_max=1318.5 end=silence file=seg_6552936b_0015_2036.wav
+  #16 seq 2318..2353 36 frames 1440 ms rms_avg=309.1 rms_max=1230.8 end=silence file=seg_6552936b_0016_2318.wav
+  #17 seq 2351..2422 72 frames 2880 ms rms_avg=329.3 rms_max=1142.3 end=silence file=seg_6552936b_0017_2351.wav
+  #18 seq 2422..2581 160 frames 6400 ms rms_avg=319.1 rms_max=1264.2 end=silence file=seg_6552936b_0018_2422.wav
+  #19 seq 2584..2688 105 frames 4200 ms rms_avg=362.8 rms_max=1652.2 end=silence file=seg_6552936b_0019_2584.wav
+  #20 seq 2692..2863 172 frames 6880 ms rms_avg=394.1 rms_max=1486.2 end=silence file=seg_6552936b_0020_2692.wav
+  #21 seq 2868..2924 57 frames 2280 ms rms_avg=246.5 rms_max=1100.4 end=silence file=seg_6552936b_0021_2868.wav
+  #22 seq 2925..2973 49 frames 1960 ms rms_avg=320.0 rms_max=1238.4 end=silence file=seg_6552936b_0022_2925.wav
+  #23 seq 2972..3016 45 frames 1800 ms rms_avg=297.6 rms_max=846.4 end=silence file=seg_6552936b_0023_2972.wav
+  #24 seq 3014..3101 88 frames 3520 ms rms_avg=298.1 rms_max=1285.9 end=silence file=seg_6552936b_0024_3014.wav
+  #25 seq 3103..3196 94 frames 3760 ms rms_avg=320.1 rms_max=1297.4 end=silence file=seg_6552936b_0025_3103.wav
+  #26 seq 3199..3268 70 frames 2800 ms rms_avg=313.3 rms_max=1205.1 end=silence file=seg_6552936b_0026_3199.wav
+  #27 seq 3272..3322 51 frames 2040 ms rms_avg=305.3 rms_max=1174.5 end=silence file=seg_6552936b_0027_3272.wav
+  #28 seq 3323..3446 124 frames 4960 ms rms_avg=245.5 rms_max=790.0 end=silence file=seg_6552936b_0028_3323.wav
+  #29 seq 3454..3543 90 frames 3600 ms rms_avg=284.9 rms_max=1250.1 end=silence file=seg_6552936b_0029_3454.wav
+  #30 seq 3546..3619 74 frames 2960 ms rms_avg=235.0 rms_max=938.4 end=silence file=seg_6552936b_0030_3546.wav
+  #31 seq 3648..4022 375 frames 15000 ms rms_avg=363.3 rms_max=1329.5 end=max_duration file=seg_6552936b_0031_3648.wav
+  #32 seq 4023..4156 134 frames 5360 ms rms_avg=345.1 rms_max=1356.1 end=silence file=seg_6552936b_0032_4023.wav
+  #33 seq 4159..4220 62 frames 2480 ms rms_avg=267.2 rms_max=747.3 end=silence file=seg_6552936b_0033_4159.wav
+  #34 seq 4245..4288 44 frames 1760 ms rms_avg=238.7 rms_max=717.8 end=silence file=seg_6552936b_0034_4245.wav
+  #35 seq 4290..4398 109 frames 4360 ms rms_avg=293.5 rms_max=1328.7 end=silence file=seg_6552936b_0035_4290.wav
+  #36 seq 4403..4459 57 frames 2280 ms rms_avg=258.0 rms_max=1020.2 end=silence file=seg_6552936b_0036_4403.wav
+  #37 seq 4501..4581 81 frames 3240 ms rms_avg=331.7 rms_max=1241.3 end=silence file=seg_6552936b_0037_4501.wav
+  #38 seq 4582..4718 137 frames 5480 ms rms_avg=292.3 rms_max=1298.9 end=silence file=seg_6552936b_0038_4582.wav
+  #39 seq 4727..4846 120 frames 4800 ms rms_avg=248.3 rms_max=906.7 end=silence file=seg_6552936b_0039_4727.wav
+  #40 seq 4846..4898 53 frames 2120 ms rms_avg=356.3 rms_max=1211.3 end=silence file=seg_6552936b_0040_4846.wav
+  #41 seq 4899..4959 61 frames 2440 ms rms_avg=289.7 rms_max=1062.5 end=silence file=seg_6552936b_0041_4899.wav
+  #42 seq 4995..5050 56 frames 2240 ms rms_avg=371.0 rms_max=1466.0 end=silence file=seg_6552936b_0042_4995.wav
+  #43 seq 5050..5070 21 frames 840 ms rms_avg=301.8 rms_max=915.6 end=silence file=seg_6552936b_0043_5050.wav
+  #44 seq 5070..5139 70 frames 2800 ms rms_avg=346.7 rms_max=1156.7 end=silence file=seg_6552936b_0044_5070.wav
+  #45 seq 5141..5165 25 frames 1000 ms rms_avg=219.1 rms_max=743.0 end=silence file=seg_6552936b_0045_5141.wav
+  #46 seq 5173..5358 186 frames 7440 ms rms_avg=388.2 rms_max=1517.1 end=silence file=seg_6552936b_0046_5173.wav
+  #47 seq 5371..5432 62 frames 2480 ms rms_avg=378.4 rms_max=1351.3 end=silence file=seg_6552936b_0047_5371.wav
+  #48 seq 5441..5567 127 frames 5080 ms rms_avg=346.6 rms_max=1399.5 end=silence file=seg_6552936b_0048_5441.wav
+  #49 seq 5566..5589 24 frames 960 ms rms_avg=271.6 rms_max=884.5 end=silence file=seg_6552936b_0049_5566.wav
+  #50 seq 5605..5773 169 frames 6760 ms rms_avg=332.9 rms_max=1040.1 end=silence file=seg_6552936b_0050_5605.wav
+  #51 seq 5774..5882 109 frames 4360 ms rms_avg=306.8 rms_max=1035.3 end=silence file=seg_6552936b_0051_5774.wav
+  #52 seq 5921..6001 81 frames 3240 ms rms_avg=332.4 rms_max=856.7 end=silence file=seg_6552936b_0052_5921.wav
+  #53 seq 6006..6053 48 frames 1920 ms rms_avg=390.2 rms_max=1203.9 end=silence file=seg_6552936b_0053_6006.wav
+  #54 seq 6075..6123 49 frames 1960 ms rms_avg=336.0 rms_max=911.3 end=silence file=seg_6552936b_0054_6075.wav
+  #55 seq 6135..6283 149 frames 5960 ms rms_avg=408.9 rms_max=1460.1 end=silence file=seg_6552936b_0055_6135.wav
+  #56 seq 6289..6381 93 frames 3720 ms rms_avg=522.1 rms_max=2143.0 end=silence file=seg_6552936b_0056_6289.wav
+  #57 seq 6684..6779 96 frames 3840 ms rms_avg=291.6 rms_max=1479.1 end=silence file=seg_6552936b_0057_6684.wav
+
+SUMMARY {"received": 7504, "accepted": 7504, "processed": 7504, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 3, "queue_depth": 0, "vad_speech_frames": 4955, "segments": 57, "segment_write_errors": 0, "noise_rms": 74.97, "dur_s": 308.101, "epoch": 2423002847, "seq_first": 1, "seq_last": 7504}
+
+WAV files: 57
+  seg_6552936b_0001_40.wav 47404 B
+  seg_6552936b_0002_75.wav 69164 B
+  seg_6552936b_0003_464.wav 267564 B
+  seg_6552936b_0004_1094.wav 121644 B
+  seg_6552936b_0005_1207.wav 110124 B
+  seg_6552936b_0006_1296.wav 115244 B
+  seg_6552936b_0007_1497.wav 58924 B
+  seg_6552936b_0008_1546.wav 42284 B
+  seg_6552936b_0009_1578.wav 85804 B
+  seg_6552936b_0010_1661.wav 75564 B
+  seg_6552936b_0011_1720.wav 66604 B
+  seg_6552936b_0012_1777.wav 33324 B
+  seg_6552936b_0013_1810.wav 73004 B
+  seg_6552936b_0014_1934.wav 129324 B
+  seg_6552936b_0015_2036.wav 361004 B
+  seg_6552936b_0016_2318.wav 46124 B
+  seg_6552936b_0017_2351.wav 92204 B
+  seg_6552936b_0018_2422.wav 204844 B
+  seg_6552936b_0019_2584.wav 134444 B
+  seg_6552936b_0020_2692.wav 220204 B

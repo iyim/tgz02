@@ -1,0 +1,28 @@
+receiver pid=19926 case=T308C window=150s out=/data/local/tmp/t4/acc_T308C
+bridge rc=0 (152.8s)
+
+SEGMENTS (10):
+  #1 seq 40..109 70 frames 2800 ms rms_avg=608.9 rms_max=2034.3 end=silence file=seg_2a4e3627_0001_40.wav
+  #2 seq 116..269 154 frames 6160 ms rms_avg=585.0 rms_max=1971.1 end=silence file=seg_2a4e3627_0002_116.wav
+  #3 seq 273..342 70 frames 2800 ms rms_avg=563.2 rms_max=1775.6 end=silence file=seg_2a4e3627_0003_273.wav
+  #4 seq 345..479 135 frames 5400 ms rms_avg=610.3 rms_max=1936.6 end=silence file=seg_2a4e3627_0004_345.wav
+  #5 seq 577..601 25 frames 1000 ms rms_avg=131.6 rms_max=400.6 end=silence file=seg_2a4e3627_0005_577.wav
+  #6 seq 719..754 36 frames 1440 ms rms_avg=269.4 rms_max=910.1 end=silence file=seg_2a4e3627_0006_719.wav
+  #7 seq 936..960 25 frames 1000 ms rms_avg=302.9 rms_max=1196.6 end=silence file=seg_2a4e3627_0007_936.wav
+  #8 seq 2688..2746 59 frames 2360 ms rms_avg=173.1 rms_max=658.4 end=silence file=seg_2a4e3627_0008_2688.wav
+  #9 seq 3326..3350 25 frames 1000 ms rms_avg=146.0 rms_max=448.9 end=silence file=seg_2a4e3627_0009_3326.wav
+  #10 seq 3396..3428 33 frames 1320 ms rms_avg=214.8 rms_max=899.3 end=silence file=seg_2a4e3627_0010_3396.wav
+
+SUMMARY {"received": 3753, "accepted": 3753, "processed": 3753, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 3, "queue_depth": 0, "vad_speech_frames": 592, "segments": 10, "segment_write_errors": 0, "noise_rms": 79.89, "dur_s": 158.083, "epoch": 4019023948, "seq_first": 1, "seq_last": 3753}
+
+WAV files: 10
+  seg_2a4e3627_0001_40.wav 89644 B
+  seg_2a4e3627_0002_116.wav 197164 B
+  seg_2a4e3627_0003_273.wav 89644 B
+  seg_2a4e3627_0004_345.wav 172844 B
+  seg_2a4e3627_0005_577.wav 32044 B
+  seg_2a4e3627_0006_719.wav 46124 B
+  seg_2a4e3627_0007_936.wav 32044 B
+  seg_2a4e3627_0008_2688.wav 75564 B
+  seg_2a4e3627_0009_3326.wav 32044 B
+  seg_2a4e3627_0010_3396.wav 42284 B

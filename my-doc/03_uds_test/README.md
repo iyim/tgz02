@@ -147,7 +147,7 @@ T3 实测与统计见 `../04_device_t3_uds_report.md`；驱动脚本 `../04_devi
 
 | 文件 | 作用 |
 |---|---|
-| `tests/bridge_unit_test.js` | 把 `pcm_bridge_draft.js` **原样**加载进假 Frida 环境，覆盖任务书 §5 的 18 项：整帧复制、lane0 抽取、TGZ2 v2 头全字段、`ts_us/epoch/seq`、flags 无 SYNTHETIC、JS/C FNV 对拍、sendto 成功 / EAGAIN / ENOBUFS / 对端消失重连、stale、时钟失败、环满、第二生产者禁用、stop 幂等、初始化回滚、DRY_RUN 无 socket、Hook 纯函数性。**201 断言** |
+| `tests/bridge_unit_test.js` | 把 `pcm_bridge_draft.js` **原样**加载进假 Frida 环境，覆盖任务书 §5 的 18 项：整帧复制、lane0 抽取、TGZ2 v2 头全字段、`ts_us/epoch/seq`、flags 无 SYNTHETIC、JS/C FNV 对拍、sendto 成功 / EAGAIN / ENOBUFS / 对端消失重连、stale、时钟失败、环满、多生产者线程（单 / 双 / 5 TID 交替 + 重入拦截）、stop 幂等、初始化回滚、DRY_RUN 无 socket、Hook 纯函数性。**240 断言** |
 | `tests_c/fnv_golden.c` | 用真正的 `tgz2_fnv1a()` 生成 JS/C 对拍金标准常量（`0x811c9dc5 / 0xe40c292c / 0x1a47e90b / 0xa7ce7505 / 0x09d6a1c5 / 0xee980ac9`） |
 | `tests/probe_detach_test.js` | `thread_probe.js` 的卸载验证：到点 detach、幂等、安装失败不留定时器、统计口径。**43 断言** |
 | `crc_crosscheck/` | JS/C 的 FNV-1a 逐字节一致（18 组，含真实 ch0）；反面对照证明 `Math.imul` 必需 |
