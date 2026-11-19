@@ -1,0 +1,12 @@
+total 1384
+-rw-rw-r-- 1 shell shell 220204 2026-11-19 21:46 seg_bb47813a_0001_187.wav
+-rw-rw-r-- 1 shell shell  96044 2026-11-19 21:47 seg_bb47813a_0002_369.wav
+-rw-rw-r-- 1 shell shell 204844 2026-11-19 21:47 seg_bb47813a_0003_441.wav
+-rw-rw-r-- 1 shell shell 138284 2026-11-19 21:47 seg_bb47813a_0004_606.wav
+-rw-rw-r-- 1 shell shell 105004 2026-11-19 21:47 seg_bb47813a_0005_824.wav
+-rw-rw-r-- 1 shell shell  85804 2026-11-19 21:47 seg_bb47813a_0006_1049.wav
+-rw-rw-r-- 1 shell shell  57644 2026-11-19 21:47 seg_bb47813a_0007_1119.wav
+-rw-rw-r-- 1 shell shell  38444 2026-11-19 21:47 seg_bb47813a_0008_1166.wav
+-rw-rw-r-- 1 shell shell 125484 2026-11-19 21:47 seg_bb47813a_0009_1259.wav
+-rw-rw-r-- 1 shell shell 190764 2026-11-19 21:47 seg_bb47813a_0010_1372.wav
+-rw-rw-r-- 1 shell shell 133164 2026-11-19 21:47 seg_bb47813a_0011_1524.wav
