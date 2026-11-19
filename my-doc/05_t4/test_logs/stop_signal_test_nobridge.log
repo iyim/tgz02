@@ -1,0 +1,106 @@
+== T4-07 process-level stop test (bridge=False) ==
+(hold=4.0s per case)
+
+[1] secs 超时退出
+  ok   secs: 进程在 30 s 内结束（无死锁）
+  ok   secs: 退出码 0
+  ok   secs: 打印了 SUMMARY
+  ok   secs: 运行时长 >= 3.0s（实际 4.20s）
+  ok   secs: 停止及时 <= 14.0s（实际 4.20s）
+  ok   secs: received == accepted
+  ok   secs: accepted == processed + queue_drop
+  ok   secs: queue_depth == 0
+  ok   secs: segment_write_errors == 0
+       SUMMARY {"received": 0, "accepted": 0, "processed": 0, "queue_drop": 0, "queue_depth": 0, "segments": 0, "dur_s": 4.041}
+
+[2] SIGINT
+  ok   sigint: 找到 t4_receiver 进程
+  ok   sigint: kill -INT 成功
+  ok   sigint: 进程在 30 s 内结束（无死锁）
+  ok   sigint: 退出码 0
+  ok   sigint: 打印了 SUMMARY
+  ok   sigint: 运行时长 >= 3.0s（实际 4.31s）
+  ok   sigint: 停止及时 <= 14.0s（实际 4.31s）
+  ok   sigint: received == accepted
+  ok   sigint: accepted == processed + queue_drop
+  ok   sigint: queue_depth == 0
+  ok   sigint: segment_write_errors == 0
+       SUMMARY {"received": 0, "accepted": 0, "processed": 0, "queue_drop": 0, "queue_depth": 0, "segments": 0, "dur_s": 4.138}
+
+[3] SIGTERM
+  ok   sigterm: 找到 t4_receiver 进程
+  ok   sigterm: kill -TERM 成功
+  ok   sigterm: 进程在 30 s 内结束（无死锁）
+  ok   sigterm: 退出码 0
+  ok   sigterm: 打印了 SUMMARY
+  ok   sigterm: 运行时长 >= 3.0s（实际 4.36s）
+  ok   sigterm: 停止及时 <= 14.0s（实际 4.36s）
+  ok   sigterm: received == accepted
+  ok   sigterm: accepted == processed + queue_drop
+  ok   sigterm: queue_depth == 0
+  ok   sigterm: segment_write_errors == 0
+       SUMMARY {"received": 0, "accepted": 0, "processed": 0, "queue_drop": 0, "queue_depth": 0, "segments": 0, "dur_s": 4.248}
+
+[4] 连续启动/停止 5 次（SIGINT）
+  ok   cyc1: 找到 t4_receiver 进程
+  ok   cyc1: kill -INT 成功
+  ok   cyc1: 进程在 30 s 内结束（无死锁）
+  ok   cyc1: 退出码 0
+  ok   cyc1: 打印了 SUMMARY
+  ok   cyc1: 运行时长 >= 3.0s（实际 4.34s）
+  ok   cyc1: 停止及时 <= 14.0s（实际 4.34s）
+  ok   cyc1: received == accepted
+  ok   cyc1: accepted == processed + queue_drop
+  ok   cyc1: queue_depth == 0
+  ok   cyc1: segment_write_errors == 0
+       SUMMARY {"received": 0, "accepted": 0, "processed": 0, "queue_drop": 0, "queue_depth": 0, "segments": 0, "dur_s": 4.222}
+  ok   cyc2: 找到 t4_receiver 进程
+  ok   cyc2: kill -INT 成功
+  ok   cyc2: 进程在 30 s 内结束（无死锁）
+  ok   cyc2: 退出码 0
+  ok   cyc2: 打印了 SUMMARY
+  ok   cyc2: 运行时长 >= 3.0s（实际 4.31s）
+  ok   cyc2: 停止及时 <= 14.0s（实际 4.31s）
+  ok   cyc2: received == accepted
+  ok   cyc2: accepted == processed + queue_drop
+  ok   cyc2: queue_depth == 0
+  ok   cyc2: segment_write_errors == 0
+       SUMMARY {"received": 0, "accepted": 0, "processed": 0, "queue_drop": 0, "queue_depth": 0, "segments": 0, "dur_s": 4.212}
+  ok   cyc3: 找到 t4_receiver 进程
+  ok   cyc3: kill -INT 成功
+  ok   cyc3: 进程在 30 s 内结束（无死锁）
+  ok   cyc3: 退出码 0
+  ok   cyc3: 打印了 SUMMARY
+  ok   cyc3: 运行时长 >= 3.0s（实际 4.30s）
+  ok   cyc3: 停止及时 <= 14.0s（实际 4.30s）
+  ok   cyc3: received == accepted
+  ok   cyc3: accepted == processed + queue_drop
+  ok   cyc3: queue_depth == 0
+  ok   cyc3: segment_write_errors == 0
+       SUMMARY {"received": 0, "accepted": 0, "processed": 0, "queue_drop": 0, "queue_depth": 0, "segments": 0, "dur_s": 4.214}
+  ok   cyc4: 找到 t4_receiver 进程
+  ok   cyc4: kill -INT 成功
+  ok   cyc4: 进程在 30 s 内结束（无死锁）
+  ok   cyc4: 退出码 0
+  ok   cyc4: 打印了 SUMMARY
+  ok   cyc4: 运行时长 >= 3.0s（实际 4.30s）
+  ok   cyc4: 停止及时 <= 14.0s（实际 4.30s）
+  ok   cyc4: received == accepted
+  ok   cyc4: accepted == processed + queue_drop
+  ok   cyc4: queue_depth == 0
+  ok   cyc4: segment_write_errors == 0
+       SUMMARY {"received": 0, "accepted": 0, "processed": 0, "queue_drop": 0, "queue_depth": 0, "segments": 0, "dur_s": 4.21}
+  ok   cyc5: 找到 t4_receiver 进程
+  ok   cyc5: kill -INT 成功
+  ok   cyc5: 进程在 30 s 内结束（无死锁）
+  ok   cyc5: 退出码 0
+  ok   cyc5: 打印了 SUMMARY
+  ok   cyc5: 运行时长 >= 3.0s（实际 4.34s）
+  ok   cyc5: 停止及时 <= 14.0s（实际 4.34s）
+  ok   cyc5: received == accepted
+  ok   cyc5: accepted == processed + queue_drop
+  ok   cyc5: queue_depth == 0
+  ok   cyc5: segment_write_errors == 0
+       SUMMARY {"received": 0, "accepted": 0, "processed": 0, "queue_drop": 0, "queue_depth": 0, "segments": 0, "dur_s": 4.21}
+
+=== 86 passed, 0 failed ===

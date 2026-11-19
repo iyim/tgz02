@@ -40,8 +40,18 @@
 #include "vad_energy.h"
 
 /* ============ 全局停止标志 ============ */
-static volatile sig_atomic_t g_stop = 0;
-static void on_signal(int sig) { (void)sig; g_stop = 1; }
+/*
+ * 两个不同的停止标志，用途严格分开（T4-07）：
+ *   g_signal_stop : 信号处理函数 -> 主线程 的"收到信号"通知。
+ *                   只在 on_signal() 里写、只在 main 里读，保证异步信号安全
+ *                   （处理函数里不碰 pthread/malloc/stdio）。
+ *   g_stop        : 线程间停止标志，普通 int。**所有运行期读写都必须持有 g_ctx.mu**。
+ *                   volatile sig_atomic_t 只适合信号处理，不能当 pthread 同步用。
+ */
+static volatile sig_atomic_t g_signal_stop = 0;
+static int g_stop = 0;
+
+static void on_signal(int sig) { (void)sig; g_signal_stop = 1; }
 
 /* ============ 片段写入状态（只由处理线程访问） ============ */
 typedef struct {
@@ -122,6 +132,27 @@ static void now_mono(struct timespec *ts)
 static double ts_diff_s(const struct timespec *a, const struct timespec *b)
 {
     return (double)(a->tv_sec - b->tv_sec) + (double)(a->tv_nsec - b->tv_nsec) / 1e9;
+}
+
+/* 读线程停止标志：与所有写方使用同一把 g_ctx.mu */
+static int stop_requested(t4_ctx *ctx)
+{
+    int stop;
+
+    pthread_mutex_lock(&ctx->mu);
+    stop = g_stop;
+    pthread_mutex_unlock(&ctx->mu);
+
+    return stop;
+}
+
+/* 置线程停止标志 + 广播：状态更新与 broadcast 必须在同一临界区 */
+static void request_stop(t4_ctx *ctx)
+{
+    pthread_mutex_lock(&ctx->mu);
+    g_stop = 1;
+    pthread_cond_broadcast(&ctx->cv);
+    pthread_mutex_unlock(&ctx->mu);
 }
 
 /* ============ 片段 sink ============ */
@@ -205,7 +236,9 @@ static void *rx_thread(void *arg)
     t4_ctx *ctx = (t4_ctx *)arg;
     uint8_t buf[8192];
 
-    while (!g_stop) {
+    /* 停止判断走 stop_requested()（锁内读）；select 仍是 100 ms 超时，
+     * 所以停止后最多再等一个超时周期，不会长期阻塞 */
+    while (!stop_requested(ctx)) {
         fd_set rs;
         struct timeval tv;
         int sel, n;
@@ -266,7 +299,7 @@ static void *proc_thread(void *arg)
      *   - 收到停止标志后不再等待新数据，但必须把已入队的帧全部处理完；
      *   - 还必须等接收线程彻底结束（rx_done），否则接收线程可能"已经通过 !g_stop 检查、
      *     正在 select/recv"，随后又入队一帧，导致 join 之后队列非空；
-     *   - 因此唯一退出条件是：g_stop && ctx->rx_done && 队列为空。
+     *   - 因此唯一退出条件是：g_stop && ctx->rx_done && 队列为空（g_stop 在 ctx->mu 内读）。
      * 绝不在停止时清空队列或丢弃剩余帧。
      */
     for (;;) {
@@ -555,7 +588,7 @@ int main(int argc, char **argv)
     }
     if (pthread_create(&th_proc, NULL, proc_thread, &g_ctx) != 0) {
         fprintf(stderr, "[!] cannot create proc thread\n");
-        g_stop = 1;
+        request_stop(&g_ctx);            /* 锁内设置 + 广播，rx_thread 才会退出 */
         pthread_join(th_rx, NULL);
         pthread_mutex_destroy(&g_ctx.mu);
         pthread_cond_destroy(&g_ctx.cv);
@@ -563,9 +596,13 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    /* 主线程只负责计时与停止标志 */
-    while (!g_stop) {
+    /*
+     * 主线程只轮询两件事：信号标志（异步写）与运行时长。
+     * 它**不直接读写线程共享的 g_stop**，统一走 request_stop()。
+     */
+    for (;;) {
         struct timespec nap;
+        if (g_signal_stop) break;
         if (secs > 0.0) {
             struct timespec tn;
             now_mono(&tn);
@@ -576,10 +613,7 @@ int main(int argc, char **argv)
         nanosleep(&nap, NULL);
     }
 
-    g_stop = 1;
-    pthread_mutex_lock(&g_ctx.mu);
-    pthread_cond_broadcast(&g_ctx.cv);
-    pthread_mutex_unlock(&g_ctx.mu);
+    request_stop(&g_ctx);
     pthread_join(th_rx, NULL);
     pthread_join(th_proc, NULL);
 

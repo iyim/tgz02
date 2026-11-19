@@ -19,6 +19,10 @@
 >
 > **T4-06 追加（见 §14）**：`stop_and_broadcast()` 的 `g_stop` 移到临界区内 + `g_stop` 全文件读写审计 ——
 > 真机连跑 5 次仍 `34 passed, 0 failed`。
+>
+> **T4-07 追加（见 §15）**：生产侧把"信号通知"与"线程停止"拆成两个标志，
+> `g_stop` 改普通 `int` 且所有读写都在 `g_ctx.mu` 内；新增进程级 `stop_signal_test.py`
+> 用**真实 SIGINT/SIGTERM** 验证停止路径（真机 8 个用例 95 passed / 0 failed）。
 
 - 基线 commit：`50c61f8863a028c4f94231de18efd97fd4e2d05e`
 - 本轮提交：`f93e2c967807357604e395769db747d0a1940ac5`
@@ -902,3 +906,133 @@ E（4 线程门闩同步 + O_EXCL）全部通过；无死锁、无超时、无�
 2. 生产侧 `main`/`rx_thread` 的 `g_stop` 无锁读写保持原样（任务要求不动退出逻辑），如后续需要严格线程安全，
    可在生产代码里把 `g_stop` 的写也移进锁内（届时需同步改 `rx_thread` 的轮询方式）。
 3. 真人说话（场景 B/C）与背景噪声（场景 D）仍未验证。
+
+---
+
+## 15. T4-07：生产接收进程的停止标志同步
+
+基线：`ed050a19c3ef48d3f7fddcb68f3462f792cbd57d`；提交：`fix: synchronize production T4 stop signaling`。
+
+### 15.1 原来的竞争
+
+`t4_receiver.c` 里只有一个 `volatile sig_atomic_t g_stop`，被四种角色访问：
+
+| 访问者 | 位置 | 同步情况（修改前） |
+|---|---|---|
+| 信号处理函数 `on_signal()` | 异步上下文写 | 无锁（异步信号安全，但不构成线程同步） |
+| `main()` | 主循环读 + 锁外写 | **锁外读写** |
+| `rx_thread()` | `while (!g_stop)` | **锁外读** |
+| `proc_thread()` | `ctx->mu` 内读 | 锁内 ✅ |
+
+`volatile sig_atomic_t` 只保证"信号上下文里能安全读写、不被优化掉"，**不是 pthread 同步**；
+`main`（锁外写）与 `rx_thread`（锁外读）之间没有 happens-before 关系。
+
+### 15.2 修复：两个标志，职责分离
+
+```c
+/* 信号 -> 主线程 的通知；只在处理函数里写、只在 main 里读 */
+static volatile sig_atomic_t g_signal_stop = 0;
+/* 线程间停止标志；普通 int，所有运行期读写都持 g_ctx.mu */
+static int g_stop = 0;
+
+static void on_signal(int sig) { (void)sig; g_signal_stop = 1; }   /* 只写这一个 */
+```
+
+新增两个辅助函数，把所有线程侧访问收口：
+
+```c
+static int  stop_requested(t4_ctx *ctx);   /* 锁内读 g_stop */
+static void request_stop(t4_ctx *ctx);     /* 锁内 g_stop=1 + broadcast */
+```
+
+- `rx_thread()`：`while (!g_stop)` → `while (!stop_requested(ctx))`，**保留 100 ms select 超时**
+  （停止后最多再等一个周期）；已进入 select/recv 时仍允许完成最后一次 recv，
+  之后照旧持锁分类/入队，最后持锁置 `rx_done=1` + broadcast（T4-03 握手不变）。
+- `proc_thread()`：退出条件仍是 `g_stop && ctx->rx_done && 队列为空`，且仍在 `ctx->mu` 内读 —— **未改**。
+- `main()`：不再读写 `g_stop`。主循环只看 `g_signal_stop` 与 `secs` 时长，停止时调 `request_stop()`；
+  `pthread_create(proc)` 失败的清理路径也改用 `request_stop()`，保证 `rx_thread` 能退出。
+- 互斥锁/条件变量仍在线程创建之前初始化。
+
+### 15.3 `g_stop` 全部读写位置（生产代码，修改后）
+
+| 行 | 位置 | 读/写 | 锁 |
+|---:|---|---|---|
+| 52 | 定义 `static int g_stop = 0` | 定义 | — |
+| 143 | `stop_requested()` | 读 | `ctx->mu` ✅ |
+| 153 | `request_stop()` | 写 | `ctx->mu` ✅ |
+| 241 | `rx_thread()` 循环条件 | 读（经 `stop_requested`） | ✅ |
+| 310 | `proc_thread()` 等待条件 | 读 | `ctx->mu` ✅ |
+| 319 | `proc_thread()` 退出判断 | 读 | `ctx->mu` ✅ |
+| 591 | `main()` proc 线程创建失败清理 | 写（经 `request_stop`） | ✅ |
+| 616 | `main()` 正常停止 | 写（经 `request_stop`） | ✅ |
+
+（行号以本次提交后的文件为准；`drain_test.c` 直接写 `g_stop` 的位置都在"无线程运行"阶段，
+详见 §14.2 审计表。）
+
+### 15.4 `g_signal_stop` 全部读写位置
+
+| 行 | 位置 | 读/写 | 说明 |
+|---:|---|---|---|
+| 51 | 定义 | 定义 | `volatile sig_atomic_t` |
+| 54 | `on_signal()` | 写 | 唯一写点，异步信号安全（无锁、无 malloc、无 stdio） |
+| 605 | `main()` 主循环 | 读 | 唯一读点，每 20 ms 轮询一次 |
+
+除这两处外没有任何代码访问 `g_signal_stop`；线程侧完全不看信号标志（只通过 `g_stop` 得知停止）。
+
+### 15.5 新增测试：进程级停止路径（真实信号）
+
+`tests/stop_signal_test.py`（Windows 上跑，只需 adb）：每个用例在设备前台启动 `t4_receiver`，
+需要信号的用例从另一个 adb 会话对该**真实进程**发 `kill -INT/-TERM`，等待退出并解析 SUMMARY。
+
+断言（每个用例）：进程在超时内结束（死锁检测）、退出码 0、打印 SUMMARY、
+`received == accepted`、`accepted == processed + queue_drop`、`queue_depth == 0`、
+`segment_write_errors == 0`、运行时长符合预期；带 `--bridge` 时还要求 `received > 0`。
+
+**为什么不用 drain_test 里的 `g_stop = 1` 冒充信号测试**：那只是普通变量赋值，
+既不经过信号处理函数，也不产生 EINTR/异步上下文，测不到真实信号路径。
+
+### 15.6 验证（真实执行的，逐项列出）
+
+**代码审查结论**：生产侧 `g_stop` 无人锁外访问；`g_signal_stop` 只有 54 行写、605 行读；
+`rx_done` 仍在接收线程彻底停止 recv/入队之后持锁置位；`proc_thread` 退出条件未变。
+
+**NDK 编译**（r21e / clang 9.0.9 / armv7a / API 26，`-O2 -Wall -Wextra -static`，无 `-Wno-*`）：
+
+| 产物 | 大小 | SHA256 | 结果 |
+|---|---:|---|---|
+| `android/out/t4_receiver` | 3,435,712 B | `e0f09767dbff486ca29db2fdd1b9dc26f111938f7f37fc8bc2630b41a0263cc8` | **0 warning / 0 error** |
+| `android/out/drain_test` | 3,444,736 B | `bd4ea53c8b1b86513a18599179f77aaab7300da3b59eb3bbcc71b1a926cba5e9` | **0 warning / 0 error** |
+
+`t4_receiver` ELF：`Class: ELF32` / `Type: EXEC` / `Machine: ARM`。
+
+**TG-Z02 真机 · 进程级停止测试（带 T3 PCM bridge，真实帧）**
+`test_logs/stop_signal_test_bridge.log` → **95 passed, 0 failed**
+
+| 用例 | 结果 | SUMMARY 摘要 |
+|---|---|---|
+| secs 超时（12 s） | 退出码 0，12.07 s | received/accepted/processed 243/243/243，drop 0，depth 0 |
+| SIGINT | 退出码 0，12.16 s | 248/248/248，drop 0，depth 0 |
+| SIGTERM | 退出码 0，12.15 s | 248/248/248，drop 0，depth 0 |
+| 连续启停 ×5（SIGINT） | 全部退出码 0，12.18–12.26 s | 251/251、251/251、237/237、241/241、246/246，drop 0，depth 0 |
+
+**TG-Z02 真机 · 同一脚本不带 bridge（纯停止路径，8 个用例）**
+`test_logs/stop_signal_test_nobridge.log` → **86 passed, 0 failed**（received=0，其余不变式全部成立）。
+
+**TG-Z02 真机 · `drain_test` 连跑 5 次**（`test_logs/drain_test_android.log`）：
+34 passed / 0 failed，0.51–0.54 s，说明生产侧改动没有破坏 D、E 用例（含 `g_stop`/`rx_done` 时序）。
+
+**本机（Windows / gcc 10.3.0）**：
+
+| 测试 | 结果 |
+|---|---|
+| VAD 单元测试 | **65 passed, 0 failed**（0 warning） |
+| `receiver_test.py` | **222 passed, 0 failed** |
+| `python -m py_compile tests\receiver_test.py tests\stop_signal_test.py` | exit 0 |
+
+### 15.7 未验证 / 限制
+
+1. **没有运行 ThreadSanitizer**，也没有任何 TSan 输出可提供（Windows/MinGW 无 TSan；
+   Android 静态二进制未搭 TSan 运行时）。结论来自逐项审计 + 真实信号的真机运行，不是工具级证明。
+2. 信号测试只覆盖"运行中收到信号"；没有测试"信号恰好发生在 `pthread_create` 之间"这类极端窗口。
+3. `SIGKILL` 无法被捕获，不在覆盖范围内（进程被强杀不会打印 SUMMARY，属预期）。
+4. 真人说话（场景 B/C）与背景噪声（场景 D）仍未验证。

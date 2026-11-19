@@ -132,8 +132,13 @@ $cc = "$env:NDK\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-android
 adb push android/out/drain_test /data/local/tmp/t4/drain_test
 adb shell "chmod 755 /data/local/tmp/t4/drain_test; cd /data/local/tmp/t4 && ./drain_test"
 
+# 2c) 进程级停止路径测试（真实 SIGINT/SIGTERM，需要设备 + adb）
+#     不带 bridge：8 个用例 86 passed；带 bridge（真实 PCM 帧）：95 passed
+python tests\stop_signal_test.py                  # 纯停止路径
+python tests\stop_signal_test.py --bridge          # 同时注入 T3 PCM（需 frida-server 在跑）
+
 # 3) 语法检查
-python -m py_compile tests\receiver_test.py
+python -m py_compile tests\receiver_test.py tests\stop_signal_test.py
 
 # 4) NDK 编译（armeabi-v7a / API 26，0 warning）
 powershell -ExecutionPolicy Bypass -File android\build.ps1
@@ -231,3 +236,6 @@ python ..\03_uds_test\verify_capture.py <capture.cap>   # 如需核对同一轮�
 - `missing` 是"观察到的缺口"，若发送端重启换了 `epoch` 会被重置；它不是端到端丢帧的最终结论。
 - `drain_test.c` 依赖 pthread，只能在 Linux/WSL 或 Android 上执行；Windows 本机不跑（不得当作已验证）。
 - 并发测试没有 ThreadSanitizer 覆盖：结论来自锁配对审查 + 真机多次复跑，不是工具级证明。
+- 停止标志分两个（T4-07）：`g_signal_stop` 只由信号处理函数写、只在 `main` 读；
+  `g_stop` 是普通 `int`，线程侧所有读写都持 `g_ctx.mu`（`stop_requested()` / `request_stop()`）。
+  `SIGKILL` 不可捕获，不在覆盖范围。
