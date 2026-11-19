@@ -1,0 +1,5 @@
+﻿8f181000-8f255000 r-xp 00000000 b3:13 485        /system/app/smartapp/lib/arm/libsmartbox.so
+8f255000-8f256000 rwxp 000d4000 b3:13 485        /system/app/smartapp/lib/arm/libsmartbox.so
+8f256000-8f36c000 r-xp 000d5000 b3:13 485        /system/app/smartapp/lib/arm/libsmartbox.so
+8f36c000-8f374000 r--p 001ea000 b3:13 485        /system/app/smartapp/lib/arm/libsmartbox.so
+8f374000-8f376000 rw-p 001f2000 b3:13 485        /system/app/smartapp/lib/arm/libsmartbox.so

@@ -1,0 +1,109 @@
+﻿
+D:\tgz02\OS\system\my-doc\04_device_t0\libsmartbox_device.so:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+000d4500 <_ZN14AGSpeechEngine11setEOUParamERK10AGVadParamb@@Base+0x84>:
+   d4500:	000f4097 	muleq	pc, r7, r0	; <UNPREDICTABLE>
+   d4504:	000f454f 	andeq	r4, pc, pc, asr #10
+
+000d4508 <_ZN14AGSpeechEngine17setSilenceTimeoutEi@@Base>:
+   d4508:	e92d4830 	push	{r4, r5, fp, lr}
+   d450c:	e28db008 	add	fp, sp, #8
+   d4510:	e24dd008 	sub	sp, sp, #8
+   d4514:	e1a04001 	mov	r4, r1
+   d4518:	e59f1030 	ldr	r1, [pc, #48]	; d4550 <_ZN14AGSpeechEngine17setSilenceTimeoutEi@@Base+0x48>
+   d451c:	e59f2030 	ldr	r2, [pc, #48]	; d4554 <_ZN14AGSpeechEngine17setSilenceTimeoutEi@@Base+0x4c>
+   d4520:	e1a05000 	mov	r5, r0
+   d4524:	e59f302c 	ldr	r3, [pc, #44]	; d4558 <_ZN14AGSpeechEngine17setSilenceTimeoutEi@@Base+0x50>
+   d4528:	e30002d6 	movw	r0, #726	; 0x2d6
+   d452c:	e08f1001 	add	r1, pc, r1
+   d4530:	e08f2002 	add	r2, pc, r2
+   d4534:	e08f3003 	add	r3, pc, r3
+   d4538:	e58d0000 	str	r0, [sp]
+   d453c:	e3a00003 	mov	r0, #3
+   d4540:	ebfee3d6 	bl	8d4a0 <__android_log_print@plt>
+   d4544:	e58540c4 	str	r4, [r5, #196]	; 0xc4
+   d4548:	e24bd008 	sub	sp, fp, #8
+   d454c:	e8bd8830 	pop	{r4, r5, fp, pc}
+   d4550:	000f3f24 	andeq	r3, pc, r4, lsr #30
+   d4554:	000f400f 	andeq	r4, pc, pc
+   d4558:	000f44d3 	ldrdeq	r4, [pc], -r3
+
+000d455c <_ZN14AGSpeechEngine4feedEjPKvi@@Base>:
+   d455c:	e92d48f0 	push	{r4, r5, r6, r7, fp, lr}
+   d4560:	e28db010 	add	fp, sp, #16
+   d4564:	e24dd008 	sub	sp, sp, #8
+   d4568:	e1a07003 	mov	r7, r3
+   d456c:	e3520000 	cmp	r2, #0
+   d4570:	0a000026 	beq	d4610 <_ZN14AGSpeechEngine4feedEjPKvi@@Base+0xb4>
+   d4574:	e3570001 	cmp	r7, #1
+   d4578:	ba000024 	blt	d4610 <_ZN14AGSpeechEngine4feedEjPKvi@@Base+0xb4>
+   d457c:	e5903050 	ldr	r3, [r0, #80]	; 0x50
+   d4580:	e1530001 	cmp	r3, r1
+   d4584:	1a000021 	bne	d4610 <_ZN14AGSpeechEngine4feedEjPKvi@@Base+0xb4>
+   d4588:	e1a0c000 	mov	ip, r0
+   d458c:	e5bc6078 	ldr	r6, [ip, #120]!	; 0x78
+   d4590:	e3560000 	cmp	r6, #0
+   d4594:	0a000016 	beq	d45f4 <_ZN14AGSpeechEngine4feedEjPKvi@@Base+0x98>
+   d4598:	e1a0300c 	mov	r3, ip
+   d459c:	e5965010 	ldr	r5, [r6, #16]
+   d45a0:	e1a04006 	mov	r4, r6
+   d45a4:	e1550001 	cmp	r5, r1
+   d45a8:	32844004 	addcc	r4, r4, #4
+   d45ac:	21a03006 	movcs	r3, r6
+   d45b0:	e5945000 	ldr	r5, [r4]
+   d45b4:	e3550000 	cmp	r5, #0
+   d45b8:	e1a06005 	mov	r6, r5
+   d45bc:	1afffff6 	bne	d459c <_ZN14AGSpeechEngine4feedEjPKvi@@Base+0x40>
+   d45c0:	e153000c 	cmp	r3, ip
+   d45c4:	0a00000a 	beq	d45f4 <_ZN14AGSpeechEngine4feedEjPKvi@@Base+0x98>
+   d45c8:	e5936010 	ldr	r6, [r3, #16]
+   d45cc:	e1560001 	cmp	r6, r1
+   d45d0:	8a000007 	bhi	d45f4 <_ZN14AGSpeechEngine4feedEjPKvi@@Base+0x98>
+   d45d4:	e5931014 	ldr	r1, [r3, #20]
+   d45d8:	e3510007 	cmp	r1, #7
+   d45dc:	1a000004 	bne	d45f4 <_ZN14AGSpeechEngine4feedEjPKvi@@Base+0x98>
+   d45e0:	e59000a4 	ldr	r0, [r0, #164]	; 0xa4
+   d45e4:	e1a01002 	mov	r1, r2
+   d45e8:	e1a02007 	mov	r2, r7
+   d45ec:	ebfeebeb 	bl	8f5a0 <_ZN19WakeupEngineWrapper4feedEPKvi@plt>
+   d45f0:	ea000006 	b	d4610 <_ZN14AGSpeechEngine4feedEjPKvi@@Base+0xb4>
+   d45f4:	e5900090 	ldr	r0, [r0, #144]	; 0x90
+   d45f8:	e3a01000 	mov	r1, #0
+   d45fc:	e58d1000 	str	r1, [sp]
+   d4600:	e1a01002 	mov	r1, r2
+   d4604:	e1a02007 	mov	r2, r7
+   d4608:	e3a03064 	mov	r3, #100	; 0x64
+   d460c:	ebfeebe6 	bl	8f5ac <_ZN16SpeechDispatcher5writeEPKci19AGWakeupAudioStatusi@plt>
+   d4610:	e1a00007 	mov	r0, r7
+   d4614:	e24bd010 	sub	sp, fp, #16
+   d4618:	e8bd88f0 	pop	{r4, r5, r6, r7, fp, pc}
+
+000d461c <_ZN14AGSpeechEngine11startListenEjRK10WakeupInfo@@Base>:
+   d461c:	e92d4ff0 	push	{r4, r5, r6, r7, r8, r9, sl, fp, lr}
+   d4620:	e28db01c 	add	fp, sp, #28
+   d4624:	e24dd02c 	sub	sp, sp, #44	; 0x2c
+   d4628:	e1a04001 	mov	r4, r1
+   d462c:	e59f142c 	ldr	r1, [pc, #1068]	; d4a60 <_ZN14AGSpeechEngine11startListenEjRK10WakeupInfo@@Base+0x444>
+   d4630:	e1a06002 	mov	r6, r2
+   d4634:	e59f2428 	ldr	r2, [pc, #1064]	; d4a64 <_ZN14AGSpeechEngine11startListenEjRK10WakeupInfo@@Base+0x448>
+   d4638:	e59f3428 	ldr	r3, [pc, #1064]	; d4a68 <_ZN14AGSpeechEngine11startListenEjRK10WakeupInfo@@Base+0x44c>
+   d463c:	e1a09000 	mov	r9, r0
+   d4640:	e30002ea 	movw	r0, #746	; 0x2ea
+   d4644:	e08f1001 	add	r1, pc, r1
+   d4648:	e08f2002 	add	r2, pc, r2
+   d464c:	e08f3003 	add	r3, pc, r3
+   d4650:	e58d0000 	str	r0, [sp]
+   d4654:	e3a00003 	mov	r0, #3
+   d4658:	ebfee390 	bl	8d4a0 <__android_log_print@plt>
+   d465c:	e3a00080 	mov	r0, #128	; 0x80
+   d4660:	ebfee3a3 	bl	8d4f4 <_Znwj@plt>
+   d4664:	e3a01000 	mov	r1, #0
+   d4668:	e1a07000 	mov	r7, r0
+   d466c:	e5801008 	str	r1, [r0, #8]
+   d4670:	f2c00050 	vmov.i32	q8, #0	; 0x00000000
+   d4674:	e59f03f0 	ldr	r0, [pc, #1008]	; d4a6c <_ZN14AGSpeechEngine11startListenEjRK10WakeupInfo@@Base+0x450>
+   d4678:	e3e02000 	mvn	r2, #0
+   d467c:	e2873060 	add	r3, r7, #96	; 0x60

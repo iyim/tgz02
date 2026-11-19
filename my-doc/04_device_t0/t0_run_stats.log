@@ -1,0 +1,21 @@
+[i] js = t0_probe2.js
+[i] target pid = 6934
+[i] attached
+[i] base=0x8f181000 target=0x8f25555c
+[i] read-only hook installed, watching 30s
+[i] script loaded, watching 38s ...
+[RUN 5.0s] calls=125 rate=24.99/s threads=1 lens={"5120":125} distinctPtrs=1 interval(ms) min=9 avg=40.18 max=135 hashDup=0
+[RUN 10.0s] calls=249 rate=24.88/s threads=1 lens={"5120":249} distinctPtrs=1 interval(ms) min=8 avg=40.08 max=139 hashDup=0
+[RUN 15.0s] calls=375 rate=24.98/s threads=1 lens={"5120":375} distinctPtrs=1 interval(ms) min=8 avg=40.05 max=139 hashDup=0
+[RUN 20.0s] calls=500 rate=24.98/s threads=1 lens={"5120":500} distinctPtrs=1 interval(ms) min=1 avg=40.10 max=139 hashDup=0
+[RUN 25.0s] calls=624 rate=24.94/s threads=1 lens={"5120":624} distinctPtrs=1 interval(ms) min=1 avg=40.00 max=139 hashDup=0
+[FINAL 30.0s] calls=750 rate=25.00/s threads=1 lens={"5120":750} distinctPtrs=1 interval(ms) min=1 avg=40.00 max=139 hashDup=0
+[CH] frames=60 (640 groups x 4ch int16)
+[CH] ch0 min=-195 max=85 mean=-62.47 nonzero=99.7%
+[CH] ch1 min=-199 max=85 mean=-63.45 nonzero=99.8%
+[CH] ch2 min=-72 max=-72 mean=-72.00 nonzero=100.0%
+[CH] ch3 min=-72 max=-72 mean=-72.00 nonzero=100.0%
+[PTR] data ptrs seen: 0x8b404400
+[i] listener detached
+[i] probe2 finished (timeout)
+[i] driver exit

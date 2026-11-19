@@ -1,0 +1,31 @@
+[i] js = t0_probe.js
+[i] target pid = 6934
+[i] attached
+[i] libsmartbox.so base = 0x8f181000  (0x8f181000)
+[i] dlsym(_ZN14AGSpeechEngine4feedEjPKvi) = 0x8f25555c
+[i] symbol offset = 0xd455c  vs target 0xd455c match = true
+[i] target runtime addr = 0x8f25555c
+[i] runtime[16] = f0482de910b08de208d04de20370a0e1
+[i] diskfile[16] = f0482de910b08de208d04de20370a0e1
+[i] bytes identical = true
+[i] first insn: push {r4, r5, r6, r7, fp, lr}
+[i] second insn: add fp, sp, #0x10
+[i] read-only hook installed, watching 30s
+[i] script loaded, watching 45s ...
+[FIRST] tid=7477 r0(this)=0x904b1080 r1=0x1 r2(data)=0x8b404400 r3(len)=5120
+[FIRST] data[0..64) = 0300f2ffb8ffb8ff0c00f3ffb8ffb8fffefffeffb8ffb8ffebffebffb8ffb8ffe8ffddffb8ffb8ffe7ffe0ffb8ffb8ffe7ffe8ffb8ffb8ffdbffe8ffb8ffb8ff
+[RUN 5.0s] calls=124 threads=1 lens={"5120":124} nullPtr=0 readFail=0 hookEx=0
+      tid=7477 calls=124
+[RUN 10.0s] calls=250 threads=1 lens={"5120":250} nullPtr=0 readFail=0 hookEx=0
+      tid=7477 calls=250
+[RUN 15.0s] calls=374 threads=1 lens={"5120":374} nullPtr=0 readFail=0 hookEx=0
+      tid=7477 calls=374
+[RUN 20.0s] calls=500 threads=1 lens={"5120":500} nullPtr=0 readFail=0 hookEx=0
+      tid=7477 calls=500
+[RUN 25.0s] calls=624 threads=1 lens={"5120":624} nullPtr=0 readFail=0 hookEx=0
+      tid=7477 calls=624
+[FINAL 30.0s] calls=749 threads=1 lens={"5120":749} nullPtr=0 readFail=0 hookEx=0
+      tid=7477 calls=749
+[i] listener detached
+[i] probe finished (timeout)
+[i] driver exit

@@ -1,0 +1,15 @@
+[i] js = t0_probe3.js
+[i] target pid = 6934
+[i] attached
+[i] base=0x8f181000 target=0x8f25555c
+[i] waiting for first frame ...
+[i] script loaded, watching 8s ...
+[ONE] tid=7477 data=0x8b404400 len=5120
+[ONE] first 32 int16 (4ch interleaved): -52,-67,-72,-72,-49,-68,-72,-72,-66,-92,-72,-72,-64,-80,-72,-72,-57,-77,-72,-72,-55,-65,-72,-72,-48,-59,-72,-72,-42,-71,-72,-72
+[ONE] ch0!=ch1 samples = 626/640
+[ONE] ch0!=ch2 samples = 633/640
+[ONE] ch2!=ch3 samples = 0/640
+[ONE] ch2 first=-72 ch3 first=-72 last ch2=-72 ch3=-72
+[i] listener detached
+[i] probe3 finished
+[i] driver exit
