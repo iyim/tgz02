@@ -34,6 +34,11 @@ def main():
 
     blob = open(args.cap, "rb").read()
     n = len(blob) // MSG
+    rest = len(blob) % MSG
+    # 与 verify_capture.py 完全一致的完整性规则：文件长度必须是整帧长度的整数倍
+    if rest:
+        print("[!] trailing bytes: %d B left over (not a whole %d B TGZ2 frame) -> "
+              "capture is incomplete" % (rest, MSG))
     if not n:
         print("[!] no frame")
         return 1
@@ -73,8 +78,16 @@ def main():
     print("dup_frames    : %d  (与前一帧逐字节相同)" % same_as_prev)
     print("first_frame   : min=%d max=%d" % (min(first), max(first)))
     print("last_frame    : min=%d max=%d" % (min(last), max(last)))
-    ok = zero_frames == 0 and same_as_prev == 0 and max(rms) > args.silent_rms
-    print("RESULT        :", "PASS (real, varying audio)" if ok else "CHECK")
+    print("integrity     : frames=%d frame_bytes=%d trailing=%d %s"
+          % (n, MSG, rest, "OK" if rest == 0 else "INCOMPLETE"))
+    ok = (rest == 0 and zero_frames == 0 and same_as_prev == 0
+          and max(rms) > args.silent_rms)
+    if rest:
+        # 残帧 => 这份 capture 不完整，统计值只能当"已解析部分"的参考，不能判 PASS
+        print("RESULT        : INCOMPLETE (%d trailing bytes, not a multiple of %d)"
+              % (rest, MSG))
+    else:
+        print("RESULT        :", "PASS (real, varying audio)" if ok else "CHECK")
 
     if args.spectrum:
         import math

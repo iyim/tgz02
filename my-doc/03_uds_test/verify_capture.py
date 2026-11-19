@@ -71,8 +71,10 @@ def main():
     rest = len(blob) % MSG
     print(f"file       : {args.cap}")
     print(f"bytes      : {len(blob)}  frames={n}  trailing={rest}")
+    # 尾部残帧（非整帧字节）是**不可接受**的：capture 只能是一帧接一帧的整帧流。
+    # 不允许"忽略尾部字节"或截断文件来让它看起来完整。
     if rest:
-        print("[!] trailing bytes: not a whole TGZ2 frame (capture truncated?)")
+        print(f"[!] trailing bytes: {rest} B left over (not a whole {MSG} B TGZ2 frame) -> incomplete capture")
     if n == 0:
         print("[!] no complete frame")
         return 1
@@ -142,7 +144,14 @@ def main():
 
     print(f"dup={total_dup} reorder={total_back} missing_total={total_gap}")
     print(f"rejects    : {bad}")
-    ok = (not any(bad.values())) and total_dup == 0 and total_back == 0
+    print(f"integrity  : frames={n} frame_bytes={MSG} trailing={rest}"
+          f" {'OK' if rest == 0 else 'INCOMPLETE'}")
+    # rest == 0 是 PASS 的必要条件：尾部有残字节说明文件不完整（写入被截断）
+    ok = (rest == 0) and (not any(bad.values())) and total_dup == 0 and total_back == 0
+    if rest:
+        print(f"RESULT     : FAIL (incomplete capture: {rest} trailing bytes, "
+              f"not a multiple of {MSG})")
+        return 1
     print("RESULT     :", "PASS" if ok else "FAIL")
     return 0 if ok else 1
 

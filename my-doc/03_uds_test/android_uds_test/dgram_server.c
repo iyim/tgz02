@@ -53,6 +53,54 @@ static void print_stat(const stats *S)
     fflush(stdout);
 }
 
+/* ---------------- JSON 输出辅助（只在本文件内使用） ----------------
+ * READY 行必须是**可以被标准 JSON 解析器直接解析的完整 JSON 对象**，
+ * 因此路径一类的外部字符串一律经 json_write_string() 转义，绝不直接拼接。
+ */
+static void json_write_string(FILE *f, const char *s)
+{
+    const unsigned char *p = (const unsigned char *)s;
+    fputc('"', f);
+    for (; *p; p++) {
+        switch (*p) {
+        case '"':  fputs("\\\"", f); break;
+        case '\\': fputs("\\\\", f); break;
+        case '\b': fputs("\\b", f); break;
+        case '\f': fputs("\\f", f); break;
+        case '\n': fputs("\\n", f); break;
+        case '\r': fputs("\\r", f); break;
+        case '\t': fputs("\\t", f); break;
+        default:
+            if (*p < 0x20) fprintf(f, "\\u%04x", (unsigned)*p);   /* 其余控制字符 */
+            else fputc((int)*p, f);                               /* UTF-8 字节原样输出 */
+            break;
+        }
+    }
+    fputc('"', f);
+}
+
+/* NULL -> JSON null（未指定 --capture 时必须这样输出，不能输出空串/裸文本） */
+static void json_write_string_or_null(FILE *f, const char *s)
+{
+    if (s) json_write_string(f, s);
+    else fputs("null", f);
+}
+
+static void print_ready(FILE *f, const char *mode, const char *name,
+                        int rcvbuf_req, int rcvbuf_eff, int max_age_ms,
+                        const char *capture_path)
+{
+    fputs("{\"type\":\"READY\",\"role\":\"server\",\"mode\":", f);
+    json_write_string(f, mode);
+    fputs(",\"name\":", f);
+    json_write_string(f, name);
+    fprintf(f, ",\"rcvbuf_req\":%d,\"rcvbuf_eff\":%d,\"max_age_ms\":%d,",
+            rcvbuf_req, rcvbuf_eff, max_age_ms);
+    fputs("\"capture\":", f);
+    json_write_string_or_null(f, capture_path);
+    fputs(",\"payload_policy\":\"synthetic=regen-compare,real-pcm=crc-only\"}\n", f);
+}
+
 int main(int argc, char **argv)
 {
     const char *abstract_name = "tgz2pcm";
@@ -121,11 +169,9 @@ int main(int argc, char **argv)
     socklen_t gl = sizeof(got);
     getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &got, &gl);
 
-    printf("READY {\"role\":\"server\",\"mode\":\"%s\",\"name\":\"%s\",\"rcvbuf_req\":%d,"
-           "\"rcvbuf_eff\":%d,\"max_age_ms\":%d,\"capture\":%s,\"payload_policy\":\""
-           "synthetic=regen-compare,real-pcm=crc-only\"}\n",
-           file_path ? "file" : "abstract", file_path ? file_path : abstract_name,
-           rcvbuf, got, max_age_ms, capture_path ? capture_path : "");
+    print_ready(stdout, file_path ? "file" : "abstract",
+                file_path ? file_path : abstract_name,
+                rcvbuf, got, max_age_ms, capture_path);
     fflush(stdout);
 
     static uint8_t buf[8192];
