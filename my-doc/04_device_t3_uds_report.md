@@ -7,8 +7,8 @@
 > 本轮只证明"传输链路"，不含 VAD / 唤醒词 / ASR / LLM / TTS。
 
 - 本轮基线 commit：`1ba8904d396b1768d6fe1d5b7c8241f1f7de7714`（"fix T2 dry-run finish: final drain, stricter verdict, wording"）
-- 本轮代码提交：`<CODE_COMMIT>`（提交信息 `feat: implement T3 device PCM UDS bridge`）
-- 本报告补记提交：`<DOC_COMMIT>`
+- 本轮代码提交：`698e81a59ad417fe1ee9baffb7c6dcec24b131fa`（提交信息 `feat: implement T3 device PCM UDS bridge`）
+- 本报告补记提交：本次提交只回填上面两行 SHA（报告内容与代码提交一致，未复核改动）
 - 工作分支：`main`（未建分支、未开 PR）
 - 被测脚本 SHA256：`08c4720e676765298d1436b7c77f0f1f83cffe388376297e7e366eb76a829dba`（`my-doc/03_uds_test/pcm_bridge_draft.js`，两份真机日志里的 `js_sha256` 与之一致）
 - 接收端二进制 SHA256：`68a15523c5e318be916c383d4d2d90e390f20ebb7bdc9d0d56c0f9519b7ca948`（3,407,656 B，armv7 静态链接）
