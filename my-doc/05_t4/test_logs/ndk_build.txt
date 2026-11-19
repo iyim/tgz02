@@ -1,12 +1,15 @@
-﻿cc      : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd
+cc      : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd
 Android (7019983 based on r365631c3) clang version 9.0.9 (https://android.googlesource.com/toolchain/llvm-project a2a1e703c0edb03ba29944e529ccbf457742737b) (based on LLVM 9.0.9svn)
 Target: armv7a-unknown-linux-android26
 Thread model: posix
 InstalledDir: D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin
 cmd     : armv7a-linux-androideabi26-clang -O2 -Wall -Wextra -static -o out/t4_receiver t4_receiver.c rx_core.c vad_energy.c -lm
 exit    : 0
-output_lines: 0
 warnings: 0
 errors  : 0
-artifact: out/t4_receiver 3431344 B
-sha256  : d4ac850e1712e3bf9fd37840ffce8ce8d431566271211a94aedb3c76e48455c4
+artifact: out/t4_receiver 3431548 B
+sha256  : 31635a3ff2c532ddf7a1c2b94ebb1f11e4930c438ee6dcd74d1eb5fb0619c41c
+elf     : Class:                             ELF32
+elf     : Type:                              EXEC (Executable file)
+elf     : Machine:                           ARM
+drain_test: out/drain_test 3439924 B sha256=31ed324931f628923ee77ee5d749c0ee7a52171564e247730642bcc0a2cd9f2a

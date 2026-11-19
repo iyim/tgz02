@@ -113,6 +113,10 @@ static int run_script(const char *spec, int with_summary)
             build_frame(msg, seq, epoch);
             seq++;
             msg[4] = 99;
+        } else if (!strncmp(tok, "seq=", 4)) {
+            /* 只改序号游标，不送帧：用来脚本化乱序/回绕场景 */
+            seq = (uint32_t)strtoul(tok + 4, NULL, 0);
+            continue;
         } else {
             fprintf(stderr, "unknown token: %s\n", tok);
             free(copy);
@@ -132,10 +136,18 @@ static int run_script(const char *spec, int with_summary)
     }
     free(copy);
 
-    print_stats(&st);
-    if (with_summary) {
-        rx_write_summary(stdout, &st, &q, 123u, 2u, 0u, 1.500, 12.50, 262144, 212992);
-        fflush(stdout);
+    /* 模拟生产端"退出排空"：把队列里剩下的帧全部取完（processed = 实际取出帧数） */
+    {
+        rx_frame f;
+        uint64_t processed = 0;
+        while (rx_queue_pop(&q, &f)) processed++;
+
+        print_stats(&st);
+        if (with_summary) {
+            rx_write_summary(stdout, &st, &q, processed, 123u, 2u, 0u, 1.500, 12.50,
+                             262144, 212992);
+            fflush(stdout);
+        }
     }
     rx_queue_free(&q);
     return 0;
@@ -174,14 +186,14 @@ static int run_queue(int cap, int extra)
     return 0;
 }
 
-static int run_wav(const char *dir, int frames, long seg_id)
+static int run_wav(const char *dir, int frames, long seg_id, unsigned run_id)
 {
     t4_wav w;
     int16_t block[TGZ2_SPF];
     int f, i;
     long file_bytes;
 
-    if (t4_wav_open(&w, dir, seg_id, 42u, TGZ2_RATE) != 0) {
+    if (t4_wav_open(&w, dir, (uint32_t)run_id, seg_id, 42u, TGZ2_RATE) != 0) {
         fprintf(stderr, "wav open failed\n");
         return 1;
     }
@@ -203,8 +215,10 @@ static int run_wav(const char *dir, int frames, long seg_id)
 
     printf("{\"type\":\"WAV\",\"path\":");
     json_write_string(stdout, w.path);
-    printf(",\"frames\":%d,\"data_bytes\":%u,\"expect_file_bytes\":%ld}\n",
-           frames, (unsigned)frames * (unsigned)TGZ2_PAYLOAD, file_bytes);
+    printf(",\"frames\":%d,\"data_bytes\":%u,\"expect_file_bytes\":%ld,"
+           "\"run_id\":%u,\"seg_id\":%ld}\n",
+           frames, (unsigned)frames * (unsigned)TGZ2_PAYLOAD, file_bytes,
+           (unsigned)run_id, seg_id);
     fflush(stdout);
     return 0;
 }
@@ -213,7 +227,7 @@ int main(int argc, char **argv)
 {
     if (argc < 2) {
         fprintf(stderr, "usage: %s --script SPEC [--with-summary] | --queue CAP EXTRA | "
-                        "--wav DIR --frames N --seg ID\n", argv[0]);
+                        "--wav DIR --frames N --seg ID [--run-id HEX]\n", argv[0]);
         return 2;
     }
     if (!strcmp(argv[1], "--script") && argc >= 3) {
@@ -225,10 +239,14 @@ int main(int argc, char **argv)
     }
     if (!strcmp(argv[1], "--wav") && argc >= 7) {
         const char *dir = argv[2];
-        int frames = 0, seg = 0;
+        int frames = 0, seg = 0, k;
+        unsigned run_id = 0;
         if (!strcmp(argv[3], "--frames")) frames = atoi(argv[4]);
         if (!strcmp(argv[5], "--seg")) seg = atoi(argv[6]);
-        return run_wav(dir, frames, seg);
+        for (k = 7; k + 1 < argc; k++) {
+            if (!strcmp(argv[k], "--run-id")) run_id = (unsigned)strtoul(argv[k + 1], NULL, 16);
+        }
+        return run_wav(dir, frames, seg, run_id);
     }
     fprintf(stderr, "bad arguments\n");
     return 2;

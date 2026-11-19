@@ -250,7 +250,8 @@ def main():
     wavdir = os.path.join(tmpdir, "segments")
     os.makedirs(wavdir, exist_ok=True)
     frames = 5
-    rc, lines, err = run(exe, ["--wav", wavdir, "--frames", str(frames), "--seg", "7"])
+    rc, lines, err = run(exe, ["--wav", wavdir, "--frames", str(frames), "--seg", "7",
+                               "--run-id", "0a0b0c0d"])
     eq(rc, 0, "wav: harness 退出码 0")
     eq(err.strip(), "", "wav: stderr 为空")
     w = parse(lines, "WAV", "wav")
@@ -258,6 +259,8 @@ def main():
         w = w[0]
         path = w["path"]
         ok(os.path.exists(path), "wav: 文件已生成")
+        eq(os.path.basename(path), "seg_0a0b0c0d_0007_42.wav",
+           "wav: 文件名 = seg_<run_id>_<seg>_<seq>.wav")
         eq(w["frames"], frames, "wav: frames=5")
         eq(w["data_bytes"], frames * PAYLOAD, "wav: data_bytes = 5 * 1280")
         eq(os.path.getsize(path), 44 + frames * PAYLOAD, "wav: 文件大小 = 44 + PCM")
@@ -285,6 +288,114 @@ def main():
             for f in range(frames) for i in range(SPF))
         eq(len(data), frames * PAYLOAD, "wave: 读回字节数 = 5*1280")
         ok(data == expect, "wave: 读回的 PCM 与写入的样本逐字节一致")
+
+    # ---- 10) 乱序/重复/回绕（P2：乱序不得污染序号高水位） ----
+    print("\n[10] 序号语义：乱序不倒退高水位、重复单计、uint32 回绕正常")
+
+    def seq_case(spec, ctx):
+        st, _ = script_stats(exe, spec, ctx)
+        return st or {}
+
+    # 1,2,3,4
+    st = seq_case("ok,ok,ok,ok", "seq-1..4")
+    eq(st.get("missing"), 0, "seq 1,2,3,4: missing=0")
+    eq(st.get("duplicate"), 0, "seq 1,2,3,4: duplicate=0")
+    eq(st.get("reorder"), 0, "seq 1,2,3,4: reorder=0")
+
+    # 1,3,2,4 —— 关键回归：收 2 时记乱序，但高水位停在 3，收 4 时不能再算缺口
+    st = seq_case("ok,seq=3,ok,seq=2,ok,seq=4,ok", "seq-1324")
+    eq(st.get("seq_first"), 1, "seq 1,3,2,4: first=1")
+    eq(st.get("seq_last"), 4, "seq 1,3,2,4: last=4（高水位没有被乱序拉回）")
+    eq(st.get("reorder"), 1, "seq 1,3,2,4: reorder=1")
+    eq(st.get("missing"), 1, "seq 1,3,2,4: missing=1（不是 2 —— 旧的 seq_last=2 写法会算成 2）")
+    eq(st.get("duplicate"), 0, "seq 1,3,2,4: duplicate=0")
+
+    # 1,2,2,3
+    st = seq_case("ok,ok,dup,ok", "seq-1223")
+    eq(st.get("duplicate"), 1, "seq 1,2,2,3: duplicate=1")
+    eq(st.get("missing"), 0, "seq 1,2,2,3: missing=0")
+    eq(st.get("reorder"), 0, "seq 1,2,2,3: reorder=0")
+
+    # 1,3,4
+    st = seq_case("ok,seq=3,ok,ok", "seq-134")
+    eq(st.get("missing"), 1, "seq 1,3,4: missing=1")
+    eq(st.get("reorder"), 0, "seq 1,3,4: reorder=0")
+
+    # 回绕：0xFFFFFFFE,0xFFFFFFFF,0,1
+    st = seq_case("seq=0xFFFFFFFE,ok,ok,ok,ok", "seq-wrap")
+    eq(st.get("seq_first"), 4294967294, "wrap: first=0xFFFFFFFE")
+    eq(st.get("seq_last"), 1, "wrap: last=1（回绕后继续前进）")
+    eq(st.get("missing"), 0, "wrap: missing=0（无虚假缺口）")
+    eq(st.get("reorder"), 0, "wrap: reorder=0（回绕不被当成后退）")
+    eq(st.get("duplicate"), 0, "wrap: duplicate=0")
+
+    # 回绕 + 跨 0 的缺口：0xFFFFFFFF -> 1 应算 1 个缺口
+    st = seq_case("seq=0xFFFFFFFF,ok,seq=1,ok", "seq-wrap-gap")
+    eq(st.get("missing"), 1, "wrap-gap: 0xFFFFFFFF -> 1 记 1 个缺口")
+
+    # ---- 11) SUMMARY: processed 与不变式 ----
+    print("\n[11] SUMMARY 的 processed 与 accepted == processed + queue_drop")
+    st, lines = script_stats(exe, "ok,ok,ok,badcrc", "processed", with_summary=True)
+    sm = parse(lines, "SUMMARY", "processed")
+    if sm:
+        s = sm[0]
+        ok("processed" in s, "summary: 字段 processed 存在")
+        ok(isinstance(s.get("processed"), int), "summary: processed 是整数")
+        eq(s["accepted"], 3, "summary: accepted=3（badcrc 不计）")
+        eq(s["processed"], 3, "summary: processed=3")
+        eq(s["queue_drop"], 0, "summary: queue_drop=0")
+        eq(s["accepted"], s["processed"] + s["queue_drop"],
+           "summary: accepted == processed + queue_drop")
+        eq(s["queue_depth"], 0, "summary: queue_depth == 0")
+
+    # 队列满场景：150 帧 > cap 128 -> accepted=150, drops=22, processed=128
+    spec = ",".join(["ok"] * 150)
+    st, lines = script_stats(exe, spec, "processed-drop", with_summary=True)
+    sm = parse(lines, "SUMMARY", "processed-drop")
+    if sm:
+        s = sm[0]
+        eq(s["accepted"], 150, "drop-case: accepted=150")
+        eq(s["queue_drop"], 22, "drop-case: queue_drop=22（cap 128）")
+        eq(s["processed"], 128, "drop-case: processed=128")
+        eq(s["accepted"], s["processed"] + s["queue_drop"],
+           "drop-case: accepted == processed + queue_drop")
+        eq(s["queue_depth"], 0, "drop-case: queue_depth == 0")
+
+    # ---- 12) WAV 文件名唯一（P2：不同运行不覆盖） ----
+    print("\n[12] WAV 文件名带 run_id，不同运行不覆盖旧文件")
+    uniqdir = os.path.join(tmpdir, "unique")
+    os.makedirs(uniqdir, exist_ok=True)
+
+    def wav_run(run_id):
+        rc, lines, err = run(exe, ["--wav", uniqdir, "--frames", "2", "--seg", "3",
+                                   "--run-id", run_id])
+        eq(rc, 0, "unique(%s): harness 退出码 0" % run_id)
+        w = parse(lines, "WAV", "unique(%s)" % run_id)
+        return (w[0] if w else None)
+
+    w1 = wav_run("aabbccdd")
+    w2 = wav_run("aabbccdd")          # 故意用同一个 run_id，模拟"撞车"
+    w3 = wav_run("11223344")          # 正常的另一次运行
+    if w1 and w2 and w3:
+        p1, p2, p3 = w1["path"], w2["path"], w3["path"]
+        ok(p1 != p2, "unique: 相同 run_id 第二次也不覆盖（换名 _a1）", p1)
+        ok("_a1" in os.path.basename(p2), "unique: 第二个文件名带 _a1 后缀",
+           os.path.basename(p2))
+        ok(p1 != p3, "unique: 不同 run_id 文件名不同")
+        eq(os.path.basename(p1), "seg_aabbccdd_0003_42.wav", "unique: 名称含 run_id")
+        eq(os.path.basename(p3), "seg_11223344_0003_42.wav", "unique: 第二个 run_id 生效")
+        for pth in (p1, p2, p3):
+            ok(os.path.exists(pth), "unique: 文件存在 %s" % os.path.basename(pth))
+            ok(os.path.getsize(pth) == 44 + 2 * PAYLOAD,
+               "unique: 大小正确 %s" % os.path.basename(pth))
+            with wave.open(pth, "rb") as wf:
+                eq(wf.getnframes(), 2 * SPF, "unique: 可读回 2 帧 %s"
+                   % os.path.basename(pth))
+        # 三个文件内容完全相同（同样的合成数据），说明没有被截断成空文件
+        d1 = open(p1, "rb").read()
+        d2 = open(p2, "rb").read()
+        d3 = open(p3, "rb").read()
+        ok(d1 == d2 == d3, "unique: 三个文件内容一致（都没有被截断）")
 
     # ---- 结论 ----
     print("\n=== %d passed, %d failed ===" % (pass_n, fail_n))

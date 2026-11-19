@@ -4,6 +4,9 @@
 > 协议/CRC/序号全部干净（`received == accepted == sent`，`missing/dup/reorder/bad_*` 全 0），
 > 无接收队列丢弃，安静环境**零误触发**；片段落盘路径用**强制低阈值**跑通并回拉 6 个可播放 WAV。
 > **真人说话（场景 B/C）与背景噪声（场景 D）未验证** —— 设备旁无人，也不能用合成音频冒充。
+>
+> **T4-02 追加（见 §10）**：退出时排空队列（新增 `processed`）、乱序不污染序号高水位、
+> WAV 文件名带 run_id 且不覆盖旧文件 —— 三项已修复，本机测试 + 真机验证通过。
 
 - 基线 commit：`50c61f8863a028c4f94231de18efd97fd4e2d05e`
 - 本轮提交：`f93e2c967807357604e395769db747d0a1940ac5`
@@ -25,6 +28,9 @@
 | 场景 A：安静环境 ≥30 s，不误触发 | **真机已验证**（190 s） |
 | 场景 E：连续 ≥3 min 不崩、队列不增长 | **真机已验证**（190 s，队列高水位 3/128） |
 | 片段 WAV 落盘（真实设备音频） | **真机已验证**（强制低阈值，6 个片段，本机逐个校验通过） |
+| T4-02：退出排空队列（pthread 测试） | **真机已验证**（`drain_test` 在 TG-Z02 上 18 passed / 0 failed） |
+| T4-02：乱序/重复/回绕序号语义 | **本机测试通过**（`receiver_test.py` 第 10 组） |
+| T4-02：WAV 文件名唯一、不覆盖 | **真机已验证**（两次运行同名片段号/起始序号并存 9 个文件） |
 | 场景 B：真人连续说话 ≥5 句 | **未验证**（需人对着设备说话） |
 | 场景 C：句中短暂停顿不切段 | **未验证**（同上；逻辑本身由单元测试 T5 覆盖） |
 | 场景 D：背景噪声误触发 | **未验证**（现场无可用噪声源/播放通路） |
@@ -310,3 +316,155 @@ adb shell "sh /data/local/tmp/t4/run_t4.sh stop"
 adb pull /data/local/tmp/t4/t4_receiver.log .
 adb pull /data/local/tmp/t4/segments ./segments
 ```
+
+---
+
+## 10. T4-02 修复记录（P1 + P2×2）
+
+基线：`8a3473ae3d68d90cb42efeca80397636260bc931`；
+提交：`fix: drain T4 queue on shutdown and harden stats`。
+
+### 10.1 P1：退出时排空队列（不再丢帧）
+
+**问题**：`proc_thread()` 的循环条件是 `while (!g_stop)`，主线程置 `g_stop` 后处理线程可能
+在队列仍有数据时退出。T4-01 的真机证据 `device_run_quiet_190s.log` 里
+`accepted=4450` 而 `queue_depth=1` 就是这一帧没被处理。
+
+**修复**：循环改为 `for (;;)`；条件变量等待仅在 `!g_stop` 时进行；只有在
+「`g_stop` 且队列为空」时才 `break`；`break` 之后才 `vad_flush()`。
+停止时不修改队列、不清空、不丢弃任何已入队帧。主线程仍然是
+`join(rx) → join(proc) → 打印 SUMMARY`，保证接收线程不会在处理线程退出后继续入队。
+
+**新增统计** `processed`（实际送入 VAD 的帧数），并纳入 SUMMARY；
+退出后应满足 `accepted == processed + queue_drop` 且 `queue_depth == 0`。
+
+**测试**：新增 `tests/drain_test.c`，它 `#define main` 改名后直接
+`#include "../android/t4_receiver.c"`，**调用的就是生产 `proc_thread()`**：
+
+| 用例 | 场景 | 断言 |
+|---|---|---|
+| A | 先把 `g_stop=1`，队列里已有 25 帧静音 + 60 帧方波 | `processed=85`、队列深度 0、`vad.frames_seen=85`、只开 1 个片段、`vad_flush` 后状态回 IDLE、WAV 落盘（63 帧 = 5 pre-roll + 58；大小 = 44+63×1280） |
+| B | 空队列 + `g_stop=1` | 立即退出，`processed=0`，无片段收尾 |
+| C | 真线程：先入队 40 帧，`g_stop=0` 起线程（走 cond_timedwait 等待路径），200 ms 后置停止并 `broadcast` | `join` 后 `processed=40`、队列深度 0、`vad.frames_seen=40` |
+
+**执行方式与结果**：Windows 无 pthread，本测试**不在 Windows 跑**；
+用 NDK 交叉编译后在 TG-Z02 真机执行：
+
+```
+$ armv7a-linux-androideabi26-clang -O2 -Wall -Wextra -static -o out/drain_test       tests/drain_test.c android/rx_core.c android/vad_energy.c -lm
+（0 warning / 0 error）
+
+$ adb shell 'cd /data/local/tmp/t4 && ./drain_test'
+drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
+[A] g_stop=1 且队列 85 帧：必须排空后再退出
+  ok   A processed == 85（停止后仍逐帧处理）
+  ok   A 队列深度 == 0
+  ok   A VAD 实际收到 85 帧
+  ok   A 只开了一个片段
+  ok   A 收尾时关闭了该片段（vad_flush 生效）
+  ok   A flush 后状态回到 IDLE
+  ok   A 片段 WAV 保存成功
+  ok   A 没有写盘错误
+  ok   A 输出目录里有 WAV
+  ok   A 片段含 63 帧（5 帧 pre-roll + 58 帧）
+  ok   A WAV 大小 = 44 + 帧数*1280
+[B] 队列为空 + g_stop=1：立即退出
+  ok   B processed == 0
+  ok   B VAD 没收到帧
+  ok   B 没有片段需要收尾
+[C] 真线程：先入队 40 帧，运行中置停止并 broadcast
+  ok   C pthread_create 成功
+  ok   C processed == 40
+  ok   C 队列深度 == 0
+  ok   C VAD 收到 40 帧
+=== 18 passed, 0 failed ===
+```
+
+### 10.2 P2：乱序帧不再倒退序号基准
+
+**问题**：`rx_classify()` 每帧无条件 `st->seq_last = h.seq`，
+收到 `1,3,2,4` 时，处理 2 会把高水位拉回 2，处理 4 时再算一次缺口（missing 变 2）。
+
+**修复**：改成 uint32 无符号差判定，只有"前进"的帧才推进高水位：
+
+```c
+uint32_t d = h.seq - st->seq_last;
+if (d == 0)                       st->duplicate++;          /* 重复，不改基准 */
+else if (d < 0x80000000u) {       if (d > 1) st->missing += d - 1; st->seq_last = h.seq; }
+else                              st->reorder++;            /* 回退，不改基准 */
+```
+
+`0xFFFFFFFF -> 0` 的差是 1，回绕不会报缺口；epoch 切换仍然重置序号判断。
+
+**测试**（`receiver_test.py` 第 10 组，全部实测通过）：
+
+| 输入 | 实测 |
+|---|---|
+| 1,2,3,4 | `missing=0 duplicate=0 reorder=0` |
+| 1,3,2,4 | `missing=1 reorder=1`，`seq_last=4`（旧写法会算成 missing=2） |
+| 1,2,2,3 | `duplicate=1`，`missing=0` |
+| 1,3,4 | `missing=1` |
+| 0xFFFFFFFE..1（回绕） | `missing=0 reorder=0`，`seq_first=4294967294 seq_last=1` |
+| 0xFFFFFFFF → 1 | `missing=1`（回绕后的真实缺口仍能算出） |
+
+`missing` 的语义已在 README 明确为"**观察到的序号缺口累计**"，不是"最终确认永久丢失的帧"。
+
+### 10.3 P2：WAV 文件名带 run_id，不覆盖旧录音
+
+**问题**：`seg_<编号>_<start_seq>.wav` 只由片段号与起始序号组成，进程重启后可能同名，
+`fopen(..., "wb")` 会截断上一次测试的录音。
+
+**修复**：
+- 每次进程启动生成 `run_id`（PID × 2654435761 ^ CLOCK_REALTIME 的秒/纳秒混合），进 `CONFIG` 日志；
+- 文件名改为 `seg_<run_id:8hex>_<4 位片段编号>_<start_seq>.wav`；
+- 打开前先探测目标名是否已存在，存在就改用 `…_a1.wav` / `…_a2.wav`（最多 1000 次），
+  **任何情况下都不截断已有文件**；路径长度检查与"创建失败不崩溃"的原处理保持不变。
+
+**测试**：
+- 本机（`receiver_test.py` 第 12 组）：同一 `--run-id` 连续两次 → 第二次得到 `_a1` 后缀且两个文件都可读、
+  内容一致；换 `run_id` → 文件名不同；文件名格式断言 `seg_<runid>_<seg>_<seq>.wav`。
+- 真机：两次运行（`run_id` 分别 `b55a5158` / `a46a517e`）产生了**片段号与起始序号完全相同**的文件，
+  目录里 9 个文件并存、无覆盖：
+
+```
+seg_a46a517e_0001_24.wav   seg_b55a5158_0001_24.wav
+seg_a46a517e_0002_99.wav   seg_b55a5158_0002_99.wav
+seg_a46a517e_0003_174.wav  seg_b55a5158_0003_174.wav
+seg_a46a517e_0004_249.wav  seg_b55a5158_0004_249.wav
+                           seg_b55a5158_0005_324.wav
+```
+
+9 个文件逐个校验（`device_segments_t402/`）：RIFF/WAVE 标识、`RIFF size = 文件长−8`、
+`data size = PCM 长`、16000/1ch/16bit、`nframes = 帧数×640`、字节数与时长一致，**9/9 OK**。
+
+### 10.4 回归测试（本轮实际执行）
+
+| 项目 | 命令 | 结果 |
+|---|---|---|
+| VAD 单元测试 | `gcc -O2 -Wall -Wextra -o testsad_unit_test.exe testsad_unit_test.c androidad_energy.c -lm` → 运行 | **65 passed, 0 failed**（0 warning） |
+| 接收端测试 | `python testseceiver_test.py` | **203 passed, 0 failed** |
+| Python 语法 | `python -m py_compile testseceiver_test.py` | exit 0 |
+| 退出排空测试 | `drain_test`（NDK 编译 → 真机运行） | **18 passed, 0 failed** |
+| NDK 编译 | 见 §10.5 | **0 warning / 0 error** |
+
+### 10.5 NDK 编译（本轮）
+
+| 项 | 值 |
+|---|---|
+| 编译器 | `…ndroid-ndk-r21e\…rmv7a-linux-androideabi26-clang.cmd`（clang 9.0.9，`armv7a-unknown-linux-android26`） |
+| 命令 | `armv7a-linux-androideabi26-clang -O2 -Wall -Wextra -static -o out/t4_receiver t4_receiver.c rx_core.c vad_energy.c -lm` |
+| 结果 | exit 0，0 warning / 0 error，无 `-Wno-*` |
+| 产物 | `android/out/t4_receiver` 3,431,548 B，SHA256 `31635a3ff2c532ddf7a1c2b94ebb1f11e4930c438ee6dcd74d1eb5fb0619c41c` |
+| ELF | `Class: ELF32` / `Type: EXEC` / `Machine: ARM` |
+| 测试二进制 | `out/drain_test` 3,439,924 B，SHA256 `31ed324931f628923ee77ee5d749c0ee7a52171564e247730642bcc0a2cd9f2a` |
+
+### 10.6 真机验证（本轮）
+
+| 项 | 结果 |
+|---|---|
+| 安静环境 55 s（bridge 45 s） | `received=1127 accepted=1127 processed=1127 queue_drop=0 queue_depth=0`，`missing/dup/reorder/bad_*` 全 0，`segments=0`，`noise_rms=77.49` |
+| 不变式 | `accepted(1127) == processed(1127) + queue_drop(0)` ✅，`queue_depth==0` ✅ |
+| 强制低阈值两次运行 | 每次 `processed == accepted`、`queue_depth=0`、`segment_write_errors=0`；两次 run_id 不同，9 个 WAV 并存且全部校验通过 |
+| 退出排空（生产线程） | `drain_test` 在真机上 18 passed（见 10.1） |
+| 真机"停止时队列非空"的自然复现 | 本轮未复现（安静场景队列高水位仅 4，远低于 128）；该路径由 `drain_test` A 用例确定性覆盖 |
+| 真人说话 / 背景噪声 | **仍未验证**（需要真人/噪声源，见 §7.3） |

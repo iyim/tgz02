@@ -98,15 +98,20 @@ void json_write_string_or_null(FILE *f, const char *s);
 
 /*
  * SUMMARY：输出一行纯 JSON（含 "type":"SUMMARY"）。
- * 必需字段：received/accepted/bad_len/bad_crc/missing/duplicate/reorder/
+ * 必需字段：received/accepted/processed/bad_len/bad_crc/missing/duplicate/reorder/
  *           queue_drop/queue_high_watermark/vad_speech_frames/segments/segment_write_errors
+ * 退出排空后应满足：accepted == processed + queue_drop，且 queue_depth == 0
  */
 void rx_write_summary(FILE *f, const rx_stats *st, const rx_queue *q,
+                      uint64_t processed,
                       uint64_t vad_speech_frames, uint64_t segments,
                       uint64_t segment_write_errors, double dur_s,
                       double noise_rms, int rcvbuf_req, int rcvbuf_eff);
 
-/* ---- WAV 落盘（16 kHz / 单声道 / 16-bit） ---- */
+/* ---- WAV 落盘（16 kHz / 单声道 / 16-bit） ----
+ * 文件名：<dir>/seg_<run_id:8hex>_<seg_id:04>_<start_seq>.wav
+ * run_id 由调用方按"每次进程运行唯一"生成；若目标文件已存在则自动换名（_a1/_a2…），
+ * 因此不同运行之间不会互相覆盖，也不会有任何一次运行截断旧录音。 */
 typedef struct {
     FILE    *f;
     uint32_t data_bytes;
@@ -114,8 +119,9 @@ typedef struct {
     char     path[T4_SEG_PATH_MAX];
 } t4_wav;
 
-/* 返回 0 = 成功，-1 = 打不开/写头失败（不抛异常、不崩溃） */
-int t4_wav_open(t4_wav *w, const char *dir, long seg_id, uint32_t start_seq, int sample_rate);
+/* 返回 0 = 成功，-1 = 打不开/写头失败/路径过长（不抛异常、不崩溃） */
+int t4_wav_open(t4_wav *w, const char *dir, uint32_t run_id, long seg_id,
+                uint32_t start_seq, int sample_rate);
 int t4_wav_write(t4_wav *w, const int16_t *samples, int n);
 /* 关闭并回填 RIFF/data 长度；返回 0 = 全部成功，-1 = 有写入/回填失败 */
 int t4_wav_close(t4_wav *w);

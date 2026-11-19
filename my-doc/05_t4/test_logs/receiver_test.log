@@ -5,8 +5,8 @@ receiver_test.py
   ok   源文件存在: rx_core.c
   ok   找到 C 编译器
   cc      : C:\TDM-GCC-64\bin\gcc.EXE
-  tmpdir  : C:\Users\mac\AppData\Local\Temp\t4_rx_test_b39v3tuq
-  build: C:\TDM-GCC-64\bin\gcc.EXE -O2 -Wall -Wextra -o C:\Users\mac\AppData\Local\Temp\t4_rx_test_b39v3tuq\receiver_harness.exe D:\tgz02\OS\system\my-doc\05_t4\tests\receiver_harness.c D:\tgz02\OS\system\my-doc\05_t4\android\rx_core.c -lws2_32
+  tmpdir  : C:\Users\mac\AppData\Local\Temp\t4_rx_test_83e4nuvi
+  build: C:\TDM-GCC-64\bin\gcc.EXE -O2 -Wall -Wextra -o C:\Users\mac\AppData\Local\Temp\t4_rx_test_83e4nuvi\receiver_harness.exe D:\tgz02\OS\system\my-doc\05_t4\tests\receiver_harness.c D:\tgz02\OS\system\my-doc\05_t4\android\rx_core.c -lws2_32
   ok   harness 编译成功
   ok   harness 可执行文件存在
 
@@ -130,6 +130,7 @@ receiver_test.py
   ok   wav: stderr 为空
   ok   wav: 至少有一行 type=WAV
   ok   wav: 文件已生成
+  ok   wav: 文件名 = seg_<run_id>_<seg>_<seq>.wav
   ok   wav: frames=5
   ok   wav: data_bytes = 5 * 1280
   ok   wav: 文件大小 = 44 + PCM
@@ -147,5 +148,89 @@ receiver_test.py
   ok   wave: 读回字节数 = 5*1280
   ok   wave: 读回的 PCM 与写入的样本逐字节一致
 
-=== 124 passed, 0 failed ===
+[10] 序号语义：乱序不倒退高水位、重复单计、uint32 回绕正常
+  ok   seq-1..4: harness 退出码 0
+  ok   seq-1..4: stderr 为空
+  ok   seq-1..4: 至少有一行 type=STATS
+  ok   seq 1,2,3,4: missing=0
+  ok   seq 1,2,3,4: duplicate=0
+  ok   seq 1,2,3,4: reorder=0
+  ok   seq-1324: harness 退出码 0
+  ok   seq-1324: stderr 为空
+  ok   seq-1324: 至少有一行 type=STATS
+  ok   seq 1,3,2,4: first=1
+  ok   seq 1,3,2,4: last=4（高水位没有被乱序拉回）
+  ok   seq 1,3,2,4: reorder=1
+  ok   seq 1,3,2,4: missing=1（不是 2 —— 旧的 seq_last=2 写法会算成 2）
+  ok   seq 1,3,2,4: duplicate=0
+  ok   seq-1223: harness 退出码 0
+  ok   seq-1223: stderr 为空
+  ok   seq-1223: 至少有一行 type=STATS
+  ok   seq 1,2,2,3: duplicate=1
+  ok   seq 1,2,2,3: missing=0
+  ok   seq 1,2,2,3: reorder=0
+  ok   seq-134: harness 退出码 0
+  ok   seq-134: stderr 为空
+  ok   seq-134: 至少有一行 type=STATS
+  ok   seq 1,3,4: missing=1
+  ok   seq 1,3,4: reorder=0
+  ok   seq-wrap: harness 退出码 0
+  ok   seq-wrap: stderr 为空
+  ok   seq-wrap: 至少有一行 type=STATS
+  ok   wrap: first=0xFFFFFFFE
+  ok   wrap: last=1（回绕后继续前进）
+  ok   wrap: missing=0（无虚假缺口）
+  ok   wrap: reorder=0（回绕不被当成后退）
+  ok   wrap: duplicate=0
+  ok   seq-wrap-gap: harness 退出码 0
+  ok   seq-wrap-gap: stderr 为空
+  ok   seq-wrap-gap: 至少有一行 type=STATS
+  ok   wrap-gap: 0xFFFFFFFF -> 1 记 1 个缺口
+
+[11] SUMMARY 的 processed 与 accepted == processed + queue_drop
+  ok   processed: harness 退出码 0
+  ok   processed: stderr 为空
+  ok   processed: 至少有一行 type=STATS
+  ok   processed: 至少有一行 type=SUMMARY
+  ok   summary: 字段 processed 存在
+  ok   summary: processed 是整数
+  ok   summary: accepted=3（badcrc 不计）
+  ok   summary: processed=3
+  ok   summary: queue_drop=0
+  ok   summary: accepted == processed + queue_drop
+  ok   summary: queue_depth == 0
+  ok   processed-drop: harness 退出码 0
+  ok   processed-drop: stderr 为空
+  ok   processed-drop: 至少有一行 type=STATS
+  ok   processed-drop: 至少有一行 type=SUMMARY
+  ok   drop-case: accepted=150
+  ok   drop-case: queue_drop=22（cap 128）
+  ok   drop-case: processed=128
+  ok   drop-case: accepted == processed + queue_drop
+  ok   drop-case: queue_depth == 0
+
+[12] WAV 文件名带 run_id，不同运行不覆盖旧文件
+  ok   unique(aabbccdd): harness 退出码 0
+  ok   unique(aabbccdd): 至少有一行 type=WAV
+  ok   unique(aabbccdd): harness 退出码 0
+  ok   unique(aabbccdd): 至少有一行 type=WAV
+  ok   unique(11223344): harness 退出码 0
+  ok   unique(11223344): 至少有一行 type=WAV
+  ok   unique: 相同 run_id 第二次也不覆盖（换名 _a1）
+  ok   unique: 第二个文件名带 _a1 后缀
+  ok   unique: 不同 run_id 文件名不同
+  ok   unique: 名称含 run_id
+  ok   unique: 第二个 run_id 生效
+  ok   unique: 文件存在 seg_aabbccdd_0003_42.wav
+  ok   unique: 大小正确 seg_aabbccdd_0003_42.wav
+  ok   unique: 可读回 2 帧 seg_aabbccdd_0003_42.wav
+  ok   unique: 文件存在 seg_aabbccdd_0003_42_a1.wav
+  ok   unique: 大小正确 seg_aabbccdd_0003_42_a1.wav
+  ok   unique: 可读回 2 帧 seg_aabbccdd_0003_42_a1.wav
+  ok   unique: 文件存在 seg_11223344_0003_42.wav
+  ok   unique: 大小正确 seg_11223344_0003_42.wav
+  ok   unique: 可读回 2 帧 seg_11223344_0003_42.wav
+  ok   unique: 三个文件内容一致（都没有被截断）
+
+=== 203 passed, 0 failed ===
 note: 本测试覆盖可移植的协议/队列/WAV 逻辑；AF_UNIX DGRAM 的真实收发由真机 t4_receiver 验证。

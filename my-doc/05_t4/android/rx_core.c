@@ -65,14 +65,24 @@ rx_result rx_classify(const uint8_t *buf, int n, rx_stats *st, tgz2_hdr *hdr)
 
     if (!st->have_seq) {
         st->seq_first = h.seq;
+        st->seq_last = h.seq;
         st->have_seq = 1;
     } else {
-        int32_t d = (int32_t)(h.seq - st->seq_last);
-        if (d == 0) st->duplicate++;
-        else if (d > 1) st->missing += (uint64_t)(d - 1);
-        else if (d < 0) st->reorder++;
+        /* 无符号差：天然处理 uint32 回绕（0xFFFFFFFF -> 0 的差是 1）。
+         * 只有"向前"的帧才推进高水位：
+         *   d == 0        重复帧 -> duplicate，不改基准
+         *   1 <= d < 2^31 前进    -> missing += d-1，seq_last 前移
+         *   d >= 2^31     回退    -> reorder，**不**把基准倒退（否则后续正常帧会被重复计缺口） */
+        uint32_t d = h.seq - st->seq_last;
+        if (d == 0) {
+            st->duplicate++;
+        } else if (d < 0x80000000u) {
+            if (d > 1) st->missing += (uint64_t)(d - 1);
+            st->seq_last = h.seq;
+        } else {
+            st->reorder++;
+        }
     }
-    st->seq_last = h.seq;
     st->accepted++;
 
     if (hdr != NULL) *hdr = h;
@@ -170,6 +180,7 @@ void json_write_string_or_null(FILE *f, const char *s)
 }
 
 void rx_write_summary(FILE *f, const rx_stats *st, const rx_queue *q,
+                      uint64_t processed,
                       uint64_t vad_speech_frames, uint64_t segments,
                       uint64_t segment_write_errors, double dur_s,
                       double noise_rms, int rcvbuf_req, int rcvbuf_eff)
@@ -178,6 +189,7 @@ void rx_write_summary(FILE *f, const rx_stats *st, const rx_queue *q,
     fputs("{\"type\":\"SUMMARY\",\"received\":", f);
     fprintf(f, "%llu", (unsigned long long)st->received);
     fprintf(f, ",\"accepted\":%llu", (unsigned long long)st->accepted);
+    fprintf(f, ",\"processed\":%llu", (unsigned long long)processed);
     fprintf(f, ",\"bad_len\":%llu", (unsigned long long)st->bad_len);
     fprintf(f, ",\"bad_crc\":%llu", (unsigned long long)st->bad_crc);
     fprintf(f, ",\"missing\":%llu", (unsigned long long)st->missing);
@@ -219,21 +231,41 @@ static void put_u16le(uint8_t *p, uint16_t v)
     p[1] = (uint8_t)((v >> 8) & 0xFF);
 }
 
-int t4_wav_open(t4_wav *w, const char *dir, long seg_id, uint32_t start_seq, int sample_rate)
+int t4_wav_open(t4_wav *w, const char *dir, uint32_t run_id, long seg_id,
+                uint32_t start_seq, int sample_rate)
 {
     uint8_t hdr[44];
     uint32_t byte_rate;
-    int n;
+    int n, attempt;
 
     if (w == NULL || dir == NULL || sample_rate <= 0) return -1;
     memset(w, 0, sizeof(*w));
 
-    n = snprintf(w->path, sizeof(w->path), "%s/seg_%04ld_%u.wav",
-                 dir, seg_id, (unsigned)start_seq);
-    if (n < 0 || (size_t)n >= sizeof(w->path)) { w->path[0] = '\0'; return -1; }
+    /* 文件名里带 run_id（每次进程运行不同），并且**绝不覆盖已有文件**：
+     * 万一 run_id/片段号/起始序号撞车，就换一个带 _aN 后缀的名字重试。 */
+    w->f = NULL;
+    for (attempt = 0; attempt < 1000; attempt++) {
+        FILE *probe;
+        if (attempt == 0) {
+            n = snprintf(w->path, sizeof(w->path), "%s/seg_%08x_%04ld_%u.wav",
+                         dir, (unsigned)run_id, seg_id, (unsigned)start_seq);
+        } else {
+            n = snprintf(w->path, sizeof(w->path), "%s/seg_%08x_%04ld_%u_a%d.wav",
+                         dir, (unsigned)run_id, seg_id, (unsigned)start_seq, attempt);
+        }
+        if (n < 0 || (size_t)n >= sizeof(w->path)) { w->path[0] = '\0'; return -1; }
 
-    w->f = fopen(w->path, "wb");
-    if (w->f == NULL) { w->path[0] = '\0'; return -1; }
+        probe = fopen(w->path, "rb");          /* 已存在 -> 换名，不覆盖旧录音 */
+        if (probe != NULL) {
+            fclose(probe);
+            continue;
+        }
+        w->f = fopen(w->path, "wb");
+        if (w->f != NULL) break;
+        w->path[0] = '\0';                      /* 目录不可写等：按原错误处理 */
+        return -1;
+    }
+    if (w->f == NULL) { w->path[0] = '\0'; return -1; }   /* 1000 次都撞名（不该发生） */
 
     byte_rate = (uint32_t)sample_rate * 2u;         /* 单声道 16-bit */
     memcpy(hdr + 0, "RIFF", 4);

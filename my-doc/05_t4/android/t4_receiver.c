@@ -76,6 +76,39 @@ typedef struct {
 static t4_ctx    g_ctx;
 static vad_t     g_vad;
 static seg_state g_seg;
+static uint64_t  g_processed;              /* 实际送入 VAD 的帧数（处理线程写，main join 后读） */
+static uint32_t  g_run_id;                 /* 本次进程运行的唯一标识（进 WAV 文件名） */
+
+/* 第一轮基线参数：任务书给的值，所有项都可由 CLI 覆盖 */
+void t4_default_vad_config(vad_config *cfg)
+{
+    if (cfg == NULL) return;
+    cfg->sample_rate     = TGZ2_RATE;
+    cfg->frame_samples   = TGZ2_SPF;
+    cfg->min_start_rms   = 180.0;
+    cfg->start_ratio     = 3.0;
+    cfg->end_ratio       = 0.6;
+    cfg->calibration_ms  = 1000;
+    cfg->start_frames    = 2;
+    cfg->hangover_ms     = 600;
+    cfg->pre_roll_ms     = 200;
+    cfg->max_segment_ms  = 15000;
+    cfg->noise_alpha     = 0.05;
+}
+
+/* run_id：PID + 实时时钟纳秒混合，保证不同进程运行不会撞车（同名也不会覆盖旧文件） */
+static uint32_t make_run_id(void)
+{
+    struct timespec ts;
+    uint32_t pid = (uint32_t)getpid();
+    uint32_t sec = 0, ns = 0;
+
+    if (clock_gettime(CLOCK_REALTIME, &ts) == 0) {
+        sec = (uint32_t)ts.tv_sec;
+        ns = (uint32_t)ts.tv_nsec;
+    }
+    return (uint32_t)((pid * 2654435761u) ^ (sec << 8) ^ ns ^ 0xA5A5u);
+}
 
 static void now_mono(struct timespec *ts)
 {
@@ -103,7 +136,7 @@ static void seg_on_open(void *ud, long segment_id, uint32_t start_seq, uint64_t 
     s->start_ts = start_ts;
     s->last_ts = start_ts;
     s->active = 1;
-    if (t4_wav_open(&s->wav, s->out_dir, segment_id, start_seq, TGZ2_RATE) != 0) {
+    if (t4_wav_open(&s->wav, s->out_dir, g_run_id, segment_id, start_seq, TGZ2_RATE) != 0) {
         s->write_errors++;
         s->active = 0;                      /* 打开失败：本片段不写盘，但继续接收/检测 */
         fprintf(stderr, "[!] segment %ld: wav open failed in %s (errno=%d)\n",
@@ -217,7 +250,12 @@ static void *proc_thread(void *arg)
     sink.on_frame = seg_on_frame;
     sink.on_close = seg_on_close;
 
-    while (!g_stop) {
+    /*
+     * 退出语义（P1 修复）：收到停止标志后**不再等待新数据**，但必须把已经成功入队的帧
+     * 全部处理完才允许退出。因此循环条件是 for(;;)，只有"g_stop 且队列为空"才 break。
+     * 绝不在停止时清空队列或丢弃剩余帧。
+     */
+    for (;;) {
         rx_frame f;
         int got = 0;
 
@@ -231,15 +269,19 @@ static void *proc_thread(void *arg)
         }
         if (ctx->q.count > 0) {
             got = rx_queue_pop(&ctx->q, &f);
+        } else if (g_stop) {
+            pthread_mutex_unlock(&ctx->mu);
+            break;                            /* 停止且队列已空：可以退出了 */
         }
         pthread_mutex_unlock(&ctx->mu);
 
         if (got) {
             vad_feed(&g_vad, f.samples, TGZ2_SPF, f.seq, f.ts_us, &sink);
+            g_processed++;
         }
     }
 
-    /* 退出：正在说话的片段以 shutdown 原因安全收尾 */
+    /* 只有队列排空之后才收尾：正在说话的片段以 shutdown 原因安全关闭 */
     vad_flush(&g_vad, &sink);
     return NULL;
 }
@@ -296,17 +338,8 @@ int main(int argc, char **argv)
     char err[160];
 
     /* 默认参数：任务书给的第一轮基线 */
-    cfg.sample_rate     = TGZ2_RATE;
-    cfg.frame_samples   = TGZ2_SPF;
-    cfg.min_start_rms   = 180.0;
-    cfg.start_ratio     = 3.0;
-    cfg.end_ratio       = 0.6;
-    cfg.calibration_ms  = 1000;
-    cfg.start_frames    = 2;
-    cfg.hangover_ms     = 600;
-    cfg.pre_roll_ms     = 200;
-    cfg.max_segment_ms  = 15000;
-    cfg.noise_alpha     = 0.05;
+    t4_default_vad_config(&cfg);
+    g_run_id = make_run_id();
 
     g_ctx.rcvbuf_req = 262144;
     if (rx_queue_init(&g_ctx.q, T4_QUEUE_CAP_DEFAULT) != 0) {
@@ -469,14 +502,14 @@ int main(int argc, char **argv)
     json_write_string(stdout, abstract_name);
     printf(",\"out\":");
     json_write_string(stdout, out_dir);
-    printf(",\"secs\":%.3f,\"frame_ms\":%d,\"frame_samples\":%d,\"sample_rate\":%d,"
+    printf(",\"secs\":%.3f,\"run_id\":%u,\"frame_ms\":%d,\"frame_samples\":%d,\"sample_rate\":%d,"
            "\"channels\":1,\"bits\":16,\"min_rms\":%.3f,\"start_ratio\":%.3f,"
            "\"end_ratio\":%.3f,\"calibration_ms\":%d,\"start_frames\":%d,"
            "\"hangover_ms\":%d,\"pre_roll_ms\":%d,\"max_segment_ms\":%d,"
            "\"noise_alpha\":%.3f,\"queue_cap\":%d,\"rcvbuf_req\":%d,"
            "\"vad_calib_frames\":%d,\"vad_hangover_frames\":%d,\"vad_pre_roll_frames\":%d,"
            "\"vad_max_segment_frames\":%d}\n",
-           secs, g_vad.frame_ms, cfg.frame_samples, cfg.sample_rate,
+           secs, g_run_id, g_vad.frame_ms, cfg.frame_samples, cfg.sample_rate,
            cfg.min_start_rms, cfg.start_ratio, cfg.end_ratio, cfg.calibration_ms,
            cfg.start_frames, cfg.hangover_ms, cfg.pre_roll_ms, cfg.max_segment_ms,
            cfg.noise_alpha, g_ctx.q.cap, g_ctx.rcvbuf_req,
@@ -535,7 +568,7 @@ int main(int argc, char **argv)
 
     now_mono(&t1);
     pthread_mutex_lock(&g_ctx.mu);
-    rx_write_summary(stdout, &g_ctx.stats, &g_ctx.q,
+    rx_write_summary(stdout, &g_ctx.stats, &g_ctx.q, g_processed,
                      (uint64_t)g_vad.speech_frames, g_seg.segments, g_seg.write_errors,
                      ts_diff_s(&t1, &t0), vad_noise_floor(&g_vad),
                      g_ctx.rcvbuf_req, g_ctx.rcvbuf_eff);

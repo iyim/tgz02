@@ -82,14 +82,25 @@ t4_receiver \
     rms_avg, rms_max, end_reason(silence|max_duration|shutdown),
     saved, written_frames, file, start_ts_us, end_ts_us
 {"type":"SUMMARY", ...}  退出统计，必需字段：
-    received, accepted, bad_len, bad_crc, missing, duplicate, reorder,
+    received, accepted, processed, bad_len, bad_crc, missing, duplicate, reorder,
     queue_drop, queue_high_watermark, vad_speech_frames, segments, segment_write_errors
     （另附 bad_magic/bad_ver/bad_hdr/bad_param/epoch_switches/epoch/seq_first/seq_last/
       queue_cap/queue_depth/noise_rms/dur_s/rcvbuf_req/rcvbuf_eff）
+
+退出时的不变式（正常退出应恒成立）：
+    accepted == processed + queue_drop        processed = 实际送入 VAD 的帧数
+    queue_depth == 0                          停摆时队列已被排空
 ```
 
-片段文件：`<out>/seg_<4 位编号>_<start_seq>.wav`，16 kHz / 单声道 / 16-bit PCM，
-WAV 头在关闭时回填 RIFF 与 data 长度（与实际 PCM 一致）。
+**退出语义（T4-02 修复）**：收到 `--secs` 时限或 SIGINT/SIGTERM 后，处理线程不再等待新数据，
+但会把队列中**已经入队的帧全部处理完**才 `vad_flush()` 收尾；任何情况下都不清空队列、不丢剩余帧。
+
+片段文件：`<out>/seg_<run_id:8 位十六进制>_<4 位片段编号>_<start_seq>.wav`，
+16 kHz / 单声道 / 16-bit PCM，WAV 头在关闭时回填 RIFF 与 data 长度（与实际 PCM 一致）。
+
+- `run_id` 在进程启动时由 PID + 实时时钟纳秒混合生成（`CONFIG` 里能看到），**不同运行不会同名**；
+- 即使撞名（例如同一 run_id 重复打开同一片段号），也会自动改用 `…_a1.wav` / `…_a2.wav`，
+  **绝不截断覆盖已有录音**。
 
 ## 本机测试（Windows / GCC，可重复）
 
@@ -100,8 +111,15 @@ cd D:\tgz02\OS\system\my-doc\05_t4
 gcc -O2 -Wall -Wextra -o tests\vad_unit_test.exe tests\vad_unit_test.c android\vad_energy.c -lm
 .\tests\vad_unit_test.exe
 
-# 2) 接收端协议/队列/WAV 测试（自动编译 harness）
+# 2) 接收端协议/队列/WAV/序号语义 测试（自动编译 harness）
 python tests\receiver_test.py
+
+# 2b) 退出排空测试（pthread，Windows 没有 pthread，只能 Linux/WSL 或 Android 跑）
+#     grep -E 'ok|FAIL|passed' 后应看到 18 passed, 0 failed
+$cc = "$env:NDK\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd"
+& $cc -O2 -Wall -Wextra -static -o android\out\drain_test tests\drain_test.c android\rx_core.c android\vad_energy.c -lm
+adb push android/out/drain_test /data/local/tmp/t4/drain_test
+adb shell "chmod 755 /data/local/tmp/t4/drain_test; cd /data/local/tmp/t4 && ./drain_test"
 
 # 3) 语法检查
 python -m py_compile tests\receiver_test.py
@@ -167,6 +185,20 @@ python ..\03_uds_test\verify_capture.py <capture.cap>   # 如需核对同一轮�
 **必须明确**：场景 B（真人连续说话）与 C（句中短暂停顿）**必须由人实际对着设备说话**，
 不能用合成音频、不能用本机 WAV 回放冒充。若无人执行，报告中必须写"真机真人测试未完成"。
 
+## 统计语义（重要）
+
+| 字段 | 语义 |
+|---|---|
+| `accepted` | 协议校验成功的帧数 |
+| `queue_drop` | 校验成功但队列满而被**主动丢弃**的帧数（drop-new，保旧丢新） |
+| `processed` | 实际从队列取出并送入 VAD 的帧数 |
+| `missing` | **观察到的序号缺口累计**（按 `seq` 高水位算出），不是"最终确认永久丢失的帧"；`epoch` 切换会重置判断 |
+| `duplicate` / `reorder` | 重复帧 / 回退帧（回退**不会**让序号高水位倒退，因此不会连锁产生虚假缺口） |
+| `queue_depth` | 退出时的队列深度，正常应恒为 0（排空后才退出） |
+
+序号按 `uint32` 无符号差判定：`0` 重复、`1..2^31-1` 前进、`>=2^31` 视为回退。
+`0xFFFFFFFF -> 0` 的差是 1，因此**回绕不会产生虚假缺口**。
+
 ## 判读要点
 
 | 现象 | 含义 |
@@ -185,3 +217,5 @@ python ..\03_uds_test\verify_capture.py <capture.cap>   # 如需核对同一轮�
 - 校准窗口（默认第 1 秒）必须安静，否则噪声底会被说话污染。
 - 单进程两线程；接收侧每帧做一次 FNV-1a（1280 B），处理侧写 WAV 为同步 fwrite。
 - 队列满采用 drop-new（保留旧帧），片段内部可能出现序号缺口，需对照 `queue_drop` 判读。
+- `missing` 是"观察到的缺口"，若发送端重启换了 `epoch` 会被重置；它不是端到端丢帧的最终结论。
+- `drain_test.c` 依赖 pthread，只能在 Linux/WSL 或 Android 上执行；Windows 本机不跑（不得当作已验证）。
