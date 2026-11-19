@@ -1,0 +1,6 @@
+out/
+tests/out/
+tests/_t5_test/
+_obj/
+*.o
+*.exe
