@@ -1111,6 +1111,27 @@ static void test_jsonl_strict(void)
            "T15.11 原始识别文本必须完整保留");
     }
 
+    /* T15.12：拒绝 JSON 对象结束后的非法尾随字符 */
+    {
+        size_t n = strlen(line);
+
+        if (n > 0 && line[n - 1] == '\n') {
+            snprintf(buf, sizeof(buf),
+                     "%.*sgarbage\n",
+                     (int)(n - 1), line);
+
+            replay_with(work, buf, &lines, &bad, &sink);
+
+            ok_eq_ll((long long)lines, 0,
+                     "T15.12 JSON 对象后存在非法字符 -> 拒绝");
+
+            ok_eq_ll((long long)bad, 1,
+                     "T15.12 非法尾随字符计入 bad");
+        } else {
+            ok(0, "T15.12 测试前提：JSON 行以换行符结束");
+        }
+    }
+
     /* 10) 损坏记录之后的有效记录仍能恢复 */
     snprintf(buf, sizeof(buf), "{\"broken\":1\n%s", line);
     replay_with(work, buf, &lines, &bad, &sink);

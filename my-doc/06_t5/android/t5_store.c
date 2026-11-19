@@ -182,6 +182,32 @@ static const char *json_skip_string(const char *p)
 }
 
 /*
+ * 跳过本项目 JSONL 序列化器产生的一个值。
+ * 当前格式只包含字符串和整数，不接受对象、数组或其他类型。
+ */
+static const char *json_skip_value(const char *p)
+{
+    char *endp = NULL;
+
+    if (p == NULL)
+        return NULL;
+
+    if (*p == '"')
+        return json_skip_string(p);
+
+    errno = 0;
+    (void)strtoll(p, &endp, 10);
+
+    if (endp == p || errno == ERANGE)
+        return NULL;
+
+    if (*endp != ',' && *endp != '}')
+        return NULL;
+
+    return endp;
+}
+
+/*
  * 只查找 JSON 顶层对象字段。
  *
  * 不会匹配字符串内容中的伪字段，例如：
@@ -189,9 +215,22 @@ static const char *json_skip_string(const char *p)
  *
  * 返回值直接指向字段值，不再指向字段名前面的引号。
  */
+/*
+ * 只查找 JSON 顶层对象字段。
+ *
+ * 要求：
+ * 1. 不匹配字符串内容中的伪字段。
+ * 2. 检查整个 JSON 对象，而不是找到字段就提前返回。
+ * 3. 拒绝重复字段。
+ * 4. 拒绝尾随非法字符。
+ * 5. 只接受本模块序列化器产生的字符串和整数值。
+ *
+ * 返回值直接指向字段值。
+ */
 static const char *find_key(const char *line, const char *key)
 {
     const char *p;
+    const char *found = NULL;
     size_t key_len;
 
     if (line == NULL || key == NULL)
@@ -209,11 +248,13 @@ static const char *find_key(const char *line, const char *key)
         const char *key_start;
         const char *key_end;
         const char *value;
+        const char *value_end;
         size_t current_len;
 
         p = json_skip_ws(p);
 
-        if (*p == '}')
+        /* 空对象或逗号后直接结束，均不接受。 */
+        if (*p == '}' || *p == '\0')
             return NULL;
 
         if (*p != '"')
@@ -236,31 +277,37 @@ static const char *find_key(const char *line, const char *key)
 
         if (current_len == key_len &&
             memcmp(key_start, key, key_len) == 0) {
-            return value;
-        }
-
-        /* 跳过当前字段的值。当前 JSONL 格式是扁平对象。 */
-        if (*value == '"') {
-            p = json_skip_string(value);
-
-            if (p == NULL)
+            /* 重复字段直接拒绝，避免字段覆盖歧义。 */
+            if (found != NULL)
                 return NULL;
-        } else {
-            p = value;
 
-            while (*p != '\0' && *p != ',' && *p != '}')
-                p++;
+            found = value;
         }
 
-        p = json_skip_ws(p);
+        /* 无论是否找到目标字段，都必须检查当前值。 */
+        value_end = json_skip_value(value);
+
+        if (value_end == NULL)
+            return NULL;
+
+        p = json_skip_ws(value_end);
 
         if (*p == ',') {
             p++;
             continue;
         }
 
-        if (*p == '}')
-            return NULL;
+        if (*p == '}') {
+            p++;
+
+            /* 对象结束后只能有空白字符。 */
+            p = json_skip_ws(p);
+
+            if (*p != '\0')
+                return NULL;
+
+            return found;
+        }
 
         return NULL;
     }
