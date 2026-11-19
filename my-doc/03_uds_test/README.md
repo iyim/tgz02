@@ -147,7 +147,7 @@ T3 实测与统计见 `../04_device_t3_uds_report.md`；驱动脚本 `../04_devi
 
 | 文件 | 作用 |
 |---|---|
-| `tests/bridge_unit_test.js` | 把 `pcm_bridge_draft.js` **原样**加载进假 Frida 环境，覆盖任务书 §5 的 18 项：整帧复制、lane0 抽取、TGZ2 v2 头全字段、`ts_us/epoch/seq`、flags 无 SYNTHETIC、JS/C FNV 对拍、sendto 成功 / EAGAIN / ENOBUFS / 对端消失重连、stale、时钟失败、环满、多生产者线程（单 / 双 / 5 TID 交替 + 重入拦截）、stop 幂等、初始化回滚、DRY_RUN 无 socket、Hook 纯函数性。**240 断言** |
+| `tests/bridge_unit_test.js` | 把 `pcm_bridge_draft.js` **原样**加载进假 Frida 环境，覆盖任务书 §5 的 18 项：整帧复制、lane0 抽取、TGZ2 v2 头全字段、`ts_us/epoch/seq`、flags 无 SYNTHETIC、JS/C FNV 对拍、sendto 成功 / EAGAIN / ENOBUFS / 对端消失重连、stale、时钟失败、环满、多生产者线程（单 / 双 / 5 TID 交替 + 重入拦截）、stop 幂等、初始化回滚、DRY_RUN 无 socket、Hook 纯函数性；T3-09 再加 `clock_gettime` 的 `scheduling:'exclusive'`（选项记录、调用链审计、两个 TID 在放锁窗口重叠的丢帧对照、运行时拒绝该选项时必须停止）。**300 断言** |
 | `tests_c/fnv_golden.c` | 用真正的 `tgz2_fnv1a()` 生成 JS/C 对拍金标准常量（`0x811c9dc5 / 0xe40c292c / 0x1a47e90b / 0xa7ce7505 / 0x09d6a1c5 / 0xee980ac9`） |
 | `tests/probe_detach_test.js` | `thread_probe.js` 的卸载验证：到点 detach、幂等、安装失败不留定时器、统计口径。**43 断言** |
 | `crc_crosscheck/` | JS/C 的 FNV-1a 逐字节一致（18 组，含真实 ch0）；反面对照证明 `Math.imul` 必需 |
@@ -164,8 +164,10 @@ cd crc_crosscheck; python run_crosscheck.py
 
 - 本机只能用 `stream`；`--proto dgram` 只能在 Linux/Android 上测（Windows 内核不支持 AF_UNIX DGRAM）。
 - 原生负载是 `seq` 决定的伪随机序列，不是真语音；真语音路径已由第二阶段 `pcm_talk.raw` 验证。
-- 只有 1 个生产者 / 1 个消费者。真机实测 `producerTid` 恒为 19873（单生产者），若将来出现第二个生产者，
-  脚本会自动禁用旁路并记录 `multi-producer:<tid>`。
+- 真机实测原厂管线会从**不同 TID** 调用 `feed`（19873 / 14171），因此 T3-08 起不再按"单生产者"处理：
+  TID 只做统计（`tidCount` / `otherTidCalls` / `tids`），不触发禁用。SPSC 的槽位纪律靠"回调互斥"保证，
+  而回调互斥的前提是 Hook 内不释放脚本锁 —— T3-09 把 `clock_gettime` 改成 `scheduling:'exclusive'` 之后才真正成立
+  （详见 `../03_pcm_bridge_t3_09_clock_exclusive.md`）。
 - 线程序号 `seq` 在"发送尝试"时分配：`sendDrop` 会消耗一个 `seq`，接收端表现为缺口；
   `stale` / `ringDrop` / `noPeerDrop` 不消耗 `seq`。因此 `接收端 missing == sendDrop + 内核丢包`。
 - 帧头 `ts_us` 是"进入 Hook 并拿到 JS 锁之后"的时刻，受 Frida JS 锁排队影响会成对聚集

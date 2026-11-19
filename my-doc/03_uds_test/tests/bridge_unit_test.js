@@ -19,11 +19,14 @@
  *   T11 过期帧（>500 ms）丢弃且不发送
  *   T12 clock_gettime 失败丢帧
  *   T13 环满丢帧
- *   T14 出现第二个生产线程 -> 禁用旁路
+ *   T14 多生产者线程：TID 变化不禁用，帧照常入环（T3-08）；单/双/5 TID + 真重入拦截
  *   T15 stop 幂等
  *   T16 初始化中途失败 -> 资源回滚
  *   T17 DRY_RUN 不建 socket / 不 sendto
  *   T18 Hook 回调内不做 socket / CRC / lane0 抽取 / 动态分配
+ *   T19 clock_gettime exclusive 调度（T3-09）：NativeFunction 选项、调用链审计、
+ *       两个 TID 在放锁窗口重叠时是否丢帧（含 cooperative 负对照）、
+ *       运行时拒绝该选项时必须停止而不是静默降级
  *
  * 不连设备、不连 frida-server：node tests/bridge_unit_test.js
  */
@@ -128,9 +131,66 @@ function makeEnv(opts) {
     moduleLoaded: opts.moduleLoaded !== false,
     symbolFound: opts.symbolFound !== false,
     feedOffset: opts.feedOffset === undefined ? FEED_OFF : opts.feedOffset,
-    sigBytes: opts.sigBytes || SIG
+    sigBytes: opts.sigBytes || SIG,
+    /* T3-09 调度相关开关 */
+    rejectScheduling: !!opts.rejectScheduling,        /* 老 Frida：拒绝 scheduling 选项 */
+    cooperativeOverride: !!opts.cooperativeOverride    /* 负对照：忽略 scheduling，全部 cooperative */
   };
   env.advanceUs = function (d) { env.us += d; };
+
+  /* ---------------- T3-09：假脚本锁（Frida JS 运行时的锁模型） ----------------
+   * 事实：Frida 的 JS 运行时单线程，凡是执行 JS 的线程都持有"脚本锁"。
+   * 默认 NativeFunction 是 cooperative —— 调用原生函数期间**释放**脚本锁，
+   * 别的原生线程可以在那个窗口里抢到锁进入 JS；exclusive 则继续持锁。
+   *
+   * 这个模型不预判哪段代码是"并发"的：谁想进入 Hook 回调就调 env.enter()，
+   * 锁被别的 TID 占着就排队（真机上就是阻塞在取锁上），锁一释放就按序恢复。
+   * 因此"两个原生线程的回调是否重叠"完全由被测代码里的调度方式决定。
+   */
+  env.jsLock = { holder: null };   /* 持锁线程 TID；null = 无人持锁 */
+  env.lockDepth = 0;
+  env.lockEvents = [];             /* {ev:'release'|'reacquire', name, tid} */
+  env.nativeTrace = [];            /* 每次 NativeFunction 调用 {name,sched,tid,holder} */
+  env.nativeFns = [];              /* 每次 NativeFunction 创建 {name,ret,args,opts,sched} */
+  env.foreign = [];                /* 已到达但阻塞在脚本锁上的原生线程任务 */
+  env.lockContended = 0;
+  env.pumped = 0;
+  env.pumping = false;
+
+  /* 锁空闲时按序放行排队的原生线程 */
+  env.pump = function () {
+    if (env.pumping) return;
+    env.pumping = true;
+    try {
+      let guard = 0;
+      while (env.foreign.length && env.jsLock.holder === null && guard++ < 64) {
+        const task = env.foreign.shift();
+        const saved = env.tid;
+        env.tid = task.tid;
+        env.pumped++;
+        try { task.run(); } finally { env.tid = saved; }
+      }
+    } finally { env.pumping = false; }
+  };
+
+  /* 原生线程进入 JS 回调：先拿脚本锁 */
+  env.enter = function (fn, args) {
+    const tid = env.tid;
+    const held = env.jsLock.holder;
+    if (held !== null && held !== tid) {
+      env.lockContended++;
+      env.foreign.push({ tid: tid, run: () => env.enter(fn, args) });
+      return undefined;
+    }
+    const outermost = (held === null);
+    if (outermost) env.jsLock.holder = tid;
+    env.lockDepth++;
+    try { return fn.call(null, args); }
+    finally {
+      env.lockDepth--;
+      if (outermost) env.jsLock.holder = null;
+    }
+  };
 
   const libcImpl = {
     socket: () => {
@@ -194,7 +254,12 @@ function makeEnv(opts) {
         if (env.attachThrows) throw new Error('attach failed (injected)');
         if (env.invalidListener === 'null') return null;
         if (env.invalidListener === 'empty') return {};
-        env.hooks.push(cbs);
+        /* T3-09：进入回调必须先拿到脚本锁（真 Frida 里由运行时完成） */
+        const hook = {
+          onLeave: cbs.onLeave,
+          onEnter: (args) => env.enter(cbs.onEnter, args)
+        };
+        env.hooks.push(hook);
         return {
           detach() {
             env.detachCount++;
@@ -203,10 +268,49 @@ function makeEnv(opts) {
         };
       }
     },
-    /* NativeFunction(fnPtr, ret, args) -> 调用对应的 libc 桩 */
-    NativeFunction: function (fnPtr) {
+    /* NativeFunction(fnPtr, ret, args[, abiOrOptions]) -> 调用对应的 libc 桩
+     * T3-09：解析第 4 个参数里的 scheduling，并把 cooperative 的"放锁窗口"建模出来。 */
+    NativeFunction: function (fnPtr, ret, argTypes, abiOrOptions) {
       const name = fnPtr.libcName || fnPtr.name;
-      return function () { return libcImpl[name].apply(null, arguments); };
+      let opts = null;
+      let sched = 'cooperative';
+      if (typeof abiOrOptions === 'string') {
+        opts = { abi: abiOrOptions };
+      } else if (abiOrOptions && typeof abiOrOptions === 'object') {
+        opts = abiOrOptions;
+        if (opts.scheduling !== undefined) {
+          /* 老版本 Frida 会直接拒绝未知选项 */
+          if (env.rejectScheduling) throw new Error('invalid option: scheduling (injected)');
+          if (opts.scheduling !== 'cooperative' && opts.scheduling !== 'exclusive') {
+            throw new Error('invalid scheduling: ' + opts.scheduling);
+          }
+          sched = opts.scheduling;
+        }
+      }
+      /* 负对照：模拟"运行时接受但忽略 scheduling"的退化情况 */
+      if (env.cooperativeOverride) sched = 'cooperative';
+      env.nativeFns.push({ name: name, ret: ret, args: argTypes, opts: opts, sched: sched });
+
+      const impl = libcImpl[name];
+      if (!impl) throw new Error('unbound libc symbol: ' + name);
+      return function () {
+        const holderAtCall = env.jsLock.holder;
+        env.nativeTrace.push({ name: name, sched: sched, tid: env.tid, holder: holderAtCall });
+        if (sched === 'exclusive') {
+          /* 持锁执行：别的原生线程进不来 */
+          return impl.apply(null, arguments);
+        }
+        /* cooperative：释放脚本锁 -> 排队的原生线程可以在窗口内进入 JS */
+        env.jsLock.holder = null;
+        env.lockEvents.push({ ev: 'release', name: name, tid: env.tid });
+        try {
+          env.pump();
+          return impl.apply(null, arguments);
+        } finally {
+          env.jsLock.holder = holderAtCall;
+          env.lockEvents.push({ ev: 'reacquire', name: name, tid: env.tid });
+        }
+      };
     },
     ptr: (v) => new Ptr(v, 'literal'),
     send: (o) => { env.sends.push(o); },
@@ -270,12 +374,28 @@ function lane0Ref() {
   return out;
 }
 
-/* 把 5120 B 的 PCM 挂成一个可被 Memory.copy 读取的指针 */
-function feed(env, pcm, len) {
+/* 把 5120 B 的 PCM 挂成一个可被 Memory.copy 读取的指针
+ * tid 给定时先切到该线程（模拟"现在是这个线程在跑"） */
+function feed(env, pcm, len, tid) {
+  const hook = env.hooks[0];
+  if (!hook) return false;
+  if (tid !== undefined) env.tid = tid;
+  feedInner(env, pcm, len);
+  /* 回调返回 -> 脚本锁释放 -> 阻塞在锁上的其它原生线程这时才恢复 */
+  env.pump();
+  return true;
+}
+function feedInner(env, pcm, len) {
   const hook = env.hooks[0];
   if (!hook) return false;
   hook.onEnter([null, null, new Mem(pcm, 0), { toInt32: () => (len === undefined ? 5120 : len) }]);
   return true;
+}
+/* 让 tid 这个原生线程"已经在 feed 里、阻塞在脚本锁上"（T3-09 并发窗口） */
+function queueFeed(env, pcm, tid, len) {
+  /* 这个线程确实在等锁：真机上它阻塞在取脚本锁上，直到持锁者放锁/退出回调 */
+  env.lockContended++;
+  env.foreign.push({ tid: tid, run: () => feedInner(env, pcm, len) });
 }
 function tick(env, which) { env.timers.interval[which === undefined ? 0 : which](); }
 
@@ -676,6 +796,166 @@ function testHookReentry() {
   ok(st.pendingEq, '不变式仍成立');
 }
 
+/* ================================================================= T19 */
+/* 第 k 帧：lane0 = i - 320 + k*1000（每帧不同，便于逐帧核对载荷） */
+function makePcmAt(k) {
+  const buf = Buffer.alloc(5120);
+  for (let i = 0; i < 640; i++) {
+    buf.writeInt16LE(i - 320 + k * 1000, i * 8);
+    buf.writeInt16LE(999, i * 8 + 2);
+    buf.writeInt16LE(-999, i * 8 + 4);
+    buf.writeInt16LE(i % 7, i * 8 + 6);
+  }
+  return buf;
+}
+function lane0At(k) {
+  const out = Buffer.alloc(1280);
+  for (let i = 0; i < 640; i++) out.writeInt16LE(i - 320 + k * 1000, i * 2);
+  return out;
+}
+
+/* 6 个原生生产者帧同时在生产：线程 A(19873) 先拿到脚本锁进入回调，
+ * 另外 5 帧来自 14171/19873 交替的线程，全部阻塞在锁上。
+ * A 在回调里调用 clock_gettime —— 其调度方式决定这 5 个线程能否在窗口内挤进来。 */
+function runConcurrentBurst(env, n) {
+  const tids = [14171, 19873];
+  for (let k = 1; k < n; k++) queueFeed(env, makePcmAt(k), tids[k % 2]);
+  feed(env, makePcmAt(0), 5120, 19873);
+}
+
+/* 去掉注释，只留可执行代码（注释里提到 scheduling 是正常的） */
+function stripComments(s) {
+  return s
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:'"\\])\/\/[^\n]*/g, '$1');
+}
+
+function testClockExclusive() {
+  console.log('\n[T19] clock_gettime exclusive：多线程 Hook 不再因放锁丢帧（T3-09）');
+  const CODE = stripComments(SRC);
+
+  /* ---- T19a：NativeFunction 创建参数（只有 clock_gettime 指定了调度） ---- */
+  {
+    const { env, exports } = mount({ tid: 19873 });
+    const st = exports.stats();
+    const cg = env.nativeFns.filter(f => f.name === 'clock_gettime');
+    eq(cg.length, 1, 'T19a: clock_gettime 只创建 1 次');
+    ok(!!(cg[0] && cg[0].opts), 'T19a: 创建时传了第 4 个参数（options 对象）');
+    eq(cg[0] && cg[0].opts && cg[0].opts.scheduling, 'exclusive',
+       "T19a: options.scheduling = 'exclusive'");
+    const withSched = env.nativeFns
+      .filter(f => f.opts && f.opts.scheduling !== undefined)
+      .map(f => f.name);
+    eq(JSON.stringify(withSched), JSON.stringify(['clock_gettime']),
+       'T19a: 只有 clock_gettime 改了调度，socket/connect/sendto/fcntl/close 保持默认');
+    eq(st.clockSched, 'exclusive', 'T19a: stats().clockSched = exclusive');
+    eq(st.clockExclusive, true, 'T19a: stats().clockExclusive = true');
+    const ready = env.sends.filter(m => m.t === 'ready')[0];
+    eq(ready && ready.clock_sched, 'exclusive', "T19a: ready 上报 clock_sched = 'exclusive'");
+  }
+
+  /* ---- T19b：源码层独占性（防止选项被删掉或被搬到别的函数上） ---- */
+  {
+    const occ = (CODE.match(/scheduling\s*:\s*'exclusive'/g) || []).length;
+    eq(occ, 1, "T19b: 可执行代码里 'exclusive' 调度只出现 1 处");
+    const at = SRC.indexOf("scheduling: 'exclusive'");
+    const ctx = SRC.slice(Math.max(0, at - 400), at);
+    ok(/clock_gettime/.test(ctx), 'T19b: 该处在 clock_gettime 构造上下文里');
+    ok(/new NativeFunction\(g\('clock_gettime'\)/.test(ctx),
+       'T19b: 该处是 clock_gettime 的 NativeFunction 调用参数');
+    for (const fn of ['socket', 'connect', 'sendto', 'fcntl', 'close']) {
+      const m = CODE.match(new RegExp("new NativeFunction\\(g\\('" + fn + "'\\)[^\\n]*"));
+      ok(!!m, 'T19b: ' + fn + ' 绑定存在');
+      ok(!!m && m[0].indexOf('scheduling') === -1, 'T19b: ' + fn + ' 未改调度方式');
+    }
+    /* 失败路径必须是"停止 + 报告"，不能是"退回 cooperative" */
+    ok(/clock-exclusive-unsupported/.test(SRC), 'T19b: 有 clock-exclusive-unsupported 停止标记');
+    ok(!/scheduling\s*:\s*'cooperative'/.test(CODE), 'T19b: 没有显式退回 cooperative 的写法');
+  }
+
+  /* ---- T19c：回调内真实调用链审计（不是看名字猜） ---- */
+  {
+    const { env, exports } = mount({ tid: 19873 });
+    env.nativeTrace.length = 0;
+    env.lockEvents.length = 0;
+    feed(env, makePcm(), 5120, 19873);
+    const tr = env.nativeTrace.slice();
+    eq(tr.length, 1, 'T19c: 一次 Hook 回调里只有 1 次 NativeFunction 调用');
+    eq(tr[0] && tr[0].name, 'clock_gettime', 'T19c: 该调用就是 clock_gettime');
+    eq(tr[0] && tr[0].sched, 'exclusive', 'T19c: 它是 exclusive 调度');
+    eq(tr[0] && tr[0].holder, 19873, 'T19c: 调用时脚本锁在本线程手里');
+    eq(env.lockEvents.length, 0, 'T19c: 回调内没有发生任何一次放锁');
+    eq(env.lockEvents.filter(e => e.ev === 'release').length, 0, 'T19c: release 事件 = 0');
+    const st = exports.stats();
+    eq(st.produced, 1, 'T19c: 帧正常入环');
+    eq(st.hookEx, 0, 'T19c: 没有异常逃逸');
+  }
+
+  /* ---- T19d：两个 TID 的 Hook 在 clock_gettime 窗口重叠（exclusive 全收） ---- */
+  {
+    const N = 6;
+    const { env, exports } = mount({ tid: 19873 });
+    eq(exports.stats().hookReentry, 0, 'T19d: 起始 hookReentry = 0');
+    runConcurrentBurst(env, N);
+    let st = exports.stats();
+    eq(st.enabled, true, 'T19d: 仍 enabled');
+    eq(st.frames, N, 'T19d: frames = ' + N + '（' + N + ' 次进入都过了闸门）');
+    eq(st.produced, N, 'T19d: produced = ' + N + '（一帧都没丢）');
+    eq(st.hookReentry, 0, 'T19d: hookReentry = 0（另一个 TID 没被误判成重入）');
+    eq(st.hookEx, 0, 'T19d: hookEx = 0');
+    eq(st.clockDrop, 0, 'T19d: clockDrop = 0');
+    eq(st.ringDrop, 0, 'T19d: ringDrop = 0');
+    eq(st.tidCount, 2, 'T19d: 两个生产者线程都被统计到');
+    eq(env.lockContended, N - 1, 'T19d: ' + (N - 1) + ' 个线程真的在等锁');
+    eq(env.pumped, N - 1, 'T19d: 它们都在 A 退出回调后才被放行');
+    eq(env.lockEvents.filter(e => e.ev === 'release' && e.name === 'clock_gettime').length, 0,
+       'T19d: clock_gettime 窗口内从未放锁');
+    ok(st.pendingEq, 'T19d: pendingEq 不变式成立');
+
+    tick(env); tick(env);                       /* DRAIN_BURST = 8，一次就够，两次更稳 */
+    st = exports.stats();
+    eq(st.sent, N, 'T19d: ' + N + ' 帧全部发出');
+    eq(env.frames.length, N, 'T19d: mock 收到 ' + N + ' 个数据报');
+    let seqOk = 0, payOk = 0;
+    for (let k = 0; k < env.frames.length; k++) {
+      const f = env.frames[k];
+      if (f.buf.readUInt32LE(8) === k + 1) seqOk++;
+      if (f.buf.subarray(40, 40 + 1280).equals(lane0At(k))) payOk++;
+    }
+    eq(seqOk, N, 'T19d: seq 连续 1..' + N + '（无跳号/无重复）');
+    eq(payOk, N, 'T19d: 每帧载荷逐字节等于各自源帧（无覆盖、无交错）');
+    eq(st.capSeq, N, 'T19d: 采集序号恰好 ' + N + ' 个（每帧只入环一次）');
+  }
+
+  /* ---- T19e：负对照 —— 运行时忽略 scheduling（全部 cooperative），同一个窗口就丢帧 ---- */
+  {
+    const N = 6;
+    const { env, exports } = mount({ tid: 19873, cooperativeOverride: true });
+    runConcurrentBurst(env, N);
+    const st = exports.stats();
+    eq(st.frames, 1, 'T19e 负对照: 只有 A 的帧进入主体（其余被当成重入）');
+    eq(st.produced, 1, 'T19e 负对照: produced = 1，丢了 ' + (N - 1) + ' 帧');
+    eq(st.hookReentry, N - 1, 'T19e 负对照: hookReentry = ' + (N - 1) + '（正是被误判的重入）');
+    ok(env.lockEvents.some(e => e.ev === 'release' && e.name === 'clock_gettime'),
+       'T19e 负对照: cooperative 下 clock_gettime 确实放了锁');
+    ok(st.pendingEq, 'T19e 负对照: 不变式仍成立（丢帧被如实记账）');
+  }
+
+  /* ---- T19f：运行时拒绝 scheduling 选项 -> 必须停止并报告，不得静默降级 ---- */
+  {
+    const { env, exports } = mount({ rejectScheduling: true });
+    const st = exports.stats();
+    eq(st.enabled, false, 'T19f: enabled = false（直接停）');
+    eq(st.clockSched, 'unsupported', "T19f: clockSched = 'unsupported'");
+    ok(/clock-exclusive-unsupported/.test(String(st.why)),
+       'T19f: why 明确写出 clock-exclusive-unsupported');
+    eq(env.hooks.length, 0, 'T19f: 没有安装 Hook（不会带着默认调度继续跑）');
+    eq(env.intervalCalls, 0, 'T19f: 没有创建定时器');
+    eq(st.lifecycle.stopped, true, 'T19f: teardown 已执行，资源回滚');
+    eq(st.fd, -1, 'T19f: 没有 fd 泄漏');
+  }
+}
+
 /* ================================================================= T15 */
 function testStopIdempotent() {
   console.log('\n[T15] stop 幂等：先关闸门 -> 清定时器 -> detach 一次 -> close');
@@ -850,6 +1130,7 @@ testClockFail();
 testRingFull();
 testMultiProducer();
 testHookReentry();
+testClockExclusive();
 testStopIdempotent();
 testInitRollback();
 testDryRun();

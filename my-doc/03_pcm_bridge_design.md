@@ -203,6 +203,9 @@ libc.connect(fd, sa, 110);            // dgram 也可以不 connect，改用 sen
   1. 每帧一次 `readByteArray` + 一次 `sendto`，25 次/秒，单帧 1280 B 拷贝 + JS 侧抽取（640 次循环）。开销本身可接受（微秒级），但 **JS 运行时与目标线程共享**：任何一次 Frida 的 GC 或脚本解析都会直接压在音频线程上。
   2. **`frida-server` 必须常驻**才能长期工作。这与本项目 §6 安全要求（不常驻、不监听 0.0.0.0、单 session）直接冲突，也与第二阶段观察到的 `fs32` SIGABRT / zygote SIGSEGV 无法排除关联。
   3. Frida 的 `send()` 消息队列是**无界**的；把 4096 帧/分钟的二进制往宿主推，宿主一慢就在 `:core` 里攒内存。
+  4. **`NativeFunction` 默认是 cooperative 调度**（调用原生函数时释放脚本锁）。放在 Hook 回调里会打开一个换线程窗口：
+     另一个生产者线程能在你的回调执行中途进来。T3-09 起 Hook 内的 `clock_gettime` 必须显式
+     `{ scheduling: 'exclusive' }`，见 `03_pcm_bridge_t3_09_clock_exclusive.md`。
 - **结论：只做验证工具，不做产品形态。**
 
 ### B. 原生 SO + 内联 Hook + 专用发送线程（推荐）
@@ -435,6 +438,8 @@ boot → Magisk post-fs-data → Zygisk 加载 → 系统起 zygote
 | # | 未验证项 | 等级 | 为什么重要 | 怎么才能闭环 |
 |---|---|---|---|---|
 | 1 | ~~`feed` 是否**单线程**调用（SPSC 前提）~~ **已由 T3-08 解决** | — | 真机证明会出现两个生产者线程（19873 / 14171） | 桥接层改为多 TID 接受（TID 仅统计），见 `03_pcm_bridge_t3_08_multitid.md`；`thread_probe.js` 仍未执行 |
+| 7 | **Hook 回调是否真的互斥**（"Frida JS 单线程"不等于"回调互斥"） | — | 默认 `NativeFunction` 是 cooperative 调度，调用期间释放脚本锁，另一个原生线程能进入同一回调，被 `inHook` 误判成重入而丢帧 | T3-09 把 Hook 内唯一的原生调用 `clock_gettime` 改为 `scheduling:'exclusive'`，并逐项审计回调调用链（`Process.getCurrentThreadId` / `Memory.copy` / 环写都是运行时内建或纯 JS，无放锁点）；见 `03_pcm_bridge_t3_09_clock_exclusive.md` |
+| 8 | 真机上两个生产者线程**在 clock_gettime 窗口内重叠**的直接证据 | M | T3-08 / T3-09 两轮真机测试都没复现多 TID（`tidCount` 恒为 1），窗口只在单元测试里被构造过 | 需要抓到一个 `tidCount ≥ 2` 的真机会话，并观察 `hookReentry` 仍为 0 |
 | 2 | 原厂进程内的真实行为（hook 耗时、唤醒成功率） | U | 唯一能证明"不破坏原厂" | 30 秒短测（§9 步骤 2） |
 | 3 | 抽象命名空间在 `:core` 与助手进程间是否可达 | U | 决定 socket 要不要落盘 | 真机 A+助手进程联调（A-SHELL 只证明了 shell↔shell 可行） |
 | 4 | 固件升级后签名是否仍匹配 | U | 决定 §7 闸门是否真的拦得住 | 每次 OTA 后重跑闸 1~3 |

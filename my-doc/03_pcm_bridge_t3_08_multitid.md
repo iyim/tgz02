@@ -92,6 +92,12 @@ st.frames++;
 > 这是"依赖运行时的串行化"而不是"自己加锁"的方案。若将来 Frida 后端改成多线程 JS 运行时，
 > 这个前提就会失效——所以 `STAT` 里保留了 `reentry`/`hookEx` 计数作为运行时健康指标（见 §5）。
 
+> **T3-09 修正（2026-11-19，后续轮次）**：上面第 1 条当时写得太强。Frida 的 JS 运行时确实是单线程的，
+> 但**默认 `NativeFunction` 是 cooperative 调度**——调用原生函数时释放脚本锁，另一个原生线程可以在那个
+> 窗口里进入同一个回调（T2/T3 的 `nowUs()` 正是这样一次 `clock_gettime` 调用）。此时后到者并不会"等待"，
+> 而是被 `inHook` 当成重入直接丢弃 → **丢帧**。T3-09 把 `clock_gettime` 改成 `scheduling:'exclusive'`
+> 之后，本条才真正成立；详见 `03_pcm_bridge_t3_09_clock_exclusive.md`。
+
 ### 2.4 协议/格式保持不变
 
 Hook 地址 `libsmartbox.so+0xd455c`、签名 `_ZN14AGSpeechEngine4feedEjPKvi`、5120 B 帧长、
@@ -167,14 +173,16 @@ T4 接收端：`android/out/t4_receiver`（T4-07 版本）；桥接脚本 SHA256
 
 | 风险 | 现状 | 依据 |
 |---|---|---|
-| 两个原生线程真正同时进入 JS 回调 | **无**（Frida 单线程 JS 运行时串行化） | 运行时设计；`reentry` 计数在 4 轮真机恒为 0/0 |
+| 两个原生线程真正同时进入 JS 回调 | **T3-08 当时写的是"无"，T3-09 已推翻其中一半** | `clock_gettime` 默认 cooperative 会放锁 → 第二个线程能进入并被误判重入（T3-09 修复） |
 | 同线程重入（回调内再次 feed） | **已被 `inHook` 拦截** | 单元测试 T14d（`hookReentry=1`，重入帧不入环） |
 | 消费端与 Hook 交错 | **无**（同一 JS 锁 + `inDrain`） | 4 轮真机 `drainReentry=0`、`drainEx=0` |
 | 环边界（生产者覆盖未消费槽位） | **不可能**：满则 `ringDrop++`，不写 | 单元测试 T13；真机 `ringDrop=0` |
 | 运行时前提变化（未来的 Frida 改成多线程 JS） | **会成为风险** | 保留 `hookEx`/`reentry` 计数，异常时可立刻看到 |
 
-**结论：在当前 Frida 运行时下，多线程调用不会破坏环形缓冲区；前提是"同一脚本的 JS 回调串行执行"，
-这一点由 `reentry=0 / hookEx=0` 的真机统计与 5 TID 轮转的单元测试共同支撑（尚无真机多 TID 直接观测）。**
+**结论：在当前 Frida 运行时下，多线程调用不会破坏环形缓冲区；前提是"同一脚本的 JS 回调串行执行"。
+T3-08 当时的依据只有 `reentry=0 / hookEx=0` 的真机统计 + 5 TID 轮转的单元测试；
+T3-09 之后补充了机制层面的依据：回调内唯一的原生调用已改为 exclusive 调度，
+且"回调串行"这件事本身由 T19d/T19e 的放锁窗口对照测试直接验证（cooperative 会丢 5/6 帧）。**
 
 ---
 
@@ -183,7 +191,7 @@ T4 接收端：`android/out/t4_receiver`（T4-07 版本）；桥接脚本 SHA256
 ```powershell
 cd my-doc\03_uds_test
 node --check pcm_bridge_draft.js
-node tests\bridge_unit_test.js        # 期望 240 passed, 0 failed
+node tests\bridge_unit_test.js        # T3-08 时为 240 passed, 0 failed；T3-09 后为 300 passed, 0 failed
 
 # 真机（设备已连 adb，frida-server 在跑）
 python ..\04_device_t3\run_t3_uds.py 300 ..\..\_analysis\bridge_300s.log

@@ -1,0 +1,114 @@
+[P1] 正常安装 -> 到点 FINAL -> detach + 清定时器
+  ok   安装后 Hook 数量 = 1
+  ok   有 1 个统计 interval
+  ok   有 1 个停止 timeout
+  ok   此时还没到 dump 时机（5 s 一次）
+  ok   detach() 被调用 1 次
+  ok   打印了 1 次 FINAL
+  ok   FINAL 里 total=2
+  ok   FINAL 只声明"窗口内 1 个线程"
+  ok   FINAL 明确表示不能据此证明 SPSC 前提
+  ok   clearInterval 调用 1 次
+  ok   clearTimeout 调用 1 次
+  ok   重复触发不再 detach（stopped 守卫）
+  ok   重复触发不再 clearInterval
+  ok   停止后 onEnter 直接返回，不产生输出
+
+[P3] 安装失败：不得残留 Hook，也不得留下定时器
+  ok   模块未加载: Hook 数量 = 0
+  ok   模块未加载: 没有 interval
+  ok   模块未加载: 没有 timeout
+  ok   模块未加载: 没有可 detach 的 listener
+  ok   模块未加载: 打印了停止原因
+  ok   符号缺失: Hook 数量 = 0
+  ok   符号缺失: 没有 interval
+  ok   符号缺失: 没有 timeout
+  ok   符号缺失: 没有可 detach 的 listener
+  ok   符号缺失: 打印了停止原因
+  ok   偏移不符: Hook 数量 = 0
+  ok   偏移不符: 没有 interval
+  ok   偏移不符: 没有 timeout
+  ok   偏移不符: 没有可 detach 的 listener
+  ok   偏移不符: 打印了停止原因
+  ok   机器码签名不符: Hook 数量 = 0
+  ok   机器码签名不符: 没有 interval
+  ok   机器码签名不符: 没有 timeout
+  ok   机器码签名不符: 没有可 detach 的 listener
+  ok   机器码签名不符: 打印了停止原因
+  ok   attach 抛异常: Hook 数量 = 0
+  ok   attach 抛异常: 没有 interval
+  ok   attach 抛异常: 没有 timeout
+  ok   attach 抛异常: 没有可 detach 的 listener
+  ok   attach 抛异常: 打印了停止原因
+
+[P4] 统计口径：多线程 / 长度直方图
+  ok   threads=2
+  ok   长度直方图 5120 -> 2
+  ok   长度直方图 320 -> 1
+  ok   多线程时给出 MPSC 警告
+  ok   多线程场景同样会 detach
+
+[P5.1] 机器码读取抛异常
+  ok   P5.1: 打印读取失败
+  ok   P5.1: reason = sig-read-failed
+  ok   P5.1: Hook 数量 = 0
+  ok   P5.1: 没有创建 interval
+  ok   P5.1: 没有创建 timeout
+  ok   P5.1: 没有可 detach 的 listener
+  ok   P5.1: 走了统一 finish()
+  ok   P5.1: finish 只执行一次
+
+[P5.2] attach 返回 null
+  ok   P5.2: 打印无效 listener
+  ok   P5.2: reason = invalid-listener
+  ok   P5.2: Hook 数量 = 0
+  ok   P5.2: 没有创建 interval
+  ok   P5.2: 没有创建 timeout
+  ok   P5.2: 没有可 detach 的 listener
+  ok   P5.2: 走了统一 finish()
+  ok   P5.2: finish 只执行一次
+
+[P5.3] attach 返回没有 detach 方法的对象
+  ok   P5.3: reason = invalid-listener
+  ok   P5.3: Hook 数量 = 0
+  ok   P5.3: 没有创建 interval
+  ok   P5.3: 没有创建 timeout
+  ok   P5.3: 没有可 detach 的 listener
+  ok   P5.3: 走了统一 finish()
+  ok   P5.3: finish 只执行一次
+
+[P5.4] setInterval 抛异常
+  ok   P5.4: listener 已 detach 1 次
+  ok   P5.4: 没有 interval 需要清理
+  ok   P5.4: 没有 timeout 需要清理
+  ok   P5.4: reason = timer-setup-failed
+
+[P5.5] setInterval 返回 null
+  ok   P5.5: listener 已 detach 1 次
+  ok   P5.5: 没有创建 timeout
+  ok   P5.5: 没有 timeout 需要清理
+  ok   P5.5: 没有残留 interval 需要清理
+  ok   P5.5: reason = timer-setup-failed
+
+[P5.6] setTimeout 抛异常
+  ok   P5.6: listener 已 detach 1 次
+  ok   P5.6: 已创建的 interval 被清理 1 次
+  ok   P5.6: 没有 timeout 需要清理
+  ok   P5.6: reason = timer-setup-failed
+
+[P5.7] setTimeout 返回 null
+  ok   P5.7: listener 已 detach 1 次
+  ok   P5.7: 已创建的 interval 被清理 1 次
+  ok   P5.7: 没有残留 timeout 需要清理
+  ok   P5.7: reason = timer-setup-failed
+
+[P5.8] 重复触发 finish：幂等
+  ok   P5.8: 正常路径有 1 个 timeout
+  ok   P5.8: detach 不重复
+  ok   P5.8: clearInterval 不重复
+  ok   P5.8: clearTimeout 不重复
+  ok   P5.8: probe stopped 只打印一次
+  ok   P5.8: 失败路径 finish 也只执行一次
+  ok   P5.8: 失败路径 detach 只 1 次
+
+=== 91 passed, 0 failed ===

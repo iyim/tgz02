@@ -1,0 +1,368 @@
+bridge_unit_test.js  (source: pcm_bridge_draft.js, 790 lines, 28924 chars)
+
+[T01] T2 式整帧 5120 B 复制（Hook 内只有一次 Memory.copy）
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   预分配环 64*5120 = 327680 B 存在
+  ok   onEnter 已触发
+  ok   frames = 1
+  ok   produced = 1
+  ok   depthMax = 1
+  ok   环槽 0 与输入帧逐字节一致（4 路全部保留，未只存 lane0）
+  ok   slot[0..1] = lane0[0] = -320
+  ok   slot[8..9] = 第二个 lane0 样本 = -319
+  ok   槽 1 偏移 = 5120（不是 1320）
+  ok   produced = 2
+
+[T02] lane0 抽取：in16[q*4]（字节 q*8）与独立参考实现一致
+  ok   LANE-BEGIN/END 标记存在
+  ok   640 样本逐个相等
+  ok   步长写错（stride=8）会被本测试抓出来
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   发出 1 帧
+  ok   发出的 1280 B 载荷 == lane0 参考
+  ok   消费端算了 1 次 CRC
+
+[T03] TGZ2 v2 头字段（offset 与 tgz2_frame.h 完全一致）
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   整帧长度 = 40 + 1280 = 1320
+  ok   off 0  magic = TGZ2
+  ok   off 4  ver = 2
+  ok   off 6  hdr_len = 40
+  ok   off 24 rate = 16000
+  ok   off 28 ch = 1
+  ok   off 30 bits = 16
+  ok   off 32 payload_len = 1280
+  ok   off 36 crc = FNV-1a(payload)
+
+[T04] ts_us / epoch / seq
+  ok   off 12 ts_us = CLOCK_MONOTONIC 微秒
+  ok   off 20 epoch = 本次启动的 epoch
+  ok   epoch != 0
+  ok   off 8  seq 首帧 = 1
+  ok   第二帧已发送
+  ok   seq 单调 +1（同 epoch 内）
+  ok   第二帧 ts_us 跟随采样时刻
+  ok   两帧同 epoch
+
+[T05] 真实 PCM 不得置 SYNTHETIC
+  ok   off 5  flags = 0
+  ok   SYNTHETIC 位为 0
+  ok   SPEECH 位为 0（本轮不做 VAD）
+
+[T06] JS FNV-1a == C tgz2_fnv1a()
+  ok   FNV-BYTES-BEGIN/END 标记存在
+  ok   C 金标准 empty (0 B)
+  ok   BigInt 参考 empty
+  ok   C 金标准 one_0x61 (1 B)
+  ok   BigInt 参考 one_0x61
+  ok   C 金标准 abc (3 B)
+  ok   BigInt 参考 abc
+  ok   C 金标准 lane0_640 (1280 B)
+  ok   BigInt 参考 lane0_640
+  ok   C 金标准 zeros_1280 (1280 B)
+  ok   BigInt 参考 zeros_1280
+  ok   C 金标准 synth_seq1 (1280 B)
+  ok   BigInt 参考 synth_seq1
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   真实帧头 CRC == BigInt(载荷)
+  ok   真实帧 CRC == C 金标准 lane0_640
+
+[T07] sendto 成功路径
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   drain 之前不发送
+  ok   socket() 1 次
+  ok   connect() 1 次（connected DGRAM）
+  ok   fcntl 设置 + 回读（>=2 次）
+  ok   sendto() 1 次
+  ok   发送长度 1320
+  ok   sent = 1
+  ok   pending = 0
+  ok   fd 已就绪
+  ok   O_NONBLOCK 已回读确认
+  ok   sessions = 1
+  ok   lat 统计可用
+  ok   frames-produced 与各类丢弃口径自洽
+
+[T08] EAGAIN：丢本帧、不重试、不阻塞
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   sendto 只调用 1 次（没有重试）
+  ok   sendDrop = 1
+  ok   sent = 0
+  ok   pending = 0（帧已丢弃）
+  ok   sendErr = 0
+  ok   fd 保持（可继续发后续帧）
+  ok   lastErrno 记录 = 11
+  ok   下一帧正常发送
+
+[T09] ENOBUFS：丢本帧、不重试、不阻塞
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   sendto 只调用 1 次（没有重试）
+  ok   sendDrop = 1
+  ok   sent = 0
+  ok   pending = 0（帧已丢弃）
+  ok   sendErr = 0
+  ok   fd 保持（可继续发后续帧）
+  ok   lastErrno 记录 = 105
+  ok   下一帧正常发送
+
+[T10] 对端消失 -> 关 socket -> 下个 tick 重连
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   socket 已关闭
+  ok   fd = -1
+  ok   reconnects = 1
+  ok   该帧计入 sendDrop
+  ok   重连窗口内丢帧计入 noPeerDrop
+  ok   窗口内不建新 socket（受 RETRY_MS 限制）
+  ok   窗口过后重建 socket
+  ok   sessions = 2
+  ok   重连后成功发送 1 帧
+  ok   connect 未失败
+
+[T11] 过期帧（> MAX_AGE_MS=500）丢弃，不发送旧语音
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   stale = 1
+  ok   未调用 sendto
+  ok   sent = 0
+  ok   pending = 0
+  ok   499.999 ms 的帧仍然发送
+
+[T12] clock_gettime 失败 -> Hook 丢帧、消费端不发
+[v] installed epoch=0xa9a16e78 ring=327680B msg=1320B dry=false clock=exclusive
+  ok   onEnter 已触发
+  ok   produced = 0（未入环）
+  ok   clockDrop = 1
+  ok   clockFail >= 1
+  ok   环里没有写入任何半帧数据
+  ok   时钟不可用时不发送
+  ok   noClockTicks >= 1（drain 直接返回）
+  ok   frames-produced 口径自洽（clockDrop 解释差额）
+
+[T13] 环满丢帧（64 槽，绝不覆盖未消费数据）
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   produced = 64
+  ok   depthMax = 64
+  ok   ringDrop = 1
+  ok   produced 不变
+  ok   槽 0 未被覆盖
+  ok   槽 0 内容仍是第 1 帧
+  ok   frames-produced = ringDrop
+
+[T14] 多生产者线程：TID 变化不禁用，帧照常入环（T3-08）
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   T14a 单 TID: 仍 enabled
+  ok   T14a 单 TID: disables = 0
+  ok   T14a 单 TID: frames = 5
+  ok   T14a 单 TID: produced = 5
+  ok   T14a 单 TID: tidCount = 1
+  ok   T14a 单 TID: producerTid = 4242
+  ok   T14a 单 TID: 该线程调用 5 次
+  ok   T14a 单 TID: otherTidCalls = 0
+  ok   T14a 单 TID: frames-produced 不变式成立
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   T14b 两 TID 交替: 仍 enabled（不再自禁用）
+  ok   T14b 两 TID 交替: disables = 0
+  ok   T14b: why 里没有 multi-producer
+  ok   T14b: frames = 6
+  ok   T14b: produced = 6
+  ok   T14b: ringDrop = 0
+  ok   T14b: tidCount = 2
+  ok   T14b: producerTid 仍是首个线程（诊断用）
+  ok   T14b: TID 19873 调用 3 次
+  ok   T14b: TID 14171 调用 3 次
+  ok   T14b: tids 里附带 firstTid
+  ok   T14b: tids = 2 个线程 + firstTid
+  ok   T14b: otherTidCalls = 3
+  ok   T14b: frames-produced 不变式成立
+  ok   T14b: 消费端仍在发送（没被禁用）
+  ok   T14b: 发出的每帧都算了 CRC
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   T14c 多 TID: 仍 enabled
+  ok   T14c 多 TID: disables = 0
+  ok   T14c: frames = 10
+  ok   T14c: produced = 10
+  ok   T14c: tidCount = 5
+  ok   T14c: otherTidCalls = 8（10 帧里 8 帧不是首线程）
+  ok   T14c: TID 101 调用 2 次
+  ok   T14c: TID 202 调用 2 次
+  ok   T14c: TID 303 调用 2 次
+  ok   T14c: TID 404 调用 2 次
+  ok   T14c: TID 505 调用 2 次
+  ok   T14c: 10 帧全部发出（两个 tick）
+  ok   T14c: mock 收到 10 个数据报
+  ok   T14c: 10 帧载荷全部等于 lane0 参考数据（无交错/无覆盖）
+  ok   T14c: 序号 1..10 连续
+
+[T14d] 真正的重入仍被 inHook 拦住（同一线程在回调内再次 feed）
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   重入确实被触发了一次
+  ok   hookReentry = 1（被 inHook 拦住）
+  ok   frames 只算外层 1 次（重入未计数）
+  ok   produced = 1（重入帧没入环）
+  ok   没有异常逃逸
+  ok   不变式仍成立
+
+[T19] clock_gettime exclusive：多线程 Hook 不再因放锁丢帧（T3-09）
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   T19a: clock_gettime 只创建 1 次
+  ok   T19a: 创建时传了第 4 个参数（options 对象）
+  ok   T19a: options.scheduling = 'exclusive'
+  ok   T19a: 只有 clock_gettime 改了调度，socket/connect/sendto/fcntl/close 保持默认
+  ok   T19a: stats().clockSched = exclusive
+  ok   T19a: stats().clockExclusive = true
+  ok   T19a: ready 上报 clock_sched = 'exclusive'
+  ok   T19b: 可执行代码里 'exclusive' 调度只出现 1 处
+  ok   T19b: 该处在 clock_gettime 构造上下文里
+  ok   T19b: 该处是 clock_gettime 的 NativeFunction 调用参数
+  ok   T19b: socket 绑定存在
+  ok   T19b: socket 未改调度方式
+  ok   T19b: connect 绑定存在
+  ok   T19b: connect 未改调度方式
+  ok   T19b: sendto 绑定存在
+  ok   T19b: sendto 未改调度方式
+  ok   T19b: fcntl 绑定存在
+  ok   T19b: fcntl 未改调度方式
+  ok   T19b: close 绑定存在
+  ok   T19b: close 未改调度方式
+  ok   T19b: 有 clock-exclusive-unsupported 停止标记
+  ok   T19b: 没有显式退回 cooperative 的写法
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   T19c: 一次 Hook 回调里只有 1 次 NativeFunction 调用
+  ok   T19c: 该调用就是 clock_gettime
+  ok   T19c: 它是 exclusive 调度
+  ok   T19c: 调用时脚本锁在本线程手里
+  ok   T19c: 回调内没有发生任何一次放锁
+  ok   T19c: release 事件 = 0
+  ok   T19c: 帧正常入环
+  ok   T19c: 没有异常逃逸
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   T19d: 起始 hookReentry = 0
+  ok   T19d: 仍 enabled
+  ok   T19d: frames = 6（6 次进入都过了闸门）
+  ok   T19d: produced = 6（一帧都没丢）
+  ok   T19d: hookReentry = 0（另一个 TID 没被误判成重入）
+  ok   T19d: hookEx = 0
+  ok   T19d: clockDrop = 0
+  ok   T19d: ringDrop = 0
+  ok   T19d: 两个生产者线程都被统计到
+  ok   T19d: 5 个线程真的在等锁
+  ok   T19d: 它们都在 A 退出回调后才被放行
+  ok   T19d: clock_gettime 窗口内从未放锁
+  ok   T19d: pendingEq 不变式成立
+  ok   T19d: 6 帧全部发出
+  ok   T19d: mock 收到 6 个数据报
+  ok   T19d: seq 连续 1..6（无跳号/无重复）
+  ok   T19d: 每帧载荷逐字节等于各自源帧（无覆盖、无交错）
+  ok   T19d: 采集序号恰好 6 个（每帧只入环一次）
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   T19e 负对照: 只有 A 的帧进入主体（其余被当成重入）
+  ok   T19e 负对照: produced = 1，丢了 5 帧
+  ok   T19e 负对照: hookReentry = 5（正是被误判的重入）
+  ok   T19e 负对照: cooperative 下 clock_gettime 确实放了锁
+  ok   T19e 负对照: 不变式仍成立（丢帧被如实记账）
+  ok   T19f: enabled = false（直接停）
+  ok   T19f: clockSched = 'unsupported'
+  ok   T19f: why 明确写出 clock-exclusive-unsupported
+  ok   T19f: 没有安装 Hook（不会带着默认调度继续跑）
+  ok   T19f: 没有创建定时器
+  ok   T19f: teardown 已执行，资源回滚
+  ok   T19f: 没有 fd 泄漏
+
+[T15] stop 幂等：先关闸门 -> 清定时器 -> detach 一次 -> close
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   stop 前已发送 1 帧
+  ok   stop 前 hook 在位
+  ok   stopped = true
+  ok   detach 已尝试
+  ok   detach 成功
+  ok   hookDetachError = null
+  ok   listener.detach() 1 次
+  ok   tick + stat 都 clearInterval
+  ok   tickActive = false
+  ok   statActive = false
+  ok   socket 关闭 1 次
+  ok   重复 stop 仍返回 stopped
+  ok   重复 stop 不重复 detach
+  ok   重复 stop 不重复 close
+  ok   teardown 后 tick 不再发送
+  ok   teardown 后 hook 不再入环
+
+[T16] 初始化中途失败 -> 资源全部回滚
+  ok   attach 失败: enabled = false
+  ok   attach 失败: why 记录 install:*
+  ok   attach 失败: 没有可 detach 的 listener
+  ok   attach 失败: 没有创建定时器
+  ok   attach 失败: teardown 已执行
+  ok   attach 失败: 没有 fd 泄漏
+  ok   listener=null: enabled = false
+  ok   listener=null: 没有创建定时器
+  ok   listener=null: tick 未残留
+  ok   listener=empty: enabled = false
+  ok   listener=empty: 没有创建定时器
+  ok   listener=empty: tick 未残留
+  ok   第 1 个 setInterval 返回 null: detach 1 次
+  ok   第 1 个: tick 未残留
+  ok   第 1 个: stat 未残留
+  ok   第 1 个: enabled = false
+  ok   第 2 个 setInterval 返回 null: detach 1 次
+  ok   第 2 个: tick 未残留
+  ok   第 2 个: stat 未残留
+  ok   第 2 个: enabled = false
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   nb 失败: socket 建过 1 次
+  ok   nb 失败: socket 已关闭
+  ok   nb 失败: 绝不发送
+  ok   nb 失败: 旁路被禁用
+  ok   nb 失败: why = nonblock-set-fail
+  ok   nb 失败: 该帧计入 noPeerDrop
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   回读失败: why = nonblock-not-set
+  ok   回读失败: 绝不发送
+  ok   回读失败: socket 已关闭
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   connect 失败: connectFail = 1
+  ok   connect 失败: socket 已关闭
+  ok   connect 失败: 帧计入 noPeerDrop
+  ok   connect 失败: 没有 sendto
+  ok   connect 恢复后正常发送
+  ok   sessions = 1（只有成功那次）
+
+[T17] DRY_RUN：不 socket / 不 connect / 不 sendto
+  ok   DRY_RUN 已改写为 true
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=true clock=exclusive
+  ok   socket() 0 次
+  ok   connect() 0 次
+  ok   sendto() 0 次
+  ok   DRY_RUN 仍统计 frames = 1
+  ok   DRY_RUN 仍统计 produced = 1
+  ok   DRY_RUN 仍统计 sent = 1
+  ok   stats().dry = true
+
+[T18] Hook 回调内不做 socket / CRC / lane0 抽取 / 动态分配
+  ok   HOOK-BEGIN/END 标记存在
+  ok   Hook 体内不含 `sendto`
+  ok   Hook 体内不含 `socket(`
+  ok   Hook 体内不含 `connect(`
+  ok   Hook 体内不含 `close(`
+  ok   Hook 体内不含 `fnv`
+  ok   Hook 体内不含 `readS16`
+  ok   Hook 体内不含 `writeS16`
+  ok   Hook 体内不含 `readByteArray`
+  ok   Hook 体内不含 `Memory.alloc`
+  ok   Hook 体内不含 `setInterval`
+  ok   Hook 体内不含 `console.`
+  ok   Hook 体内不含 `send(`
+  ok   Hook 体内不含 `new `
+  ok   Hook 体内不含 `setTimeout`
+  ok   Hook 体内不含 `Process.getCurrentThreadId() }`
+  ok   Hook 体内有且只有 Memory.copy 的内存动作
+  ok   Memory.copy 恰好出现 1 次
+  ok   参数位置沿用 args[2] / args[3]
+  ok   保留 5120 长度检查
+[v] installed epoch=0x8586466f ring=327680B msg=1320B dry=false clock=exclusive
+  ok   Hook 调用期间 Memory.alloc 次数 = 0
+  ok   Hook 调用期间 syscall 数 = 0
+  ok   Hook 期间没有算 CRC（crcFrames = 0）
+  ok   Hook 期间没有发送
+  ok   Hook 只负责整帧入环
+
+=== 300 passed, 0 failed ===

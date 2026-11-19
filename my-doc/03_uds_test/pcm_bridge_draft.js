@@ -18,7 +18,20 @@
  *   R5 过期帧 MAX_AGE_MS=500：过期即丢（stale），ts<=0 的帧一律不发送（clockDrop）
  *   R6 没有接收端时丢帧记 noPeerDrop，与 ringDrop / stale / sendDrop 分开统计
  *   R7 统计口径扩展 + rpc.exports.stats() / rpc.exports.stop()
- *   R8 单生产者守卫保留：出现第二个生产线程 -> 立即禁用旁路并记录原因（不按 SPSC 硬写环）
+ *   R8 （已废弃，见 T3-08）原"出现第二个生产线程立即禁用"的守卫已删除
+ *
+ * T3-08：支持多个原生生产者 TID。
+ *   真机证明原厂管线会从不同线程调用 AGSpeechEngine::feed，因此 TID 只做统计
+ *   （producerTid / tidCount / otherTidCalls / tids），不再触发 disable()。
+ *   inHook 保护保留，但它的语义收窄为"同一线程在回调内再次进入"。
+ *
+ * T3-09：clock_gettime 用 NativeFunction scheduling:'exclusive' 创建。
+ *   Frida 默认 cooperative：调用原生函数期间会释放脚本锁，另一个原生线程就能
+ *   进入同一个 Interceptor 回调，被 inHook 当作重入而丢弃 -> 真机多线程丢帧。
+ *   exclusive 让这次短暂的原生调用继续持有脚本锁，回调真正互斥。
+ *   只对 clock_gettime 这么做；socket/connect/sendto/close 都在消费端，保持默认。
+ *   若运行时拒绝该选项：立即停止（enabled=false, why=clock-exclusive-unsupported），
+ *   绝不静默退回 cooperative。
  *
  * 保留自 T2 的已验证部分：
  *   - Hook 地址四项校验（模块加载 / 符号存在 / 偏移 0xd455c / 前 16 字节机器码）
@@ -28,8 +41,11 @@
  *   - FNV-1a 用 Math.imul（普通 * 会丢 32 位乘法精度）
  *   - 生命周期：强引用对象 + Script.bindWeak、teardown 幂等、先关数据闸门再清理
  *
- * 并发模型（与 T2 相同）：Frida V8 对同一脚本只有一份 JS 执行权，
- * Interceptor 回调与定时器回调不会真正并发；仍保留 reentry 守卫以便在真机上验证这一点。
+ * 并发模型：Frida V8 对同一脚本只有一份 JS 执行权，但默认的 NativeFunction
+ * 是 cooperative 调度 —— 调用原生函数时会释放脚本锁，其它原生线程可以在那个
+ * 窗口里进入 JS。所以"Hook 回调互斥"并不是自动成立的：Hook 内每一次原生调用
+ * 都必须是 exclusive（或不是 NativeFunction），否则 inHook 会误判重入。
+ * T3-09 起 clock_gettime 改为 exclusive；Hook 内再无其它原生调用（见 installHook 注释）。
  *
  * 用法：
  *   frida -H 127.0.0.1:27042 -n com.alibaba.ailabs.genie.smartapp:core -l pcm_bridge_draft.js
@@ -123,6 +139,7 @@ var st = {
   connectFail: 0, reconnects: 0, sessions: 0, disables: 0,
   depthMax: 0, producerTid: 0, producerCalls: 0, wantsClose: false,
   tidCalls: {}, tidCount: 0, otherTidCalls: 0,
+  clockSched: 'unset',        /* 'exclusive' 才允许安装 Hook；'unsupported' = 运行时拒绝该选项 */
   crcFrames: 0, reentryHook: 0, reentryDrain: 0, drainEx: 0,
   lastErrno: 0, nonblockVerified: false,
   hashSum: 0, hashN: 0
@@ -193,17 +210,42 @@ var libc = null;
 function bindLibc() {
   if (libc !== null) return;
   function g(n) { return Module.getExportByName('libc.so', n); }
-  libc = {
+  var o = {
     socket:   new NativeFunction(g('socket'),  'int',  ['int', 'int', 'int']),
     connect:  new NativeFunction(g('connect'), 'int',  ['int', 'pointer', 'int']),
     sendto:   new NativeFunction(g('sendto'),  'long', ['int', 'pointer', 'ulong', 'int', 'pointer', 'int']),
     fcntl:    new NativeFunction(g('fcntl'),   'int',  ['int', 'int', 'int']),
-    close:    new NativeFunction(g('close'),   'int',  ['int']),
-    clock_gettime: new NativeFunction(g('clock_gettime'), 'int', ['int', 'pointer'])
+    close:    new NativeFunction(g('close'),   'int',  ['int'])
   };
+
+  /*
+   * T3-09 —— 只有这一个 NativeFunction 改变调度方式。
+   *
+   * 默认 cooperative 调度会在原生调用期间释放脚本锁：生产者线程 A 进入 onEnter、
+   * 置 inHook=true、调用 clock_gettime 时放锁，生产者线程 B 立刻进入同一个回调，
+   * 看到 inHook 为真 -> 记 reentryHook 并丢弃，B 的这帧 PCM 就没了。
+   *
+   * exclusive：调用期间继续持有脚本锁，B 阻塞到 A 退出回调，两帧都入环。
+   * clock_gettime 只写 8 字节 timespec、纳秒级，持锁没有代价。
+   *
+   * socket/connect/sendto/fcntl/close 全部在消费端（tick），必须保持默认调度。
+   * 选项不被当前 Frida 支持时：不静默降级，直接禁用旁路并留下明确原因。
+   */
+  try {
+    o.clock_gettime = new NativeFunction(g('clock_gettime'), 'int', ['int', 'pointer'],
+                                        { scheduling: 'exclusive' });
+  } catch (e) {
+    st.clockSched = 'unsupported';
+    st.why = 'clock-exclusive-unsupported:' + String(e && e.message ? e.message : e);
+    st.enabled = false;
+    throw new Error(st.why);
+  }
+  st.clockSched = 'exclusive';
+
   var ep = Module.findExportByName('libc.so', '__errno') ||
            Module.findExportByName('libc.so', '__errno_location');
-  libc.errno = ep ? new NativeFunction(ep, 'pointer', []) : null;
+  o.errno = ep ? new NativeFunction(ep, 'pointer', []) : null;
+  libc = o;
 }
 
 var tsMem = null;
@@ -380,7 +422,22 @@ function ensureSock(now) {
 
 /* ============ 7) Hook（只做：闸门 + 整帧复制 + 序号/时间戳 + 推进 tail） ============
  * T3-08：接受多个原生生产者线程（TID 只做统计，不再触发 disable）。
- * 安全性依赖 Frida 单线程 JS 运行时 + inHook/inDrain 双保护，详见闸门 2 的注释。
+ *
+ * T3-09 —— 回调内 JS 锁审计（逐项核对真实调用链，不看名字猜）：
+ *   1) Process.getCurrentThreadId()
+ *        Frida 运行时绑定，走 C++ 直调，不构造 NativeFunction，不释放脚本锁。
+ *   2) nowUs() -> libc.clock_gettime(CLOCK_MONOTONIC, tsMem)
+ *        NativeFunction；T3-09 起以 scheduling:'exclusive' 创建，调用期间持锁。
+ *        这是回调里唯一的原生函数调用。
+ *   3) decodeTimespec(tsMem)  -> 两次 readS32()，NativePointer 内建读取，无锁释放。
+ *   4) args[2]/args[3] 的 isNull()/toInt32()  -> NativePointer 内建，无锁释放。
+ *   5) indexOfCapSeq / depth 计算  -> 纯 JS。
+ *   6) Memory.copy(dst, src, 5120)  -> 运行时内建（memmove 直调），不经过
+ *        NativeFunction 调度，不释放脚本锁。
+ *   7) slotCapSeq/slotTsUs/idx.tail/st.* 写入  -> 纯 JS（Float64Array 元素写、
+ *        对象属性写），无锁释放。
+ *   结论：除了已改成 exclusive 的 clock_gettime，回调内没有任何释放 JS 锁的点，
+ *   两个原生线程的 onEnter 真正互斥；inHook 只可能被"同线程重入"触发。
  */
 function installHook() {
   if (teardownDone || !LIFECYCLE.alive || !st.enabled) {
@@ -407,6 +464,10 @@ function installHook() {
          *      串行完成的，不会交错；消费端 tick 与它同样串行（另有 inDrain 保护）；
          *   3) 生产者只写 tail 与其槽位，消费者只读 tail、写 head 与其槽位，
          *      SPSC 的"不互相触碰对方槽位"前提继续成立。
+         * T3-09：上面第 1 条成立的前提是回调内不释放脚本锁。clock_gettime 已改为
+         *   exclusive 调度（T3-09 之前是默认 cooperative，会在原生调用期间放锁，
+         *   于是第二个线程能挤进来、被 inHook 误判成重入而丢帧）。回调内其余操作
+         *   都是运行时内建或纯 JS，不再有释放点。
          * 真正的重入（同一线程在回调内部再次调用 feed，JS 锁可重入）仍由 inHook 拦住。
          */
         var tid = Process.getCurrentThreadId();
@@ -626,10 +687,12 @@ function install() {
     msg_bytes: MSG_LEN, hdr_bytes: HDR_LEN, payload_bytes: FRAME_OUT,
     lane0_samples: SPF, lane_stride_bytes: LANE_STRIDE * 2,
     sock: (SOCK_ABSTRACT ? 'abstract:' : 'file:') + SOCK_PATH,
-    max_age_ms: MAX_AGE_MS, tick_ms: TICK_MS, burst: DRAIN_BURST
+    max_age_ms: MAX_AGE_MS, tick_ms: TICK_MS, burst: DRAIN_BURST,
+    clock_sched: st.clockSched
   });
   console.log('[v] installed epoch=0x' + (st.epoch >>> 0).toString(16) +
-              ' ring=' + (RING_CAP * FRAME_IN) + 'B msg=' + MSG_LEN + 'B dry=' + DRY_RUN);
+              ' ring=' + (RING_CAP * FRAME_IN) + 'B msg=' + MSG_LEN + 'B dry=' + DRY_RUN +
+              ' clock=' + st.clockSched);
 }
 
 /* ============ 11) 清理（幂等；Hook 内不做这些） ============ */
@@ -686,6 +749,7 @@ function summary() {
     reconnects: st.reconnects, sessions: st.sessions, disables: st.disables,
     depthMax: st.depthMax, pending: pending(), producerTid: st.producerTid,
     tidCount: st.tidCount, otherTidCalls: st.otherTidCalls,
+    clockSched: st.clockSched, clockExclusive: st.clockSched === 'exclusive',
     tids: tidsObj(), fd: st.fd, nonblockVerified: st.nonblockVerified,
     crcFrames: st.crcFrames, hashSum: st.hashSum, dry: DRY_RUN,
     latP50_us: latPct(0.50), latP99_us: latPct(0.99),
@@ -713,7 +777,10 @@ if (st.enabled) {
     install();
   } catch (e) {
     st.enabled = false;
-    st.why = 'install:' + String(e && e.message ? e.message : e);
+    var msg = String(e && e.message ? e.message : e);
+    /* 已经写明具体原因（如 clock-exclusive-unsupported）就不要被 install: 前缀淹没 */
+    if (st.why.indexOf('clock-exclusive-unsupported') !== 0) st.why = 'install:' + msg;
+    report({ t: 'install-failed', why: st.why, clock_sched: st.clockSched, err: msg });
     teardown();          /* 中途失败：已创建的定时器/监听器/fd 全部回滚 */
   }
 } else {
