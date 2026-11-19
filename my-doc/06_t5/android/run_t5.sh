@@ -1,17 +1,6 @@
 #!/system/bin/sh
-# run_t5.sh -- control the T5 ASR agent on the device (plain shell, no root needed)
-#
-#   adb shell "sh /data/local/tmp/t5/run_t5.sh start"          # background, watches T4 dir
-#   adb shell "sh /data/local/tmp/t5/run_t5.sh start --verbose"
-#   adb shell "sh /data/local/tmp/t5/run_t5.sh once"           # scan + process once, then exit
-#   adb shell "sh /data/local/tmp/t5/run_t5.sh status"
-#   adb shell "sh /data/local/tmp/t5/run_t5.sh log [N]"        # tail N lines (default 20)
-#   adb shell "sh /data/local/tmp/t5/run_t5.sh results [N]"    # tail N result records
-#   adb shell "sh /data/local/tmp/t5/run_t5.sh files"          # list work dir
-#   adb shell "sh /data/local/tmp/t5/run_t5.sh stop"           # SIGINT, graceful
-#
-# paths: /data/local/tmp/t5/{t5_agent,t5_agent.log,t5_agent.pid,work/}
-#        watch dir default: /data/local/tmp/t4/segments   (override with --watch-dir ...)
+# T5 process controller
+
 set -u
 
 D=/data/local/tmp/t5
@@ -24,80 +13,192 @@ WATCH=/data/local/tmp/t4/segments
 cmd=${1:-start}
 [ $# -gt 0 ] && shift
 
+read_pid()
+{
+    [ -f "$PID" ] || return 1
+
+    p=$(cat "$PID" 2>/dev/null) || return 1
+
+    case "$p" in
+        ''|*[!0-9]*) return 1 ;;
+    esac
+
+    [ "$p" -gt 1 ] || return 1
+
+    return 0
+}
+
+is_t5_process()
+{
+    p=$1
+
+    case "$p" in
+        ''|*[!0-9]*) return 1 ;;
+    esac
+
+    [ -r "/proc/$p/cmdline" ] || return 1
+
+    # 用 cat 读取，绝不让 tr 继承 stdin：/proc/<pid> 在两次检查之间消失时，
+    # 原来的 `tr < /proc/$p/cmdline` 会因重定向失败而改读 stdin（adb shell 管道，永不 EOF），
+    # 导致 status/stop 永久挂起。cat 打不开就退出，管道随即结束，exe 为空 -> 判非 T5。
+    exe=$(cat "/proc/$p/cmdline" 2>/dev/null |
+          tr '\000' '\n' |
+          sed -n '1p')
+
+    [ "$exe" = "$BIN" ]
+}
+
+cleanup_stale_pid()
+{
+    if read_pid; then
+        if ! is_t5_process "$p"; then
+            rm -f "$PID"
+        fi
+    else
+        rm -f "$PID"
+    fi
+}
+
+wait_exit()
+{
+    p=$1
+    count=$2
+
+    i=0
+    while [ "$i" -lt "$count" ]; do
+        if ! is_t5_process "$p"; then
+            return 0
+        fi
+
+        sleep 0.1
+        i=$((i + 1))
+    done
+
+    return 1
+}
+
 case "$cmd" in
   start)
-    if [ -f "$PID" ] && kill -0 "$(cat "$PID")" 2>/dev/null; then
-      echo "already running: pid=$(cat "$PID")"
-      exit 1
+    cleanup_stale_pid
+
+    if read_pid && is_t5_process "$p"; then
+        echo "already running: pid=$p"
+        exit 1
     fi
+
+    [ -x "$BIN" ] || {
+        echo "t5_agent not executable: $BIN"
+        exit 1
+    }
+
     mkdir -p "$WORK" || exit 1
     : > "$LOG"
-    nohup "$BIN" --watch-dir "$WATCH" --work-dir "$WORK" "$@" >> "$LOG" 2>&1 &
-    echo $! > "$PID"
+
+    nohup "$BIN" \
+        --watch-dir "$WATCH" \
+        --work-dir "$WORK" \
+        "$@" >> "$LOG" 2>&1 &
+
+    child=$!
+    echo "$child" > "$PID"
+
     sleep 1
-    if kill -0 "$(cat "$PID")" 2>/dev/null; then
-      echo "started: pid=$(cat "$PID") log=$LOG work=$WORK watch=$WATCH"
-      head -2 "$LOG"
+
+    if is_t5_process "$child"; then
+        echo "started: pid=$child log=$LOG"
+        head -2 "$LOG"
     else
-      echo "failed to start; log:"
-      cat "$LOG"
-      exit 1
+        rm -f "$PID"
+        echo "failed to start; log:"
+        cat "$LOG"
+        exit 1
     fi
     ;;
+
   once)
     mkdir -p "$WORK" || exit 1
-    exec "$BIN" --watch-dir "$WATCH" --work-dir "$WORK" --once "$@"
+    exec "$BIN" \
+        --watch-dir "$WATCH" \
+        --work-dir "$WORK" \
+        --once "$@"
     ;;
+
   status)
-    if [ -f "$PID" ] && kill -0 "$(cat "$PID")" 2>/dev/null; then
-      echo "running: pid=$(cat "$PID")"
-      tail -3 "$LOG"
+    if read_pid && is_t5_process "$p"; then
+        echo "running: pid=$p"
+        tail -3 "$LOG"
     else
-      echo "not running"
-      exit 1
+        cleanup_stale_pid
+        echo "not running"
+        exit 1
     fi
     ;;
+
   log)
     n=${1:-20}
-    tail -"$n" "$LOG"
+    tail -n "$n" "$LOG"
     ;;
+
   results)
     n=${1:-10}
     if [ -f "$WORK/results.jsonl" ]; then
-      tail -"$n" "$WORK/results.jsonl"
+        tail -n "$n" "$WORK/results.jsonl"
     else
-      echo "no results yet ($WORK/results.jsonl)"
+        echo "no results yet"
     fi
     ;;
+
   files)
     ls -l "$WORK"
     ;;
+
   stop)
-    if [ ! -f "$PID" ]; then
-      echo "no pid file"
-      exit 1
+    if ! read_pid; then
+        rm -f "$PID"
+        echo "no valid pid file"
+        exit 1
     fi
-    p=$(cat "$PID")
-    if kill -0 "$p" 2>/dev/null; then
-      kill -INT "$p" 2>/dev/null
-      i=0
-      while kill -0 "$p" 2>/dev/null && [ $i -lt 50 ]; do
-        sleep 0.1
-        i=$((i+1))
-      done
-      if kill -0 "$p" 2>/dev/null; then
-        echo "still running after SIGINT, sending TERM"
-        kill "$p" 2>/dev/null
-        sleep 0.5
-      fi
-      echo "stopped: pid=$p"
-      tail -2 "$LOG"
-    else
-      echo "not running (stale pid $p)"
+
+    if ! is_t5_process "$p"; then
+        rm -f "$PID"
+        echo "stale pid file; no signal sent"
+        exit 1
     fi
+
+    kill -INT "$p" 2>/dev/null || {
+        echo "SIGINT failed"
+        exit 1
+    }
+
+    if wait_exit "$p" 50; then
+        rm -f "$PID"
+        echo "stopped: pid=$p"
+        tail -2 "$LOG"
+        exit 0
+    fi
+
+    echo "SIGINT timeout; sending TERM"
+
+    if is_t5_process "$p"; then
+        kill -TERM "$p" 2>/dev/null || {
+            echo "SIGTERM failed"
+            exit 1
+        }
+    fi
+
+    if wait_exit "$p" 30; then
+        rm -f "$PID"
+        echo "stopped after TERM: pid=$p"
+        tail -2 "$LOG"
+        exit 0
+    fi
+
+    echo "ERROR: process still running: pid=$p"
+    exit 1
     ;;
+
   *)
-    echo "usage: sh $0 {start|once|status|log [N]|results [N]|files|stop} [extra args]"
+    echo "usage: sh $0 {start|once|status|log [N]|results [N]|files|stop}"
     exit 2
     ;;
 esac

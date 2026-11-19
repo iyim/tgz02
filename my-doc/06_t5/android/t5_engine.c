@@ -542,9 +542,19 @@ t5_engine *t5_engine_open(const t5_config *cfg, char *err, size_t errlen)
 
     /* 重启恢复：回放 jobs.jsonl（同一 job_id 后写覆盖先写） */
     ra.e = e;
-    if (t5_store_replay(cfg->work_dir, T5_JOBS_JSON, replay_cb, &ra, &lines, &bad) != 0) {
-        if (err && errlen) snprintf(err, errlen, "replay-failed:%s", T5_JOBS_JSON);
-        /* 回放失败不致命：从空表开始，但仍要能跑 */
+    if (t5_store_replay(cfg->work_dir,
+                        T5_JOBS_JSON,
+                        replay_cb,
+                        &ra,
+                        &lines,
+                        &bad) != 0) {
+        if (err && errlen) {
+            snprintf(err, errlen,
+                     "replay-failed:%s", T5_JOBS_JSON);
+        }
+
+        t5_engine_close(e);
+        return NULL;
     }
     e->stats.replay_lines = lines;
     e->stats.bad_lines = bad;

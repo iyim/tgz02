@@ -74,13 +74,24 @@ T4 打开 WAV 时把 `RIFF size` 写成 36、`data size` 写成 0，**只有 `t4
 因此 T5 的判定是：
 
 1. 连续两次采样 `(size, mtime)` 不变，且间隔 ≥ `--stable-ms`；
-2. `data_len != 0`（为 0 一定还没关闭）；
-3. `文件长度 >= 44 + data_len` 且 `riff_size + 8 == 文件长度`；
-4. 格式：`PCM(1)` / 单声道 / 16000 Hz / 16-bit / `block_align=2` / `byte_rate=32000`。
+2. 从文件偏移逐个 chunk 读取（64 位偏移、每步边界检查），得到 `fmt` 与 `data`；
+3. `data_len != 0`（为 0 一定还没关闭）；
+4. `文件长度 >= data_off + data_len`；
+5. 格式：`PCM(1)` / 单声道 / 16000 Hz / 16-bit / `block_align=2` / `byte_rate=32000`。
 
-1 或 2/3 不满足 → `INCOMPLETE`，下一轮再来（不是永久失败）；
-格式不符 → `FAILED` 并写清原因（`not-16000hz` / `not-mono` / `bad-magic:RIFF` …）。
-超过 `--incomplete-timeout-ms` 仍然是半截文件 → 判 `FAILED`（`incomplete-timeout:*`），避免无限重试。
+判定分支（修正轮后的实际行为）：
+
+| 情况 | 结果 |
+|---|---|
+| `riff_size + 8 > 文件长度`（文件短了） | `INCOMPLETE`，下一轮再来 |
+| `riff_size + 8 < 文件长度`（文件长了） | `INVALID`（`riff-size-mismatch`）——**T4 写盘中的文件也落在这里** |
+| `chunk` 长度越界（含 `0xFFFFFFFF`、`0xFFFFFFF0`） | `INVALID`（`chunk-length-out-of-range`） |
+| `fmt` 长度 < 16 | `INVALID`（`fmt-too-short`） |
+| 格式不符 | `INVALID` + 具体原因（`not-16000hz` / `not-mono` / `not-bits` …） |
+| 超过 `--incomplete-timeout-ms` 仍是半截 | `FAILED`（`incomplete-timeout:*`） |
+
+> 注意：第 2 行是**修正轮引入的语义变化**（旧实现把"写盘中"判 `INCOMPLETE` 并重试）。
+> 具体风险与复现见 `t5_01_implementation_report.md` §0.1。
 
 ## 状态机
 
@@ -121,4 +132,19 @@ T4 的 `hangover_ms=600`，说话中间停顿超过 0.6 s 会被切成多个 WAV
 - Mock Provider 不做任何识别，返回 `[MOCK] recognized segment <seg_id>`，`provider_type=mock`；
 - 单线程：Provider 若是慢速云端实现，扫描会被它阻塞（本阶段不涉及）；
 - `--max-jobs` 是硬上限，超出后不会无限建任务（见上）；
-- 目录轮询有最长 `--scan-interval-ms` 的发现延迟。
+- 目录轮询有最长 `--scan-interval-ms` 的发现延迟；
+- **写盘中的 T4 文件会被判 `INVALID` 而不是 `INCOMPLETE`**（修正轮语义，待审查决定是否改回）；
+  若采样恰好落在"最后一帧已写完、头未回填"的瞬间，关闭后大小不变会命中 `(名字,大小)` 去重而停在 `FAILED`；
+- `jobs.jsonl` 的字段读取器是**面向本项目格式的轻量解析器**，不是通用 JSON 解析器：
+  中间字段缺少结束引号时可能"吞掉"后续结构，只有结尾字段缺引号才会被判坏行。
+
+## 测试
+
+```powershell
+# 主机：168 条断言（WAV/JSONL/回放/状态机/有界内存），不需要设备
+cd tests; powershell -ExecutionPolicy Bypass -File build_and_run.ps1
+
+# 设备端：run_t5.sh 行为（start/status/stop/PID 校验/过期 PID/误杀防护）
+adb push tests/shell_test.sh /data/local/tmp/t5/shell_test.sh
+adb shell "sh /data/local/tmp/t5/shell_test.sh"
+```

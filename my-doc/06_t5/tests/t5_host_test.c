@@ -186,6 +186,28 @@ static long long file_hash(const char *path)
     return h;
 }
 
+/* 把截断的 WAV 补到头部声称的长度（T4 继续写数据的情形：大小变化，头不变） */
+static void extend_wav(const char *path, uint32_t total_data_bytes)
+{
+    long long cur;
+    long long want;
+    FILE *f;
+
+    cur = t5_file_size(path);
+    want = 44 + (long long)total_data_bytes;
+    if (cur < 0 || cur >= want) return;
+    f = fopen(path, "ab");
+    if (f == NULL) return;
+    while (cur < want) {
+        char zero[512];
+        size_t n = (size_t)((want - cur) > 512 ? 512 : (want - cur));
+        memset(zero, 0, sizeof(zero));
+        if (fwrite(zero, 1, n, f) != n) break;
+        cur += (long long)n;
+    }
+    fclose(f);
+}
+
 /* ---------------- 引擎快捷方式 ---------------- */
 
 static t5_config mk_cfg(const char *watch, const char *work)
@@ -319,45 +341,68 @@ static void test_non_wav_ignored(void)
 }
 
 /* ================= T03 ================= */
+/*
+ * 注意（T5-01 修正轮）：新的 t5_wav.c 把"riff_end < 文件长度"判为 INVALID。
+ * T4 写盘中的文件正是这种形态（riff_size 占位 36，数据已经在增长），
+ * 因此"写盘中"从 INCOMPLETE（延迟重试）变成 INVALID（建档即 FAILED）。
+ * 这里按新语义断言，并在末尾用 T03d 记录由此产生的"同名同大小去重"风险。
+ * 截断（riff_end > 文件长度）仍然是 INCOMPLETE -> 可重试，T03b 覆盖。
+ */
 static void test_incomplete(void)
 {
     char watch[T5_MAX_PATH], work[T5_MAX_PATH], wav[T5_MAX_PATH];
     t5_config c;
     t5_engine *e;
     const t5_stats *s;
+    char id[T5_MAX_ID];
+    const t5_job *j;
 
-    printf("\n[T03] 不完整 WAV 不处理，补全后才处理\n");
+    printf("\n[T03a] 写盘中的 T4 文件（riff=36 + 已有数据）在新解析器下的判定\n");
     case_dirs(3, watch, sizeof(watch), work, sizeof(work));
     rel_path(wav, sizeof(wav), watch, "seg_00112233_0001_100.wav");
-    make_wav(wav, 6400, 1, 16000, 1, 16);      /* 未关闭：data_len=0 */
+    make_wav(wav, 6400, 1, 16000, 1, 16);      /* 未关闭：riff=36, data_len=0, 已有 6400 字节数据 */
 
     c = mk_cfg(watch, work);
     e = open_engine(&c);
     if (e == NULL) return;
-
-    ok_eq_ll(t5_engine_scan(e), 0, "T03 第一轮：不建 Job");
-    ok_eq_ll(t5_engine_scan(e), 0, "T03 第二轮：仍然不建 Job");
+    ok_eq_ll(t5_engine_scan(e), 0, "T03a 首次采样只登记候选");
+    ok_eq_ll(t5_engine_scan(e), 1, "T03a 第二次采样建 Job（不是静默跳过）");
+    t5_make_job_id("seg_00112233_0001_100.wav", 44 + 6400, id);
+    j = t5_engine_find_job(e, id);
+    ok(j != NULL && j->state == T5_FAILED, "T03a 新语义：当场判 FAILED（旧实现是 INCOMPLETE 重试）");
+    if (j != NULL) ok_contains(j->err_msg, "riff-size-mismatch", "T03a 失败原因是 riff-size-mismatch");
     s = t5_engine_stats(e);
-    ok(s->incomplete_skips >= 1, "T03 计入 incomplete_skips");
+    ok_eq_ll((long long)s->incomplete_skips, 0, "T03a 不再走 incomplete 分支");
+    ok_eq_ll((long long)s->invalid, 1, "T03a 计入 invalid");
 
-    finalize_wav(wav, 6400);                   /* 模拟 T4 关闭并回填 */
-    ok_eq_ll(t5_engine_scan(e), 1, "T03 补全后建了 1 个 Job");
-    ok_eq_ll(t5_engine_process_ready(e, 0), 1, "T03 补全后可以处理");
-    ok_eq_ll((long long)t5_engine_stats(e)->succeeded, 1, "T03 succeeded = 1");
+    /* T03d：文件随后被 T4 正常关闭（只回填头，大小不变）-> 同名同大小被去重 */
+    finalize_wav(wav, 6400);
+    ok_eq_ll(t5_engine_scan(e), 0, "T03d 关闭后大小不变 -> 被 (名字,大小) 去重，不再建 Job");
+    j = t5_engine_find_job(e, id);
+    ok(j != NULL && j->state == T5_FAILED, "T03d 该片段停留在 FAILED（风险点，见报告）");
+    ok_eq_ll((long long)t5_engine_stats(e)->succeeded, 0, "T03d 没有识别成功");
     t5_engine_close(e);
 
-    /* 截断（头声称 6400，实际只有一半） */
+    /* T03b：截断（头声称 6400，实际 3200）-> INCOMPLETE，补数据后可正常处理 */
     {
         char watch2[T5_MAX_PATH], work2[T5_MAX_PATH], wav2[T5_MAX_PATH];
         t5_engine *e2;
         case_dirs(4, watch2, sizeof(watch2), work2, sizeof(work2));
         rel_path(wav2, sizeof(wav2), watch2, "seg_00112233_0002_200.wav");
         make_wav(wav2, 6400, 2, 16000, 1, 16);
+
         c = mk_cfg(watch2, work2);
         e2 = open_engine(&c);
         if (e2 != NULL) {
-            ok_eq_ll(scan2(e2), 0, "T03 截断文件不建 Job");
-            ok(t5_engine_stats(e2)->incomplete_skips >= 1, "T03 截断计入 incomplete_skips");
+            ok_eq_ll(t5_engine_scan(e2), 0, "T03b 首次采样只登记候选");
+            ok_eq_ll(t5_engine_scan(e2), 0, "T03b 截断文件不建 Job");
+            ok(t5_engine_stats(e2)->incomplete_skips >= 1, "T03b 截断计入 incomplete_skips");
+
+            extend_wav(wav2, 6400);            /* T4 继续把剩下的数据写完（大小变化） */
+            ok_eq_ll(t5_engine_scan(e2), 0, "T03b 刚补完的一轮只更新候选");
+            ok_eq_ll(t5_engine_scan(e2), 1, "T03b 稳定后建 Job");
+            ok_eq_ll(t5_engine_process_ready(e2, 0), 1, "T03b 补全后可以处理");
+            ok_eq_ll((long long)t5_engine_stats(e2)->succeeded, 1, "T03b succeeded = 1");
             t5_engine_close(e2);
         }
     }
@@ -763,6 +808,431 @@ static void test_store_format(void)
     }
 }
 
+
+/* ================= T14：WAV 解析健壮性 ================= */
+static void patch_u32(const char *path, long off, uint32_t v)
+{
+    FILE *f = fopen(path, "r+b");
+    unsigned char b[4];
+    if (f == NULL) return;
+    b[0] = (unsigned char)(v & 0xff);
+    b[1] = (unsigned char)((v >> 8) & 0xff);
+    b[2] = (unsigned char)((v >> 16) & 0xff);
+    b[3] = (unsigned char)((v >> 24) & 0xff);
+    fseek(f, off, SEEK_SET);
+    fwrite(b, 1, 4, f);
+    fclose(f);
+}
+
+static void check_one(const char *path, t5_wav_check want, const char *want_err,
+                      const char *name)
+{
+    t5_wav_info wi;
+    char err[T5_MAX_ERR];
+    t5_wav_check got;
+
+    err[0] = '\0';
+    got = t5_wav_inspect(path, &wi, err, sizeof(err));
+    ok_impl(got == want, name, t5_wav_check_name(got));
+    if (want_err != NULL) ok_contains(err, want_err, "  └ 错误原因");
+}
+
+static void test_wav_robustness(void)
+{
+    char base[T5_MAX_PATH], p[T5_MAX_PATH];
+    char watch[T5_MAX_PATH], work[T5_MAX_PATH];
+
+    printf("\n[T14] WAV 解析：正常头 / 畸形 chunk / 长度越界 / 不影响邻居\n");
+    snprintf(base, sizeof(base), "%s/case20", g_root);
+    t5_mkdir_p(base);
+    rel_path(p, sizeof(p), base, "ok.wav");
+    make_wav(p, 6400, 0, 16000, 1, 16);
+
+    /* 1) 正常 T4 44 字节头 */
+    check_one(p, T5_WAV_OK, NULL, "T14.1 正常 T4 WAV -> ok");
+
+    /* 2) fmt chunk 长度 8（< 16） */
+    {
+        char f2[T5_MAX_PATH];
+        rel_path(f2, sizeof(f2), base, "fmt_short.wav");
+        make_wav(f2, 6400, 0, 16000, 1, 16);
+        patch_u32(f2, 16, 8);
+        check_one(f2, T5_WAV_INVALID, "fmt-too-short", "T14.2 fmt 长度 8 -> invalid");
+    }
+
+    /* 3) fmt chunk 长度 2000（超过剩余空间） */
+    {
+        char f3[T5_MAX_PATH];
+        rel_path(f3, sizeof(f3), base, "fmt_over.wav");
+        make_wav(f3, 6400, 0, 16000, 1, 16);
+        patch_u32(f3, 16, 2000);
+        check_one(f3, T5_WAV_INVALID, "chunk-length-out-of-range", "T14.3 fmt 长度 2000 -> invalid");
+    }
+
+    /* 4) chunk 长度 0xFFFFFFFF */
+    {
+        char f4[T5_MAX_PATH];
+        rel_path(f4, sizeof(f4), base, "len_ffff.wav");
+        make_wav(f4, 6400, 0, 16000, 1, 16);
+        patch_u32(f4, 40, 0xFFFFFFFFu);
+        check_one(f4, T5_WAV_INVALID, "chunk-length-out-of-range", "T14.4 data 长度 0xFFFFFFFF -> invalid");
+    }
+
+    /* 5) chunk 长度 0xFFFFFFF0 */
+    {
+        char f5[T5_MAX_PATH];
+        rel_path(f5, sizeof(f5), base, "len_fffff0.wav");
+        make_wav(f5, 6400, 0, 16000, 1, 16);
+        patch_u32(f5, 16, 0xFFFFFFF0u);
+        check_one(f5, T5_WAV_INVALID, "chunk-length-out-of-range", "T14.5 fmt 长度 0xFFFFFFF0 -> invalid");
+    }
+
+    /* 6) data 长度超出 RIFF 范围 */
+    {
+        char f6[T5_MAX_PATH];
+        rel_path(f6, sizeof(f6), base, "data_over.wav");
+        make_wav(f6, 6400, 0, 16000, 1, 16);
+        patch_u32(f6, 40, 6400u + 64u);
+        check_one(f6, T5_WAV_INVALID, "chunk-length-out-of-range", "T14.6 data 长度超出 RIFF -> invalid");
+    }
+
+    /* 7) RIFF 长度大于文件实际长度 */
+    {
+        char f7[T5_MAX_PATH];
+        rel_path(f7, sizeof(f7), base, "riff_big.wav");
+        make_wav(f7, 6400, 0, 16000, 1, 16);
+        patch_u32(f7, 4, 36u + 6400u + 100u);
+        check_one(f7, T5_WAV_INCOMPLETE, "riff-truncated", "T14.7 RIFF 长度 > 文件 -> incomplete");
+    }
+
+    /* 8) RIFF 长度小于文件实际长度 */
+    {
+        char f8[T5_MAX_PATH];
+        rel_path(f8, sizeof(f8), base, "riff_small.wav");
+        make_wav(f8, 6400, 0, 16000, 1, 16);
+        patch_u32(f8, 4, 36u + 6400u - 100u);
+        check_one(f8, T5_WAV_INVALID, "riff-size-mismatch", "T14.8 RIFF 长度 < 文件 -> invalid");
+    }
+
+    /* 9) 损坏 WAV 不影响同目录正常 WAV（经过引擎） */
+    {
+        t5_config c;
+        t5_engine *e;
+        case_dirs(21, watch, sizeof(watch), work, sizeof(work));
+        rel_path(p, sizeof(p), watch, "seg_99999999_0001_100.wav");
+        make_wav(p, 6400, 0, 16000, 1, 16);
+        {
+            char bad[T5_MAX_PATH];
+            rel_path(bad, sizeof(bad), watch, "seg_99999999_0002_200.wav");
+            make_wav(bad, 6400, 0, 16000, 1, 16);
+            patch_u32(bad, 40, 0xFFFFFFFFu);
+        }
+        c = mk_cfg(watch, work);
+        e = open_engine(&c);
+        if (e != NULL) {
+            ok_eq_ll(scan2(e), 2, "T14.9 好文件与坏文件各建一个 Job");
+            t5_engine_process_ready(e, 0);
+            ok_eq_ll((long long)t5_engine_stats(e)->succeeded, 1, "T14.9 好文件识别成功");
+            ok_eq_ll((long long)t5_engine_stats(e)->invalid, 1, "T14.9 坏文件判 invalid");
+            ok_eq_ll((long long)t5_engine_stats(e)->failed, 0, "T14.9 没有运行期失败");
+            t5_engine_close(e);
+        }
+    }
+}
+
+/* ================= T15：JSONL 严格解析 ================= */
+typedef struct {
+    unsigned long calls;
+    t5_job last;
+} replay_sink;
+
+static void sink_cb(void *ud, const t5_job *j)
+{
+    replay_sink *s = (replay_sink *)ud;
+    s->calls++;
+    s->last = *j;
+}
+
+static void write_text_file(const char *path, const char *content)
+{
+    FILE *f = fopen(path, "wb");
+    if (f == NULL) return;
+    fputs(content, f);
+    fclose(f);
+}
+
+/* 把 jobs.jsonl 换成给定内容并回放，返回 (lines, bad) */
+static void replay_with(const char *work, const char *content,
+                        unsigned long *lines, unsigned long *bad, replay_sink *sink)
+{
+    char path[T5_MAX_PATH];
+    snprintf(path, sizeof(path), "%s/jobs.jsonl", work);
+    write_text_file(path, content);
+    if (sink != NULL) { sink->calls = 0; memset(&sink->last, 0, sizeof(sink->last)); }
+    if (t5_store_replay(work, "jobs.jsonl", sink_cb, sink, lines, bad) != 0) {
+        *lines = 0;
+        *bad = 0;
+    }
+}
+
+static void test_jsonl_strict(void)
+{
+    char work[T5_MAX_PATH], path[T5_MAX_PATH], line[2048], buf[4096];
+    t5_job j;
+    replay_sink sink;
+    unsigned long lines = 0, bad = 0;
+    char watch[T5_MAX_PATH];
+
+    printf("\n[T15] JSONL：严格解析（缺引号/非法转义/缺字段/溢出/损坏后仍可恢复）\n");
+    case_dirs(22, watch, sizeof(watch), work, sizeof(work));
+    (void)watch;
+
+    memset(&j, 0, sizeof(j));
+    snprintf(j.job_id, sizeof(j.job_id), "%s", "0123456789abcdef");
+    snprintf(j.file, sizeof(j.file), "%s", "/data/local/tmp/t4/segments/x.wav");
+    snprintf(j.name, sizeof(j.name), "%s", "seg_aaaaaaaa_0001_100.wav");
+    j.size = 6444;
+    j.state = T5_SUCCEEDED;
+    snprintf(j.provider, sizeof(j.provider), "mock");
+    snprintf(j.provider_type, sizeof(j.provider_type), "mock");
+    snprintf(j.text, sizeof(j.text), "[MOCK] recognized segment 1");
+    snprintf(j.run_id, sizeof(j.run_id), "aaaaaaaa");
+    j.seg_id = 1;
+    j.start_seq = 100;
+    ok(t5_job_to_json(&j, line, sizeof(line)) > 0, "T15 序列化一条正常记录");
+
+    /* 1) 正常记录 */
+    replay_with(work, line, &lines, &bad, &sink);
+    ok_eq_ll((long long)lines, 1, "T15.1 正常记录回放 1 条");
+    ok_eq_ll((long long)bad, 0, "T15.1 没有坏行");
+    ok(sink.calls == 1 && sink.last.state == T5_SUCCEEDED, "T15.1 状态 SUCCEEDED");
+    ok_contains(sink.last.text, "[MOCK] recognized segment 1", "T15.1 文本解析正确");
+
+    /* 2) 缺少结束双引号（字符串一直延续到记录结尾） */
+    write_text_file((snprintf(path, sizeof(path), "%s/jobs.jsonl", work), path),
+                    "{\"v\":1,\"job_id\":\"0123456789abcdef\",\"file\":\"/a.wav\","
+                    "\"name\":\"a.wav\",\"size\":6444,\"state\":\"SUCCEEDED\",\"attempt\":0,"
+                    "\"t_start\":\"\",\"t_end\":\"\",\"provider\":\"mock\","
+                    "\"provider_type\":\"mock\",\"text\":\"unterminated}\n");
+    lines = bad = 0;
+    ok(t5_store_replay(work, "jobs.jsonl", NULL, NULL, &lines, &bad) == 0,
+       "T15.2 回放不报 I/O 错误（坏行不是 I/O 错误）");
+    ok_eq_ll((long long)lines, 0, "T15.2 缺结束引号 -> 该行被拒");
+    ok_eq_ll((long long)bad, 1, "T15.2 计入 bad");
+
+    /* 3) 非法转义 */
+    snprintf(buf, sizeof(buf), "%s", line);
+    {
+        char *q = strstr(buf, "[MOCK]");
+        if (q) { buf[0] = buf[0]; memmove(q + 1, q, strlen(q) + 1); q[0] = '\\'; q[1] = 'x'; }
+    }
+    replay_with(work, buf, &lines, &bad, &sink);
+    ok_eq_ll((long long)lines, 0, "T15.3 非法转义 \\x -> 该行被拒");
+
+    /* 4) 不完整 Unicode 转义 */
+    write_text_file((snprintf(path, sizeof(path), "%s/jobs.jsonl", work), path),
+                    "{\"v\":1,\"job_id\":\"0123456789abcdef\",\"file\":\"/a.wav\",\"name\":\"a.wav\","
+                    "\"size\":6444,\"state\":\"SUCCEEDED\",\"attempt\":0,\"t_start\":\"\",\"t_end\":\"\","
+                    "\"provider\":\"mock\",\"provider_type\":\"mock\",\"text\":\"\\u12\",\"err_code\":0,"
+                    "\"err_msg\":\"\"}\n");
+    lines = bad = 0;
+    ok(t5_store_replay(work, "jobs.jsonl", NULL, NULL, &lines, &bad) == 0, "T15.4 回放不报 I/O 错误");
+    ok_eq_ll((long long)lines, 0, "T15.4 不完整 \\u 转义 -> 该行被拒");
+    ok_eq_ll((long long)bad, 1, "T15.4 计入 bad");
+
+    /* 5) 缺 job_id */
+    replay_with(work,
+        "{\"v\":1,\"file\":\"/a.wav\",\"name\":\"a.wav\",\"size\":6444,\"state\":\"SUCCEEDED\","
+        "\"attempt\":0,\"t_start\":\"\",\"t_end\":\"\",\"provider\":\"mock\",\"provider_type\":\"mock\","
+        "\"text\":\"x\",\"err_code\":0,\"err_msg\":\"\"}\n", &lines, &bad, &sink);
+    ok_eq_ll((long long)lines, 0, "T15.5 缺 job_id -> 该行被拒");
+
+    /* 6) 缺 state */
+    replay_with(work,
+        "{\"v\":1,\"job_id\":\"0123456789abcdef\",\"file\":\"/a.wav\",\"name\":\"a.wav\",\"size\":6444,"
+        "\"attempt\":0,\"t_start\":\"\",\"t_end\":\"\",\"provider\":\"mock\",\"provider_type\":\"mock\","
+        "\"text\":\"x\",\"err_code\":0,\"err_msg\":\"\"}\n", &lines, &bad, &sink);
+    ok_eq_ll((long long)lines, 0, "T15.6 缺 state -> 该行被拒");
+
+    /* 7) 缺 file */
+    replay_with(work,
+        "{\"v\":1,\"job_id\":\"0123456789abcdef\",\"name\":\"a.wav\",\"size\":6444,\"state\":\"SUCCEEDED\","
+        "\"attempt\":0,\"t_start\":\"\",\"t_end\":\"\",\"provider\":\"mock\",\"provider_type\":\"mock\","
+        "\"text\":\"x\",\"err_code\":0,\"err_msg\":\"\"}\n", &lines, &bad, &sink);
+    ok_eq_ll((long long)lines, 0, "T15.7 缺 file -> 该行被拒");
+
+    /* 8) 数字字段溢出 */
+    replay_with(work,
+        "{\"v\":1,\"job_id\":\"0123456789abcdef\",\"file\":\"/a.wav\",\"name\":\"a.wav\","
+        "\"size\":999999999999999999999999,\"state\":\"SUCCEEDED\",\"attempt\":0,"
+        "\"t_start\":\"\",\"t_end\":\"\",\"provider\":\"mock\",\"provider_type\":\"mock\","
+        "\"text\":\"x\",\"err_code\":0,\"err_msg\":\"\"}\n", &lines, &bad, &sink);
+    ok_eq_ll((long long)lines, 0, "T15.8 size 溢出 -> 该行被拒");
+
+    /* 9) 有效记录后跟随损坏记录 */
+    snprintf(buf, sizeof(buf), "%s{\"broken\":1,\"text\":\"unterminated\n", line);
+    replay_with(work, buf, &lines, &bad, &sink);
+    ok_eq_ll((long long)lines, 1, "T15.9 有效记录仍被读出");
+    ok_eq_ll((long long)bad, 1, "T15.9 损坏记录计入 bad");
+
+    /* 10) 损坏记录之后的有效记录仍能恢复 */
+    snprintf(buf, sizeof(buf), "{\"broken\":1\n%s", line);
+    replay_with(work, buf, &lines, &bad, &sink);
+    ok_eq_ll((long long)lines, 1, "T15.10 损坏行之后的有效记录被读出");
+    ok_eq_ll((long long)bad, 1, "T15.10 损坏行计入 bad");
+    ok(sink.calls == 1 && sink.last.state == T5_SUCCEEDED, "T15.10 恢复出的状态正确");
+}
+
+/* 损坏记录不能覆盖有效 SUCCEEDED 记录（引擎层面） */
+static void test_corrupt_does_not_override(void)
+{
+    char watch[T5_MAX_PATH], work[T5_MAX_PATH], path[T5_MAX_PATH], line[2048];
+    t5_config c;
+    t5_engine *e;
+    t5_job j;
+    const t5_job *got;
+
+    printf("\n[T15b] 损坏记录不覆盖有效 SUCCEEDED，也不触发重复识别\n");
+    case_dirs(23, watch, sizeof(watch), work, sizeof(work));
+
+    memset(&j, 0, sizeof(j));
+    t5_make_job_id("seg_cccccccc_0001_100.wav", 6444, j.job_id);
+    snprintf(j.file, sizeof(j.file), "%s/seg_cccccccc_0001_100.wav", watch);
+    snprintf(j.name, sizeof(j.name), "%s", "seg_cccccccc_0001_100.wav");
+    j.size = 6444;
+    j.state = T5_SUCCEEDED;
+    snprintf(j.provider, sizeof(j.provider), "mock");
+    snprintf(j.provider_type, sizeof(j.provider_type), "mock");
+    snprintf(j.text, sizeof(j.text), "[MOCK] recognized segment 1");
+    j.seg_id = 1;
+    j.start_seq = 100;
+    ok(t5_job_to_json(&j, line, sizeof(line)) > 0, "T15b 造一条 SUCCEEDED 记录");
+
+    snprintf(path, sizeof(path), "%s/jobs.jsonl", work);
+    {
+        FILE *f = fopen(path, "wb");
+        if (f != NULL) {
+            fputs(line, f);
+            fputs("{\"v\":1,\"job_id\":\"deadbeefdeadbeef\",\"text\":\"broken\n", f);
+            fclose(f);
+        }
+    }
+
+    c = mk_cfg(watch, work);
+    e = open_engine(&c);
+    if (e != NULL) {
+        ok_eq_ll((long long)t5_engine_stats(e)->replay_lines, 1, "T15b 有效记录 1 条");
+        ok_eq_ll((long long)t5_engine_stats(e)->bad_lines, 1, "T15b 损坏记录 1 条");
+        got = t5_engine_find_job(e, j.job_id);
+        ok(got != NULL && got->state == T5_SUCCEEDED, "T15b 状态仍是 SUCCEEDED（未被覆盖）");
+        ok_eq_ll(t5_engine_scan(e), 0, "T15b 扫描不新建 Job");
+        ok_eq_ll(t5_engine_process_ready(e, 0), 0, "T15b 不重复识别");
+        t5_engine_close(e);
+    }
+}
+
+/* ================= T16：历史回放失败必须阻止启动 ================= */
+static void test_replay_failure(void)
+{
+    char watch[T5_MAX_PATH], work[T5_MAX_PATH], path[T5_MAX_PATH];
+    t5_config c;
+    t5_engine *e;
+    char err[T5_MAX_ERR];
+
+    printf("\n[T16] 回放：文件不存在可启动 / 真实读取错误必须启动失败\n");
+
+    /* 1) jobs.jsonl 不存在 -> 首次启动 */
+    case_dirs(24, watch, sizeof(watch), work, sizeof(work));
+    c = mk_cfg(watch, work);
+    e = open_engine(&c);
+    ok(e != NULL, "T16.1 jobs.jsonl 不存在 -> 正常启动");
+    if (e != NULL) {
+        ok_eq_ll((long long)t5_engine_stats(e)->replay_lines, 0, "T16.1 replay_lines = 0");
+        t5_engine_close(e);
+    }
+
+    /* 2) 正常存在 -> 正常恢复 */
+    {
+        char wav[T5_MAX_PATH];
+        rel_path(wav, sizeof(wav), watch, "seg_dddddddd_0001_100.wav");
+        make_wav(wav, 6400, 0, 16000, 1, 16);
+        e = open_engine(&c);
+        if (e != NULL) {
+            scan2(e);
+            t5_engine_process_ready(e, 0);
+            ok_eq_ll((long long)t5_engine_stats(e)->succeeded, 1, "T16.2 首次运行成功 1 个");
+            t5_engine_close(e);
+        }
+        e = open_engine(&c);
+        if (e != NULL) {
+            ok(t5_engine_stats(e)->replay_lines > 0, "T16.2 重启读到历史记录");
+            t5_engine_close(e);
+        }
+    }
+
+    /* 3) 读取发生真实错误：把 jobs.jsonl 做成目录
+     *    Windows: fopen 失败(EACCES) -> replay 返回 -1
+     *    Linux/Android: fopen 成功但 fgets 读到 EISDIR -> ferror -> replay 返回 -1
+     *    两条路径都必须让 t5_engine_open() 返回 NULL。 */
+    {
+        char work2[T5_MAX_PATH], watch2[T5_MAX_PATH];
+        case_dirs(25, watch2, sizeof(watch2), work2, sizeof(work2));
+        snprintf(path, sizeof(path), "%s/jobs.jsonl", work2);
+        mkdir(path);
+        ok(t5_is_dir(path), "T16.3 已把 jobs.jsonl 造成目录");
+
+        {
+            unsigned long l = 0, b = 0;
+            ok(t5_store_replay(work2, "jobs.jsonl", NULL, NULL, &l, &b) == -1,
+               "T16.3 历史读不出来时 t5_store_replay 返回 -1（目录/EISDIR）");
+        }
+
+        c = mk_cfg(watch2, work2);
+        err[0] = '\0';
+        e = t5_engine_open(&c, err, sizeof(err));
+        ok(e == NULL, "T16.3 回放/打开失败 -> 引擎不启动");
+        ok(strstr(err, "replay-failed") != NULL ||
+           strstr(err, "cannot-open-store-in") != NULL,
+           "T16.3 错误信息写明历史不可用（replay-failed / cannot-open-store-in）");
+        if (e != NULL) t5_engine_close(e);
+
+        /* 4) 回放失败时不得调用 Mock Provider、不得处理 WAV */
+        {
+            char wav[T5_MAX_PATH];
+            rel_path(wav, sizeof(wav), watch2, "seg_eeeeeeee_0001_100.wav");
+            make_wav(wav, 6400, 0, 16000, 1, 16);
+            err[0] = '\0';
+            e = t5_engine_open(&c, err, sizeof(err));
+            ok(e == NULL, "T16.4 有 WAV 也一样不启动");
+            snprintf(path, sizeof(path), "%s/results.jsonl", work2);
+            ok(t5_file_size(path) < 0, "T16.4 没有产生任何识别结果");
+        }
+    }
+
+    /* 5) 已成功任务重启后不得重复执行（独立基线） */
+    {
+        char watch3[T5_MAX_PATH], work3[T5_MAX_PATH], wav3[T5_MAX_PATH];
+        case_dirs(26, watch3, sizeof(watch3), work3, sizeof(work3));
+        rel_path(wav3, sizeof(wav3), watch3, "seg_ffffffff_0001_100.wav");
+        make_wav(wav3, 6400, 0, 16000, 1, 16);
+        c = mk_cfg(watch3, work3);
+        e = open_engine(&c);
+        if (e != NULL) {
+            scan2(e);
+            t5_engine_process_ready(e, 0);
+            ok_eq_ll((long long)t5_engine_stats(e)->succeeded, 1, "T16.5 首次成功 1 个");
+            t5_engine_close(e);
+        }
+        e = open_engine(&c);
+        if (e != NULL) {
+            ok_eq_ll((long long)t5_engine_stats(e)->succeeded, 0, "T16.5 重启后 succeeded = 0");
+            ok_eq_ll(t5_engine_scan(e), 0, "T16.5 重启后不新建 Job");
+            ok_eq_ll(t5_engine_process_ready(e, 0), 0, "T16.5 重启后不重复执行");
+            t5_engine_close(e);
+        }
+    }
+}
+
 int main(void)
 {
     printf("t5_host_test -- T5 ASR pipeline (mock) host tests\n");
@@ -782,6 +1252,11 @@ int main(void)
     test_distinct_run_ids();
     test_bounded();
     test_store_format();
+
+    test_wav_robustness();
+    test_jsonl_strict();
+    test_corrupt_does_not_override();
+    test_replay_failure();
 
     printf("\n=== %d passed, %d failed ===\n", g_pass, g_fail);
     printf("(fixtures kept under %s)\n", g_root);

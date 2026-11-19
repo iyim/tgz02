@@ -1,0 +1,31 @@
+[S1] 正常 start / status / stop
+  ok   S1.1 start 输出 started
+  ok   S1.2 PID 文件合法（pid=1362）
+  ok   S1.3 status 返回 0（运行中）
+  ok   S1.4 stop 输出 stopped
+  ok   S2.1 PID 文件已清理
+  ok   S2.2 进程确实退出（/proc 已无该 pid）
+  ok   S2.3 停止后 status 返回非 0
+[S3] 再次 start
+  ok   S3.1 再次 start 成功
+  ok   S3.2 新 PID 与上次不同
+[S7] 已在运行时不允许重复 start
+  ok   S7.1 重复 start 被拒绝且返回非 0
+  ok   S7.2 原有实例的 PID 未被改写
+[S4] 过期 PID 文件（指向已退出的进程）
+  ok   S4.1 过期 PID 下 status 报 not running
+  ok   S4.2 过期 PID 文件被清理
+[S5/S6] PID 被其它进程占用：stop 不得误杀
+  ok   S5.1 stop 识别为 stale 并返回非 0
+  ok   S5.2 置为失败前不打印 stopped
+  ok   S6.1 没有任何 stopped 谎报
+  ok   S6.2 无关进程仍然活着（没有被信号打到）
+  ok   S6.3 stale 文件不会阻止正常 start
+[S9] 无 PID 文件时 stop 必须失败且不得谎报
+  ok   S9.1 无 PID 文件 -> 非 0 + no valid pid file
+  ok   S9.2 没有 stopped 谎报
+[S9b] 未执行项（如实标注，不计入 pass）
+  --   S8 SIGINT 超时 -> TERM：需要一个 argv[0]==/data/local/tmp/t5/t5_agent 且忽略 SIGINT 的 ELF 替身，本轮未造
+  --   S9c TERM 之后仍在运行的失败路径：同上，未执行
+
+=== shell_test: 20 passed, 0 failed ===

@@ -1,1 +1,0 @@
-{"t":"t5_start","watch":"/data/local/tmp/t5/watch_demo","work":"/data/local/tmp/t5/work_demo","provider":"mock","provider_type":"mock","scan_interval_ms":1000,"stable_ms":500,"max_jobs":4096,"max_retries":3,"once":0}

@@ -1,3 +1,0 @@
-{"t":"t5_start","watch":"/data/local/tmp/t4/segments","work":"/data/local/tmp/t5/work_v1","provider":"mock","provider_type":"mock","scan_interval_ms":1000,"stable_ms":500,"max_jobs":4096,"max_retries":3,"once":1}
-[t5] once: rounds=2 added=0 processed=0
-{"t":"t5_stats","scans":2,"files_seen":40,"new_jobs":0,"dup_skips":40,"incomplete_skips":0,"invalid":0,"succeeded":0,"failed":0,"retried":0,"queue_full":0,"evicted":0,"recovered":0,"bad_lines":0,"provider_errors":0,"store_errors":0,"jobs_tracked":20,"replay_lines":100}

@@ -1,4 +1,0 @@
-{"t":"t5_start","watch":"/data/local/tmp/t5/watch_demo","work":"/data/local/tmp/t5/work_demo","provider":"mock","provider_type":"mock","scan_interval_ms":1000,"stable_ms":500,"max_jobs":4096,"max_retries":3,"once":0}
-{"t":"t5_stats","scans":11,"files_seen":4,"new_jobs":2,"dup_skips":0,"incomplete_skips":0,"invalid":0,"succeeded":2,"failed":0,"retried":0,"queue_full":0,"evicted":0,"recovered":0,"bad_lines":0,"provider_errors":0,"store_errors":0,"jobs_tracked":2,"replay_lines":0}
-[t5] stop requested; draining lightweight state
-{"t":"t5_stats","scans":20,"files_seen":22,"new_jobs":2,"dup_skips":18,"incomplete_skips":0,"invalid":0,"succeeded":2,"failed":0,"retried":0,"queue_full":0,"evicted":0,"recovered":0,"bad_lines":0,"provider_errors":0,"store_errors":0,"jobs_tracked":2,"replay_lines":0}
