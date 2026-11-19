@@ -49,7 +49,7 @@ drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
   ok   E 目录里恰好新增 N 个 WAV（旧文件未被覆盖）
 
 === 34 passed, 0 failed ===
-########## run 2 (elapsed 0.53s, rc=0) ##########
+########## run 2 (elapsed 0.52s, rc=0) ##########
 drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
 (cleanup) removed 6 stale wav files from /data/local/tmp/t4/drain_out
 
@@ -100,7 +100,7 @@ drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
   ok   E 目录里恰好新增 N 个 WAV（旧文件未被覆盖）
 
 === 34 passed, 0 failed ===
-########## run 3 (elapsed 0.54s, rc=0) ##########
+########## run 3 (elapsed 0.51s, rc=0) ##########
 drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
 (cleanup) removed 6 stale wav files from /data/local/tmp/t4/drain_out
 
@@ -202,7 +202,7 @@ drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
   ok   E 目录里恰好新增 N 个 WAV（旧文件未被覆盖）
 
 === 34 passed, 0 failed ===
-########## run 5 (elapsed 0.54s, rc=0) ##########
+########## run 5 (elapsed 0.53s, rc=0) ##########
 drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
 (cleanup) removed 6 stale wav files from /data/local/tmp/t4/drain_out
 
@@ -256,7 +256,7 @@ drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
 
 ########## 5-run summary ##########
 run 1: elapsed=0.51s rc=0 === 34 passed, 0 failed ===
-run 2: elapsed=0.53s rc=0 === 34 passed, 0 failed ===
-run 3: elapsed=0.54s rc=0 === 34 passed, 0 failed ===
+run 2: elapsed=0.52s rc=0 === 34 passed, 0 failed ===
+run 3: elapsed=0.51s rc=0 === 34 passed, 0 failed ===
 run 4: elapsed=0.52s rc=0 === 34 passed, 0 failed ===
-run 5: elapsed=0.54s rc=0 === 34 passed, 0 failed ===
+run 5: elapsed=0.53s rc=0 === 34 passed, 0 failed ===

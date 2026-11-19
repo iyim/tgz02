@@ -308,8 +308,16 @@ int main(void)
         expect(rc == 0, "C pthread_create 成功");
         if (rc == 0) {
             nap_ms(200);                   /* 让线程先把队列吃掉并进入等待 */
-            g_ctx.rx_done = 1;             /* 接收线程已结束（本用例无接收线程） */
-            stop_and_broadcast();
+
+            /* 与生产 main 相同的收尾方式：状态更新与 broadcast 在同一把锁内完成。
+             * rx_done / g_stop 都是处理线程会读的共享状态，必须在 ctx->mu 下写，
+             * 否则就是数据竞争（不能只靠"先写后广播"的巧合）。 */
+            pthread_mutex_lock(&g_ctx.mu);
+            g_ctx.rx_done = 1;
+            g_stop = 1;
+            pthread_cond_broadcast(&g_ctx.cv);
+            pthread_mutex_unlock(&g_ctx.mu);
+
             pthread_join(th, NULL);
         }
         expect(g_processed == 40, "C processed == 40");

@@ -13,6 +13,9 @@
 >
 > **T4-04 追加（见 §12）**：修掉并发测试自身的数据竞争（`g_processed`/队列写入）与 E 用例的起跑/
 > 创建检查问题 —— 真机连跑 5 次 `34 passed, 0 failed`。
+>
+> **T4-05 追加（见 §13）**：补齐 C 用例遗漏的 `rx_done` 加锁写 + 全文件共享状态审计 ——
+> 真机连跑 5 次仍 `34 passed, 0 failed`。
 
 - 基线 commit：`50c61f8863a028c4f94231de18efd97fd4e2d05e`
 - 本轮提交：`f93e2c967807357604e395769db747d0a1940ac5`
@@ -701,3 +704,95 @@ eceiver_test.py` | exit 0 |
    内核的原子性由 `O_EXCL` 本身保证（T4-03 已论证），本测试只验证结果正确。
 3. 真人说话（场景 B/C）与背景噪声（场景 D）仍未验证。
 4. 只验证了同进程 4 线程并发创建，未做多进程并发。
+
+---
+
+## 13. T4-05：C 用例的 `rx_done` 数据竞争修复 + 共享状态审计
+
+基线：`ccda16cd494c9ba5eaca90e8ae8bc2a91977fd68`；提交：`test: synchronize T4 drain test completion flag`。
+只改 `tests/drain_test.c` 一处，不触碰生产退出握手、WAV 创建逻辑、D/E 用例。
+
+### 13.1 改了什么
+
+T4-04 把 D 用例的 `rx_done` 写放进了锁里，但漏了 C 用例。C 原来的收尾是：
+
+```c
+nap_ms(200);
+g_ctx.rx_done = 1;          /* ← 未持锁写共享状态 */
+stop_and_broadcast();       /* g_stop=1 + 加锁 broadcast（两次状态更新不在同一临界区） */
+pthread_join(th, NULL);
+```
+
+处理线程在 `while (q.count == 0 && !(g_stop && ctx->rx_done))` 里读这两个字段，
+所以上面的写法是对**同一份共享状态的无锁写 vs 持锁读**，属于数据竞争（正确性靠"先写后广播"的巧合）。
+
+改为与生产 `main` 完全一致的收尾方式，状态更新与广播在同一临界区内完成：
+
+```c
+pthread_mutex_lock(&g_ctx.mu);
+g_ctx.rx_done = 1;
+g_stop = 1;
+pthread_cond_broadcast(&g_ctx.cv);
+pthread_mutex_unlock(&g_ctx.mu);
+
+pthread_join(th, NULL);
+```
+
+不再调用 `stop_and_broadcast()`（该函数仍保留给 D 用例，D 的状态更新本来就在锁内）。
+C 的测试目标不变：40 帧全部处理、队列清空、`vad_flush` 正常收尾、线程正常退出。
+
+### 13.2 全文件共享状态审计（逐条核对）
+
+| 共享状态 | 位置 | 同步方式 | 结论 |
+|---|---|---|---|
+| `g_ctx.rx_done` 写 | `reset_state()`（第 111 行） | 此时**没有**任何线程存在 | 无竞争 ✅ |
+| `g_ctx.rx_done` 写 | 用例 A / B（第 259 / 290 行） | `proc_thread()` 同步调用，线程尚未创建 | 无竞争 ✅ |
+| `g_ctx.rx_done` 写 | 用例 C（第 316 行） | **本轮修复**：`ctx->mu` 内写 + 锁内 broadcast | 已修 ✅ |
+| `g_ctx.rx_done` 写 | 用例 D（第 366 行） | `ctx->mu` 内写 + 锁内 broadcast（T4-04 已修） | ✅ |
+| `g_ctx.rx_done` 读 | 处理线程退出条件 | 生产代码在 `ctx->mu` 内读 | ✅ |
+| `g_ctx.rx_done` 读 | 断言（第 375 行） | `pthread_join` 之后 | ✅ |
+| `g_processed` 写 | 处理线程 `g_processed++` | 生产代码：`ctx->mu` 内（T4-04 加的） | ✅ |
+| `g_processed` 写 | `reset_state()` | 没有线程运行时 | 无竞争 ✅ |
+| `g_processed` 读 | D 的轮询 | `read_processed()`：同一把 `ctx->mu` | ✅ |
+| `g_processed` 读 | A/B/C/D 的断言 | 同步调用结束或 `pthread_join` 之后 | ✅ |
+| 队列写 | A/B/C 的 `push_frame()` | 自带 `ctx->mu` + `cond_signal` | ✅ |
+| 队列写 | D 的 `push_frame_locked()` | 调用处已持锁（`lock → push → signal → unlock`） | ✅ |
+| 队列读 | 处理线程 `rx_queue_pop()` | 生产代码在 `ctx->mu` 内 | ✅ |
+| 队列深度读 | `rx_queue_count()`（各用例断言） | 同步调用结束或 `pthread_join` 之后 | ✅ |
+| `g_stop` 写 | A/B（无线程）、C（本轮改到锁内）、D（`stop_and_broadcast()` 锁内） | 见上 | ✅ |
+
+`g_vad` / `g_seg` 只在处理线程内被写，断言都在同步调用结束或 join 之后读取，无并发访问。
+
+### 13.3 验证结果（全部实际执行）
+
+**NDK 编译**（`-O2 -Wall -Wextra -static`，NDK r21e / clang 9.0.9 / API 26）：
+
+| 产物 | 大小 | SHA256 | 结果 |
+|---|---:|---|---|
+| `android/out/drain_test` | 3,444,708 B | `6457b2bae16a1614cf0578f7b583d27e2cf056341fb5ecd39a46d40a4934a91f` | **0 warning / 0 error** |
+| `android/out/t4_receiver`（未改动，重编确认） | 3,435,644 B | `479bf8c65d1b041761f9d424829d6ef38ef37020b575131d049a847339b192f1` | 0 warning / 0 error，ELF32 / ARM |
+
+**TG-Z02 真机：连续 5 次**（`test_logs/drain_test_android.log`）
+
+| 次 | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| 耗时 | 0.51 s | 0.52 s | 0.51 s | 0.52 s | 0.53 s |
+| 结果 | **34 passed, 0 failed** | 34/0 | 34/0 | 34/0 | 34/0 |
+
+含 C 用例断言：`C pthread_create 成功`、`C processed == 40`、`C 队列深度 == 0`、`C VAD 收到 40 帧`。
+
+**本机（Windows / gcc 10.3.0）**
+
+| 测试 | 结果 |
+|---|---|
+| VAD 单元测试 | **65 passed, 0 failed**（0 warning） |
+| `receiver_test.py` | **222 passed, 0 failed** |
+| `python -m py_compile tests\receiver_test.py` | exit 0 |
+
+### 13.4 未验证 / 限制
+
+1. 仍未跑 ThreadSanitizer（Windows/MinGW 无 TSan，Android 静态二进制未搭 TSan 运行时）：
+   "无竞争"的结论来自逐条锁配对审计 + 5 次真机复跑，不是工具级证明。
+2. C 用例保留 `nap_ms(200)`：它只是让处理线程先把 40 帧吃完并进入等待，不承担任何同步职责 ——
+   正确性由锁与 `pthread_join` 保证。
+3. 真人说话（场景 B/C）与背景噪声（场景 D）仍未验证。

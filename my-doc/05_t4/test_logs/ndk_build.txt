@@ -12,7 +12,5 @@ elf     : Class:                             ELF32
 elf     : Type:                              EXEC (Executable file)
 elf     : Machine:                           ARM
 cmd     : armv7a-linux-androideabi26-clang -O2 -Wall -Wextra -static -o android/out/drain_test tests/drain_test.c android/rx_core.c android/vad_energy.c -lm
-warnings: 0
-errors  : 0
 artifact: android/out/drain_test 3444708 B
-sha256  : 7db100984fcb48b1e95221aac45cb9cc807b38b344982f78e0e99eee162a33ce
+sha256  : 6457b2bae16a1614cf0578f7b583d27e2cf056341fb5ecd39a46d40a4934a91f
