@@ -22,8 +22,17 @@
  *   32   4     payload_len  1280
  *   36   4     crc          FNV-1a(payload)
  *
- * 载荷：由 seq 决定的确定性伪随机 int16 序列（见 tgz2_fill_payload）。
- *       接收端可本地重算并逐字节比对，所以任何截断/错位/串帧都会被立刻发现。
+ * Payload:
+ *   - TGZ2_FLAG_SYNTHETIC:
+ *       Deterministic synthetic payload generated from seq.
+ *       Receiver may regenerate and compare it byte-for-byte.
+ *
+ *   - Without TGZ2_FLAG_SYNTHETIC:
+ *       Actual PCM payload.
+ *       Integrity is verified by frame CRC only.
+ *
+ * 中文补充：SYNTHETIC 帧的载荷可以用 tgz2_fill_payload() 按 seq 重算并逐字节比对；
+ * 真实 PCM 帧的载荷不可重算，只能用帧头 CRC 校验完整性，不能拿伪随机规则去比。
  */
 #ifndef TGZ2_FRAME_H
 #define TGZ2_FRAME_H
@@ -71,6 +80,12 @@
 #define TGZ2_PERIOD_US    40000
 #define TGZ2_RING_CAP     64                        /* 64 * 40 ms = 2.56 s 上限 */
 
+/* flags 位定义（数值不得改动）
+ *   TGZ2_FLAG_SYNTHETIC — 载荷是"由 seq 确定性生成"的测试数据，
+ *                         接收端可用 tgz2_check_payload() 重算并逐字节比对。
+ *   TGZ2_FLAG_SPEECH    — 采集侧认为该帧含语音活动（仅信息位，不参与校验）。
+ * 不含 SYNTHETIC 位的帧 = 真实 PCM，只能靠 CRC 校验。
+ */
 #define TGZ2_FLAG_SYNTHETIC   0x01
 #define TGZ2_FLAG_SPEECH      0x02
 

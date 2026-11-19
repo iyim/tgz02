@@ -466,3 +466,120 @@ T9 最初断言"socket 仍然被关闭"，但该用例从未建过 socket（`fd=
 | 4 | `kill -9 frida-server` 时 fd 归属 | 设计上残留到目标进程退出 |
 
 > 本节所有"已通过"均为 **W-PC**。是否进入真机验证由你决定。
+
+---
+
+## 8.9 修复真实 PCM 与 SYNTHETIC 载荷校验混淆
+
+等级：**W-PC**（本机编译 + 本机运行）。`T-DEV = 0`（未执行任何真机操作）。
+
+### 8.9.1 问题原因
+
+`account()` 无条件执行 `tgz2_check_payload(h->seq, msg + TGZ2_HDR_LEN)`。
+该函数按 `seq` **重新生成**确定性伪随机载荷再逐字节比对——这个前提只对 SYNTHETIC 测试帧成立。
+一旦发送端送的是**真实 PCM**（`flags=0`，由 `pcm_bridge_draft.js` 从原厂 ch0 抽取），
+载荷不可重算，逐字节比对必然失败，于是**每一帧真实音频都会被计成 `reject_payload`**。
+后果不是丢帧（`accepted` 仍增加），而是**统计被污染**：`reject.payload` 永远等于帧数，
+把"真的载荷损坏"这个信号彻底淹没。
+
+### 8.9.2 修改文件与位置
+
+| 文件 | 位置 | 改动 |
+|---|---|---|
+| `tgz2_frame.h` | 头部注释「Payload」段 | 改为双语说明：SYNTHETIC 可由 seq 重算并逐字节比对；非 SYNTHETIC 是真实 PCM，只由 CRC 保证完整性 |
+| `tgz2_frame.h` | `TGZ2_FLAG_*` 定义处 | 增加 flags 语义注释（数值未动：`SYNTHETIC=0x01`、`SPEECH=0x02`） |
+| `uds_sink.c` | 文件头 Behaviour 第 3 条 | 改为"所有帧做头校验 + CRC；SYNTHETIC 帧额外做确定性比对；真实 PCM 只靠 CRC" |
+| `uds_sink.c` | `account()` 内 | 载荷比对加 `if (h->flags & TGZ2_FLAG_SYNTHETIC)` 条件 |
+| `tests_c/payload_validation_test.c` | 新增 | 直接 include `../uds_sink.c`（仅把其 `main` 改名）执行生产代码 |
+
+**未改动**：`TGZ2_VER`(2)、flags 数值、头长(40)、消息长(1320)、字段偏移、CRC/FNV 算法、
+PCM 抽取、时间戳、socket 收发逻辑、环形缓冲、`drain()`、`teardown()`。
+
+### 8.9.3 CRC 覆盖性核查（任务 3.6 要求）
+
+`account()` 只有两处调用点，**都在 `tgz2_unpack()` 之后**：
+
+| 行 | 路径 | 前序 |
+|---|---|---|
+| `uds_sink.c:338 → 345` | dgram | `int rc = tgz2_unpack(rbuf,&h); if (rc) { … reject_crc++ … continue; }` |
+| `uds_sink.c:363 → 370` | stream | `int rc = tgz2_unpack(acc,&h); if (rc) { … memmove 1B … continue; }` |
+
+`tgz2_unpack()` 内部第 185 行 `if (tgz2_fnv1a(...) != h->crc) return -8;` —— CRC 不通过的帧
+**不可能**到达 `account()`。因此"跳过伪随机比对"不会连带跳过 CRC，任务 3.5 的要求成立。
+
+顺带发现一处**统计口径不一致（未修改，仅报告）**：stream 路径把 CRC 失败并入 `reject_hdr`，
+而 dgram 路径单独计入 `reject_crc`。属既有行为，本轮不在授权范围内，未改动。
+
+### 8.9.4 修改前后行为差异
+
+| 帧类型 | 修改前 | 修改后 |
+|---|---|---|
+| SYNTHETIC + 载荷正确 | 通过 | 通过（不变） |
+| SYNTHETIC + 载荷错误但 CRC 正确 | `reject_payload++` | `reject_payload++`（不变） |
+| 真实 PCM + CRC 正确 | **`reject_payload++`（误判）** | `reject_payload` 不变，正常 `accepted` |
+| 真实 PCM + CRC 错误 | 到不了 `account()` | 到不了 `account()`（不变） |
+
+### 8.9.5 新增 C 测试结果（21 断言，0 失败，exit 0）
+
+测试**直接 include 生产文件**（`#define main uds_sink_main_unused` + `#include "../uds_sink.c"`），
+调用的是 `uds_sink.exe` 里同一份 `account()` / `tgz2_unpack()` / `tgz2_check_payload()`，无测试副本。
+
+| 用例 | 期望 | 实测 |
+|---|---|---|
+| A SYNTHETIC 正常帧 | CRC 通过、`reject_payload` 不变 | ✅ `accepted=1, reject_payload=0` |
+| B SYNTHETIC 载荷被改 + CRC 重算 | CRC 通过但内容比对失败 | ✅ `accepted=1, reject_payload=1`（**证明 CRC 正确 ≠ 内容正确**） |
+| C 真实 PCM 正常帧（flags=0） | 不做伪随机比对 | ✅ `accepted=1, reject_payload=0` |
+| C2 flags=0 但载荷"故意"不等于 `fill_payload(11)` | 仍必须接受 | ✅ `accepted=1, reject_payload=0`（若无条件比对，这里必然为 1） |
+| D 真实 PCM + CRC 错误 | `tgz2_unpack` 返回 −8，不进 account | ✅ `rc=-8`、`reject_crc=1`、`accepted=0`、`reject_payload=0` |
+| E SYNTHETIC + CRC 错误 | CRC 优先拒绝 | ✅ `rc=-8`、`accepted=0`、`reject_payload=0` |
+| 0 协议不变量 | `VER=2 / FLAG=0x01 / HDR=40 / MSG=1320` | ✅ 三项全过 |
+
+### 8.9.6 端到端回归（synthetic 发送端 + 改后的 sink，12 s）
+
+```
+source: produced=300 ok=300 send_drop_wb=0 bytes=396000 rate=32.22 KiB/s
+sink  : accepted=300 missing=0 dup=0 reorder=0
+        reject{magic=0, short=0, hdr=0, crc=0, payload=0}
+        lat p50=1300µs p95=2055µs max=8164µs
+```
+
+说明改动没有破坏 SYNTHETIC 路径：`reject.payload` 仍为 0。
+
+### 8.9.7 全部回归结果
+
+| 项 | 结果 |
+|---|---|
+| `gcc uds_sink.c` | exit 0（384,917 B） |
+| `gcc uds_source.c` | exit 0（380,567 B） |
+| `gcc tests_c/payload_validation_test.c` | exit 0 |
+| `tests_c/payload_validation_test.exe` | **21 passed / 0 failed**，exit 0 |
+| `node --check` ×4 | 全部 exit 0 |
+| `node tests/bridge_unit_test.js` | **153 passed / 0 failed** |
+| `node tests/probe_detach_test.js` | **91 passed / 0 failed** |
+| `python crc_crosscheck/run_crosscheck.py` | **RESULT: PASS，18/18**（反面对照 17/18 不一致） |
+
+日志：`my-doc/03_uds_test/_run/p1_payload_validation_test_output.txt`。
+
+### 8.9.8 编译环境与命令
+
+```
+Windows 10 22H2 (19045) / TDM-GCC gcc 10.3.0 / node v24.22.0 / Python 3.11.9
+
+gcc -O2 -Wall -o uds_sink.exe   uds_sink.c   -lws2_32
+gcc -O2 -Wall -o uds_source.exe uds_source.c -lws2_32 -lwinmm
+gcc -O2 -Wall -o tests_c\payload_validation_test.exe tests_c\payload_validation_test.c -lws2_32
+```
+
+（过程中遇到两次 `ld.exe: cannot open output file`：是上一轮遗留的 `uds_sink` 进程仍占用 exe 导致，
+结束进程后重建即通过；**不是代码问题**。）
+
+### 8.9.9 未完成事项 / 已发现未修复
+
+| # | 项 | 说明 |
+|---|---|---|
+| 1 | **真实 PCM 端到端**未跑 | 需要让发送端以 `flags=0` 发送，属发送端改动，不在本次授权范围；目前由 C 单测 C/C2/D 覆盖该路径 |
+| 2 | stream 路径 CRC 失败计入 `reject_hdr` 而非 `reject_crc` | 既有统计口径问题，未改（避免扩大范围） |
+| 3 | `uds_sink` **初次 accept 不检查 `--secs`** | 无客户端时会一直等（`g_stop` 只能靠信号置位）。本轮排查时实际触发过一次，需 kill 进程。建议下一轮修，但不在本次授权范围 |
+| 4 | 真机行为 | `T-DEV = 0`；本轮禁止 Frida / thread_probe / bridge / PCM 采集 |
+
+> 本节全部为 **W-PC**，未在 TG-Z02 上运行任何东西。

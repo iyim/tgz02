@@ -1,0 +1,421 @@
+=== PCM Bridge P1：SYNTHETIC / 真实 PCM 载荷校验分离 —— 验证输出 ===
+时间: 2026-11-19 09:18:14
+环境: Windows 10 22H2 / TDM-GCC gcc 10.3.0 / node v24.22.0 / Python 3.11.9
+
+--- 1) 编译生产代码 ---
+gcc -O2 -Wall -o uds_sink.exe uds_sink.c -lws2_32 -> exit 0
+gcc -O2 -Wall -o uds_source.exe uds_source.c -lws2_32 -lwinmm -> exit 0
+产物: uds_sink.exe=True (384917 B)  uds_source.exe=True (380567 B)
+
+--- 2) 编译并运行新增 C 测试 ---
+gcc payload_validation_test.c -> exit 0
+payload_validation_test (production code from uds_sink.c)
+
+[0] protocol invariants
+  ok   TGZ2_VER 仍为 2
+  ok   TGZ2_FLAG_SYNTHETIC 仍为 0x01
+  ok   头长 40 / 帧长 1320 未变
+
+[A] SYNTHETIC frame with correct payload
+  ok   CRC 通过，帧进入 account()
+  ok   accepted = 1
+  ok   reject_payload = 0（确定性载荷一致）
+
+[B] SYNTHETIC frame with wrong payload but valid CRC
+  ok   CRC 自身通过（证明 CRC 正确 != 内容正确）
+  ok   accepted = 1
+  ok   reject_payload = 1（确定性比对失败）
+
+[C] real PCM frame, flags = 0, valid CRC
+  ok   CRC 通过
+  ok   accepted = 1
+  ok   reject_payload = 0（不执行确定性比对）
+
+[C2] flags = 0 with a payload that would fail the synthetic check
+  ok   CRC 通过
+  ok   accepted = 1
+  ok   reject_payload = 0（若仍无条件比对，这里必然变成 1）
+
+[D] real PCM frame, flags = 0, broken CRC
+  ok   tgz2_unpack 返回 -8（CRC 失败）
+  ok   sink 会把它计入 reject_crc
+  ok   不计入 accepted
+  ok   reject_payload 未增加（根本没到内容校验）
+
+[E] SYNTHETIC frame with broken CRC
+  ok   CRC 失败优先于内容比对
+  ok   未计入 accepted，也未计 reject_payload
+
+=== 21 passed, 0 failed ===
+payload_validation_test.exe -> exit 0
+
+--- 3) node --check ---
+node --check .\pcm_bridge_draft.js  -> exit 0
+node --check .\thread_probe.js  -> exit 0
+node --check .\tests\bridge_unit_test.js  -> exit 0
+node --check .\tests\probe_detach_test.js  -> exit 0
+
+--- 4) node .\tests\bridge_unit_test.js ---
+bridge_unit_test.js  (source: pcm_bridge_draft.js, 515 lines)
+
+[T1] decodeTimespec (timespec 偏移)
+  ok   TS-BEGIN/TS-END 标记存在
+  ok   (0,0) -> 0
+  ok   (12345,678901234) -> 12345678901
+  ok   (100,500) -> 100000000（500 ns 截断为 0 µs）
+  ok   (1,999999999) -> 1999999
+  ok   (7,999999) -> 7000999
+  ok   必须不是 7000000（证明 tv_nsec 取自 +4，而不是重复读 +0）
+  ok   tv_sec 负数 -> -1
+  ok   tv_nsec 负数 -> -1
+  ok   tv_nsec = 1e9 -> -1
+  ok   tv_nsec = 999999999 -> 999999
+
+[T2] 正常时钟：hook -> 环 -> sendto，头字段/载荷/CRC 全查
+  ok   找到环形缓冲（64*1320）
+  ok   hook 已安装
+  ok   onEnter 已调用
+  ok   enabled = true
+  ok   frames = 1
+  ok   clockFail = 0
+  ok   clockDrop = 0
+  ok   ch0 抽取逐字节正确
+  ok   drain 未跑时没有 sendto
+  ok   tick 后 sendto 调用 1 次
+  ok   socket() 调用 1 次
+  ok   发送长度 = 1320
+  ok   sent = 1
+  ok   magic = TGZ2
+  ok   ver = 2
+  ok   hdr_len = 40
+  ok   seq = 1
+  ok   ts_us = 12345678901（来自 tv_sec*1e6+tv_nsec/1000）
+  ok   rate = 16000
+  ok   ch = 1
+  ok   bits = 16
+  ok   payload_len = 1280
+  ok   crc 与 BigInt 参考实现一致
+
+[T3] 时钟失败（clock_gettime 返回 -1）：必须丢帧且不发送
+  ok   frames = 0（未入环）
+  ok   clockDrop = 1
+  ok   clockFail >= 1
+  ok   时钟失败时没有 sendto
+  ok   sent = 0
+  ok   noClockTicks >= 1（drain 直接返回）
+  ok   环槽内没有写入任何头（不存在 ts=0 的帧）
+
+[T3] 时钟失败（tv_nsec = 1e9 非法）：必须丢帧且不发送
+  ok   frames = 0（未入环）
+  ok   clockDrop = 1
+  ok   clockFail >= 1
+  ok   时钟失败时没有 sendto
+  ok   sent = 0
+  ok   noClockTicks >= 1（drain 直接返回）
+  ok   环槽内没有写入任何头（不存在 ts=0 的帧）
+
+[T4] 时钟恢复后必须立刻恢复正常发送
+  ok   失败阶段 clockDrop = 1
+  ok   恢复后 frames = 1
+  ok   恢复后有 sendto
+
+[T5] DRY_RUN：绝不 socket()/connect()/sendto()
+  ok   DRY_RUN 已改写为 true
+  ok   socket() 0 次
+  ok   connect() 0 次
+  ok   sendto() 0 次
+  ok   DRY_RUN 仍统计 frames = 1
+  ok   DRY_RUN 仍统计 sent = 1
+
+[T6] 单生产者守卫：换 tid 立即禁用
+  ok   第一个 tid 后仍 enabled
+  ok   第二个 tid 后 enabled = false
+  ok   why 记录 multi-producer
+  ok   禁用后不再入环
+
+[T7] stop：先关闸门 -> 清定时器 -> detach 一次 -> 关 socket
+  ok   stop 之前已发送 1 帧
+  ok   stop 之前 hook 在位
+  ok   stopped = true
+  ok   hookDetachAttempted = true
+  ok   hookDetached = true
+  ok   hookDetachError = null
+  ok   listener.detach() 调用 1 次
+  ok   tick 与 stat 都 clearInterval（2 次）
+  ok   tickActive = false
+  ok   statActive = false
+  ok   socket 已关闭
+  ok   enabled 已置 false
+  ok   teardown 后 tick 不再发送
+  ok   teardown 后 hook 不再入环（frames 停在 1）
+
+[T8] stop 幂等：重复调用不重复 detach / 不重复清理
+  ok   三次 stop 都返回 stopped = true
+  ok   detach 只发生 1 次
+  ok   clearInterval 只发生 2 次（tick + stat）
+
+[T9] detach 抛异常：错误被记录，不中断后续清理
+  ok   socket 已创建
+  ok   hookDetachAttempted = true
+  ok   hookDetached = false
+  ok   hookDetachError 记录异常 -> detach failed (injected)
+  ok   定时器仍然被清理
+  ok   detach 抛异常后 socket 仍然被关闭一次
+
+[T10] attach 失败：统一回滚，不留 hook / 不留定时器
+  ok   enabled = false
+  ok   why 以 install: 开头 -> install:attach failed (injected)
+  ok   没有可用的 hook
+  ok   没有创建任何定时器
+  ok   已进入 stopped 状态
+  ok   没有 listener，未尝试 detach
+
+[T11] stop 关 socket 之后不再发送
+  ok   stop 关闭 socket 恰好一次
+  ok   stop 之后不再 sendto
+
+[T12] 预检失败：不装 hook、不建定时器（四种预检各跑一遍）
+  ok   模块缺失: Hook 数量 = 0
+  ok   模块缺失: interval 创建数量 = 0
+  ok   模块缺失: 根本没有调用过 setInterval
+  ok   模块缺失: stats.enabled = false
+  ok   符号缺失: Hook 数量 = 0
+  ok   符号缺失: interval 创建数量 = 0
+  ok   符号缺失: 根本没有调用过 setInterval
+  ok   符号缺失: stats.enabled = false
+  ok   偏移不符: Hook 数量 = 0
+  ok   偏移不符: interval 创建数量 = 0
+  ok   偏移不符: 根本没有调用过 setInterval
+  ok   偏移不符: stats.enabled = false
+  ok   签名不符: Hook 数量 = 0
+  ok   签名不符: interval 创建数量 = 0
+  ok   签名不符: 根本没有调用过 setInterval
+  ok   签名不符: stats.enabled = false
+
+[T13] attach 返回无效 listener：不允许启动，也不谎称已卸载
+  ok   null: enabled = false
+  ok   null: why -> install:attach-returned-invalid-listener
+  ok   null: interval 创建数量 = 0
+  ok   null: 没有成功 detach（无效 listener 无法 detach）
+  ok   null: stop() 可安全调用
+  ok   null: 未尝试 detach
+  ok   null: 未声称 detach 成功
+  ok   null: 重复 stop 返回 stopped
+  ok   null: 重复 stop 也没有 detach
+  ok   null: 没有定时器需要清理
+  ok   empty: enabled = false
+  ok   empty: why -> install:attach-returned-invalid-listener
+  ok   empty: interval 创建数量 = 0
+  ok   empty: 没有成功 detach（无效 listener 无法 detach）
+  ok   empty: stop() 可安全调用
+  ok   empty: 未尝试 detach
+  ok   empty: 未声称 detach 成功
+  ok   empty: 重复 stop 返回 stopped
+  ok   empty: 重复 stop 也没有 detach
+  ok   empty: 没有定时器需要清理
+
+[T14] 定时器创建失败：回滚已创建资源
+  ok   第 1 次 setInterval 抛异常: listener detach 1 次
+  ok   第 1 次抛异常: 没有 interval 需要清理
+  ok   第 1 次抛异常: enabled = false
+  ok   第 1 次抛异常: teardown = stopped
+  ok   第 2 次抛异常: 只创建成功 1 个 interval
+  ok   第 2 次抛异常: listener detach 1 次
+  ok   第 2 次抛异常: 已创建的 interval 被清理 1 次
+  ok   第 2 次抛异常: 没有 socket 残留
+  ok   第 2 次抛异常: teardown = stopped
+  ok   第 2 次抛异常: 重复 stop 不重复 detach
+  ok   第 2 次抛异常: 重复 stop 不重复 clearInterval
+  ok   第 1 个 setInterval 返回 null: detach 1 次
+  ok   第 1 个返回 null: teardown = stopped
+  ok   第 1 个返回 null: 没有残留 tick
+  ok   第 1 个返回 null: 没有残留 stat
+  ok   第 1 个返回 null: 存活定时器数量 = 0
+  ok   第 1 个返回 null: 两次 setInterval 都被调用过
+  ok   第 1 个返回 null: enabled = false
+  ok   第 2 个 setInterval 返回 null: detach 1 次
+  ok   第 2 个返回 null: teardown = stopped
+  ok   第 2 个返回 null: 没有残留 tick
+  ok   第 2 个返回 null: 没有残留 stat
+  ok   第 2 个返回 null: 存活定时器数量 = 0
+  ok   第 2 个返回 null: 两次 setInterval 都被调用过
+  ok   第 2 个返回 null: enabled = false
+
+=== 153 passed, 0 failed ===
+
+--- 5) node .\tests\probe_detach_test.js ---
+[P1] 正常安装 -> 到点 FINAL -> detach + 清定时器
+  ok   安装后 Hook 数量 = 1
+  ok   有 1 个统计 interval
+  ok   有 1 个停止 timeout
+  ok   此时还没到 dump 时机（5 s 一次）
+  ok   detach() 被调用 1 次
+  ok   打印了 1 次 FINAL
+  ok   FINAL 里 total=2
+  ok   FINAL 只声明"窗口内 1 个线程"
+  ok   FINAL 明确表示不能据此证明 SPSC 前提
+  ok   clearInterval 调用 1 次
+  ok   clearTimeout 调用 1 次
+  ok   重复触发不再 detach（stopped 守卫）
+  ok   重复触发不再 clearInterval
+  ok   停止后 onEnter 直接返回，不产生输出
+
+[P3] 安装失败：不得残留 Hook，也不得留下定时器
+  ok   模块未加载: Hook 数量 = 0
+  ok   模块未加载: 没有 interval
+  ok   模块未加载: 没有 timeout
+  ok   模块未加载: 没有可 detach 的 listener
+  ok   模块未加载: 打印了停止原因
+  ok   符号缺失: Hook 数量 = 0
+  ok   符号缺失: 没有 interval
+  ok   符号缺失: 没有 timeout
+  ok   符号缺失: 没有可 detach 的 listener
+  ok   符号缺失: 打印了停止原因
+  ok   偏移不符: Hook 数量 = 0
+  ok   偏移不符: 没有 interval
+  ok   偏移不符: 没有 timeout
+  ok   偏移不符: 没有可 detach 的 listener
+  ok   偏移不符: 打印了停止原因
+  ok   机器码签名不符: Hook 数量 = 0
+  ok   机器码签名不符: 没有 interval
+  ok   机器码签名不符: 没有 timeout
+  ok   机器码签名不符: 没有可 detach 的 listener
+  ok   机器码签名不符: 打印了停止原因
+  ok   attach 抛异常: Hook 数量 = 0
+  ok   attach 抛异常: 没有 interval
+  ok   attach 抛异常: 没有 timeout
+  ok   attach 抛异常: 没有可 detach 的 listener
+  ok   attach 抛异常: 打印了停止原因
+
+[P4] 统计口径：多线程 / 长度直方图
+  ok   threads=2
+  ok   长度直方图 5120 -> 2
+  ok   长度直方图 320 -> 1
+  ok   多线程时给出 MPSC 警告
+  ok   多线程场景同样会 detach
+
+[P5.1] 机器码读取抛异常
+  ok   P5.1: 打印读取失败
+  ok   P5.1: reason = sig-read-failed
+  ok   P5.1: Hook 数量 = 0
+  ok   P5.1: 没有创建 interval
+  ok   P5.1: 没有创建 timeout
+  ok   P5.1: 没有可 detach 的 listener
+  ok   P5.1: 走了统一 finish()
+  ok   P5.1: finish 只执行一次
+
+[P5.2] attach 返回 null
+  ok   P5.2: 打印无效 listener
+  ok   P5.2: reason = invalid-listener
+  ok   P5.2: Hook 数量 = 0
+  ok   P5.2: 没有创建 interval
+  ok   P5.2: 没有创建 timeout
+  ok   P5.2: 没有可 detach 的 listener
+  ok   P5.2: 走了统一 finish()
+  ok   P5.2: finish 只执行一次
+
+[P5.3] attach 返回没有 detach 方法的对象
+  ok   P5.3: reason = invalid-listener
+  ok   P5.3: Hook 数量 = 0
+  ok   P5.3: 没有创建 interval
+  ok   P5.3: 没有创建 timeout
+  ok   P5.3: 没有可 detach 的 listener
+  ok   P5.3: 走了统一 finish()
+  ok   P5.3: finish 只执行一次
+
+[P5.4] setInterval 抛异常
+  ok   P5.4: listener 已 detach 1 次
+  ok   P5.4: 没有 interval 需要清理
+  ok   P5.4: 没有 timeout 需要清理
+  ok   P5.4: reason = timer-setup-failed
+
+[P5.5] setInterval 返回 null
+  ok   P5.5: listener 已 detach 1 次
+  ok   P5.5: 没有创建 timeout
+  ok   P5.5: 没有 timeout 需要清理
+  ok   P5.5: 没有残留 interval 需要清理
+  ok   P5.5: reason = timer-setup-failed
+
+[P5.6] setTimeout 抛异常
+  ok   P5.6: listener 已 detach 1 次
+  ok   P5.6: 已创建的 interval 被清理 1 次
+  ok   P5.6: 没有 timeout 需要清理
+  ok   P5.6: reason = timer-setup-failed
+
+[P5.7] setTimeout 返回 null
+  ok   P5.7: listener 已 detach 1 次
+  ok   P5.7: 已创建的 interval 被清理 1 次
+  ok   P5.7: 没有残留 timeout 需要清理
+  ok   P5.7: reason = timer-setup-failed
+
+[P5.8] 重复触发 finish：幂等
+  ok   P5.8: 正常路径有 1 个 timeout
+  ok   P5.8: detach 不重复
+  ok   P5.8: clearInterval 不重复
+  ok   P5.8: clearTimeout 不重复
+  ok   P5.8: probe stopped 只打印一次
+  ok   P5.8: 失败路径 finish 也只执行一次
+  ok   P5.8: 失败路径 detach 只 1 次
+
+=== 91 passed, 0 failed ===
+
+--- 6) python crc_crosscheck\run_crosscheck.py ---
+[1/4] generating cases.bin ...
+wrote D:\tgz02\OS\system\my-doc\03_uds_test\crc_crosscheck\cases.bin: 18 cases, 15381 bytes
+  [ 0] real_ch0         len=1280
+  [ 1] zeros_1280       len=1280
+  [ 2] ones_ffff        len=1280
+  [ 3] minus1_x640      len=1280
+  [ 4] min_int16_x640   len=1280
+  [ 5] max_int16_x640   len=1280
+  [ 6] alt_minmax       len=1280
+  [ 7] neg_ramp         len=1280
+  [ 8] synth_seq0       len=1280
+  [ 9] synth_seq1       len=1280
+  [10] synth_seq12345   len=1280
+  [11] len0             len=0
+  [12] len1             len=1
+  [13] len2             len=2
+  [14] len3             len=3
+  [15] len7             len=7
+  [16] len13            len=13
+  [17] len1023          len=1023
+
+[2/4] building crc_c ...
+ok -> crc_c.exe
+
+[3/4] running both sides ...
+C side: header = ../tgz2_frame.h, cases = 18
+JS side: Math.imul (extracted from pcm_bridge_draft.js), cases = 18
+
+[4/4] comparing ...
+ #   len  C (tgz2_fnv1a) JS (Math.imul) match name
+--------------------------------------------------
+ 0  1280  0x38ea3a26     0x38ea3a26     YES   real_ch0
+ 1  1280  0x09d6a1c5     0x09d6a1c5     YES   zeros_1280
+ 2  1280  0xef05fec5     0xef05fec5     YES   ones_ffff
+ 3  1280  0xef05fec5     0xef05fec5     YES   minus1_x640
+ 4  1280  0xa7baa1c5     0xa7baa1c5     YES   min_int16_x640
+ 5  1280  0x192dfec5     0x192dfec5     YES   max_int16_x640
+ 6  1280  0xd54f5345     0xd54f5345     YES   alt_minmax
+ 7  1280  0xdc0d8cd6     0xdc0d8cd6     YES   neg_ramp
+ 8  1280  0xfafd7bfe     0xfafd7bfe     YES   synth_seq0
+ 9  1280  0xee980ac9     0xee980ac9     YES   synth_seq1
+10  1280  0x1b24072d     0x1b24072d     YES   synth_seq12345
+11     0  0x811c9dc5     0x811c9dc5     YES   len0
+12     1  0x0e0c6b4a     0x0e0c6b4a     YES   len1
+13     2  0x978d310e     0x978d310e     YES   len2
+14     3  0xee44b241     0xee44b241     YES   len3
+15     7  0x2b00e6a9     0x2b00e6a9     YES   len7
+16    13  0xaee9fb82     0xaee9fb82     YES   len13
+17  1023  0x5a2412a1     0x5a2412a1     YES   len1023
+
+control (naive `h * 16777619`): 17/18 cases differ from C
+
+RESULT: PASS
+  Math.imul  : 18/18 �� C һ��
+  ��ͨ�˷�   : 17/18 �� C ��һ�£�˵�������Ǳ�Ҫ�ģ�
+
+--- 7) 端到端回归：synthetic 发送端(flags=SYNTHETIC) + 改后的 sink，12 s ---
+source: SUMMARY {"role":"source","proto":"stream","dur_s":12.002,"cpu_s":0.203,"cpu_pct_one_core":1.69,"produced":300,"push_ok":300,"ring_drop":0,"send_ok":300,"send_drop_wb":0,"send_partial":0,"send_err":0,"bytes_sent":396000,"depth_max":1,"tick_n":300,"tick_late_max_us":599,"tick_late_avg_us":70.4,"tick_missed":0,"push_us_max":22,"push_us_avg_us":0.62,"ts_delta_ms":{"min":39.40,"max":40.60},"naive":0,"epoch":1829531331,"reconnects":0,"ring_cap":64,"rate_kib_s":32.22}
+sink  : SUMMARY {"role":"sink","proto":"stream","dur_s":15.001,"cpu_s":0.000,"cpu_pct_one_core":0.00,"accepted":300,"bytes":396000,"bytes_rx":396000,"reject":{"magic":0,"short":0,"hdr":0,"crc":0,"payload":0},"resync":0,"seq_first":0,"seq_last":299,"miss_before_first":0,"missing":0,"dup":0,"reorder":0,"lat_us":{"avg":1333.0,"p50":1300,"p95":2055,"p99":2183,"max":8164},"gap_max_ms":42.21,"stalls":0,"stall_total_ms":0.0,"tsgap_ms":{"min":39.40,"max":40.60},"stale":0,"epoch":1829531331,"epochs":0,"max_age_ms":500,"rate_kib_s":25.00}

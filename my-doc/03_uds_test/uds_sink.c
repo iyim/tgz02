@@ -8,8 +8,11 @@
  *      so the sender can never be blocked by this end.
  *   2. stream mode keeps a reassembly buffer and resynchronises on the
  *      magic word, counting every resync.
- *   3. Every frame is checked with a deterministic payload compare plus a
- *      CRC, so truncation / misalignment / frame splicing is detected.
+ *   3. Every frame gets header validation plus the CRC. On top of that,
+ *      SYNTHETIC frames (TGZ2_FLAG_SYNTHETIC) are also compared against the
+ *      deterministic payload regenerated from seq. Real PCM frames are NOT
+ *      compared against that pattern -- only the CRC covers them -- otherwise
+ *      every real frame would be counted as "payload mismatch".
  *   4. latency = recv_time - capture timestamp in the header (same machine,
  *      monotonic clock, so the subtraction is meaningful).
  *   5. --stall-at / --stall-len freeze the receiver on purpose to prove the
@@ -144,8 +147,14 @@ static void account(stats *s, const uint8_t *msg, const tgz2_hdr *h, uint64_t rx
     }
     s->seq_last = h->seq;
 
-    /* payload integrity: deterministic regenerated pattern */
-    if (!tgz2_check_payload(h->seq, msg + TGZ2_HDR_LEN)) s->reject_payload++;
+    /*
+     * Synthetic 测试帧才执行确定性载荷比对 —— 只有这种帧的载荷可以由 seq 重新生成。
+     * 真实 PCM 帧的完整性由 tgz2_unpack() 里的 CRC 保证：dgram 与 stream 两条
+     * 接收路径都是"先 tgz2_unpack()、通过后才 account()"，CRC 不通过的帧到不了这里。
+     */
+    if (h->flags & TGZ2_FLAG_SYNTHETIC) {
+        if (!tgz2_check_payload(h->seq, msg + TGZ2_HDR_LEN)) s->reject_payload++;
+    }
 
     lat = (uint32_t)(rx_us > h->ts_us ? (rx_us - h->ts_us) : 0);
     lat_push(s, lat);
