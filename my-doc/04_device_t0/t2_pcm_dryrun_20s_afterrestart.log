@@ -1,0 +1,59 @@
+[i] ===== T2 DRY_RUN driver =====
+[i] js_file = t2_pcm_dryrun.js
+[i] js_sha256 = 041d6670de4f19fb3c592b8cf90ab91f3d37e63856a72f3ad38e0136e2607725
+[i] requested_mode = blockcopy
+[i] requested_run_seconds = 20
+[i] target_pid = 19572
+[i] attached
+[i] script loaded (address checks + attach happen in start())
+[i] setMode -> ok
+[i] T2 PCM DRY_RUN (blockcopy: one Memory.copy of the whole frame in the hook)
+[v] check1 module loaded, base=0x8f202000
+[v] check2 symbol=0x8f2d655c
+[v] check3 offset=0xd455c
+[v] check4 runtime[16]=f0482de910b08de208d04de20370a0e1
+[v] clock_gettime bound
+[v] copy_mode=blockcopy
+[v] input_frame_bytes=5120
+[v] ring_slot_bytes=5120 ring_total_bytes=327680 ring_cap=64
+[v] output_payload_bytes=1280
+[v] lane0_samples=640 lane0_stride_bytes=8
+[v] meta_bytes=1024 cost_ring=2048 lat_ring=4096
+[v] hook installed at 0x8f2d655c
+[i] observing 20s; phases: QUIET->10s SPEECH->20s TONE->20s
+[i] start() -> True (hook timer started at +8.31s from driver start)
+[i] lane0 self-check: samples=640 mismatches=0 result=ok
+[i] crc algorithm cross-check (first frame only): 0x7b3b3cf7 vs exact 0x7b3b3cf7 match=true
+[RUN 5.0s] mode=blockcopy produced=124 consumed=124 ringDrop=0 depthMax=2 seqGap=0 readErr=0 lenErr=0 hookEx=0 drainEx=0 reentry=0/0 laneCheckErr=0
+[RUN] hook copy: n=124 P50=82.7us P95=116.6us P99=135.9us max=290.2us (excludes JS-lock queueing)
+[RUN] drain latency: n=124 P50=16906.0us P95=27497.2us P99=31580.9us max=37530.7us
+[RUN] crc: frames=124 algorithm_check=ok sum32=0xf3560645 (per-frame FNV computed; no independent per-frame expectation in DRY_RUN)
+[RUN] payload: rms_avg=37.0 rms_max=51.0 p2p_max=266 min=-227 max=100
+[RUN] rate=24.80/s calls=124 lenBad=0 nullPtr=0 threads=1
+[RUN 10.0s] mode=blockcopy produced=250 consumed=250 ringDrop=0 depthMax=3 seqGap=0 readErr=0 lenErr=0 hookEx=0 drainEx=0 reentry=0/0 laneCheckErr=0
+[RUN] hook copy: n=250 P50=68.8us P95=113.5us P99=135.8us max=290.2us (excludes JS-lock queueing)
+[RUN] drain latency: n=250 P50=16082.5us P95=26582.9us P99=31580.9us max=37663.9us
+[RUN] crc: frames=250 algorithm_check=ok sum32=0x383fc7e2 (per-frame FNV computed; no independent per-frame expectation in DRY_RUN)
+[RUN] payload: rms_avg=38.8 rms_max=73.6 p2p_max=331 min=-255 max=122
+[RUN] rate=25.00/s calls=250 lenBad=0 nullPtr=0 threads=1
+[RUN 15.0s] mode=blockcopy produced=374 consumed=374 ringDrop=0 depthMax=3 seqGap=0 readErr=0 lenErr=0 hookEx=0 drainEx=0 reentry=0/0 laneCheckErr=0
+[RUN] hook copy: n=374 P50=67.8us P95=112.2us P99=135.8us max=290.2us (excludes JS-lock queueing)
+[RUN] drain latency: n=374 P50=16030.7us P95=25892.2us P99=35250.2us max=44711.3us
+[RUN] crc: frames=374 algorithm_check=ok sum32=0x44e05ded (per-frame FNV computed; no independent per-frame expectation in DRY_RUN)
+[RUN] payload: rms_avg=37.1 rms_max=73.6 p2p_max=331 min=-255 max=122
+[RUN] rate=24.93/s calls=374 lenBad=0 nullPtr=0 threads=1
+[i] listener detached
+[FINAL 20.0s] mode=blockcopy produced=500 consumed=499 ringDrop=0 depthMax=4 seqGap=0 readErr=0 lenErr=0 hookEx=0 drainEx=0 reentry=0/0 laneCheckErr=0
+[FINAL] hook copy: n=500 P50=67.7us P95=111.5us P99=135.5us max=290.2us (excludes JS-lock queueing)
+[FINAL] drain latency: n=499 P50=16082.5us P95=26695.8us P99=37530.7us max=44711.3us
+[FINAL] crc: frames=499 algorithm_check=ok sum32=0x3ef5198f (per-frame FNV computed; no independent per-frame expectation in DRY_RUN)
+[FINAL] payload: rms_avg=37.0 rms_max=73.6 p2p_max=331 min=-255 max=122
+[FINAL] rate=25.00/s calls=500 lenBad=0 nullPtr=0 threads=1
+===== [END] reason=timeout mode=blockcopy lane0_selfcheck=ok(640/640) verdict=NO-AUTO-FAIL(review required) =====
+[i] hook window elapsed: 23.06s (js auto-stop at 20s)
+[i] stop() -> {'aborted': False, 'produced': 500, 'consumed': 499, 'ringDrop': 0, 'laneCheckErr': 0, 'crcAlgorithmOk': True, 'seqGap': 0}
+[i] script unloaded
+[i] session detached
+[i] driver_exit_after = 31.65s (from driver start)
+[i] js_sha256_at_exit = 041d6670de4f19fb3c592b8cf90ab91f3d37e63856a72f3ad38e0136e2607725
+[i] rc = 0

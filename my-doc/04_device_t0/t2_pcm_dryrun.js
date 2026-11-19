@@ -1,22 +1,25 @@
 'use strict';
 /*
- * t2_pcm_dryrun.js -- T2：Hook 内同步复制 lane0 + 预分配环形缓冲 + DRY_RUN 消费
+ * t2_pcm_dryrun.js -- T2：Hook 内 blockcopy 同步复制 + 预分配环形缓冲 + DRY_RUN 消费
  *
- * 本轮只做 DRY_RUN：**不建 socket、不发 PCM、不打包 40 B 头**。
- * 环形缓冲里存的是"本来要放进协议载荷"的那 1280 字节，消费端对它算 FNV-1a，
- * 与 tgz2_frame.h / pcm_bridge_draft.js 用的是同一算法（Math.imul），T3 可直接复用。
+ * 正式模式只有 blockcopy：
+ *   hook 内一次 Memory.copy(dst, src, 5120) 把整帧搬到环槽；
+ *   消费端再做 lane0 抽取（out[i] = in[i*4]，640 个 int16 = 1280 字节）。
+ * 另有 countonly 模式，只用于把 "Frida Interceptor 固有开销" 与 "我们的拷贝+消费"
+ * 分开测量，不产生任何 PCM。
  *
- * ── 并发模型（必读）──────────────────────────────────────────────
- * Frida 的 V8 运行时对**同一个脚本**只有一个 JS 执行权（内部 JS 锁）：
- *   - Interceptor 回调在执行到 hook 的线程上被调用，但必须先拿到 JS 锁；
- *   - setInterval 回调同样要拿 JS 锁。
- * 因此两者**不会真正并发执行**：不存在两个 JS 回调同时改 idxTail/idxHead。
- * 但代价是**延迟耦合**：消费端占用 JS 锁时，hook 回调要等，等于把消费开销
- * 加到音频线程的延迟上。T1 已经实测到这一点（hook 内做重统计把 25 fps 拖到 10 fps）。
- * 所以：hook 内只做拷贝，统计全部放消费端；并用 inHook/inDrain 计数器实测"是否发生重入"。
+ * 本轮仍是 DRY_RUN：**不建 socket、不发 PCM、不打包 40 B 头**。
+ * 环里存的是整帧原始数据；1280 字节 lane0 载荷由消费端产出，
+ * 其 FNV-1a 与 tgz2_frame.h / pcm_bridge_draft.js 同一算法（Math.imul）。
+ * T3 的接收端会按实际帧头 CRC 对收到的载荷做完整性校验——本轮不声称做到那一步。
  *
- * 本轮不宣称"整个运行时永远无并发"：只声明"本脚本的两个回调被 JS 锁串行化"，
- * 并用 reentry 计数做运行时验证。
+ * ── 并发模型 ─────────────────────────────────────────────────────
+ * Frida 的 V8 运行时对同一脚本只有一份 JS 执行权（内部 JS 锁）：
+ * Interceptor 回调虽在命中 hook 的线程上被调用，但必须先取得这把锁；
+ * setInterval 回调同样要取锁。因此两者不会真正并发执行，JS 状态无需原子操作；
+ * 代价是延迟耦合：消费端持锁时 hook 要排队，排队时间**不计入**下文 hook 耗时统计
+ * （时间戳是在拿到锁之后、拷贝之前取的）。
+ * 运行时用 inHook/inDrain 守卫验证：应恒为 0/0。
  */
 
 var MOD = 'libsmartbox.so';
@@ -25,46 +28,52 @@ var OFF = 0xd455c;
 var EXPECT_HEX = 'f0482de910b08de208d04de20370a0e1';
 
 /* 与 tgz2_frame.h / pcm_bridge_draft.js 保持一致 */
-var FRAME_IN = 5120;      /* 原始帧字节数 */
-var STRIDE   = 8;         /* 4 路 int16 交错 */
-var SPF      = 640;       /* 每路样本数 */
-var FRAME_OUT = 1280;     /* lane0: 640 * int16 */
-var RING_CAP = 64;
-var FNV_BASIS = 2166136261;
-/* COPY_MODE: 'strided' = dst[i]=src[i*4] 逐样本拷贝（规格字面）；
- *            'blockcopy' = 一次 Memory.copy 复制 5120 B 整帧，lane0 抽取移到消费端 */
-var COPY_MODE = 'strided';
-var SLOT_BYTES = FRAME_OUT;
-var TICK_MS = 20;
+var FRAME_IN   = 5120;    /* 原始帧字节数 */
+var STRIDE     = 8;       /* 4 路 int16 交错 */
+var SPF        = 640;     /* lane0 样本数 */
+var FRAME_OUT  = 1280;    /* lane0 输出: 640 * int16 */
+var RING_CAP   = 64;
+var FNV_BASIS  = 2166136261;
+var TICK_MS    = 20;
 
-var base = null, target = null, listener = null, tickTimer = null, repTimer = null, stopTimer = null;
+var COPY_MODE = 'blockcopy';      /* 'blockcopy' | 'countonly' */
+var SLOT_BYTES = FRAME_IN;        /* 正式模式恒为 5120 */
+
+var base = null, target = null, listener = null;
+var tickTimer = null, repTimer = null, stopTimer = null;
 var running = false, stopped = false, aborted = false;
-var t0 = 0;
-var RUN_MS = 30000;
-var PHASES = null;
+var t0 = 0, RUN_MS = 30000, PHASES = null;
 
-/* ---- 预分配：环 + 每槽元数据 + 采样数组（全部在 start 前完成） ---- */
-var ring = null;                 /* RING_CAP * FRAME_OUT 字节 */
-var slotSeq = null;              /* Float64Array(RING_CAP) 每槽序号（生产端写） */
-var slotTsNs = null;             /* Float64Array(RING_CAP) 每槽入环时刻 (ns) */
-var hookCostUs = null;           /* Float64Array(2048) hook 拷贝耗时采样环 */
-var latUs = null;                /* Float64Array(4096) 消费延迟采样环 */
-var tsMem = null;                /* struct timespec (8 B) */
+/* ---- 预分配 ---- */
+var ring = null;                 /* RING_CAP * SLOT_BYTES */
+var slotSeq = null;              /* Float64Array(RING_CAP) */
+var slotTsNs = null;             /* Float64Array(RING_CAP) */
+var hookCostUs = null;           /* Float64Array(2048) */
+var latUs = null;                /* Float64Array(4096) */
+var tsMem = null;
 
-var idxHead = 0, idxTail = 0;
-var seqNext = 0;
+var idxHead = 0, idxTail = 0, seqNext = 0;
 var calls = 0, lenBad = 0, nullPtr = 0, ringDrop = 0, produced = 0;
-var hookEx = 0, drainEx = 0, readErr = 0, crcErr = 0, lenErr = 0;
+var hookEx = 0, drainEx = 0, readErr = 0, lenErr = 0;
 var consumed = 0, seqGap = 0, reentryHook = 0, reentryDrain = 0;
+var laneCheckErr = 0, laneCheckDone = false, laneCheckMism = -1;
 var depthMax = 0;
 var inHook = false, inDrain = false;
 var hookCostN = 0, hookCostW = 0, latN = 0, latW = 0;
 var lastSeq = -1;
-var crcRefChecked = false;
-var laneSelfChecked = false;
 var tids = {};
 
-/* ---- libc 时钟 ---- */
+/* CRC：算法交叉验证（一次性）与"逐帧计算"分开记录，避免把一次校验说成全帧完整性验证 */
+var crcAlgorithmChecked = false;
+var crcAlgorithmOk = false;
+var crcAlgorithmSample = '';
+var crcFrames = 0;               /* 逐帧算过 FNV 的帧数 */
+var crcSum = 0;                  /* 逐帧 FNV 的低 32 位累加，仅用于观察波动 */
+
+/* 载荷统计（消费端） */
+var payloadRmsSum = 0, payloadRmsMax = 0, payloadP2pMax = 0;
+var payloadMin = 0, payloadMax = 0;
+
 var clockGettime = null;
 
 function bindLibc() {
@@ -77,7 +86,6 @@ function bindLibc() {
   }
 }
 
-/* CLOCK_MONOTONIC=1；返回 ns，失败返回 0（调用方必须判 0） */
 function nowNs() {
   if (clockGettime === null) return 0;
   if (clockGettime(1, tsMem) !== 0) return 0;
@@ -93,38 +101,55 @@ function hex16(p) {
   return s;
 }
 
-/* ---- 百分位 ---- */
 function pct(arr, n, q) {
   if (!n) return 0;
   var a = new Array(n);
   for (var i = 0; i < n; i++) a[i] = arr[i];
   a.sort(function (x, y) { return x - y; });
-  var k = Math.floor((n - 1) * q);
-  return a[k];
+  return a[Math.floor((n - 1) * q)];
 }
 
 function fmt(v, d) { return v.toFixed(d === undefined ? 2 : d); }
 
-/* ---- 统计输出 ---- */
 function report(tag) {
   var hn = hookCostN, ln = latN;
-  var hP50 = pct(hookCostUs, hn, 0.50), hP95 = pct(hookCostUs, hn, 0.95),
-      hP99 = pct(hookCostUs, hn, 0.99), hMax = pct(hookCostUs, hn, 1.0);
-  var lP50 = pct(latUs, ln, 0.50), lP95 = pct(latUs, ln, 0.95),
-      lP99 = pct(latUs, ln, 0.99), lMax = pct(latUs, ln, 1.0);
   var el = (Date.now() - t0) / 1000;
-
-  console.log('[' + tag + ' ' + fmt(el, 1) + 's] produced=' + produced + ' consumed=' + consumed +
-              ' ringDrop=' + ringDrop + ' depthMax=' + depthMax +
-              ' crcErr=' + crcErr + ' readErr=' + readErr + ' lenErr=' + lenErr +
-              ' seqGap=' + seqGap + ' hookEx=' + hookEx + ' drainEx=' + drainEx +
-              ' reentry=' + reentryHook + '/' + reentryDrain);
-  console.log('[' + tag + '] hook  copies: n=' + hn + ' P50=' + fmt(hP50, 1) + 'us P95=' +
-              fmt(hP95, 1) + 'us P99=' + fmt(hP99, 1) + 'us max=' + fmt(hMax, 1) + 'us');
-  console.log('[' + tag + '] drain latency: n=' + ln + ' P50=' + fmt(lP50, 1) + 'us P95=' +
-              fmt(lP95, 1) + 'us P99=' + fmt(lP99, 1) + 'us max=' + fmt(lMax, 1) + 'us');
+  console.log('[' + tag + ' ' + fmt(el, 1) + 's] mode=' + COPY_MODE + ' produced=' + produced +
+              ' consumed=' + consumed + ' ringDrop=' + ringDrop + ' depthMax=' + depthMax +
+              ' seqGap=' + seqGap + ' readErr=' + readErr + ' lenErr=' + lenErr +
+              ' hookEx=' + hookEx + ' drainEx=' + drainEx + ' reentry=' + reentryHook + '/' + reentryDrain +
+              ' laneCheckErr=' + laneCheckErr);
+  console.log('[' + tag + '] hook copy: n=' + hn + ' P50=' + fmt(pct(hookCostUs, hn, 0.50), 1) +
+              'us P95=' + fmt(pct(hookCostUs, hn, 0.95), 1) + 'us P99=' + fmt(pct(hookCostUs, hn, 0.99), 1) +
+              'us max=' + fmt(pct(hookCostUs, hn, 1.0), 1) + 'us (excludes JS-lock queueing)');
+  console.log('[' + tag + '] drain latency: n=' + ln + ' P50=' + fmt(pct(latUs, ln, 0.50), 1) +
+              'us P95=' + fmt(pct(latUs, ln, 0.95), 1) + 'us P99=' + fmt(pct(latUs, ln, 0.99), 1) +
+              'us max=' + fmt(pct(latUs, ln, 1.0), 1) + 'us');
+  console.log('[' + tag + '] crc: frames=' + crcFrames + ' algorithm_check=' +
+              (crcAlgorithmChecked ? (crcAlgorithmOk ? 'ok' : 'MISMATCH') : 'not-run') +
+              ' sum32=0x' + (crcSum >>> 0).toString(16) +
+              ' (per-frame FNV computed; no independent per-frame expectation in DRY_RUN)');
+  console.log('[' + tag + '] payload: rms_avg=' + fmt(payloadRmsSum / (crcFrames || 1), 1) +
+              ' rms_max=' + fmt(payloadRmsMax, 1) + ' p2p_max=' + fmt(payloadP2pMax, 0) +
+              ' min=' + payloadMin + ' max=' + payloadMax);
   console.log('[' + tag + '] rate=' + fmt(produced / (el || 1), 2) + '/s calls=' + calls +
               ' lenBad=' + lenBad + ' nullPtr=' + nullPtr + ' threads=' + Object.keys(tids).length);
+}
+
+/* 只做"自动失败"判定；不自动判 PASS（是否通过由审查方根据日志决定） */
+function autoVerdict() {
+  var fail = [];
+  if (aborted) fail.push('address-check');
+  if (laneCheckErr > 0) fail.push('lane0-selfcheck');
+  if (laneCheckMism === -1 && COPY_MODE === 'blockcopy') fail.push('lane0-selfcheck-not-run');
+  if (crcAlgorithmChecked && !crcAlgorithmOk) fail.push('crc-algorithm');
+  if (lenErr > 0) fail.push('payload-length');
+  if (readErr > 0) fail.push('read');
+  if (hookEx > 0) fail.push('hook-exception');
+  if (drainEx > 0) fail.push('drain-exception');
+  if (seqGap > 0) fail.push('seq-gap');
+  if (ringDrop > 0) fail.push('ring-drop');
+  return fail.length ? ('AUTO-FAIL:' + fail.join(',')) : 'NO-AUTO-FAIL(review required)';
 }
 
 function finish(reason) {
@@ -141,18 +166,20 @@ function finish(reason) {
   listener = null;
 
   try { report('FINAL'); } catch (e) { console.log('[!] report: ' + e); }
-  console.log('===== [END] reason=' + reason + ' aborted=' + aborted +
-              ' crcRefChecked=' + crcRefChecked + ' =====');
+  var v;
+  try { v = autoVerdict(); } catch (e) { v = 'verdict-error'; }
+  console.log('===== [END] reason=' + reason + ' mode=' + COPY_MODE +
+              ' lane0_selfcheck=' + (laneCheckDone ? (laneCheckErr === 0 ? 'ok(' + SPF + '/' + SPF + ')'
+                                                    : 'FAIL(' + laneCheckErr + 'mismatch)') : 'not-run') +
+              ' verdict=' + v + ' =====');
 }
 
-/* ---- DRY_RUN 消费端 ---- */
 function fnvBytes(u8) {
   var h = FNV_BASIS >>> 0;
   for (var i = 0; i < u8.length; i++) h = Math.imul(h ^ u8[i], 16777619) >>> 0;
   return h;
 }
 
-/* 一次性：用 BigInt 精确参考实现交叉验证 Math.imul 版本（仅第一帧，之后不再做） */
 function fnvExact(u8) {
   var h = 2166136261n;
   for (var i = 0; i < u8.length; i++) {
@@ -162,6 +189,7 @@ function fnvExact(u8) {
   return Number(h);
 }
 
+/* ---- DRY_RUN 消费端 ---- */
 function drain() {
   if (inDrain) { reentryDrain++; return; }
   inDrain = true;
@@ -172,91 +200,92 @@ function drain() {
 
       if (COPY_MODE === 'countonly') {
         idxHead++; consumed++;
-        if (lastSeq >= 0 && slotSeq[slot] !== lastSeq + 1) seqGap++;
-        lastSeq = slotSeq[slot];
+        var cs = slotSeq[slot];
+        if (lastSeq >= 0 && cs !== lastSeq + 1) seqGap++;
+        lastSeq = cs;
         continue;
       }
 
-      var bytes;
-      try { bytes = ring.add(off).readByteArray(SLOT_BYTES); }
+      var frame;
+      try { frame = ring.add(off).readByteArray(SLOT_BYTES); }
       catch (e) { readErr++; idxHead++; continue; }
-      if (bytes === null || bytes.byteLength !== SLOT_BYTES) { lenErr++; idxHead++; continue; }
+      if (frame === null || frame.byteLength !== SLOT_BYTES) { lenErr++; idxHead++; continue; }
 
-      if (COPY_MODE === 'blockcopy') {
-        /* 从整帧里抽 lane0：out[i] = in[i*4]（int16） */
-        var in16 = new Int16Array(bytes);
-        var lane = new Int16Array(SPF);
-        for (var q = 0; q < SPF; q++) lane[q] = in16[q * 4];
-        laneView = lane;
-        bytes = lane.buffer;
-      }
-      if (bytes.byteLength !== FRAME_OUT) { lenErr++; idxHead++; continue; }
+      /* lane0 抽取（消费端）：out[i] = in[i*4] */
+      var in16 = new Int16Array(frame);
+      var lane = new Int16Array(SPF);
+      for (var q = 0; q < SPF; q++) lane[q] = in16[q * 4];
 
-      /* 一次性自检：抽取结果必须等于对同一 slot 逐样本 strided 读取 */
-      if (!laneSelfChecked) {
-        laneSelfChecked = true;
+      /* 一次性自检：抽取结果必须与对同一 slot 逐样本 strided 读取一致 */
+      if (!laneCheckDone) {
+        laneCheckDone = true;
         var slotBase = ring.add(off);
         var mism = 0;
         for (var z = 0; z < SPF; z++) {
-          if (laneView[z] !== slotBase.add(z * STRIDE).readS16()) mism++;
+          if (lane[z] !== slotBase.add(z * STRIDE).readS16()) mism++;
         }
-        console.log('[i] lane0 self-check (extracted vs strided read of same slot): mismatches=' +
-                    mism + ' / ' + SPF);
+        laneCheckMism = mism;
+        laneCheckErr = mism;
+        console.log('[i] lane0 self-check: samples=' + SPF + ' mismatches=' + mism +
+                    ' result=' + (mism === 0 ? 'ok' : 'FAIL'));
       }
+
+      var bytes = lane.buffer;
+      if (bytes.byteLength !== FRAME_OUT) { lenErr++; idxHead++; continue; }
 
       var u8 = new Uint8Array(bytes);
       var crc = fnvBytes(u8);
-      if (!crcRefChecked) {
-        crcRefChecked = true;
+      crcFrames++;
+      crcSum = (crcSum + crc) >>> 0;
+
+      if (!crcAlgorithmChecked) {
+        crcAlgorithmChecked = true;
         var ref = fnvExact(u8);
-        console.log('[i] CRC cross-check: imul=0x' + crc.toString(16) + ' exact=0x' + ref.toString(16) +
-                    ' match=' + (crc === ref));
-        if (crc !== ref) crcErr++;
+        crcAlgorithmOk = (crc === ref);
+        crcAlgorithmSample = '0x' + crc.toString(16) + ' vs exact 0x' + ref.toString(16);
+        console.log('[i] crc algorithm cross-check (first frame only): ' + crcAlgorithmSample +
+                    ' match=' + crcAlgorithmOk);
       }
 
-      /* 载荷统计（消费端做，不在 hook 内） */
-      var i16 = new Int16Array(bytes);
-      var min = i16[0], max = i16[0], sum = 0, sumSq = 0;
-      for (var i = 0; i < i16.length; i++) {
-        var v = i16[i];
+      /* 载荷统计 */
+      var min = lane[0], max = lane[0], sum = 0, sumSq = 0;
+      for (var i = 0; i < lane.length; i++) {
+        var v = lane[i];
         if (v < min) min = v;
         if (v > max) max = v;
         sum += v; sumSq += v * v;
       }
-      var mean = sum / i16.length;
-      var ms2 = sumSq / i16.length - mean * mean;
+      var mean = sum / lane.length;
+      var ms2 = sumSq / lane.length - mean * mean;
       var rms = ms2 > 0 ? Math.sqrt(ms2) : 0;
-      payloadRmsSum += rms; if (rms > payloadRmsMax) payloadRmsMax = rms;
-      payloadP2pMax = Math.max(payloadP2pMax, max - min);
+      payloadRmsSum += rms;
+      if (rms > payloadRmsMax) payloadRmsMax = rms;
+      if (max - min > payloadP2pMax) payloadP2pMax = max - min;
+      if (min < payloadMin) payloadMin = min;
+      if (max > payloadMax) payloadMax = max;
 
-      /* 序号连续性 */
+      /* 序号 */
       var s = slotSeq[slot];
       if (lastSeq >= 0 && s !== lastSeq + 1) seqGap++;
       lastSeq = s;
 
       /* 消费延迟 */
-      var now = nowNs();
-      var ts = slotTsNs[slot];
+      var now = nowNs(), ts = slotTsNs[slot];
       if (now !== 0 && ts !== 0 && now > ts) {
         latUs[latW] = (now - ts) / 1000;
         latW = (latW + 1) % latUs.length;
         if (latN < latUs.length) latN++;
       }
 
-      idxHead++;
-      consumed++;
+      idxHead++; consumed++;
     }
   } catch (e) { drainEx++; }
   inDrain = false;
 }
 
-var payloadRmsSum = 0, payloadRmsMax = 0, payloadP2pMax = 0;
-var laneView = null;                     /* blockcopy 模式下的 lane0 视图 */
-function bytes16Get(arr, idx) { return arr[idx]; }
-
 /* ---- 安装 ---- */
 function install(runMs) {
-  console.log('[i] T2 PCM DRY_RUN: copy lane0 in hook, ring in native memory, no socket');
+  console.log('[i] T2 PCM DRY_RUN (blockcopy: one Memory.copy of the whole frame in the hook)');
 
   base = Module.findBaseAddress(MOD);
   if (base === null) { console.log('[ABORT] check1: ' + MOD + ' not loaded'); aborted = true; return false; }
@@ -277,17 +306,22 @@ function install(runMs) {
   console.log('[v] check4 runtime[16]=' + got);
 
   bindLibc();
-  if (clockGettime === null) { console.log('[ABORT] clock_gettime unavailable (timing would be meaningless)'); aborted = true; return false; }
-  console.log('[v] clock_gettime bound, monotonic available');
+  if (clockGettime === null) { console.log('[ABORT] clock_gettime unavailable'); aborted = true; return false; }
+  console.log('[v] clock_gettime bound');
 
-  /* 预分配（在 attach 之前完成，hook 内不再分配任何缓冲区） */
+  /* 预分配 */
   ring = Memory.alloc(RING_CAP * SLOT_BYTES);
   slotSeq = new Float64Array(RING_CAP);
   slotTsNs = new Float64Array(RING_CAP);
   hookCostUs = new Float64Array(2048);
   latUs = new Float64Array(4096);
-  console.log('[v] mode=' + COPY_MODE + ' slot=' + SLOT_BYTES + 'B ring=' + (RING_CAP * SLOT_BYTES) + 'B metacost=' +
-              (RING_CAP * 16) + 'B costRing=2048 latRing=4096');
+
+  console.log('[v] copy_mode=' + COPY_MODE);
+  console.log('[v] input_frame_bytes=' + FRAME_IN);
+  console.log('[v] ring_slot_bytes=' + SLOT_BYTES + ' ring_total_bytes=' + (RING_CAP * SLOT_BYTES) + ' ring_cap=' + RING_CAP);
+  console.log('[v] output_payload_bytes=' + FRAME_OUT);
+  console.log('[v] lane0_samples=' + SPF + ' lane0_stride_bytes=' + STRIDE);
+  console.log('[v] meta_bytes=' + (RING_CAP * 16) + ' cost_ring=2048 lat_ring=4096');
 
   try {
     listener = Interceptor.attach(target, {
@@ -312,7 +346,6 @@ function install(runMs) {
           var dst = ring.add(slot * SLOT_BYTES);
 
           if (COPY_MODE === 'countonly') {
-            /* 只计数：用于测量 Interceptor + JS 回调入口的固有开销 */
             slotSeq[slot] = seqNext++;
             slotTsNs[slot] = 0;
             idxTail++;
@@ -322,18 +355,7 @@ function install(runMs) {
           }
 
           var tS = nowNs();
-          if (COPY_MODE === 'blockcopy') {
-            /* 一次原生 memcpy 整帧；lane0 抽取在消费端完成 */
-            Memory.copy(dst, src, FRAME_IN);
-          } else {
-            /* 规格字面：dst[i] = src[i*4]（int16） */
-            var sp = src, dp = dst;
-            for (var i = 0; i < SPF; i++) {
-              dp.writeS16(sp.readS16());
-              sp = sp.add(STRIDE);
-              dp = dp.add(2);
-            }
-          }
+          Memory.copy(dst, src, FRAME_IN);      /* 同步复制整帧，5120 B */
           var tE = nowNs();
 
           slotSeq[slot] = seqNext++;
@@ -392,20 +414,27 @@ function install(runMs) {
 }
 
 rpc.exports = {
-  setMode: function (m, stride) {
-    if (m !== 'strided' && m !== 'blockcopy' && m !== 'countonly') return false;
-    COPY_MODE = m;
-    SLOT_BYTES = (m === 'blockcopy') ? FRAME_IN : FRAME_OUT;
-    if (m === 'countonly') SLOT_BYTES = FRAME_OUT;
-    return true;
+  setMode: function (m) {
+    if (m === 'blockcopy' || m === 'countonly') {
+      COPY_MODE = m;
+      SLOT_BYTES = FRAME_IN;
+      return true;
+    }
+    return false;      /* strided 等一律拒绝：不是正式模式 */
   },
   start: function (ms) { return install(ms); },
-  stop: function () { finish('rpc'); return { aborted: aborted, produced: produced, consumed: consumed, ringDrop: ringDrop, crcErr: crcErr }; },
+  stop: function () {
+    finish('rpc');
+    return { aborted: aborted, produced: produced, consumed: consumed, ringDrop: ringDrop,
+             laneCheckErr: laneCheckErr, crcAlgorithmOk: crcAlgorithmOk, seqGap: seqGap };
+  },
   stats: function () {
-    return { produced: produced, consumed: consumed, ringDrop: ringDrop, depthMax: depthMax,
-             crcErr: crcErr, readErr: readErr, lenErr: lenErr, seqGap: seqGap,
+    return { mode: COPY_MODE, produced: produced, consumed: consumed, ringDrop: ringDrop,
+             depthMax: depthMax, seqGap: seqGap, readErr: readErr, lenErr: lenErr,
              hookEx: hookEx, drainEx: drainEx, reentry: [reentryHook, reentryDrain],
-             calls: calls, lenBad: lenBad, nullPtr: nullPtr, hookCostN: hookCostN, latN: latN };
+             calls: calls, lenBad: lenBad, nullPtr: nullPtr,
+             laneCheckMism: laneCheckMism, crcAlgorithmOk: crcAlgorithmOk,
+             crcFrames: crcFrames, hookCostN: hookCostN, latN: latN };
   }
 };
 

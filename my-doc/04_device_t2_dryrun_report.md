@@ -1,34 +1,37 @@
-# TG-Z02 T2 真机 PCM 只读采集与 DRY_RUN 报告
+# TG-Z02 T2 真机 PCM 只读采集与 DRY_RUN 报告（审查修正版）
 
-设备：TG-Z02（AILABS_S1L，MT8167S，Android 8.1 / API 27，armeabi-v7a）
-目标：`com.alibaba.ailabs.genie.smartapp:core`（pid 6934），`libsmartbox.so + 0xd455c`
-时间：2026-11-19 11:38 – 12:00 (+08:00)
-证据标签：**真机实测** / **计算推导** / **尚未验证**
+设备：TG-Z02（AILABS_S1L，MT8167S，Android 8.1 / API 27，armeabi-v7a，内核 Linux 4.4.95 armv7l）
+目标：`com.alibaba.ailabs.genie.smartapp:core`，`libsmartbox.so + 0xd455c`
+本轮时间：2026-11-19 13:04 – 13:20 (+08:00)
+证据标签：**真机实测** / **静态分析** / **计算推导** / **尚未验证**
 
 > 本轮只做 DRY_RUN：**没有建立 UDS socket、没有发送 PCM、没有打包 40 B 头**，
-> 没有修改原厂 APK/SO/配置/分区，没有抢占麦克风。三次运行全部只读原始缓冲。
+> 没有修改原厂 APK/SO/配置/分区，没有抢占麦克风。
+> 正式运行模式**只有 blockcopy**（hook 内一次 `Memory.copy` 复制整帧 5120 B，lane0 抽取在消费端）。
 
 ---
 
 ## 1. 结论摘要
 
-| 项 | 结果 |
-|---|---|
-| 地址校验（每次启动） | 3 次运行全部通过（模块 / 符号 / 偏移 / 前 16 字节） |
-| Hook 触发 | 750 / 1500 / 751 帧，速率 24.94–25.00 帧/s |
-| 同步复制 | 每帧在回调内完成（两种实现，见 §4） |
-| DRY_RUN 消费 | 生产数 == 消费数（750/750、1500/1500、751/751） |
-| CRC 错误 | **0**，且 `Math.imul` 版本与 BigInt 精确实现逐帧抽检一致 |
-| 读取异常 | 0（`readErr / lenErr / hookEx / drainEx` 全 0） |
-| ring_drop | **0**（三次运行） |
-| 最大环深度 | 4 / 64 帧 |
-| 序号缺口 | 0 |
-| 重入 | 0/0（`reentryHook / reentryDrain`） |
-| 原厂功能 | 三进程 pid 与状态未变，无 ANR / 崩溃 / tombstone，音频节拍全程 25/s 未退化 |
-| **Hook 拷贝耗时** | **逐样本实现 P50 18 659.8 µs；整块 Memory.copy 实现 P50 69.7 µs（268× 差距）** |
+| 项 | 30 秒（A） | 60 秒（B） |
+|---|---|---|
+| 目标 pid / 模块基址 | 6934 / 0x8f181000 | 6934 / 0x8f181000 |
+| JS 文件 SHA256（日志首行记录） | `041d6670…e2607725` | 同左 |
+| 地址四项校验 | 全通过 | 全通过 |
+| 生产 / 消费 | 749 / 749 | 1500 / 1500 |
+| 帧率 | 24.97 /s | 25.00 /s |
+| ring_drop / 最大环深度 | 0 / 4 | 0 / 3 |
+| 序号缺口 | 0 | 0 |
+| readErr / lenErr | 0 / 0 | 0 / 0 |
+| hookEx / drainEx | 0 / 0 | 0 / 0 |
+| 重入计数（hook/drain） | 0 / 0 | 0 / 0 |
+| lane0 自检（640 样本） | **640/640 一致** | **640/640 一致** |
+| CRC 算法交叉验证（仅首帧） | `match=true`（0xfab8cda） | `match=true`（0x5acf1ba） |
+| Hook 拷贝耗时 | P50 68.1 / P95 118.9 / P99 198.5 / max 1597.9 µs | P50 67.2 / P95 114.4 / P99 185.2 / max 1307.0 µs |
+| 自动判定行 | `verdict=NO-AUTO-FAIL(review required)` | 同左 |
 
-**T2 判定：通过**（十项通过标准逐条见 §9）。
-但必须带两个说明：① 规格字面的"640 对 readS16/writeS16"实现**开销不可接受**；② 60 秒稳定性测试用的是整块复制实现，两者已在 §4 明确区分。
+**T2 是否通过由审查方判定**：脚本只做"自动失败"判定（任一硬指标不达标即 `AUTO-FAIL`），
+不会因为日志生成而自称通过。
 
 ---
 
@@ -38,61 +41,55 @@
 |---|---|
 | 主机 | Windows 10 22H2，Python 3.11.9，frida 16.7.19 |
 | 设备端 | `/data/local/tmp/fs32`（arm32 frida-server），`adb forward tcp:27042` |
-| 设备 | `full_ailabs_s1l` / `AILABS_S1L` / MT8167S / SDK 27 / armeabi-v7a |
-| 目标进程 | 6934 `:core`（UID system），三次运行前后 pid 未变 |
-| 模块基址 | 0x8f181000，目标运行时地址 0x8f25555c |
+| 设备 | `full_ailabs_s1l` / MT8167S / SDK 27 / armeabi-v7a |
+| 内核 | `Linux version 4.4.95+ ... #1 SMP PREEMPT`；`CONFIG_HZ=100`（`/proc/config.gz` 可读） |
+| 目标进程（测试 A/B） | pid 6934 `:core`（UID system） |
+
+> 设备从上午到现在一直在线（`uptime` 1 天 15 小时），本轮所有数值都在同一台真机上采集。
 
 ---
 
-## 3. 地址校验（真机实测，每次 start() 都执行）
+## 3. 地址校验（每次 `start()` 都执行，四项全过即继续，任一不符则不 attach）
 
 ```
 [v] check1 module loaded, base=0x8f181000
 [v] check2 symbol=0x8f25555c
 [v] check3 offset=0xd455c
 [v] check4 runtime[16]=f0482de910b08de208d04de20370a0e1
-[v] clock_gettime bound, monotonic available
+[v] clock_gettime bound
 ```
 
-四项任一不符即 `aborted=true` 并且**不 attach**（本轮三次运行均通过，未触发 abort 分支）。
+进程重启后的独立验证（见 §9.2）用的是同一个脚本，基址变成 **0x8f202000**，偏移仍是 `0xd455c`，
+四项同样全过 —— 说明校验逻辑不依赖某个固定基址。
 
 ---
 
-## 4. 环形缓冲、并发依据与两种拷贝实现
+## 4. 实现
 
-### 4.1 环形缓冲（预分配，native 内存）
+### 4.1 启动时打印的固定参数（每次运行都在日志里）
 
-| 模式 | 每槽字节 | 环大小 | 元数据 |
-|---|---|---|---|
-| `strided` | 1280（lane0 一座） | 64 × 1280 = **81 920 B** | `Float64Array(64)` 序号 + `Float64Array(64)` 入环时刻（共 1024 B） |
-| `blockcopy` | 5120（整帧） | 64 × 5120 = **327 680 B** | 同上 |
+```
+[v] copy_mode=blockcopy
+[v] input_frame_bytes=5120
+[v] ring_slot_bytes=5120 ring_total_bytes=327680 ring_cap=64
+[v] output_payload_bytes=1280
+[v] lane0_samples=640 lane0_stride_bytes=8
+[v] meta_bytes=1024 cost_ring=2048 lat_ring=4096
+```
 
-全部在 `attach` **之前**分配完毕；hook 内不调用 `Memory.alloc`、不新建 ArrayBuffer/TypedArray。
-
-### 4.2 并发模型（不是把 C 的 SPSC 原子环照搬）
-
-- Frida 的 V8 运行时对**同一脚本**只有一份 JS 执行权（内部 JS 锁）。
-  `Interceptor` 回调虽在命中 hook 的线程上被调用，但**必须先取得这把锁**；
-  `setInterval` 回调同样要取锁。因此本脚本的两个回调**不会真正并发**，
-  `idxTail / idxHead / 统计计数器`不存在数据竞争，无需原子操作。
-- 代价是**延迟耦合**：消费端持锁期间，hook 回调要等——消费开销会加到音频线程上。
-  这一点在 T1 已经间接实测过（hook 内做重统计把 25 fps 拖到 10 fps），本轮又量到了 hook 自身的拷贝耗时。
-- 运行时验证：hook 内与消费内各有一个重入守卫，三次运行 `reentryHook / reentryDrain = 0 / 0`。
-- **本轮不宣称"Frida 运行时永远无并发"**：只声明"本脚本的两个回调被 JS 锁串行化"，并给出上述计数作为观测证据。
-
-### 4.3 Hook 热路径
+### 4.2 Hook 热路径（`t2_pcm_dryrun.js`，正式模式）
 
 ```js
 onEnter: function (args) {
   if (!running) return;
-  if (inHook) { reentryHook++; return; }          // 串行化验证
+  if (inHook) { reentryHook++; return; }              // 串行化验证用的重入守卫
   inHook = true;
   try {
     calls++;
     tids[Process.getCurrentThreadId()] = 1;
 
     var len = args[3].toInt32();
-    if (len !== FRAME_IN) { lenBad++; return; }    // 5120
+    if (len !== FRAME_IN) { lenBad++; return; }        // 5120
     var src = args[2];
     if (src.isNull()) { nullPtr++; return; }
 
@@ -103,16 +100,7 @@ onEnter: function (args) {
     var dst = ring.add(slot * SLOT_BYTES);
 
     var tS = nowNs();
-    if (COPY_MODE === 'blockcopy') {
-      Memory.copy(dst, src, FRAME_IN);             // 一次原生 memcpy（5120 B）
-    } else {
-      var sp = src, dp = dst;                      // 规格字面：dst[i] = src[i*4]
-      for (var i = 0; i < SPF; i++) {
-        dp.writeS16(sp.readS16());
-        sp = sp.add(STRIDE);
-        dp = dp.add(2);
-      }
-    }
+    Memory.copy(dst, src, FRAME_IN);                   // 同步复制整帧 5120 B
     var tE = nowNs();
 
     slotSeq[slot] = seqNext++;
@@ -120,231 +108,204 @@ onEnter: function (args) {
     idxTail++;
     produced++;
     if (depth + 1 > depthMax) depthMax = depth + 1;
-    /* 耗时采样写入预分配的 Float64Array(2048) 环 */
+    /* 耗时写入预分配 Float64Array(2048) */
   } catch (e) { hookEx++; } finally { inHook = false; }
 }
 ```
 
-hook 内**没有**：CRC、格式化、统计遍历、socket、等待、`sleep`、加锁、堆缓冲区分配。
-（注：逐样本实现的 `sp.add()/dp.add()` 每轮会新建一个小 NativePointer 对象，这是 Frida JS API 无法避免的；
-但没有任何 `Memory.alloc` / `new ArrayBuffer`。这一点正是它慢的根因，见 §5。）
+hook 内**没有** CRC、RMS、字符串格式化、日志、socket、等待、`Memory.alloc`，
+也没有 `new ArrayBuffer/Uint8Array/Int16Array`（提交前做过一次 token 审计：热路径内只出现 `Memory.copy`）。
 
-### 4.4 两种实现为什么差 268 倍
+### 4.3 消费路径（DRY_RUN）
 
-| 实现 | 每帧 JS→native 调用次数 | 实测 P50 |
+`setInterval(20 ms)` → `drain()`：
+取槽 → `readByteArray(5120)` → **lane0 抽取 `lane[q] = in16[q*4]`（640 个 int16）**
+→ 校验 1280 字节 → 逐帧算 FNV-1a（`Math.imul`）→ 载荷统计 → 序号连续性 → 消费延迟 → `idxHead++`。
+`stop()` 幂等：清 tick/rep/stop 三个定时器 → detach listener → 输出最终统计与自动判定行。
+
+### 4.4 并发依据
+
+Frida 的 V8 运行时对同一脚本只有一份 JS 执行权：`Interceptor` 回调（在命中 hook 的线程上被调用）
+与 `setInterval` 回调都必须先取得这把锁，因此二者**不会真正并发**，JS 状态无需原子操作；
+代价是延迟耦合——消费端持锁时 hook 要排队。
+
+**该排队时间不计入下面的 hook 耗时统计**：时间戳是在拿到锁之后、`Memory.copy` 之前取得的。
+运行时用 `inHook / inDrain` 守卫观测重入，三次运行均为 `0 / 0`。
+
+---
+
+## 5. 30 秒运行（测试 A）— `t2_pcm_dryrun_30s_blockcopy.log`
+
+```
+[i] js_sha256 = 041d6670de4f19fb3c592b8cf90ab91f3d37e63856a72f3ad38e0136e2607725
+[i] lane0 self-check: samples=640 mismatches=0 result=ok
+[i] crc algorithm cross-check (first frame only): 0xfab8cda vs exact 0xfab8cda match=true
+[FINAL 30.0s] mode=blockcopy produced=749 consumed=749 ringDrop=0 depthMax=4 seqGap=0
+              readErr=0 lenErr=0 hookEx=0 drainEx=0 reentry=0/0 laneCheckErr=0
+[FINAL] hook copy: n=749 P50=68.1us P95=118.9us P99=198.5us max=1597.9us (excludes JS-lock queueing)
+[FINAL] drain latency: n=749 P50=16176.3us P95=28167.9us P99=39226.7us max=61949.8us
+[FINAL] crc: frames=749 algorithm_check=ok sum32=0x73f87a13
+       (per-frame FNV computed; no independent per-frame expectation in DRY_RUN)
+[FINAL] payload: rms_avg=7079.2 rms_max=19553.2 p2p_max=65535 min=-32768 max=32767
+[FINAL] rate=24.97/s calls=749 lenBad=0 nullPtr=0 threads=1
+===== [END] reason=timeout mode=blockcopy lane0_selfcheck=ok(640/640) verdict=NO-AUTO-FAIL(review required) =====
+[i] hook window elapsed: 33.12s (js auto-stop at 30s)
+[i] driver_exit_after = 35.70s (from driver start)
+[i] js_sha256_at_exit = 041d6670...e2607725
+[i] rc = 0
+```
+
+刺激：0–10 s 静默；约 12 s 起设备扬声器播放中文语音（9.5 s）；约 22 s 起播放 1 kHz 测试音（10 s）。
+
+## 6. 60 秒运行（测试 B）— `t2_pcm_dryrun_60s_blockcopy.log`
+
+```
+[i] js_sha256 = 041d6670de4f19fb3c592b8cf90ab91f3d37e63856a72f3ad38e0136e2607725
+[i] lane0 self-check: samples=640 mismatches=0 result=ok
+[i] crc algorithm cross-check (first frame only): 0x5acf1ba vs exact 0x5acf1ba match=true
+[FINAL 60.0s] mode=blockcopy produced=1500 consumed=1500 ringDrop=0 depthMax=3 seqGap=0
+              readErr=0 lenErr=0 hookEx=0 drainEx=0 reentry=0/0 laneCheckErr=0
+[FINAL] hook copy: n=1500 P50=67.2us P95=114.4us P99=185.2us max=1307.0us (excludes JS-lock queueing)
+[FINAL] drain latency: n=1500 P50=15505.5us P95=27181.1us P99=35899.5us max=68796.0us
+[FINAL] crc: frames=1500 algorithm_check=ok sum32=0xb1fe489f
+[FINAL] payload: rms_avg=3536.3 rms_max=19431.5 p2p_max=65535 min=-32768 max=32767
+[FINAL] rate=25.00/s calls=1500 lenBad=0 nullPtr=0 threads=1
+===== [END] reason=timeout mode=blockcopy lane0_selfcheck=ok(640/640) verdict=NO-AUTO-FAIL(review required) =====
+[i] hook window elapsed: 63.14s (js auto-stop at 60s)
+[i] driver_exit_after = 65.39s (from driver start)
+[i] rc = 0
+```
+
+刺激：0–10 s 静默；约 12 s 语音；约 22 s 1 kHz 测试音（10 s，约 32 s 结束）；30–60 s 持续观察。
+**这只是 60 秒运行，不是长稳测试**（长稳未做，见 §10）。
+
+两个运行里 `payload min/max` 都到过 ±32768：那是扬声器放语音/测试音时 ADC 削顶，
+说明取到的确实是随声音变化的真实音频，不是常量缓冲。
+
+---
+
+## 7. 关于 CRC 的准确表述
+
+- 每帧**都计算** FNV-1a（`Math.imul` 实现，1280 字节），`crcFrames` 记录帧数（749 / 1500）；
+- `crcAlgorithmCheck` **只在第一帧**做一次：把 `Math.imul` 结果与 BigInt 精确实现比对，只用来验证**算法实现**；
+- DRY_RUN 里**没有**"独立预期 CRC"用于逐帧完整性比对（没有接收端、没有重放）——
+  因此**不能**把"算法交叉验证通过"说成"全部 PCM 帧已完成独立 CRC 完整性校验"。
+  逐帧 FNV 只是被算出来并累加（`sum32`）用于观察波动。
+- **T3 的接收端**会按实际帧头 CRC 对收到的载荷做完整性校验，那才是真正的端到端校验。
+
+---
+
+## 8. CPU 开销（原始采样可复核）
+
+测量脚本：`04_device_t0/t2_cpu_measure.py`；原始日志：`04_device_t0/t2_cpu_measure.log`。
+每个窗口都记录了墙钟起止、`/proc/<pid>/stat` 的 `utime/stime` 起止值与 jiffies 增量。
+
+### 8.1 USER_HZ 的确认
+
+- 设备 `/proc/config.gz` 可读，直接得到 `CONFIG_HZ=100` / `CONFIG_HZ_100=y`；
+- procfs 的 tick 单位按 32 位 ARM 约定为 `USER_HZ=100`。
+- `top -b -n 2 -d 1 -p <pid>` 的瞬时值在本机 toybox 上不可靠（同一时刻给 8.9%，与 jiffies 法差一个数量级），
+  因此**只把 config.gz 作为依据**，top 交叉核对记为"不可用"。
+
+### 8.2 三窗口原始采样（pid 19572，无音频刺激，各 15 s）
+
+```
+baseline_no_hook   utime 20130->21144  stime 358->368  djiffies=1024  wall=15.293s  cpu=66.96%
+countonly          utime 21589->22611  stime 386->398  djiffies=1034  wall=15.213s  cpu=67.97%
+blockcopy          utime 23634->24782  stime 425->440  djiffies=1163  wall=15.202s  cpu=76.50%
+```
+
+`cpu_percent = (utime+stime 增量) / (USER_HZ × 墙钟秒) × 100`
+
+| 场景 | CPU（占单核） | 相对基线 |
 |---|---|---|
-| strided（640 次 `readS16` + 640 次 `writeS16` + 1280 次 `add`） | ≈ 2560 次 | **18 659.8 µs** |
-| blockcopy（1 次 `Memory.copy` 5120 B） | 1 次 | **69.7 µs** |
+| baseline（无 hook） | 66.96% | — |
+| countonly（只计数的 hook） | 67.97% | **+1.01 pp** |
+| blockcopy（拷贝 + 消费统计） | 76.50% | **+9.54 pp** |
 
-Frida 的每次 `NativePointer` 调用都要跨 JS/native 边界并创建临时对象，2 560 次 ≈ 18.7 ms。
-**18.7 ms 占 40 ms 帧周期的 47%**：虽然帧率仍是 25/s（源端节拍没被拉坏），
-但这等于把音频线程近一半的时间排在 JS 锁上，抖动风险高，不适合作为 T3 的部署形态。
+解读（**真机实测 + 计算推导**）：Interceptor + JS 回调入口的固有开销约 +1 pp；
+`Memory.copy` 本身按 25 帧/s × 70 µs ≈ 0.18% 单核；**其余约 +8 pp 来自消费端的 DRY_RUN 统计**
+（每 20 ms 一次跨 Frida 边界读 5120 B、建视图、1280 B FNV、640 样本扫描）。
 
----
-
-## 5. DRY_RUN 消费路径
-
-`setInterval(…, 20 ms)` → `drain()`：
-
-1. 从环里按 `idxHead % RING_CAP` 取槽，`readByteArray(SLOT_BYTES)`；
-2. `blockcopy` 模式下先做 lane0 抽取 `lane[q] = in16[q*4]`（640 次，消费端）；
-3. 校验载荷长度 `=== 1280`；
-4. 计算 **FNV-1a**：`h = Math.imul(h ^ byte, 16777619) >>> 0`（1280 次）；
-   第一帧额外用 BigInt 精确实现交叉验证（三次运行均 `match=true`）；
-5. 逐样本统计 min / max / 均值 / 去直流 RMS / 峰峰值；
-6. 校验序号连续性、记录入环→消费延迟；
-7. `idxHead++`、`consumed++`。
-
-**没有**创建任何 socket（`DRY_RUN` 不建 UDS），`stop()` 后不遗留定时器与 listener。
+> 说明：更早一次同法测量（68.8% / 70.3% / 78.3%，pid 6934）**没有保存原始采样**，
+> 因此只能记为"报告记录、不可独立复核"；本节的 66.96% / 67.97% / 76.50% 才是可复核的那一组。
+> 局限：单次 15 s 窗口、±1–2 pp 噪声、三个窗口背靠背测量，环境负载漂移未完全排除。
 
 ---
 
-## 6. 三次运行原始结果
+## 9. 稳定性、进程重启事件与偏离
 
-### 6.1 运行 A：30 秒，`strided`（规格字面实现）— `t2_pcm_dryrun_30s.log`
+### 9.1 测试 A/B 期间
 
-```
-[FINAL 30.0s] produced=750 consumed=750 ringDrop=0 depthMax=4 crcErr=0 readErr=0
-              lenErr=0 seqGap=0 hookEx=0 drainEx=0 reentry=0/0
-[FINAL] hook  copies: n=750  P50=18659.8us P95=21399.2us P99=22887.1us max=32894.5us
-[FINAL] drain latency: n=750  P50=4211.9us  P95=26524.0us P99=35937.0us max=78166.4us
-[FINAL] rate=24.96/s calls=750 lenBad=0 nullPtr=0 threads=1
-[i] CRC cross-check: imul=0xf7ba4363 exact=0xf7ba4363 match=true
-```
+三进程（6682 / 6934 / 7031）全程存活；无 `FATAL`/`ANR`；无新 tombstone；
+音频节拍始终 24.97–25.00/s；`rc=0`。
 
-### 6.2 运行 B：60 秒，`blockcopy`（整帧复制）— `t2_pcm_dryrun_60s.log`
+### 9.2 一次**由我造成的**进程重启（必须记录）
 
-```
-[FINAL 60.1s] produced=1500 consumed=1500 ringDrop=0 depthMax=4 crcErr=0 readErr=0
-              lenErr=0 seqGap=0 hookEx=0 drainEx=0 reentry=0/0
-[FINAL] hook  copies: n=1500 P50=69.7us   P95=119.8us  P99=164.3us  max=1606.7us
-[FINAL] drain latency: n=1500 P50=15694.7us P95=27849.8us P99=41416.1us max=79827.6us
-[FINAL] rate=24.94/s calls=1500 lenBad=0 nullPtr=0 threads=1
-[i] CRC cross-check: imul=0xa88a8355 exact=0xa88a8355 match=true
-```
+在做 CPU 标定时我在设备上起了 3 个 CPU-bound busy loop（想用它们标定 HZ），
+设备负载升到 load average 15 左右，随后 `:core` 与 `:business` 在 **13:11 前后重启**：
 
-### 6.3 运行 C：30 秒，`blockcopy` + lane0 自检 — `t2_pcm_dryrun_30s_blockcopy_selfcheck.log`
-
-```
-[i] lane0 self-check (extracted vs strided read of same slot): mismatches=0 / 640
-[i] CRC cross-check: imul=0xb6ff3dcc exact=0xb6ff3dcc match=true
-[FINAL 30.0s] produced=751 consumed=751 ringDrop=0 depthMax=4 crcErr=0 ... reentry=0/0
-[FINAL] hook  copies: n=751  P50=71.8us   P95=135.5us  P99=177.2us  max=1201.2us
-[FINAL] drain latency: n=751  P50=16098.8us P95=29506.6us P99=43153.9us max=69526.0us
-[FINAL] rate=25.00/s
-```
-
-> 自检含义：`blockcopy` 模式下消费端抽取出的 lane0，与"对同一 slot 按 `z*STRIDE` 逐样本读取"的结果
-> **640/640 完全一致**，即整帧复制 + 消费端抽取与规格要求的 `dst[i]=src[i*4]` 等价。
-
-### 6.4 刺激与响应（同 T1 的判定口径）
-
-| 阶段 | 刺激 | 消费端 lane0 RMS（逐帧均值，运行 C） |
-|---|---|---|
-| 0–10 s | 静默 | 见日志 `RUN` 行（约 40–80） |
-| 10–20 s | 中文语音（设备扬声器） | 明显升高（数千量级） |
-| 20–30 s | 1 kHz 测试音 | 最高（万量级） |
-
-消费端 RMS/峰峰值逐次输出在 `RUN` 行中；本节只作为"取到的确实是随声音变化的 PCM"的旁证，
-定量通道/频率结论以 T1 报告为准。
-
----
-
-## 7. 性能统计汇总
-
-| 指标 | 运行 A（strided） | 运行 B（blockcopy） | 运行 C（blockcopy+自检） |
-|---|---|---|---|
-| Hook 总调用数 | 750 | 1500 | 751 |
-| 合法帧（len==5120） | 750 | 1500 | 751 |
-| 生产 / 消费 | 750 / 750 | 1500 / 1500 | 751 / 751 |
-| ring_drop | 0 | 0 | 0 |
-| 序号缺口 | 0 | 0 | 0 |
-| 最大环深度 | 4 | 4 | 4 |
-| Hook 拷贝 P50 | 18 659.8 µs | **69.7 µs** | 71.8 µs |
-| P95 / P99 / max | 21 399 / 22 887 / 32 894 µs | 119.8 / 164.3 / 1 606.7 µs | 135.5 / 177.2 / 1 201.2 µs |
-| 消费延迟 P50 | 4 211.9 µs | 15 694.7 µs | 16 098.8 µs |
-| P95 / P99 / max | 26 524 / 35 937 / 78 166 µs | 27 849.8 / 41 416.1 / 79 827.6 µs | 29 506.6 / 43 153.9 / 69 526.0 µs |
-| CRC 错误 | 0 | 0 | 0 |
-| 读取异常 / 长度异常 | 0 / 0 | 0 / 0 | 0 / 0 |
-| 线程数 | 1 | 1 | 1 |
-| 帧率 | 24.96 /s | 24.94 /s | 25.00 /s |
-| 测试前后 pid | 6934（未变） | 6934（未变） | 6934（未变） |
-
-### 7.1 CPU 开销分解（补充实测）
-
-用 `/proc/6934/stat` 的 `utime+stime`（USER_HZ=100，ARM Linux 默认）在 14–20 s 窗口内求差，
-按"进程占单核百分比"计算，三次窗口同法：
-
-| 场景 | 窗口 | CPU（占单核） | 相对基线 |
-|---|---|---|---|
-| 基线（无 hook） | 20.4 s | **68.8%** | — |
-| `countonly`（hook 装着，只计数，不拷贝、不取时间戳、消费端跳过统计） | 14.5 s | **70.3%** | **+1.5 pp** |
-| `blockcopy`（拷贝 70 µs/帧 + 消费端 FNV/统计） | 16.2 s | **78.3%** | **+9.5 pp** |
-
-分解结论（**真机实测 + 计算推导**）：
-
-- **Frida Interceptor + JS 回调入口本身的固有开销 ≈ +1.5 pp**（约 1.5% 单核），这部分省不掉；
-- **拷贝本身 ≈ +0.2 pp**（25 帧/s × 70 µs = 1.75 ms/s）；
-- **剩下的 ≈ +7.8 pp 全是消费端**：每 20 ms 一次 drain，每次要跨 Frida 边界读 5120 B、
-  新建 `Uint8Array`/`Int16Array` 视图、对 1280 B 做 FNV、对 640 个样本做 min/max/RMS 扫描
-  → 约 1.5 ms/tick。**这是 DRY_RUN 统计的代价，不是采集本身的代价。**
-- 对照：`strided` 若按 18.7 ms/帧算，25 帧/s 就是 **468 ms/s ≈ 47% 单核**，与"占掉近半个帧周期"的观察一致。
-
-局限：单窗口采样，±1–2 pp 噪声；`top -b -n 1` 的单次读数波动大（曾读到 63.6%–83.8%），
-因此上表不用 `top`，只用 jiffies 差值。`getconf` 不存在，HZ 按 ARM Linux 默认 100 处理；
-即使 HZ 取值有偏差，**同一方法下三个场景的相对差**仍然成立。
-
-**测量方式与局限**（不伪造精度）：
-
-- hook 耗时用 `clock_gettime(CLOCK_MONOTONIC)`（libc，vDSO，单次约百纳秒级）在拷贝前后各取一次时间戳，
-  单位换算成 µs；因此**测量值包含两次时间戳调用自身**，且**不包含**等待 JS 锁的时间
-  （即"进入回调后、开始拷贝前"的排队时间没有计入）。
-- 消费延迟 = 消费端取帧时刻 − 该帧入环时刻，包含 `setInterval` 的 20 ms 量化误差，
-  所以 P50 落在 4–16 ms 属于量化结果，不能读成"系统延迟只有这么多"。
-- 百分位方法：把环形采样（hook 2048 个、延迟 4096 个；超出部分覆盖最旧）排序后取 `floor((n-1)q)`。
-- 运行 A 的 drain 延迟 P50（4.2 ms）比 B/C 低，是因为 hook 自己占了 18.7 ms 的 JS 锁，
-  消费回调总在 hook 之后紧接着执行——**这是耦合的副作用，不是性能更好**。
-
----
-
-## 8. 原厂功能与稳定性
-
-| 检查 | 结果 |
+| 项 | 变化 |
 |---|---|
-| 三进程存活 | 6682 / 6934 / 7031 全程存活，pid 未变，状态 `SyS_epoll_wait` |
-| 崩溃 / ANR | logcat 最近 400 行无 `FATAL` / `ANR in` / `signal 11` |
-| tombstone | `/data/tombstones/` 最新仍是 2026-11-18 20:28，**本轮无新增** |
-| 音频节拍 | hook 期间帧率始终 24.94–25.00/s（源端 25/s），**未退化** |
-| 设备端清理 | frida-server 已停、48 kHz 测试音已删除（`ps`/`ls` 复查通过） |
-| 原厂语音交互 | **未做真人交互测试**：本轮用设备扬声器播放语音/测试音作为刺激，没有验证唤醒词识别率（见 §10） |
+| `:core` | 6934 → **19572** |
+| `:business` | 7031 → **19637** |
+| 主进程 | 6682 未变 |
+
+- **没有 tombstone**（最新仍是 2026-11-18 20:28），logcat 里也没有 `FATAL` / `ANR` / `signal 11`
+  → 不是 native 崩溃，更像是高负载下被系统回收/重新拉起。
+- 时间顺序上：**测试 A/B 已在此事件之前完成并 rc=0**（两份日志的 target_pid 都是 6934）。
+- 事件后我用同一份脚本做了一次 20 s 独立验证（`t2_pcm_dryrun_20s_afterrestart.log`）：
+  pid 19572、**模块基址变成 0x8f202000**、偏移仍 0xd455c、四项校验全过、
+  自检 640/640、`ringDrop=0`、`hookEx=drainEx=0`、`rate=25.00/s`、hook P50 67.7 µs、`rc=0`。
+- busy loop 现已全部清除（`ps` 复查无残留）。
+
+**这是我的操作失误，与 T2 代码路径无关，但设备确实在我手上重启过一次**，因此如实记录。
+
+### 9.3 与规格的偏离 / 历史说明
+
+- 规格字面的 `strided`（`dst[i]=src[i*4]` 逐样本 640 对读写）**已从脚本中移除**，
+  只保留为历史测量：`t2_pcm_dryrun_30s.log`（pid 6934、750 帧、`ringDrop=0`，但 hook P50 **18.7 ms**）。
+  该日志是旧版本脚本产生的，**不能与本轮 blockcopy 结果混读**；正式模式只有 blockcopy。
+- `countonly` 模式仅用于 §8 的开销分解，不产生 PCM，也不是正式模式。
 
 ---
 
-## 9. 通过标准逐条核对
+## 10. 未验证事项
 
-| # | 标准 | 结果 |
+| # | 项 | 状态 |
 |---|---|---|
-| 1 | 地址校验全部通过 | ✅ 三次运行均通过 |
-| 2 | Hook 成功触发 | ✅ 750 / 1500 / 751 帧 |
-| 3 | 每帧在回调内同步复制 | ✅ 两种实现都在 `onEnter` 内完成；`blockcopy` 还额外做了 640/640 自检 |
-| 4 | 消费端持续取到有效帧 | ✅ 生产 == 消费 |
-| 5 | CRC 错误为 0 | ✅ 且与 BigInt 精确实现逐帧抽检一致 |
-| 6 | 无读取异常 | ✅ readErr / lenErr 全 0 |
-| 7 | 无明显原厂功能异常 | ✅ 进程/节拍/无 ANR；但真人交互未测（见 §10） |
-| 8 | 无崩溃或重启 | ✅ 无新 tombstone，pid 未变 |
-| 9 | ring_drop 为 0 | ✅ 三次均 0（深度峰值仅 4/64） |
-| 10 | 采集节拍无明显退化 | ✅ 24.94–25.00/s |
-
-**T2 通过。** 唯一需要审查方裁决的是"哪种拷贝实现作为 T3 的基准"（见 §10 第 1 项）。
+| 1 | **原厂唤醒词与实际对话交互** | **未完成**：操作者不在家、设备不在身边，无法做真人语音测试。用设备扬声器播放的合成语音/测试音**不能**替代唤醒词测试。**需要在真机上单独进行。** |
+| 2 | 采样率的独立时钟测量 | 仍为"强支持、未直测"（640 样本/40 ms + 两点频谱校准） |
+| 3 | 消费延迟对端到端的影响 | P50 ≈15.5–16.2 ms（20 ms tick + 40 ms 帧周期决定）；T3 若"消费即发送"需再加这段 |
+| 4 | hook 个别帧 1.3–1.6 ms 离群点 | 三次运行都有，未定位（疑似 GC 或锁等待） |
+| 5 | 长稳（分钟级连续运行） | 未做；本轮最长 60 s |
+| 6 | lane2/lane3 物理含义 | 未确认（本轮只提取 lane0） |
+| 7 | CPU 绝对值的外部可比性 | 设备当前负载（load average ≈10）高于上午，绝对值偏高；只有同批窗口之间的差值可比 |
 
 ---
 
-## 10. 与规格的偏离、未解决问题
-
-### 10.1 与规格的一处偏离（必须由审查方确认）
-
-规格 §4.2 要求 hook 内做 `dst[i] = src[i*4]`（640 对 `readS16/writeS16`）。
-实测该实现在本机需要 **18.7 ms/帧**（占 40 ms 周期 47%），因此**另外实现了 `blockcopy`**：
-hook 内一次 `Memory.copy` 复制整帧 5120 B，lane0 抽取移到消费端。
-等价性由运行 C 的 `lane0 self-check: mismatches=0 / 640` 证明。
-
-- **30 秒日志 = 规格字面实现（strided）**，全部错误计数为 0，但 hook 开销 18.7 ms；
-- **60 秒日志 = blockcopy 实现**，hook P50 69.7 µs；
-- 两者不是同一实现，不能混读。T3 采用哪种，请审查方定。
-
-### 10.2 未解决 / 未测量
-
-| # | 项 | 说明 |
-|---|---|---|
-| 1 | 消费延迟 P50 约 16 ms | 由 20 ms 消费 tick + 40 ms 帧周期共同决定；若 T3 要"消费即发送"，端到端会再加这段延迟。可考虑把 tick 降到 10 ms，但会加剧与 hook 的 JS 锁竞争，需实测权衡 |
-| 2 | hook 最大耗时 1.2–1.6 ms 的离群点 | 三次运行都有个别帧超过 1 ms（疑似 GC 或锁等待），未定位 |
-| 3 | CPU 开销已补测（见 §7.1） | 相对基线 +9.5 pp；其中消费端统计约占 +7.8 pp，Interceptor 固有开销 +1.5 pp，拷贝本身 +0.2 pp。若要降开销，优先砍消费端统计（缓存 CRC、跳过逐样本 RMS） |
-| 4 | 真人语音交互 | 唤醒词识别率、实际对话是否受影响未验证 |
-| 5 | 采样率仍是"强支持未直测" | 同 T1，需要独立时钟或与原厂 `AudioRecord` 配置对照 |
-| 6 | lane2/lane3 的物理含义 | 仍未确认（不影响本轮，提取的是 lane0） |
-| 7 | 长稳 | 单次最长 60 s；未做分钟级连续观察 |
-
----
-
-## 11. 结论与 T3 建议
-
-- **T2 通过**：Hook 内同步复制、预分配有界环、独立消费路径、CRC/长度/序号校验、DRY_RUN 统计全部落地，
-  三项错误计数（CRC / 读取 / 丢帧）全 0，原厂进程与节拍无退化。
-- **能否进入 T3（UDS 真机传输）**：**具备条件，但建议先用 `blockcopy` 作为基准实现**，
-  并且 T3 只需要在消费端把已有的 1280 B 载荷套上 `tgz2_frame.h` 的 40 B 头（`VER=2`、`rate=16000`、`ch=1`、`bits=16`、
-  FNV-1a 载荷 CRC —— 与 T2 消费端算的 CRC 是同一个算法，可直接复用），不需要改动 hook。
-
----
-
-## 12. 文件清单
+## 11. 文件清单
 
 | 文件 | 说明 |
 |---|---|
-| `04_device_t0/t2_pcm_dryrun.js` | T2 脚本（地址校验 / 双拷贝模式 / 预分配环 / DRY_RUN 消费） |
-| `04_device_t0/t2_pcm_dryrun_run.py` | 驱动（第 3 参数选择 strided / blockcopy） |
-| `04_device_t0/t2_pcm_dryrun_30s.log` | 运行 A：30 s，strided |
-| `04_device_t0/t2_pcm_dryrun_60s.log` | 运行 B：60 s，blockcopy |
-| `04_device_t0/t2_pcm_dryrun_30s_blockcopy_selfcheck.log` | 运行 C：30 s，blockcopy + lane0 自检（补充证据） |
-| `04_device_t0/t2_cpu_blockcopy.log` | CPU 分解：blockcopy 模式 25 s 运行日志 |
-| `04_device_t0/t2_cpu_countonly.log` | CPU 分解：countonly 模式 22 s 运行日志 |
+| `04_device_t0/t2_pcm_dryrun.js` | T2 脚本（blockcopy 正式模式；countonly 仅用于开销分解；lane0 自检带错误计数；启动参数打印；自动失败判定） |
+| `04_device_t0/t2_pcm_dryrun_run.py` | 驱动（默认 blockcopy、拒绝未知模式、日志首行 JS SHA256、区分运行窗口/驱动退出时间、异常也清理） |
+| `04_device_t0/t2_pcm_dryrun_30s_blockcopy.log` | **测试 A**：30 s，pid 6934 |
+| `04_device_t0/t2_pcm_dryrun_60s_blockcopy.log` | **测试 B**：60 s，pid 6934 |
+| `04_device_t0/t2_pcm_dryrun_20s_afterrestart.log` | 重启后 20 s 独立验证（pid 19572，基址 0x8f202000） |
+| `04_device_t0/t2_cpu_measure.py` | CPU 原始采样脚本（HZ 依据 + 三窗口 jiffies 记录） |
+| `04_device_t0/t2_cpu_measure.log` | CPU 原始采样日志（含 utime/stime 起止值） |
+| `04_device_t0/t2_pcm_dryrun_30s.log` | **历史**：旧版 strided 实现日志（非正式模式，保留不覆盖） |
+| `04_device_t0/t2_pcm_dryrun_60s.log` | **历史**：旧版 blockcopy 日志（保留不覆盖） |
+| `04_device_t0/t2_pcm_dryrun_30s_blockcopy_selfcheck.log` | **历史**：旧版自检日志（保留不覆盖） |
 | `04_device_t2_dryrun_report.md` | 本报告 |
+
+---
+
+## 12. 结论
+
+- DRY_RUN 在真机上跑通：hook 内同步复制整帧、预分配有界环、独立消费端提取 lane0（1280 B）、
+  逐帧长度/序号/统计全 0 异常，30 s 与 60 s 两次运行的 `verdict` 均为 `NO-AUTO-FAIL(review required)`。
+- **T2 是否通过由审查方判定**。本轮不自动给"通过"结论。
+- 进入 T3 前需要审查方决定：是否精简消费端统计以降低约 8 pp 单核开销；
+  以及真人唤醒词/对话验证如何补做（本轮明确未做）。

@@ -1,0 +1,29 @@
+=== T2 CPU measurement (raw samples, independently re-checkable) ===
+time  = 2026-11-19 13:16:17
+adb   = D:\GreenSoft\platform-tools\adb.exe
+serial= 192.168.1.9:5555   pid=19572
+
+--- 0) environment ---
+kernel: Linux version 4.4.95+ (admin@f4e1075b6d72) (gcc version 6.3.1 20170404 (Linaro GCC 6.3-2017.05) ) #1 SMP PREEMPT Fri Nov 4 14:52:25 CST 2022
+kernel CONFIG_HZ (if /proc/config.gz readable): CONFIG_HZ_FIXED=0
+CONFIG_HZ_100=y
+CONFIG_HZ=100
+procfs tick unit assumed USER_HZ=100 (32-bit ARM convention)
+
+--- 1) USER_HZ cross-check: jiffies-derived vs top instantaneous ---
+jiffies window: utime 19736->20115 stime 353->358 djiffies=384 wall=5.665s -> 67.79% (HZ=100)
+top instantaneous %CPU at same time: n/a
+
+--- 2) measurement windows (15 s each, no audio stimulus) ---
+baseline_no_hook   utime 20130->21144  stime 358->368  djiffies=1024  wall=15.293s  cpu=66.96%
+countonly          utime 21589->22611  stime 386->398  djiffies=1034  wall=15.213s  cpu=67.97%
+blockcopy          utime 23634->24782  stime 425->440  djiffies=1163  wall=15.202s  cpu=76.50%
+
+--- 3) formula and results ---
+cpu_percent = (utime+stime delta in jiffies) / (USER_HZ * wall_seconds) * 100
+baseline_no_hook   cpu=66.96%  delta_vs_baseline=+0.00 pp
+countonly          cpu=67.97%  delta_vs_baseline=+1.01 pp
+blockcopy          cpu=76.50%  delta_vs_baseline=+9.54 pp
+
+limitations: single-shot 15 s windows, +-1-2 pp noise; windows run back-to-back on the same
+             device, so ambient load drift is not fully excluded.
