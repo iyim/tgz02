@@ -1,0 +1,88 @@
+vad_unit_test  (vad_energy.c: frame=1024 samples, 16000 Hz)
+
+[T1] 全零静音不触发
+  ok   T1 全零 125 帧：没有打开片段
+  ok   T1 没有关闭事件
+  ok   T1 speech_frames == 0
+  ok   T1 噪声底 == 0
+  ok   T1 校准后进入 IDLE
+
+[T2] 低幅度噪声不触发（RMS 40 < min_start_rms 180）
+  ok   T2 低噪声 225 帧：没有打开片段
+  ok   T2 起始阈值 = max(180, noise*3) = 180
+  ok   T2 结束阈值 = 180*0.6 = 108
+
+[T3] 连续高能量帧触发开始（start_frames=2）
+  ok   T3 连续 2 帧 400 触发一次开启
+  ok   T3 进入 SPEECH
+  ok   T3 片段末尾 seq = 触发帧 seq
+  ok   T3 片段已含 pre-roll 5 帧
+
+[T4] 单帧脉冲不触发
+  ok   T4 单帧脉冲不打开片段
+  ok   T4 计数被随后的静音清零
+
+[T5] 语音中的短暂停顿不切段（hangover=600ms=15 帧）
+  ok   T5 已开始
+  ok   T5 停顿 10 帧（400ms）不结束片段
+  ok   T5 仍在 SPEECH
+  ok   T5 恢复说话后仍是一个片段
+
+[T6] 持续静音达到 hangover 后结束
+  ok   T6 静音 15 帧触发一次结束
+  ok   T6 end_reason = silence
+  ok   T6 回到 IDLE
+  ok   T6 segments_closed == 1
+
+[T7] pre-roll 帧数正确（200ms=5 帧 / 400ms=10 帧）
+  ok   T7 200ms pre-roll 补写 5 帧
+  ok   T7 片段第一帧 seq = 触发帧 - 4
+  ok   T7 400ms pre-roll 补写 10 帧
+  ok   T7 片段第一帧 seq = 触发帧 - 9
+  ok   T7 pre_roll=0 时片段含触发帧 1 帧
+  ok   T7 pre_roll=0 时 sink 收到 1 帧
+
+[T8] 最大片段时长保护（max_segment_ms=200 -> 5 帧翻滚）
+  ok   T8 12 帧 / 5 帧上限 -> 关闭 2 次
+  ok   T8 end_reason = max_duration
+  ok   T8 每个片段 5 帧
+  ok   T8 翻滚后仍在 SPEECH
+  ok   T8 新片段已写 2 帧（12-5-5）
+  ok   T8 共打开 3 个片段（1 + 2 次翻滚）
+
+[T9] 噪声底不会在 SPEECH 状态被更新
+  ok   T9 校准后噪声底 ≈ 10
+  ok   T9 处于 SPEECH
+  ok   T9 SPEECH 期间 50 帧 400 幅度没有改变噪声底
+  ok   T9 回到 IDLE
+  ok   T9 IDLE 后噪声底被静音拉低
+
+[T10] 参数边界与异常输入不崩溃
+  ok   T10 默认配置合法
+  ok   T10 min_start_rms=0 被拒并给出原因
+  ok   T10 end_ratio=1.0 被拒
+  ok   T10 start_frames=0 被拒
+  ok   T10 pre_roll_ms=2000 超出环容量被拒
+  ok   T10 max_segment_ms=40（<2 帧）被拒
+  ok   T10 noise_alpha=0 被拒
+  ok   T10 帧长不是整毫秒被拒
+  ok   T10 48k 非整毫秒帧长被拒
+  ok   T10 48k/960（20ms，<=1024 样本）合法
+  ok   T10 48k/1920 超 1024 样本上限被拒
+  ok   T10 非法配置 vad_init 返回 -1
+  ok   T10 cfg_ok=0
+  ok   T10 非法配置下 vad_feed 返回 -1
+  ok   T10 合法配置 vad_init 成功
+  ok   T10 vad_feed(NULL) 返回 -1
+  ok   T10 samples=NULL 返回 -1
+  ok   T10 帧长 639 返回 -1
+  ok   T10 帧长 0 返回 -1
+  ok   T10 非法帧计入 frames_dropped_invalid
+  ok   T10 vad_flush(NULL) 返回 -1
+  ok   T10 空片段 vad_flush 返回 0
+  ok   T10 vad_frame_rms(NULL) = 0
+  ok   T10 方波 400 的 RMS ≈ 400
+  ok   T10 极端合法参数通过校验
+  ok   T10 极端参数运行 30 帧不崩溃
+
+=== 65 passed, 0 failed ===

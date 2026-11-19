@@ -1,0 +1,5 @@
+# build outputs are not committed (sources, test logs and device evidence are)
+out/
+*.exe
+*.o
+__pycache__/

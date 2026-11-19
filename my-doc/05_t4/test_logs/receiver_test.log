@@ -1,0 +1,151 @@
+receiver_test.py
+  harness : D:\tgz02\OS\system\my-doc\05_t4\tests\receiver_harness.c
+  rx_core : D:\tgz02\OS\system\my-doc\05_t4\android\rx_core.c
+  ok   源文件存在: receiver_harness.c
+  ok   源文件存在: rx_core.c
+  ok   找到 C 编译器
+  cc      : C:\TDM-GCC-64\bin\gcc.EXE
+  tmpdir  : C:\Users\mac\AppData\Local\Temp\t4_rx_test_b39v3tuq
+  build: C:\TDM-GCC-64\bin\gcc.EXE -O2 -Wall -Wextra -o C:\Users\mac\AppData\Local\Temp\t4_rx_test_b39v3tuq\receiver_harness.exe D:\tgz02\OS\system\my-doc\05_t4\tests\receiver_harness.c D:\tgz02\OS\system\my-doc\05_t4\android\rx_core.c -lws2_32
+  ok   harness 编译成功
+  ok   harness 可执行文件存在
+
+[1] 合法 TGZ2 v2 帧正常接收
+  ok   valid: harness 退出码 0
+  ok   valid: stderr 为空
+  ok   valid: 至少有一行 type=STATS
+  ok   valid: received=3
+  ok   valid: accepted=3
+  ok   valid: 没有任何坏帧计数
+  ok   valid: missing=0
+  ok   valid: seq_first=1
+  ok   valid: seq_last=3
+
+[2] 错误长度数据报被拒绝
+  ok   badlen: harness 退出码 0
+  ok   badlen: stderr 为空
+  ok   badlen: 至少有一行 type=STATS
+  ok   badlen: received=1
+  ok   badlen: accepted=0
+  ok   badlen: bad_len=1
+
+[3] 错误 CRC 被拒绝
+  ok   badcrc: harness 退出码 0
+  ok   badcrc: stderr 为空
+  ok   badcrc: 至少有一行 type=STATS
+  ok   badcrc: 只有合法帧被接收
+  ok   badcrc: bad_crc=1
+  ok   badcrc: received=2
+
+[4] 错误 magic/version 被拒绝
+  ok   badmagic+ver: harness 退出码 0
+  ok   badmagic+ver: stderr 为空
+  ok   badmagic+ver: 至少有一行 type=STATS
+  ok   badmagic: bad_magic=1
+  ok   badver: bad_ver=1
+  ok   badmagic+ver: accepted=0
+  ok   badmagic+ver: received=2
+
+[5] 序号缺口统计正确（跳过 3 个 seq -> missing += 3）
+  ok   gap: harness 退出码 0
+  ok   gap: stderr 为空
+  ok   gap: 至少有一行 type=STATS
+  ok   gap: accepted=3
+  ok   gap: missing=3
+  ok   gap: duplicate=0
+  ok   gap: reorder=0
+  ok   gap: seq_last=6（1,2 -> 6）
+  ok   dup: harness 退出码 0
+  ok   dup: stderr 为空
+  ok   dup: 至少有一行 type=STATS
+  ok   dup: duplicate=1
+  ok   reorder: harness 退出码 0
+  ok   reorder: stderr 为空
+  ok   reorder: 至少有一行 type=STATS
+  ok   reorder: reorder=1
+
+[6] epoch 切换重置序号判断（不把重启算成丢帧）
+  ok   epoch: harness 退出码 0
+  ok   epoch: stderr 为空
+  ok   epoch: 至少有一行 type=STATS
+  ok   epoch: epoch_switches=1
+  ok   epoch: 切换后没有凭空产生 missing
+  ok   epoch: accepted=4
+  ok   epoch: 新 epoch 值已生效
+
+[7] 队列满时丢弃新帧（不阻塞、不覆盖未处理帧）
+  ok   queue: harness 退出码 0
+  ok   queue: 至少有一行 type=QUEUE
+  ok   queue: cap=8
+  ok   queue: 共推入 13 帧
+  ok   queue: 成功入队 8 帧
+  ok   queue: 丢弃 5 帧
+  ok   queue: 高水位=8
+  ok   queue: 取出 8 帧
+  ok   queue: 队首仍是第 1 帧（未被覆盖）
+  ok   queue: 队尾是第 8 帧
+  ok   queue: 取空后 count=0
+  ok   queue-no-drop: 至少有一行 type=QUEUE
+  ok   queue: 未溢出时 drops=0
+
+[8] 正常退出时 SUMMARY 可解析
+  ok   summary: harness 退出码 0
+  ok   summary: stderr 为空
+  ok   summary: 至少有一行 type=STATS
+  ok   summary: 至少有一行 type=SUMMARY
+  ok   summary: 字段 received 存在
+  ok   summary: 字段 received 是整数
+  ok   summary: 字段 accepted 存在
+  ok   summary: 字段 accepted 是整数
+  ok   summary: 字段 bad_len 存在
+  ok   summary: 字段 bad_len 是整数
+  ok   summary: 字段 bad_crc 存在
+  ok   summary: 字段 bad_crc 是整数
+  ok   summary: 字段 missing 存在
+  ok   summary: 字段 missing 是整数
+  ok   summary: 字段 duplicate 存在
+  ok   summary: 字段 duplicate 是整数
+  ok   summary: 字段 reorder 存在
+  ok   summary: 字段 reorder 是整数
+  ok   summary: 字段 queue_drop 存在
+  ok   summary: 字段 queue_drop 是整数
+  ok   summary: 字段 queue_high_watermark 存在
+  ok   summary: 字段 queue_high_watermark 是整数
+  ok   summary: 字段 vad_speech_frames 存在
+  ok   summary: 字段 vad_speech_frames 是整数
+  ok   summary: 字段 segments 存在
+  ok   summary: 字段 segments 是整数
+  ok   summary: 字段 segment_write_errors 存在
+  ok   summary: 字段 segment_write_errors 是整数
+  ok   summary: received=3
+  ok   summary: accepted=2（1 帧坏 CRC 不计）
+  ok   summary: bad_crc=1
+  ok   summary: vad_speech_frames 透传
+  ok   summary: segments 透传
+  ok   summary: noise_rms 是数字
+  ok   summary: dur_s 是数字
+
+[9] WAV 文件头与 PCM 数据长度一致
+  ok   wav: harness 退出码 0
+  ok   wav: stderr 为空
+  ok   wav: 至少有一行 type=WAV
+  ok   wav: 文件已生成
+  ok   wav: frames=5
+  ok   wav: data_bytes = 5 * 1280
+  ok   wav: 文件大小 = 44 + PCM
+  ok   wav: 前 4 字节是 RIFF
+  ok   wav: 8..12 是 WAVE
+  ok   wav: RIFF size = 文件长度 - 8
+  ok   wav: data size = PCM 长度
+  ok   wav: 采样率 16000
+  ok   wav: 单声道
+  ok   wav: 16-bit
+  ok   wave: nchannels=1
+  ok   wave: sampwidth=2
+  ok   wave: framerate=16000
+  ok   wave: nframes = frames*640
+  ok   wave: 读回字节数 = 5*1280
+  ok   wave: 读回的 PCM 与写入的样本逐字节一致
+
+=== 124 passed, 0 failed ===
+note: 本测试覆盖可移植的协议/队列/WAV 逻辑；AF_UNIX DGRAM 的真实收发由真机 t4_receiver 验证。
