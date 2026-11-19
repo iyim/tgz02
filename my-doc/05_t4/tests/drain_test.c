@@ -111,7 +111,8 @@ static void reset_state(void)
     g_ctx.rx_done = 0;
 }
 
-static void push_frame(uint32_t seq, int amp)
+/* 调用者已持有 g_ctx.mu：真正操作队列 */
+static void push_frame_locked(uint32_t seq, int amp)
 {
     rx_frame f;
     int i;
@@ -123,6 +124,65 @@ static void push_frame(uint32_t seq, int amp)
     f.epoch = 0xABCD0001u;
     f.ts_us = 1000000ull + (uint64_t)seq * 40000ull;
     if (!rx_queue_push(&g_ctx.q, &f)) printf("  (warn) push failed seq=%u\n", seq);
+}
+
+/* 单线程准备阶段用：自己加锁、入队、通知 */
+static void push_frame(uint32_t seq, int amp)
+{
+    pthread_mutex_lock(&g_ctx.mu);
+    push_frame_locked(seq, amp);
+    pthread_cond_signal(&g_ctx.cv);
+    pthread_mutex_unlock(&g_ctx.mu);
+}
+
+/* 读 processed 的唯一入口：与处理线程的写入用同一把锁同步 */
+static uint64_t read_processed(void)
+{
+    uint64_t v;
+    pthread_mutex_lock(&g_ctx.mu);
+    v = g_processed;
+    pthread_mutex_unlock(&g_ctx.mu);
+    return v;
+}
+
+/* ---- 用例 E 的起跑门闩：4 个线程全部就位后同时放行（mutex + cond，API 26 通用） ---- */
+static pthread_mutex_t g_gate_mu = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t  g_gate_cv = PTHREAD_COND_INITIALIZER;
+static int g_gate_waiting = 0;
+static int g_gate_open = 0;
+
+/* 线程侧：报到后等放行（同时放行 -> 真正的并发起跑） */
+static void gate_wait(void)
+{
+    pthread_mutex_lock(&g_gate_mu);
+    g_gate_waiting++;
+    pthread_cond_broadcast(&g_gate_cv);          /* 通知主线程"我又到了一个" */
+    while (!g_gate_open) pthread_cond_wait(&g_gate_cv, &g_gate_mu);
+    pthread_mutex_unlock(&g_gate_mu);
+}
+
+/*
+ * 主线程侧：等 expect 个线程报到后一次性放行。
+ * 用 2 s 上限的 timedwait，避免"线程创建失败 -> 永远等不齐 -> 测试挂死"；
+ * 超时也照样放行，返回值供断言（不足则用例失败，但不会死锁）。
+ */
+static int gate_open_all(int expect)
+{
+    struct timespec dl;
+    int waited = 0;
+
+    clock_gettime(CLOCK_REALTIME, &dl);
+    dl.tv_sec += 2;
+
+    pthread_mutex_lock(&g_gate_mu);
+    while (g_gate_waiting < expect) {
+        if (pthread_cond_timedwait(&g_gate_cv, &g_gate_mu, &dl) == ETIMEDOUT) break;
+    }
+    waited = g_gate_waiting;
+    g_gate_open = 1;
+    pthread_cond_broadcast(&g_gate_cv);
+    pthread_mutex_unlock(&g_gate_mu);
+    return waited;
 }
 
 static void *proc_trampoline(void *arg) { return proc_thread(arg); }
@@ -138,6 +198,7 @@ static void *wav_thread(void *arg)
     int16_t block[TGZ2_SPF];
     int i;
 
+    gate_wait();                        /* 与其它线程同时被放行，制造真正的并发创建 */
     if (t4_wav_open(&w, TEST_DIR, TEST_RUN_ID, 7, 42u, TGZ2_RATE) != 0) return NULL;
     for (i = 0; i < TGZ2_SPF; i++) block[i] = (int16_t)(i % 1000);
     if (t4_wav_write(&w, block, TGZ2_SPF) != 0) {
@@ -278,33 +339,35 @@ int main(void)
         expect(rc == 0, "D pthread_create 成功");
 
         if (rc == 0) {
-            /* 1) 先送一帧，等它被处理 —— 以此确认线程在跑，且随后进入等待 */
-            push_frame(9001, 500);
+            /* 1) 先送一帧（持锁入队 + 通知），等它被处理 —— 确认线程在跑、随后进入等待。
+             *    读取 processed 走 read_processed()，与处理线程的写入用同一把锁同步。 */
             pthread_mutex_lock(&g_ctx.mu);
+            push_frame_locked(9001, 500);
             pthread_cond_signal(&g_ctx.cv);
             pthread_mutex_unlock(&g_ctx.mu);
-            for (i = 0; i < 200 && g_processed < 1; i++) nap_ms(10);
-            waited = (g_processed == 1);
+
+            for (i = 0; i < 200 && read_processed() < 1; i++) nap_ms(10);
+            waited = (read_processed() == 1);
             expect(waited, "D 第一帧已处理（处理线程在等待下一帧）");
 
-            /* 2) 停止信号先到，但接收线程尚未结束（rx_done=0） */
+            /* 2) 停止信号先到，但接收线程尚未结束（rx_done=0）。
+             *    这里等 200 ms 不是为了"掩盖竞争"，而是给错误实现留出提前退出的时间窗口。 */
             stop_and_broadcast();
-            nap_ms(200);                    /* 给"错误实现"足够时间提前退出 */
+            nap_ms(200);
 
-            /* 3) 模拟接收线程"已经在 recv 里、停止后才拿到"的最后一帧 */
-            push_frame(9002, 500);
+            /* 3) 模拟接收线程"已经在 recv 里、停止之后才拿到"的最后一帧（持锁入队 + 通知） */
             pthread_mutex_lock(&g_ctx.mu);
+            push_frame_locked(9002, 500);
             pthread_cond_signal(&g_ctx.cv);
             pthread_mutex_unlock(&g_ctx.mu);
-            nap_ms(100);
 
-            /* 4) 接收线程真正结束 */
+            /* 4) 接收线程真正结束：持锁置 rx_done 并广播 */
             pthread_mutex_lock(&g_ctx.mu);
             g_ctx.rx_done = 1;
             pthread_cond_broadcast(&g_ctx.cv);
             pthread_mutex_unlock(&g_ctx.mu);
 
-            pthread_join(th, NULL);
+            pthread_join(th, NULL);          /* join 之后读下面这些量才有明确顺序 */
 
             expect(g_processed == 2,
                    "D processed == 2（g_stop=1、rx_done=0 期间没有提前退出）");
@@ -323,30 +386,56 @@ int main(void)
         enum { NTH = 4 };
         pthread_t th[NTH];
         char paths[NTH][T4_SEG_PATH_MAX];
-        int t, created = 0, distinct = 1, okhdr = 0;
+        int created_th[NTH];
+        int t, u, started = 0, created = 0, distinct = 1, okhdr = 0;
+        int before = count_wavs(dir), after = 0, waited = 0;
 
         memset(paths, 0, sizeof(paths));
+        for (t = 0; t < NTH; t++) created_th[t] = 0;
+
+        /* 复位门闩：本用例只用一次，复位是为了将来重复/多次调用也安全 */
+        pthread_mutex_lock(&g_gate_mu);
+        g_gate_waiting = 0;
+        g_gate_open = 0;
+        pthread_mutex_unlock(&g_gate_mu);
+
         for (t = 0; t < NTH; t++) {
-            pthread_create(&th[t], NULL, wav_thread, &paths[t]);
+            int crc = pthread_create(&th[t], NULL, wav_thread, &paths[t]);
+            if (crc == 0) {
+                created_th[t] = 1;
+                started++;
+            } else {
+                printf("  (fail) pthread_create #%d rc=%d\n", t, crc);
+            }
         }
-        for (t = 0; t < NTH; t++) pthread_join(th[t], NULL);
+        expect(started == NTH, "E 4 个 pthread_create 全部成功");
+
+        if (started > 0) {
+            waited = gate_open_all(started);     /* 全部就位后一次性放行 */
+            expect(waited == started, "E 所有线程都已到达起跑门闩（同时起跑）");
+        }
+        for (t = 0; t < NTH; t++) {
+            if (created_th[t]) pthread_join(th[t], NULL);   /* 只 join 创建成功的线程 */
+        }
 
         for (t = 0; t < NTH; t++) {
             if (paths[t][0] != '\0') created++;
         }
-        expect(created == NTH, "E 4 个线程都拿到了文件");
+        expect(created == started, "E 每个起跑的线程都拿到了文件");
         for (t = 0; t < NTH; t++) {
-            int u;
             for (u = t + 1; u < NTH; u++) {
-                if (strcmp(paths[t], paths[u]) == 0) distinct = 0;
+                if (paths[t][0] && paths[u][0] && strcmp(paths[t], paths[u]) == 0) distinct = 0;
             }
         }
-        expect(distinct, "E 4 个文件名互不相同");
+        expect(distinct, "E 文件名互不相同");
         for (t = 0; t < NTH; t++) {
             struct stat st;
-            if (stat(paths[t], &st) == 0 && st.st_size == 44 + TGZ2_PAYLOAD) okhdr++;
+            if (paths[t][0] && stat(paths[t], &st) == 0 &&
+                st.st_size == 44 + TGZ2_PAYLOAD) okhdr++;
         }
-        expect(okhdr == NTH, "E 4 个文件都是 44 + 1280 字节（未被截断）");
+        expect(okhdr == started, "E 每个文件都是 44 + 1280 字节（未被截断）");
+        after = count_wavs(dir);
+        expect(after == before + started, "E 目录里恰好新增 N 个 WAV（旧文件未被覆盖）");
     }
 
     printf("\n=== %d passed, %d failed ===\n", g_pass, g_fail);

@@ -1,0 +1,9 @@
+dir: D:\tgz02\OS\_analysis\t404_wavs files: 6
+seg_11223344_0007_42.wav          1324 B  nf=  640  40.0 ms  rms= 369.1  OK
+seg_11223344_0007_42_a1.wav       1324 B  nf=  640  40.0 ms  rms= 369.1  OK
+seg_11223344_0007_42_a2.wav       1324 B  nf=  640  40.0 ms  rms= 369.1  OK
+seg_11223344_0007_42_a3.wav       1324 B  nf=  640  40.0 ms  rms= 369.1  OK
+seg_d3a17001_0001_23.wav         80684 B  nf=40320  2520.0 ms  rms= 488.0  OK
+seg_d3a17001_0001_9001.wav        2604 B  nf= 1280  80.0 ms  rms= 500.0  OK
+runs=2  total_s=2.76  bad=0
+RESULT: PASS

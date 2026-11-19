@@ -291,7 +291,10 @@ static void *proc_thread(void *arg)
 
         if (got) {
             vad_feed(&g_vad, f.samples, TGZ2_SPF, f.seq, f.ts_us, &sink);
+            /* 计数也在 mu 下更新：测试（以及任何观察者）用同一把锁读取，不存在数据竞争 */
+            pthread_mutex_lock(&ctx->mu);
             g_processed++;
+            pthread_mutex_unlock(&ctx->mu);
         }
     }
 

@@ -10,6 +10,9 @@
 >
 > **T4-03 追加（见 §11）**：退出加入 `rx_done` 握手彻底关闭竞态、WAV 改 `O_EXCL` 原子独占创建 ——
 > 本机测试 + 真机 5 次启停验证通过。
+>
+> **T4-04 追加（见 §12）**：修掉并发测试自身的数据竞争（`g_processed`/队列写入）与 E 用例的起跑/
+> 创建检查问题 —— 真机连跑 5 次 `34 passed, 0 failed`。
 
 - 基线 commit：`50c61f8863a028c4f94231de18efd97fd4e2d05e`
 - 本轮提交：`f93e2c967807357604e395769db747d0a1940ac5`
@@ -602,3 +605,99 @@ eceiver_test.py` | exit 0 |
 2. 真人说话（场景 B/C）与背景噪声（场景 D）仍未验证，需要真人/噪声源。
 3. 并发创建用例 E 在真机上用 4 线程验证，但未做多进程并发（同一目录、同一 run_id）测试。
 4. Windows 侧只能跑顺序的原子创建测试（无 pthread）；并发创建只在 Android 上验证。
+
+---
+
+## 12. T4-04：并发测试的确定性与数据竞争修复
+
+基线：`b3223ac624ae0d06c3e532e42df0bc29eea9ba9f`；
+提交：`test: make T4 concurrency tests deterministic`。
+**本轮只改测试代码 + 给计数器加锁，不动任何生产逻辑设计。**
+
+### 12.1 修改文件与内容
+
+| 文件 | 改动 |
+|---|---|
+| `android/t4_receiver.c` | 仅一处：`proc_thread()` 里的 `g_processed++` 放进 `pthread_mutex_lock(&ctx->mu)` / `unlock` 之间。**未改** `rx_done` 握手、退出条件、`rx_thread()` 收发流程 |
+| `tests/drain_test.c` | 新增 `push_frame_locked()`（调用者持锁）/`push_frame()`（自带加锁+通知）/`read_processed()`（持锁读）；用例 D 全流程改为持锁入队与持锁读取；用例 E 增加 mutex+cond 起跑门闩、逐线程检查 `pthread_create` 返回值、只 join 创建成功的线程、新增"目录恰好新增 N 个 WAV"断言 |
+| `test_logs/*` | 五次连续真机运行输出、WAV 校验输出、NDK 编译记录 |
+| `README.md` / 本报告 | 同步说明 |
+
+### 12.2 D 用例：怎么消除的竞争
+
+修复前有两个竞争：
+
+1. `g_processed` 由处理线程写、测试线程轮询读，没有任何同步（技术上 UB，可能读到撕裂/陈旧值）；
+2. `push_frame()` 直接 `rx_queue_push()` 而不持 `g_ctx.mu`，与处理线程的 `rx_queue_pop()` 竞争。
+
+修复后：
+
+| 位置 | 现在的同步方式 |
+|---|---|
+| 处理线程计数 | `pthread_mutex_lock(&ctx->mu); g_processed++; unlock` |
+| 测试读取 | `read_processed()`：同一把 `ctx->mu` |
+| 测试入队 | `push_frame_locked()` 必须在持锁区间调用；D 里都是 `lock → push_frame_locked → pthread_cond_signal → unlock` |
+| 停止标志 / `rx_done` | 保持"持锁改状态 + 持锁内 broadcast"（与生产一致） |
+| 断言读取 | 全部放在 `pthread_join(th, NULL)` 之后，借助 join 的 happens-before |
+
+测试语义完全保留：第一帧处理完成 → `g_stop=1` 但 `rx_done=0` → 处理线程不退出 → 最后一帧入队并被处理 →
+置 `rx_done=1` 后退出 → `processed==2`、队列空、VAD 收 2 帧、`vad_flush()` 最后执行（片段 shutdown 含 2 帧）。
+
+**没有用 sleep 掩盖竞争**：D 里剩下一处 200 ms 等待，是"给错误实现留出提前退出的时间窗口"，
+它不是同步手段 —— 所有正确性判断都靠锁与 join。
+
+### 12.3 E 用例：怎么保证同时起跑
+
+- 起跑门闩 = `pthread_mutex_t` + `pthread_cond_t` + 计数（不依赖 `pthread_barrier_t`，API 26 通用）：
+  每个线程 `gate_wait()` 报到后阻塞；主线程 `gate_open_all(n)` 等到 n 个线程就位后**一次性 broadcast 放行**，
+  四个线程此后几乎同时进入 `t4_wav_open()`；
+- 主线程的等待带 **2 s 上限**（`pthread_cond_timedwait`），万一某次 `pthread_create` 失败也不会把测试挂死，
+  而是让断言失败；
+- 每个 `pthread_create()` 的返回值都被检查（失败打印 rc 并计入 `started`），**只 join 创建成功的线程**；
+- 断言：4 个线程全部创建成功、全部到达门闩、每个线程都拿到文件、文件名互不相同、
+  每个文件 `44 + TGZ2_PAYLOAD` 字节、**目录里恰好新增 N 个 WAV（旧文件未被覆盖）**。
+
+### 12.4 本轮测试结果（全部实际执行）
+
+**本机（Windows / gcc 10.3.0）**
+
+| 测试 | 结果 |
+|---|---|
+| VAD 单元测试 | **65 passed, 0 failed**（0 warning） |
+| `receiver_test.py` | **222 passed, 0 failed** |
+| `python -m py_compile tests\receiver_test.py` | exit 0 |
+
+**NDK 交叉编译（r21e / clang 9.0.9 / armeabi-v7a / API 26，`-O2 -Wall -Wextra -static`）**
+
+| 产物 | 大小 | SHA256 | 结果 |
+|---|---:|---|---|
+| `android/out/t4_receiver` | 3,435,644 B | `479bf8c65d1b041761f9d424829d6ef38ef37020b575131d049a847339b192f1` | 0 warning / 0 error |
+| `android/out/drain_test` | 3,444,708 B | `7db100984fcb48b1e95221aac45cb9cc807b38b344982f78e0e99eee162a33ce` | 0 warning / 0 error |
+
+`t4_receiver` ELF：`Class: ELF32` / `Type: EXEC` / `Machine: ARM`。
+
+**TG-Z02 真机：`drain_test` 连续 5 次**（`test_logs/drain_test_android.log`）
+
+| 次 | 耗时 | 结果 |
+|---|---:|---|
+| 1 | 0.51 s | **34 passed, 0 failed** |
+| 2 | 0.53 s | **34 passed, 0 failed** |
+| 3 | 0.54 s | **34 passed, 0 failed** |
+| 4 | 0.52 s | **34 passed, 0 failed** |
+| 5 | 0.54 s | **34 passed, 0 failed** |
+
+- 断言数从 31 增到 34（E 由 3 条变 6 条），5 次无死锁、无超时、无崩溃；
+- D 用例每次都输出同一条 SEGMENT：`frame_count=2, end_reason=shutdown, written_frames=2`；
+- E 用例每次产出 4 个并发文件：`seg_11223344_0007_42.wav` + `_a1`/`_a2`/`_a3`；
+- 6 个 WAV（4 个并发 + A、D 片段）回拉校验（`test_logs/device_wav_check_t404.txt`）：
+  `RIFF/WAVE`、`RIFF size = 文件长−8`、`data size = PCM 长`、16000/1ch/16bit、
+  `nframes = 帧数×640`，**6/6 OK**；4 个并发文件都是 1324 B = `44 + 1280`。
+
+### 12.5 未验证 / 限制
+
+1. **没有跑 ThreadSanitizer**：本机是 Windows(MinGW) 无 TSan；Android 静态二进制也没搭 TSan 运行时。
+   本轮的"无数据竞争"结论来自**代码路径上的锁配对审查 + 5 次真机复跑**，不是工具级证明。
+2. E 的门闩保证了"同时起跑"，但不保证内核里两次 `open(O_EXCL)` 真正交错；
+   内核的原子性由 `O_EXCL` 本身保证（T4-03 已论证），本测试只验证结果正确。
+3. 真人说话（场景 B/C）与背景噪声（场景 D）仍未验证。
+4. 只验证了同进程 4 线程并发创建，未做多进程并发。

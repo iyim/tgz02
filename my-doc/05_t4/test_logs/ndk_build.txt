@@ -4,13 +4,15 @@ Target: armv7a-unknown-linux-android26
 Thread model: posix
 InstalledDir: D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin
 cmd     : armv7a-linux-androideabi26-clang -O2 -Wall -Wextra -static -o android/out/t4_receiver android/t4_receiver.c android/rx_core.c android/vad_energy.c -lm
-exit    : 0
 warnings: 0
 errors  : 0
 artifact: android/out/t4_receiver 3435644 B
-sha256  : 18945b19a7cfc4fada07b5a7a45577d077f8810b8f2acde8a8215c4c919abe17
+sha256  : 479bf8c65d1b041761f9d424829d6ef38ef37020b575131d049a847339b192f1
 elf     : Class:                             ELF32
 elf     : Type:                              EXEC (Executable file)
 elf     : Machine:                           ARM
-drain_test: android/out/drain_test 3444276 B sha256=05649aa86c3462faf60761f24c6586c9ee3d94abcf02bf4f1e5a1e0e7b503297
 cmd     : armv7a-linux-androideabi26-clang -O2 -Wall -Wextra -static -o android/out/drain_test tests/drain_test.c android/rx_core.c android/vad_energy.c -lm
+warnings: 0
+errors  : 0
+artifact: android/out/drain_test 3444708 B
+sha256  : 7db100984fcb48b1e95221aac45cb9cc807b38b344982f78e0e99eee162a33ce

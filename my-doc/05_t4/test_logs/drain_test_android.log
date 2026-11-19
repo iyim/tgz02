@@ -1,51 +1,4 @@
-drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
-(cleanup) removed 12 stale wav files from /data/local/tmp/t4/drain_out
-
-[A] g_stop=1 且队列 85 帧：必须排空后再退出
-{"type":"SEGMENT","segment_id":1,"start_seq":23,"end_seq":85,"frame_count":63,"duration_ms":2520,"rms_avg":476.2,"rms_max":500.0,"end_reason":"shutdown","saved":true,"written_frames":63,"file":"/data/local/tmp/t4/drain_out/seg_d3a17001_0001_23.wav","vad_segment_id":1,"start_ts_us":1920000,"end_ts_us":4400000}
-  ok   A processed == 85（停止后仍逐帧处理）
-  ok   A 队列深度 == 0
-  ok   A VAD 实际收到 85 帧
-  ok   A 只开了一个片段
-  ok   A 收尾时关闭了该片段（vad_flush 生效）
-  ok   A flush 后状态回到 IDLE
-  ok   A 片段 WAV 保存成功
-  ok   A 没有写盘错误
-  ok   A 输出目录里有 WAV
-  ok   A 片段含 63 帧（5 帧 pre-roll + 58 帧）
-  ok   A WAV 大小 = 44 + 帧数*1280
-  ok   A 文件名含 run_id/片段号/起始序号
-
-[B] 队列为空 + g_stop=1 + rx_done=1：立即退出
-  ok   B processed == 0
-  ok   B VAD 没收到帧
-  ok   B 没有片段需要收尾
-
-[C] 真线程：先入队 40 帧，运行中置停止并 broadcast
-  ok   C pthread_create 成功
-  ok   C processed == 40
-  ok   C 队列深度 == 0
-  ok   C VAD 收到 40 帧
-
-[D] 停止竞态：g_stop=1 但 rx_done=0 时不得退出，最后一帧仍要处理
-  ok   D pthread_create 成功
-  ok   D 第一帧已处理（处理线程在等待下一帧）
-{"type":"SEGMENT","segment_id":1,"start_seq":9001,"end_seq":9002,"frame_count":2,"duration_ms":80,"rms_avg":500.0,"rms_max":500.0,"end_reason":"shutdown","saved":true,"written_frames":2,"file":"/data/local/tmp/t4/drain_out/seg_d3a17001_0001_9001.wav","vad_segment_id":1,"start_ts_us":361040000,"end_ts_us":361080000}
-  ok   D processed == 2（g_stop=1、rx_done=0 期间没有提前退出）
-  ok   D 队列深度 == 0
-  ok   D rx_done == 1
-  ok   D VAD 收到 2 帧
-  ok   D 片段在退出时收尾
-  ok   D 片段含 2 帧（flush 在最后一帧之后）
-  ok   D 写盘无错误
-
-[E] 4 线程同时创建同名 WAV：必须全部独占成功（O_EXCL）
-  ok   E 4 个线程都拿到了文件
-  ok   E 4 个文件名互不相同
-  ok   E 4 个文件都是 44 + 1280 字节（未被截断）
-
-=== 31 passed, 0 failed ===
---- second run ---
+########## run 1 (elapsed 0.51s, rc=0) ##########
 drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
 (cleanup) removed 6 stale wav files from /data/local/tmp/t4/drain_out
 
@@ -88,8 +41,222 @@ drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
   ok   D 写盘无错误
 
 [E] 4 线程同时创建同名 WAV：必须全部独占成功（O_EXCL）
-  ok   E 4 个线程都拿到了文件
-  ok   E 4 个文件名互不相同
-  ok   E 4 个文件都是 44 + 1280 字节（未被截断）
+  ok   E 4 个 pthread_create 全部成功
+  ok   E 所有线程都已到达起跑门闩（同时起跑）
+  ok   E 每个起跑的线程都拿到了文件
+  ok   E 文件名互不相同
+  ok   E 每个文件都是 44 + 1280 字节（未被截断）
+  ok   E 目录里恰好新增 N 个 WAV（旧文件未被覆盖）
 
-=== 31 passed, 0 failed ===
+=== 34 passed, 0 failed ===
+########## run 2 (elapsed 0.53s, rc=0) ##########
+drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
+(cleanup) removed 6 stale wav files from /data/local/tmp/t4/drain_out
+
+[A] g_stop=1 且队列 85 帧：必须排空后再退出
+{"type":"SEGMENT","segment_id":1,"start_seq":23,"end_seq":85,"frame_count":63,"duration_ms":2520,"rms_avg":476.2,"rms_max":500.0,"end_reason":"shutdown","saved":true,"written_frames":63,"file":"/data/local/tmp/t4/drain_out/seg_d3a17001_0001_23.wav","vad_segment_id":1,"start_ts_us":1920000,"end_ts_us":4400000}
+  ok   A processed == 85（停止后仍逐帧处理）
+  ok   A 队列深度 == 0
+  ok   A VAD 实际收到 85 帧
+  ok   A 只开了一个片段
+  ok   A 收尾时关闭了该片段（vad_flush 生效）
+  ok   A flush 后状态回到 IDLE
+  ok   A 片段 WAV 保存成功
+  ok   A 没有写盘错误
+  ok   A 输出目录里有 WAV
+  ok   A 片段含 63 帧（5 帧 pre-roll + 58 帧）
+  ok   A WAV 大小 = 44 + 帧数*1280
+  ok   A 文件名含 run_id/片段号/起始序号
+
+[B] 队列为空 + g_stop=1 + rx_done=1：立即退出
+  ok   B processed == 0
+  ok   B VAD 没收到帧
+  ok   B 没有片段需要收尾
+
+[C] 真线程：先入队 40 帧，运行中置停止并 broadcast
+  ok   C pthread_create 成功
+  ok   C processed == 40
+  ok   C 队列深度 == 0
+  ok   C VAD 收到 40 帧
+
+[D] 停止竞态：g_stop=1 但 rx_done=0 时不得退出，最后一帧仍要处理
+  ok   D pthread_create 成功
+  ok   D 第一帧已处理（处理线程在等待下一帧）
+{"type":"SEGMENT","segment_id":1,"start_seq":9001,"end_seq":9002,"frame_count":2,"duration_ms":80,"rms_avg":500.0,"rms_max":500.0,"end_reason":"shutdown","saved":true,"written_frames":2,"file":"/data/local/tmp/t4/drain_out/seg_d3a17001_0001_9001.wav","vad_segment_id":1,"start_ts_us":361040000,"end_ts_us":361080000}
+  ok   D processed == 2（g_stop=1、rx_done=0 期间没有提前退出）
+  ok   D 队列深度 == 0
+  ok   D rx_done == 1
+  ok   D VAD 收到 2 帧
+  ok   D 片段在退出时收尾
+  ok   D 片段含 2 帧（flush 在最后一帧之后）
+  ok   D 写盘无错误
+
+[E] 4 线程同时创建同名 WAV：必须全部独占成功（O_EXCL）
+  ok   E 4 个 pthread_create 全部成功
+  ok   E 所有线程都已到达起跑门闩（同时起跑）
+  ok   E 每个起跑的线程都拿到了文件
+  ok   E 文件名互不相同
+  ok   E 每个文件都是 44 + 1280 字节（未被截断）
+  ok   E 目录里恰好新增 N 个 WAV（旧文件未被覆盖）
+
+=== 34 passed, 0 failed ===
+########## run 3 (elapsed 0.54s, rc=0) ##########
+drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
+(cleanup) removed 6 stale wav files from /data/local/tmp/t4/drain_out
+
+[A] g_stop=1 且队列 85 帧：必须排空后再退出
+{"type":"SEGMENT","segment_id":1,"start_seq":23,"end_seq":85,"frame_count":63,"duration_ms":2520,"rms_avg":476.2,"rms_max":500.0,"end_reason":"shutdown","saved":true,"written_frames":63,"file":"/data/local/tmp/t4/drain_out/seg_d3a17001_0001_23.wav","vad_segment_id":1,"start_ts_us":1920000,"end_ts_us":4400000}
+  ok   A processed == 85（停止后仍逐帧处理）
+  ok   A 队列深度 == 0
+  ok   A VAD 实际收到 85 帧
+  ok   A 只开了一个片段
+  ok   A 收尾时关闭了该片段（vad_flush 生效）
+  ok   A flush 后状态回到 IDLE
+  ok   A 片段 WAV 保存成功
+  ok   A 没有写盘错误
+  ok   A 输出目录里有 WAV
+  ok   A 片段含 63 帧（5 帧 pre-roll + 58 帧）
+  ok   A WAV 大小 = 44 + 帧数*1280
+  ok   A 文件名含 run_id/片段号/起始序号
+
+[B] 队列为空 + g_stop=1 + rx_done=1：立即退出
+  ok   B processed == 0
+  ok   B VAD 没收到帧
+  ok   B 没有片段需要收尾
+
+[C] 真线程：先入队 40 帧，运行中置停止并 broadcast
+  ok   C pthread_create 成功
+  ok   C processed == 40
+  ok   C 队列深度 == 0
+  ok   C VAD 收到 40 帧
+
+[D] 停止竞态：g_stop=1 但 rx_done=0 时不得退出，最后一帧仍要处理
+  ok   D pthread_create 成功
+  ok   D 第一帧已处理（处理线程在等待下一帧）
+{"type":"SEGMENT","segment_id":1,"start_seq":9001,"end_seq":9002,"frame_count":2,"duration_ms":80,"rms_avg":500.0,"rms_max":500.0,"end_reason":"shutdown","saved":true,"written_frames":2,"file":"/data/local/tmp/t4/drain_out/seg_d3a17001_0001_9001.wav","vad_segment_id":1,"start_ts_us":361040000,"end_ts_us":361080000}
+  ok   D processed == 2（g_stop=1、rx_done=0 期间没有提前退出）
+  ok   D 队列深度 == 0
+  ok   D rx_done == 1
+  ok   D VAD 收到 2 帧
+  ok   D 片段在退出时收尾
+  ok   D 片段含 2 帧（flush 在最后一帧之后）
+  ok   D 写盘无错误
+
+[E] 4 线程同时创建同名 WAV：必须全部独占成功（O_EXCL）
+  ok   E 4 个 pthread_create 全部成功
+  ok   E 所有线程都已到达起跑门闩（同时起跑）
+  ok   E 每个起跑的线程都拿到了文件
+  ok   E 文件名互不相同
+  ok   E 每个文件都是 44 + 1280 字节（未被截断）
+  ok   E 目录里恰好新增 N 个 WAV（旧文件未被覆盖）
+
+=== 34 passed, 0 failed ===
+########## run 4 (elapsed 0.52s, rc=0) ##########
+drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
+(cleanup) removed 6 stale wav files from /data/local/tmp/t4/drain_out
+
+[A] g_stop=1 且队列 85 帧：必须排空后再退出
+{"type":"SEGMENT","segment_id":1,"start_seq":23,"end_seq":85,"frame_count":63,"duration_ms":2520,"rms_avg":476.2,"rms_max":500.0,"end_reason":"shutdown","saved":true,"written_frames":63,"file":"/data/local/tmp/t4/drain_out/seg_d3a17001_0001_23.wav","vad_segment_id":1,"start_ts_us":1920000,"end_ts_us":4400000}
+  ok   A processed == 85（停止后仍逐帧处理）
+  ok   A 队列深度 == 0
+  ok   A VAD 实际收到 85 帧
+  ok   A 只开了一个片段
+  ok   A 收尾时关闭了该片段（vad_flush 生效）
+  ok   A flush 后状态回到 IDLE
+  ok   A 片段 WAV 保存成功
+  ok   A 没有写盘错误
+  ok   A 输出目录里有 WAV
+  ok   A 片段含 63 帧（5 帧 pre-roll + 58 帧）
+  ok   A WAV 大小 = 44 + 帧数*1280
+  ok   A 文件名含 run_id/片段号/起始序号
+
+[B] 队列为空 + g_stop=1 + rx_done=1：立即退出
+  ok   B processed == 0
+  ok   B VAD 没收到帧
+  ok   B 没有片段需要收尾
+
+[C] 真线程：先入队 40 帧，运行中置停止并 broadcast
+  ok   C pthread_create 成功
+  ok   C processed == 40
+  ok   C 队列深度 == 0
+  ok   C VAD 收到 40 帧
+
+[D] 停止竞态：g_stop=1 但 rx_done=0 时不得退出，最后一帧仍要处理
+  ok   D pthread_create 成功
+  ok   D 第一帧已处理（处理线程在等待下一帧）
+{"type":"SEGMENT","segment_id":1,"start_seq":9001,"end_seq":9002,"frame_count":2,"duration_ms":80,"rms_avg":500.0,"rms_max":500.0,"end_reason":"shutdown","saved":true,"written_frames":2,"file":"/data/local/tmp/t4/drain_out/seg_d3a17001_0001_9001.wav","vad_segment_id":1,"start_ts_us":361040000,"end_ts_us":361080000}
+  ok   D processed == 2（g_stop=1、rx_done=0 期间没有提前退出）
+  ok   D 队列深度 == 0
+  ok   D rx_done == 1
+  ok   D VAD 收到 2 帧
+  ok   D 片段在退出时收尾
+  ok   D 片段含 2 帧（flush 在最后一帧之后）
+  ok   D 写盘无错误
+
+[E] 4 线程同时创建同名 WAV：必须全部独占成功（O_EXCL）
+  ok   E 4 个 pthread_create 全部成功
+  ok   E 所有线程都已到达起跑门闩（同时起跑）
+  ok   E 每个起跑的线程都拿到了文件
+  ok   E 文件名互不相同
+  ok   E 每个文件都是 44 + 1280 字节（未被截断）
+  ok   E 目录里恰好新增 N 个 WAV（旧文件未被覆盖）
+
+=== 34 passed, 0 failed ===
+########## run 5 (elapsed 0.54s, rc=0) ##########
+drain_test  (proc_thread from t4_receiver.c, frame=640 samples)
+(cleanup) removed 6 stale wav files from /data/local/tmp/t4/drain_out
+
+[A] g_stop=1 且队列 85 帧：必须排空后再退出
+{"type":"SEGMENT","segment_id":1,"start_seq":23,"end_seq":85,"frame_count":63,"duration_ms":2520,"rms_avg":476.2,"rms_max":500.0,"end_reason":"shutdown","saved":true,"written_frames":63,"file":"/data/local/tmp/t4/drain_out/seg_d3a17001_0001_23.wav","vad_segment_id":1,"start_ts_us":1920000,"end_ts_us":4400000}
+  ok   A processed == 85（停止后仍逐帧处理）
+  ok   A 队列深度 == 0
+  ok   A VAD 实际收到 85 帧
+  ok   A 只开了一个片段
+  ok   A 收尾时关闭了该片段（vad_flush 生效）
+  ok   A flush 后状态回到 IDLE
+  ok   A 片段 WAV 保存成功
+  ok   A 没有写盘错误
+  ok   A 输出目录里有 WAV
+  ok   A 片段含 63 帧（5 帧 pre-roll + 58 帧）
+  ok   A WAV 大小 = 44 + 帧数*1280
+  ok   A 文件名含 run_id/片段号/起始序号
+
+[B] 队列为空 + g_stop=1 + rx_done=1：立即退出
+  ok   B processed == 0
+  ok   B VAD 没收到帧
+  ok   B 没有片段需要收尾
+
+[C] 真线程：先入队 40 帧，运行中置停止并 broadcast
+  ok   C pthread_create 成功
+  ok   C processed == 40
+  ok   C 队列深度 == 0
+  ok   C VAD 收到 40 帧
+
+[D] 停止竞态：g_stop=1 但 rx_done=0 时不得退出，最后一帧仍要处理
+  ok   D pthread_create 成功
+  ok   D 第一帧已处理（处理线程在等待下一帧）
+{"type":"SEGMENT","segment_id":1,"start_seq":9001,"end_seq":9002,"frame_count":2,"duration_ms":80,"rms_avg":500.0,"rms_max":500.0,"end_reason":"shutdown","saved":true,"written_frames":2,"file":"/data/local/tmp/t4/drain_out/seg_d3a17001_0001_9001.wav","vad_segment_id":1,"start_ts_us":361040000,"end_ts_us":361080000}
+  ok   D processed == 2（g_stop=1、rx_done=0 期间没有提前退出）
+  ok   D 队列深度 == 0
+  ok   D rx_done == 1
+  ok   D VAD 收到 2 帧
+  ok   D 片段在退出时收尾
+  ok   D 片段含 2 帧（flush 在最后一帧之后）
+  ok   D 写盘无错误
+
+[E] 4 线程同时创建同名 WAV：必须全部独占成功（O_EXCL）
+  ok   E 4 个 pthread_create 全部成功
+  ok   E 所有线程都已到达起跑门闩（同时起跑）
+  ok   E 每个起跑的线程都拿到了文件
+  ok   E 文件名互不相同
+  ok   E 每个文件都是 44 + 1280 字节（未被截断）
+  ok   E 目录里恰好新增 N 个 WAV（旧文件未被覆盖）
+
+=== 34 passed, 0 failed ===
+
+########## 5-run summary ##########
+run 1: elapsed=0.51s rc=0 === 34 passed, 0 failed ===
+run 2: elapsed=0.53s rc=0 === 34 passed, 0 failed ===
+run 3: elapsed=0.54s rc=0 === 34 passed, 0 failed ===
+run 4: elapsed=0.52s rc=0 === 34 passed, 0 failed ===
+run 5: elapsed=0.54s rc=0 === 34 passed, 0 failed ===

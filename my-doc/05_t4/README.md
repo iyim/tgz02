@@ -125,7 +125,8 @@ gcc -O2 -Wall -Wextra -o tests\vad_unit_test.exe tests\vad_unit_test.c android\v
 python tests\receiver_test.py
 
 # 2b) 退出排空 / 停止竞态 / 并发 WAV 创建测试（pthread，Windows 无 pthread，只能 Linux/WSL 或 Android 跑）
-#     期望 31 passed, 0 failed（A 排空、B 空队列、C 真线程、D rx_done 竞态、E 4 线程 O_EXCL）
+#     期望 34 passed, 0 failed（A 排空、B 空队列、C 真线程、D rx_done 竞态、E 门闩同步的 4 线程 O_EXCL）
+#     说明：D 的入队/计数读取全部持 ctx->mu；E 用 mutex+cond 门闩同时放行，并逐个检查 pthread_create
 $cc = "$env:NDK\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd"
 & $cc -O2 -Wall -Wextra -static -o android\out\drain_test tests\drain_test.c android\rx_core.c android\vad_energy.c -lm
 adb push android/out/drain_test /data/local/tmp/t4/drain_test
@@ -229,3 +230,4 @@ python ..\03_uds_test\verify_capture.py <capture.cap>   # 如需核对同一轮�
 - 队列满采用 drop-new（保留旧帧），片段内部可能出现序号缺口，需对照 `queue_drop` 判读。
 - `missing` 是"观察到的缺口"，若发送端重启换了 `epoch` 会被重置；它不是端到端丢帧的最终结论。
 - `drain_test.c` 依赖 pthread，只能在 Linux/WSL 或 Android 上执行；Windows 本机不跑（不得当作已验证）。
+- 并发测试没有 ThreadSanitizer 覆盖：结论来自锁配对审查 + 真机多次复跑，不是工具级证明。
