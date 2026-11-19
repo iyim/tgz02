@@ -1,0 +1,45 @@
+[i] js = t2_pcm_dryrun.js
+[i] target pid = 6934
+[i] run_seconds = 30
+[i] stimulus plan: 0-10s quiet / 10-20s chinese speech / 20-30s 1kHz tone
+[i] attached
+[i] script loaded (address checks + attach happen in start())
+[i] T2 PCM DRY_RUN: copy lane0 in hook, ring in native memory, no socket
+[v] check1 module loaded, base=0x8f181000
+[v] check2 symbol=0x8f25555c
+[v] check3 offset=0xd455c
+[v] check4 runtime[16]=f0482de910b08de208d04de20370a0e1
+[v] clock_gettime bound, monotonic available
+[v] mode=strided slot=1280B ring=81920B metacost=1024B costRing=2048 latRing=4096
+[v] hook installed at 0x8f25555c
+[i] observing 30s; phases: QUIET->10s SPEECH->20s TONE->30s
+[i] start() -> True
+[i] CRC cross-check: imul=0xf7ba4363 exact=0xf7ba4363 match=true
+[RUN 5.0s] produced=124 consumed=124 ringDrop=0 depthMax=4 crcErr=0 readErr=0 lenErr=0 seqGap=0 hookEx=0 drainEx=0 reentry=0/0
+[RUN] hook  copies: n=124 P50=18742.0us P95=21206.0us P99=22865.7us max=25442.8us
+[RUN] drain latency: n=124 P50=4110.0us P95=25296.7us P99=32405.4us max=78166.4us
+[RUN] rate=24.77/s calls=124 lenBad=0 nullPtr=0 threads=1
+[RUN 10.1s] produced=250 consumed=250 ringDrop=0 depthMax=4 crcErr=0 readErr=0 lenErr=0 seqGap=0 hookEx=0 drainEx=0 reentry=0/0
+[RUN] hook  copies: n=250 P50=18672.0us P95=21207.4us P99=22865.7us max=25442.8us
+[RUN] drain latency: n=250 P50=3883.2us P95=26524.0us P99=35937.0us max=78166.4us
+[RUN] rate=24.87/s calls=250 lenBad=0 nullPtr=0 threads=1
+[RUN 15.1s] produced=375 consumed=374 ringDrop=0 depthMax=4 crcErr=0 readErr=0 lenErr=0 seqGap=0 hookEx=0 drainEx=0 reentry=0/0
+[RUN] hook  copies: n=375 P50=18670.4us P95=21270.4us P99=22865.7us max=29285.5us
+[RUN] drain latency: n=374 P50=3893.5us P95=25565.7us P99=35937.0us max=78166.4us
+[RUN] rate=24.91/s calls=375 lenBad=0 nullPtr=0 threads=1
+[RUN 20.1s] produced=500 consumed=500 ringDrop=0 depthMax=4 crcErr=0 readErr=0 lenErr=0 seqGap=0 hookEx=0 drainEx=0 reentry=0/0
+[RUN] hook  copies: n=500 P50=18658.9us P95=21206.8us P99=22865.7us max=32894.5us
+[RUN] drain latency: n=500 P50=4110.0us P95=27312.1us P99=36145.8us max=78166.4us
+[RUN] rate=24.92/s calls=500 lenBad=0 nullPtr=0 threads=1
+[RUN 25.1s] produced=626 consumed=625 ringDrop=0 depthMax=4 crcErr=0 readErr=0 lenErr=0 seqGap=0 hookEx=0 drainEx=0 reentry=0/0
+[RUN] hook  copies: n=626 P50=18670.2us P95=21342.8us P99=22887.1us max=32894.5us
+[RUN] drain latency: n=625 P50=4059.8us P95=26524.0us P99=35045.4us max=78166.4us
+[RUN] rate=24.94/s calls=626 lenBad=0 nullPtr=0 threads=1
+[i] listener detached
+[FINAL 30.0s] produced=750 consumed=750 ringDrop=0 depthMax=4 crcErr=0 readErr=0 lenErr=0 seqGap=0 hookEx=0 drainEx=0 reentry=0/0
+[FINAL] hook  copies: n=750 P50=18659.8us P95=21399.2us P99=22887.1us max=32894.5us
+[FINAL] drain latency: n=750 P50=4211.9us P95=26524.0us P99=35937.0us max=78166.4us
+[FINAL] rate=24.96/s calls=750 lenBad=0 nullPtr=0 threads=1
+===== [END] reason=timeout aborted=false crcRefChecked=true =====
+[i] stop() -> {'aborted': False, 'produced': 750, 'consumed': 750, 'ringDrop': 0, 'crcErr': 0}
+[i] driver exit
