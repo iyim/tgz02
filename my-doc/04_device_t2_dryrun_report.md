@@ -318,7 +318,7 @@ hook 内一次 `Memory.copy` 复制整帧 5120 B，lane0 抽取移到消费端�
 |---|---|---|
 | 1 | 消费延迟 P50 约 16 ms | 由 20 ms 消费 tick + 40 ms 帧周期共同决定；若 T3 要"消费即发送"，端到端会再加这段延迟。可考虑把 tick 降到 10 ms，但会加剧与 hook 的 JS 锁竞争，需实测权衡 |
 | 2 | hook 最大耗时 1.2–1.6 ms 的离群点 | 三次运行都有个别帧超过 1 ms（疑似 GC 或锁等待），未定位 |
-| 3 | CPU 增量未测 | 本轮只测帧率与耗时，没有测进程 CPU%（设备本底 `xengine_main` 已占约 75% 单核） |
+| 3 | CPU 开销已补测（见 §7.1） | 相对基线 +9.5 pp；其中消费端统计约占 +7.8 pp，Interceptor 固有开销 +1.5 pp，拷贝本身 +0.2 pp。若要降开销，优先砍消费端统计（缓存 CRC、跳过逐样本 RMS） |
 | 4 | 真人语音交互 | 唤醒词识别率、实际对话是否受影响未验证 |
 | 5 | 采样率仍是"强支持未直测" | 同 T1，需要独立时钟或与原厂 `AudioRecord` 配置对照 |
 | 6 | lane2/lane3 的物理含义 | 仍未确认（不影响本轮，提取的是 lane0） |
@@ -345,4 +345,6 @@ hook 内一次 `Memory.copy` 复制整帧 5120 B，lane0 抽取移到消费端�
 | `04_device_t0/t2_pcm_dryrun_30s.log` | 运行 A：30 s，strided |
 | `04_device_t0/t2_pcm_dryrun_60s.log` | 运行 B：60 s，blockcopy |
 | `04_device_t0/t2_pcm_dryrun_30s_blockcopy_selfcheck.log` | 运行 C：30 s，blockcopy + lane0 自检（补充证据） |
+| `04_device_t0/t2_cpu_blockcopy.log` | CPU 分解：blockcopy 模式 25 s 运行日志 |
+| `04_device_t0/t2_cpu_countonly.log` | CPU 分解：countonly 模式 22 s 运行日志 |
 | `04_device_t2_dryrun_report.md` | 本报告 |
