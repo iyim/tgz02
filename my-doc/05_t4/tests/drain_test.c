@@ -218,10 +218,15 @@ static void nap_ms(long ms)
     nanosleep(&nap, NULL);
 }
 
+/*
+ * 停止标志必须在锁内更新：处理线程是在持有 g_ctx.mu 时读 g_stop 的，
+ * 锁外写就是"无线程同步的普通读写"。注意 g_stop 是 volatile sig_atomic_t，
+ * volatile 只保证不被优化掉，**不提供**线程间同步语义。
+ */
 static void stop_and_broadcast(void)
 {
-    g_stop = 1;
     pthread_mutex_lock(&g_ctx.mu);
+    g_stop = 1;
     pthread_cond_broadcast(&g_ctx.cv);
     pthread_mutex_unlock(&g_ctx.mu);
 }

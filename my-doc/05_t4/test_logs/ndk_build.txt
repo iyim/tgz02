@@ -1,3 +1,4 @@
+note    : T4-06 只改 tests/drain_test.c；t4_receiver 未改，此处为重编确认
 cc      : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd
 Android (7019983 based on r365631c3) clang version 9.0.9 (https://android.googlesource.com/toolchain/llvm-project a2a1e703c0edb03ba29944e529ccbf457742737b) (based on LLVM 9.0.9svn)
 Target: armv7a-unknown-linux-android26
@@ -12,5 +13,7 @@ elf     : Class:                             ELF32
 elf     : Type:                              EXEC (Executable file)
 elf     : Machine:                           ARM
 cmd     : armv7a-linux-androideabi26-clang -O2 -Wall -Wextra -static -o android/out/drain_test tests/drain_test.c android/rx_core.c android/vad_energy.c -lm
+warnings: 0
+errors  : 0
 artifact: android/out/drain_test 3444708 B
-sha256  : 6457b2bae16a1614cf0578f7b583d27e2cf056341fb5ecd39a46d40a4934a91f
+sha256  : 561d57cb09059f2f648a562f5e7cf91836911ae641c6bdc4226d2c07a09de04e

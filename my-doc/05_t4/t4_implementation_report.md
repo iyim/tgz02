@@ -16,6 +16,9 @@
 >
 > **T4-05 追加（见 §13）**：补齐 C 用例遗漏的 `rx_done` 加锁写 + 全文件共享状态审计 ——
 > 真机连跑 5 次仍 `34 passed, 0 failed`。
+>
+> **T4-06 追加（见 §14）**：`stop_and_broadcast()` 的 `g_stop` 移到临界区内 + `g_stop` 全文件读写审计 ——
+> 真机连跑 5 次仍 `34 passed, 0 failed`。
 
 - 基线 commit：`50c61f8863a028c4f94231de18efd97fd4e2d05e`
 - 本轮提交：`f93e2c967807357604e395769db747d0a1940ac5`
@@ -795,4 +798,107 @@ C 的测试目标不变：40 帧全部处理、队列清空、`vad_flush` 正常
    "无竞争"的结论来自逐条锁配对审计 + 5 次真机复跑，不是工具级证明。
 2. C 用例保留 `nap_ms(200)`：它只是让处理线程先把 40 帧吃完并进入等待，不承担任何同步职责 ——
    正确性由锁与 `pthread_join` 保证。
+3. 真人说话（场景 B/C）与背景噪声（场景 D）仍未验证。
+
+---
+
+## 14. T4-06：`g_stop` 的线程间数据竞争修复与全文件审计
+
+基线：`456788224101b0b8f74727a1e1d6f783b1c397e0`；提交：`test: synchronize T4 stop flag in drain tests`。
+只改 `tests/drain_test.c` 的 `stop_and_broadcast()`（外加注释），未动生产退出握手、WAV 逻辑、VAD、T3。
+
+### 14.1 问题与修复
+
+修改前：
+
+```c
+static void stop_and_broadcast(void)
+{
+    g_stop = 1;                       /* ← 锁外写 */
+    pthread_mutex_lock(&g_ctx.mu);
+    pthread_cond_broadcast(&g_ctx.cv);
+    pthread_mutex_unlock(&g_ctx.mu);
+}
+```
+
+处理线程是在**持有 `g_ctx.mu`** 时读 `g_stop`（`while (q.count == 0 && !(g_stop && rx_done))`），
+所以上面是"锁外写 vs 锁内读"，两个普通线程之间没有 happens-before 关系。
+`g_stop` 的类型是 `volatile sig_atomic_t`（生产侧为了信号处理函数而这么声明），
+但 **volatile 只保证不被优化掉，不提供线程间同步语义**。
+
+修改后（状态更新与广播在同一临界区）：
+
+```c
+static void stop_and_broadcast(void)
+{
+    pthread_mutex_lock(&g_ctx.mu);
+    g_stop = 1;
+    pthread_cond_broadcast(&g_ctx.cv);
+    pthread_mutex_unlock(&g_ctx.mu);
+}
+```
+
+D 用例本来就通过这个函数设置停止标志，因此 D 自动获得修复，测试语义不变
+（`g_stop=1`、`rx_done=0` 时不得退出；最后一帧入队并处理；置 `rx_done` 后退出；`processed==2`、队列空、`vad_flush` 最后执行）。
+
+### 14.2 `g_stop` 全文件读写审计（逐项，不写"已加锁"了事）
+
+| 行号 | 位置 | 是否有并发线程 | 同步方式 | 结论 |
+|---:|---|---|---|---|
+| 110 | `reset_state()` 里 `g_stop = 0` | 否 —— 三个调用点（A/B/D）都在 `pthread_create` 之前；A/B 更是从不建线程 | 无 | 无并发访问，不需要锁 ✅ |
+| 263 | 用例 A `g_stop = 1` | 否 —— 紧接 `proc_thread(&g_ctx)` **同步调用**，线程尚未创建 | 无 | 无并发访问 ✅ |
+| 294 | 用例 B `g_stop = 1` | 否 —— 同上（B 全程无线程） | 无 | 无并发访问 ✅ |
+| 322 | 用例 C `g_stop = 1` | **是** —— 处理线程已在跑 | `ctx->mu` 内写 + 锁内 broadcast（T4-05） | ✅ |
+| 229 | `stop_and_broadcast()`（**D 用例**用） | **是** —— 处理线程已在跑 | **本轮修复**：`ctx->mu` 内写 + 锁内 broadcast | ✅ |
+| — | 测试代码读 `g_stop` | 无（测试不直接读；只有处理线程在锁内读） | — | ✅ |
+
+顺带复核同轮涉及的其余共享状态（T4-04/T4-05 已修，本轮未回退）：
+
+| 共享状态 | 写 | 读 | 同步 |
+|---|---|---|---|
+| `g_ctx.rx_done` | `reset_state()`（无线程）、A/B（无线程）、C（锁内）、D（锁内） | 处理线程锁内、断言在 `join` 后 | ✅ |
+| `g_processed` | 处理线程（`ctx->mu` 内）、`reset_state()`（无线程） | `read_processed()`（同锁）、断言在同步调用/`join` 后 | ✅ |
+| 队列 | A/B/C `push_frame()`（自带锁）、D `push_frame_locked()`（调用处持锁） | 处理线程 `rx_queue_pop()`（生产锁内）、`rx_queue_count()` 断言在同步/`join` 后 | ✅ |
+
+**生产侧现状（按要求未改动）**：`t4_receiver.c` 里 `main` 的 `g_stop = 1`（第 558/579 行附近）仍在锁外，
+`rx_thread()` 也在锁外轮询 `while (!g_stop)`。这是 T3/T4 以来既有的设计（`volatile sig_atomic_t` + 广播时序），
+本轮任务明确要求不动生产退出逻辑，因此只记录、不修改；测试侧已全部改成锁内写。
+
+### 14.3 验证（代码审查 / 编译 / 本机 / 真机 分开记录）
+
+**代码审查结论**：`drain_test.c` 中所有"有并发线程时"的 `g_stop`、`rx_done`、`g_processed`、队列访问
+都与读取方使用同一把 `g_ctx.mu`；无线程阶段的写入不作要求；未把 `volatile` 当同步手段。
+
+**NDK 编译**（r21e / clang 9.0.9 / armv7a / API 26，`-O2 -Wall -Wextra -static`，无 `-Wno-*`）：
+
+| 产物 | 大小 | SHA256 | 结果 |
+|---|---:|---|---|
+| `android/out/drain_test` | 3,444,708 B | `561d57cb09059f2f648a562f5e7cf91836911ae641c6bdc4226d2c07a09de04e` | **0 warning / 0 error** |
+| `android/out/t4_receiver`（未改动） | 3,435,644 B | `479bf8c65d1b041761f9d424829d6ef38ef37020b575131d049a847339b192f1` | 0 warning / 0 error，ELF32 / ARM |
+
+**TG-Z02 真机：连续 5 次**（`test_logs/drain_test_android.log`）：
+
+| 次 | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| 耗时 | 0.51 s | 0.52 s | 0.51 s | 0.51 s | 0.51 s |
+| 结果 | **34 passed, 0 failed** | 34/0 | 34/0 | 34/0 | 34/0 |
+
+包括 C（40 帧、队列空、正常退出）与 D（`g_stop=1`、`rx_done=0` 不退出；最后一帧被处理；flush 最后执行）、
+E（4 线程门闩同步 + O_EXCL）全部通过；无死锁、无超时、无崩溃。
+
+**本机（Windows / gcc 10.3.0）**：
+
+| 测试 | 结果 |
+|---|---|
+| VAD 单元测试 | **65 passed, 0 failed**（0 warning） |
+| `receiver_test.py` | **222 passed, 0 failed** |
+| `python -m py_compile tests\receiver_test.py` | exit 0 |
+
+### 14.4 未验证 / 限制
+
+1. **没有运行 ThreadSanitizer**，也没有任何 TSan 结果可提供：Windows/MinGW 无 TSan，
+   Android 静态二进制未搭 TSan 运行时。本轮"无竞争"的结论只来自逐项锁配对审查 + 5 次真机复跑，
+   属于代码审查与运行验证，不是工具级证明。
+2. 生产侧 `main`/`rx_thread` 的 `g_stop` 无锁读写保持原样（任务要求不动退出逻辑），如后续需要严格线程安全，
+   可在生产代码里把 `g_stop` 的写也移进锁内（届时需同步改 `rx_thread` 的轮询方式）。
 3. 真人说话（场景 B/C）与背景噪声（场景 D）仍未验证。

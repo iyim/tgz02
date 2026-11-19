@@ -5,8 +5,8 @@ receiver_test.py
   ok   源文件存在: rx_core.c
   ok   找到 C 编译器
   cc      : C:\TDM-GCC-64\bin\gcc.EXE
-  tmpdir  : C:\Users\mac\AppData\Local\Temp\t4_rx_test_kgc_2q3k
-  build: C:\TDM-GCC-64\bin\gcc.EXE -O2 -Wall -Wextra -o C:\Users\mac\AppData\Local\Temp\t4_rx_test_kgc_2q3k\receiver_harness.exe D:\tgz02\OS\system\my-doc\05_t4\tests\receiver_harness.c D:\tgz02\OS\system\my-doc\05_t4\android\rx_core.c -lws2_32
+  tmpdir  : C:\Users\mac\AppData\Local\Temp\t4_rx_test_r7sty9on
+  build: C:\TDM-GCC-64\bin\gcc.EXE -O2 -Wall -Wextra -o C:\Users\mac\AppData\Local\Temp\t4_rx_test_r7sty9on\receiver_harness.exe D:\tgz02\OS\system\my-doc\05_t4\tests\receiver_harness.c D:\tgz02\OS\system\my-doc\05_t4\android\rx_core.c -lws2_32
   ok   harness 编译成功
   ok   harness 可执行文件存在
 
