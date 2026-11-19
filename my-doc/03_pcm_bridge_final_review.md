@@ -510,6 +510,9 @@ PCM 抽取、时间戳、socket 收发逻辑、环形缓冲、`drain()`、`teard
 顺带发现一处**统计口径不一致（未修改，仅报告）**：stream 路径把 CRC 失败并入 `reject_hdr`，
 而 dgram 路径单独计入 `reject_crc`。属既有行为，本轮不在授权范围内，未改动。
 
+**明确声明**：这两条生产统计路径（`dgram → reject_crc`、`stream → reject_hdr`）**本次一律不修改**。
+C 单测只验证 `tgz2_unpack()` 的返回值与"帧是否进入 `account()`"，不验证、也不伪造这两个计数器的取值。
+
 ### 8.9.4 修改前后行为差异
 
 | 帧类型 | 修改前 | 修改后 |
@@ -519,10 +522,11 @@ PCM 抽取、时间戳、socket 收发逻辑、环形缓冲、`drain()`、`teard
 | 真实 PCM + CRC 正确 | **`reject_payload++`（误判）** | `reject_payload` 不变，正常 `accepted` |
 | 真实 PCM + CRC 错误 | 到不了 `account()` | 到不了 `account()`（不变） |
 
-### 8.9.5 新增 C 测试结果（21 断言，0 失败，exit 0）
+### 8.9.5 新增 C 测试结果（20 断言，0 失败，exit 0）
 
 测试**直接 include 生产文件**（`#define main uds_sink_main_unused` + `#include "../uds_sink.c"`），
 调用的是 `uds_sink.exe` 里同一份 `account()` / `tgz2_unpack()` / `tgz2_check_payload()`，无测试副本。
+**测试不手工累加 `reject_crc` / `reject_hdr` 等生产统计字段**——只断言这条路径能证明的事实。
 
 | 用例 | 期望 | 实测 |
 |---|---|---|
@@ -530,9 +534,14 @@ PCM 抽取、时间戳、socket 收发逻辑、环形缓冲、`drain()`、`teard
 | B SYNTHETIC 载荷被改 + CRC 重算 | CRC 通过但内容比对失败 | ✅ `accepted=1, reject_payload=1`（**证明 CRC 正确 ≠ 内容正确**） |
 | C 真实 PCM 正常帧（flags=0） | 不做伪随机比对 | ✅ `accepted=1, reject_payload=0` |
 | C2 flags=0 但载荷"故意"不等于 `fill_payload(11)` | 仍必须接受 | ✅ `accepted=1, reject_payload=0`（若无条件比对，这里必然为 1） |
-| D 真实 PCM + CRC 错误 | `tgz2_unpack` 返回 −8，不进 account | ✅ `rc=-8`、`reject_crc=1`、`accepted=0`、`reject_payload=0` |
+| D 真实 PCM + CRC 错误 | `tgz2_unpack` 返回 −8，帧不进 `account()` | ✅ `rc=-8`、`accepted=0`、`reject_payload=0` |
 | E SYNTHETIC + CRC 错误 | CRC 优先拒绝 | ✅ `rc=-8`、`accepted=0`、`reject_payload=0` |
 | 0 协议不变量 | `VER=2 / FLAG=0x01 / HDR=40 / MSG=1320` | ✅ 三项全过 |
+
+**D 用例的边界（本轮修正）**：单测只证明"`tgz2_unpack()` 因 CRC 返回 −8，且该帧没有进入 `account()`"。
+"生产程序把这个错误记进哪个计数器"属于接收主循环（`uds_sink.c` 的 dgram / stream 分支）的职责，
+**测试不复制、不手工累加该统计**，因此也不声称单测验证了 `reject_crc` 的取值。
+上一版测试里的 `if (rc == -8) g_s.reject_crc++;` 是测试自己伪造统计，已删除。
 
 ### 8.9.6 端到端回归（synthetic 发送端 + 改后的 sink，12 s）
 
@@ -552,7 +561,7 @@ sink  : accepted=300 missing=0 dup=0 reorder=0
 | `gcc uds_sink.c` | exit 0（384,917 B） |
 | `gcc uds_source.c` | exit 0（380,567 B） |
 | `gcc tests_c/payload_validation_test.c` | exit 0 |
-| `tests_c/payload_validation_test.exe` | **21 passed / 0 failed**，exit 0 |
+| `tests_c/payload_validation_test.exe` | **20 passed / 0 failed**，exit 0 |
 | `node --check` ×4 | 全部 exit 0 |
 | `node tests/bridge_unit_test.js` | **153 passed / 0 failed** |
 | `node tests/probe_detach_test.js` | **91 passed / 0 failed** |

@@ -130,11 +130,12 @@ int main(void)
     make_pcm();
     build(12, 0, g_payload, 1);                    /* CRC 故意错 */
     rc = feed();
+    /* 只断言这条测试路径真的能证明的事：unpack 拒绝，且帧没进 account()。
+     * 生产程序把 CRC 失败计到哪个计数器（dgram=reject_crc / stream=reject_hdr）
+     * 是接收主循环的职责，本测试不碰、也不手工累加这些统计字段。 */
     check(rc == -8, "tgz2_unpack 返回 -8（CRC 失败）");
-    if (rc == -8) g_s.reject_crc++;                /* 复刻 sink 的计数 */
-    check(g_s.reject_crc == 1, "sink 会把它计入 reject_crc");
-    check(g_s.accepted == 0, "不计入 accepted");
-    check(g_s.reject_payload == 0, "reject_payload 未增加（根本没到内容校验）");
+    check(g_s.accepted == 0, "CRC 错误帧没有进入 accepted");
+    check(g_s.reject_payload == 0, "CRC 错误帧没有进入 payload 校验");
 
     /* ---- E: SYNTHETIC + 错误 CRC 也必须先被 CRC 拦下 ---- */
     printf("\n[E] SYNTHETIC frame with broken CRC\n");
