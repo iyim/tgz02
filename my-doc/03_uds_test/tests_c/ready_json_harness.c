@@ -9,6 +9,9 @@
  *
  * run   : ./ready_json_harness --null            -> 一行 READY，capture 为 JSON null
  *         ./ready_json_harness --stdin           -> 每行输入一个 capture 路径，各输出一行 READY
+ *         ./ready_json_harness --capture-stdin [FRAMES]
+ *                                                -> 每行输入一个 capture 路径，各输出一行 CAPTURE
+ *                                                   （FRAMES 默认 252，bytes = FRAMES * 1320）
  *
  * 用 stdin 传路径而不是命令行参数，是为了让含双引号 / 反斜杠的路径不被 shell 的引号规则吞掉。
  */
@@ -43,6 +46,18 @@ int main(int argc, char **argv)
             size_t len = strlen(line);
             while (len && (line[len - 1] == '\n' || line[len - 1] == '\r')) line[--len] = '\0';
             print_ready(stdout, "abstract", "tgz2_pcm", 8192, 16384, 500, line);
+            fflush(stdout);
+        }
+        return 0;
+    }
+
+    /* CAPTURE 行：与 main() 收尾时调用的完全是同一个 print_capture() */
+    if (!strcmp(argv[1], "--capture-stdin")) {
+        uint64_t frames = (argc > 2) ? (uint64_t)strtoull(argv[2], NULL, 10) : 252ull;
+        while (fgets(line, sizeof(line), stdin)) {
+            size_t len = strlen(line);
+            while (len && (line[len - 1] == '\n' || line[len - 1] == '\r')) line[--len] = '\0';
+            print_capture(stdout, line, frames);
             fflush(stdout);
         }
         return 0;

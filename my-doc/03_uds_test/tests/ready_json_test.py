@@ -127,6 +127,40 @@ def check_common(obj, ctx):
     ok("capture" in obj, "%s: capture 字段存在" % ctx)
 
 
+CAPTURE_PREFIX = "CAPTURE "
+
+
+def parse_capture_line(line, ctx):
+    """CAPTURE 行的前缀是 `CAPTURE `，其后的对象必须能被 json.loads 直接解析"""
+    has_prefix = line.startswith(CAPTURE_PREFIX)
+    ok(has_prefix, "%s: 行前缀是 'CAPTURE '" % ctx, repr(line[:48]))
+    body = line[len(CAPTURE_PREFIX):] if has_prefix else line
+    try:
+        obj = json.loads(body)
+    except ValueError as e:
+        ok(False, "%s: CAPTURE 段 json.loads 解析成功" % ctx,
+           "%s -> %r" % (e, body[:160]))
+        return None
+    ok(True, "%s: CAPTURE 段 json.loads 解析成功" % ctx)
+    ok(isinstance(obj, dict), "%s: 顶层是 JSON 对象" % ctx)
+    return obj
+
+
+def check_capture(obj, ctx, want_path, want_frames):
+    eq(set(obj.keys()), {"file", "frames", "bytes"},
+       "%s: 字段集合 == {file, frames, bytes}" % ctx)
+    eq(obj.get("file"), want_path, "%s: file 原样往返 (%r)" % (ctx, want_path))
+    ok(isinstance(obj.get("frames"), int) and not isinstance(obj.get("frames"), bool),
+       "%s: frames 是 JSON 整数（不是字符串）" % ctx,
+       "type=%s" % type(obj.get("frames")).__name__)
+    eq(obj.get("frames"), want_frames, "%s: frames 值 == %d" % (ctx, want_frames))
+    ok(isinstance(obj.get("bytes"), int) and not isinstance(obj.get("bytes"), bool),
+       "%s: bytes 是 JSON 整数（不是字符串）" % ctx,
+       "type=%s" % type(obj.get("bytes")).__name__)
+    eq(obj.get("bytes"), want_frames * 1320,
+       "%s: bytes 值 == frames * 1320" % ctx)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cc", default=None, help="C 编译器（默认自动探测 gcc/cc/clang）")
@@ -184,14 +218,47 @@ def main():
         eq(obj.get("capture"), want, "%s: capture 原样往返 (%r)" % (ctx, want))
         ok(len(json.dumps(obj)) > 0, "%s: 对象可再序列化" % ctx)
 
-    # ---- 3) 反面对照：旧写法（裸拼接）不是合法 JSON ----
+    # ---- 3) CAPTURE 行（与设备收尾时同一个 print_capture()） ----
+    print("\n[capture] %d 种 capture 路径" % len(paths))
+    rc, lines, err = run_lines(exe, ["--capture-stdin", "252"],
+                               "\n".join(paths) + "\n")
+    eq(rc, 0, "capture: harness 退出码 0")
+    eq(len(lines), len(paths), "capture: 输出行数 == 输入路径数")
+    eq(err.strip(), "", "capture: stderr 为空")
+    for i, want in enumerate(paths):
+        if i >= len(lines):
+            break
+        ctx = "capture[%d]" % i
+        obj = parse_capture_line(lines[i], ctx)
+        if obj:
+            check_capture(obj, ctx, want, 252)
+
+    # frames = 0 -> bytes = 0，且两者仍是 JSON 数字
+    print("\n[capture-zero] frames=0")
+    rc, lines, err = run_lines(exe, ["--capture-stdin", "0"],
+                               "/data/local/tmp/capture.pcm\n")
+    eq(rc, 0, "capture-zero: harness 退出码 0")
+    eq(len(lines), 1, "capture-zero: 恰好 1 行")
+    if lines:
+        obj = parse_capture_line(lines[0], "capture-zero")
+        if obj:
+            check_capture(obj, "capture-zero", "/data/local/tmp/capture.pcm", 0)
+
+    # ---- 4) 反面对照：旧写法（裸拼接）不是合法 JSON ----
     print("\n[negative] 旧写法（不加引号/不转义）确实不是合法 JSON")
     bad = ('{"type":"READY","capture":quote"inside.pcm}').strip()
     try:
         json.loads(bad)
-        ok(False, "旧格式应解析失败")
+        ok(False, "旧 READY 格式应解析失败")
     except ValueError:
-        ok(True, "旧格式（裸拼接）解析失败 -> 证明本测试有区分力")
+        ok(True, "旧 READY 格式（裸拼接）解析失败 -> 证明本测试有区分力")
+
+    bad_cap = '{"file":"quote"inside.pcm","frames":252,"bytes":332640}'
+    try:
+        json.loads(bad_cap)
+        ok(False, "旧 CAPTURE 格式应解析失败")
+    except ValueError:
+        ok(True, "旧 CAPTURE 格式（裸拼接）解析失败 -> 证明本测试有区分力")
 
     print("\n=== %d passed, %d failed ===" % (pass_n, fail_n))
     if fail_n:

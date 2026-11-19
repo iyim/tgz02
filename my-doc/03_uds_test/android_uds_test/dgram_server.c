@@ -101,6 +101,18 @@ static void print_ready(FILE *f, const char *mode, const char *name,
     fputs(",\"payload_policy\":\"synthetic=regen-compare,real-pcm=crc-only\"}\n", f);
 }
 
+/* 尾部 CAPTURE 行：CAPTURE 是行前缀，其后的对象必须是合法 JSON。
+ * file 走 json_write_string_or_null()（路径里的 " 和 \ 必须转义），
+ * frames / bytes 保持 JSON 数字，字段名与含义与旧版一致。 */
+static void print_capture(FILE *f, const char *capture_path, uint64_t frames)
+{
+    fputs("CAPTURE {\"file\":", f);
+    json_write_string_or_null(f, capture_path);
+    fprintf(f, ",\"frames\":%llu,\"bytes\":%llu}\n",
+            (unsigned long long)frames,
+            (unsigned long long)(frames * (uint64_t)TGZ2_MSG));
+}
+
 int main(int argc, char **argv)
 {
     const char *abstract_name = "tgz2pcm";
@@ -308,9 +320,7 @@ int main(int argc, char **argv)
     if (cap) {
         fflush(cap);
         fclose(cap);
-        printf("CAPTURE {\"file\":\"%s\",\"frames\":%llu,\"bytes\":%llu}\n",
-               capture_path, (unsigned long long)S.captured,
-               (unsigned long long)(S.captured * (uint64_t)TGZ2_MSG));
+        print_capture(stdout, capture_path, S.captured);
     }
     fflush(stdout);
 
