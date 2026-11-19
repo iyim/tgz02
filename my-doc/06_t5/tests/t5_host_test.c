@@ -1132,6 +1132,49 @@ static void test_jsonl_strict(void)
         }
     }
 
+    /* T15.13：拒绝 JSON 整数中的正号 */
+    snprintf(buf, sizeof(buf), "%s", line);
+    {
+        char *q = strstr(buf, "\"size\":");
+
+        if (q != NULL) {
+            q += strlen("\"size\":");
+            memmove(q + 1, q, strlen(q) + 1);
+            *q = '+';
+
+            replay_with(work, buf, &lines, &bad, &sink);
+
+            ok_eq_ll((long long)lines, 0,
+                     "T15.13 JSON 整数带正号 -> 拒绝");
+
+            ok_eq_ll((long long)bad, 1,
+                     "T15.13 非法正号整数计入 bad");
+        } else {
+            ok(0, "T15.13 测试前提：找到 size 字段");
+        }
+    }
+
+    /* T15.14：拒绝 JSON 整数的前导零 */
+    snprintf(buf, sizeof(buf), "%s", line);
+    {
+        char *q = strstr(buf, "\"size\":");
+
+        if (q != NULL) {
+            q += strlen("\"size\":");
+            *q = '0';
+
+            replay_with(work, buf, &lines, &bad, &sink);
+
+            ok_eq_ll((long long)lines, 0,
+                     "T15.14 JSON 整数存在前导零 -> 拒绝");
+
+            ok_eq_ll((long long)bad, 1,
+                     "T15.14 非法前导零整数计入 bad");
+        } else {
+            ok(0, "T15.14 测试前提：找到 size 字段");
+        }
+    }
+
     /* 10) 损坏记录之后的有效记录仍能恢复 */
     snprintf(buf, sizeof(buf), "{\"broken\":1\n%s", line);
     replay_with(work, buf, &lines, &bad, &sink);

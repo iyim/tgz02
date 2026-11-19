@@ -183,28 +183,53 @@ static const char *json_skip_string(const char *p)
 
 /*
  * 跳过本项目 JSONL 序列化器产生的一个值。
- * 当前格式只包含字符串和整数，不接受对象、数组或其他类型。
+ * 当前格式只包含字符串和整数。
+ *
+ * 整数按 JSON 词法规则检查：
+ * - 允许负号，但不允许正号
+ * - 允许 0，但不允许 00、0123 等前导零
+ * - 至少包含一位数字
+ * - 不接受小数、指数和其他类型
+ *
+ * 返回值指向值结束位置，后续由调用方处理空白和分隔符。
  */
 static const char *json_skip_value(const char *p)
 {
-    char *endp = NULL;
+    const char *q;
 
-    if (p == NULL)
+    if (p == NULL || *p == '\0')
         return NULL;
 
     if (*p == '"')
         return json_skip_string(p);
 
-    errno = 0;
-    (void)strtoll(p, &endp, 10);
+    q = p;
 
-    if (endp == p || errno == ERANGE)
+    if (*q == '-')
+        q++;
+
+    if (*q == '0') {
+        q++;
+
+        /* JSON 整数不允许前导零。 */
+        if (*q >= '0' && *q <= '9')
+            return NULL;
+    } else if (*q >= '1' && *q <= '9') {
+        do {
+            q++;
+        } while (*q >= '0' && *q <= '9');
+    } else {
         return NULL;
+    }
 
-    if (*endp != ',' && *endp != '}')
+    /* 值后面只能是 JSON 空白、逗号或对象结束符。 */
+    if (*q != ',' && *q != '}' &&
+        *q != ' ' && *q != '\t' &&
+        *q != '\r' && *q != '\n') {
         return NULL;
+    }
 
-    return endp;
+    return q;
 }
 
 /*

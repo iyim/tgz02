@@ -1,5 +1,5 @@
 cc  : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd
 cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -static -o D:\tgz02\OS\system\my-doc\06_t5\android\out\t5_agent t5_agent.c t5_engine.c t5_store.c t5_provider.c t5_wav.c t5_state.c t5_util.c
 exit: 0
-artifact: t5_agent  3602264 B
-sha256  : 7230cf91e7b52ec68fd8e68b50dc9b14e36d03833768c8d57de86cd40583410b
+artifact: t5_agent  3602300 B
+sha256  : c66925be5c4de6ab5ba66777b97031863e693d132d5571ec6f68e0db11282af8
