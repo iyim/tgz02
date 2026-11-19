@@ -1,0 +1,137 @@
+[i] js = t1_audio_signal_probe.js
+[i] target pid = 6934
+[i] schedule (relative to hook install):
+[i]   0-10s  QUIET1  keep silent
+[i]  10-20s  SPEAK   normal speech near the mic
+[i]  20-30s  TONE    continuous steady test tone / music
+[i]  30-40s  QUIET2  silent again
+[i]  40-45s  WRAP    finalize
+[i] attached
+[i] T1 audio signal probe; phases: 0-10 QUIET1 / 10-20 SPEAK / 20-30 TONE / 30-40 QUIET2 / 40-45 WRAP
+[v] check1 module loaded, base=0x8f181000
+[v] check2 symbol found at 0x8f25555c
+[v] check3 symbol offset = 0xd455c
+[v] check4 runtime[16] = f0482de910b08de208d04de20370a0e1 (matches expected)
+[v] target runtime addr = 0x8f25555c
+[i] hook installed, observing 45s
+[i] script loaded; watching 55s ...
+[t 1s] phase=QUIET1 calls=24 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 2s] phase=QUIET1 calls=48 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 3s] phase=QUIET1 calls=73 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 4s] phase=QUIET1 calls=97 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 5s] phase=QUIET1 calls=121 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 6s] phase=QUIET1 calls=146 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 7s] phase=QUIET1 calls=170 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 8s] phase=QUIET1 calls=194 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 9s] phase=QUIET1 calls=219 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 10s] phase=SPEAK calls=242 threads=1 ptrs=1 readFail=0 hookEx=0
+===== [PHASE QUIET1] end at 10.0s frames=242 =====
+  [1ch] samplesPerLane=2560  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-26379 max=28851 p2p=55230 mean=-66.85 rms_dc=741.57 rms_frm_avg=53.05 rms_frm_max=741.57 amp1k=0.0 amp1k_dB=-99.0 nz=99.8%
+  [2ch] samplesPerLane=1280  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-26379 max=28620 p2p=54999 mean=-66.64 rms_dc=737.29 rms_frm_avg=52.91 rms_frm_max=737.29 amp1k=0.0 amp1k_dB=-99.0 nz=99.8%
+    lane1 min=-25490 max=28851 p2p=54341 mean=-67.05 rms_dc=745.82 rms_frm_avg=53.19 rms_frm_max=745.82 amp1k=0.0 amp1k_dB=-99.0 nz=99.8%
+    corr: l0-l1=0.994
+  [4ch] samplesPerLane=640  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-26379 max=28620 p2p=54999 mean=-62.73 rms_dc=1034.71 rms_frm_avg=74.22 rms_frm_max=1034.71 amp1k=4.8 amp1k_dB=0.0 nz=99.7%
+    lane1 min=-25490 max=28851 p2p=54341 mean=-63.55 rms_dc=1046.87 rms_frm_avg=74.68 rms_frm_max=1046.87 amp1k=4.8 amp1k_dB=-0.1 nz=99.7%
+    lane2 min=-3005 max=3068 p2p=6073 mean=-70.55 rms_dc=128.56 rms_frm_avg=2.99 rms_frm_max=128.56 amp1k=0.7 amp1k_dB=-16.6 nz=100.0%
+    lane3 min=-3005 max=3068 p2p=6073 mean=-70.55 rms_dc=128.56 rms_frm_avg=2.99 rms_frm_max=128.56 amp1k=0.7 amp1k_dB=-16.6 nz=100.0%
+    corr: l0-l1=0.994 l0-l2=0.078 l0-l3=0.078 l1-l2=0.093 l1-l3=0.093 l2-l3=1.000
+  [STRUCT] equal-sample ratio: eq1=25.89% eq2=0.75% eq3=23.94% eq4=47.83% eq5=23.95% eq6=0.75% eq7=23.84% eq8=47.27%
+[t 11s] phase=SPEAK calls=262 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 12s] phase=SPEAK calls=284 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 13s] phase=SPEAK calls=305 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 14s] phase=SPEAK calls=327 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 15s] phase=SPEAK calls=349 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 16s] phase=SPEAK calls=370 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 17s] phase=SPEAK calls=391 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 18s] phase=SPEAK calls=412 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 19s] phase=SPEAK calls=434 threads=1 ptrs=1 readFail=0 hookEx=0
+===== [PHASE SPEAK] end at 20.0s frames=213 =====
+  [1ch] samplesPerLane=2560  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-32768 max=32767 p2p=65535 mean=-53.01 rms_dc=2816.62 rms_frm_avg=3097.51 rms_frm_max=6120.03 amp1k=0.0 amp1k_dB=-99.0 nz=99.9%
+  [2ch] samplesPerLane=1280  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-32768 max=32767 p2p=65535 mean=-53.01 rms_dc=2839.05 rms_frm_avg=3108.40 rms_frm_max=6172.52 amp1k=0.0 amp1k_dB=-99.0 nz=99.9%
+    lane1 min=-32768 max=32767 p2p=65535 mean=-53.01 rms_dc=2794.02 rms_frm_avg=3086.52 rms_frm_max=6067.08 amp1k=0.0 amp1k_dB=-99.0 nz=99.9%
+    corr: l0-l1=0.992
+  [4ch] samplesPerLane=640  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-32768 max=32767 p2p=65535 mean=-62.27 rms_dc=3961.11 rms_frm_avg=4349.75 rms_frm_max=8697.11 amp1k=230.5 amp1k_dB=0.0 nz=99.9%
+    lane1 min=-32768 max=32767 p2p=65535 mean=-62.28 rms_dc=3896.55 rms_frm_avg=4318.42 rms_frm_max=8547.46 amp1k=232.1 amp1k_dB=0.1 nz=99.9%
+    lane2 min=-7630 max=7590 p2p=15220 mean=-43.75 rms_dc=655.60 rms_frm_avg=630.24 rms_frm_max=748.04 amp1k=49.0 amp1k_dB=-13.5 nz=99.9%
+    lane3 min=-7630 max=7590 p2p=15220 mean=-43.75 rms_dc=655.60 rms_frm_avg=630.24 rms_frm_max=748.04 amp1k=49.0 amp1k_dB=-13.5 nz=99.9%
+    corr: l0-l1=0.992 l0-l2=0.013 l0-l3=0.013 l1-l2=0.020 l1-l3=0.020 l2-l3=1.000
+  [STRUCT] equal-sample ratio: eq1=25.25% eq2=0.08% eq3=6.93% eq4=13.81% eq5=6.86% eq6=0.08% eq7=6.36% eq8=12.76%
+[t 20s] phase=TONE calls=456 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 21s] phase=TONE calls=475 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 22s] phase=TONE calls=494 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 23s] phase=TONE calls=514 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 24s] phase=TONE calls=535 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 25s] phase=TONE calls=554 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 26s] phase=TONE calls=575 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 27s] phase=TONE calls=596 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 28s] phase=TONE calls=616 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 29s] phase=TONE calls=638 threads=1 ptrs=1 readFail=0 hookEx=0
+===== [PHASE TONE] end at 30.0s frames=200 =====
+  [1ch] samplesPerLane=2560  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-27312 max=27272 p2p=54584 mean=-49.74 rms_dc=13172.53 rms_frm_avg=13274.58 rms_frm_max=13442.86 amp1k=0.0 amp1k_dB=-99.0 nz=100.0%
+  [2ch] samplesPerLane=1280  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-27312 max=27272 p2p=54584 mean=-49.48 rms_dc=13248.66 rms_frm_avg=13348.72 rms_frm_max=13515.95 amp1k=0.0 amp1k_dB=-99.0 nz=100.0%
+    lane1 min=-26974 max=26931 p2p=53905 mean=-50.00 rms_dc=13095.97 rms_frm_avg=13200.01 rms_frm_max=13369.38 amp1k=0.0 amp1k_dB=-99.0 nz=100.0%
+    corr: l0-l1=1.000
+  [4ch] samplesPerLane=640  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-27312 max=27272 p2p=54584 mean=-61.56 rms_dc=18481.10 rms_frm_avg=18623.91 rms_frm_max=18863.56 amp1k=26122.5 amp1k_dB=0.0 nz=100.0%
+    lane1 min=-26974 max=26931 p2p=53905 mean=-62.60 rms_dc=18262.14 rms_frm_avg=18410.70 rms_frm_max=18653.47 amp1k=25816.3 amp1k_dB=-0.1 nz=100.0%
+    lane2 min=-4408 max=4580 p2p=8988 mean=-37.40 rms_dc=3082.62 rms_frm_avg=3085.76 rms_frm_max=3092.61 amp1k=4357.8 amp1k_dB=-15.6 nz=100.0%
+    lane3 min=-4408 max=4580 p2p=8988 mean=-37.40 rms_dc=3082.62 rms_frm_avg=3085.76 rms_frm_max=3092.61 amp1k=4357.8 amp1k_dB=-15.6 nz=100.0%
+    corr: l0-l1=1.000 l0-l2=-0.007 l0-l3=-0.007 l1-l2=-0.003 l1-l3=-0.003 l2-l3=1.000
+  [STRUCT] equal-sample ratio: eq1=25.08% eq2=0.00% eq3=0.00% eq4=0.00% eq5=0.00% eq6=0.00% eq7=0.00% eq8=0.00%
+[t 30s] phase=QUIET2 calls=657 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 31s] phase=QUIET2 calls=680 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 32s] phase=QUIET2 calls=703 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 33s] phase=QUIET2 calls=727 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 34s] phase=QUIET2 calls=750 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 35s] phase=QUIET2 calls=772 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 36s] phase=QUIET2 calls=795 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 37s] phase=QUIET2 calls=819 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 38s] phase=QUIET2 calls=842 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 39s] phase=QUIET2 calls=866 threads=1 ptrs=1 readFail=0 hookEx=0
+===== [PHASE QUIET2] end at 40.0s frames=232 =====
+  [1ch] samplesPerLane=2560  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-6468 max=6419 p2p=12887 mean=-32.23 rms_dc=121.50 rms_frm_avg=219.62 rms_frm_max=1665.49 amp1k=0.0 amp1k_dB=-99.0 nz=99.8%
+  [2ch] samplesPerLane=1280  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-6468 max=6419 p2p=12887 mean=-31.99 rms_dc=118.17 rms_frm_avg=213.02 rms_frm_max=1619.13 amp1k=0.0 amp1k_dB=-99.0 nz=99.8%
+    lane1 min=-6142 max=6152 p2p=12294 mean=-32.48 rms_dc=124.74 rms_frm_avg=226.03 rms_frm_max=1710.59 amp1k=0.0 amp1k_dB=-99.0 nz=99.8%
+    corr: l0-l1=0.978
+  [4ch] samplesPerLane=640  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-6468 max=6419 p2p=12887 mean=-62.24 rms_dc=161.51 rms_frm_avg=297.49 rms_frm_max=2289.44 amp1k=26.8 amp1k_dB=0.0 nz=99.6%
+    lane1 min=-6142 max=6152 p2p=12294 mean=-63.22 rms_dc=170.92 rms_frm_avg=315.98 rms_frm_max=2418.87 amp1k=31.3 amp1k_dB=1.3 nz=99.6%
+    lane2 min=-33 max=-1 p2p=32 mean=-1.74 rms_dc=3.88 rms_frm_avg=5.87 rms_frm_max=10.58 amp1k=0.0 amp1k_dB=-88.6 nz=100.0%
+    lane3 min=-33 max=-1 p2p=32 mean=-1.74 rms_dc=3.88 rms_frm_avg=5.87 rms_frm_max=10.58 amp1k=0.0 amp1k_dB=-88.6 nz=100.0%
+    corr: l0-l1=0.977 l0-l2=0.003 l0-l3=0.003 l1-l2=0.004 l1-l3=0.004 l2-l3=1.000
+  [STRUCT] equal-sample ratio: eq1=25.86% eq2=0.36% eq3=25.82% eq4=51.92% eq5=25.70% eq6=0.36% eq7=25.70% eq8=51.07%
+[t 40s] phase=WRAP calls=888 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 41s] phase=WRAP calls=913 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 42s] phase=WRAP calls=937 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 43s] phase=WRAP calls=962 threads=1 ptrs=1 readFail=0 hookEx=0
+[t 44s] phase=WRAP calls=986 threads=1 ptrs=1 readFail=0 hookEx=0
+===== [PHASE WRAP] end at 45.0s frames=122 =====
+  [1ch] samplesPerLane=2560  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-279 max=143 p2p=422 mean=-31.85 rms_dc=47.68 rms_frm_avg=47.25 rms_frm_max=54.56 amp1k=0.0 amp1k_dB=-99.0 nz=99.8%
+  [2ch] samplesPerLane=1280  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-279 max=137 p2p=416 mean=-31.60 rms_dc=47.57 rms_frm_avg=47.23 rms_frm_max=54.14 amp1k=0.0 amp1k_dB=-99.0 nz=99.8%
+    lane1 min=-261 max=143 p2p=404 mean=-32.10 rms_dc=47.78 rms_frm_avg=47.27 rms_frm_max=54.94 amp1k=0.0 amp1k_dB=-99.0 nz=99.8%
+    corr: l0-l1=0.960
+  [4ch] samplesPerLane=640  (1kHz Goertzel assumed lane rate 16kHz)
+    lane0 min=-279 max=137 p2p=416 mean=-62.21 rms_dc=51.51 rms_frm_avg=50.79 rms_frm_max=62.33 amp1k=2.0 amp1k_dB=0.0 nz=99.6%
+    lane1 min=-261 max=143 p2p=404 mean=-63.19 rms_dc=51.30 rms_frm_avg=50.10 rms_frm_max=61.04 amp1k=2.0 amp1k_dB=0.1 nz=99.7%
+    lane2 min=-1 max=-1 p2p=0 mean=-1.00 rms_dc=0.00 rms_frm_avg=0.00 rms_frm_max=0.00 amp1k=0.0 amp1k_dB=-99.0 nz=100.0%
+    lane3 min=-1 max=-1 p2p=0 mean=-1.00 rms_dc=0.00 rms_frm_avg=0.00 rms_frm_max=0.00 amp1k=0.0 amp1k_dB=-99.0 nz=100.0%
+    corr: l0-l1=0.931 l0-l2=0.000 l0-l3=0.000 l1-l2=0.000 l1-l3=0.000 l2-l3=0.000
+  [STRUCT] equal-sample ratio: eq1=25.78% eq2=0.31% eq3=25.78% eq4=51.84% eq5=25.76% eq6=0.31% eq7=25.69% eq8=51.16%
+===== [SUMMARY] reason=timeout elapsed=45.0s calls=1009 threads=1 distinctPtrs=1 lens={"5120":1009} nullPtr=0 readFail=0 hookEx=0 dumpErr=0 =====
+  tids: 7477
+  ptrs: 0x8b404400
+[i] listener detached
+[i] probe finished
+[i] driver exit

@@ -22,7 +22,8 @@ var calls = 0, tids = {}, lens = {}, ptrs = {}, ptrOrder = [];
 var prevT = 0, dMin = 0, dMax = 0, dSum = 0, dCount = 0;
 var hashes = {}, hashDup = 0;
 var statN = 0;
-var chMin = [0, 0, 0, 0], chMax = [0, 0, 0, 0], chSum = [0, 0, 0, 0], chNZ = [0, 0, 0, 0];
+var chMin = [32768, 32768, 32768, 32768], chMax = [-32768, -32768, -32768, -32768];
+var chSum = [0, 0, 0, 0], chNZ = [0, 0, 0, 0];
 var t0 = Date.now();
 
 function fnv(bytes, n) {
@@ -109,8 +110,8 @@ function main() {
           for (var i = 0; i < 640; i++) {
             for (var c = 0; c < 4; c++) {
               var v = i16[i * 4 + c];
-              if (statN === 0) { chMin[c] = v; chMax[c] = v; }
-              else { if (v < chMin[c]) chMin[c] = v; if (v > chMax[c]) chMax[c] = v; }
+              if (v < chMin[c]) chMin[c] = v;
+              if (v > chMax[c]) chMax[c] = v;
               chSum[c] += v;
               if (v !== 0) chNZ[c]++;
             }

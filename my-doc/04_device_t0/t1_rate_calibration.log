@@ -1,0 +1,31 @@
+[i] js = t1_rate_calibration_probe.js
+[i] target pid = 6934
+[i] schedule (relative to hook install):
+[i]   0-10s  QUIET1  keep silent
+[i]  10-20s  SPEAK   normal speech near the mic
+[i]  20-30s  TONE    continuous steady test tone / music
+[i]  30-40s  QUIET2  silent again
+[i]  40-45s  WRAP    finalize
+[i] attached
+[i] rate calibration: 0-10s tone 1kHz, 10-20s tone 500Hz, 20-25s wrap
+[i] Goertzel bins (assumed lane rate 16kHz): 250, 333, 500, 1000, 2000, 3000 Hz
+[v] address checks passed; target=0x8f25555c
+[i] hook installed, 25s
+[i] script loaded; watching 33s ...
+[t 5s] phase=TONE1K calls=125
+[t 10s] phase=TONE500 calls=250
+===== [PHASE TONE1K] end at 10.0s frames=250 =====
+  lane0 rms=17916.49  amp@250Hz=0.4  amp@333Hz=0.3  amp@500Hz=0.3  amp@1000Hz=1569.2  amp@2000Hz=3.2  amp@3000Hz=3.6
+  lane2 rms=3004.58  amp@250Hz=0.0  amp@333Hz=0.0  amp@500Hz=0.0  amp@1000Hz=262.5  amp@2000Hz=0.0  amp@3000Hz=0.0
+[t 15s] phase=TONE500 calls=374
+[t 20s] phase=WRAP calls=500
+===== [PHASE TONE500] end at 20.1s frames=250 =====
+  lane0 rms=26071.38  amp@250Hz=1.9  amp@333Hz=2.9  amp@500Hz=2300.3  amp@1000Hz=37.2  amp@2000Hz=2.2  amp@3000Hz=1.6
+  lane2 rms=3789.37  amp@250Hz=0.4  amp@333Hz=0.5  amp@500Hz=334.7  amp@1000Hz=0.1  amp@2000Hz=0.0  amp@3000Hz=0.0
+===== [PHASE WRAP] end at 25.0s frames=125 =====
+  lane0 rms=11241.34  amp@250Hz=0.4  amp@333Hz=0.2  amp@500Hz=889.2  amp@1000Hz=3.4  amp@2000Hz=0.3  amp@3000Hz=0.5
+  lane2 rms=1618.40  amp@250Hz=0.0  amp@333Hz=0.0  amp@500Hz=129.4  amp@1000Hz=0.0  amp@2000Hz=0.0  amp@3000Hz=0.0
+===== [SUMMARY] reason=timeout elapsed=25.0s calls=625 threads=1 ptrs=1 nullPtr=0 readFail=0 hookEx=0 dumpErr=0 =====
+[i] listener detached
+[i] calibration probe finished
+[i] driver exit
