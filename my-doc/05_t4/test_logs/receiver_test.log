@@ -5,8 +5,8 @@ receiver_test.py
   ok   源文件存在: rx_core.c
   ok   找到 C 编译器
   cc      : C:\TDM-GCC-64\bin\gcc.EXE
-  tmpdir  : C:\Users\mac\AppData\Local\Temp\t4_rx_test_83e4nuvi
-  build: C:\TDM-GCC-64\bin\gcc.EXE -O2 -Wall -Wextra -o C:\Users\mac\AppData\Local\Temp\t4_rx_test_83e4nuvi\receiver_harness.exe D:\tgz02\OS\system\my-doc\05_t4\tests\receiver_harness.c D:\tgz02\OS\system\my-doc\05_t4\android\rx_core.c -lws2_32
+  tmpdir  : C:\Users\mac\AppData\Local\Temp\t4_rx_test_y9807x00
+  build: C:\TDM-GCC-64\bin\gcc.EXE -O2 -Wall -Wextra -o C:\Users\mac\AppData\Local\Temp\t4_rx_test_y9807x00\receiver_harness.exe D:\tgz02\OS\system\my-doc\05_t4\tests\receiver_harness.c D:\tgz02\OS\system\my-doc\05_t4\android\rx_core.c -lws2_32
   ok   harness 编译成功
   ok   harness 可执行文件存在
 
@@ -232,5 +232,26 @@ receiver_test.py
   ok   unique: 可读回 2 帧 seg_11223344_0003_42.wav
   ok   unique: 三个文件内容一致（都没有被截断）
 
-=== 203 passed, 0 failed ===
+[13] 原子独占创建（O_EXCL）：已存在同名文件时另起后缀且不改动旧文件
+  ok   atomic: harness 退出码 0
+  ok   atomic: 至少有一行 type=WAV
+  ok   atomic: 没有占用已存在的文件名
+  ok   atomic: 自动改用 _a1 后缀
+  ok   atomic: 旧文件长度未变
+  ok   atomic: 旧文件内容逐字节未变（未被截断）
+  ok   atomic: 新文件已创建
+  ok   atomic: 新文件大小正确
+  ok   atomic: 新文件可被 wave 读取（3 帧）
+  ok   atomic: 连续创建退出码 0
+  ok   atomic-repeat: 至少有一行 type=WAV
+  ok   atomic: 连续创建得到新文件名 (seg_cafebabe_0009_42_a2.wav)
+  ok   atomic: 连续创建的文件大小正确
+  ok   atomic: 连续创建退出码 0
+  ok   atomic-repeat: 至少有一行 type=WAV
+  ok   atomic: 连续创建得到新文件名 (seg_cafebabe_0009_42_a3.wav)
+  ok   atomic: 连续创建的文件大小正确
+  ok   atomic: 三次创建得到三个不同文件名
+  ok   atomic: 占位文件始终未被改写
+
+=== 222 passed, 0 failed ===
 note: 本测试覆盖可移植的协议/队列/WAV 逻辑；AF_UNIX DGRAM 的真实收发由真机 t4_receiver 验证。

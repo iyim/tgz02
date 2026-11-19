@@ -3,8 +3,22 @@
  */
 #include "rx_core.h"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _WIN32
+#  include <io.h>
+#  define T4_CLOSE_FD _close
+#  define T4_UNLINK   _unlink
+#  define T4_O_BINARY _O_BINARY     /* 否则 open() 走文本模式，0x0A 会被翻译成 CRLF */
+#else
+#  include <unistd.h>
+#  define T4_CLOSE_FD close
+#  define T4_UNLINK   unlink
+#  define T4_O_BINARY 0
+#endif
 
 /* ---------------- 统计 / 校验 ---------------- */
 void rx_stats_init(rx_stats *st)
@@ -241,11 +255,12 @@ int t4_wav_open(t4_wav *w, const char *dir, uint32_t run_id, long seg_id,
     if (w == NULL || dir == NULL || sample_rate <= 0) return -1;
     memset(w, 0, sizeof(*w));
 
-    /* 文件名里带 run_id（每次进程运行不同），并且**绝不覆盖已有文件**：
-     * 万一 run_id/片段号/起始序号撞车，就换一个带 _aN 后缀的名字重试。 */
+    /* 文件名里带 run_id（每次进程运行不同），并且用 O_EXCL **原子独占创建**：
+     * 万一 run_id/片段号/起始序号撞车，内核保证只有一个创建者成功，其余换 _aN 后缀重试。
+     * 没有任何"先检查再创建"的竞争窗口，也就不会截断已有录音。 */
     w->f = NULL;
     for (attempt = 0; attempt < 1000; attempt++) {
-        FILE *probe;
+        int fd;
         if (attempt == 0) {
             n = snprintf(w->path, sizeof(w->path), "%s/seg_%08x_%04ld_%u.wav",
                          dir, (unsigned)run_id, seg_id, (unsigned)start_seq);
@@ -255,15 +270,22 @@ int t4_wav_open(t4_wav *w, const char *dir, uint32_t run_id, long seg_id,
         }
         if (n < 0 || (size_t)n >= sizeof(w->path)) { w->path[0] = '\0'; return -1; }
 
-        probe = fopen(w->path, "rb");          /* 已存在 -> 换名，不覆盖旧录音 */
-        if (probe != NULL) {
-            fclose(probe);
-            continue;
+        fd = open(w->path, O_WRONLY | O_CREAT | O_EXCL | T4_O_BINARY, 0664);
+        if (fd < 0) {
+            if (errno == EEXIST) continue;        /* 已有同名文件：换下一个后缀 */
+            w->path[0] = '\0';                    /* 目录不可写等：按原错误处理 */
+            return -1;
         }
-        w->f = fopen(w->path, "wb");
-        if (w->f != NULL) break;
-        w->path[0] = '\0';                      /* 目录不可写等：按原错误处理 */
-        return -1;
+        w->f = fdopen(fd, "wb");
+        if (w->f == NULL) {
+            int saved = errno;
+            T4_CLOSE_FD(fd);
+            T4_UNLINK(w->path);                   /* 不留下 0 字节/半截 WAV */
+            w->path[0] = '\0';
+            errno = saved;
+            return -1;
+        }
+        break;
     }
     if (w->f == NULL) { w->path[0] = '\0'; return -1; }   /* 1000 次都撞名（不该发生） */
 

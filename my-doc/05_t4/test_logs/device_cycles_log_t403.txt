@@ -1,0 +1,68 @@
+== before: 0 wav files ==
+
+===== cycle 1 =====
+start: started: pid=4699 log=/data/local/tmp/t4/t4_receiver.log out=/data/local/tmp/t4/segments
+start: {"type":"CONFIG","abstract":"tgz2_pcm","out":"/data/local/tmp/t4/segments","secs":0.000,"run_id":3500924983,"frame_ms":40,"frame_samples":640,"sample_rate":1600
+bridge rc=0
+stop took 0.40s
+  {"type":"SUMMARY","received":202,"accepted":202,"processed":202,"bad_len":0,"bad_crc":0,"missing":0,"duplicate":0,"reorder":0,"bad_magic":0,"bad_ver":0,"bad_hdr":0,"bad_param":0,"epoch_switches":0,"epoch":546478548,"seq_first":1,"seq_last":202,"queue_drop":0,"queue_high_watermark":2,"queue_cap":128,"queue_depth":0,"vad_speech_frames":175,"segments":4,"segment_write_errors":0,"noise_rms":75.66,"dur_s":16.355,"rcvbuf_req":262144,"rcvbuf_eff":524288}
+  wav files now: 4
+  run_ids: ['d0abe037']
+
+===== cycle 2 =====
+start: started: pid=5640 log=/data/local/tmp/t4/t4_receiver.log out=/data/local/tmp/t4/segments
+start: {"type":"CONFIG","abstract":"tgz2_pcm","out":"/data/local/tmp/t4/segments","secs":0.000,"run_id":1274203672,"frame_ms":40,"frame_samples":640,"sample_rate":1600
+bridge rc=0
+stop took 0.33s
+  {"type":"SUMMARY","received":204,"accepted":204,"processed":204,"bad_len":0,"bad_crc":0,"missing":0,"duplicate":0,"reorder":0,"bad_magic":0,"bad_ver":0,"bad_hdr":0,"bad_param":0,"epoch_switches":0,"epoch":568099040,"seq_first":1,"seq_last":204,"queue_drop":0,"queue_high_watermark":2,"queue_cap":128,"queue_depth":0,"vad_speech_frames":177,"segments":4,"segment_write_errors":0,"noise_rms":74.30,"dur_s":11.908,"rcvbuf_req":262144,"rcvbuf_eff":524288}
+  wav files now: 8
+  run_ids: ['4bf2ce18', 'd0abe037']
+
+===== cycle 3 =====
+start: started: pid=5667 log=/data/local/tmp/t4/t4_receiver.log out=/data/local/tmp/t4/segments
+start: {"type":"CONFIG","abstract":"tgz2_pcm","out":"/data/local/tmp/t4/segments","secs":0.000,"run_id":2161067603,"frame_ms":40,"frame_samples":640,"sample_rate":1600
+bridge rc=0
+stop took 0.33s
+  {"type":"SUMMARY","received":201,"accepted":201,"processed":201,"bad_len":0,"bad_crc":0,"missing":0,"duplicate":0,"reorder":0,"bad_magic":0,"bad_ver":0,"bad_hdr":0,"bad_param":0,"epoch_switches":0,"epoch":639163386,"seq_first":1,"seq_last":201,"queue_drop":0,"queue_high_watermark":2,"queue_cap":128,"queue_depth":0,"vad_speech_frames":174,"segments":4,"segment_write_errors":0,"noise_rms":73.75,"dur_s":11.732,"rcvbuf_req":262144,"rcvbuf_eff":524288}
+  wav files now: 12
+  run_ids: ['4bf2ce18', '80cf4653', 'd0abe037']
+
+===== cycle 4 =====
+start: started: pid=5695 log=/data/local/tmp/t4/t4_receiver.log out=/data/local/tmp/t4/segments
+start: {"type":"CONFIG","abstract":"tgz2_pcm","out":"/data/local/tmp/t4/segments","secs":0.000,"run_id":1766254870,"frame_ms":40,"frame_samples":640,"sample_rate":1600
+bridge rc=0
+stop took 0.36s
+  {"type":"SUMMARY","received":201,"accepted":201,"processed":201,"bad_len":0,"bad_crc":0,"missing":0,"duplicate":0,"reorder":0,"bad_magic":0,"bad_ver":0,"bad_hdr":0,"bad_param":0,"epoch_switches":0,"epoch":648491385,"seq_first":1,"seq_last":201,"queue_drop":0,"queue_high_watermark":2,"queue_cap":128,"queue_depth":0,"vad_speech_frames":174,"segments":4,"segment_write_errors":0,"noise_rms":76.89,"dur_s":11.869,"rcvbuf_req":262144,"rcvbuf_eff":524288}
+  wav files now: 16
+  run_ids: ['4bf2ce18', '6946e916', '80cf4653', 'd0abe037']
+
+===== cycle 5 =====
+start: started: pid=5722 log=/data/local/tmp/t4/t4_receiver.log out=/data/local/tmp/t4/segments
+start: {"type":"CONFIG","abstract":"tgz2_pcm","out":"/data/local/tmp/t4/segments","secs":0.000,"run_id":2772764731,"frame_ms":40,"frame_samples":640,"sample_rate":1600
+bridge rc=0
+stop took 0.59s
+  {"type":"SUMMARY","received":201,"accepted":201,"processed":201,"bad_len":0,"bad_crc":0,"missing":0,"duplicate":0,"reorder":0,"bad_magic":0,"bad_ver":0,"bad_hdr":0,"bad_param":0,"epoch_switches":0,"epoch":669205156,"seq_first":1,"seq_last":201,"queue_drop":0,"queue_high_watermark":2,"queue_cap":128,"queue_depth":0,"vad_speech_frames":174,"segments":4,"segment_write_errors":0,"noise_rms":75.22,"dur_s":11.887,"rcvbuf_req":262144,"rcvbuf_eff":524288}
+  wav files now: 20
+  run_ids: ['4bf2ce18', '6946e916', '80cf4653', 'a545083b', 'd0abe037']
+
+== final file list ==
+  seg_4bf2ce18_0001_24.wav
+  seg_4bf2ce18_0002_74.wav
+  seg_4bf2ce18_0003_124.wav
+  seg_4bf2ce18_0004_174.wav
+  seg_6946e916_0001_24.wav
+  seg_6946e916_0002_74.wav
+  seg_6946e916_0003_124.wav
+  seg_6946e916_0004_174.wav
+  seg_80cf4653_0001_24.wav
+  seg_80cf4653_0002_74.wav
+  seg_80cf4653_0003_124.wav
+  seg_80cf4653_0004_174.wav
+  seg_a545083b_0001_24.wav
+  seg_a545083b_0002_74.wav
+  seg_a545083b_0003_124.wav
+  seg_a545083b_0004_174.wav
+  seg_d0abe037_0001_24.wav
+  seg_d0abe037_0002_74.wav
+  seg_d0abe037_0003_124.wav
+  seg_d0abe037_0004_174.wav

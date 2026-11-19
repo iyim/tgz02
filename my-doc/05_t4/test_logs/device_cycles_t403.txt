@@ -1,0 +1,22 @@
+  == before: 0 wav files ==
+===== cycle 1 =====
+  stop took 0.40s
+  SUMMARY {"received": 202, "accepted": 202, "processed": 202, "queue_drop": 0, "queue_depth": 0, "missing": 0, "duplicate": 0, "reorder": 0, "segments": 4, "segment_write_errors": 0}
+  wav files now: 4
+===== cycle 2 =====
+  stop took 0.33s
+  SUMMARY {"received": 204, "accepted": 204, "processed": 204, "queue_drop": 0, "queue_depth": 0, "missing": 0, "duplicate": 0, "reorder": 0, "segments": 4, "segment_write_errors": 0}
+  wav files now: 8
+===== cycle 3 =====
+  stop took 0.33s
+  SUMMARY {"received": 201, "accepted": 201, "processed": 201, "queue_drop": 0, "queue_depth": 0, "missing": 0, "duplicate": 0, "reorder": 0, "segments": 4, "segment_write_errors": 0}
+  wav files now: 12
+===== cycle 4 =====
+  stop took 0.36s
+  SUMMARY {"received": 201, "accepted": 201, "processed": 201, "queue_drop": 0, "queue_depth": 0, "missing": 0, "duplicate": 0, "reorder": 0, "segments": 4, "segment_write_errors": 0}
+  wav files now: 16
+===== cycle 5 =====
+  stop took 0.59s
+  SUMMARY {"received": 201, "accepted": 201, "processed": 201, "queue_drop": 0, "queue_depth": 0, "missing": 0, "duplicate": 0, "reorder": 0, "segments": 4, "segment_write_errors": 0}
+  wav files now: 20
+  == final file list ==

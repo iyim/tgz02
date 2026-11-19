@@ -7,6 +7,9 @@
 >
 > **T4-02 追加（见 §10）**：退出时排空队列（新增 `processed`）、乱序不污染序号高水位、
 > WAV 文件名带 run_id 且不覆盖旧文件 —— 三项已修复，本机测试 + 真机验证通过。
+>
+> **T4-03 追加（见 §11）**：退出加入 `rx_done` 握手彻底关闭竞态、WAV 改 `O_EXCL` 原子独占创建 ——
+> 本机测试 + 真机 5 次启停验证通过。
 
 - 基线 commit：`50c61f8863a028c4f94231de18efd97fd4e2d05e`
 - 本轮提交：`f93e2c967807357604e395769db747d0a1940ac5`
@@ -31,6 +34,8 @@
 | T4-02：退出排空队列（pthread 测试） | **真机已验证**（`drain_test` 在 TG-Z02 上 18 passed / 0 failed） |
 | T4-02：乱序/重复/回绕序号语义 | **本机测试通过**（`receiver_test.py` 第 10 组） |
 | T4-02：WAV 文件名唯一、不覆盖 | **真机已验证**（两次运行同名片段号/起始序号并存 9 个文件） |
+| T4-03：停止竞态（`rx_done` 握手） | **真机已验证**（`drain_test` 用例 D，31 passed / 0 failed） |
+| T4-03：WAV 原子独占创建（`O_EXCL`） | **真机已验证**（用例 E 4 线程并发 + 5 次启停 20 个文件并存） |
 | 场景 B：真人连续说话 ≥5 句 | **未验证**（需人对着设备说话） |
 | 场景 C：句中短暂停顿不切段 | **未验证**（同上；逻辑本身由单元测试 T5 覆盖） |
 | 场景 D：背景噪声误触发 | **未验证**（现场无可用噪声源/播放通路） |
@@ -442,8 +447,10 @@ seg_a46a517e_0004_249.wav  seg_b55a5158_0004_249.wav
 | 项目 | 命令 | 结果 |
 |---|---|---|
 | VAD 单元测试 | `gcc -O2 -Wall -Wextra -o testsad_unit_test.exe testsad_unit_test.c androidad_energy.c -lm` → 运行 | **65 passed, 0 failed**（0 warning） |
-| 接收端测试 | `python testseceiver_test.py` | **203 passed, 0 failed** |
-| Python 语法 | `python -m py_compile testseceiver_test.py` | exit 0 |
+| 接收端测试 | `python tests
+eceiver_test.py` | **203 passed, 0 failed** |
+| Python 语法 | `python -m py_compile tests
+eceiver_test.py` | exit 0 |
 | 退出排空测试 | `drain_test`（NDK 编译 → 真机运行） | **18 passed, 0 failed** |
 | NDK 编译 | 见 §10.5 | **0 warning / 0 error** |
 
@@ -468,3 +475,130 @@ seg_a46a517e_0004_249.wav  seg_b55a5158_0004_249.wav
 | 退出排空（生产线程） | `drain_test` 在真机上 18 passed（见 10.1） |
 | 真机"停止时队列非空"的自然复现 | 本轮未复现（安静场景队列高水位仅 4，远低于 128）；该路径由 `drain_test` A 用例确定性覆盖 |
 | 真人说话 / 背景噪声 | **仍未验证**（需要真人/噪声源，见 §7.3） |
+
+---
+
+## 11. T4-03 修复记录（P1 竞态 + P2 原子创建）
+
+基线：`606318e481eb68130dbc4a5f1aa3ea3b9a671c64`；
+提交：`fix: synchronize T4 receiver shutdown and WAV creation`。
+
+### 11.1 P1：退出握手 `g_stop && rx_done && queue_empty`
+
+**问题（T4-02 遗留）**：处理线程只判断 `g_stop` 与队列是否为空。接收线程可能已经通过
+`while (!g_stop)` 检查、正卡在 `select/recv` 里；主线程置 `g_stop` 后处理线程看到队列空就退出并
+`vad_flush()` —— 紧接着接收线程 `recv` 成功、把最后一帧入队。主线程 `join` 两个线程后打印 SUMMARY，
+此时队列可能非空（T4-01 的 `queue_depth=1` 就是这样来的）。
+
+**修复**：
+- `t4_ctx` 增加 `int rx_done`（由 `ctx->mu` 保护）；
+- 接收线程退出前：**停止 select/recv/入队** → 持锁 `rx_done=1` → `pthread_cond_broadcast` → 解锁 → 返回；
+- 处理线程唯一退出条件：`g_stop && ctx->rx_done && ctx->q.count == 0`；
+- 主线程保持 `g_stop=1` → 持锁 broadcast → `join(rx)` → `join(proc)`。
+
+时序上，最后一帧必然发生在 `rx_done=1` 之前入队，而处理线程在 `rx_done` 之前绝不退出，
+因此该帧一定会被处理（用例 D 用真实线程与真实队列验证）。
+
+### 11.2 新增用例 D（停止竞态，确定性时序）
+
+`tests/drain_test.c` 用例 D（复用生产 `proc_thread()`，不写模拟实现）：
+
+1. 起真线程（`g_stop=0, rx_done=0`），先送 1 帧并**轮询等待 `processed==1`**（确认线程在跑、随后阻塞等待）；
+2. `g_stop=1` + broadcast，**`rx_done` 仍为 0**；等 200 ms（给"错误实现"足够时间提前退出）；
+3. 再入队"在飞的最后一帧"；
+4. 持锁置 `rx_done=1` 并 broadcast；
+5. `join` 后断言 `processed==2`、队列深度 0、`rx_done==1`、VAD 收到 2 帧、
+   片段以 `shutdown` 收尾且 `frame_count==2`（证明 `vad_flush` 在最后一帧之后）。
+
+**真机执行结果**（TG-Z02，NDK 交叉编译后运行）：
+
+```
+[D] 停止竞态：g_stop=1 但 rx_done=0 时不得退出，最后一帧仍要处理
+  ok   D pthread_create 成功
+  ok   D 第一帧已处理（处理线程在等待下一帧）
+  ok   D processed == 2（g_stop=1、rx_done=0 期间没有提前退出）
+  ok   D 队列深度 == 0
+  ok   D rx_done == 1
+  ok   D VAD 收到 2 帧
+  ok   D 片段在退出时收尾
+  ok   D 片段含 2 帧（flush 在最后一帧之后）
+  ok   D 写盘无错误
+```
+
+**可重复性**：测试开始会先清空自己的输出目录（`/data/local/tmp/t4/drain_out` 里上次留下的 WAV），
+因此可以连续多次运行；真机上连跑两次都是 `31 passed, 0 failed`
+（第一次清理 12 个旧文件、第二次清理 6 个）。见 `test_logs/drain_test_android.log`。
+
+统计口径说明：D 用例直接构造 `rx_frame` 入队、**不经过 `rx_classify`**，所以 `accepted` 恒为 0，
+这里不对 `accepted == processed + queue_drop` 做断言；该不变式由 `receiver_test.py` 第 11 组
+（走完整分类路径 + 队列溢出场景）覆盖。
+
+### 11.3 P2：WAV 用 `O_EXCL` 原子独占创建
+
+**问题（T4-02 遗留）**：`fopen(path,"rb")` 探测 + `fopen(path,"wb")` 创建之间存在 TOCTOU，
+两个线程/两个进程同时撞名时仍可能互相截断。
+
+**修复**（`rx_core.c` 的 `t4_wav_open()`）：
+
+```c
+fd = open(path, O_WRONLY | O_CREAT | O_EXCL | T4_O_BINARY, 0664);
+if (fd < 0) { if (errno == EEXIST) continue; else return -1; }   /* 换 _aN 后缀 / 其它错误直接失败 */
+w->f = fdopen(fd, "wb");
+if (!w->f) { close(fd); unlink(path); return -1; }               /* 不留 0 字节残文件 */
+```
+
+- 名字规则不变：`seg_<run_id>_<seg>_<seq>.wav`，撞名时 `_a1` / `_a2` …（上限 1000 次）；
+- 路径长度检查、目录不可写时"记录错误不崩溃"的处理保持不变；
+- **本机测试发现并修掉一个平台差异**：Windows 上 `open()` 默认文本模式会把 0x0A 翻成 CRLF，
+  导致 WAV 比预期大 12 字节（`44 + N*1280` → `+12`）。现在 Windows 下带 `_O_BINARY`，POSIX 下为 0。
+
+### 11.4 本轮测试结果（全部实际执行）
+
+| 测试 | 命令 | 结果 |
+|---|---|---|
+| VAD 单元测试 | `gcc -O2 -Wall -Wextra -o testsad_unit_test.exe testsad_unit_test.c androidad_energy.c -lm` → 运行 | **65 passed, 0 failed**（0 warning） |
+| 接收端测试 | `python tests
+eceiver_test.py` | **222 passed, 0 failed**（新增第 13 组：原子创建/占位文件不被改写/连续 3 次不撞名） |
+| 退出排空/竞态/并发 WAV | `drain_test`（NDK 编译 → 真机） | **31 passed, 0 failed**（A/B/C/D/E） |
+| Python 语法 | `python -m py_compile tests
+eceiver_test.py` | exit 0 |
+
+### 11.5 NDK 编译（本轮）
+
+| 项 | 值 |
+|---|---|
+| 编译器 | `…ndroid-ndk-r21e\…rmv7a-linux-androideabi26-clang.cmd`（clang 9.0.9，`armv7a-unknown-linux-android26`） |
+| 命令 | `armv7a-linux-androideabi26-clang -O2 -Wall -Wextra -static -o out/t4_receiver android/t4_receiver.c android/rx_core.c android/vad_energy.c -lm` |
+| 结果 | exit 0，**0 warning / 0 error**，无 `-Wno-*` |
+| 产物 | `android/out/t4_receiver` 3,435,644 B，SHA256 `18945b19a7cfc4fada07b5a7a45577d077f8810b8f2acde8a8215c4c919abe17` |
+| ELF | `Class: ELF32` / `Type: EXEC` / `Machine: ARM` |
+| 测试二进制 | `android/out/drain_test` 3,444,276 B，SHA256 `05649aa86c3462faf60761f24c6586c9ee3d94abcf02bf4f1e5a1e0e7b503297` |
+
+### 11.6 真机验证：5 次启停（每次 bridge 8 s，强制低阈值以产出 WAV）
+
+`test_logs/device_cycles_t403.txt`：
+
+| 周期 | received | accepted | processed | queue_drop | queue_depth | segments | write_errors | stop 耗时 | 目录文件数 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 202 | 202 | 202 | 0 | 0 | 4 | 0 | 0.40 s | 4 |
+| 2 | 204 | 204 | 204 | 0 | 0 | 4 | 0 | 0.33 s | 8 |
+| 3 | 201 | 201 | 201 | 0 | 0 | 4 | 0 | 0.33 s | 12 |
+| 4 | 201 | 201 | 201 | 0 | 0 | 4 | 0 | 0.36 s | 16 |
+| 5 | 201 | 201 | 201 | 0 | 0 | 4 | 0 | 0.59 s | 20 |
+
+- 5 次都满足 `accepted == processed + queue_drop`、`queue_depth == 0`、`missing/dup/reorder/bad_*` 全 0；
+- 每次 run_id 不同（`4bf2ce18 / 6946e916 / 80cf4653 / a545083b / d0abe037`），
+  片段号与起始序号完全一样（1..4 / 24,74,124,174）却**并存 20 个文件**，无覆盖；
+- 20 个 WAV 全部回拉校验（`test_logs/device_cycles_wav_check_t403.txt`）：
+  `RIFF/WAVE`、`RIFF size = 文件长−8`、`data size = PCM 长`、16000/1ch/16bit、`nframes = 帧数×640`，
+  **20/20 OK，0 bad**，总时长 35.76 s；
+- 停止耗时 0.33–0.59 s，无死锁、无退出超时；5 次运行均正常退出并打印 SUMMARY；
+- 5 次运行后 `:core` pid 仍为 19572，未重启。
+
+### 11.7 未验证 / 限制
+
+1. **自然发生的竞态未复现**：T4-03 的竞态窗口在微秒级，本轮 5 次启停都没有自然触发
+   （`queue_depth` 一直是 0）。该路径完全由用例 D 的确定性时序覆盖，**不能声称真机上自然发生过**。
+2. 真人说话（场景 B/C）与背景噪声（场景 D）仍未验证，需要真人/噪声源。
+3. 并发创建用例 E 在真机上用 4 线程验证，但未做多进程并发（同一目录、同一 run_id）测试。
+4. Windows 侧只能跑顺序的原子创建测试（无 pthread）；并发创建只在 Android 上验证。

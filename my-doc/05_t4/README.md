@@ -92,15 +92,25 @@ t4_receiver \
     queue_depth == 0                          停摆时队列已被排空
 ```
 
-**退出语义（T4-02 修复）**：收到 `--secs` 时限或 SIGINT/SIGTERM 后，处理线程不再等待新数据，
-但会把队列中**已经入队的帧全部处理完**才 `vad_flush()` 收尾；任何情况下都不清空队列、不丢剩余帧。
+**退出语义（T4-02/T4-03）**：主线程置 `g_stop=1` 并 `broadcast`；处理线程不再等待新数据，但
+必须同时满足三个条件才允许退出并 `vad_flush()`：
+
+1. `g_stop` 已置位；
+2. `rx_done` 已置位（接收线程**彻底结束**，不再 select/recv/入队）；
+3. 队列为空（已入队的帧全部处理完）。
+
+`rx_done` 由接收线程在退出前**持锁**写入并 `broadcast`。这样"接收线程已通过停止检查、正在
+select/recv，停止后才拿到最后一帧"的竞态窗口被关闭：该帧一定在 `rx_done` 之前入队，处理线程会先处理它。
+任何情况下都不清空队列、不丢剩余帧。
 
 片段文件：`<out>/seg_<run_id:8 位十六进制>_<4 位片段编号>_<start_seq>.wav`，
 16 kHz / 单声道 / 16-bit PCM，WAV 头在关闭时回填 RIFF 与 data 长度（与实际 PCM 一致）。
 
 - `run_id` 在进程启动时由 PID + 实时时钟纳秒混合生成（`CONFIG` 里能看到），**不同运行不会同名**；
-- 即使撞名（例如同一 run_id 重复打开同一片段号），也会自动改用 `…_a1.wav` / `…_a2.wav`，
-  **绝不截断覆盖已有录音**。
+- 创建方式是 `open(path, O_WRONLY|O_CREAT|O_EXCL, 0664)` + `fdopen()`：**原子独占**，
+  内核保证同一名字只有一个创建者成功；撞名时自动改用 `…_a1.wav` / `…_a2.wav`（最多 1000 次）。
+  不存在"先检查再创建"的 TOCTOU 窗口，`fdopen()` 失败会关 fd 并删掉刚建的空文件。
+- Windows 上额外带 `_O_BINARY`（否则 `open()` 走文本模式，0x0A 会被翻译成 CRLF 撑大文件 —— 该问题由本机测试发现）。
 
 ## 本机测试（Windows / GCC，可重复）
 
@@ -114,8 +124,8 @@ gcc -O2 -Wall -Wextra -o tests\vad_unit_test.exe tests\vad_unit_test.c android\v
 # 2) 接收端协议/队列/WAV/序号语义 测试（自动编译 harness）
 python tests\receiver_test.py
 
-# 2b) 退出排空测试（pthread，Windows 没有 pthread，只能 Linux/WSL 或 Android 跑）
-#     grep -E 'ok|FAIL|passed' 后应看到 18 passed, 0 failed
+# 2b) 退出排空 / 停止竞态 / 并发 WAV 创建测试（pthread，Windows 无 pthread，只能 Linux/WSL 或 Android 跑）
+#     期望 31 passed, 0 failed（A 排空、B 空队列、C 真线程、D rx_done 竞态、E 4 线程 O_EXCL）
 $cc = "$env:NDK\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd"
 & $cc -O2 -Wall -Wextra -static -o android\out\drain_test tests\drain_test.c android\rx_core.c android\vad_energy.c -lm
 adb push android/out/drain_test /data/local/tmp/t4/drain_test

@@ -397,6 +397,52 @@ def main():
         d3 = open(p3, "rb").read()
         ok(d1 == d2 == d3, "unique: 三个文件内容一致（都没有被截断）")
 
+    # ---- 13) 原子独占创建：已有同名文件时绝不覆盖（O_EXCL） ----
+    print("\n[13] 原子独占创建（O_EXCL）：已存在同名文件时另起后缀且不改动旧文件")
+    atomicdir = os.path.join(tmpdir, "atomic")
+    os.makedirs(atomicdir, exist_ok=True)
+    base_name = "seg_cafebabe_0009_42.wav"
+    base_path = os.path.join(atomicdir, base_name)
+    # 手工占位：内容与正常 WAV 完全不同，用来证明"没有被截断/改写"
+    placeholder = b"PRESERVE-ME-" + bytes(range(64)) * 4
+    with open(base_path, "wb") as f:
+        f.write(placeholder)
+    before = open(base_path, "rb").read()
+
+    rc, lines, err = run(exe, ["--wav", atomicdir, "--frames", "3", "--seg", "9",
+                               "--run-id", "cafebabe"])
+    eq(rc, 0, "atomic: harness 退出码 0")
+    w = parse(lines, "WAV", "atomic")
+    if w:
+        w = w[0]
+        p_new = w["path"]
+        ok(os.path.basename(p_new) != base_name, "atomic: 没有占用已存在的文件名",
+           os.path.basename(p_new))
+        eq(os.path.basename(p_new), "seg_cafebabe_0009_42_a1.wav",
+           "atomic: 自动改用 _a1 后缀")
+        after = open(base_path, "rb").read()
+        eq(len(after), len(before), "atomic: 旧文件长度未变")
+        ok(after == before, "atomic: 旧文件内容逐字节未变（未被截断）")
+        ok(os.path.exists(p_new), "atomic: 新文件已创建")
+        eq(os.path.getsize(p_new), 44 + 3 * PAYLOAD, "atomic: 新文件大小正确")
+        with wave.open(p_new, "rb") as wf:
+            eq(wf.getnframes(), 3 * SPF, "atomic: 新文件可被 wave 读取（3 帧）")
+        # 连开三次同样参数：必须得到三个不同文件名，且互不覆盖
+        seen = {os.path.basename(p_new)}
+        for _ in range(2):
+            rc, lines, _ = run(exe, ["--wav", atomicdir, "--frames", "3", "--seg", "9",
+                                     "--run-id", "cafebabe"])
+            eq(rc, 0, "atomic: 连续创建退出码 0")
+            w2 = parse(lines, "WAV", "atomic-repeat")
+            if w2:
+                nm = os.path.basename(w2[0]["path"])
+                ok(nm not in seen, "atomic: 连续创建得到新文件名 (%s)" % nm)
+                seen.add(nm)
+                eq(os.path.getsize(w2[0]["path"]), 44 + 3 * PAYLOAD,
+                   "atomic: 连续创建的文件大小正确")
+        eq(len(seen), 3, "atomic: 三次创建得到三个不同文件名")
+        ok(open(base_path, "rb").read() == before, "atomic: 占位文件始终未被改写")
+
     # ---- 结论 ----
     print("\n=== %d passed, %d failed ===" % (pass_n, fail_n))
     if fail_n:

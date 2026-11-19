@@ -70,6 +70,7 @@ typedef struct {
     pthread_cond_t  cv;
     rx_stats        stats;        /* 由 mu 保护 */
     rx_queue        q;            /* 由 mu 保护 */
+    int             rx_done;      /* 接收线程已彻底结束（由 mu 保护；T4-03 P1） */
 } t4_ctx;
 
 /* 全局对象：进程级单实例，放在 BSS（rx_queue 的槽位是堆分配，不在这里） */
@@ -236,6 +237,16 @@ static void *rx_thread(void *arg)
         }
         pthread_mutex_unlock(&ctx->mu);
     }
+
+    /*
+     * T4-03 P1：接收线程在这里**彻底停止**接收与入队，然后在锁内标记 rx_done 并广播。
+     * 处理线程必须看到 rx_done 才能退出，因此"最后一次 recv 成功后入队的那一帧"
+     * 一定会被处理线程看到（竞态窗口被关闭）。
+     */
+    pthread_mutex_lock(&ctx->mu);
+    ctx->rx_done = 1;
+    pthread_cond_broadcast(&ctx->cv);
+    pthread_mutex_unlock(&ctx->mu);
     return NULL;
 }
 
@@ -251,8 +262,11 @@ static void *proc_thread(void *arg)
     sink.on_close = seg_on_close;
 
     /*
-     * 退出语义（P1 修复）：收到停止标志后**不再等待新数据**，但必须把已经成功入队的帧
-     * 全部处理完才允许退出。因此循环条件是 for(;;)，只有"g_stop 且队列为空"才 break。
+     * 退出语义（T4-03 P1 收紧）：
+     *   - 收到停止标志后不再等待新数据，但必须把已入队的帧全部处理完；
+     *   - 还必须等接收线程彻底结束（rx_done），否则接收线程可能"已经通过 !g_stop 检查、
+     *     正在 select/recv"，随后又入队一帧，导致 join 之后队列非空；
+     *   - 因此唯一退出条件是：g_stop && ctx->rx_done && 队列为空。
      * 绝不在停止时清空队列或丢弃剩余帧。
      */
     for (;;) {
@@ -260,18 +274,18 @@ static void *proc_thread(void *arg)
         int got = 0;
 
         pthread_mutex_lock(&ctx->mu);
-        while (!g_stop && ctx->q.count == 0) {
+        while (ctx->q.count == 0 && !(g_stop && ctx->rx_done)) {
             struct timespec dl;
             clock_gettime(CLOCK_REALTIME, &dl);
-            dl.tv_nsec += 50L * 1000000L;    /* 50 ms 超时：只为及时看到停止标志 */
+            dl.tv_nsec += 50L * 1000000L;    /* 50 ms 超时：兜底，不改变退出条件 */
             if (dl.tv_nsec >= 1000000000L) { dl.tv_sec++; dl.tv_nsec -= 1000000000L; }
             pthread_cond_timedwait(&ctx->cv, &ctx->mu, &dl);
         }
         if (ctx->q.count > 0) {
             got = rx_queue_pop(&ctx->q, &f);
-        } else if (g_stop) {
+        } else if (g_stop && ctx->rx_done) {
             pthread_mutex_unlock(&ctx->mu);
-            break;                            /* 停止且队列已空：可以退出了 */
+            break;                            /* 接收线程已结束且队列已空：可以退出 */
         }
         pthread_mutex_unlock(&ctx->mu);
 

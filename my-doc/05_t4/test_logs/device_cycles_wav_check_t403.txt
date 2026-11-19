@@ -1,0 +1,23 @@
+dir: D:\tgz02\OS\_analysis\t403_wavs files: 20
+seg_4bf2ce18_0001_24.wav         64044 B  nf=32000  2000.0 ms  rms=  75.0  OK
+seg_4bf2ce18_0002_74.wav         64044 B  nf=32000  2000.0 ms  rms=  75.5  OK
+seg_4bf2ce18_0003_124.wav        64044 B  nf=32000  2000.0 ms  rms=  76.1  OK
+seg_4bf2ce18_0004_174.wav        39724 B  nf=19840  1240.0 ms  rms=  76.7  OK
+seg_6946e916_0001_24.wav         64044 B  nf=32000  2000.0 ms  rms=  77.2  OK
+seg_6946e916_0002_74.wav         64044 B  nf=32000  2000.0 ms  rms=  76.7  OK
+seg_6946e916_0003_124.wav        64044 B  nf=32000  2000.0 ms  rms=  77.3  OK
+seg_6946e916_0004_174.wav        35884 B  nf=17920  1120.0 ms  rms=  76.1  OK
+seg_80cf4653_0001_24.wav         64044 B  nf=32000  2000.0 ms  rms=  75.5  OK
+seg_80cf4653_0002_74.wav         64044 B  nf=32000  2000.0 ms  rms=  76.3  OK
+seg_80cf4653_0003_124.wav        64044 B  nf=32000  2000.0 ms  rms=  77.0  OK
+seg_80cf4653_0004_174.wav        35884 B  nf=17920  1120.0 ms  rms=  76.4  OK
+seg_a545083b_0001_24.wav         64044 B  nf=32000  2000.0 ms  rms=  81.0  OK
+seg_a545083b_0002_74.wav         64044 B  nf=32000  2000.0 ms  rms=  82.3  OK
+seg_a545083b_0003_124.wav        64044 B  nf=32000  2000.0 ms  rms=  88.3  OK
+seg_a545083b_0004_174.wav        35884 B  nf=17920  1120.0 ms  rms=  76.5  OK
+seg_d0abe037_0001_24.wav         64044 B  nf=32000  2000.0 ms  rms=  74.8  OK
+seg_d0abe037_0002_74.wav         64044 B  nf=32000  2000.0 ms  rms=  75.3  OK
+seg_d0abe037_0003_124.wav        64044 B  nf=32000  2000.0 ms  rms=  74.6  OK
+seg_d0abe037_0004_174.wav        37164 B  nf=18560  1160.0 ms  rms=  78.5  OK
+runs=5  total_s=35.76  bad=0
+RESULT: PASS
