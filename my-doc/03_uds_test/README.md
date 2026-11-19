@@ -136,7 +136,7 @@ python verify_capture.py _run\m.cap
 | 文件 | 作用 | 状态 |
 |---|---|---|
 | `pcm_bridge_draft.js` | 方案 A（修订 6）：T2 式整帧 `Memory.copy(5120)` 入 64×5120 B 环 → 20 ms 消费端抽 lane0 / FNV-1a / TGZ2 v2 头 → 非阻塞 `AF_UNIX SOCK_DGRAM`（抽象名 `tgz2_pcm`） | **已真机实测（T3，2026-11-19，10 s ×2：252/252 帧，CRC/序号全 0 错）** |
-| `thread_probe.js` | 只读线程探针：验证 `feed` 是否单生产者（SPSC 前提）；30 s 到点自动 detach | 未执行（本轮由 `pcm_bridge_draft.js` 内的 `producerTid` 守卫实测：单生产者 19873） |
+| `thread_probe.js` | 只读线程探针：验证 `feed` 是否单生产者（SPSC 前提）；30 s 到点自动 detach | 未执行（T3 短测里 `producerTid=19873`；但 T4-08 的 `t408_bridge_BC2.log` 已出现第二个生产者 TID 14171，见 §8） |
 
 执行顺序（每次只引入一个变量）：
 `thread_probe.js`（只读）→ `pcm_bridge_draft.js` + `DRY_RUN=true`（只统计）→ 打开发送。
@@ -164,10 +164,14 @@ cd crc_crosscheck; python run_crosscheck.py
 
 - 本机只能用 `stream`；`--proto dgram` 只能在 Linux/Android 上测（Windows 内核不支持 AF_UNIX DGRAM）。
 - 原生负载是 `seq` 决定的伪随机序列，不是真语音；真语音路径已由第二阶段 `pcm_talk.raw` 验证。
-- 真机实测原厂管线会从**不同 TID** 调用 `feed`（19873 / 14171），因此 T3-08 起不再按"单生产者"处理：
-  TID 只做统计（`tidCount` / `otherTidCalls` / `tids`），不触发禁用。SPSC 的槽位纪律靠"回调互斥"保证，
-  而回调互斥的前提是 Hook 内不释放脚本锁 —— T3-09 把 `clock_gettime` 改成 `scheduling:'exclusive'` 之后才真正成立
-  （详见 `../03_pcm_bridge_t3_09_clock_exclusive.md`）。
+- 原厂管线确实会从**不同 TID** 调用 `feed`：唯一一次真机观测是 **T4-08 的 `t408_bridge_BC2.log`**
+  （`producerTid=19873`、`why="multi-producer:14171"`、`disables=1`、`frames=1`），当时旧版 Bridge 直接自禁用。
+  T3-08 起不再按"单生产者"处理：TID 只做统计（`tidCount` / `otherTidCalls` / `tids`），不触发禁用。
+  但**修复后没有再抓到过第二个 TID**（T3-08 四轮 + T3-09 两轮 `tidCount` 均为 1，TID 16285）。
+- SPSC 的槽位纪律靠"回调互斥"保证，而回调互斥的前提是 Hook 内不释放脚本锁 ——
+  T3-09 把 `clock_gettime` 改成 `scheduling:'exclusive'` 之后才真正成立。该窗口的验证是**单元测试**
+  （T19d 正例 / T19e 负对照，模拟锁模型），不是真机并发观测。
+  证据分级见 `../03_pcm_bridge_t3_09_clock_exclusive.md` §6。
 - 线程序号 `seq` 在"发送尝试"时分配：`sendDrop` 会消耗一个 `seq`，接收端表现为缺口；
   `stale` / `ringDrop` / `noPeerDrop` 不消耗 `seq`。因此 `接收端 missing == sendDrop + 内核丢包`。
 - 帧头 `ts_us` 是"进入 Hook 并拿到 JS 锁之后"的时刻，受 Frida JS 锁排队影响会成对聚集

@@ -439,7 +439,7 @@ boot → Magisk post-fs-data → Zygisk 加载 → 系统起 zygote
 |---|---|---|---|---|
 | 1 | ~~`feed` 是否**单线程**调用（SPSC 前提）~~ **已由 T3-08 解决** | — | 真机证明会出现两个生产者线程（19873 / 14171） | 桥接层改为多 TID 接受（TID 仅统计），见 `03_pcm_bridge_t3_08_multitid.md`；`thread_probe.js` 仍未执行 |
 | 7 | **Hook 回调是否真的互斥**（"Frida JS 单线程"不等于"回调互斥"） | — | 默认 `NativeFunction` 是 cooperative 调度，调用期间释放脚本锁，另一个原生线程能进入同一回调，被 `inHook` 误判成重入而丢帧 | T3-09 把 Hook 内唯一的原生调用 `clock_gettime` 改为 `scheduling:'exclusive'`，并逐项审计回调调用链（`Process.getCurrentThreadId` / `Memory.copy` / 环写都是运行时内建或纯 JS，无放锁点）；见 `03_pcm_bridge_t3_09_clock_exclusive.md` |
-| 8 | 真机上两个生产者线程**在 clock_gettime 窗口内重叠**的直接证据 | M | T3-08 / T3-09 两轮真机测试都没复现多 TID（`tidCount` 恒为 1），窗口只在单元测试里被构造过 | 需要抓到一个 `tidCount ≥ 2` 的真机会话，并观察 `hookReentry` 仍为 0 |
+| 8 | 真机上两个生产者线程**在 clock_gettime 窗口内重叠**的直接证据 | M | 多 TID 的真机观测只有一次历史记录（T4-08 `t408_bridge_BC2.log`：19873 + 14171，被旧版 Bridge 自禁用，只发 1 帧）；T3-08 四轮 + T3-09 两轮都没再现（`tidCount` 恒为 1） | 需要抓到一个修复后 `tidCount ≥ 2` 的真机会话，并观察 `hookReentry` 仍为 0。注意：T19d/T19e 是模拟锁模型的单元测试，不能顶替这一项 |
 | 2 | 原厂进程内的真实行为（hook 耗时、唤醒成功率） | U | 唯一能证明"不破坏原厂" | 30 秒短测（§9 步骤 2） |
 | 3 | 抽象命名空间在 `:core` 与助手进程间是否可达 | U | 决定 socket 要不要落盘 | 真机 A+助手进程联调（A-SHELL 只证明了 shell↔shell 可行） |
 | 4 | 固件升级后签名是否仍匹配 | U | 决定 §7 闸门是否真的拦得住 | 每次 OTA 后重跑闸 1~3 |
