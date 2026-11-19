@@ -114,19 +114,158 @@ int t5_store_append(t5_store *s, const t5_job *j)
 
 /* ---------------- 极简 JSON 读取（只认本模块自己写的字段） ---------------- */
 
-static const char *find_key(const char *line, const char *key)
+static const char *json_skip_ws(const char *p)
 {
-    char pat[64];
-    size_t n = strlen(key);
-    if (n + 4 >= sizeof(pat)) return NULL;
-    snprintf(pat, sizeof(pat), "\"%s\":", key);
-    return strstr(line, pat);
+    while (*p == ' ' || *p == '\t' ||
+           *p == '\r' || *p == '\n') {
+        p++;
+    }
+    return p;
 }
 
-/* 严格解析 JSON 字符串值。
- * 只支持本模块序列化器产生的 JSON 字符串。
- * 输出空间不足时失败，不允许静默截断。
+/*
+ * 跳过一个 JSON 字符串。
+ * 返回结束双引号之后的位置；格式错误返回 NULL。
  */
+static const char *json_skip_string(const char *p)
+{
+    if (p == NULL || *p != '"')
+        return NULL;
+
+    p++;
+
+    while (*p != '\0') {
+        unsigned char c = (unsigned char)*p;
+
+        if (c == '"')
+            return p + 1;
+
+        if (c < 0x20)
+            return NULL;
+
+        if (c == '\\') {
+            int i;
+
+            p++;
+
+            if (*p == '\0')
+                return NULL;
+
+            if (*p == 'u') {
+                p++;
+
+                for (i = 0; i < 4; i++) {
+                    unsigned char h = (unsigned char)p[i];
+
+                    if (h == '\0')
+                        return NULL;
+
+                    if (!((h >= '0' && h <= '9') ||
+                          (h >= 'a' && h <= 'f') ||
+                          (h >= 'A' && h <= 'F'))) {
+                        return NULL;
+                    }
+                }
+
+                p += 4;
+                continue;
+            }
+
+            if (strchr("\"\\/bfnrt", *p) == NULL)
+                return NULL;
+        }
+
+        p++;
+    }
+
+    return NULL;
+}
+
+/*
+ * 只查找 JSON 顶层对象字段。
+ *
+ * 不会匹配字符串内容中的伪字段，例如：
+ *   "text":"some text containing \"err_msg\":\"fake\""
+ *
+ * 返回值直接指向字段值，不再指向字段名前面的引号。
+ */
+static const char *find_key(const char *line, const char *key)
+{
+    const char *p;
+    size_t key_len;
+
+    if (line == NULL || key == NULL)
+        return NULL;
+
+    key_len = strlen(key);
+    p = json_skip_ws(line);
+
+    if (*p != '{')
+        return NULL;
+
+    p++;
+
+    for (;;) {
+        const char *key_start;
+        const char *key_end;
+        const char *value;
+        size_t current_len;
+
+        p = json_skip_ws(p);
+
+        if (*p == '}')
+            return NULL;
+
+        if (*p != '"')
+            return NULL;
+
+        key_start = p + 1;
+        key_end = json_skip_string(p);
+
+        if (key_end == NULL)
+            return NULL;
+
+        current_len = (size_t)(key_end - key_start - 1);
+
+        p = json_skip_ws(key_end);
+
+        if (*p != ':')
+            return NULL;
+
+        value = json_skip_ws(p + 1);
+
+        if (current_len == key_len &&
+            memcmp(key_start, key, key_len) == 0) {
+            return value;
+        }
+
+        /* 跳过当前字段的值。当前 JSONL 格式是扁平对象。 */
+        if (*value == '"') {
+            p = json_skip_string(value);
+
+            if (p == NULL)
+                return NULL;
+        } else {
+            p = value;
+
+            while (*p != '\0' && *p != ',' && *p != '}')
+                p++;
+        }
+
+        p = json_skip_ws(p);
+
+        if (*p == ',') {
+            p++;
+            continue;
+        }
+
+        if (*p == '}')
+            return NULL;
+
+        return NULL;
+    }
+}
+
 static int json_get_str(const char *line,
                         const char *key,
                         char *out,
@@ -142,8 +281,6 @@ static int json_get_str(const char *line,
 
     if (p == NULL)
         return -1;
-
-    p += strlen(key) + 3;
 
     if (*p != '"')
         return -1;
@@ -213,6 +350,14 @@ static int json_get_str(const char *line,
     if (*p != '"')
         return -1;
 
+    p++;
+    p = json_skip_ws(p);
+
+    if (*p != ',' && *p != '}' &&
+        *p != '\n' && *p != '\0') {
+        return -1;
+    }
+
     out[w] = '\0';
     return 0;
 }
@@ -229,17 +374,18 @@ static int json_get_ll(const char *line,
     if (line == NULL || key == NULL || out == NULL || p == NULL)
         return -1;
 
-    p += strlen(key) + 3;
-
     errno = 0;
     value = strtoll(p, &endp, 10);
 
     if (endp == p || errno == ERANGE)
         return -1;
 
+    endp = (char *)json_skip_ws(endp);
+
     if (*endp != ',' && *endp != '}' &&
-        *endp != '\n' && *endp != '\0')
+        *endp != '\n' && *endp != '\0') {
         return -1;
+    }
 
     *out = value;
     return 0;

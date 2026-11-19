@@ -118,6 +118,21 @@ t5_wav_check t5_wav_inspect(const char *path,
     }
 
     if (riff_end < (uint64_t)fsize) {
+        /*
+         * T4 打开 WAV 时使用占位头：
+         * RIFF size = 36，data size = 0。
+         * 写入 PCM 期间文件会增长，但只有 t4_wav_close()
+         * 才回填 RIFF 和 data 的真实长度。
+         *
+         * 因此，RIFF size 仍为 36 且文件已超过 44 字节，
+         * 应视为 T4 正在写盘，而不是永久损坏。
+         */
+        if (riff_size == 36u &&
+            (uint64_t)fsize > (uint64_t)(T5_RIFF_HDR + T5_CHUNK_HDR + T5_FMT_MIN)) {
+            set_err(err, errlen, "t4-open-placeholder");
+            return T5_WAV_INCOMPLETE;
+        }
+
         set_err(err, errlen, "riff-size-mismatch");
         return T5_WAV_INVALID;
     }

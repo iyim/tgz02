@@ -342,11 +342,9 @@ static void test_non_wav_ignored(void)
 
 /* ================= T03 ================= */
 /*
- * 注意（T5-01 修正轮）：新的 t5_wav.c 把"riff_end < 文件长度"判为 INVALID。
- * T4 写盘中的文件正是这种形态（riff_size 占位 36，数据已经在增长），
- * 因此"写盘中"从 INCOMPLETE（延迟重试）变成 INVALID（建档即 FAILED）。
- * 这里按新语义断言，并在末尾用 T03d 记录由此产生的"同名同大小去重"风险。
- * 截断（riff_end > 文件长度）仍然是 INCOMPLETE -> 可重试，T03b 覆盖。
+ * T4 写盘中的文件：riff_size=36（占位）、data_len=0、数据已经在增长。
+ * 修正后判 INCOMPLETE（t4-open-placeholder）-> 延迟重试；
+ * t4_wav_close() 回填头部后重新校验 -> PENDING -> 识别成功。
  */
 static void test_incomplete(void)
 {
@@ -357,30 +355,28 @@ static void test_incomplete(void)
     char id[T5_MAX_ID];
     const t5_job *j;
 
-    printf("\n[T03a] 写盘中的 T4 文件（riff=36 + 已有数据）在新解析器下的判定\n");
+    printf("\n[T03a] T4 写盘中的文件 -> incomplete，回填后正常处理\n");
     case_dirs(3, watch, sizeof(watch), work, sizeof(work));
     rel_path(wav, sizeof(wav), watch, "seg_00112233_0001_100.wav");
-    make_wav(wav, 6400, 1, 16000, 1, 16);      /* 未关闭：riff=36, data_len=0, 已有 6400 字节数据 */
+    make_wav(wav, 6400, 1, 16000, 1, 16);
 
     c = mk_cfg(watch, work);
     e = open_engine(&c);
     if (e == NULL) return;
     ok_eq_ll(t5_engine_scan(e), 0, "T03a 首次采样只登记候选");
-    ok_eq_ll(t5_engine_scan(e), 1, "T03a 第二次采样建 Job（不是静默跳过）");
+    ok_eq_ll(t5_engine_scan(e), 0, "T03a 写盘中不建 Job");
+    s = t5_engine_stats(e);
+    ok(s->incomplete_skips >= 1, "T03a 计入 incomplete_skips（不是 invalid）");
+    ok_eq_ll((long long)s->invalid, 0, "T03a 没有判永久失败");
+
+    finalize_wav(wav, 6400);                   /* 模拟 T4 关闭并回填 */
+    ok_eq_ll(t5_engine_scan(e), 1, "T03a 回填后建了 1 个 Job");
     t5_make_job_id("seg_00112233_0001_100.wav", 44 + 6400, id);
     j = t5_engine_find_job(e, id);
-    ok(j != NULL && j->state == T5_FAILED, "T03a 新语义：当场判 FAILED（旧实现是 INCOMPLETE 重试）");
-    if (j != NULL) ok_contains(j->err_msg, "riff-size-mismatch", "T03a 失败原因是 riff-size-mismatch");
-    s = t5_engine_stats(e);
-    ok_eq_ll((long long)s->incomplete_skips, 0, "T03a 不再走 incomplete 分支");
-    ok_eq_ll((long long)s->invalid, 1, "T03a 计入 invalid");
-
-    /* T03d：文件随后被 T4 正常关闭（只回填头，大小不变）-> 同名同大小被去重 */
-    finalize_wav(wav, 6400);
-    ok_eq_ll(t5_engine_scan(e), 0, "T03d 关闭后大小不变 -> 被 (名字,大小) 去重，不再建 Job");
-    j = t5_engine_find_job(e, id);
-    ok(j != NULL && j->state == T5_FAILED, "T03d 该片段停留在 FAILED（风险点，见报告）");
-    ok_eq_ll((long long)t5_engine_stats(e)->succeeded, 0, "T03d 没有识别成功");
+    ok(j != NULL && j->state == T5_PENDING, "T03a 状态为 PENDING");
+    ok_eq_ll(t5_engine_process_ready(e, 0), 1, "T03a 可以处理");
+    ok_eq_ll((long long)t5_engine_stats(e)->succeeded, 1, "T03a succeeded = 1");
+    ok_eq_ll(t5_engine_scan(e), 0, "T03a 之后重复扫描不新建 Job");
     t5_engine_close(e);
 
     /* T03b：截断（头声称 6400，实际 3200）-> INCOMPLETE，补数据后可正常处理 */
@@ -914,6 +910,22 @@ static void test_wav_robustness(void)
         check_one(f8, T5_WAV_INVALID, "riff-size-mismatch", "T14.8 RIFF 长度 < 文件 -> invalid");
     }
 
+    /* 10/11) T4 写盘中：RIFF=36、data=0，但 PCM 数据已经写入 */
+    {
+        char f9[T5_MAX_PATH];
+
+        rel_path(f9, sizeof(f9), base, "t4_open.wav");
+        make_wav(f9, 6400, 1, 16000, 1, 16);
+
+        check_one(f9, T5_WAV_INCOMPLETE, "t4-open-placeholder",
+                  "T14.10 T4 写盘中 WAV -> incomplete");
+
+        /* 模拟 t4_wav_close() 回填头部 */
+        finalize_wav(f9, 6400);
+
+        check_one(f9, T5_WAV_OK, NULL, "T14.11 T4 关闭并回填后 WAV -> ok");
+    }
+
     /* 9) 损坏 WAV 不影响同目录正常 WAV（经过引擎） */
     {
         t5_config c;
@@ -1074,6 +1086,30 @@ static void test_jsonl_strict(void)
     replay_with(work, buf, &lines, &bad, &sink);
     ok_eq_ll((long long)lines, 1, "T15.9 有效记录仍被读出");
     ok_eq_ll((long long)bad, 1, "T15.9 损坏记录计入 bad");
+
+    /* 11) 文本内容中的伪字段不能覆盖真正的 JSON 字段 */
+    {
+        char fake_text[T5_MAX_TEXT];
+
+        snprintf(fake_text, sizeof(fake_text),
+                 "recognized: \"err_msg\":\"fake-error\"");
+
+        snprintf(j.text, sizeof(j.text), "%s", fake_text);
+        snprintf(j.err_msg, sizeof(j.err_msg), "%s", "real-error");
+
+        ok(t5_job_to_json(&j, line, sizeof(line)) > 0,
+           "T15.11 生成包含伪字段的记录");
+
+        replay_with(work, line, &lines, &bad, &sink);
+
+        ok_eq_ll((long long)lines, 1, "T15.11 伪字段记录正常回放");
+
+        ok(strcmp(sink.last.err_msg, "real-error") == 0,
+           "T15.11 err_msg 必须取真正顶层字段");
+
+        ok(strstr(sink.last.text, "fake-error") != NULL,
+           "T15.11 原始识别文本必须完整保留");
+    }
 
     /* 10) 损坏记录之后的有效记录仍能恢复 */
     snprintf(buf, sizeof(buf), "{\"broken\":1\n%s", line);
