@@ -13,21 +13,26 @@
 
 ## 1. 结论摘要
 
+> 本节数字取自本轮（收尾修正后）的两份新日志：
+> `t2_pcm_dryrun_30s_blockcopy_final.log` 与 `t2_pcm_dryrun_60s_blockcopy_final.log`。
+> 上一轮（未含 final drain）的两份日志作为历史保留，不再作为结论依据。
+
 | 项 | 30 秒（A） | 60 秒（B） |
 |---|---|---|
-| 目标 pid / 模块基址 | 6934 / 0x8f181000 | 6934 / 0x8f181000 |
-| JS 文件 SHA256（日志首行记录） | `041d6670…e2607725` | 同左 |
+| 目标 pid / 模块基址 | 19572 / 0x8f202000 | 19572 / 0x8f202000 |
+| JS 文件 SHA256（日志首行记录） | `a491e770…a642255922` | 同左 |
 | 地址四项校验 | 全通过 | 全通过 |
-| 生产 / 消费 | 749 / 749 | 1500 / 1500 |
-| 帧率 | 24.97 /s | 25.00 /s |
-| ring_drop / 最大环深度 | 0 / 4 | 0 / 3 |
+| 生产 / 消费 / pending | **752 / 752 / 0** | **1500 / 1500 / 0** |
+| 帧率 | 25.06 /s | 25.00 /s |
+| ring_drop / 最大环深度 | 0 / 4 | 0 / 4 |
 | 序号缺口 | 0 | 0 |
-| readErr / lenErr | 0 / 0 | 0 / 0 |
+| readErr / lenErr / lenBad / nullPtr | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 |
 | hookEx / drainEx | 0 / 0 | 0 / 0 |
 | 重入计数（hook/drain） | 0 / 0 | 0 / 0 |
 | lane0 自检（640 样本） | **640/640 一致** | **640/640 一致** |
-| CRC 算法交叉验证（仅首帧） | `match=true`（0xfab8cda） | `match=true`（0x5acf1ba） |
-| Hook 拷贝耗时 | P50 68.1 / P95 118.9 / P99 198.5 / max 1597.9 µs | P50 67.2 / P95 114.4 / P99 185.2 / max 1307.0 µs |
+| CRC 算法交叉验证（仅首帧） | `match=true`（0x1c2fadd4） | `match=true`（0xbcf0209a） |
+| Hook 拷贝耗时 | P50 68.6 / P95 106.1 / P99 160.5 / max 811.0 µs | P50 67.2 / P95 102.3 / P99 134.8 / max 3860.4 µs |
+| final drain（detach 后） | pending 0 → 0，consumed_total=752 | pending 0 → 0，consumed_total=1500 |
 | 自动判定行 | `verdict=NO-AUTO-FAIL(review required)` | 同左 |
 
 **T2 是否通过由审查方判定**：脚本只做"自动失败"判定（任一硬指标不达标即 `AUTO-FAIL`），
@@ -113,15 +118,27 @@ onEnter: function (args) {
 }
 ```
 
-hook 内**没有** CRC、RMS、字符串格式化、日志、socket、等待、`Memory.alloc`，
-也没有 `new ArrayBuffer/Uint8Array/Int16Array`（提交前做过一次 token 审计：热路径内只出现 `Memory.copy`）。
+hook 内**没有** CRC、RMS、字符串格式化、日志、socket、阻塞等待，也没有 `Memory.alloc` 或
+`new ArrayBuffer/Uint8Array/Int16Array`（提交前做过 token 审计）。
+
+准确的描述是：**PCM 数据搬运只使用一次 `Memory.copy`**；hook 内除此之外还包含
+时间戳采集（两次 `clock_gettime`）、计数器更新、以及环形缓冲区的元数据写入
+（`slotSeq` / `slotTsNs` / `idxTail` / `produced` / `depthMax`）。
+**不包含** CRC、RMS 统计、日志输出、socket 操作、阻塞等待和动态内存分配。
 
 ### 4.3 消费路径（DRY_RUN）
 
 `setInterval(20 ms)` → `drain()`：
 取槽 → `readByteArray(5120)` → **lane0 抽取 `lane[q] = in16[q*4]`（640 个 int16）**
 → 校验 1280 字节 → 逐帧算 FNV-1a（`Math.imul`）→ 载荷统计 → 序号连续性 → 消费延迟 → `idxHead++`。
-`stop()` 幂等：清 tick/rep/stop 三个定时器 → detach listener → 输出最终统计与自动判定行。
+
+`stop()` 幂等，收尾顺序固定：
+清 tick/rep/stop 三个定时器 → **detach listener（此后不会再有新帧入环）** →
+**执行一次 `drain()` 把已入环但未消费的帧排空** → 输出最终统计与自动判定行。
+
+> 因此**最终统计以排空后的数据为准**：`FINAL` 行与 `[END]` 行里的
+> `produced / consumed / pending` 都是 final drain 之后的值，`pending = idxTail - idxHead`。
+> 日志里另有一行 `[i] final drain: pending_before=… pending_after=… consumed_total=…` 记录排空前后对比。
 
 ### 4.4 并发依据
 
@@ -134,55 +151,80 @@ Frida 的 V8 运行时对同一脚本只有一份 JS 执行权：`Interceptor` �
 
 ---
 
-## 5. 30 秒运行（测试 A）— `t2_pcm_dryrun_30s_blockcopy.log`
+## 5. 30 秒运行（测试 A）— `t2_pcm_dryrun_30s_blockcopy_final.log`
 
 ```
-[i] js_sha256 = 041d6670de4f19fb3c592b8cf90ab91f3d37e63856a72f3ad38e0136e2607725
+[i] js_sha256 = a491e770f75b361d49a4e658abf6ea3552d298ad0a90194b7e9dbfa642255922
+[i] target_pid = 19572
 [i] lane0 self-check: samples=640 mismatches=0 result=ok
-[i] crc algorithm cross-check (first frame only): 0xfab8cda vs exact 0xfab8cda match=true
-[FINAL 30.0s] mode=blockcopy produced=749 consumed=749 ringDrop=0 depthMax=4 seqGap=0
-              readErr=0 lenErr=0 hookEx=0 drainEx=0 reentry=0/0 laneCheckErr=0
-[FINAL] hook copy: n=749 P50=68.1us P95=118.9us P99=198.5us max=1597.9us (excludes JS-lock queueing)
-[FINAL] drain latency: n=749 P50=16176.3us P95=28167.9us P99=39226.7us max=61949.8us
-[FINAL] crc: frames=749 algorithm_check=ok sum32=0x73f87a13
+[i] crc algorithm cross-check (first frame only): 0x1c2fadd4 vs exact 0x1c2fadd4 match=true
+[i] final drain: pending_before=0 pending_after=0 consumed_total=752
+[FINAL 30.0s] mode=blockcopy produced=752 consumed=752 pending=0 ringDrop=0 depthMax=4 seqGap=0
+              readErr=0 lenErr=0 lenBad=0 nullPtr=0 hookEx=0 drainEx=0 reentry=0/0 laneCheckErr=0
+[FINAL] hook copy: n=752 P50=68.6us P95=106.1us P99=160.5us max=811.0us (excludes JS-lock queueing)
+[FINAL] drain latency: n=752 P50=16814.5us P95=33354.2us P99=52740.7us max=109909.1us
+[FINAL] crc: frames=752 algorithm_check=ok sum32=0x4eeabd36
        (per-frame FNV computed; no independent per-frame expectation in DRY_RUN)
-[FINAL] payload: rms_avg=7079.2 rms_max=19553.2 p2p_max=65535 min=-32768 max=32767
-[FINAL] rate=24.97/s calls=749 lenBad=0 nullPtr=0 threads=1
-===== [END] reason=timeout mode=blockcopy lane0_selfcheck=ok(640/640) verdict=NO-AUTO-FAIL(review required) =====
-[i] hook window elapsed: 33.12s (js auto-stop at 30s)
-[i] driver_exit_after = 35.70s (from driver start)
-[i] js_sha256_at_exit = 041d6670...e2607725
+[FINAL] payload: rms_avg=7141.2 rms_max=19832.2 p2p_max=65535 min=-32768 max=32767
+[FINAL] rate=25.06/s calls=752 lenBad=0 nullPtr=0 threads=1
+===== [END] reason=timeout mode=blockcopy produced=752 consumed=752 pending=0
+      lane0_selfcheck=ok(640/640) verdict=NO-AUTO-FAIL(review required) =====
+[i] hook window elapsed: 33.11s (js auto-stop at 30s)
+[i] driver_exit_after = 36.12s (from driver start)
 [i] rc = 0
 ```
 
-刺激：0–10 s 静默；约 12 s 起设备扬声器播放中文语音（9.5 s）；约 22 s 起播放 1 kHz 测试音（10 s）。
+刺激：0-10 s 静默；约 12 s 设备扬声器播放中文语音（9.5 s）；约 22 s 播放 1 kHz 测试音（10 s）。
 
-## 6. 60 秒运行（测试 B）— `t2_pcm_dryrun_60s_blockcopy.log`
+## 6. 60 秒运行（测试 B）— `t2_pcm_dryrun_60s_blockcopy_final.log`
 
 ```
-[i] js_sha256 = 041d6670de4f19fb3c592b8cf90ab91f3d37e63856a72f3ad38e0136e2607725
+[i] js_sha256 = a491e770f75b361d49a4e658abf6ea3552d298ad0a90194b7e9dbfa642255922
+[i] target_pid = 19572
 [i] lane0 self-check: samples=640 mismatches=0 result=ok
-[i] crc algorithm cross-check (first frame only): 0x5acf1ba vs exact 0x5acf1ba match=true
-[FINAL 60.0s] mode=blockcopy produced=1500 consumed=1500 ringDrop=0 depthMax=3 seqGap=0
-              readErr=0 lenErr=0 hookEx=0 drainEx=0 reentry=0/0 laneCheckErr=0
-[FINAL] hook copy: n=1500 P50=67.2us P95=114.4us P99=185.2us max=1307.0us (excludes JS-lock queueing)
-[FINAL] drain latency: n=1500 P50=15505.5us P95=27181.1us P99=35899.5us max=68796.0us
-[FINAL] crc: frames=1500 algorithm_check=ok sum32=0xb1fe489f
-[FINAL] payload: rms_avg=3536.3 rms_max=19431.5 p2p_max=65535 min=-32768 max=32767
+[i] crc algorithm cross-check (first frame only): 0xbcf0209a vs exact 0xbcf0209a match=true
+[i] final drain: pending_before=0 pending_after=0 consumed_total=1500
+[FINAL 60.0s] mode=blockcopy produced=1500 consumed=1500 pending=0 ringDrop=0 depthMax=4 seqGap=0
+              readErr=0 lenErr=0 lenBad=0 nullPtr=0 hookEx=0 drainEx=0 reentry=0/0 laneCheckErr=0
+[FINAL] hook copy: n=1500 P50=67.2us P95=102.3us P99=134.8us max=3860.4us (excludes JS-lock queueing)
+[FINAL] drain latency: n=1500 P50=16600.5us P95=33299.2us P99=50024.5us max=79097.2us
+[FINAL] crc: frames=1500 algorithm_check=ok sum32=0x898a4c3a
+[FINAL] payload: rms_avg=3672.2 rms_max=20277.4 p2p_max=65535 min=-32768 max=32767
 [FINAL] rate=25.00/s calls=1500 lenBad=0 nullPtr=0 threads=1
-===== [END] reason=timeout mode=blockcopy lane0_selfcheck=ok(640/640) verdict=NO-AUTO-FAIL(review required) =====
-[i] hook window elapsed: 63.14s (js auto-stop at 60s)
-[i] driver_exit_after = 65.39s (from driver start)
+===== [END] reason=timeout mode=blockcopy produced=1500 consumed=1500 pending=0
+      lane0_selfcheck=ok(640/640) verdict=NO-AUTO-FAIL(review required) =====
+[i] hook window elapsed: 63.15s (js auto-stop at 60s)
+[i] driver_exit_after = 65.34s (from driver start)
 [i] rc = 0
 ```
 
-刺激：0–10 s 静默；约 12 s 语音；约 22 s 1 kHz 测试音（10 s，约 32 s 结束）；30–60 s 持续观察。
-**这只是 60 秒运行，不是长稳测试**（长稳未做，见 §10）。
+刺激：0-10 s 静默；约 12 s 语音；约 22 s 1 kHz 测试音（10 s，约 32 s 结束）；30-60 s 持续观察。
+**这只是 60 秒运行，不是长稳测试**。两次运行 `payload min/max` 都到过 ±32768，
+是扬声器播放时 ADC 削顶，说明取到的确实是随声音变化的真实音频。
 
-两个运行里 `payload min/max` 都到过 ±32768：那是扬声器放语音/测试音时 ADC 削顶，
-说明取到的确实是随声音变化的真实音频，不是常量缓冲。
+两次运行的 `final drain` 都是 `pending_before=0`：说明 20 ms 的消费 tick 在这两次运行里
+已经把环排空，final drain 没有额外帧要处理；它的作用体现在"最后一批帧还没被 tick 取走"的场景
+（本地单测 S2 已构造并验证该路径：pending 1 → 0）。
 
----
+## 6.1 本地逻辑测试（不连设备）
+
+文件：`04_device_t0/tests/t2_dryrun_unit_test.js`
+命令：`node tests/t2_dryrun_unit_test.js` → **44 passed / 0 failed**
+
+做法：把 `t2_pcm_dryrun.js` **原样**载入一套假 Frida 环境（Module / Memory / Interceptor /
+NativeFunction / Process / setInterval / console），用假 5120 字节源帧驱动真实的 `onEnter`，
+再用真实的 `drain()` / `finish()` 收尾；判定规则则从文件里的 `/* VERDICT-BEGIN */` 段抽取后单测。
+
+| 场景 | 内容 | 结果 |
+|---|---|---|
+| S1 | produced == consumed | 通过：`NO-AUTO-FAIL` |
+| S2 | 结尾留 1 帧未消费 | 通过：final drain 后 `pending 1 -> 0`，判定正常 |
+| S3 | final drain 中途异常（注入 clock 失败） | 通过：`pending>0` 且 `drainEx>0` → `AUTO-FAIL:drain-exception,pending-frames` |
+| S4 | `lenBad=1`（len=4096） | 通过：`AUTO-FAIL:input-length` |
+| S5 | `nullPtr=1` | 通过：`AUTO-FAIL:null-ptr` |
+| S7 | lane0 自检注入不一致 | 通过：`AUTO-FAIL:lane0-selfcheck` |
+| S8 | `stop()` 连续调用 3 次 | 通过：FINAL/END 各只输出一次，consumed 不变，detach 只 1 次 |
+| S6/S9 | `verdictFromCounters` 13 条规则逐条验证 | 通过：address-check / lane0-selfcheck-not-run / lane0-selfcheck / crc-algorithm / payload-length / input-length / null-ptr / read / hook-exception / drain-exception / seq-gap / ring-drop / reentry-hook / reentry-drain / pending-frames 全部触发 |
 
 ## 7. 关于 CRC 的准确表述
 
@@ -295,6 +337,9 @@ blockcopy          utime 23634->24782  stime 425->440  djiffies=1163  wall=15.20
 | `04_device_t0/t2_pcm_dryrun_20s_afterrestart.log` | 重启后 20 s 独立验证（pid 19572，基址 0x8f202000） |
 | `04_device_t0/t2_cpu_measure.py` | CPU 原始采样脚本（HZ 依据 + 三窗口 jiffies 记录） |
 | `04_device_t0/t2_cpu_measure.log` | CPU 原始采样日志（含 utime/stime 起止值） |
+| `04_device_t0/t2_pcm_dryrun_30s_blockcopy_final.log` | **本轮测试 A**：收尾修正后 30 s |
+| `04_device_t0/t2_pcm_dryrun_60s_blockcopy_final.log` | **本轮测试 B**：收尾修正后 60 s |
+| `04_device_t0/tests/t2_dryrun_unit_test.js` | 本地逻辑测试（44 断言：8 个场景 + 13 条判定规则） |
 | `04_device_t0/t2_pcm_dryrun_30s.log` | **历史**：旧版 strided 实现日志（非正式模式，保留不覆盖） |
 | `04_device_t0/t2_pcm_dryrun_60s.log` | **历史**：旧版 blockcopy 日志（保留不覆盖） |
 | `04_device_t0/t2_pcm_dryrun_30s_blockcopy_selfcheck.log` | **历史**：旧版自检日志（保留不覆盖） |
@@ -309,3 +354,15 @@ blockcopy          utime 23634->24782  stime 425->440  djiffies=1163  wall=15.20
 - **T2 是否通过由审查方判定**。本轮不自动给"通过"结论。
 - 进入 T3 前需要审查方决定：是否精简消费端统计以降低约 8 pp 单核开销；
   以及真人唤醒词/对话验证如何补做（本轮明确未做）。
+
+## 13. 本轮（收尾修正）改动记录
+
+| 项 | 改动 |
+|---|---|
+| `finish()` | 顺序固定为：停定时器 -> detach hook -> **final drain 排空** -> 输出统计与判定；`stopped` 守卫保证幂等，不重复消费、不重复报告 |
+| `autoVerdict()` | 抽出纯函数 `verdictFromCounters`（`VERDICT-BEGIN/END` 标记便于单测抽取），补齐 `lenBad` / `nullPtr` / `reentryHook` / `reentryDrain` / `produced!==consumed` 规则 |
+| 统计输出 | `FINAL` 行与 `[END]` 行明确输出 `produced / consumed / pending`；`FINAL` 首行补 `lenBad` / `nullPtr` |
+| 报告措辞 | "热路径内只出现 Memory.copy" 改为 "PCM 搬运只用一次 Memory.copy；另含时间戳采集、计数器更新、环元数据写入；不含 CRC/RMS/日志/socket/阻塞等待/动态内存分配" |
+| 报告补充 | 说明 final drain 在 detach 之后执行、最终统计以排空后的数据为准 |
+| 新增 | 本地逻辑测试 `tests/t2_dryrun_unit_test.js`（44 断言）与本轮两份真机日志 |
+| 未改 | `strided` 仍未启用；UDS/socket 未引入；T0/T1 证据文件未动 |

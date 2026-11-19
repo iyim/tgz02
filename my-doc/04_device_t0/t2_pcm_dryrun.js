@@ -115,8 +115,10 @@ function report(tag) {
   var hn = hookCostN, ln = latN;
   var el = (Date.now() - t0) / 1000;
   console.log('[' + tag + ' ' + fmt(el, 1) + 's] mode=' + COPY_MODE + ' produced=' + produced +
-              ' consumed=' + consumed + ' ringDrop=' + ringDrop + ' depthMax=' + depthMax +
+              ' consumed=' + consumed + ' pending=' + ((idxTail - idxHead) | 0) +
+              ' ringDrop=' + ringDrop + ' depthMax=' + depthMax +
               ' seqGap=' + seqGap + ' readErr=' + readErr + ' lenErr=' + lenErr +
+              ' lenBad=' + lenBad + ' nullPtr=' + nullPtr +
               ' hookEx=' + hookEx + ' drainEx=' + drainEx + ' reentry=' + reentryHook + '/' + reentryDrain +
               ' laneCheckErr=' + laneCheckErr);
   console.log('[' + tag + '] hook copy: n=' + hn + ' P50=' + fmt(pct(hookCostUs, hn, 0.50), 1) +
@@ -137,19 +139,48 @@ function report(tag) {
 }
 
 /* 只做"自动失败"判定；不自动判 PASS（是否通过由审查方根据日志决定） */
-function autoVerdict() {
+/* VERDICT-BEGIN -- 纯函数，供单测直接抽取比对（不依赖 Frida 环境） */
+function verdictFromCounters(c) {
   var fail = [];
-  if (aborted) fail.push('address-check');
-  if (laneCheckErr > 0) fail.push('lane0-selfcheck');
-  if (laneCheckMism === -1 && COPY_MODE === 'blockcopy') fail.push('lane0-selfcheck-not-run');
-  if (crcAlgorithmChecked && !crcAlgorithmOk) fail.push('crc-algorithm');
-  if (lenErr > 0) fail.push('payload-length');
-  if (readErr > 0) fail.push('read');
-  if (hookEx > 0) fail.push('hook-exception');
-  if (drainEx > 0) fail.push('drain-exception');
-  if (seqGap > 0) fail.push('seq-gap');
-  if (ringDrop > 0) fail.push('ring-drop');
+  if (c.aborted) fail.push('address-check');
+  if (c.laneCheckMism === -1) fail.push('lane0-selfcheck-not-run');
+  if (c.laneCheckErr > 0) fail.push('lane0-selfcheck');
+  if (c.crcChecked && !c.crcOk) fail.push('crc-algorithm');
+  if (c.lenErr > 0) fail.push('payload-length');
+  if (c.lenBad > 0) fail.push('input-length');
+  if (c.nullPtr > 0) fail.push('null-ptr');
+  if (c.readErr > 0) fail.push('read');
+  if (c.hookEx > 0) fail.push('hook-exception');
+  if (c.drainEx > 0) fail.push('drain-exception');
+  if (c.seqGap > 0) fail.push('seq-gap');
+  if (c.ringDrop > 0) fail.push('ring-drop');
+  if (c.reentryHook > 0) fail.push('reentry-hook');
+  if (c.reentryDrain > 0) fail.push('reentry-drain');
+  if (c.produced !== c.consumed) fail.push('pending-frames');
   return fail.length ? ('AUTO-FAIL:' + fail.join(',')) : 'NO-AUTO-FAIL(review required)';
+}
+/* VERDICT-END */
+
+function autoVerdict() {
+  return verdictFromCounters({
+    aborted: aborted,
+    laneCheckMism: laneCheckMism,
+    laneCheckErr: laneCheckErr,
+    crcChecked: crcAlgorithmChecked,
+    crcOk: crcAlgorithmOk,
+    lenErr: lenErr,
+    lenBad: lenBad,
+    nullPtr: nullPtr,
+    readErr: readErr,
+    hookEx: hookEx,
+    drainEx: drainEx,
+    seqGap: seqGap,
+    ringDrop: ringDrop,
+    reentryHook: reentryHook,
+    reentryDrain: reentryDrain,
+    produced: produced,
+    consumed: consumed
+  });
 }
 
 function finish(reason) {
@@ -165,10 +196,18 @@ function finish(reason) {
   }
   listener = null;
 
+  /* Hook 已 detach，不会再有新帧入环；把已入环但未消费的帧排空后再统计 */
+  var pendingBefore = (idxTail - idxHead) | 0;
+  try { drain(); } catch (e) { console.log('[!] final drain: ' + e); }
+  var pendingAfter = (idxTail - idxHead) | 0;
+  console.log('[i] final drain: pending_before=' + pendingBefore + ' pending_after=' + pendingAfter +
+              ' consumed_total=' + consumed);
+
   try { report('FINAL'); } catch (e) { console.log('[!] report: ' + e); }
   var v;
   try { v = autoVerdict(); } catch (e) { v = 'verdict-error'; }
   console.log('===== [END] reason=' + reason + ' mode=' + COPY_MODE +
+              ' produced=' + produced + ' consumed=' + consumed + ' pending=' + ((idxTail - idxHead) | 0) +
               ' lane0_selfcheck=' + (laneCheckDone ? (laneCheckErr === 0 ? 'ok(' + SPF + '/' + SPF + ')'
                                                     : 'FAIL(' + laneCheckErr + 'mismatch)') : 'not-run') +
               ' verdict=' + v + ' =====');
