@@ -1,65 +1,84 @@
 'use strict';
 /*
- * pcm_bridge_draft.js -- 方案 A 草稿（真机短时验证用 · 修订 5）
+ * pcm_bridge_draft.js -- T3：原厂进程内 PCM -> AF_UNIX SOCK_DGRAM 旁路（修订 6）
  *
- * 状态：**仍未在 TG-Z02 上运行过**。本轮只做静态与 PC 侧校验，
- *       没有在设备上执行 hook、thread_probe 或 bridge。
+ * 链路：
+ *   smartapp:core / AGSpeechEngine::feed (libsmartbox.so +0xd455c)
+ *     -> Frida onEnter：整帧 Memory.copy(5120) 入预分配环槽（只做这一件事）
+ *     -> 消费定时器（20 ms，每次最多 8 帧）：lane0 抽取 -> FNV-1a -> 40 B 头 -> sendto
+ *     -> 独立 Android 接收进程（dgram_server --abstract tgz2_pcm --capture FILE）
  *
- * 修订 5 相对修订 4：
- *   F9  Hook listener 显式保存；teardown 先关数据闸门再 detach（最多一次）、
- *       清定时器、关 socket；重复 stop 幂等；初始化失败统一回滚；
- *       Hook 回调内不做 detach/close/定时器清理
+ * 修订 6 相对修订 5：
+ *   R1 环改为"整帧"语义：每槽 5120 B 原始 4 路交错数据，环总 64*5120=327680 B；
+ *      lane0 抽取、CRC、头组装、sendto 全部移出 Hook，只在消费端做
+ *   R2 Hook 内禁止 socket / sendto / CRC / lane0 抽取 / RMS / 日志 / 循环抽样 / 动态分配
+ *   R3 帧头严格对齐 tgz2_frame.h v2（40 B，offset 20 = epoch，真实 PCM 不置 SYNTHETIC）
+ *   R4 发送失败语义分级：EAGAIN/EWOULDBLOCK/ENOBUFS -> sendDrop；对端消失 -> 关 socket
+ *      记 reconnects 并等下一 tick 重连；其他 -> sendErr + errno；绝不重试当前帧
+ *   R5 过期帧 MAX_AGE_MS=500：过期即丢（stale），ts<=0 的帧一律不发送（clockDrop）
+ *   R6 没有接收端时丢帧记 noPeerDrop，与 ringDrop / stale / sendDrop 分开统计
+ *   R7 统计口径扩展 + rpc.exports.stats() / rpc.exports.stop()
+ *   R8 单生产者守卫保留：出现第二个生产线程 -> 立即禁用旁路并记录原因（不按 SPSC 硬写环）
  *
- * 修订 3 相对修订 2（见 03_pcm_bridge_final_review.md）：
- *   F1 FNV-1a 改用 Math.imul（32 位乘法精度），与 tgz2_frame.h 逐字节一致；
- *      该函数放在 FNV-BEGIN/END 标记之间，供 crc_crosscheck 直接抽取测试
- *   F2 资源清理改为「强引用对象 + Script.bindWeak」+「rpc.exports.stop()」，
- *      不再用没有强引用的 {} 作触发器
- *   F3 sendto 只用于 connected dgram：地址传 NULL/0，返回值按 ssize_t 处理
- *   F4 timespec 读取加校验（nsec<1e9），时钟失败计数
- *   F5 socket 生命周期收敛到 fdOwner 单一所有者，杜绝重复 close / 泄漏
- *   F6 DRY_RUN 明确不建 socket、不 sendto、不 connect
- *   F7 新增单生产者运行时守卫：出现第二个 tid 立即禁用旁路（SPSC 前提未验证）
- *   F8 hook 内异常计数自身也包 try，绝不让异常穿出 onEnter
+ * 保留自 T2 的已验证部分：
+ *   - Hook 地址四项校验（模块加载 / 符号存在 / 偏移 0xd455c / 前 16 字节机器码）
+ *   - 参数位置 args[2]=PCM 指针、args[3]=输入长度，长度必须等于 5120
+ *   - Hook 内一次 Memory.copy(dst, src, 5120) 的整帧复制方式
+ *   - arm32 struct timespec { int32 tv_sec; int32 tv_nsec; } 的读取（tv_nsec 在 +4）
+ *   - FNV-1a 用 Math.imul（普通 * 会丢 32 位乘法精度）
+ *   - 生命周期：强引用对象 + Script.bindWeak、teardown 幂等、先关数据闸门再清理
+ *
+ * 并发模型（与 T2 相同）：Frida V8 对同一脚本只有一份 JS 执行权，
+ * Interceptor 回调与定时器回调不会真正并发；仍保留 reentry 守卫以便在真机上验证这一点。
  *
  * 用法：
  *   frida -H 127.0.0.1:27042 -n com.alibaba.ailabs.genie.smartapp:core -l pcm_bridge_draft.js
- *   python: script.exports_sync.stop()   # 卸载前显式释放 fd
+ *   python: script.exports_sync.stats() / script.exports_sync.stop()
+ *   DRY_RUN=true 时只统计：不 socket()、不 connect()、不 sendto()
  */
 
 /* ============ 配置 ============ */
-var DRY_RUN       = false;         // true = 只统计，不建 socket 不发送
-var SOCK_ABSTRACT = true;          // 抽象命名空间优先
-var SOCK_PATH     = 'tgz2_pcm';
-var MAX_AGE_MS    = 500;           // 过期帧丢弃
-var RETRY_MS      = 500;
-var DRAIN_BURST   = 8;
-var TICK_MS       = 20;
-var RING_CAP      = 64;
-var FRAME_IN      = 5120;
-var STRIDE        = 8;
-var SPF           = 640;
-var FRAME_OUT     = 1280;
-var HDR_LEN       = 40;
-var MSG_LEN       = HDR_LEN + FRAME_OUT;
-var MAGIC         = 0x325A4754;
-var VER           = 2;
-var F_OFF         = 0xd455c;
-var SYM           = '_ZN14AGSpeechEngine4feedEjPKvi';
-var SIG_BYTES     = [0xf0, 0x48, 0x2d, 0xe9, 0x10, 0xb0, 0x8d, 0xe2,
-                     0x08, 0xd0, 0x4d, 0xe2, 0x03, 0x70, 0xa0, 0xe1];
+var DRY_RUN        = false;         /* true = 只统计，不建 socket 不发送 */
+var SOCK_ABSTRACT  = true;          /* 抽象命名空间（不需要文件系统权限） */
+var SOCK_PATH      = 'tgz2_pcm';
+var MAX_AGE_MS     = 500;           /* 超过 500 ms 的帧不再发送（旧语音没有价值） */
+var RETRY_MS       = 500;           /* socket 重连最小间隔 */
+var DRAIN_BURST    = 8;             /* 每个消费 tick 最多处理 8 帧 */
+var TICK_MS        = 20;
+var STAT_MS        = 5000;
+var RING_CAP       = 64;            /* 64 * 40 ms = 2.56 s 上限 */
+var FRAME_IN       = 5120;          /* 原厂输入帧：4 路 int16 交错，640 样本/路 */
+var LANE_STRIDE    = 4;             /* int16 索引步长：lane0 = in16[q*4]，等价字节偏移 q*8 */
+var SPF            = 640;           /* 每帧每路样本数 */
+var FRAME_OUT      = 1280;          /* 单声道 int16 载荷字节数 */
+var HDR_LEN        = 40;
+var MSG_LEN        = HDR_LEN + FRAME_OUT;   /* 1320 */
+var MAGIC          = 0x325A4754;
+var VER            = 2;
+var FLAG_SYNTHETIC = 0x01;
+var FLAG_SPEECH    = 0x02;
+var RATE           = 16000;
+var CH             = 1;
+var BITS           = 16;
 
+var F_OFF          = 0xd455c;
+var SYM            = '_ZN14AGSpeechEngine4feedEjPKvi';
+var SIG_BYTES      = [0xf0, 0x48, 0x2d, 0xe9, 0x10, 0xb0, 0x8d, 0xe2,
+                      0x08, 0xd0, 0x4d, 0xe2, 0x03, 0x70, 0xa0, 0xe1];
+
+/* arm32 / Android 常量 */
 var AF_UNIX = 1, SOCK_DGRAM = 2;
 var F_GETFL = 3, F_SETFL = 4, O_NONBLOCK = 0x800;   /* arm32: 0o4000 */
 var CLOCK_MONOTONIC = 1;
-var EAGAIN = 11, ENOBUFS = 105, EPIPE = 32, ECONNRESET = 104,
+var EAGAIN = 11, EWOULDBLOCK = 11, ENOBUFS = 105, EPIPE = 32, ECONNRESET = 104,
     ENOTCONN = 107, ECONNREFUSED = 111;
+var TWO32 = 4294967296;
 
 /* ============ FNV-1a（与 tgz2_frame.h 的 tgz2_fnv1a 等价） ============
  * C 侧:      h ^= p[i]; h *= 16777619u;        // uint32 回绕
  * JS 侧:     Math.imul(h ^ byte, 16777619) >>> 0
  * 普通 * 在 JS 里是 double，h*16777619 会超过 2^53 丢精度 —— 必须用 imul。
- * 这两行被 crc_crosscheck/crc_test.js 用标记抽取，测试的就是这里。
+ * crc_crosscheck/crc_test.js 按标记抽取这两个函数单独与 C 对拍。
  */
 /* FNV-BEGIN */
 function fnvStep(h, byte) {
@@ -73,24 +92,59 @@ function fnv2(h, v) {
 /* FNV-END */
 var FNV_BASIS = 2166136261;
 
+/* 逐字节版本：消费端对 1280 B payload 求 CRC（与 tgz2_fnv1a(p, n) 同一算法） */
+/* FNV-BYTES-BEGIN */
+function fnvBytes(u8, off, len) {
+  var h = FNV_BASIS >>> 0;
+  var end = off + len;
+  for (var i = off; i < end; i++) h = Math.imul(h ^ u8[i], 16777619) >>> 0;
+  return h >>> 0;
+}
+/* FNV-BYTES-END */
+
 /* ============ 统计 ============ */
+/*
+ * frames      Hook 回调进入主体（通过闸门）的次数
+ * produced    成功整帧复制入环的帧数            frames - produced = lenBad + nullPtr + ringDrop + clockDrop
+ * sent        成功 sendto 的帧数
+ * stale       采集超过 MAX_AGE_MS 被丢弃
+ * noPeerDrop  没有可用 socket（接收端未启动/重连失败）而丢弃
+ * sendDrop    EAGAIN/EWOULDBLOCK/ENOBUFS/对端消失 造成的丢弃
+ * sendErr     socket 错误（含 errno 记录）
+ * clockFail   clock_gettime 失败次数；clockDrop 因时钟不可用丢帧；noClockTicks 消费 tick 无法取时钟
+ * ringDrop    环满丢弃（Hook 侧）；depthMax 环最大深度
+ */
 var st = {
   enabled: false, why: 'init', epoch: 0, seq: 0, fd: -1, nextTry: 0,
-  frames: 0, sent: 0, stale: 0, ringDrop: 0, lenBad: 0,
-  readFail: 0, hookEx: 0, sendDrop: 0, sendErr: 0, clockFail: 0,
-  clockDrop: 0, noClockTicks: 0,
+  frames: 0, produced: 0, capSeq: 0,
+  sent: 0, stale: 0, ringDrop: 0, noPeerDrop: 0, sendDrop: 0, sendErr: 0,
+  lenBad: 0, nullPtr: 0, readFail: 0, hookEx: 0,
+  clockFail: 0, clockDrop: 0, noClockTicks: 0,
   connectFail: 0, reconnects: 0, sessions: 0, disables: 0,
-  depthMax: 0, producerTid: 0, wantsClose: false, tids: {}
+  depthMax: 0, producerTid: 0, producerCalls: 0, wantsClose: false,
+  crcFrames: 0, reentryHook: 0, reentryDrain: 0, drainEx: 0,
+  lastErrno: 0, nonblockVerified: false,
+  hashSum: 0, hashN: 0
 };
 
-/* ============ 生命周期对象（F2：必须有强引用） ============
- * libF: Script.bindWeak(target, cb) 的语义是「target 被 GC 时，或脚本即将卸载时」
- * 调用 cb。若传 {}（无强引用），V8 随时可以回收它 -> cb 可能在运行中提前触发，
- * 也就是把正在用的 fd 关掉。所以这里持有一个不可回收的对象。
+/* 元数据（与环槽一一对应，全部预分配） */
+var ring = null;                    /* RING_CAP * FRAME_IN = 327680 B */
+var slotCapSeq = null;              /* Float64Array(RING_CAP) 采集序号 */
+var slotTsUs = null;                /* Float64Array(RING_CAP) 采集时刻（MONOTONIC 微秒） */
+var msg = null;                     /* Memory.alloc(MSG_LEN) 待发帧（头 + 载荷） */
+var payloadAB = null, payloadU8 = null, payloadI16 = null;
+var latUs = null, latW = 0, latN = 0;
+
+var idx = { head: 0, tail: 0 };
+var inHook = false, inDrain = false;
+
+/* ============ 生命周期对象（必须有强引用） ============
+ * Script.bindWeak(target, cb) 在 target 被 GC 或脚本即将卸载时触发 cb。
+ * 传 {} 作触发器时 V8 可以随时回收它，于是回调可能在运行中提前触发、把正在用的
+ * fd 关掉。所以这里持有一个不可回收对象。
  */
 var LIFECYCLE = { alive: true, fds: [] };
 
-/* 修订 5：Hook 与资源的显式生命周期 */
 var hookListener = null;
 var hookDetachAttempted = false;
 var hookDetached = false;
@@ -105,40 +159,38 @@ function errnoOf() {
   try { return libc && libc.errno ? libc.errno().readS32() : 0; } catch (e) { return 0; }
 }
 
-/* ============ 1) 三级闸门 ============ */
-var base = Module.findBaseAddress('libsmartbox.so');
-var feed = null;
-if (base === null) {
-  st.why = 'no-module';
-} else {
+/* ============ 1) 四级地址校验（与 T2 完全一致） ============ */
+var checkReport = { ck1_module: false, ck2_symbol: false, ck3_offset: false, ck4_sig: false };
+var base = null, feed = null;
+(function precheck() {
+  base = Module.findBaseAddress('libsmartbox.so');
+  if (base === null) { st.why = 'no-module'; return; }
+  checkReport.ck1_module = true;
+
   feed = Module.findExportByName('libsmartbox.so', SYM);
-  if (feed === null) {
-    st.why = 'no-symbol';
-  } else {
-    var off = feed.sub(base).toInt32();
-    if (off !== F_OFF) {
-      st.why = 'offset:' + off.toString(16);
-      feed = null;
-    } else {
-      var sigOk = true;
-      try {
-        var pro = new Uint8Array(feed.readByteArray(16));
-        for (var i = 0; i < 16; i++) {
-          if (pro[i] !== SIG_BYTES[i]) { sigOk = false; st.why = 'sig@' + i; break; }
-        }
-      } catch (e) { sigOk = false; st.why = 'sig-read'; }
-      if (!sigOk) feed = null;
+  if (feed === null) { st.why = 'no-symbol'; return; }
+  checkReport.ck2_symbol = true;
+
+  var off = feed.sub(base).toInt32();
+  if (off !== F_OFF) { st.why = 'offset:' + off.toString(16); feed = null; return; }
+  checkReport.ck3_offset = true;
+
+  var sigOk = true;
+  try {
+    var pro = new Uint8Array(feed.readByteArray(16));
+    for (var si = 0; si < 16; si++) {
+      if (pro[si] !== SIG_BYTES[si]) { sigOk = false; st.why = 'sig@' + si; break; }
     }
-  }
-}
+  } catch (e) { sigOk = false; st.why = 'sig-read'; }
+  if (!sigOk) { feed = null; return; }
+  checkReport.ck4_sig = true;
+})();
 st.enabled = (feed !== null);
 
-/* ============ 2) libc 绑定（F4：类型按 arm32 ABI 声明） ============
- * arm32: int=4, long=4, size_t/ssize_t=4, socklen_t=4, void*=4
- * timespec = { int32 tv_sec; int32 tv_nsec; } = 8 字节
- */
+/* ============ 2) libc 绑定（arm32 ABI：int=4, long=4, size_t/ssize_t=4） ============ */
 var libc = null;
 function bindLibc() {
+  if (libc !== null) return;
   function g(n) { return Module.getExportByName('libc.so', n); }
   libc = {
     socket:   new NativeFunction(g('socket'),  'int',  ['int', 'int', 'int']),
@@ -153,16 +205,16 @@ function bindLibc() {
   libc.errno = ep ? new NativeFunction(ep, 'pointer', []) : null;
 }
 
-var tsMem = Memory.alloc(8);
+var tsMem = null;
 
-/* TS-BEGIN —— 这段被 tests/bridge_unit_test.js 按标记抽取后单独测试
+/* TS-BEGIN —— tests/bridge_unit_test.js 按标记抽取后单独测试
  *
  * arm32 struct timespec { int32 tv_sec; int32 tv_nsec; } 共 8 字节：
  *   tv_sec 在 +0，tv_nsec 在 +4。
- * 修订 3 写成 tsMem.readS32(), tsMem.readS32() —— 两次读的是同一地址，
+ * 修订 3 曾写成 tsMem.readS32(), tsMem.readS32() —— 两次读同一地址，
  * 纳秒恒等于秒，时间戳直接错掉。必须第二处 add(4)。
  *
- * 返回 >=0：微秒；返回 -1：字段非法（负值或 nsec ≥ 1e9）。
+ * 返回 >=0：微秒；返回 -1：字段非法（负值或 nsec >= 1e9）。
  */
 function decodeTimespec(buf) {
   var s = buf.readS32();
@@ -174,6 +226,7 @@ function decodeTimespec(buf) {
 
 function nowUs() {
   try {
+    if (libc === null) bindLibc();
     if (libc.clock_gettime(CLOCK_MONOTONIC, tsMem) !== 0) { st.clockFail++; return 0; }
     var us = decodeTimespec(tsMem);
     if (us < 0) { st.clockFail++; return 0; }
@@ -181,13 +234,60 @@ function nowUs() {
   } catch (e) { st.clockFail++; return 0; }
 }
 
-/* ============ 3) 预分配（零分配路径） ============ */
-var ring = Memory.alloc(RING_CAP * MSG_LEN);
-var crcArr = new Int32Array(RING_CAP);
-var tsArr = new Float64Array(RING_CAP);
-var idx = { head: 0, tail: 0 };
+/* ============ 3) 预分配（Hook 安装前全部完成，Hook 内零分配） ============ */
+function prepare() {
+  if (ring !== null) return true;
+  tsMem = Memory.alloc(8);
+  ring = Memory.alloc(RING_CAP * FRAME_IN);      /* 327680 B：64 槽 * 5120 B 整帧 */
+  slotCapSeq = new Float64Array(RING_CAP);
+  slotTsUs = new Float64Array(RING_CAP);
+  msg = Memory.alloc(MSG_LEN);                   /* 1320 B：头 40 + 载荷 1280 */
+  payloadAB = new ArrayBuffer(FRAME_OUT);
+  payloadU8 = new Uint8Array(payloadAB);
+  payloadI16 = new Int16Array(payloadAB);
+  latUs = new Float64Array(2048);
+  latW = 0;
+  latN = 0;
+  return true;
+}
 
-/* ============ 4) 地址与 socket（F3/F5） ============ */
+/* ============ 4) lane0 抽取（消费端，Hook 内禁止） ============ */
+/* LANE-BEGIN */
+/* in16 是整帧的 int16 视图（4 路交错），lane0 = in16[q*4]；
+ * 等价于字节偏移 q*8（每路 int16，4 路一组 8 字节）。 */
+function extractLane0(in16, out16, spf, stride) {
+  for (var q = 0; q < spf; q++) out16[q] = in16[q * stride];
+  return out16;
+}
+/* LANE-END */
+
+/* ============ 5) TGZ2 v2 帧组装（消费端，Hook 内禁止） ============ */
+/* FRAME-BEGIN */
+function putU64(p, v) {
+  var lo = v % TWO32;                 /* ts_us < 2^53，double 精确 */
+  var hi = Math.floor(v / TWO32);
+  p.writeU32(lo >>> 0);
+  p.add(4).writeU32(hi >>> 0);
+}
+function buildFrame(m, seq, tsUs, epoch, flags, payload, crc) {
+  m.writeU32(MAGIC >>> 0);
+  m.add(4).writeU8(VER);
+  m.add(5).writeU8(flags & 0xFF);
+  m.add(6).writeU16(HDR_LEN);
+  m.add(8).writeU32(seq >>> 0);
+  putU64(m.add(12), tsUs);
+  m.add(20).writeU32(epoch >>> 0);
+  m.add(24).writeU32(RATE);
+  m.add(28).writeU16(CH);
+  m.add(30).writeU16(BITS);
+  m.add(32).writeU32(FRAME_OUT);
+  m.add(36).writeU32(crc >>> 0);
+  m.add(HDR_LEN).writeByteArray(payload);
+  return MSG_LEN;
+}
+/* FRAME-END */
+
+/* ============ 6) socket（fd 唯一所有者 = st.fd） ============ */
 var saMem = null, saLen = 0;
 
 function buildAddr() {
@@ -196,38 +296,38 @@ function buildAddr() {
     saMem = Memory.alloc(110);              /* sizeof(struct sockaddr_un) */
     saMem.writeU16(AF_UNIX);
     if (SOCK_ABSTRACT) {
-      /* abstract: sun_path[0]=0 后接名字，长度 = 2 + 1 + strlen（不含结尾 NUL） */
+      /* 抽象命名空间：sun_path[0]=0，名字从 sun_path[1] 开始 */
       saMem.add(2).writeU8(0);
       saMem.add(3).writeUtf8String(SOCK_PATH);
-      saLen = 3 + SOCK_PATH.length;
+      saLen = 2 + 1 + SOCK_PATH.length;     /* 不含结尾 NUL */
     } else {
-      /* filesystem: sun_path 需要结尾 NUL，长度 = 2 + strlen + 1 */
       saMem.add(2).writeUtf8String(SOCK_PATH);
-      saLen = 3 + SOCK_PATH.length;
+      saLen = 2 + SOCK_PATH.length + 1;     /* 含结尾 NUL */
     }
     return true;
   } catch (e) { st.why = 'addr'; return false; }
 }
 
-/* fd 只有一个所有者：st.fd。任何关闭都必须经过 closeSock()（F5） */
 var fdOwner = { owned: false };
 function closeSock() {
   if (!fdOwner.owned) return;
   var fd = st.fd;
   st.fd = -1;
   fdOwner.owned = false;
+  st.nonblockVerified = false;
   if (fd >= 0) { try { libc.close(fd); } catch (e) { } }
 }
 
+/* 只在消费 tick / teardown 里调用：Hook 内绝不调 socket/close */
 function disable(why) {
   st.why = why;
   st.disables++;
   st.enabled = false;
-  st.wantsClose = true;        /* 真正的 close 放到 tick 里做，hook 内不做 syscall */
+  st.wantsClose = true;
 }
 
 function ensureSock(now) {
-  if (DRY_RUN) return false;                 /* F6：DRY_RUN 绝不建 socket */
+  if (DRY_RUN) return false;                 /* DRY_RUN 绝不建 socket */
   if (fdOwner.owned) return true;
   if (now < st.nextTry) return false;
   st.nextTry = now + RETRY_MS * 1000;
@@ -238,23 +338,27 @@ function ensureSock(now) {
     if (!buildAddr()) return false;
 
     fd = libc.socket(AF_UNIX, SOCK_DGRAM, 0);
-    if (fd < 0) { st.sendErr++; return false; }          /* 失败时没有 fd 需要关 */
+    if (fd < 0) { st.sendErr++; st.lastErrno = errnoOf(); return false; }
 
-    /* F1/非阻塞：设置 + 回读确认，任一失败就关掉并永久禁用 */
+    /* 非阻塞：设置 + 回读确认，任一失败就关掉并禁用（绝不带着阻塞 fd 发送） */
     if (libc.fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
+      st.lastErrno = errnoOf();
       try { libc.close(fd); } catch (e) { }
       disable('nonblock-set-fail');
       return false;
     }
     var fl = libc.fcntl(fd, F_GETFL, 0);
     if (fl < 0 || (fl & O_NONBLOCK) === 0) {
+      st.lastErrno = errnoOf();
       try { libc.close(fd); } catch (e) { }
       disable('nonblock-not-set');
       return false;
     }
 
+    /* connected DGRAM：connect 之后 sendto 的目标地址传 NULL/0 */
     if (libc.connect(fd, saMem, saLen) < 0) {
       st.connectFail++;
+      st.lastErrno = errnoOf();
       try { libc.close(fd); } catch (e) { }
       return false;
     }
@@ -262,6 +366,7 @@ function ensureSock(now) {
 
     st.fd = fd;
     fdOwner.owned = true;
+    st.nonblockVerified = true;
     st.sessions++;
     return true;
   } catch (e) {
@@ -272,54 +377,63 @@ function ensureSock(now) {
   }
 }
 
-/* ============ 5) hook（修订 5：保存 listener，stop 后禁止处理） ============ */
+/* ============ 7) Hook（只做：闸门 + 整帧复制 + 序号/时间戳 + 推进 tail） ============ */
 function installHook() {
   if (teardownDone || !LIFECYCLE.alive || !st.enabled) {
     throw new Error('lifecycle-not-active');
   }
 
   hookListener = Interceptor.attach(feed, {
+    /* HOOK-BEGIN */
     onEnter: function (args) {
-      /* 三道闸门：已 teardown / 生命周期结束 / 旁路禁用 -> 立刻返回，什么都不做 */
+      /* 闸门 1：已 teardown / 生命周期结束 / 旁路已禁用 -> 立刻返回 */
       if (teardownDone || !LIFECYCLE.alive || !st.enabled) return;
+      if (inHook) { st.reentryHook++; return; }
+      inHook = true;
       try {
+        /* 闸门 2：单生产者（SPSC 前提）。出现第二个线程立刻禁用，不硬写环 */
         var tid = Process.getCurrentThreadId();
+        if (st.producerTid === 0) {
+          st.producerTid = tid;
+        } else if (tid !== st.producerTid) {
+          disable('multi-producer:' + tid);
+          return;
+        }
+        st.producerCalls++;
+        st.frames++;
 
-        /* F7：SPSC 前提未验证 -> 一旦出现第二个生产者立刻禁用，宁可停也不写坏数据 */
-        if (st.producerTid === 0) st.producerTid = tid;
-        else if (tid !== st.producerTid) { disable('multi-producer:' + tid); return; }
-
-        st.tids[tid] = (st.tids[tid] || 0) + 1;
-
+        /* 闸门 3：参数位置与长度（T2 已验证：args[3] 必须等于 5120） */
         var len = args[3].toInt32();
         if (len !== FRAME_IN) { st.lenBad++; return; }
 
+        /* 闸门 4：指针非空 */
+        var src = args[2];
+        if (src.isNull()) { st.nullPtr++; return; }
+
+        /* 闸门 5：环有空位（满则丢，绝不覆盖未消费数据） */
         var depth = (idx.tail - idx.head) | 0;
         if (depth >= RING_CAP) { st.ringDrop++; return; }
 
-        var src = args[2];
-        if (src.isNull()) { st.readFail++; return; }
+        /* 闸门 6：时钟可用（失败则丢帧，绝不把 ts=0 当成采集时刻放进环） */
+        var tS = nowUs();
+        if (tS === 0) { st.clockDrop++; return; }
 
         var slotNo = idx.tail % RING_CAP;
-        var dst = ring.add(slotNo * MSG_LEN + HDR_LEN);
-        var h = FNV_BASIS >>> 0;
-        for (var i = 0; i < SPF; i++) {
-          var v = src.add(i * STRIDE).readS16();
-          dst.add(i * 2).writeS16(v);
-          h = fnv2(h, v);
-        }
-        crcArr[slotNo] = h | 0;
-        /* 时钟失败（nowUs 返回 0）时本帧直接丢弃，绝不把 ts=0 当成采集时刻放进环 */
-        var ts = nowUs();
-        if (ts === 0) { st.clockDrop++; return; }
-        tsArr[slotNo] = ts;
+        var dst = ring.add(slotNo * FRAME_IN);
+        Memory.copy(dst, src, FRAME_IN);       /* 唯一的内存动作：整帧 5120 B */
+
+        slotCapSeq[slotNo] = st.capSeq++;
+        slotTsUs[slotNo] = tS;
         idx.tail++;
-        st.frames++;
-        if (depth > st.depthMax) st.depthMax = depth;
+        st.produced++;
+        if (depth + 1 > st.depthMax) st.depthMax = depth + 1;
       } catch (e) {
         try { st.hookEx++; } catch (e2) { }
+      } finally {
+        inHook = false;
       }
     }
+    /* HOOK-END */
   });
 
   if (!hookListener || typeof hookListener.detach !== 'function') {
@@ -328,138 +442,175 @@ function installHook() {
   }
 }
 
-/* ============ 6) 发送 ============ */
-function drain() {
-  if (!st.enabled) return;
-  var now = nowUs();
-  /* 时钟失败时 now 为 0：既不能发帧（ts 无意义），也不能拿 0 去做 age 计算把整环判成过期 */
-  if (now === 0) { st.noClockTicks++; return; }
-
-  if (!DRY_RUN && !ensureSock(now)) {
-    while (idx.head < idx.tail) { idx.head++; st.stale++; }
-    return;
+/* ============ 8) 消费端（20 ms tick，每次最多 DRAIN_BURST 帧） ============ */
+function toI16(ab) {
+  if (ab === null || ab === undefined) return null;
+  if (typeof ArrayBuffer !== 'undefined' && ab instanceof ArrayBuffer) return new Int16Array(ab);
+  if (typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView(ab)) {
+    return new Int16Array(ab.buffer, ab.byteOffset, ab.byteLength >> 1);
   }
+  return null;
+}
 
-  var burst = DRAIN_BURST;
-  while (burst-- > 0 && idx.head < idx.tail) {
-    var slotNo = idx.head % RING_CAP;
-    var slot = ring.add(slotNo * MSG_LEN);
-    try {
-      if (tsArr[slotNo] && now - tsArr[slotNo] > MAX_AGE_MS * 1000) {
-        st.stale++; idx.head++; continue;
+function drain() {
+  if (teardownDone || !LIFECYCLE.alive) return;
+  if (inDrain) { st.reentryDrain++; return; }
+  inDrain = true;
+  try {
+    /* 禁用/对端消失后的 close 只在消费 tick 里做（Hook 内绝不 close） */
+    if (st.wantsClose) { st.wantsClose = false; closeSock(); }
+    if (!st.enabled) return;
+
+    var now = nowUs();
+    if (now === 0) { st.noClockTicks++; return; }   /* 无时钟：既不发送也不做 age 判断 */
+
+    var burst = DRAIN_BURST;
+    while (burst-- > 0 && idx.head !== idx.tail) {
+      var slotNo = idx.head % RING_CAP;
+
+      var tsUs = slotTsUs[slotNo];
+      /* 时间戳为 0 / 非正：绝不当作正常数据发送 */
+      if (!(tsUs > 0)) { st.clockDrop++; idx.head++; continue; }
+
+      var age = now - tsUs;
+      if (age > MAX_AGE_MS * 1000) { st.stale++; idx.head++; continue; }
+
+      /* 没有 socket（接收端未启动 / 重连未成功）：丢本帧，绝不阻塞 */
+      if (!DRY_RUN && !fdOwner.owned) {
+        if (!ensureSock(now)) { st.noPeerDrop++; idx.head++; continue; }
       }
 
-      st.seq++;
-      slot.writeU32(MAGIC);
-      slot.add(4).writeU8(VER);
-      slot.add(5).writeU8(0);
-      slot.add(6).writeU16(HDR_LEN);
-      slot.add(8).writeU32(st.seq);
-      slot.add(12).writeU64(tsArr[slotNo] || 0);   /* < 2^53，double 精确 */
-      slot.add(20).writeU32(st.epoch);
-      slot.add(24).writeU32(16000);
-      slot.add(28).writeU16(1);
-      slot.add(30).writeU16(16);
-      slot.add(32).writeU32(FRAME_OUT);
-      slot.add(36).writeU32(crcArr[slotNo] >>> 0);
+      var ab;
+      try { ab = ring.add(slotNo * FRAME_IN).readByteArray(FRAME_IN); }
+      catch (e) { st.readFail++; idx.head++; continue; }
+      if (ab === null || ab.byteLength !== FRAME_IN) { st.readFail++; idx.head++; continue; }
+
+      var in16 = toI16(ab);
+      if (in16 === null) { st.readFail++; idx.head++; continue; }
+
+      /* lane0 抽取 + CRC + 头组装：全部在消费端 */
+      extractLane0(in16, payloadI16, SPF, LANE_STRIDE);
+      var crc = fnvBytes(payloadU8, 0, FRAME_OUT);
+      st.crcFrames++;
+      st.hashSum = (st.hashSum + crc) >>> 0;
+      st.hashN++;
+
+      var seq = (st.seq = (st.seq + 1) >>> 0);
+      buildFrame(msg, seq, tsUs, st.epoch, 0, payloadU8, crc);   /* flags=0：真实 PCM */
 
       if (DRY_RUN) {
         st.sent++;
       } else {
-        /* connected dgram：目标地址传 NULL/0（F3） */
-        var n = libc.sendto(st.fd, slot, MSG_LEN, 0, ptr(0), 0);
+        var n = libc.sendto(st.fd, msg, MSG_LEN, 0, ptr(0), 0);
         if (n === MSG_LEN) {
           st.sent++;
+          latUs[latW] = age;
+          latW = (latW + 1) % latUs.length;
+          if (latN < latUs.length) latN++;
         } else if (n < 0) {
           var e = errnoOf();
-          if (e === EAGAIN || e === ENOBUFS) {
-            st.sendDrop++;                       /* 缓冲满：丢，不重试 */
+          st.lastErrno = e;
+          if (e === EAGAIN || e === EWOULDBLOCK || e === ENOBUFS) {
+            st.sendDrop++;                       /* 缓冲满：丢本帧，不重试 */
+          } else if (e === EPIPE || e === ECONNRESET || e === ENOTCONN || e === ECONNREFUSED) {
+            st.sendDrop++;                       /* 本帧没送到 */
+            st.reconnects++;
+            closeSock();                         /* 对端没了：关掉，下一个 tick 重连 */
           } else {
-            st.sendErr++;
-            if (e === EPIPE || e === ECONNRESET || e === ENOTCONN || e === ECONNREFUSED) {
-              closeSock();                       /* 对端没了：关掉，下轮重连 */
-              st.reconnects++;
-            }
+            st.sendErr++;                        /* 其他错误：计数，丢本帧 */
           }
         } else {
           st.sendErr++;                          /* dgram 不应出现半包 */
         }
       }
       idx.head++;
-    } catch (e) {
-      st.sendErr++;
-      idx.head++;
     }
+  } catch (e) {
+    st.drainEx++;
+  } finally {
+    inDrain = false;
   }
 }
 
-/* ============ 7) 启动与定时器 ============ */
+/* ============ 9) 统计输出 ============ */
+function pending() { return (idx.tail - idx.head) | 0; }
+
+function tidsObj() {
+  var o = {};
+  if (st.producerTid !== 0) o[String(st.producerTid)] = st.producerCalls;
+  return o;
+}
+
+function latPct(q) {
+  /* 只对最近 latN 个样本做近似分位数，纯诊断用途 */
+  var n = latN;
+  if (!n) return 0;
+  var a = [];
+  for (var i = 0; i < n; i++) a.push(latUs[i]);
+  a.sort(function (x, y) { return x - y; });
+  return a[Math.floor((n - 1) * q)];
+}
+
+function statLine(tag) {
+  return '[' + tag + '] epoch=0x' + (st.epoch >>> 0).toString(16) +
+         ' frames=' + st.frames + ' produced=' + st.produced + ' sent=' + st.sent +
+         ' pending=' + pending() + ' ringDrop=' + st.ringDrop + ' stale=' + st.stale +
+         ' noPeerDrop=' + st.noPeerDrop + ' sendDrop=' + st.sendDrop + ' sendErr=' + st.sendErr +
+         ' depthMax=' + st.depthMax + ' crcFrames=' + st.crcFrames +
+         ' clockFail=' + st.clockFail + ' clockDrop=' + st.clockDrop +
+         ' hookEx=' + st.hookEx + ' drainEx=' + st.drainEx +
+         ' reentry=' + st.reentryHook + '/' + st.reentryDrain +
+         ' sessions=' + st.sessions + ' reconnects=' + st.reconnects +
+         ' connectFail=' + st.connectFail + ' fd=' + st.fd + ' tid=' + st.producerTid +
+         ' nb=' + st.nonblockVerified + ' lastErrno=' + st.lastErrno;
+}
+
 function startTimers() {
   tick = setInterval(function () {
     if (teardownDone || !LIFECYCLE.alive) return;
-    try {
-      if (st.wantsClose) { st.wantsClose = false; closeSock(); }   /* 见 disable() */
-      drain();
-    } catch (e) { st.sendErr++; }
+    try { drain(); } catch (e) { st.drainEx++; }
   }, TICK_MS);
 
   stat = setInterval(function () {
     if (teardownDone || !LIFECYCLE.alive) return;
-    report({ t: 'stat', enabled: st.enabled, why: st.why, epoch: st.epoch, seq: st.seq,
-             frames: st.frames, sent: st.sent, stale: st.stale, ringDrop: st.ringDrop,
-             lenBad: st.lenBad, readFail: st.readFail, hookEx: st.hookEx,
-             sendDrop: st.sendDrop, sendErr: st.sendErr, clockFail: st.clockFail,
-             clockDrop: st.clockDrop, noClockTicks: st.noClockTicks,
-             connectFail: st.connectFail, reconnects: st.reconnects,
-             sessions: st.sessions, disables: st.disables, depthMax: st.depthMax,
-             producerTid: st.producerTid, tids: st.tids, fd: st.fd, dry: DRY_RUN });
-  }, 5000);
+    try { report({ t: 'stat', line: statLine('STAT'), stats: summary() }); } catch (e) { }
+  }, STAT_MS);
 
   if (tick === null || tick === undefined || stat === null || stat === undefined) {
     throw new Error('setInterval-returned-null');
   }
 }
 
-try {
-  if (!LIFECYCLE.alive) {
-    throw new Error('lifecycle-not-active');
-  }
+/* ============ 10) 安装 ============ */
+function install() {
+  if (teardownDone || !LIFECYCLE.alive) throw new Error('lifecycle-not-active');
+  if (!st.enabled) throw new Error('precheck:' + st.why);
 
-  if (st.enabled) {
-    bindLibc();                                            /* 时钟需要，DRY_RUN 也绑 */
+  bindLibc();
+  prepare();                 /* 环 / 槽元数据 / 待发帧 / 载荷视图，全部在 attach 之前 */
 
-    st.epoch = ((nowUs() & 0xFFFFFFFF) ^ 0x5A5A5A5A) >>> 0;
+  /* epoch：脚本每次启动都换（接收端据此识别"发送端重启"） */
+  var boot = nowUs();
+  if (boot === 0) { boot = Date.now() & 0xFFFFFFFF; }      /* 时钟不可用时退化为墙钟 */
+  st.epoch = ((boot & 0xFFFFFFFF) ^ 0x5A5A5A5A) >>> 0;
 
-    installHook();
+  installHook();
+  st.why = 'ok';
+  startTimers();
 
-    st.why = 'ok';
-
-    /*
-     * 只有预检和 Hook 安装全部成功后，
-     * 才允许创建 tick/stat 定时器。
-     */
-    startTimers();
-  }
-} catch (e) {
-  st.enabled = false;
-  st.why = 'install:' + String(e && e.message ? e.message : e);
-
-  /*
-   * 统一回滚已经创建的资源。
-   * teardown 必须保持幂等。
-   */
-  teardown();
+  report({
+    t: 'ready', enabled: st.enabled, epoch: st.epoch, dry: DRY_RUN,
+    ring_cap: RING_CAP, ring_slot_bytes: FRAME_IN, ring_total_bytes: RING_CAP * FRAME_IN,
+    msg_bytes: MSG_LEN, hdr_bytes: HDR_LEN, payload_bytes: FRAME_OUT,
+    lane0_samples: SPF, lane_stride_bytes: LANE_STRIDE * 2,
+    sock: (SOCK_ABSTRACT ? 'abstract:' : 'file:') + SOCK_PATH,
+    max_age_ms: MAX_AGE_MS, tick_ms: TICK_MS, burst: DRAIN_BURST
+  });
+  console.log('[v] installed epoch=0x' + (st.epoch >>> 0).toString(16) +
+              ' ring=' + (RING_CAP * FRAME_IN) + 'B msg=' + MSG_LEN + 'B dry=' + DRY_RUN);
 }
 
-/* ============ 8) 资源清理（修订 5：幂等 + 显式 detach） ============
- * 顺序固定：
- *   1) 先关数据闸门（teardownDone / LIFECYCLE.alive / st.enabled），在飞的 hook 回调立刻返回
- *   2) 清 tick / stat 定时器
- *   3) 最多尝试一次 listener.detach()
- *   4) 关 socket
- * Hook 回调里**不做** detach、close、定时器清理（这些只在 tick / stop 里发生）。
- * 自动兜底：目标进程退出时内核回收全部 fd；脚本卸载时 Script.bindWeak 触发 teardown。
- */
+/* ============ 11) 清理（幂等；Hook 内不做这些） ============ */
 function teardownStatus() {
   return {
     stopped: teardownDone,
@@ -475,40 +626,74 @@ function teardownStatus() {
 }
 
 function teardown() {
-  if (teardownDone) return teardownStatus();          /* 幂等：重复调用直接返回状态 */
+  if (teardownDone) return teardownStatus();          /* 幂等 */
   teardownDone = true;
 
+  /* 1) 先关数据闸门：在飞的 hook 回调立刻返回 */
   LIFECYCLE.alive = false;
   st.enabled = false;
 
+  /* 2) 清定时器 */
   if (tick !== null && tick !== undefined) { try { clearInterval(tick); } catch (e) { } tick = null; }
   if (stat !== null && stat !== undefined) { try { clearInterval(stat); } catch (e) { } stat = null; }
 
+  /* 3) detach 最多一次 */
   if (hookListener !== null && hookListener !== undefined && !hookDetachAttempted) {
     hookDetachAttempted = true;
     try { hookListener.detach(); hookDetached = true; }
     catch (e) { hookDetachError = String(e && e.message ? e.message : e); }
   }
 
+  /* 4) 关 socket */
   try { closeSock(); } catch (e) { }
 
   return teardownStatus();
 }
 
+/* ============ 12) 对外接口 ============ */
+function summary() {
+  return {
+    enabled: st.enabled, why: st.why, epoch: st.epoch, seq: st.seq, capSeq: st.capSeq,
+    frames: st.frames, produced: st.produced, sent: st.sent,
+    stale: st.stale, ringDrop: st.ringDrop, noPeerDrop: st.noPeerDrop,
+    sendDrop: st.sendDrop, sendErr: st.sendErr, lastErrno: st.lastErrno,
+    lenBad: st.lenBad, nullPtr: st.nullPtr, readFail: st.readFail,
+    hookEx: st.hookEx, hookReentry: st.reentryHook, drainReentry: st.reentryDrain,
+    drainEx: st.drainEx, clockFail: st.clockFail, clockDrop: st.clockDrop,
+    noClockTicks: st.noClockTicks, connectFail: st.connectFail,
+    reconnects: st.reconnects, sessions: st.sessions, disables: st.disables,
+    depthMax: st.depthMax, pending: pending(), producerTid: st.producerTid,
+    tids: tidsObj(), fd: st.fd, nonblockVerified: st.nonblockVerified,
+    crcFrames: st.crcFrames, hashSum: st.hashSum, dry: DRY_RUN,
+    latP50_us: latPct(0.50), latP99_us: latPct(0.99),
+    pendingEq: (st.frames - st.produced) === (st.lenBad + st.nullPtr + st.ringDrop + st.clockDrop)
+  };
+}
+
 rpc.exports = {
-  stop: function () { return teardown(); },
   stats: function () {
-    return { enabled: st.enabled, why: st.why, frames: st.frames, sent: st.sent,
-             stale: st.stale, ringDrop: st.ringDrop, sendDrop: st.sendDrop,
-             sendErr: st.sendErr, hookEx: st.hookEx, clockFail: st.clockFail,
-             clockDrop: st.clockDrop, noClockTicks: st.noClockTicks,
-             producerTid: st.producerTid, tids: st.tids, fd: st.fd,
-             lifecycle: teardownStatus() };
-  }
+    var s = summary();
+    s.lifecycle = teardownStatus();
+    s.checks = checkReport;
+    return s;
+  },
+  stop: function () { return teardown(); },
+  start: function () { install(); return summary(); }
 };
 
 try { Script.bindWeak(LIFECYCLE, teardown); } catch (e) { }
-LIFECYCLE.fds = [];      /* 只是让对象保持"有内容"，避免被优化掉 */
+LIFECYCLE.fds = [];      /* 让对象保持"有内容"，避免被优化掉 */
 
-report({ t: 'ready', enabled: st.enabled, why: st.why, epoch: st.epoch, dry: DRY_RUN,
-         feed: feed ? feed.toString() : null });
+/* ============ 13) 启动 ============ */
+if (st.enabled) {
+  try {
+    install();
+  } catch (e) {
+    st.enabled = false;
+    st.why = 'install:' + String(e && e.message ? e.message : e);
+    teardown();          /* 中途失败：已创建的定时器/监听器/fd 全部回滚 */
+  }
+} else {
+  report({ t: 'precheck-failed', why: st.why, checks: checkReport });
+  console.log('[!] precheck failed: ' + st.why);
+}

@@ -1,0 +1,11 @@
+READY {"role":"server","mode":"abstract","name":"tgz2_pcm","rcvbuf_req":8192,"rcvbuf_eff":16384,"max_age_ms":500,"capture":/data/local/tmp/tgz2_uds/t3_tone.cap,"payload_policy":"synthetic=regen-compare,real-pcm=crc-only"}
+STAT {"msgs":0,"accepted":0,"missing":0,"dup":0,"stale":0,"real_pcm":0,"synthetic":0,"lat_avg_us":0.0,"lat_max_us":0}
+STAT {"msgs":0,"accepted":0,"missing":0,"dup":0,"stale":0,"real_pcm":0,"synthetic":0,"lat_avg_us":0.0,"lat_max_us":0}
+STAT {"msgs":60,"accepted":60,"missing":0,"dup":0,"stale":0,"real_pcm":60,"synthetic":0,"lat_avg_us":14415.3,"lat_max_us":30011}
+STAT {"msgs":185,"accepted":185,"missing":0,"dup":0,"stale":0,"real_pcm":185,"synthetic":0,"lat_avg_us":14583.9,"lat_max_us":32673}
+STAT {"msgs":252,"accepted":252,"missing":0,"dup":0,"stale":0,"real_pcm":252,"synthetic":0,"lat_avg_us":14867.2,"lat_max_us":40365}
+STAT {"msgs":252,"accepted":252,"missing":0,"dup":0,"stale":0,"real_pcm":252,"synthetic":0,"lat_avg_us":14867.2,"lat_max_us":40365}
+STAT {"msgs":252,"accepted":252,"missing":0,"dup":0,"stale":0,"real_pcm":252,"synthetic":0,"lat_avg_us":14867.2,"lat_max_us":40365}
+STAT {"msgs":252,"accepted":252,"missing":0,"dup":0,"stale":0,"real_pcm":252,"synthetic":0,"lat_avg_us":14867.2,"lat_max_us":40365}
+SUMMARY {"role":"server","mode":"abstract","dur_s":40.042,"msgs":252,"accepted":252,"bytes":332640,"stale":0,"paused":0,"bad":{"magic":0,"ver":0,"hdr":0,"len":0,"param":0,"crc":0,"payload":0},"synthetic":0,"real_pcm":252,"captured":252,"seq_first":1,"seq_last":252,"missing":0,"dup":0,"reorder":0,"lat_us":{"avg":14867.2,"max":40365},"tsgap_ms":{"min":7.97,"max":154.82},"epoch":2835037334}
+CAPTURE {"file":"/data/local/tmp/tgz2_uds/t3_tone.cap","frames":252,"bytes":332640}

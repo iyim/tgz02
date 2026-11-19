@@ -1,0 +1,9 @@
+READY {"role":"server","mode":"abstract","name":"tgz2_pcm","rcvbuf_req":8192,"rcvbuf_eff":16384,"max_age_ms":500,"capture":/data/local/tmp/tgz2_uds/t3_real_pcm.cap,"payload_policy":"synthetic=regen-compare,real-pcm=crc-only"}
+STAT {"msgs":0,"accepted":0,"missing":0,"dup":0,"stale":0,"real_pcm":0,"synthetic":0,"lat_avg_us":0.0,"lat_max_us":0}
+STAT {"msgs":0,"accepted":0,"missing":0,"dup":0,"stale":0,"real_pcm":0,"synthetic":0,"lat_avg_us":0.0,"lat_max_us":0}
+STAT {"msgs":98,"accepted":98,"missing":0,"dup":0,"stale":0,"real_pcm":98,"synthetic":0,"lat_avg_us":16419.6,"lat_max_us":67235}
+STAT {"msgs":224,"accepted":224,"missing":0,"dup":0,"stale":0,"real_pcm":224,"synthetic":0,"lat_avg_us":15739.1,"lat_max_us":67235}
+STAT {"msgs":252,"accepted":252,"missing":0,"dup":0,"stale":0,"real_pcm":252,"synthetic":0,"lat_avg_us":15590.9,"lat_max_us":67235}
+STAT {"msgs":252,"accepted":252,"missing":0,"dup":0,"stale":0,"real_pcm":252,"synthetic":0,"lat_avg_us":15590.9,"lat_max_us":67235}
+SUMMARY {"role":"server","mode":"abstract","dur_s":30.084,"msgs":252,"accepted":252,"bytes":332640,"stale":0,"paused":0,"bad":{"magic":0,"ver":0,"hdr":0,"len":0,"param":0,"crc":0,"payload":0},"synthetic":0,"real_pcm":252,"captured":252,"seq_first":1,"seq_last":252,"missing":0,"dup":0,"reorder":0,"lat_us":{"avg":15590.9,"max":67235},"tsgap_ms":{"min":5.77,"max":154.53},"epoch":2981915443}
+CAPTURE {"file":"/data/local/tmp/tgz2_uds/t3_real_pcm.cap","frames":252,"bytes":332640}

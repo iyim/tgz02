@@ -1,0 +1,4 @@
+# capture 原始数据不入库（仓库约定：*.cap / *.wav 属运行数据）
+# 入库的是：verify_*.txt、audio_stats_*.txt，以及报告里的 SHA256
+*.cap
+*.wav

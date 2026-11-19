@@ -131,21 +131,24 @@ python verify_capture.py _run\m.cap
 
 ---
 
-## 6. 真机脚本（未执行）
+## 6. 真机脚本
 
 | 文件 | 作用 | 状态 |
 |---|---|---|
-| `pcm_bridge_draft.js` | 方案 A 草稿（修订 4：timespec 偏移、时钟失败丢帧、Math.imul FNV、强引用生命周期、单生产者守卫） | **未在设备上运行** |
-| `thread_probe.js` | 只读线程探针：验证 `feed` 是否单生产者（SPSC 前提）；30 s 到点自动 detach | **未执行** |
+| `pcm_bridge_draft.js` | 方案 A（修订 6）：T2 式整帧 `Memory.copy(5120)` 入 64×5120 B 环 → 20 ms 消费端抽 lane0 / FNV-1a / TGZ2 v2 头 → 非阻塞 `AF_UNIX SOCK_DGRAM`（抽象名 `tgz2_pcm`） | **已真机实测（T3，2026-11-19，10 s ×2：252/252 帧，CRC/序号全 0 错）** |
+| `thread_probe.js` | 只读线程探针：验证 `feed` 是否单生产者（SPSC 前提）；30 s 到点自动 detach | 未执行（本轮由 `pcm_bridge_draft.js` 内的 `producerTid` 守卫实测：单生产者 19873） |
 
 执行顺序（每次只引入一个变量）：
 `thread_probe.js`（只读）→ `pcm_bridge_draft.js` + `DRY_RUN=true`（只统计）→ 打开发送。
+
+T3 实测与统计见 `../04_device_t3_uds_report.md`；驱动脚本 `../04_device_t3/run_t3_uds.py`。
 
 ## 7. 本机测试（不连设备）
 
 | 文件 | 作用 |
 |---|---|
-| `tests/bridge_unit_test.js` | 把 `pcm_bridge_draft.js` 原样加载进假 Frida 环境：timespec 解码、时钟失败丢帧、端到端帧头/载荷/CRC（BigInt 独立参考）、DRY_RUN 无 socket、多生产者守卫。**61 断言** |
+| `tests/bridge_unit_test.js` | 把 `pcm_bridge_draft.js` **原样**加载进假 Frida 环境，覆盖任务书 §5 的 18 项：整帧复制、lane0 抽取、TGZ2 v2 头全字段、`ts_us/epoch/seq`、flags 无 SYNTHETIC、JS/C FNV 对拍、sendto 成功 / EAGAIN / ENOBUFS / 对端消失重连、stale、时钟失败、环满、第二生产者禁用、stop 幂等、初始化回滚、DRY_RUN 无 socket、Hook 纯函数性。**201 断言** |
+| `tests_c/fnv_golden.c` | 用真正的 `tgz2_fnv1a()` 生成 JS/C 对拍金标准常量（`0x811c9dc5 / 0xe40c292c / 0x1a47e90b / 0xa7ce7505 / 0x09d6a1c5 / 0xee980ac9`） |
 | `tests/probe_detach_test.js` | `thread_probe.js` 的卸载验证：到点 detach、幂等、安装失败不留定时器、统计口径。**43 断言** |
 | `crc_crosscheck/` | JS/C 的 FNV-1a 逐字节一致（18 组，含真实 ch0）；反面对照证明 `Math.imul` 必需 |
 | `bindweak_probe.js` / `bindweak_run.py` | `Script.bindWeak` 生命周期实测（本机进程） |
@@ -161,4 +164,9 @@ cd crc_crosscheck; python run_crosscheck.py
 
 - 本机只能用 `stream`；`--proto dgram` 只能在 Linux/Android 上测（Windows 内核不支持 AF_UNIX DGRAM）。
 - 原生负载是 `seq` 决定的伪随机序列，不是真语音；真语音路径已由第二阶段 `pcm_talk.raw` 验证。
-- 只有 1 个生产者 / 1 个消费者。若真机上 `feed` 跨线程并发（**未验证**），SPSC 需换成每线程独立环或 MPSC。
+- 只有 1 个生产者 / 1 个消费者。真机实测 `producerTid` 恒为 19873（单生产者），若将来出现第二个生产者，
+  脚本会自动禁用旁路并记录 `multi-producer:<tid>`。
+- 线程序号 `seq` 在"发送尝试"时分配：`sendDrop` 会消耗一个 `seq`，接收端表现为缺口；
+  `stale` / `ringDrop` / `noPeerDrop` 不消耗 `seq`。因此 `接收端 missing == sendDrop + 内核丢包`。
+- 帧头 `ts_us` 是"进入 Hook 并拿到 JS 锁之后"的时刻，受 Frida JS 锁排队影响会成对聚集
+  （实测间隔 5.77~154.53 ms，均值 39.9 ms）。T4 以后的下游节奏判断不能直接依赖该时间戳。
