@@ -12,7 +12,8 @@
  *   4    1     ver          2
  *   5    1     flags        bit0 synthetic, bit1 speech_active
  *   6    2     hdr_len      40
- *   8    4     seq          生产序号，从 0 起，单调 +1（缺口 = 丢帧）
+ *   8    4     seq          生产序号，同一发送实例内单调 +1（缺口 = 丢帧）；
+ *                            起始值由发送端决定：uds_source.c 首帧 0，pcm_bridge_draft.js 首帧 1
  *   12   8     ts_us        采集时刻，同一台机器内的单调微秒（跨进程可直接相减）
  *   20   4     epoch        发送端实例标识（重启即变）
  *   24   4     rate         16000

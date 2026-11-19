@@ -97,7 +97,8 @@ console.log('[P1] 正常安装 -> 到点 FINAL -> detach + 清定时器');
   const finalLogs = env.logs.filter(l => /FINAL/.test(l));
   ok(finalLogs.length === 1, '打印了 1 次 FINAL');
   ok(env.logs.some(l => /total=2/.test(l)), 'FINAL 里 total=2');
-  ok(env.logs.some(l => /\[ok\] 只有 1 个生产者线程/.test(l)), 'FINAL 给出 SPSC 判定');
+  ok(env.logs.some(l => /观察窗口内仅发现 1 个 feed 调用线程/.test(l)), 'FINAL 只声明"窗口内 1 个线程"');
+  ok(env.logs.some(l => /尚不能证明长期单生产者/.test(l)), 'FINAL 明确表示不能据此证明 SPSC 前提');
   eq(env.cleared.interval, 1, 'clearInterval 调用 1 次');
   eq(env.cleared.timeout, 1, 'clearTimeout 调用 1 次');
 
@@ -144,7 +145,7 @@ console.log('\n[P4] 统计口径：多线程 / 长度直方图');
   ok(env.logs.some(l => /threads=2/.test(l)), 'threads=2');
   ok(env.logs.some(l => /"5120":2/.test(l)), '长度直方图 5120 -> 2');
   ok(env.logs.some(l => /"320":1/.test(l)), '长度直方图 320 -> 1');
-  ok(env.logs.some(l => /检出多个生产者线程/.test(l)), '多线程时给出 MPSC 警告');
+  ok(env.logs.some(l => /观察窗口内发现多个 feed 调用线程/.test(l)), '多线程时给出 MPSC 警告');
   eq(env.detach, 1, '多线程场景同样会 detach');
 }
 

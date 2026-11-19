@@ -313,3 +313,84 @@ if (stopTimer !== null) { clearTimeout(stopTimer); stopTimer = null; }
 | 5 | 本次 `decodeTimespec` 修正未在真机复核 | 需真机首次运行确认 `ts_us` 与 `CLOCK_MONOTONIC` 一致 |
 
 > 特别声明：本节所有"通过"都是 **W-PC（本机 node / 编译）**，与 TG-Z02 原厂进程无关。
+
+---
+
+## 8. 修订 5：生命周期闭环（按 `_analysis/11.txt` 的补丁）
+
+依据 `11.txt` 的 §6 规则清单、§1.1/§1.2 的可见补丁块、§4/§5 的测试要求实施。
+本轮仍然**没有**跑真机 Hook / thread_probe / PCM Bridge，**T-DEV 仍为 0**。
+
+### 8.1 代码改动
+
+| # | 位置 | 改动 |
+|---|---|---|
+| 1.1 | `LIFECYCLE` 之后 | 新增 `hookListener / hookDetachAttempted / hookDetached / hookDetachError / tick / stat / teardownDone` |
+| 1.2 | `installHook()` | 生命周期不活跃时抛 `lifecycle-not-active`；**保存 `Interceptor.attach()` 返回值**；attach 返回 null 也抛错；`onEnter` 三道闸门（`teardownDone` / `LIFECYCLE.alive` / `st.enabled`） |
+| 1.3 | 启动段 | 抽出 `startTimers()`；启动失败统一 `catch → st.why='install:…' → teardown()` 回滚 |
+| 1.4 | teardown 段 | `teardown()` 幂等；顺序固定为 **关数据闸门 → 清 tick/stat → 最多一次 detach → 关 socket**；新增 `teardownStatus()`，`rpc.stop` 返回 `stopped / hookDetachAttempted / hookDetached / hookDetachError / tickActive / statActive / fd` |
+| — | hook 回调 | 不做 detach / close / 定时器清理（`disable()` 只置 `wantsClose`，真正的 close 在 tick 里） |
+
+### 8.2 与 `11.txt` 的一处偏离（需要你确认）
+
+`11.txt` §8.3 要求把 `tgz2_frame.h` 的 seq 注释改成"从 1 开始"。
+
+**但 C 发送端首帧是 0**：`uds_source.c` 第 249 行 `uint32_t seq = 0;`、第 261 行 `h.seq = seq;`（先打包后自增，第 293 行才 `seq++`）。
+只有 `pcm_bridge_draft.js` 是"先自增再写帧"，首帧为 1。接收端不依赖起始值（只按增量算缺口）。
+
+若按原文写"从 1 起"，会把 `uds_source.c` 描述错。实际改成：
+
+```
+seq  生产序号，同一发送实例内单调 +1（缺口 = 丢帧）；
+     起始值由发送端决定：uds_source.c 首帧 0，pcm_bridge_draft.js 首帧 1
+```
+
+### 8.3 `thread_probe.js` 判定措辞（已改）
+
+| 场景 | 现在的输出 |
+|---|---|
+| 窗口内 1 个 tid | `[??] 观察窗口内仅发现 1 个 feed 调用线程；尚不能证明长期单生产者，SPSC 前提仍需谨慎验证` |
+| 窗口内 >1 个 tid | `[!!] 观察窗口内发现多个 feed 调用线程 -> SPSC 前提不成立，必须改 MPSC（或每线程独立环）` |
+| 0 个 tid | `[..] 观察窗口内没有观测到任何 feed 调用：hook 没装上或该时段无音频` |
+
+头注释也补上了同一限定：**只能观测一个时间窗口**，要真正证明需覆盖静默/唤醒/识别会话/播放全部状态。
+
+### 8.4 实际运行结果（非预估）
+
+| 命令 | 结果 |
+|---|---|
+| `node --check pcm_bridge_draft.js` | exit 0 |
+| `node --check thread_probe.js` | exit 0 |
+| `node --check tests/bridge_unit_test.js` | exit 0 |
+| `node --check tests/probe_detach_test.js` | exit 0 |
+| `node tests/bridge_unit_test.js` | **92 passed / 0 failed**（上一轮 61，本轮 +31） |
+| `node tests/probe_detach_test.js` | **44 passed / 0 failed**（上一轮 43，措辞断言更新后 +1） |
+| `python crc_crosscheck/run_crosscheck.py` | **RESULT: PASS，18/18 与 C 一致**（反面对照 17/18 不一致） |
+
+完整输出留档：`03_uds_test/_run/round5_test_output.txt`。
+
+### 8.5 新增的生命周期测试（T7–T11，31 条断言）
+
+| 用例 | 覆盖 |
+|---|---|
+| T7 `stop` 正常路径 | 先关闸门 → `clearInterval` 两次 → `detach` 一次 → `close` 一次；`tickActive/statActive=false`；stop 后 tick 不再 `sendto`、hook 不再入环 |
+| T8 幂等 | 三次 `stop()` 都返回 `stopped=true`；detach 只 1 次、clearInterval 只 2 次 |
+| T9 detach 抛异常 | `hookDetachError` 记录异常，`hookDetached=false`，但定时器与 socket 仍被清理（先建 socket 再 stop，断言 `close` 恰好 +1） |
+| T10 attach 失败 | `enabled=false`、`why` 以 `install:` 开头、无 hook、**无任何定时器**、`hookDetachAttempted=false` |
+| T11 stop 后不再发送 | stop 关闭 socket 恰好一次，之后 tick 不再 `sendto` |
+
+### 8.6 过程中修掉的一处**测试自身**缺陷
+
+T9 最初断言"socket 仍然被关闭"，但该用例从未建过 socket（`fd=-1` → `closeSock()` 正确什么都不做），
+断言因此失败。已改为先 `feed + tick` 真建出 socket，再 `stop`，断言 `close` 增量恰好 1 —— 属于**测试补强**，不是放宽断言。
+
+### 8.7 本轮仍未解决（U）
+
+| # | 项 | 说明 |
+|---|---|---|
+| 1 | 测试环境是**假 Frida**，不是真机 | `Interceptor`/`Memory`/`NativeFunction` 全是桩；真机行为仍需 T-DEV 验证 |
+| 2 | `teardown` 与 `drain` 的并发 | JS 单线程，不存在真正并发；但若 `stop()` 恰在 `drain()` 执行中到来，会排在其后执行——行为上安全，未做显式建模 |
+| 3 | `feed` 是否单生产者 | 探针仍未执行；守卫只能发现跨 tid 交替 |
+| 4 | frida-server 被 `kill -9` 时的 fd 归属 | 设计上残留到目标进程退出 |
+
+> 再次声明：§8 全部为 **W-PC**，`T-DEV = 0`。

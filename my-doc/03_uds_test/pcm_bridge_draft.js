@@ -1,9 +1,14 @@
 'use strict';
 /*
- * pcm_bridge_draft.js -- 方案 A 草稿（真机短时验证用 · 修订 3）
+ * pcm_bridge_draft.js -- 方案 A 草稿（真机短时验证用 · 修订 5）
  *
  * 状态：**仍未在 TG-Z02 上运行过**。本轮只做静态与 PC 侧校验，
  *       没有在设备上执行 hook、thread_probe 或 bridge。
+ *
+ * 修订 5 相对修订 4：
+ *   F9  Hook listener 显式保存；teardown 先关数据闸门再 detach（最多一次）、
+ *       清定时器、关 socket；重复 stop 幂等；初始化失败统一回滚；
+ *       Hook 回调内不做 detach/close/定时器清理
  *
  * 修订 3 相对修订 2（见 03_pcm_bridge_final_review.md）：
  *   F1 FNV-1a 改用 Math.imul（32 位乘法精度），与 tgz2_frame.h 逐字节一致；
@@ -84,6 +89,16 @@ var st = {
  * 也就是把正在用的 fd 关掉。所以这里持有一个不可回收的对象。
  */
 var LIFECYCLE = { alive: true, fds: [] };
+
+/* 修订 5：Hook 与资源的显式生命周期 */
+var hookListener = null;
+var hookDetachAttempted = false;
+var hookDetached = false;
+var hookDetachError = null;
+
+var tick = null;
+var stat = null;
+var teardownDone = false;
 
 function report(o) { try { send(o); } catch (e) { } }
 function errnoOf() {
@@ -257,11 +272,16 @@ function ensureSock(now) {
   }
 }
 
-/* ============ 5) hook（F7/F8） ============ */
+/* ============ 5) hook（修订 5：保存 listener，stop 后禁止处理） ============ */
 function installHook() {
-  Interceptor.attach(feed, {
+  if (teardownDone || !LIFECYCLE.alive || !st.enabled) {
+    throw new Error('lifecycle-not-active');
+  }
+
+  hookListener = Interceptor.attach(feed, {
     onEnter: function (args) {
-      if (!st.enabled) return;
+      /* 三道闸门：已 teardown / 生命周期结束 / 旁路禁用 -> 立刻返回，什么都不做 */
+      if (teardownDone || !LIFECYCLE.alive || !st.enabled) return;
       try {
         var tid = Process.getCurrentThreadId();
 
@@ -301,6 +321,10 @@ function installHook() {
       }
     }
   });
+
+  if (hookListener === null || hookListener === undefined) {
+    throw new Error('attach-returned-null');
+  }
 }
 
 /* ============ 6) 发送 ============ */
@@ -368,57 +392,102 @@ function drain() {
   }
 }
 
-/* ============ 7) 启动 ============ */
-if (st.enabled) {
-  try {
+/* ============ 7) 启动与定时器 ============ */
+function startTimers() {
+  tick = setInterval(function () {
+    if (teardownDone || !LIFECYCLE.alive) return;
+    try {
+      if (st.wantsClose) { st.wantsClose = false; closeSock(); }   /* 见 disable() */
+      drain();
+    } catch (e) { st.sendErr++; }
+  }, TICK_MS);
+
+  stat = setInterval(function () {
+    if (teardownDone || !LIFECYCLE.alive) return;
+    report({ t: 'stat', enabled: st.enabled, why: st.why, epoch: st.epoch, seq: st.seq,
+             frames: st.frames, sent: st.sent, stale: st.stale, ringDrop: st.ringDrop,
+             lenBad: st.lenBad, readFail: st.readFail, hookEx: st.hookEx,
+             sendDrop: st.sendDrop, sendErr: st.sendErr, clockFail: st.clockFail,
+             clockDrop: st.clockDrop, noClockTicks: st.noClockTicks,
+             connectFail: st.connectFail, reconnects: st.reconnects,
+             sessions: st.sessions, disables: st.disables, depthMax: st.depthMax,
+             producerTid: st.producerTid, tids: st.tids, fd: st.fd, dry: DRY_RUN });
+  }, 5000);
+
+  if (tick === null || tick === undefined || stat === null || stat === undefined) {
+    throw new Error('setInterval-returned-null');
+  }
+}
+
+try {
+  if (!LIFECYCLE.alive) throw new Error('lifecycle-not-active');
+  if (st.enabled) {
     bindLibc();                                            /* 时钟需要，DRY_RUN 也绑 */
     st.epoch = ((nowUs() & 0xFFFFFFFF) ^ 0x5A5A5A5A) >>> 0;
     installHook();
     st.why = 'ok';
-  } catch (e) {
-    st.enabled = false;
-    st.why = 'install';
   }
+  startTimers();
+} catch (e) {
+  /* 初始化失败：统一回滚已经创建的资源（listener / 定时器 / socket），不留半成品 */
+  st.enabled = false;
+  st.why = 'install:' + String(e && e.message ? e.message : e);
+  teardown();
 }
 
-var tick = setInterval(function () {
-  try {
-    if (st.wantsClose) { st.wantsClose = false; closeSock(); }   /* 见 disable() */
-    drain();
-  } catch (e) { st.sendErr++; }
-}, TICK_MS);
-var stat = setInterval(function () {
-  report({ t: 'stat', enabled: st.enabled, why: st.why, epoch: st.epoch, seq: st.seq,
-           frames: st.frames, sent: st.sent, stale: st.stale, ringDrop: st.ringDrop,
-           lenBad: st.lenBad, readFail: st.readFail, hookEx: st.hookEx,
-           sendDrop: st.sendDrop, sendErr: st.sendErr, clockFail: st.clockFail,
-           clockDrop: st.clockDrop, noClockTicks: st.noClockTicks,
-           connectFail: st.connectFail, reconnects: st.reconnects,
-           sessions: st.sessions, disables: st.disables, depthMax: st.depthMax,
-           producerTid: st.producerTid, tids: st.tids, fd: st.fd, dry: DRY_RUN });
-}, 5000);
-
-/* ============ 8) 资源清理（F2） ============
- * 1) 首选：宿主在卸载前调用 rpc.exports.stop()（同步、确定）。
- * 2) 兜底：Script.bindWeak(LIFECYCLE, ...) —— LIFECYCLE 有强引用，不会被提前回收，
- *    文档语义是「target 被 GC 或脚本即将卸载」时回调，因此等价于 unload 钩子。
- * 3) 最后：目标进程退出时内核回收全部 fd（唯一真正"自动"的路径）。
+/* ============ 8) 资源清理（修订 5：幂等 + 显式 detach） ============
+ * 顺序固定：
+ *   1) 先关数据闸门（teardownDone / LIFECYCLE.alive / st.enabled），在飞的 hook 回调立刻返回
+ *   2) 清 tick / stat 定时器
+ *   3) 最多尝试一次 listener.detach()
+ *   4) 关 socket
+ * Hook 回调里**不做** detach、close、定时器清理（这些只在 tick / stop 里发生）。
+ * 自动兜底：目标进程退出时内核回收全部 fd；脚本卸载时 Script.bindWeak 触发 teardown。
  */
+function teardownStatus() {
+  return {
+    stopped: teardownDone,
+    hookDetachAttempted: hookDetachAttempted,
+    hookDetached: hookDetached,
+    hookDetachError: hookDetachError,
+    tickActive: tick !== null && tick !== undefined,
+    statActive: stat !== null && stat !== undefined,
+    fd: st.fd,
+    enabled: st.enabled,
+    why: st.why
+  };
+}
+
 function teardown() {
-  try { clearInterval(tick); } catch (e) { }
-  try { clearInterval(stat); } catch (e) { }
-  try { LIFECYCLE.alive = false; } catch (e) { }
+  if (teardownDone) return teardownStatus();          /* 幂等：重复调用直接返回状态 */
+  teardownDone = true;
+
+  LIFECYCLE.alive = false;
+  st.enabled = false;
+
+  if (tick !== null && tick !== undefined) { try { clearInterval(tick); } catch (e) { } tick = null; }
+  if (stat !== null && stat !== undefined) { try { clearInterval(stat); } catch (e) { } stat = null; }
+
+  if (hookListener !== null && hookListener !== undefined && !hookDetachAttempted) {
+    hookDetachAttempted = true;
+    try { hookListener.detach(); hookDetached = true; }
+    catch (e) { hookDetachError = String(e && e.message ? e.message : e); }
+  }
+
   try { closeSock(); } catch (e) { }
+
+  return teardownStatus();
 }
 
 rpc.exports = {
-  stop: function () { teardown(); return { why: st.why, fd: st.fd }; },
+  stop: function () { return teardown(); },
   stats: function () {
     return { enabled: st.enabled, why: st.why, frames: st.frames, sent: st.sent,
              stale: st.stale, ringDrop: st.ringDrop, sendDrop: st.sendDrop,
              sendErr: st.sendErr, hookEx: st.hookEx, clockFail: st.clockFail,
              clockDrop: st.clockDrop, noClockTicks: st.noClockTicks,
-             producerTid: st.producerTid, tids: st.tids, fd: st.fd };
+             producerTid: st.producerTid, tids: st.tids, fd: st.fd,
+             lifecycle: teardownStatus() };
   }
 };
 

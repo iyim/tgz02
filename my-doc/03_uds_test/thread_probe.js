@@ -3,7 +3,11 @@
  * thread_probe.js -- 只读线程探针：验证 AGSpeechEngine::feed 是不是"单生产者"
  *
  * 目的：SPSC（无锁单生产者/单消费者）环的前提是**只有一个线程**调用 feed。
- *       第二阶段只证明了"数据从 AG-audio_record 线程流出来"，没有统计过调用线程数量。
+ *
+ * 重要限定（修订 5）：本探针**只能观测一个时间窗口**。
+ * 即使 30 秒窗口内只看到一个 tid，也**不能**据此宣布"SPSC 前提成立"——
+ * 只能说"观察窗口内仅发现 1 个 feed 调用线程，尚不能证明长期单生产者"。
+ * 真正的证明需要覆盖"静默 / 唤醒 / 识别会话 / 播放"等全部状态。
  *
  * 状态：**未在 TG-Z02 上运行**（本轮禁止）。属于 hook 操作，需按 03_pcm_bridge_final_review.md 的流程单独审核后执行。
  *
@@ -58,11 +62,11 @@ function dump(tag) {
 function verdict() {
   var n = Object.keys(tids).length;
   if (n > 1) {
-    console.log('[!!] 检出多个生产者线程 -> SPSC 前提不成立，必须改 MPSC（或每线程独立环）');
+    console.log('[!!] 观察窗口内发现多个 feed 调用线程 -> SPSC 前提不成立，必须改 MPSC（或每线程独立环）');
   } else if (n === 1) {
-    console.log('[ok] 只有 1 个生产者线程 -> SPSC 前提成立');
+    console.log('[??] 观察窗口内仅发现 1 个 feed 调用线程；尚不能证明长期单生产者，SPSC 前提仍需谨慎验证');
   } else {
-    console.log('[..] 没有观测到任何 feed 调用：hook 没装上或该时段无音频');
+    console.log('[..] 观察窗口内没有观测到任何 feed 调用：hook 没装上或该时段无音频');
   }
 }
 

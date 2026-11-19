@@ -58,6 +58,9 @@ function makeEnv(opts) {
   const env = {
     allocs: [], sends: [], timers: { interval: [], timeout: [] },
     hooks: [], detachCount: 0, weakBinds: [],
+    clearedIntervals: 0, clearedTimeouts: 0,
+    attachThrows: !!(opts && opts.attachThrows),
+    detachThrows: !!(opts && opts.detachThrows),
     syscalls: { socket: 0, connect: 0, sendto: 0, fcntl: 0, close: 0 },
     clock: { mode: opts.clockMode || 'ok', sec: opts.sec, nsec: opts.nsec, calls: 0 },
     tid: opts.tid || 4242
@@ -112,15 +115,24 @@ function makeEnv(opts) {
     Memory: MemoryStub,
     Process: { getCurrentThreadId: () => env.tid },
     Interceptor: {
-      attach(addr, cbs) { env.hooks.push(cbs); return { detach() { env.detachCount++; } }; }
+      attach(addr, cbs) {
+        if (env.attachThrows) throw new Error('attach failed (injected)');
+        env.hooks.push(cbs);
+        return {
+          detach() {
+            env.detachCount++;
+            if (env.detachThrows) throw new Error('detach failed (injected)');
+          }
+        };
+      }
     },
     NativeFunction: function (tag, ret, args) { return function (...a) { return libcImpl[tag.__libc](...a); }; },
     ptr: (v) => mkPtr(v),
     send: (o) => { env.sends.push(o); },
     setInterval: (fn) => { env.timers.interval.push(fn); return env.timers.interval.length; },
-    clearInterval: () => { },
+    clearInterval: () => { env.clearedIntervals++; },
     setTimeout: (fn, ms) => { env.timers.timeout.push(fn); return env.timers.timeout.length; },
-    clearTimeout: () => { },
+    clearTimeout: () => { env.clearedTimeouts++; },
     Script: { bindWeak: (t, cb) => { env.weakBinds.push(cb); return 1; } },
     rpc: { exports: null }
   };
@@ -325,6 +337,88 @@ function testMultiProducer() {
   eq(exports.stats().frames, before, '禁用后不再入环');
 }
 
+/* ---------------- T7–T10: 生命周期 ---------------- */
+function testLifecycle() {
+  console.log('\n[T7] stop：先关闸门 -> 清定时器 -> detach 一次 -> 关 socket');
+  const { env, exports } = mount();
+  feedOnce(env, makePcm());
+  env.timers.interval[0]();                      /* 建 socket + 发一帧 */
+  eq(env.syscalls.sendto, 1, 'stop 之前已发送 1 帧');
+  eq(env.hooks.length, 1, 'stop 之前 hook 在位');
+
+  const s = exports.stop();
+  eq(s.stopped, true, 'stopped = true');
+  eq(s.hookDetachAttempted, true, 'hookDetachAttempted = true');
+  eq(s.hookDetached, true, 'hookDetached = true');
+  eq(s.hookDetachError, null, 'hookDetachError = null');
+  eq(env.detachCount, 1, 'listener.detach() 调用 1 次');
+  eq(env.clearedIntervals, 2, 'tick 与 stat 都 clearInterval（2 次）');
+  eq(s.tickActive, false, 'tickActive = false');
+  eq(s.statActive, false, 'statActive = false');
+  eq(env.syscalls.close >= 1, true, 'socket 已关闭');
+  eq(exports.stats().enabled, false, 'enabled 已置 false');
+
+  /* teardown 之后：tick 与 hook 都不再产生动作 */
+  const sentBefore = env.syscalls.sendto;
+  env.timers.interval[0]();
+  eq(env.syscalls.sendto, sentBefore, 'teardown 后 tick 不再发送');
+  feedOnce(env, makePcm());
+  eq(exports.stats().frames, 1, 'teardown 后 hook 不再入环（frames 停在 1）');
+}
+
+function testStopIdempotent() {
+  console.log('\n[T8] stop 幂等：重复调用不重复 detach / 不重复清理');
+  const { env, exports } = mount();
+  const a = exports.stop();
+  const b = exports.stop();
+  const c = exports.stop();
+  eq(a.stopped && b.stopped && c.stopped, true, '三次 stop 都返回 stopped = true');
+  eq(env.detachCount, 1, 'detach 只发生 1 次');
+  eq(env.clearedIntervals, 2, 'clearInterval 只发生 2 次（tick + stat）');
+}
+
+function testDetachFailure() {
+  console.log('\n[T9] detach 抛异常：错误被记录，不中断后续清理');
+  const { env, exports } = mount({ detachThrows: true });
+  feedOnce(env, makePcm());
+  env.timers.interval[0]();                        /* 先真的建出 socket */
+  eq(env.syscalls.socket, 1, 'socket 已创建');
+  const closes = env.syscalls.close;
+
+  const s = exports.stop();
+  eq(s.hookDetachAttempted, true, 'hookDetachAttempted = true');
+  eq(s.hookDetached, false, 'hookDetached = false');
+  eq(/detach failed/.test(s.hookDetachError || ''), true, 'hookDetachError 记录异常 -> ' + s.hookDetachError);
+  eq(env.clearedIntervals, 2, '定时器仍然被清理');
+  eq(env.syscalls.close, closes + 1, 'detach 抛异常后 socket 仍然被关闭一次');
+}
+
+function testAttachFailure() {
+  console.log('\n[T10] attach 失败：统一回滚，不留 hook / 不留定时器');
+  const { env, exports } = mount({ attachThrows: true });
+  const st = exports.stats();
+  eq(st.enabled, false, 'enabled = false');
+  eq(/^install:/.test(st.why), true, 'why 以 install: 开头 -> ' + st.why);
+  eq(env.hooks.length, 0, '没有可用的 hook');
+  eq(env.timers.interval.length, 0, '没有创建任何定时器');
+  eq(st.lifecycle.stopped, true, '已进入 stopped 状态');
+  eq(st.lifecycle.hookDetachAttempted, false, '没有 listener，未尝试 detach');
+}
+
+function testStopAfterSocketClose() {
+  console.log('\n[T11] stop 关 socket 之后不再发送');
+  const { env, exports } = mount();
+  feedOnce(env, makePcm());
+  env.timers.interval[0]();
+  const closes = env.syscalls.close;
+  const sent = env.syscalls.sendto;
+  exports.stop();
+  eq(env.syscalls.close, closes + 1, 'stop 关闭 socket 恰好一次');
+  feedOnce(env, makePcm());
+  env.timers.interval[0]();
+  eq(env.syscalls.sendto, sent, 'stop 之后不再 sendto');
+}
+
 /* ---------------- 跑 ---------------- */
 console.log('bridge_unit_test.js  (source: ' + path.basename(BRIDGE) + ', ' + SRC.split('\n').length + ' lines)');
 testTimespec();
@@ -334,6 +428,11 @@ testClockFail('badnsec', 'tv_nsec = 1e9 非法');
 testClockRecover();
 testDryRun();
 testMultiProducer();
+testLifecycle();
+testStopIdempotent();
+testDetachFailure();
+testAttachFailure();
+testStopAfterSocketClose();
 
 console.log(`\n=== ${pass} passed, ${fail} failed ===`);
 if (fail) { console.log(failures.map(f => '  - ' + f).join('\n')); process.exit(1); }
