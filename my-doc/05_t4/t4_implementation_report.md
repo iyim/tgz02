@@ -6,7 +6,8 @@
 > **真人说话（场景 B/C）与背景噪声（场景 D）未验证** —— 设备旁无人，也不能用合成音频冒充。
 
 - 基线 commit：`50c61f8863a028c4f94231de18efd97fd4e2d05e`
-- 本轮提交：`feat: add T4 PCM receiver and energy VAD`（SHA 见提交后的报告/回复）
+- 本轮提交：`f93e2c967807357604e395769db747d0a1940ac5`
+  （`feat: add T4 PCM receiver and energy VAD`；本报告的回填只改这一行）
 - 分支：`main`（未建分支、未开 PR、未 reset、未 force push）
 - 未修改：`tgz2_frame.h`（协议/版本/帧大小）、`pcm_bridge_draft.js`、`dgram_server.c`、
   T0/T1/T2/T3 已通过的代码与日志、原厂 APK/SO/分区
