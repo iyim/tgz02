@@ -1,0 +1,58 @@
+receiver pid=11862 case=BC window=300s out=/data/local/tmp/t4/acc_BC
+bridge rc=0 (302.6s)
+
+SEGMENTS (30):
+  #1 seq 545..569 25 frames 1000 ms rms_avg=659.4 rms_max=6900.4 end=silence file=seg_c187360f_0001_545.wav
+  #2 seq 588..620 33 frames 1320 ms rms_avg=369.1 rms_max=991.1 end=silence file=seg_c187360f_0002_588.wav
+  #3 seq 670..797 128 frames 5120 ms rms_avg=599.2 rms_max=2167.9 end=silence file=seg_c187360f_0003_670.wav
+  #4 seq 897..928 32 frames 1280 ms rms_avg=472.5 rms_max=1598.0 end=silence file=seg_c187360f_0004_897.wav
+  #5 seq 965..1095 131 frames 5240 ms rms_avg=527.2 rms_max=1669.4 end=silence file=seg_c187360f_0005_965.wav
+  #6 seq 1151..1182 32 frames 1280 ms rms_avg=378.8 rms_max=1096.4 end=silence file=seg_c187360f_0006_1151.wav
+  #7 seq 1245..1371 127 frames 5080 ms rms_avg=655.7 rms_max=3050.3 end=silence file=seg_c187360f_0007_1245.wav
+  #8 seq 1482..1516 35 frames 1400 ms rms_avg=510.1 rms_max=1708.1 end=silence file=seg_c187360f_0008_1482.wav
+  #9 seq 1544..1653 110 frames 4400 ms rms_avg=664.7 rms_max=2025.7 end=silence file=seg_c187360f_0009_1544.wav
+  #10 seq 1744..1778 35 frames 1400 ms rms_avg=558.8 rms_max=1945.0 end=silence file=seg_c187360f_0010_1744.wav
+  #11 seq 1807..1920 114 frames 4560 ms rms_avg=627.3 rms_max=1425.5 end=silence file=seg_c187360f_0011_1807.wav
+  #12 seq 2071..2118 48 frames 1920 ms rms_avg=459.1 rms_max=2158.5 end=silence file=seg_c187360f_0012_2071.wav
+  #13 seq 2127..2187 61 frames 2440 ms rms_avg=532.4 rms_max=2727.5 end=silence file=seg_c187360f_0013_2127.wav
+  #14 seq 2288..2335 48 frames 1920 ms rms_avg=382.0 rms_max=2073.5 end=silence file=seg_c187360f_0014_2288.wav
+  #15 seq 2363..2443 81 frames 3240 ms rms_avg=568.2 rms_max=1674.2 end=silence file=seg_c187360f_0015_2363.wav
+  #16 seq 2503..2547 45 frames 1800 ms rms_avg=406.7 rms_max=1981.4 end=silence file=seg_c187360f_0016_2503.wav
+  #17 seq 2562..2623 62 frames 2480 ms rms_avg=592.0 rms_max=1435.7 end=silence file=seg_c187360f_0017_2562.wav
+  #18 seq 2685..2718 34 frames 1360 ms rms_avg=566.6 rms_max=1745.4 end=silence file=seg_c187360f_0018_2685.wav
+  #19 seq 2779..2812 34 frames 1360 ms rms_avg=577.7 rms_max=1775.9 end=silence file=seg_c187360f_0019_2779.wav
+  #20 seq 2868..2900 33 frames 1320 ms rms_avg=544.5 rms_max=1725.8 end=silence file=seg_c187360f_0020_2868.wav
+  #21 seq 3193..3226 34 frames 1360 ms rms_avg=510.3 rms_max=1737.2 end=silence file=seg_c187360f_0021_3193.wav
+  #22 seq 3300..3331 32 frames 1280 ms rms_avg=304.4 rms_max=1112.4 end=silence file=seg_c187360f_0022_3300.wav
+  #23 seq 3488..3520 33 frames 1320 ms rms_avg=449.1 rms_max=1478.9 end=silence file=seg_c187360f_0023_3488.wav
+  #24 seq 3662..3690 29 frames 1160 ms rms_avg=285.3 rms_max=1002.4 end=silence file=seg_c187360f_0024_3662.wav
+  #25 seq 4077..4108 32 frames 1280 ms rms_avg=454.3 rms_max=1498.5 end=silence file=seg_c187360f_0025_4077.wav
+  #26 seq 4157..4200 44 frames 1760 ms rms_avg=381.5 rms_max=1078.8 end=silence file=seg_c187360f_0026_4157.wav
+  #27 seq 4431..4463 33 frames 1320 ms rms_avg=545.9 rms_max=1838.7 end=silence file=seg_c187360f_0027_4431.wav
+  #28 seq 4628..4732 105 frames 4200 ms rms_avg=472.2 rms_max=1740.1 end=silence file=seg_c187360f_0028_4628.wav
+  #29 seq 4739..4909 171 frames 6840 ms rms_avg=2348.5 rms_max=16004.3 end=silence file=seg_c187360f_0029_4739.wav
+  #30 seq 4920..4973 54 frames 2160 ms rms_avg=337.5 rms_max=2826.2 end=silence file=seg_c187360f_0030_4920.wav
+
+SUMMARY {"received": 7504, "accepted": 7504, "processed": 7504, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 3, "queue_depth": 0, "vad_speech_frames": 1695, "segments": 30, "segment_write_errors": 0, "noise_rms": 89.45, "dur_s": 308.115, "epoch": 3850436003, "seq_first": 1, "seq_last": 7504}
+
+WAV files: 30
+  seg_c187360f_0001_545.wav 32044 B
+  seg_c187360f_0002_588.wav 42284 B
+  seg_c187360f_0003_670.wav 163884 B
+  seg_c187360f_0004_897.wav 41004 B
+  seg_c187360f_0005_965.wav 167724 B
+  seg_c187360f_0006_1151.wav 41004 B
+  seg_c187360f_0007_1245.wav 162604 B
+  seg_c187360f_0008_1482.wav 44844 B
+  seg_c187360f_0009_1544.wav 140844 B
+  seg_c187360f_0010_1744.wav 44844 B
+  seg_c187360f_0011_1807.wav 145964 B
+  seg_c187360f_0012_2071.wav 61484 B
+  seg_c187360f_0013_2127.wav 78124 B
+  seg_c187360f_0014_2288.wav 61484 B
+  seg_c187360f_0015_2363.wav 103724 B
+  seg_c187360f_0016_2503.wav 57644 B
+  seg_c187360f_0017_2562.wav 79404 B
+  seg_c187360f_0018_2685.wav 43564 B
+  seg_c187360f_0019_2779.wav 43564 B
+  seg_c187360f_0020_2868.wav 42284 B

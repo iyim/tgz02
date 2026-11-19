@@ -1,0 +1,8 @@
+receiver pid=16018 case=SANITY window=12s out=/data/local/tmp/t4/acc_SANITY
+bridge rc=0 (17.6s)
+
+SEGMENTS (0):
+
+SUMMARY {"received": 0, "accepted": 0, "processed": 0, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 0, "queue_depth": 0, "vad_speech_frames": 0, "segments": 0, "segment_write_errors": 0, "noise_rms": 0.0, "dur_s": 20.055, "epoch": 0, "seq_first": 0, "seq_last": 0}
+
+WAV files: 0

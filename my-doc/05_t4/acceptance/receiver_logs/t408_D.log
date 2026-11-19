@@ -1,0 +1,16 @@
+receiver pid=17246 case=D window=200s out=/data/local/tmp/t4/acc_D
+bridge rc=0 (202.7s)
+
+SEGMENTS (4):
+  #1 seq 4111..4402 292 frames 11680 ms rms_avg=476.7 rms_max=6588.6 end=silence file=seg_60c43d21_0001_4111.wav
+  #2 seq 4422..4622 201 frames 8040 ms rms_avg=241.2 rms_max=2396.4 end=silence file=seg_60c43d21_0002_4422.wav
+  #3 seq 4626..4697 72 frames 2880 ms rms_avg=622.9 rms_max=4504.7 end=silence file=seg_60c43d21_0003_4626.wav
+  #4 seq 4934..4958 25 frames 1000 ms rms_avg=152.6 rms_max=476.6 end=silence file=seg_60c43d21_0004_4934.wav
+
+SUMMARY {"received": 5004, "accepted": 5004, "processed": 5004, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 3, "queue_depth": 0, "vad_speech_frames": 574, "segments": 4, "segment_write_errors": 0, "noise_rms": 80.23, "dur_s": 208.069, "epoch": 2101443630, "seq_first": 1, "seq_last": 5004}
+
+WAV files: 4
+  seg_60c43d21_0001_4111.wav 373804 B
+  seg_60c43d21_0002_4422.wav 257324 B
+  seg_60c43d21_0003_4626.wav 92204 B
+  seg_60c43d21_0004_4934.wav 32044 B

@@ -1,0 +1,8 @@
+receiver pid=16776 case=SANITY2 window=15s out=/data/local/tmp/t4/acc_SANITY2
+bridge rc=0 (17.5s)
+
+SEGMENTS (0):
+
+SUMMARY {"received": 376, "accepted": 376, "processed": 376, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 2, "queue_depth": 0, "vad_speech_frames": 0, "segments": 0, "segment_write_errors": 0, "noise_rms": 75.56, "dur_s": 23.103, "epoch": 1463146252, "seq_first": 1, "seq_last": 376}
+
+WAV files: 0

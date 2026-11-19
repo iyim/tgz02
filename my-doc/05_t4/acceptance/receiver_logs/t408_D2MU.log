@@ -1,0 +1,8 @@
+receiver pid=17727 case=D2MU window=45s out=/data/local/tmp/t4/acc_D2MU
+bridge rc=0 (47.9s)
+
+SEGMENTS (0):
+
+SUMMARY {"received": 1129, "accepted": 1129, "processed": 1129, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 3, "queue_depth": 0, "vad_speech_frames": 0, "segments": 0, "segment_write_errors": 0, "noise_rms": 90.04, "dur_s": 53.038, "epoch": 293208908, "seq_first": 1, "seq_last": 1129}
+
+WAV files: 0

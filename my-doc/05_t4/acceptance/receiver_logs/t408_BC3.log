@@ -1,0 +1,32 @@
+receiver pid=16866 case=BC3 window=220s out=/data/local/tmp/t4/acc_BC3
+bridge rc=0 (222.8s)
+
+SEGMENTS (12):
+  #1 seq 43..70 28 frames 1120 ms rms_avg=213.1 rms_max=518.8 end=silence file=seg_31f417db_0001_43.wav
+  #2 seq 408..432 25 frames 1000 ms rms_avg=755.9 rms_max=10219.2 end=silence file=seg_31f417db_0002_408.wav
+  #3 seq 477..617 141 frames 5640 ms rms_avg=457.9 rms_max=1756.2 end=silence file=seg_31f417db_0003_477.wav
+  #4 seq 863..1000 138 frames 5520 ms rms_avg=540.0 rms_max=1341.0 end=silence file=seg_31f417db_0004_863.wav
+  #5 seq 1271..1438 168 frames 6720 ms rms_avg=551.0 rms_max=1762.0 end=silence file=seg_31f417db_0005_1271.wav
+  #6 seq 1725..1865 141 frames 5640 ms rms_avg=536.5 rms_max=2132.3 end=silence file=seg_31f417db_0006_1725.wav
+  #7 seq 2096..2223 128 frames 5120 ms rms_avg=583.1 rms_max=1626.3 end=silence file=seg_31f417db_0007_2096.wav
+  #8 seq 2565..2612 48 frames 1920 ms rms_avg=608.4 rms_max=2032.3 end=silence file=seg_31f417db_0008_2565.wav
+  #9 seq 2630..2731 102 frames 4080 ms rms_avg=562.2 rms_max=2482.6 end=silence file=seg_31f417db_0009_2630.wav
+  #10 seq 3003..3055 53 frames 2120 ms rms_avg=600.1 rms_max=1923.0 end=silence file=seg_31f417db_0010_3003.wav
+  #11 seq 3081..3139 59 frames 2360 ms rms_avg=715.0 rms_max=2046.0 end=silence file=seg_31f417db_0011_3081.wav
+  #12 seq 4581..4600 20 frames 800 ms rms_avg=105.6 rms_max=432.5 end=silence file=seg_31f417db_0012_4581.wav
+
+SUMMARY {"received": 5503, "accepted": 5503, "processed": 5503, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 4, "queue_depth": 0, "vad_speech_frames": 1003, "segments": 12, "segment_write_errors": 0, "noise_rms": 75.61, "dur_s": 228.025, "epoch": 1432382603, "seq_first": 1, "seq_last": 5503}
+
+WAV files: 12
+  seg_31f417db_0001_43.wav 35884 B
+  seg_31f417db_0002_408.wav 32044 B
+  seg_31f417db_0003_477.wav 180524 B
+  seg_31f417db_0004_863.wav 176684 B
+  seg_31f417db_0005_1271.wav 215084 B
+  seg_31f417db_0006_1725.wav 180524 B
+  seg_31f417db_0007_2096.wav 163884 B
+  seg_31f417db_0008_2565.wav 61484 B
+  seg_31f417db_0009_2630.wav 130604 B
+  seg_31f417db_0010_3003.wav 67884 B
+  seg_31f417db_0011_3081.wav 75564 B
+  seg_31f417db_0012_4581.wav 25644 B

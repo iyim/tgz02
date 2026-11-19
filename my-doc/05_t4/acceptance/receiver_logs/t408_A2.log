@@ -1,0 +1,8 @@
+receiver pid=17106 case=A2 window=60s out=/data/local/tmp/t4/acc_A2
+bridge rc=0 (63.0s)
+
+SEGMENTS (0):
+
+SUMMARY {"received": 1502, "accepted": 1502, "processed": 1502, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 3, "queue_depth": 0, "vad_speech_frames": 0, "segments": 0, "segment_write_errors": 0, "noise_rms": 114.06, "dur_s": 68.06, "epoch": 1157620236, "seq_first": 1, "seq_last": 1502}
+
+WAV files: 0

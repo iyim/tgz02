@@ -1,0 +1,8 @@
+receiver pid=17406 case=D1TV window=45s out=/data/local/tmp/t4/acc_D1TV
+bridge rc=0 (47.5s)
+
+SEGMENTS (0):
+
+SUMMARY {"received": 1127, "accepted": 1127, "processed": 1127, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 3, "queue_depth": 0, "vad_speech_frames": 0, "segments": 0, "segment_write_errors": 0, "noise_rms": 86.45, "dur_s": 53.077, "epoch": 1824280272, "seq_first": 1, "seq_last": 1127}
+
+WAV files: 0

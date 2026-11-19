@@ -1,0 +1,10 @@
+receiver pid=17586 case=D1TV2 window=45s out=/data/local/tmp/t4/acc_D1TV2
+bridge rc=0 (47.7s)
+
+SEGMENTS (1):
+  #1 seq 1023..1045 23 frames 920 ms rms_avg=177.0 rms_max=432.7 end=silence file=seg_54418a5e_0001_1023.wav
+
+SUMMARY {"received": 1127, "accepted": 1127, "processed": 1127, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 4, "queue_depth": 0, "vad_speech_frames": 19, "segments": 1, "segment_write_errors": 0, "noise_rms": 145.16, "dur_s": 53.061, "epoch": 409501290, "seq_first": 1, "seq_last": 1127}
+
+WAV files: 1
+  seg_54418a5e_0001_1023.wav 29484 B

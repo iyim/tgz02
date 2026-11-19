@@ -1,0 +1,22 @@
+receiver pid=11466 case=E window=300s out=/data/local/tmp/t4/acc_E
+bridge rc=0 (302.6s)
+
+SEGMENTS (7):
+  #1 seq 1649..1669 21 frames 840 ms rms_avg=139.3 rms_max=1045.8 end=silence file=seg_993e363e_0001_1649.wav
+  #2 seq 1676..1696 21 frames 840 ms rms_avg=134.2 rms_max=829.1 end=silence file=seg_993e363e_0002_1676.wav
+  #3 seq 2847..2877 31 frames 1240 ms rms_avg=266.1 rms_max=1007.6 end=silence file=seg_993e363e_0003_2847.wav
+  #4 seq 2888..2907 20 frames 800 ms rms_avg=144.5 rms_max=510.4 end=silence file=seg_993e363e_0004_2888.wav
+  #5 seq 3005..3048 44 frames 1760 ms rms_avg=1406.0 rms_max=8393.9 end=silence file=seg_993e363e_0005_3005.wav
+  #6 seq 3525..3555 31 frames 1240 ms rms_avg=244.3 rms_max=2392.9 end=silence file=seg_993e363e_0006_3525.wav
+  #7 seq 3647..3692 46 frames 1840 ms rms_avg=256.5 rms_max=1447.3 end=silence file=seg_993e363e_0007_3647.wav
+
+SUMMARY {"received": 7503, "accepted": 7503, "processed": 7503, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 4, "queue_depth": 0, "vad_speech_frames": 186, "segments": 7, "segment_write_errors": 0, "noise_rms": 83.49, "dur_s": 308.026, "epoch": 4069045651, "seq_first": 1, "seq_last": 7503}
+
+WAV files: 7
+  seg_993e363e_0001_1649.wav 26924 B
+  seg_993e363e_0002_1676.wav 26924 B
+  seg_993e363e_0003_2847.wav 39724 B
+  seg_993e363e_0004_2888.wav 25644 B
+  seg_993e363e_0005_3005.wav 56364 B
+  seg_993e363e_0006_3525.wav 39724 B
+  seg_993e363e_0007_3647.wav 58924 B

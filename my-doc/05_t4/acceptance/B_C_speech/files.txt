@@ -1,0 +1,12 @@
+seg_31f417db_0001_43.wav
+seg_31f417db_0002_408.wav
+seg_31f417db_0003_477.wav
+seg_31f417db_0004_863.wav
+seg_31f417db_0005_1271.wav
+seg_31f417db_0006_1725.wav
+seg_31f417db_0007_2096.wav
+seg_31f417db_0008_2565.wav
+seg_31f417db_0009_2630.wav
+seg_31f417db_0010_3003.wav
+seg_31f417db_0011_3081.wav
+seg_31f417db_0012_4581.wav

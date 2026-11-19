@@ -1,0 +1,8 @@
+receiver pid=14346 case=BC2 window=240s out=/data/local/tmp/t4/acc_BC2
+bridge rc=0 (242.6s)
+
+SEGMENTS (0):
+
+SUMMARY {"received": 1, "accepted": 1, "processed": 1, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 1, "queue_depth": 0, "vad_speech_frames": 0, "segments": 0, "segment_write_errors": 0, "noise_rms": 0.0, "dur_s": 248.099, "epoch": 2737778380, "seq_first": 1, "seq_last": 1}
+
+WAV files: 0

@@ -1,0 +1,12 @@
+receiver pid=11320 case=A window=60s out=/data/local/tmp/t4/acc_A
+bridge rc=0 (62.9s)
+
+SEGMENTS (2):
+  #1 seq 353..378 26 frames 1040 ms rms_avg=153.5 rms_max=401.6 end=silence file=seg_f6e17868_0001_353.wav
+  #2 seq 422..481 60 frames 2400 ms rms_avg=253.4 rms_max=751.5 end=silence file=seg_f6e17868_0002_422.wav
+
+SUMMARY {"received": 1505, "accepted": 1505, "processed": 1505, "bad_len": 0, "bad_crc": 0, "missing": 0, "duplicate": 0, "reorder": 0, "queue_drop": 0, "queue_high_watermark": 4, "queue_depth": 0, "vad_speech_frames": 78, "segments": 2, "segment_write_errors": 0, "noise_rms": 72.05, "dur_s": 68.079, "epoch": 4193922510, "seq_first": 1, "seq_last": 1505}
+
+WAV files: 2
+  seg_f6e17868_0001_353.wav 33324 B
+  seg_f6e17868_0002_422.wav 76844 B
