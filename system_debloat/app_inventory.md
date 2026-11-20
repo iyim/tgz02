@@ -5,12 +5,15 @@
 
 ## 1. 分类汇总
 
-| 类 | 数量 | 总 MB | APK MB | lib MB | oat/vdex MB | 快照 PSS MB |
+| 类 | 数量 | 总 MB | APK MB | lib MB | oat/vdex MB | 快照 PSS 合计 kB |
 |---|---|---|---|---|---|---|
-| A | 1 | 4.6 | 4.6 | 0.0 | 0.0 | 0.0 |
-| B | 14 | 115.33 | 48.1 | 61.76 | 5.46 | 147.8 |
-| C | 19 | 153.89 | 58.35 | 36.71 | 58.85 | 103.0 |
-| D | 21 | 252.9 | 135.2 | 58.1 | 59.6 | 341.5 |
+| A | 1 | 4.6 | 4.6 | 0.0 | 0.0 | 0 |
+| B | 13 | 28.15 | 21.94 | 0.75 | 5.46 | 151,345 |
+| C | 20 | 241.07 | 84.51 | 97.72 | 58.85 | 105,519 |
+| D | 21 | 252.9 | 135.2 | 58.1 | 59.6 | 349,733 |
+
+> 最后一列是该类下各包进程 PSS 的**相加值**（单次快照，仅作量级参考），不是该类包的“内存占用”，
+> 也不能当作禁用/删除后可释放的内存；无进程的包按 0 计入。
 
 合计 **55 个包 / 526.72 MB**。
 
@@ -23,27 +26,27 @@
 | `system/priv-app/<Name>/` | 目录 | 18 | 均带 `oat/`，仅 `DefaultContainerService` 额外带 `lib/` |
 | `vendor/app/` | 未解包（vendor.img） | 2 | `GooglePinyinIME`(26.0 MB)、`MTKThermalManager`(27 KB)，仅核对路径，未做静态分析 |
 | `vendor/overlay/` | 未解包 | 1 | `framework-res__auto_generated_rro.apk`(1.44 MB) |
-| `/data/app` 更新包 | 用户分区 | 2 | `com.alibaba.ailabs.genie.rtc`、`com.topjohnwu.magisk`（覆盖了系统内 prebuilt） |
+| `/data/app` 更新包 | 用户分区 | **3** | `com.alibaba.ailabs.genie.aicare`、`com.alibaba.ailabs.genie.rtc`、`com.topjohnwu.magisk`（`UPDATED_SYSTEM_APP`，覆盖系统内 prebuilt；rev2 由 2 修正为 3） |
 
 ## 3. 完整清单（按分类、体积排序）
 
 | # | 目录 | 包名 | 版本 | 类 | 总 MB | APK | lib | oat/vdex | 组件 | persistent | PSS KB | 设备路径 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 1 | `app/ES.apk` | `com.estrongs.android.pop` | 3.2.5.5 | A | 4.60 | 4.60 | 0.00 | 0.00 | 76 |  |  | /system/app/ES.apk |
-| 2 | `app/AMPE` | `com.alipay.arome.app` | 10.2.3.1775 | B | 87.18 | 26.16 | 61.01 | 0.00 | 506 |  |  | /system/app/AMPE/AMPE.apk |
-| 3 | `app/dangbei.apk` | `com.dangbei1.tvlauncher` | 3.3.6 | B | 8.77 | 8.77 | 0.00 | 0.00 | 78 |  | 96912 | /system/app/dangbei.apk |
-| 4 | `app/Osupdate` | `com.alibaba.ailabs.genie.osupdate` | 9.0.1.0 | B | 5.47 | 1.98 | 0.00 | 3.49 | 6 | 是 | 16011 | /system/app/Osupdate/Osupdate.apk |
-| 5 | `app/Guide` | `com.alibaba.ailabs.genie.guide` | 1.1.0.118 | B | 5.42 | 4.67 | 0.75 | 0.00 | 10 |  |  | /system/app/Guide/Guide.apk |
-| 6 | `app/easytouch.apk` | `com.shere.assistivetouch` | 4.6.1 | B | 4.38 | 4.38 | 0.00 | 0.00 | 57 | 是 | 38422 | /system/app/easytouch.apk |
-| 7 | `priv-app/StorageManager` | `com.android.storagemanager` | 8.1.0 | B | 2.32 | 0.66 | 0.00 | 1.66 | 5 |  |  | /system/priv-app/StorageManager/StorageManager.apk |
-| 8 | `app/qxg.apk` | `com.web1n.permissiondog` | 0.1.0.45 | B | 1.37 | 1.37 | 0.00 | 0.00 | 15 |  |  | /system/app/qxg.apk |
-| 9 | `priv-app/MtpDocumentsProvider` | `com.android.mtp` | 8.1.0 | B | 0.13 | 0.05 | 0.00 | 0.08 | 4 |  |  | /system/priv-app/MtpDocumentsProvider/MtpDocumentsProvider.apk |
-| 10 | `priv-app/StatementService` | `com.android.statementservice` | 1.0 | B | 0.08 | 0.01 | 0.00 | 0.08 | 2 |  |  | /system/priv-app/StatementService/StatementService.apk |
-| 11 | `app/CaptivePortalLogin` | `com.android.captiveportallogin` | 8.1.0 | B | 0.05 | 0.01 | 0.00 | 0.04 | 1 |  |  | /system/app/CaptivePortalLogin/CaptivePortalLogin.apk |
-| 12 | `app/CompanionDeviceManager` | `com.android.companiondevicemanager` | 8.1.0 | B | 0.05 | 0.01 | 0.00 | 0.04 | 2 |  |  | /system/app/CompanionDeviceManager/CompanionDeviceManager.apk |
-| 13 | `app/BluetoothMidiService` | `com.android.bluetoothmidiservice` | 8.1.0 | B | 0.04 | 0.01 | 0.00 | 0.03 | 1 |  |  | /system/app/BluetoothMidiService/BluetoothMidiService.apk |
-| 14 | `priv-app/VpnDialogs` | `com.android.vpndialogs` | 8.1.0 | B | 0.04 | 0.01 | 0.00 | 0.02 | 2 |  |  | /system/priv-app/VpnDialogs/VpnDialogs.apk |
-| 15 | `app/PacProcessor` | `com.android.pacprocessor` | 8.1.0 | B | 0.03 | 0.01 | 0.00 | 0.02 | 1 |  |  | /system/app/PacProcessor/PacProcessor.apk |
+| 2 | `app/dangbei.apk` | `com.dangbei1.tvlauncher` | 3.3.6 | B | 8.77 | 8.77 | 0.00 | 0.00 | 78 |  | 96912 | /system/app/dangbei.apk |
+| 3 | `app/Osupdate` | `com.alibaba.ailabs.genie.osupdate` | 9.0.1.0 | B | 5.47 | 1.98 | 0.00 | 3.49 | 6 | 是 | 16011 | /system/app/Osupdate/Osupdate.apk |
+| 4 | `app/Guide` | `com.alibaba.ailabs.genie.guide` | 1.1.0.118 | B | 5.42 | 4.67 | 0.75 | 0.00 | 10 |  |  | /system/app/Guide/Guide.apk |
+| 5 | `app/easytouch.apk` | `com.shere.assistivetouch` | 4.6.1 | B | 4.38 | 4.38 | 0.00 | 0.00 | 57 | 是 | 38422 | /system/app/easytouch.apk |
+| 6 | `priv-app/StorageManager` | `com.android.storagemanager` | 8.1.0 | B | 2.32 | 0.66 | 0.00 | 1.66 | 5 |  |  | /system/priv-app/StorageManager/StorageManager.apk |
+| 7 | `app/qxg.apk` | `com.web1n.permissiondog` | 0.1.0.45 | B | 1.37 | 1.37 | 0.00 | 0.00 | 15 |  |  | /system/app/qxg.apk |
+| 8 | `priv-app/MtpDocumentsProvider` | `com.android.mtp` | 8.1.0 | B | 0.13 | 0.05 | 0.00 | 0.08 | 4 |  |  | /system/priv-app/MtpDocumentsProvider/MtpDocumentsProvider.apk |
+| 9 | `priv-app/StatementService` | `com.android.statementservice` | 1.0 | B | 0.08 | 0.01 | 0.00 | 0.08 | 2 |  |  | /system/priv-app/StatementService/StatementService.apk |
+| 10 | `app/CaptivePortalLogin` | `com.android.captiveportallogin` | 8.1.0 | B | 0.05 | 0.01 | 0.00 | 0.04 | 1 |  |  | /system/app/CaptivePortalLogin/CaptivePortalLogin.apk |
+| 11 | `app/CompanionDeviceManager` | `com.android.companiondevicemanager` | 8.1.0 | B | 0.05 | 0.01 | 0.00 | 0.04 | 2 |  |  | /system/app/CompanionDeviceManager/CompanionDeviceManager.apk |
+| 12 | `app/BluetoothMidiService` | `com.android.bluetoothmidiservice` | 8.1.0 | B | 0.04 | 0.01 | 0.00 | 0.03 | 1 |  |  | /system/app/BluetoothMidiService/BluetoothMidiService.apk |
+| 13 | `priv-app/VpnDialogs` | `com.android.vpndialogs` | 8.1.0 | B | 0.04 | 0.01 | 0.00 | 0.02 | 2 |  |  | /system/priv-app/VpnDialogs/VpnDialogs.apk |
+| 14 | `app/PacProcessor` | `com.android.pacprocessor` | 8.1.0 | B | 0.03 | 0.01 | 0.00 | 0.02 | 1 |  |  | /system/app/PacProcessor/PacProcessor.apk |
+| 15 | `app/AMPE` | `com.alipay.arome.app` | 10.2.3.1775 | C | 87.18 | 26.16 | 61.01 | 0.00 | 506 |  |  | /system/app/AMPE/AMPE.apk |
 | 16 | `app/AliVideoPlayer` | `com.ailabs.youku.iot` | 2.0.2.165 | C | 45.06 | 10.98 | 21.28 | 12.80 | 21 |  |  | /system/app/AliVideoPlayer/AliVideoPlayer.apk |
 | 17 | `app/GenieChildren` | `com.alibaba.ailabs.genie.children` | 5.11.0.19 | C | 20.14 | 9.97 | 2.76 | 7.40 | 29 |  |  | /system/app/GenieChildren/GenieChildren.apk |
 | 18 | `app/GenieAicare` | `com.alibaba.ailabs.genie.aicare` | 4.0.26 | C | 18.50 | 2.52 | 6.90 | 9.08 | 10 |  |  | /data/app/com.alibaba.ailabs.genie.aicare-zsBAkMuEJlOe5ygOiDbDbw==/base.apk |
@@ -95,7 +98,7 @@
 | 包 | 类 | 总 MB | APK MB | lib MB | oat MB |
 |---|---|---|---|---|---|
 | `com.alibaba.ailabs.genie.smartapp` | D | 87.89 | 24.16 | 35.62 | 28.11 |
-| `com.alipay.arome.app` | B | 87.18 | 26.16 | 61.01 | 0.00 |
+| `com.alipay.arome.app` | C | 87.18 | 26.16 | 61.01 | 0.00 |
 | `com.android.webview` | D | 52.00 | 49.97 | 0.00 | 2.02 |
 | `com.alibaba.ailabs.ar.monitor` | D | 47.86 | 33.19 | 14.67 | 0.00 |
 | `com.ailabs.youku.iot` | C | 45.06 | 10.98 | 21.28 | 12.80 |
@@ -119,5 +122,24 @@ GenieLauncher 20.48），合计 340 MB，占分区内 App 体积的 65%。
   `com.yunos` → `yunos-framework-res.apk`、`com.mediatek` → `framework/mediatek-res/mediatek-res.apk`）
   + `vendor/app` 2 个（`GooglePinyinIME`、`MTKThermalManager`）+ `vendor/overlay` 1 个（`android.auto_generated_rro__`）。
 - 设备 `pm list packages -d` 为空 → **当前没有任何包被禁用**，`enabled=0`（默认）状态为 55 个系统包的全部现状。
-- `com.alibaba.ailabs.genie.rtc` 与 `com.topjohnwu.magisk` 的 `codePath` 指向 `/data/app`，
-  即系统内 prebuilt 被用户更新覆盖；**删除系统内 prebuilt 需先确认 data 版本可独立运行**。
+
+### 5.1 被 `/data/app` 覆盖的系统包（3 个，rev2 修正）
+
+下表把**系统镜像内的预装文件**与**设备当前实际加载的版本**分开列示。`pm path` 指向 `/data/app` 只说明
+“设备上跑的是更新版”，**不代表 system 镜像里没有该 APK**：
+
+| 包名 | 系统内目录 / 版本 | 设备当前加载版本 | 设备 codePath | flags |
+|---|---|---|---|---|
+| `com.alibaba.ailabs.genie.aicare` | `app/GenieAicare` · **4.0.26** | **4.0.62** | `/data/app/com.alibaba.ailabs.genie.aicare-zsBAkMuEJlOe5ygOiDbDbw==/base.apk` | SYSTEM · UPDATED_SYSTEM_APP |
+| `com.alibaba.ailabs.genie.rtc` | `app/GenieRTC` · **4.0.16** | **5.2.78.53746723.dc** | `/data/app/com.alibaba.ailabs.genie.rtc-iD7ciUfp9lpYBtIqAEiqeA==/base.apk` | SYSTEM · UPDATED_SYSTEM_APP |
+| `com.topjohnwu.magisk` | `app/magisk.apk` · **25.2** | **27.0** | `/data/app/com.topjohnwu.magisk-EuMSu4VItaK3widDq122zw==/base.apk` | SYSTEM · UPDATED_SYSTEM_APP |
+
+由此带来的三点结论：
+
+1. 本清单统计的 **526.72 MB 是镜像内文件体积**，与设备上实际运行版本的体积无关；
+   上表三行在清单里记录的是 18.50 / 9.05 / 10.76 MB（系统内 prebuilt）。
+2. **删除系统内 prebuilt 不等于“卸载应用”**：设备仍会加载 `/data/app` 版本，但该包会退化为普通数据区应用
+   （失去 `SYSTEM` flag 及其默认权限授予 / 系统签名相关能力）。此后果**未做动态验证**，
+   在 `risk_assessment.md` 第 2 节列为高风险项。
+3. 若目标是回到“纯原厂版本”，应先 `pm uninstall` 掉数据区更新，再让系统 prebuilt 生效；
+   这属于设备操作，本报告不执行。

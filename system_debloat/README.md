@@ -59,49 +59,73 @@
 - 系统 App 总计 **55** 个（`app/` 目录 32 个 + `app/` 散装 APK 5 个 + `priv-app/` 18 个），
   分区占用 **526.72 MB**（APK + odex/vdex + 内置 native 库）。
 - 分类结果：**A 可删除 1 个（4.6 MB）**、
-  **B 建议禁用 14 个（115.33 MB）**、
-  **C 暂时保留 19 个（153.89 MB）**、
+  **B 建议禁用 13 个（28.15 MB）**、
+  **C 暂时保留 20 个（241.07 MB）**、
   **D 禁止删除 21 个（252.9 MB）**。
-- 真正的“可安全删除”只有 1 个（ES 文件浏览器，4.60 MB）。这不是分析不彻底，而是该镜像里几乎每个
-  预装 App 都通过 `sharedUserId=android.uid.system`、Provider、无障碍服务或 framework 字符串与本机其他组件耦合。
-- 收益最大的不是删 APK，而是**禁用三个常驻/高唤醒应用**：当贝桌面（实测 PSS 96,912 KB、JPush 527 次唤醒）、
-  悬浮触控（`persistent=true`，PSS 21,461 + 16,961 KB）、OTA（`persistent=true`，实测 20% CPU）。
-- 原厂语音链路（`com.aligenie.ags` + `com.alibaba.ailabs.genie.smartapp` + AVE/GenieMonitor + GenieIoT）
-  已用运行时证据确认是常驻主力（三进程 PSS 合计 216,324 KB、`:core` 进程 72% CPU、持有 `NativeService` 长唤醒锁），
-  **全部归 D**。
+- 唯一进入 A 的是 ES 文件浏览器（4.60 MB），且仅为 **A 类候选**：静态分析通过（0 条 app 级入向引用、
+  无进程、无系统签名权限、无 native 库），**尚未做删后动态验证**，需经授权后用
+  `pm uninstall -k --user 0` 观察。除此之外没有第二个可无条件删除的包——该镜像里几乎每个预装 App 都通过
+  `sharedUserId=android.uid.system`、Provider、无障碍服务或 framework 字符串与本机其他组件耦合。
+- 收益最大的不是删 APK，而是**逐项试验三个常驻/高唤醒应用**（一次只动一个、各观察 24 h）：
+  当贝桌面（快照 PSS 96,912 kB、JPush 527 次唤醒 / 小米 COCKROACH 62 次）、
+  悬浮触控（`persistent=true`，快照 PSS 21,461 + 16,961 kB）、
+  OTA（`persistent=true`，`dumpsys cpuinfo` 单次区间快照 20% CPU——不是持续占用）。
+- 原厂语音链路（`AliGenieService` + `com.alibaba.ailabs.genie.smartapp` + AVE/GenieMonitor + GenieIoT）
+  **全部归 D**。其中**只有 smartapp 获取了运行时证据**：其 3 个进程 PSS 合计 216,324 kB（仅此 3 个进程，
+  不是整条语音链路的 PSS）、`:core` 进程在单次 343 s 区间快照中占 72% CPU、持有
+  `NativeService`/`ScreenWakeManager`/`AudioIn` 唤醒锁。`GenieMonitor`、`GenieIoT`、`AliGenieService`
+  的运行时占用未单独测量，其 D 级判定依据是 Manifest 组件 + 跨包引用。
 
 ## 5. 最终回答（任务书第十节）
 
 1. **一共有多少个 App？** 系统分区内 55 个包（`app/` 32 目录 + 5 散装 APK + `priv-app/` 18）。
    设备 `pm list packages -s` 共 61 条 = 本表 55 个 App + 3 个资源包（`android`/framework-res、
    `com.yunos`/yunos-framework-res、`com.mediatek`/mediatek-res）+ `vendor/app` 2 个 + `vendor/overlay` 1 个。
-2. **哪些可以安全删除？** 仅 `app/ES.apk`（com.estrongs.android.pop，4.60 MB）。另有 3 个包在完成指定验证后可升级为 A：
-   `AMPE`、`dangbei.apk`、`qxg.apk`（见 `app_removal_recommendations.md`）。
-3. **哪些适合禁用？** 14 个 B 类，合计 115.33 MB；优先 `dangbei.apk`、`easytouch.apk`、
-   `Osupdate`，其次 `AMPE`、`Guide`、`qxg.apk` 与 8 个 AOSP 边缘组件。
+2. **哪些可以安全删除？** **没有无条件可删的包。** 唯一 A 类是 `app/ES.apk`（com.estrongs.android.pop，4.60 MB），
+   属 **A 类候选**：静态分析通过，**删后动态验证未完成**，须经用户授权并先 `pm uninstall -k --user 0` 观察。
+3. **哪些适合禁用？** 13 个 B 类，合计 28.15 MB；
+   试验顺序为单包逐个：`dangbei.apk` → `easytouch.apk` → `Osupdate`，然后再考虑 `qxg.apk`、`Guide`
+   与 8 个 AOSP 边缘组件。`AMPE` **不在**禁用清单内（rev2 调整为 C）。
 4. **哪些必须保留？** 21 个 D 类，合计 252.9 MB，含语音链路、IoT 控制、Launcher、
    SystemUI、Settings、WebView、蓝牙栈与全部存储/Provider 基础组件。
-5. **哪些依赖尚不清楚？** 19 个 C 类（153.89 MB），典型为 `GenieRTC`、`Waft`、
-   `AliVideoPlayer`、`GenieBrowser`、`AliSpKey`、`raShow`、`UUID`、`AliProvision`、`Emode`。
+5. **哪些依赖尚不清楚？** 20 个 C 类（241.07 MB），
+   含 `AMPE`（小程序容器，7 个包引用）、`GenieRTC`、`Waft`、`AliVideoPlayer`、`GenieBrowser`、
+   `AliSpKey`、`raShow`、`UUID`、`AliProvision`、`Emode` 等。
 6. **删除或禁用分别能释放多少 system 空间？**
-   * 删除 A：**4.60 MB**；
-   * 删除全部 B：**115.33 MB**（A+B 合计 **119.93 MB**）；
+   * 删除 A（ES，且需先验证）：**4.60 MB**；
+   * 删除全部 B：**28.15 MB**（A+B 合计 **32.75 MB**）；
    * **仅禁用：0 MB**（APK 仍在 system，只改 `/data/system/packages.xml` 的 enabled 状态）。
-7. **哪些应用可能影响运行时 RAM？** 以实测 PSS 排序：smartapp 三进程 216,324 KB、当贝桌面 96,912 KB、
-   Waft 83,190 KB、Launcher 48,762 KB、IoT:service 22,416 KB、GenieRTC 22,329 KB、ags 21,599 KB、
-   悬浮触控 38,422 KB（两进程）、SystemUI 20,828 KB、OTA 16,011 KB、SettingsProvider 11,825 KB。
-   （快照时刻 `dumpsys meminfo` 的 Total PSS by process，非节省量，见第 6 节声明。）
-8. **推荐按什么顺序精简？** 见 `optimization_plan.md`：P0 备份与基线 → P1 纯禁用（3 个高收益项，逐项观察 24 h）
-   → P2 删除已验证项（重新打包镜像前先做用户态卸载验证）→ P3 结构性优化（不做 odex 清理）。
+7. **哪些应用可能影响运行时 RAM？** 以快照 PSS 排序（单次 `dumpsys meminfo`，非节省量）：
+   smartapp 3 进程合计 216,324 kB、当贝桌面 96,912 kB、Waft 83,190 kB、Launcher 48,762 kB、
+   悬浮触控 38,422 kB（两进程）、IoT:service 22,416 kB、GenieRTC 22,329 kB、ags 21,599 kB、
+   SystemUI 20,828 kB、OTA 16,011 kB、SettingsProvider 11,825 kB。
+   未出现在列表中的包（含 `GenieMonitor`）在快照时刻**没有进程**，不能据此认为它们“不占内存”。
+8. **推荐按什么顺序精简？** 见 `optimization_plan.md`：P0 备份与基线 → P1 **单包逐项**禁用试验
+   （当贝 → 悬浮触控 → OTA，每项独立观察 ≥24 h）→ P2 对通过项先做用户态卸载验证再改镜像 → P3 不做 odex 清理。
 9. **如何逐项恢复？** `pm enable`（禁用项）、`cmd package install-existing`（`pm uninstall -k --user 0` 项）、
    `adb push` + `chmod 644` + `restorecon`（手工删除项）、SP Flash Tool 回刷 `flash/ori/system.bin`（镜像级）。
 
-## 6. 关于 RAM 数字的声明
+## 6. 关于 RAM 数字的声明（rev2 明确口径）
 
-本报告**不给出“预计节省 XX MB RAM”的推算值**。原因：Android 的 PSS 会在进程被再次拉起、ZRAM 换出、
-kernel page cache 复用时剧烈变化，且“禁用”只是让进程不再由系统拉起，并不等于释放同等 PSS。
-文中出现的 KB 数值全部是 `dumpsys meminfo` 的一次真实快照（2026-11-20 16:03，设备 uptime 236,883,195 ms），
-仅用于**排序与量级参考**，二次测量方法见 `optimization_plan.md` 第 4 节。
+本报告**不给出“预计节省 XX MB RAM”的推算值**。原因：PSS 随进程重拉、ZRAM 换出、page cache 复用剧烈变化；
+“禁用”只是让进程不再由系统拉起，不等于释放同等 PSS。
+
+下列指标**含义不同、不可互换、不可相加**：
+
+| 指标 | 来源 | 值（主快照 16:03） | 含义 |
+|---|---|---|---|
+| `MemTotal` | `/proc/meminfo` | 1,008,628 kB | 内核可见物理内存总量 |
+| `MemFree` | `/proc/meminfo` | 89,812 kB（16:38 二次采样为 44,332 kB） | 完全空闲物理页，不含可回收 cache |
+| `MemAvailable` | `/proc/meminfo` | 311,452 kB（16:03）／265,332 kB（16:38） | 内核估计可再分配内存 |
+| `Free RAM` | `dumpsys meminfo` | 223,708 kB | dumpsys 口径 = 0 cached pss + 120,024 cached kernel + 103,684 free |
+| `Used RAM` | `dumpsys meminfo` | 968,931 kB | dumpsys 口径 = used pss 879,079 + kernel 89,852 |
+| `used pss`（各进程 PSS 之和） | `dumpsys meminfo` | 879,079 kB | “进程占用”口径，**不是可释放量** |
+| `SwapPss` / `ZRAM` | `dumpsys meminfo` | 292,945 / 77,792 kB | 已换出页 PSS / ZRAM 物理占用 |
+
+- `Used RAM + Free RAM + Lost RAM = 1,223,781 kB > MemTotal 1,008,628 kB`：swap/ZRAM 与共享页记账口径不同，
+  三者不能相加当作“总内存”。
+- 35 分钟内 `MemFree` 从 89,812 kB 变到 44,332 kB，说明**单点内存数值不可作为优化收益**；
+  需要收益结论时按 `optimization_plan.md` 第 4 节做多采样中位数 + `batterystats` 对比。
 
 ## 7. 目录
 
@@ -109,18 +133,19 @@ kernel page cache 复用时剧烈变化，且“禁用”只是让进程不再�
 
 | 文件 | 内容 |
 |---|---|
-| [README.md](README.md) | 任务说明、方法、证据等级、结论与 9 问回答 |
-| [app_inventory.md](app_inventory.md) | 55 个包的完整清单（包名 / 版本 / 体积 / 组件 / 常驻 / 设备路径） |
+| [README.md](README.md) | 任务说明、方法、证据等级、结论、9 问回答、RAM 口径声明 |
+| [revisions.md](revisions.md) | **rev2 修订记录**：审查意见、逐条改动、依据、仍未验证的事项 |
+| [app_inventory.md](app_inventory.md) | 55 个包的完整清单（包名 / 版本 / 体积 / 组件 / 常驻 / 设备路径 / 更新包差异） |
 | [app_dependency_analysis.md](app_dependency_analysis.md) | 依赖模型、跨包引用、framework 引用、Provider / uid / native 库依赖、运行时常驻链路 |
 | [app_removal_recommendations.md](app_removal_recommendations.md) | A/B/C/D 逐项建议与操作方式 |
 | [risk_assessment.md](risk_assessment.md) | 风险矩阵、误删后果、回退与恢复策略 |
 | [optimization_plan.md](optimization_plan.md) | P0–P3 分阶段方案、测量与验收、逐项恢复命令 |
 | [app_inventory.csv](app_inventory.csv) / [app_inventory.json](app_inventory.json) | 机器可读清单（55 行全字段） |
 | [dependency_edges.csv](dependency_edges.csv) | 机器可读依赖边（含 `evidence_class`：app / sdk_noise / ambiguous / platform_provider） |
-| [summary_stats.json](summary_stats.json) | 分类汇总与运行时快照摘要 |
-| [tools/](tools/) | 解析与生成脚本（axml.py / scan.py / refs2.py / report.py），可对原始镜像复现 |
+| [summary_stats.json](summary_stats.json) | 分类汇总、内存指标口径、3 个 `/data/app` 更新包、运行时常驻证据 |
+| [tools/](tools/) | 解析与生成脚本 + **filters.py / test_filters.py**（证据过滤规则与单元测试） |
 
-## 8. 已知限制
+## 8. 已知限制（含 rev2 未解决项）
 
 - `system/framework/*.jar` 在本工作区是 316 字节占位文件（真实代码在 `framework/arm/*.vdex` 与 `oat/`），
   因此 framework 侧结论基于 **vdex 字符串**而非可读 Java 源码；无法给出“SystemServer 在哪个方法里引用了某包”。
@@ -129,3 +154,7 @@ kernel page cache 复用时剧烈变化，且“禁用”只是让进程不再�
   引用结论最高只标到“较可信”。
 - 未在设备上执行任何禁用 / 卸载操作（避免影响 T5 现场），因此“禁用后是否真的无副作用”属于**未验证**，
   需按 `optimization_plan.md` 的观察清单逐项确认。
+- 3 个包（`GenieAicare`、`GenieRTC`、`magisk`）在设备上由 `/data/app` 版本覆盖。**删除系统内 prebuilt 会让
+  该包退化为普通数据区应用**（失去 SYSTEM flag 与随之而来的默认权限授予），此后果**未验证**；详见
+  `app_inventory.md` 第 5 节与 `risk_assessment.md` 第 2 节。
+- `PSS` 只对快照时刻有进程的包有效；`GenieMonitor` 等未出现在 `Total PSS by process` 中的包**没有动态证据**。

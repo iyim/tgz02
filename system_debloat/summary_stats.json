@@ -8,23 +8,23 @@
    "apk_mb": 4.6,
    "lib_mb": 0.0,
    "oat_mb": 0.0,
-   "pss_mb": 0.0
+   "pss_sum_kb": 0
   },
   "B": {
-   "packages": 14,
-   "total_mb": 115.33,
-   "apk_mb": 48.1,
-   "lib_mb": 61.76,
+   "packages": 13,
+   "total_mb": 28.15,
+   "apk_mb": 21.94,
+   "lib_mb": 0.75,
    "oat_mb": 5.46,
-   "pss_mb": 147.8
+   "pss_sum_kb": 151345
   },
   "C": {
-   "packages": 19,
-   "total_mb": 153.89,
-   "apk_mb": 58.35,
-   "lib_mb": 36.71,
+   "packages": 20,
+   "total_mb": 241.07,
+   "apk_mb": 84.51,
+   "lib_mb": 97.72,
    "oat_mb": 58.85,
-   "pss_mb": 103.0
+   "pss_sum_kb": 105519
   },
   "D": {
    "packages": 21,
@@ -32,12 +32,173 @@
    "apk_mb": 135.2,
    "lib_mb": 58.1,
    "oat_mb": 59.6,
-   "pss_mb": 341.5
+   "pss_sum_kb": 349733
   }
  },
- "device_total_ram_mb": 984.99,
- "device_used_pss_mb": 858.5,
- "device_free_mb": 218.5,
+ "revision": {
+  "current": "rev2 (2026-11-20)",
+  "basis": "independent review of my-doc/07_system_debloat (pre-move path)",
+  "changes": [
+   "AMPE com.alipay.arome.app: B -> C (real cross-package webapps.START/INIT + GwaReceiver references)",
+   "ES com.estrongs.android.pop: A worded as A-candidate (static pass, no post-removal dynamic validation)",
+   "report.py platform-provider filter replaced by filters.is_platform_authority() + unit tests",
+   "/data/app UPDATED_SYSTEM_APP count corrected from 2 to 3 (GenieAicare added)",
+   "disable batches split into single-package experiments; OTA CPU figure marked single-snapshot",
+   "runtime wording: 216,324 kB scoped to smartapp only; memory metrics labelled by source"
+  ]
+ },
+ "memory_snapshot": {
+  "source": "read-only: adb shell dumpsys meminfo + /proc/meminfo",
+  "primary_snapshot": "2026-11-20T16:03:19+08:00 (dumpsys Uptime 236883195 ms)",
+  "second_sample": "2026-11-20T16:38:52+08:00 (uptime 239424 s)",
+  "metrics": {
+   "MemTotal_kB": {
+    "value": 1008628,
+    "meaning": "内核可见物理内存总量（/proc/meminfo）"
+   },
+   "MemFree_kB_1603": {
+    "value": 89812,
+    "meaning": "完全空闲物理页（/proc/meminfo，不含可回收 cache）"
+   },
+   "MemFree_kB_1638": {
+    "value": 44332,
+    "meaning": "同一指标 35 分钟后的第二次采样，说明该值波动很大"
+   },
+   "MemAvailable_kB_1638": {
+    "value": 265332,
+    "meaning": "内核估计可再分配内存（/proc/meminfo MemAvailable）"
+   },
+   "dumpsys_FreeRAM_kB": {
+    "value": 223708,
+    "meaning": "dumpsys 口径 Free RAM = 0 cached pss + 120024 cached kernel + 103684 free；与 MemFree / MemAvailable 不是同一指标，不可混用"
+   },
+   "dumpsys_UsedRAM_kB": {
+    "value": 968931,
+    "meaning": "dumpsys 口径 Used RAM = used pss 879079 + kernel 89852"
+   },
+   "used_pss_kB": {
+    "value": 879079,
+    "meaning": "dumpsys 汇总的各进程 PSS 之和；是\"进程占用\"口径，不是可释放量"
+   },
+   "lost_RAM_kB": {
+    "value": 31142,
+    "meaning": "dumpsys 无法归类的内存"
+   },
+   "zram_used_kB": {
+    "value": 77792,
+    "meaning": "ZRAM 物理占用"
+   },
+   "swap_total_kB": {
+    "value": 504308,
+    "meaning": "swap 总容量（ZRAM 承载）"
+   },
+   "swap_pss_kB": {
+    "value": 292945,
+    "meaning": "SwapPss（已换出页的 PSS）"
+   },
+   "status": {
+    "value": "critical",
+    "meaning": "dumpsys 自带的内存状态评级（low-ram 设备）"
+   }
+  },
+  "accounting_caveat": "Used RAM + Free RAM + Lost RAM 之和（1,223,781 kB）大于 MemTotal（1,008,628 kB），因为 swap/ZRAM 与共享页的记账口径不同；三者不可相加当作总内存。",
+  "ram_savings": "不提供禁用/删除后节省 RAM 的推算值：PSS 随进程重拉、ZRAM 换出、page cache 复用而剧烈变化。"
+ },
+ "updated_system_apps": [
+  {
+   "package": "com.alibaba.ailabs.genie.aicare",
+   "dir": "app/GenieAicare",
+   "system_version": "4.0.26",
+   "loaded_version": "4.0.62",
+   "loaded_path": "/data/app/com.alibaba.ailabs.genie.aicare-zsBAkMuEJlOe5ygOiDbDbw==/base.apk"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.rtc",
+   "dir": "app/GenieRTC",
+   "system_version": "4.0.16",
+   "loaded_version": "5.2.78.53746723.dc",
+   "loaded_path": "/data/app/com.alibaba.ailabs.genie.rtc-iD7ciUfp9lpYBtIqAEiqeA==/base.apk"
+  },
+  {
+   "package": "com.topjohnwu.magisk",
+   "dir": "app/magisk.apk",
+   "system_version": "25.2",
+   "loaded_version": "27.0",
+   "loaded_path": "/data/app/com.topjohnwu.magisk-EuMSu4VItaK3widDq122zw==/base.apk"
+  }
+ ],
+ "process_pss_kb": {
+  "system": 137535,
+  "com.dangbei1.tvlauncher": 96912,
+  "com.alibaba.genie.waft": 83190,
+  "com.alibaba.ailabs.genie.smartapp": 78035,
+  "com.alibaba.ailabs.genie.smartapp:business": 73934,
+  "com.alibaba.ailabs.genie.smartapp:core": 64355,
+  "com.alibaba.ailabs.genie.launcher": 48762,
+  "com.alibaba.ailabs.genie.iot:service": 22416,
+  "com.alibaba.ailabs.genie.rtc": 22329,
+  "com.aligenie.ags": 21599,
+  "com.shere.assistivetouch": 21461,
+  "surfaceflinger": 20957,
+  "com.android.systemui": 20828,
+  "com.shere.assistivetouch.service": 16961,
+  "com.alibaba.ailabs.genie.osupdate": 16011,
+  "com.android.settings:SettingsProvider": 11825,
+  "com.google.android.inputmethod.pinyin": 8776,
+  "camerahalserver": 8025,
+  "com.android.bluetooth": 7979,
+  "logd": 6372,
+  "zygote": 6311,
+  "fs32": 3931,
+  "audioserver": 3714,
+  "mediaserver": 2780,
+  "merged_hal_service": 2642,
+  "media.codec": 2467,
+  "media.extractor": 2088,
+  "guardians": 1983,
+  "idsd": 1499,
+  "cameraserver": 1736,
+  "drmserver": 1491,
+  "wpa_supplicant": 1280,
+  "vold": 1211,
+  "netd": 1204,
+  "adbd": 1125,
+  "installd": 1087,
+  "keystore": 1052,
+  "hwservicemanager": 1024,
+  "ueventd": 1017,
+  "aal": 988,
+  "ged_srv": 932,
+  "resource_manager": 900,
+  "magiskd": 879,
+  "wificond": 871,
+  "storaged": 864,
+  "gatekeeperd": 756,
+  "dumpsys": 703,
+  "tgb_bridge": 680,
+  "aee_aed": 675,
+  "thermalserviced": 655,
+  "netdagent": 645,
+  "healthd": 644,
+  "sleep": 619,
+  "dm_agent_binder": 617,
+  "servicemanager": 602,
+  "lmkd": 570,
+  "netdiag": 561,
+  "aee_aedv": 556,
+  "mobile_log_d": 541,
+  "sh": 506,
+  "thermald": 502,
+  "batterywarning": 501,
+  "tombstoned": 499,
+  "vndservicemanager": 497,
+  "sysenv_daemon": 424,
+  "watchdogd": 413,
+  "thermal": 396,
+  "rpmb_svc": 391,
+  "wmt_launcher": 383,
+  "libestool2.so": 361
+ },
  "wakelocks": [
   "PARTIAL_WAKE_LOCK              'NativeService' ACQ=-40m34s592ms LONG (uid=1000 pid=29434)",
   "PARTIAL_WAKE_LOCK              'AudioIn' ACQ=-40m34s556ms LONG (uid=1041 ws=WorkSource{1000})",

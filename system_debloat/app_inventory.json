@@ -25,10 +25,10 @@
    "component_or_authority": [],
    "action": []
   },
-  "note": "ES 文件浏览器（com.estrongs.android.pop）：第三方预装，唯一 LAUNCHER 入口为自身，无入向引用、无进程、无系统权限",
+  "note": "ES 文件浏览器（com.estrongs.android.pop，4.60 MB）——A 类候选：第三方预装散装 APK，无 oat、无 native 库、无系统签名权限，降噪后 0 条 app 级入向引用，快照时刻无进程。静态分析通过，但尚未做删后动态验证；需先用 pm uninstall -k --user 0 观察，且须经用户授权。",
   "ev": "较可信",
-  "how": "可删除（或先禁用观察）",
-  "grade_note": "bundled 过滤后 0 入向；meminfo 无进程",
+  "how": "A 类候选：静态通过，动态未验证；未获授权不执行卸载",
+  "grade_note": "bundled 过滤后 0 入向；meminfo 无进程；未做删后开机验证",
   "has_oat": false,
   "abis": [],
   "boot_receivers": [],
@@ -63,432 +63,6 @@
    "android.permission.CHANGE_WIFI_MULTICAST_STATE",
    "android.permission.SYSTEM_ALERT_WINDOW",
    "android.permission.GET_TASKS"
-  ]
- },
- {
-  "dir": "app/AMPE",
-  "pkg": "com.alipay.arome.app",
-  "version": "10.2.3.1775",
-  "cls": "B",
-  "apk_mb": "26.16",
-  "lib_mb": "61.01",
-  "oat_mb": "0.00",
-  "total_mb": "87.18",
-  "comps": 506,
-  "persistent": false,
-  "uid": "",
-  "min_sdk": 18,
-  "target": 29,
-  "device_path": "/system/app/AMPE/AMPE.apk",
-  "pss_kb": 0,
-  "pss_detail": {},
-  "cpu": 0.0,
-  "services_running": [],
-  "ref_strong": 5,
-  "ref_action": 24,
-  "ref_amb": 34,
-  "ref_detail": {
-   "component_or_authority": [
-    {
-     "src": "app/GenieRTC",
-     "kind": "component",
-     "token": "com.alipay.mobile.nebulacore.ui.H5Activity"
-    },
-    {
-     "src": "app/GenieRTC",
-     "kind": "component",
-     "token": "com.alibaba.ailabs.genie.webapps.game.H5GameActivity"
-    },
-    {
-     "src": "app/GenieRTC",
-     "kind": "component",
-     "token": "com.alipay.mobile.nebulax.integration.mpaas.activity.NebulaActivity$Main"
-    },
-    {
-     "src": "app/Guide",
-     "kind": "component",
-     "token": "com.alibaba.ailabs.genie.webapps.app.GwaReceiver"
-    },
-    {
-     "src": "app/smartapp",
-     "kind": "component",
-     "token": "com.alibaba.ailabs.genie.webapps.app.GwaReceiver"
-    }
-   ],
-   "action": [
-    {
-     "src": "app/AliSystemUI",
-     "kind": "action",
-     "token": "mtopsdk.mtop.antiattack.checkcode.validate.activity_action"
-    },
-    {
-     "src": "app/AliVideoPlayer",
-     "kind": "action",
-     "token": "mtopsdk.mtop.antiattack.checkcode.validate.activity_action"
-    },
-    {
-     "src": "app/GenieAicare",
-     "kind": "action",
-     "token": "mtopsdk.mtop.antiattack.checkcode.validate.activity_action"
-    },
-    {
-     "src": "app/GenieAicare",
-     "kind": "action",
-     "token": "com.alibaba.ailabs.genie.webapps.INIT"
-    },
-    {
-     "src": "app/GenieAlbums",
-     "kind": "action",
-     "token": "mtopsdk.mtop.antiattack.checkcode.validate.activity_action"
-    },
-    {
-     "src": "app/GenieBrowser",
-     "kind": "action",
-     "token": "mtopsdk.mtop.antiattack.checkcode.validate.activity_action"
-    },
-    {
-     "src": "app/GenieBrowser",
-     "kind": "action",
-     "token": "com.alibaba.ailabs.genie.webapps.INIT"
-    },
-    {
-     "src": "app/GenieChildren",
-     "kind": "action",
-     "token": "mtopsdk.mtop.antiattack.checkcode.validate.activity_action"
-    }
-   ]
-  },
-  "note": "支付宝/Genie 小程序容器（com.alipay.arome.app，87MB）：被 smartapp、Guide、GenieAicare、GenieBrowser、GenieIoT、GenieLauncher 以 com.alibaba.ailabs.genie.webapps.START/INIT 与 GwaReceiver 显式引用；快照时刻未运行",
-  "ev": "较可信",
-  "how": "可禁用（不影响其它包启动）；删除需先确认小程序/H5 技能全部下线",
-  "grade_note": "跨包 action 引用（非 SDK 噪声）+ meminfo 无进程",
-  "has_oat": false,
-  "abis": [
-   "arm"
-  ],
-  "boot_receivers": [
-   "com.alipay.mobile.quinox.preload.PreloadReceiver"
-  ],
-  "launcher": [],
-  "providers": [
-   {
-    "name": "com.alipay.mobile.healthcommon.accountsync.SyncProvider",
-    "authorities": "com.alipay.arome.app.account.syncprovider",
-    "exported": false
-   },
-   {
-    "name": "com.alipay.mobile.base.config.impl.ConfigContentProviderNew",
-    "authorities": "com.alipay.arome.app.configprovider",
-    "exported": false
-   },
-   {
-    "name": "com.huawei.hms.update.provider.UpdateProvider",
-    "authorities": "com.alipay.arome.app.hms.update.provider",
-    "exported": false
-   },
-   {
-    "name": "com.alipay.mobile.monitor.track.spm.ChinfoChainProvider",
-    "authorities": "com.alipay.arome.app.spmtracker.chinfo",
-    "exported": false
-   },
-   {
-    "name": "com.alipay.android.phone.mobilesdk.permission.guide.provider.DataProvider",
-    "authorities": "com.alipay.arome.app.PermissionProvider",
-    "exported": false
-   },
-   {
-    "name": "com.alipay.mobile.push.MainProcessDataProvider",
-    "authorities": "com.alipay.arome.app.DataInMainProProvider",
-    "exported": false
-   },
-   {
-    "name": "android.support.v4.content.FileProvider",
-    "authorities": "com.alipay.arome.mobile.camera.fileprovider",
-    "exported": false
-   },
-   {
-    "name": "com.alipay.mobile.monitor.ipc.storage.IpcMonitorCP",
-    "authorities": "com.alipay.arome.mobile.monitor.ipc.storage.IpcMonitorCP",
-    "exported": false
-   },
-   {
-    "name": "com.alipay.mobile.provider.H5NebulaFileProviderImpl",
-    "authorities": "com.alipay.arome.mobile.provider",
-    "exported": false
-   },
-   {
-    "name": "com.alipay.mobile.performance.sync.PerfAccountProvider",
-    "authorities": "com.alipay.arome.mobile.performance.account",
-    "exported": false
-   },
-   {
-    "name": "com.alipay.mobile.rome.voicebroadcast.dynamics.RemoteFuncsProvider",
-    "authorities": "com.alipay.arome.mobile.rome.voicebroadcast.dynamics.RemoteFuncsProvider",
-    "exported": false
-   },
-   {
-    "name": "com.alipay.stability.provider.StabilityProvider",
-    "authorities": "com.alipay.arome.stability.provider",
-    "exported": false
-   },
-   {
-    "name": "com.alipay.mobile.alertsentry.content.SentryContentProvider",
-    "authorities": "com.alipay.arome.mobile.alertsentry.provider",
-    "exported": true
-   },
-   {
-    "name": "com.alipay.mobile.aromeservice.AromeContentProvider",
-    "authorities": "com.alipay.mobile.arome.provider",
-    "exported": true
-   },
-   {
-    "name": "com.alipay.android.phone.businesscommon.healthcommon.util.StepSPProvider",
-    "authorities": "com.alipay.arome.app.healthcommon.StepSPProvider",
-    "exported": false
-   },
-   {
-    "name": "com.alipay.mobile.authlogin.common.provider.AliAuthLoginContentProvider",
-    "authorities": "com.alipay.arome.ali.authlogin",
-    "exported": true
-   },
-   {
-    "name": "com.alipay.mobile.securitycommon.upgrade.ASUpgradeFileProvider",
-    "authorities": "com.alipay.arome.app.asUpgradeFileProvider",
-    "exported": false
-   }
-  ],
-  "permissions": [
-   "com.alipay.permission.ALIPAY_UPDATE_CREDENTIALS",
-   "com.android.launcher.permission.INSTALL_SHORTCUT",
-   "android.permission.BLUETOOTH",
-   "android.permission.CHANGE_WIFI_STATE",
-   "android.permission.CAMERA",
-   "android.permission.ACCESS_NETWORK_STATE",
-   "android.permission.MODIFY_AUDIO_SETTINGS",
-   "com.yunos.permission.TYID_MGR_SERVICE",
-   "android.permission.AUTHENTICATE_ACCOUNTS",
-   "com.alipay.permission.ALIPAY_USE_CREDENTIALS",
-   "com.aliyun.permission.TYID_MGR_SERVICE",
-   "android.permission.READ_PHONE_STATE",
-   "android.permission.WRITE_EXTERNAL_STORAGE",
-   "android.permission.NFC",
-   "android.permission.RECORD_AUDIO",
-   "com.taobao.permission.UPDATE_CREDENTIALS",
-   "com.yunos.permission.STORAGE_SERVICE",
-   "com.sonyericsson.home.permission.BROADCAST_BADGE",
-   "com.android.launcher.permission.UNINSTALL_SHORTCUT",
-   "android.permission.READ_CONTACTS",
-   "android.permission.USE_CREDENTIALS",
-   "android.permission.VIBRATE",
-   "com.yunos.permission.TYID_SERVICE",
-   "android.permission.ACCESS_FINE_LOCATION",
-   "android.permission.FLASHLIGHT",
-   "com.taobao.permission.USE_CREDENTIALS",
-   "android.permission.ACCESS_COARSE_LOCATION",
-   "android.permission.ACCESS_BACKGROUND_LOCATION",
-   "android.permission.MANAGE_ACCOUNTS",
-   "android.permission.GET_ACCOUNTS",
-   "android.permission.GET_TASKS",
-   "android.permission.ACCESS_WIFI_STATE",
-   "com.android.launcher.permission.READ_SETTINGS",
-   "com.htc.launcher.permission.READ_SETTINGS",
-   "com.majeur.launcher.permission.UPDATE_BADGE",
-   "com.aliyun.permission.TYID_SERVICE",
-   "android.permission.WAKE_LOCK",
-   "android.permission.BLUETOOTH_ADMIN",
-   "android.permission.RECEIVE_BOOT_COMPLETED",
-   "android.permission.INTERNET",
-   "android.permission.SYSTEM_ALERT_WINDOW",
-   "com.htc.launcher.permission.UPDATE_SHORTCUT",
-   "android.permission.WRITE_SETTINGS",
-   "com.anddoes.launcher.permission.UPDATE_COUNT",
-   "android.permission.READ_PROFILE",
-   "android.permission.BROADCAST_STICKY",
-   "com.aliyun.permission.STORAGE_SERVICE",
-   "android.permission.FOREGROUND_SERVICE",
-   "nxp.permission.ACCESS_WALLET_SERVICE",
-   "com.samsung.android.authservice.permission.READ_CONTENT_PROVIDER",
-   "android.permission.USE_FINGERPRINT",
-   "com.meizu.flyme.push.permission.RECEIVE",
-   "com.alipay.arome.app.push.permission.MESSAGE",
-   "com.meizu.c2dm.permission.RECEIVE",
-   "com.alipay.arome.app.permission.C2D_MESSAGE",
-   "com.coloros.mcs.permission.RECIEVE_MCS_MESSAGE",
-   "com.heytap.mcs.permission.RECIEVE_MCS_MESSAGE",
-   "android.permission.WRITE_SYNC_SETTINGS",
-   "com.miui.mihome2.permission.READ_SETTINGS",
-   "com.miui.mihome2.permission.WRITE_SETTINGS",
-   "com.aliyun.homeshell.permission.WRITE_SETTINGS",
-   "com.aliyun.homeshell.permission.READ_SETTINGS",
-   "com.lenovo.launcher.permission.READ_SETTINGS",
-   "com.lenovo.launcher.permission.WRITE_SETTINGS",
-   "com.iLoong.permission.WRITE_SETTINGS",
-   "com.iLoong.permission.READ_SETTINGS",
-   "cn.nubia.launcher.permission.WRITE_SETTINGS",
-   "cn.nubia.launcher.permission.READ_SETTINGS",
-   "com.smartisanos.launcher.WRITE_DATABASE",
-   "com.smartisanos.launcher.READ_DATABASE",
-   "com.smartisanos.launcher.data.ExportDataProvider",
-   "com.teslacoilsw.launcher.permission.WRITE_SETTINGS",
-   "com.teslacoilsw.launcher.permission.READ_SETTINGS",
-   "com.meizu.flyme.launcher.permission.READ_SETTINGS",
-   "com.meizu.flyme.launcher.permission.WRITE_SETTINGS",
-   "com.ztemt.launcher.permission.WRITE_SETTINGS",
-   "com.ztemt.launcher.permission.READ_SETTINGS",
-   "com.zte.lqsoft.launcher.permission.READ_SETTINGS",
-   "com.zte.lqsoft.launcher.permission.WRITE_SETTINGS",
-   "com.baoruan.launcher2.permission.WRITE_SETTINGS",
-   "com.baoruan.launcher2.permission.READ_SETTINGS",
-   "com.fineos.launcher.permission.READ_SETTINGS",
-   "com.fineos.launcher.permission.WRITE_SETTINGS",
-   "com.ibingo.launcher.permission.WRITE_SETTINGS",
-   "com.ibingo.launcher.permission.READ_SETTINGS",
-   "com.zui.launcher.permission.WRITE_SETTINGS",
-   "com.zui.launcher.permission.READ_SETTINGS",
-   "com.qihoo360.screenlock.permission.READ_LOCAL_THEME",
-   "com.qihoo360.screenlock.permission.WRITE_LOCAL_THEME",
-   "com.zte.mifavor.launcher.permission.WRITE_SETTINGS",
-   "com.zte.mifavor.launcher.permission.READ_SETTINGS",
-   "com.lo.launcher.permission.READ_SETTINGS",
-   "com.lo.launcher.permission.WRITE_SETTINGS",
-   "com.android.tpwlauncher2.permission.WRITE_SETTINGS",
-   "com.android.tpwlauncher2.permission.READ_SETTINGS",
-   "com.android.sprdlauncher1.permission.READ_SETTINGS",
-   "com.android.sprdlauncher1.permission.WRITE_SETTINGS",
-   "com.s.launcher.permission.WRITE_SETTINGS",
-   "com.s.launcher.permission.READ_SETTINGS",
-   "com.zte.mobile.ZteLauncher3D.permission.READ_SETTINGS",
-   "com.zte.mobile.ZteLauncher3D.permission.WRITE_SETTINGS",
-   "com.android.launcher23.permission.READ_SETTINGS",
-   "com.android.launcher23.permission.WRITE_SETTINGS",
-   "com.mgyun.permission.READ_SETTINGS",
-   "com.mgyun.permission.WRITE_SETTINGS",
-   "com.asus.launcher3.permission.READ_SETTINGS",
-   "com.asus.launcher3.permission.WRITE_SETTINGS",
-   "com.tsf.shell.permission.READ_SETTINGS",
-   "com.tsf.shell.permission.WRITE_SETTINGS",
-   "com.tul.aviate.permission.READ_SETTINGS",
-   "com.tul.aviate.permission.WRITE_SETTINGS",
-   "com.lenovo.launcherhdmarket.permission.READ_SETTINGS",
-   "com.lenovo.launcherhdmarket.permission.WRITE_SETTINGS",
-   "com.hola.launcher.permission.READ_SETTINGS",
-   "com.hola.launcher.permission.WRITE_SETTINGS",
-   "com.qihoo360.home.permission.WRITE_SETTINGS",
-   "com.qihoo360.home.permission.READ_SETTINGS",
-   "com.slim.slimlauncher.permission.READ_SETTINGS",
-   "com.slim.slimlauncher.permission.WRITE_SETTINGS",
-   "com.huaqin.launcherEx.permission.WRITE_SETTINGS",
-   "com.huaqin.launcherEx.permission.READ_SETTINGS",
-   "com.epic.launcher.tw.permission.WRITE_SETTINGS",
-   "com.epic.launcher.tw.permission.READ_SETTINGS",
-   "com.android.lewalauncher.permission.READ_SETTINGS",
-   "com.android.lewalauncher.permission.WRITE_SETTINGS",
-   "com.Dean.launcher.permission.READ_SETTINGS",
-   "com.Dean.launcher.permission.WRITE_SETTINGS",
-   "app.cobo.launcher.permission.WRITE_SETTINGS",
-   "app.cobo.launcher.permission.READ_SETTINGS",
-   "com.alphalp.launcher.permission.WRITE_SETTINGS",
-   "com.alphalp.launcher.permission.READ_SETTINGS",
-   "com.lollipop.launcher.permission.READ_SETTINGS",
-   "com.lollipop.launcher.permission.WRITE_SETTINGS",
-   "com.l.launcher.permission.READ_SETTINGS",
-   "com.l.launcher.permission.WRITE_SETTINGS",
-   "com.dlto.atom.launcher.permission.READ_SETTINGS",
-   "com.dlto.atom.launcher.permission.WRITE_SETTINGS",
-   "com.android.sprdlauncher2.permission.WRITE_SETTINGS",
-   "com.android.sprdlauncher2.permission.READ_SETTINGS",
-   "com.konka.launcher2.permission.READ_SETTINGS",
-   "com.konka.launcher2.permission.WRITE_SETTINGS",
-   "com.mycheering.launcher.permission.WRITE_SETTINGS",
-   "com.mycheering.launcher.permission.READ_SETTINGS",
-   "com.microsoft.launcher.permission.READ_SETTINGS",
-   "com.microsoft.launcher.permission.WRITE_SETTINGS",
-   "com.nicelauncher.lolauncher.permission.READ_SETTINGS",
-   "com.nicelauncher.lolauncher.permission.WRITE_SETTINGS",
-   "com.jui.launcher3.permission.READ_SETTINGS",
-   "com.jui.launcher3.permission.WRITE_SETTINGS",
-   "com.android.launcher2.permission.READ_SETTINGS",
-   "com.android.launcher2.permission.WRITE_SETTINGS",
-   "com.qihoo360.launcher.permission.READ_SETTINGS",
-   "com.qihoo360.launcher.permission.WRITE_SETTINGS",
-   "com.lge.launcher.permission.READ_SETTINGS",
-   "com.lge.launcher.permission.WRITE_SETTINGS",
-   "net.qihoo.launcher.permission.READ_SETTINGS",
-   "net.qihoo.launcher.permission.WRITE_SETTINGS",
-   "org.adw.launcher_donut.permission.READ_SETTINGS",
-   "org.adw.launcher_donut.permission.WRITE_SETTINGS",
-   "com.huawei.launcher3.permission.READ_SETTINGS",
-   "com.huawei.launcher3.permission.WRITE_SETTINGS",
-   "com.sec.android.app.twlauncher.settings.READ_SETTINGS",
-   "com.sec.android.app.twlauncher.settings.WRITE_SETTINGS",
-   "com.anddoes.launcher.permission.READ_SETTINGS",
-   "com.anddoes.launcher.permission.WRITE_SETTINGS",
-   "com.tencent.qqlauncher.permission.READ_SETTINGS",
-   "com.tencent.qqlauncher.permission.WRITE_SETTINGS",
-   "com.huawei.launcher2.permission.READ_SETTINGS",
-   "com.huawei.launcher2.permission.WRITE_SETTINGS",
-   "com.ebproductions.android.launcher.permission.READ_SETTINGS",
-   "com.ebproductions.android.launcher.permission.WRITE_SETTINGS",
-   "telecom.mdesk.permission.READ_SETTINGS",
-   "telecom.mdesk.permission.WRITE_SETTINGS",
-   "dianxin.permission.ACCESS_LAUNCHER_DATA",
-   "com.modaco.android.launchergb.permission.READ_SETTINGS",
-   "com.modaco.android.launchergb.permission.WRITE_SETTINGS",
-   "com.sec.android.app.launcher.permission.READ_SETTINGS",
-   "com.sec.android.app.launcher.permission.WRITE_SETTINGS",
-   "com.bbk.launcher2.permission.READ_SETTINGS",
-   "com.bbk.launcher2.permission.WRITE_SETTINGS",
-   "com.android.launcher.permission.WRITE_SETTINGS",
-   "com.htc.launcher.permission.WRITE_SETTINGS",
-   "com.sec.android.app.twlauncher.WRITE_SETTINGS",
-   "com.sec.android.app.twlauncher.READ_SETTINGS",
-   "org.adw.launcher.permission.READ_SETTINGS",
-   "org.adw.launcher.permission.WRITE_SETTINGS",
-   "org.adwfreak.launcher.permission.READ_SETTINGS",
-   "org.adwfreak.launcher.permission.WRITE_SETTINGS",
-   "com.gau.go.launcherex.permission.READ_SETTINGS",
-   "com.gau.go.launcherex.permission.WRITE_SETTINGS",
-   "com.fede.launcher.permission.READ_SETTINGS",
-   "com.fede.launcher.permission.WRITE_SETTINGS",
-   "com.oppo.launcher.permission.READ_SETTINGS",
-   "com.oppo.launcher.permission.WRITE_SETTINGS",
-   "com.nd.android.launcher.permission.READ_SETTINGS",
-   "com.nd.android.launcher.permission.WRITE_SETTINGS",
-   "com.android.mylauncher.permission.READ_SETTINGS",
-   "com.android.mylauncher.permission.WRITE_SETTINGS",
-   "com.huawei.android.launcher.permission.READ_SETTINGS",
-   "com.huawei.android.launcher.permission.WRITE_SETTINGS",
-   "com.huawei.launcher.permission.READ_SETTINGS",
-   "com.huawei.launcher.permission.WRITE_SETTINGS",
-   "com.mx.launcher.permission.READ_SETTINGS",
-   "com.mx.launcher.permission.WRITE_SETTINGS",
-   "com.android.launcher3.permission.READ_SETTINGS",
-   "com.android.launcher3.permission.WRITE_SETTINGS",
-   "com.google.android.launcher.permission.READ_SETTINGS",
-   "com.google.android.launcher.permission.WRITE_SETTINGS",
-   "android.permission.REQUEST_INSTALL_PACKAGES",
-   "android.permission.CHANGE_WIFI_MULTICAST_STATE",
-   "android.permission.CHANGE_NETWORK_STATE",
-   "android.permission.READ_EXTERNAL_STORAGE",
-   "android.permission.KILL_BACKGROUND_PROCESSES",
-   "android.permission.READ_LOGS",
-   "android.permission.MOUNT_UNMOUNT_FILESYSTEMS",
-   "com.huawei.permission.tee.USE_OTRP",
-   "com.huawei.android.launcher.permission.CHANGE_BADGE",
-   "android.permission.CALL_PHONE",
-   "miui.permission.READ_STEPS",
-   "android.permission.READ_SYNC_SETTINGS",
-   "com.huawei.health.permission.BASE_STEP_SERVICE",
-   "com.zui.uhealth.permission.READ_PROVIDER",
-   "android.permission.ACTIVITY_RECOGNITION",
-   "android.permission.REORDER_TASKS",
-   "android.permission.ZTE_HEARTYSERVICE_MANAGEMENT",
-   "cn.org.ifaa.permission.USE_IFAA_MANAGER",
-   "com.huawei.permission.USE_TSM_AGENT",
-   "android.permission.SMARTCARD",
-   "org.simalliance.openmobileapi.SMARTCARD",
-   "oppo.permission.USE_FACE",
-   "android.permission.USE_FACERECOGNITION"
   ]
  },
  {
@@ -845,59 +419,12 @@
    "com.dangbei.launcher.ui.screensaver.ScreensaverService",
    "com.xiaomi.push.service.XMPushService"
   ],
-  "ref_strong": 20,
-  "ref_action": 1,
-  "ref_amb": 19,
+  "ref_strong": 0,
+  "ref_action": 0,
+  "ref_amb": 0,
   "ref_detail": {
-   "component_or_authority": [
-    {
-     "src": "app/AMPE",
-     "kind": "component",
-     "token": "com.xiaomi.push.service.XMPushService"
-    },
-    {
-     "src": "app/AMPE",
-     "kind": "component",
-     "token": "com.taobao.accs.data.MsgDistributeService"
-    },
-    {
-     "src": "app/AMPE",
-     "kind": "component",
-     "token": "com.xiaomi.push.service.receivers.NetworkStatusReceiver"
-    },
-    {
-     "src": "app/AMPE",
-     "kind": "component",
-     "token": "com.xiaomi.push.service.receivers.PingReceiver"
-    },
-    {
-     "src": "app/AMPE",
-     "kind": "component",
-     "token": "com.xiaomi.mipush.sdk.MessageHandleService"
-    },
-    {
-     "src": "app/AMPE",
-     "kind": "component",
-     "token": "com.xiaomi.mipush.sdk.PushMessageHandler"
-    },
-    {
-     "src": "app/AMPE",
-     "kind": "component",
-     "token": "com.xiaomi.push.service.XMJobService"
-    },
-    {
-     "src": "app/AliSystemUI",
-     "kind": "component",
-     "token": "com.taobao.accs.data.MsgDistributeService"
-    }
-   ],
-   "action": [
-    {
-     "src": "app/AliVideoPlayer",
-     "kind": "action",
-     "token": "com.taobao.accs.intent.action.ELECTION"
-    }
-   ]
+   "component_or_authority": [],
+   "action": []
   },
   "note": "当贝桌面（com.dangbei1.tvlauncher）：96MB PSS、JPush/XMPush 双推送、527 次闹钟唤醒、62 次 COCKROACH 唤醒；非默认 HOME（HOME 为 GenieLauncher）；降噪后无应用级入向引用（唯一命中为华为推送 SDK 字符串）",
   "ev": "已验证",
@@ -999,34 +526,12 @@
   "services_running": [
    "com.shere.easytouch.module.service.view.EasyTouchService"
   ],
-  "ref_strong": 3,
-  "ref_action": 1,
+  "ref_strong": 0,
+  "ref_action": 0,
   "ref_amb": 0,
   "ref_detail": {
-   "component_or_authority": [
-    {
-     "src": "app/webview",
-     "kind": "component",
-     "token": "com.google.android.gms.measurement.AppMeasurementJobService"
-    },
-    {
-     "src": "app/webview",
-     "kind": "component",
-     "token": "com.google.android.gms.measurement.AppMeasurementReceiver"
-    },
-    {
-     "src": "app/webview",
-     "kind": "component",
-     "token": "com.google.android.gms.measurement.AppMeasurementService"
-    }
-   ],
-   "action": [
-    {
-     "src": "app/webview",
-     "kind": "action",
-     "token": "com.google.firebase.INSTANCE_ID_EVENT"
-    }
-   ]
+   "component_or_authority": [],
+   "action": []
   },
   "note": "悬浮触控助手（com.shere.assistivetouch），persistent=true，两进程 38MB PSS",
   "ev": "已验证",
@@ -1428,6 +933,422 @@
   ]
  },
  {
+  "dir": "app/AMPE",
+  "pkg": "com.alipay.arome.app",
+  "version": "10.2.3.1775",
+  "cls": "C",
+  "apk_mb": "26.16",
+  "lib_mb": "61.01",
+  "oat_mb": "0.00",
+  "total_mb": "87.18",
+  "comps": 506,
+  "persistent": false,
+  "uid": "",
+  "min_sdk": 18,
+  "target": 29,
+  "device_path": "/system/app/AMPE/AMPE.apk",
+  "pss_kb": 0,
+  "pss_detail": {},
+  "cpu": 0.0,
+  "services_running": [],
+  "ref_strong": 3,
+  "ref_action": 9,
+  "ref_amb": 7,
+  "ref_detail": {
+   "component_or_authority": [
+    {
+     "src": "app/GenieRTC",
+     "kind": "component",
+     "token": "com.alibaba.ailabs.genie.webapps.game.H5GameActivity"
+    },
+    {
+     "src": "app/Guide",
+     "kind": "component",
+     "token": "com.alibaba.ailabs.genie.webapps.app.GwaReceiver"
+    },
+    {
+     "src": "app/smartapp",
+     "kind": "component",
+     "token": "com.alibaba.ailabs.genie.webapps.app.GwaReceiver"
+    }
+   ],
+   "action": [
+    {
+     "src": "app/GenieAicare",
+     "kind": "action",
+     "token": "com.alibaba.ailabs.genie.webapps.INIT"
+    },
+    {
+     "src": "app/GenieBrowser",
+     "kind": "action",
+     "token": "com.alibaba.ailabs.genie.webapps.INIT"
+    },
+    {
+     "src": "app/GenieIoT",
+     "kind": "action",
+     "token": "com.alibaba.ailabs.genie.webapps.INIT"
+    },
+    {
+     "src": "app/GenieLauncher",
+     "kind": "action",
+     "token": "com.alibaba.ailabs.genie.webapps.INIT"
+    },
+    {
+     "src": "app/Guide",
+     "kind": "action",
+     "token": "com.alibaba.ailabs.genie.webapps.START"
+    },
+    {
+     "src": "app/Guide",
+     "kind": "action",
+     "token": "com.alibaba.ailabs.genie.webapps.INIT"
+    },
+    {
+     "src": "app/smartapp",
+     "kind": "action",
+     "token": "com.alibaba.ailabs.genie.ampe.LOGOUT"
+    },
+    {
+     "src": "app/smartapp",
+     "kind": "action",
+     "token": "com.alibaba.ailabs.genie.webapps.START"
+    }
+   ]
+  },
+  "note": "支付宝/Genie 小程序容器（com.alipay.arome.app，87.18 MB）。存在真实跨包引用：smartapp、Guide、GenieAicare、GenieBrowser、GenieIoT、GenieLauncher 以 com.alibaba.ailabs.genie.webapps.START/INIT 与 GwaReceiver 组件显式引用（降噪后 app 级证据 9 action + 3 component，来自 7 个包）。快照时刻未运行。",
+  "ev": "较可信",
+  "how": "暂留：仅当明确放弃原厂小程序/H5 技能并完成动态验证后，才考虑禁用或删除",
+  "grade_note": "跨包 action/组件引用（非 SDK 噪声）+ meminfo 无进程",
+  "has_oat": false,
+  "abis": [
+   "arm"
+  ],
+  "boot_receivers": [
+   "com.alipay.mobile.quinox.preload.PreloadReceiver"
+  ],
+  "launcher": [],
+  "providers": [
+   {
+    "name": "com.alipay.mobile.healthcommon.accountsync.SyncProvider",
+    "authorities": "com.alipay.arome.app.account.syncprovider",
+    "exported": false
+   },
+   {
+    "name": "com.alipay.mobile.base.config.impl.ConfigContentProviderNew",
+    "authorities": "com.alipay.arome.app.configprovider",
+    "exported": false
+   },
+   {
+    "name": "com.huawei.hms.update.provider.UpdateProvider",
+    "authorities": "com.alipay.arome.app.hms.update.provider",
+    "exported": false
+   },
+   {
+    "name": "com.alipay.mobile.monitor.track.spm.ChinfoChainProvider",
+    "authorities": "com.alipay.arome.app.spmtracker.chinfo",
+    "exported": false
+   },
+   {
+    "name": "com.alipay.android.phone.mobilesdk.permission.guide.provider.DataProvider",
+    "authorities": "com.alipay.arome.app.PermissionProvider",
+    "exported": false
+   },
+   {
+    "name": "com.alipay.mobile.push.MainProcessDataProvider",
+    "authorities": "com.alipay.arome.app.DataInMainProProvider",
+    "exported": false
+   },
+   {
+    "name": "android.support.v4.content.FileProvider",
+    "authorities": "com.alipay.arome.mobile.camera.fileprovider",
+    "exported": false
+   },
+   {
+    "name": "com.alipay.mobile.monitor.ipc.storage.IpcMonitorCP",
+    "authorities": "com.alipay.arome.mobile.monitor.ipc.storage.IpcMonitorCP",
+    "exported": false
+   },
+   {
+    "name": "com.alipay.mobile.provider.H5NebulaFileProviderImpl",
+    "authorities": "com.alipay.arome.mobile.provider",
+    "exported": false
+   },
+   {
+    "name": "com.alipay.mobile.performance.sync.PerfAccountProvider",
+    "authorities": "com.alipay.arome.mobile.performance.account",
+    "exported": false
+   },
+   {
+    "name": "com.alipay.mobile.rome.voicebroadcast.dynamics.RemoteFuncsProvider",
+    "authorities": "com.alipay.arome.mobile.rome.voicebroadcast.dynamics.RemoteFuncsProvider",
+    "exported": false
+   },
+   {
+    "name": "com.alipay.stability.provider.StabilityProvider",
+    "authorities": "com.alipay.arome.stability.provider",
+    "exported": false
+   },
+   {
+    "name": "com.alipay.mobile.alertsentry.content.SentryContentProvider",
+    "authorities": "com.alipay.arome.mobile.alertsentry.provider",
+    "exported": true
+   },
+   {
+    "name": "com.alipay.mobile.aromeservice.AromeContentProvider",
+    "authorities": "com.alipay.mobile.arome.provider",
+    "exported": true
+   },
+   {
+    "name": "com.alipay.android.phone.businesscommon.healthcommon.util.StepSPProvider",
+    "authorities": "com.alipay.arome.app.healthcommon.StepSPProvider",
+    "exported": false
+   },
+   {
+    "name": "com.alipay.mobile.authlogin.common.provider.AliAuthLoginContentProvider",
+    "authorities": "com.alipay.arome.ali.authlogin",
+    "exported": true
+   },
+   {
+    "name": "com.alipay.mobile.securitycommon.upgrade.ASUpgradeFileProvider",
+    "authorities": "com.alipay.arome.app.asUpgradeFileProvider",
+    "exported": false
+   }
+  ],
+  "permissions": [
+   "com.alipay.permission.ALIPAY_UPDATE_CREDENTIALS",
+   "com.android.launcher.permission.INSTALL_SHORTCUT",
+   "android.permission.BLUETOOTH",
+   "android.permission.CHANGE_WIFI_STATE",
+   "android.permission.CAMERA",
+   "android.permission.ACCESS_NETWORK_STATE",
+   "android.permission.MODIFY_AUDIO_SETTINGS",
+   "com.yunos.permission.TYID_MGR_SERVICE",
+   "android.permission.AUTHENTICATE_ACCOUNTS",
+   "com.alipay.permission.ALIPAY_USE_CREDENTIALS",
+   "com.aliyun.permission.TYID_MGR_SERVICE",
+   "android.permission.READ_PHONE_STATE",
+   "android.permission.WRITE_EXTERNAL_STORAGE",
+   "android.permission.NFC",
+   "android.permission.RECORD_AUDIO",
+   "com.taobao.permission.UPDATE_CREDENTIALS",
+   "com.yunos.permission.STORAGE_SERVICE",
+   "com.sonyericsson.home.permission.BROADCAST_BADGE",
+   "com.android.launcher.permission.UNINSTALL_SHORTCUT",
+   "android.permission.READ_CONTACTS",
+   "android.permission.USE_CREDENTIALS",
+   "android.permission.VIBRATE",
+   "com.yunos.permission.TYID_SERVICE",
+   "android.permission.ACCESS_FINE_LOCATION",
+   "android.permission.FLASHLIGHT",
+   "com.taobao.permission.USE_CREDENTIALS",
+   "android.permission.ACCESS_COARSE_LOCATION",
+   "android.permission.ACCESS_BACKGROUND_LOCATION",
+   "android.permission.MANAGE_ACCOUNTS",
+   "android.permission.GET_ACCOUNTS",
+   "android.permission.GET_TASKS",
+   "android.permission.ACCESS_WIFI_STATE",
+   "com.android.launcher.permission.READ_SETTINGS",
+   "com.htc.launcher.permission.READ_SETTINGS",
+   "com.majeur.launcher.permission.UPDATE_BADGE",
+   "com.aliyun.permission.TYID_SERVICE",
+   "android.permission.WAKE_LOCK",
+   "android.permission.BLUETOOTH_ADMIN",
+   "android.permission.RECEIVE_BOOT_COMPLETED",
+   "android.permission.INTERNET",
+   "android.permission.SYSTEM_ALERT_WINDOW",
+   "com.htc.launcher.permission.UPDATE_SHORTCUT",
+   "android.permission.WRITE_SETTINGS",
+   "com.anddoes.launcher.permission.UPDATE_COUNT",
+   "android.permission.READ_PROFILE",
+   "android.permission.BROADCAST_STICKY",
+   "com.aliyun.permission.STORAGE_SERVICE",
+   "android.permission.FOREGROUND_SERVICE",
+   "nxp.permission.ACCESS_WALLET_SERVICE",
+   "com.samsung.android.authservice.permission.READ_CONTENT_PROVIDER",
+   "android.permission.USE_FINGERPRINT",
+   "com.meizu.flyme.push.permission.RECEIVE",
+   "com.alipay.arome.app.push.permission.MESSAGE",
+   "com.meizu.c2dm.permission.RECEIVE",
+   "com.alipay.arome.app.permission.C2D_MESSAGE",
+   "com.coloros.mcs.permission.RECIEVE_MCS_MESSAGE",
+   "com.heytap.mcs.permission.RECIEVE_MCS_MESSAGE",
+   "android.permission.WRITE_SYNC_SETTINGS",
+   "com.miui.mihome2.permission.READ_SETTINGS",
+   "com.miui.mihome2.permission.WRITE_SETTINGS",
+   "com.aliyun.homeshell.permission.WRITE_SETTINGS",
+   "com.aliyun.homeshell.permission.READ_SETTINGS",
+   "com.lenovo.launcher.permission.READ_SETTINGS",
+   "com.lenovo.launcher.permission.WRITE_SETTINGS",
+   "com.iLoong.permission.WRITE_SETTINGS",
+   "com.iLoong.permission.READ_SETTINGS",
+   "cn.nubia.launcher.permission.WRITE_SETTINGS",
+   "cn.nubia.launcher.permission.READ_SETTINGS",
+   "com.smartisanos.launcher.WRITE_DATABASE",
+   "com.smartisanos.launcher.READ_DATABASE",
+   "com.smartisanos.launcher.data.ExportDataProvider",
+   "com.teslacoilsw.launcher.permission.WRITE_SETTINGS",
+   "com.teslacoilsw.launcher.permission.READ_SETTINGS",
+   "com.meizu.flyme.launcher.permission.READ_SETTINGS",
+   "com.meizu.flyme.launcher.permission.WRITE_SETTINGS",
+   "com.ztemt.launcher.permission.WRITE_SETTINGS",
+   "com.ztemt.launcher.permission.READ_SETTINGS",
+   "com.zte.lqsoft.launcher.permission.READ_SETTINGS",
+   "com.zte.lqsoft.launcher.permission.WRITE_SETTINGS",
+   "com.baoruan.launcher2.permission.WRITE_SETTINGS",
+   "com.baoruan.launcher2.permission.READ_SETTINGS",
+   "com.fineos.launcher.permission.READ_SETTINGS",
+   "com.fineos.launcher.permission.WRITE_SETTINGS",
+   "com.ibingo.launcher.permission.WRITE_SETTINGS",
+   "com.ibingo.launcher.permission.READ_SETTINGS",
+   "com.zui.launcher.permission.WRITE_SETTINGS",
+   "com.zui.launcher.permission.READ_SETTINGS",
+   "com.qihoo360.screenlock.permission.READ_LOCAL_THEME",
+   "com.qihoo360.screenlock.permission.WRITE_LOCAL_THEME",
+   "com.zte.mifavor.launcher.permission.WRITE_SETTINGS",
+   "com.zte.mifavor.launcher.permission.READ_SETTINGS",
+   "com.lo.launcher.permission.READ_SETTINGS",
+   "com.lo.launcher.permission.WRITE_SETTINGS",
+   "com.android.tpwlauncher2.permission.WRITE_SETTINGS",
+   "com.android.tpwlauncher2.permission.READ_SETTINGS",
+   "com.android.sprdlauncher1.permission.READ_SETTINGS",
+   "com.android.sprdlauncher1.permission.WRITE_SETTINGS",
+   "com.s.launcher.permission.WRITE_SETTINGS",
+   "com.s.launcher.permission.READ_SETTINGS",
+   "com.zte.mobile.ZteLauncher3D.permission.READ_SETTINGS",
+   "com.zte.mobile.ZteLauncher3D.permission.WRITE_SETTINGS",
+   "com.android.launcher23.permission.READ_SETTINGS",
+   "com.android.launcher23.permission.WRITE_SETTINGS",
+   "com.mgyun.permission.READ_SETTINGS",
+   "com.mgyun.permission.WRITE_SETTINGS",
+   "com.asus.launcher3.permission.READ_SETTINGS",
+   "com.asus.launcher3.permission.WRITE_SETTINGS",
+   "com.tsf.shell.permission.READ_SETTINGS",
+   "com.tsf.shell.permission.WRITE_SETTINGS",
+   "com.tul.aviate.permission.READ_SETTINGS",
+   "com.tul.aviate.permission.WRITE_SETTINGS",
+   "com.lenovo.launcherhdmarket.permission.READ_SETTINGS",
+   "com.lenovo.launcherhdmarket.permission.WRITE_SETTINGS",
+   "com.hola.launcher.permission.READ_SETTINGS",
+   "com.hola.launcher.permission.WRITE_SETTINGS",
+   "com.qihoo360.home.permission.WRITE_SETTINGS",
+   "com.qihoo360.home.permission.READ_SETTINGS",
+   "com.slim.slimlauncher.permission.READ_SETTINGS",
+   "com.slim.slimlauncher.permission.WRITE_SETTINGS",
+   "com.huaqin.launcherEx.permission.WRITE_SETTINGS",
+   "com.huaqin.launcherEx.permission.READ_SETTINGS",
+   "com.epic.launcher.tw.permission.WRITE_SETTINGS",
+   "com.epic.launcher.tw.permission.READ_SETTINGS",
+   "com.android.lewalauncher.permission.READ_SETTINGS",
+   "com.android.lewalauncher.permission.WRITE_SETTINGS",
+   "com.Dean.launcher.permission.READ_SETTINGS",
+   "com.Dean.launcher.permission.WRITE_SETTINGS",
+   "app.cobo.launcher.permission.WRITE_SETTINGS",
+   "app.cobo.launcher.permission.READ_SETTINGS",
+   "com.alphalp.launcher.permission.WRITE_SETTINGS",
+   "com.alphalp.launcher.permission.READ_SETTINGS",
+   "com.lollipop.launcher.permission.READ_SETTINGS",
+   "com.lollipop.launcher.permission.WRITE_SETTINGS",
+   "com.l.launcher.permission.READ_SETTINGS",
+   "com.l.launcher.permission.WRITE_SETTINGS",
+   "com.dlto.atom.launcher.permission.READ_SETTINGS",
+   "com.dlto.atom.launcher.permission.WRITE_SETTINGS",
+   "com.android.sprdlauncher2.permission.WRITE_SETTINGS",
+   "com.android.sprdlauncher2.permission.READ_SETTINGS",
+   "com.konka.launcher2.permission.READ_SETTINGS",
+   "com.konka.launcher2.permission.WRITE_SETTINGS",
+   "com.mycheering.launcher.permission.WRITE_SETTINGS",
+   "com.mycheering.launcher.permission.READ_SETTINGS",
+   "com.microsoft.launcher.permission.READ_SETTINGS",
+   "com.microsoft.launcher.permission.WRITE_SETTINGS",
+   "com.nicelauncher.lolauncher.permission.READ_SETTINGS",
+   "com.nicelauncher.lolauncher.permission.WRITE_SETTINGS",
+   "com.jui.launcher3.permission.READ_SETTINGS",
+   "com.jui.launcher3.permission.WRITE_SETTINGS",
+   "com.android.launcher2.permission.READ_SETTINGS",
+   "com.android.launcher2.permission.WRITE_SETTINGS",
+   "com.qihoo360.launcher.permission.READ_SETTINGS",
+   "com.qihoo360.launcher.permission.WRITE_SETTINGS",
+   "com.lge.launcher.permission.READ_SETTINGS",
+   "com.lge.launcher.permission.WRITE_SETTINGS",
+   "net.qihoo.launcher.permission.READ_SETTINGS",
+   "net.qihoo.launcher.permission.WRITE_SETTINGS",
+   "org.adw.launcher_donut.permission.READ_SETTINGS",
+   "org.adw.launcher_donut.permission.WRITE_SETTINGS",
+   "com.huawei.launcher3.permission.READ_SETTINGS",
+   "com.huawei.launcher3.permission.WRITE_SETTINGS",
+   "com.sec.android.app.twlauncher.settings.READ_SETTINGS",
+   "com.sec.android.app.twlauncher.settings.WRITE_SETTINGS",
+   "com.anddoes.launcher.permission.READ_SETTINGS",
+   "com.anddoes.launcher.permission.WRITE_SETTINGS",
+   "com.tencent.qqlauncher.permission.READ_SETTINGS",
+   "com.tencent.qqlauncher.permission.WRITE_SETTINGS",
+   "com.huawei.launcher2.permission.READ_SETTINGS",
+   "com.huawei.launcher2.permission.WRITE_SETTINGS",
+   "com.ebproductions.android.launcher.permission.READ_SETTINGS",
+   "com.ebproductions.android.launcher.permission.WRITE_SETTINGS",
+   "telecom.mdesk.permission.READ_SETTINGS",
+   "telecom.mdesk.permission.WRITE_SETTINGS",
+   "dianxin.permission.ACCESS_LAUNCHER_DATA",
+   "com.modaco.android.launchergb.permission.READ_SETTINGS",
+   "com.modaco.android.launchergb.permission.WRITE_SETTINGS",
+   "com.sec.android.app.launcher.permission.READ_SETTINGS",
+   "com.sec.android.app.launcher.permission.WRITE_SETTINGS",
+   "com.bbk.launcher2.permission.READ_SETTINGS",
+   "com.bbk.launcher2.permission.WRITE_SETTINGS",
+   "com.android.launcher.permission.WRITE_SETTINGS",
+   "com.htc.launcher.permission.WRITE_SETTINGS",
+   "com.sec.android.app.twlauncher.WRITE_SETTINGS",
+   "com.sec.android.app.twlauncher.READ_SETTINGS",
+   "org.adw.launcher.permission.READ_SETTINGS",
+   "org.adw.launcher.permission.WRITE_SETTINGS",
+   "org.adwfreak.launcher.permission.READ_SETTINGS",
+   "org.adwfreak.launcher.permission.WRITE_SETTINGS",
+   "com.gau.go.launcherex.permission.READ_SETTINGS",
+   "com.gau.go.launcherex.permission.WRITE_SETTINGS",
+   "com.fede.launcher.permission.READ_SETTINGS",
+   "com.fede.launcher.permission.WRITE_SETTINGS",
+   "com.oppo.launcher.permission.READ_SETTINGS",
+   "com.oppo.launcher.permission.WRITE_SETTINGS",
+   "com.nd.android.launcher.permission.READ_SETTINGS",
+   "com.nd.android.launcher.permission.WRITE_SETTINGS",
+   "com.android.mylauncher.permission.READ_SETTINGS",
+   "com.android.mylauncher.permission.WRITE_SETTINGS",
+   "com.huawei.android.launcher.permission.READ_SETTINGS",
+   "com.huawei.android.launcher.permission.WRITE_SETTINGS",
+   "com.huawei.launcher.permission.READ_SETTINGS",
+   "com.huawei.launcher.permission.WRITE_SETTINGS",
+   "com.mx.launcher.permission.READ_SETTINGS",
+   "com.mx.launcher.permission.WRITE_SETTINGS",
+   "com.android.launcher3.permission.READ_SETTINGS",
+   "com.android.launcher3.permission.WRITE_SETTINGS",
+   "com.google.android.launcher.permission.READ_SETTINGS",
+   "com.google.android.launcher.permission.WRITE_SETTINGS",
+   "android.permission.REQUEST_INSTALL_PACKAGES",
+   "android.permission.CHANGE_WIFI_MULTICAST_STATE",
+   "android.permission.CHANGE_NETWORK_STATE",
+   "android.permission.READ_EXTERNAL_STORAGE",
+   "android.permission.KILL_BACKGROUND_PROCESSES",
+   "android.permission.READ_LOGS",
+   "android.permission.MOUNT_UNMOUNT_FILESYSTEMS",
+   "com.huawei.permission.tee.USE_OTRP",
+   "com.huawei.android.launcher.permission.CHANGE_BADGE",
+   "android.permission.CALL_PHONE",
+   "miui.permission.READ_STEPS",
+   "android.permission.READ_SYNC_SETTINGS",
+   "com.huawei.health.permission.BASE_STEP_SERVICE",
+   "com.zui.uhealth.permission.READ_PROVIDER",
+   "android.permission.ACTIVITY_RECOGNITION",
+   "android.permission.REORDER_TASKS",
+   "android.permission.ZTE_HEARTYSERVICE_MANAGEMENT",
+   "cn.org.ifaa.permission.USE_IFAA_MANAGER",
+   "com.huawei.permission.USE_TSM_AGENT",
+   "android.permission.SMARTCARD",
+   "org.simalliance.openmobileapi.SMARTCARD",
+   "oppo.permission.USE_FACE",
+   "android.permission.USE_FACERECOGNITION"
+  ]
+ },
+ {
   "dir": "app/AliSpKey",
   "pkg": "com.alibaba.spkey",
   "version": "1.0.01",
@@ -1487,7 +1408,7 @@
   "services_running": [],
   "ref_strong": 4,
   "ref_action": 1,
-  "ref_amb": 41,
+  "ref_amb": 0,
   "ref_detail": {
    "component_or_authority": [
     {
@@ -2041,16 +1962,11 @@
   "services_running": [
    ".app.RTCNotifyService"
   ],
-  "ref_strong": 18,
+  "ref_strong": 5,
   "ref_action": 5,
-  "ref_amb": 20,
+  "ref_amb": 0,
   "ref_detail": {
    "component_or_authority": [
-    {
-     "src": "app/AMPE",
-     "kind": "component",
-     "token": "com.taobao.accs.data.MsgDistributeService"
-    },
     {
      "src": "app/AliSystemUI",
      "kind": "component",
@@ -2062,29 +1978,19 @@
      "token": "com.alibaba.ailabs.genie.rtc.voip.callout.VoipCallOutActivity"
     },
     {
-     "src": "app/AliSystemUI",
+     "src": "app/smartapp",
      "kind": "component",
-     "token": "com.taobao.accs.data.MsgDistributeService"
+     "token": "com.alibaba.ailabs.genie.rtc.voip.callin.VoipCallInActivity"
     },
     {
-     "src": "app/AliVideoPlayer",
+     "src": "app/smartapp",
      "kind": "component",
-     "token": "com.taobao.accs.data.MsgDistributeService"
+     "token": "com.alibaba.ailabs.genie.rtc.voip.callout.VoipCallOutActivity"
     },
     {
-     "src": "app/GenieAicare",
-     "kind": "component",
-     "token": "com.taobao.accs.data.MsgDistributeService"
-    },
-    {
-     "src": "app/GenieAlbums",
-     "kind": "component",
-     "token": "com.taobao.accs.data.MsgDistributeService"
-    },
-    {
-     "src": "app/GenieBrowser",
-     "kind": "component",
-     "token": "com.taobao.accs.data.MsgDistributeService"
+     "src": "app/smartapp",
+     "kind": "authority",
+     "token": "com.tld.rtcProvider"
     }
    ],
    "action": [
@@ -2199,7 +2105,7 @@
   "services_running": [],
   "ref_strong": 2,
   "ref_action": 0,
-  "ref_amb": 21,
+  "ref_amb": 7,
   "ref_detail": {
    "component_or_authority": [
     {
@@ -3476,7 +3382,7 @@
   "services_running": [
    "com.yunos.tv.settings.service.dynamic.DynamicSettingsService"
   ],
-  "ref_strong": 15,
+  "ref_strong": 11,
   "ref_action": 0,
   "ref_amb": 31,
   "ref_detail": {
@@ -3485,11 +3391,6 @@
      "src": "app/AliGenieService",
      "kind": "component",
      "token": "com.android.settings.Settings"
-    },
-    {
-     "src": "app/AliGenieService",
-     "kind": "authority",
-     "token": "com.android.settings.SettingsProvider.voiceprint"
     },
     {
      "src": "app/AliSystemUI",
@@ -3502,11 +3403,6 @@
      "token": "com.android.settings.Settings"
     },
     {
-     "src": "app/AliSystemUI",
-     "kind": "authority",
-     "token": "com.android.settings.SettingsProvider.voiceprint"
-    },
-    {
      "src": "app/Emode",
      "kind": "component",
      "token": "com.android.settings.network.wifi.WifiSettingActivity"
@@ -3517,9 +3413,19 @@
      "token": "com.android.settings.Settings"
     },
     {
-     "src": "app/GenieMonitor",
-     "kind": "authority",
-     "token": "com.android.settings.SettingsProvider.voiceprint"
+     "src": "app/Osupdate",
+     "kind": "component",
+     "token": "com.android.settings.network.wifi.WifiSettingActivity"
+    },
+    {
+     "src": "app/dangbei.apk",
+     "kind": "component",
+     "token": "com.android.settings.Settings"
+    },
+    {
+     "src": "app/easytouch.apk",
+     "kind": "component",
+     "token": "com.android.settings.Settings"
     }
    ],
    "action": []
@@ -3675,7 +3581,7 @@
   ],
   "ref_strong": 99,
   "ref_action": 8,
-  "ref_amb": 59,
+  "ref_amb": 32,
   "ref_detail": {
    "component_or_authority": [
     {
@@ -4005,22 +3911,11 @@
   "pss_detail": {},
   "cpu": 0.0,
   "services_running": [],
-  "ref_strong": 2,
+  "ref_strong": 0,
   "ref_action": 0,
   "ref_amb": 0,
   "ref_detail": {
-   "component_or_authority": [
-    {
-     "src": "app/AMPE",
-     "kind": "authority",
-     "token": "com.android.calendar"
-    },
-    {
-     "src": "app/easytouch.apk",
-     "kind": "authority",
-     "token": "com.android.calendar"
-    }
-   ],
+   "component_or_authority": [],
    "action": []
   },
   "note": "日历存储，语音日程技能依赖",
@@ -4080,50 +3975,25 @@
   "pss_detail": {},
   "cpu": 0.0,
   "services_running": [],
-  "ref_strong": 41,
+  "ref_strong": 3,
   "ref_action": 0,
   "ref_amb": 0,
   "ref_detail": {
    "component_or_authority": [
     {
-     "src": "app/AMPE",
+     "src": "app/dangbei.apk",
      "kind": "authority",
-     "token": "contacts"
+     "token": "com.android.voicemail"
     },
     {
-     "src": "app/AMPE",
+     "src": "app/qxg.apk",
      "kind": "authority",
-     "token": "call_log"
+     "token": "com.android.voicemail"
     },
     {
-     "src": "app/AMPE",
+     "src": "priv-app/PackageInstaller",
      "kind": "authority",
-     "token": "com.android.contacts"
-    },
-    {
-     "src": "app/AliSystemUI",
-     "kind": "authority",
-     "token": "contacts"
-    },
-    {
-     "src": "app/AliSystemUI",
-     "kind": "authority",
-     "token": "com.android.contacts"
-    },
-    {
-     "src": "app/ES.apk",
-     "kind": "authority",
-     "token": "com.android.contacts"
-    },
-    {
-     "src": "app/GenieAicare",
-     "kind": "authority",
-     "token": "contacts"
-    },
-    {
-     "src": "app/GenieAicare",
-     "kind": "authority",
-     "token": "com.android.contacts"
+     "token": "com.android.voicemail"
     }
    ],
    "action": []
@@ -4251,52 +4121,11 @@
   "pss_detail": {},
   "cpu": 0.0,
   "services_running": [],
-  "ref_strong": 18,
+  "ref_strong": 0,
   "ref_action": 0,
   "ref_amb": 0,
   "ref_detail": {
-   "component_or_authority": [
-    {
-     "src": "app/AMPE",
-     "kind": "authority",
-     "token": "downloads"
-    },
-    {
-     "src": "app/AliVideoPlayer",
-     "kind": "authority",
-     "token": "downloads"
-    },
-    {
-     "src": "app/ES.apk",
-     "kind": "authority",
-     "token": "downloads"
-    },
-    {
-     "src": "app/GenieAicare",
-     "kind": "authority",
-     "token": "downloads"
-    },
-    {
-     "src": "app/GenieAlbums",
-     "kind": "authority",
-     "token": "downloads"
-    },
-    {
-     "src": "app/GenieBrowser",
-     "kind": "authority",
-     "token": "downloads"
-    },
-    {
-     "src": "app/GenieChildren",
-     "kind": "authority",
-     "token": "downloads"
-    },
-    {
-     "src": "app/GenieLauncher",
-     "kind": "authority",
-     "token": "downloads"
-    }
-   ],
+   "component_or_authority": [],
    "action": []
   },
   "note": "下载服务，被 18 处引用（应用更新/媒体下载）",

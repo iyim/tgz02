@@ -68,11 +68,11 @@
 | `com.alibaba.ailabs.genie.screensaver` | `com.alibaba.ailabs.genie.smartapp` | 1 | component:com.alibaba.ailabs.genie.screensaver.FlipperDr |
 | `com.alibaba.ailabs.genie.osupdate` | `com.android.settings` | 2 | component:com.alibaba.ailabs.genie.osupdate.front.Update<br>action:com.aliyun.cloudapp.FOTA_UPDATE |
 | `com.alibaba.ailabs.genie.osupdate` | `com.alibaba.ailabs.genie.smartapp` | 1 | action:com.aliyun.cloudapp.FOTA_UPDATE |
-| `com.android.settings` | `com.android.systemui` | 3 | component:com.yunos.tv.settings.GenieLabClassifyActivity<br>component:com.android.settings.Settings<br>authority:com.android.settings.SettingsProvider.voicepri |
-| `com.android.settings` | `com.alibaba.ailabs.genie.smartapp` | 3 | component:com.android.settings.Settings<br>component:com.android.settings.network.wifi.WifiSettingA<br>authority:com.android.settings.SettingsProvider.voicepri |
-| `com.android.settings` | `com.aligenie.ags` | 2 | component:com.android.settings.Settings<br>authority:com.android.settings.SettingsProvider.voicepri |
-| `com.android.settings` | `com.alibaba.ailabs.ar.monitor` | 2 | component:com.android.settings.Settings<br>authority:com.android.settings.SettingsProvider.voicepri |
+| `com.android.settings` | `com.android.systemui` | 2 | component:com.yunos.tv.settings.GenieLabClassifyActivity<br>component:com.android.settings.Settings |
+| `com.android.settings` | `com.alibaba.ailabs.genie.smartapp` | 2 | component:com.android.settings.Settings<br>component:com.android.settings.network.wifi.WifiSettingA |
+| `com.android.settings` | `com.aligenie.ags` | 1 | component:com.android.settings.Settings |
 | `com.android.settings` | `com.ailabs.emode` | 1 | component:com.android.settings.network.wifi.WifiSettingA |
+| `com.android.settings` | `com.alibaba.ailabs.ar.monitor` | 1 | component:com.android.settings.Settings |
 | `com.android.settings` | `com.alibaba.ailabs.genie.osupdate` | 1 | component:com.android.settings.network.wifi.WifiSettingA |
 | `com.android.settings` | `com.dangbei1.tvlauncher` | 1 | component:com.android.settings.Settings |
 | `com.android.settings` | `com.shere.assistivetouch` | 1 | component:com.android.settings.Settings |
@@ -97,34 +97,18 @@
 | `com.android.webview` | `com.alipay.arome.app` | 1 | component:org.chromium.content.app.SandboxedProcessServi |
 | `com.android.webview` | `com.alibaba.ailabs.genie.browser` | 1 | component:org.chromium.content.app.SandboxedProcessServi |
 | `com.android.webview` | `com.alibaba.ailabs.genie.smartapp` | 1 | component:org.chromium.content.app.SandboxedProcessServi |
-| `com.android.providers.contacts` | `com.web1n.permissiondog` | 2 | authority:contacts<br>authority:com.android.voicemail |
-| `com.android.providers.contacts` | `com.alipay.arome.app` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.android.systemui` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.alibaba.ailabs.genie.aicare` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.alibaba.ailabs.genie.albums` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.alibaba.ailabs.genie.browser` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.alibaba.ailabs.genie.children` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.alibaba.ailabs.genie.iot` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.alibaba.ailabs.genie.launcher` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.alibaba.ailabs.ar.monitor` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.alibaba.ailabs.genie.rtc` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.alibaba.ailabs.genie.screensaver` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.alibaba.ailabs.genie.guide` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.android.bluetooth` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.android.settings` | 1 | authority:contacts |
 | `com.android.providers.contacts` | `com.dangbei1.tvlauncher` | 1 | authority:com.android.voicemail |
-| `com.android.providers.contacts` | `com.shere.assistivetouch` | 1 | authority:contacts |
-| `com.android.providers.contacts` | `com.alibaba.ailabs.genie.smartapp` | 1 | authority:contacts |
+| `com.android.providers.contacts` | `com.web1n.permissiondog` | 1 | authority:com.android.voicemail |
 | `com.android.providers.contacts` | `com.android.packageinstaller` | 1 | authority:com.android.voicemail |
-| `com.android.providers.contacts` | `com.android.providers.settings` | 1 | authority:contacts |
 | `com.android.shell` | `com.topjohnwu.magisk` | 1 | authority:com.android.shell |
 | `com.android.shell` | `com.alibaba.ailabs.genie.smartapp` | 1 | authority:com.android.shell |
 | `com.android.shell` | `com.android.providers.settings` | 1 | authority:com.android.shell |
 
 **读法**：`com.aligenie.ags`（AliGenieService）被 `smartapp`、`AliSystemUI`、`GenieScreensaver`、`S1Settings`
 以 authority `com.aligenie.ic.icProvider` 与私有 action `ACTION_SCREEN_SAVER` 引用——这是语音链路的硬连接。
-`com.alipay.arome.app`（AMPE）被 6 个 Genie 包以 `com.alibaba.ailabs.genie.webapps.START/INIT` 与
-`GwaReceiver` 组件引用——它是小程序 / H5 技能容器，属真实耦合（而非 SDK 噪声）。
+`com.alipay.arome.app`（AMPE）被 **7 个包**（smartapp、Guide、GenieAicare、GenieBrowser、GenieIoT、
+GenieLauncher、GenieRTC）以 `com.alibaba.ailabs.genie.webapps.START/INIT` 与 `GwaReceiver` 组件引用——
+这是**真实的应用级耦合**（不是 SDK 噪声），rev2 据此把它从 B 调整为 C。
 `ES.apk`、`qxg.apk`、`Guide` 在降噪后**没有任何**应用级入向引用；`dangbei.apk`、`Waft`、`easytouch.apk`
 的命中全部落在已知推送 / 统计 SDK 命名空间，已在降噪中剔除。
 
@@ -137,8 +121,9 @@ AOSP 的 `media`、`downloads`、`settings`、`com.android.contacts`、`com.andr
 |---|---|---|
 | `com.android.providers.media` | 37 | com.ailabs.emode, com.ailabs.youku.iot, com.alibaba.ailabs.ar.monitor, com.alibaba.ailabs.genie.aicare, com.alibaba.ailabs.genie.albums, com.alibaba.ailabs.genie.browser |
 | `com.android.providers.settings` | 33 | com.ailabs.emode, com.ailabs.youku.iot, com.alibaba.ailabs.ar.monitor, com.alibaba.ailabs.genie.aicare, com.alibaba.ailabs.genie.albums, com.alibaba.ailabs.genie.browser |
-| `com.android.providers.contacts` | 18 | com.alibaba.ailabs.ar.monitor, com.alibaba.ailabs.genie.aicare, com.alibaba.ailabs.genie.albums, com.alibaba.ailabs.genie.browser, com.alibaba.ailabs.genie.children, com.alibaba.ailabs.genie.guide |
+| `com.android.providers.contacts` | 19 | com.alibaba.ailabs.ar.monitor, com.alibaba.ailabs.genie.aicare, com.alibaba.ailabs.genie.albums, com.alibaba.ailabs.genie.browser, com.alibaba.ailabs.genie.children, com.alibaba.ailabs.genie.guide |
 | `com.android.providers.downloads` | 18 | com.ailabs.youku.iot, com.alibaba.ailabs.ar.monitor, com.alibaba.ailabs.genie.aicare, com.alibaba.ailabs.genie.albums, com.alibaba.ailabs.genie.browser, com.alibaba.ailabs.genie.children |
+| `com.android.settings` | 4 | com.alibaba.ailabs.ar.monitor, com.alibaba.ailabs.genie.smartapp, com.aligenie.ags, com.android.systemui |
 | `com.android.providers.calendar` | 2 | com.alipay.arome.app, com.shere.assistivetouch |
 
 ## 4. framework / system_server 侧点名
@@ -261,7 +246,8 @@ Provider 会在**任何进程查询它的瞬间**把宿主进程拉起，是“�
 - `com.android.arch.lifecycle` 之类 `lifecycle-process` Provider（多个 Ali 应用都有）会在开机时被系统实例化，
   属“故意保活”，禁用对应包即可一并消除。
 - `com.alipay.arome.app` 有 17 个 Provider（`configprovider`、`PermissionProvider`、`arome.provider` 等），
-  只要有任何调用方查询就会拉起 87 MB 的小程序运行时 → 禁用比保留更省资源。
+  任一调用方查询都会把宿主进程拉起。**rev2 修正**：这既说明它是“保活型”宿主，也说明它**被真实使用**；
+  因此不能因为“可以禁用”就把它当普通 B 类，现归类为 **C**（详见 `app_removal_recommendations.md` 第 4.1 节）。
 
 ## 7. native 库依赖
 
@@ -305,12 +291,12 @@ Provider 会在**任何进程查询它的瞬间**把宿主进程拉起，是“�
 
 | 包名 | persistent | BOOT 接收器数 | 接收器 | sharedUserId |
 |---|---|---|---|---|
-| com.alipay.arome.app |  | 1 | com.alipay.mobile.quinox.preload.PreloadReceiver |  |
 | com.alibaba.ailabs.genie.osupdate | 是 | 1 | com.alibaba.ailabs.genie.osupdate.UpdateBroadcastReceiver | android.uid.system |
 | com.dangbei1.tvlauncher |  | 2 | com.dangbei.launcher.receiver.BootReceiver, com.taobao.accs.EventReceiver |  |
 | com.shere.assistivetouch | 是 | 1 | com.shere.easytouch.module.service.view.broatcast.ETServiceBroadcastReceiver |  |
 | com.web1n.permissiondog |  | 1 | com.web1n.appops2.receiver.BootReceiver |  |
 | com.android.storagemanager |  | 1 | .automatic.AutomaticStorageBroadcastReceiver |  |
+| com.alipay.arome.app |  | 1 | com.alipay.mobile.quinox.preload.PreloadReceiver |  |
 | com.alibaba.ailabs.genie.rtc |  | 1 | com.alibaba.ailabs.genie.rtc.alive.BootMsgReceiver | android.uid.system |
 | com.aliyun.uuid |  | 1 | com.aliyun.uuid.RegistUUIDReceiver | android.uid.system |
 | com.aligenie.ags |  | 2 | com.aligenie.ags.analytics.ICBroadcastReceiver, com.aligenie.ags.access.AccessBroadcastReceiver | android.uid.system |
@@ -353,8 +339,9 @@ PARTIAL_WAKE_LOCK              'ScreenWakeManager' ACQ=-39m12s398ms LONG (uid=10
 ```
 
 `NativeService` ×2 由 smartapp 的两个进程持有（`pid 29434` / `29413`），`ScreenWakeManager` 由
-`smartapp:business`（`pid 29502`）持有，`AudioIn` 由 audioserver 代 `uid 1000` 持有——**语音常听链路**的实证。
-这三个锁意味着设备在“待机”时 CPU 不会真正休眠，符合原厂“随时唤醒”的设计。
+`smartapp:business`（`pid 29502`）持有，`AudioIn` 由 audioserver 代 `uid 1000` 持有。
+**归属限定（rev2）**：这 4 个唤醒锁全部属于 `com.alibaba.ailabs.genie.smartapp` 的进程（含 audioserver 代持），
+体现的是 smartapp 的“常听”行为；不能据此推断 `AliGenieService` / `GenieMonitor` / `GenieIoT` 也持有同类锁。
 
 ### 8.4 闹钟唤醒 TOP（`dumpsys alarm`）
 
@@ -381,7 +368,15 @@ PARTIAL_WAKE_LOCK              'ScreenWakeManager' ACQ=-39m12s398ms LONG (uid=10
 
 | 链路 | 组成 | 结论 |
 |---|---|---|
-| 语音（唤醒→ASR→技能） | `AliGenieService` + `smartapp`(`:core`/`:business`) + `GenieMonitor`(AVE Wakeup/Gesture) + native `libaligenie_ic.so` | 全部 D。运行时持有长唤醒锁、占 72% CPU 峰值，是“核心但昂贵”的链路；优化只能靠禁用非语音应用腾资源，不能动它 |
-| UI（桌面/设置/系统栏） | `GenieLauncher`(HOME) + `AliSystemUI` + `S1Settings` + `Waft`(技能页) + `webview` | 全部 D/C。`Waft` 因前台渲染 + 被 smartapp 内嵌归 C |
-| 设备控制（IoT） | `GenieIoT`(`HouseService`) + `GenieRTC`(通知/通话) + Provider `iot.tmp.service` | `GenieIoT` D；`GenieRTC` C（有 22 MB 常驻，但断链风险未排除） |
+| 语音（唤醒→ASR→技能） | `AliGenieService` + `smartapp`(`:core`/`:business`) + `GenieMonitor`(AVE Wakeup/Gesture) + native `libaligenie_ic.so` | 全部 D。**运行时证据只覆盖 smartapp**：其 3 个进程 PSS 合计 216,324 kB、`:core` 单进程 72% CPU（单次区间快照）、持有 `NativeService`/`ScreenWakeManager`/`AudioIn` 锁。`GenieMonitor` 在快照中**没有进程**，其 D 级判定来自 Manifest 组件与跨包引用（较可信），未获动态验证 |
+| UI（桌面/设置/系统栏） | `GenieLauncher`(HOME) + `AliSystemUI` + `S1Settings` + `Waft`(技能页) + `webview` | 全部 D/C。`Waft` 因前台渲染（`WaftTplActivity` 为 resumed activity）+ 被 smartapp 内嵌归 C |
+| 小程序 / H5 技能 | `AMPE`(`com.alipay.arome.app`) + smartapp 的 `genie.webapps.*` action + `GwaReceiver` | `AMPE` **C**（rev2 由 B 上调）：7 个包有真实引用，删/禁前需产品决策 + 动态验证 |
+| 设备控制（IoT） | `GenieIoT`(`HouseService`) + `GenieRTC`(通知/通话) + Provider `iot.tmp.service` | `GenieIoT` D；`GenieRTC` C（快照 PSS 22,329 kB 常驻，但断链风险未排除） |
 | OTA | `Osupdate`(persistent) + framework 的 `RebootUpdateActivity` | B：可禁用，升级窗口再启用；删除会破坏 framework 侧重启升级流程 |
+
+## 10. 修订说明
+
+本文件为 rev2（2026-11-20 修订）。修订项、依据与仍未验证的事项集中记录在
+[revisions.md](revisions.md)；本文件相关改动为：平台 Provider 过滤改用 `filters.is_platform_authority()`
+（修复 `split('.')[0]` 无法排除 `com.android.providers.*` 的缺陷）、AMPE 引用计数与归类修正、
+唤醒锁与 CPU 证据的归属限定。

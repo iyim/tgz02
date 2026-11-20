@@ -1,8 +1,12 @@
-﻿"""Generate app_dependency_analysis.md, app_removal_recommendations.md,
+"""Generate app_dependency_analysis.md, app_removal_recommendations.md,
 risk_assessment.md and optimization_plan.md."""
 import json
 import os
 import re
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import filters
 
 OUT = r'D:\tgz02\OS\_analysis\debloat\out'
 DEV = os.path.join(OUT, 'device')
@@ -18,15 +22,8 @@ A = {e['dir']: e for e in apps}
 PKG = {r['dir']: r['pkg'] for r in rows}
 DIR = {v: k for k, v in PKG.items()}
 by_cls = {k: [r for r in rows if r['cls'] == k] for k in 'ABCD'}
-SDK_PREFIX = ('com.xiaomi.', 'com.taobao.', 'org.android.agoo', 'com.google.android.gms',
-              'com.google.firebase', 'mtopsdk.', 'anetwork.', 'com.uc.', 'com.amap.',
-              'com.alipay.mobile.', 'com.taobao.accs', 'org.eclipse.paho', 'com.talkingdata.',
-              'com.huawei.', 'com.baidu.', 'com.sina.', 'com.tencent.', 'com.umeng.')
-PLATFORM_AUTH = ('media', 'downloads', 'settings', 'com.android.contacts', 'com.android.calendar',
-                 'com.android.providers.contacts', 'com.android.providers.media',
-                 'com.android.providers.downloads', 'com.android.providers.settings',
-                 'user_dictionary', 'call_log', 'com.android.providers.telephony',
-                 'telephony', 'mms-sms')
+SDK_PREFIX = filters.SDK_PREFIX
+PLATFORM_AUTH = filters.PLATFORM_AUTHORITIES_EXACT
 
 
 def md(head, rows_):
@@ -41,9 +38,7 @@ def strong_in(d):
     for x in refs2['inbound'].get(d, []):
         if x['kind'] not in ('component', 'authority', 'action'):
             continue
-        if x['token'].startswith(SDK_PREFIX):
-            continue
-        if x['kind'] == 'authority' and x['token'] in PLATFORM_AUTH:
+        if filters.classify_evidence(x['kind'], x['token']) != 'app':
             continue
         res.append(x)
     return res
@@ -51,7 +46,7 @@ def strong_in(d):
 
 def platform_in(d):
     return [x for x in refs2['inbound'].get(d, [])
-            if x['kind'] == 'authority' and x['token'] in PLATFORM_AUTH]
+            if x['kind'] == 'authority' and filters.is_platform_authority(x['token'])]
 
 
 running_services = {}
@@ -147,8 +142,9 @@ dep = f"""# 依赖关系分析
 
 **读法**：`com.aligenie.ags`（AliGenieService）被 `smartapp`、`AliSystemUI`、`GenieScreensaver`、`S1Settings`
 以 authority `com.aligenie.ic.icProvider` 与私有 action `ACTION_SCREEN_SAVER` 引用——这是语音链路的硬连接。
-`com.alipay.arome.app`（AMPE）被 6 个 Genie 包以 `com.alibaba.ailabs.genie.webapps.START/INIT` 与
-`GwaReceiver` 组件引用——它是小程序 / H5 技能容器，属真实耦合（而非 SDK 噪声）。
+`com.alipay.arome.app`（AMPE）被 **7 个包**（smartapp、Guide、GenieAicare、GenieBrowser、GenieIoT、
+GenieLauncher、GenieRTC）以 `com.alibaba.ailabs.genie.webapps.START/INIT` 与 `GwaReceiver` 组件引用——
+这是**真实的应用级耦合**（不是 SDK 噪声），rev2 据此把它从 B 调整为 C。
 `ES.apk`、`qxg.apk`、`Guide` 在降噪后**没有任何**应用级入向引用；`dangbei.apk`、`Waft`、`easytouch.apk`
 的命中全部落在已知推送 / 统计 SDK 命名空间，已在降噪中剔除。
 
@@ -202,7 +198,8 @@ Provider 会在**任何进程查询它的瞬间**把宿主进程拉起，是“�
 - `com.android.arch.lifecycle` 之类 `lifecycle-process` Provider（多个 Ali 应用都有）会在开机时被系统实例化，
   属“故意保活”，禁用对应包即可一并消除。
 - `com.alipay.arome.app` 有 17 个 Provider（`configprovider`、`PermissionProvider`、`arome.provider` 等），
-  只要有任何调用方查询就会拉起 87 MB 的小程序运行时 → 禁用比保留更省资源。
+  任一调用方查询都会把宿主进程拉起。**rev2 修正**：这既说明它是“保活型”宿主，也说明它**被真实使用**；
+  因此不能因为“可以禁用”就把它当普通 B 类，现归类为 **C**（详见 `app_removal_recommendations.md` 第 5 节）。
 
 ## 7. native 库依赖
 
@@ -241,8 +238,9 @@ Provider 会在**任何进程查询它的瞬间**把宿主进程拉起，是“�
 ```
 
 `NativeService` ×2 由 smartapp 的两个进程持有（`pid 29434` / `29413`），`ScreenWakeManager` 由
-`smartapp:business`（`pid 29502`）持有，`AudioIn` 由 audioserver 代 `uid 1000` 持有——**语音常听链路**的实证。
-这三个锁意味着设备在“待机”时 CPU 不会真正休眠，符合原厂“随时唤醒”的设计。
+`smartapp:business`（`pid 29502`）持有，`AudioIn` 由 audioserver 代 `uid 1000` 持有。
+**归属限定（rev2）**：这 4 个唤醒锁全部属于 `com.alibaba.ailabs.genie.smartapp` 的进程（含 audioserver 代持），
+体现的是 smartapp 的“常听”行为；不能据此推断 `AliGenieService` / `GenieMonitor` / `GenieIoT` 也持有同类锁。
 
 ### 8.4 闹钟唤醒 TOP（`dumpsys alarm`）
 
@@ -258,10 +256,18 @@ Provider 会在**任何进程查询它的瞬间**把宿主进程拉起，是“�
 
 | 链路 | 组成 | 结论 |
 |---|---|---|
-| 语音（唤醒→ASR→技能） | `AliGenieService` + `smartapp`(`:core`/`:business`) + `GenieMonitor`(AVE Wakeup/Gesture) + native `libaligenie_ic.so` | 全部 D。运行时持有长唤醒锁、占 72% CPU 峰值，是“核心但昂贵”的链路；优化只能靠禁用非语音应用腾资源，不能动它 |
-| UI（桌面/设置/系统栏） | `GenieLauncher`(HOME) + `AliSystemUI` + `S1Settings` + `Waft`(技能页) + `webview` | 全部 D/C。`Waft` 因前台渲染 + 被 smartapp 内嵌归 C |
-| 设备控制（IoT） | `GenieIoT`(`HouseService`) + `GenieRTC`(通知/通话) + Provider `iot.tmp.service` | `GenieIoT` D；`GenieRTC` C（有 22 MB 常驻，但断链风险未排除） |
+| 语音（唤醒→ASR→技能） | `AliGenieService` + `smartapp`(`:core`/`:business`) + `GenieMonitor`(AVE Wakeup/Gesture) + native `libaligenie_ic.so` | 全部 D。**运行时证据只覆盖 smartapp**：其 3 个进程 PSS 合计 216,324 kB、`:core` 单进程 72% CPU（单次区间快照）、持有 `NativeService`/`ScreenWakeManager`/`AudioIn` 锁。`GenieMonitor` 在快照中**没有进程**，其 D 级判定来自 Manifest 组件与跨包引用（较可信），未获动态验证 |
+| UI（桌面/设置/系统栏） | `GenieLauncher`(HOME) + `AliSystemUI` + `S1Settings` + `Waft`(技能页) + `webview` | 全部 D/C。`Waft` 因前台渲染（`WaftTplActivity` 为 resumed activity）+ 被 smartapp 内嵌归 C |
+| 小程序 / H5 技能 | `AMPE`(`com.alipay.arome.app`) + smartapp 的 `genie.webapps.*` action + `GwaReceiver` | `AMPE` **C**（rev2 由 B 上调）：7 个包有真实引用，删/禁前需产品决策 + 动态验证 |
+| 设备控制（IoT） | `GenieIoT`(`HouseService`) + `GenieRTC`(通知/通话) + Provider `iot.tmp.service` | `GenieIoT` D；`GenieRTC` C（快照 PSS 22,329 kB 常驻，但断链风险未排除） |
 | OTA | `Osupdate`(persistent) + framework 的 `RebootUpdateActivity` | B：可禁用，升级窗口再启用；删除会破坏 framework 侧重启升级流程 |
+
+## 10. 修订说明
+
+本文件为 rev2（2026-11-20 修订）。修订项、依据与仍未验证的事项集中记录在
+[revisions.md](revisions.md)；本文件相关改动为：平台 Provider 过滤改用 `filters.is_platform_authority()`
+（修复 `split('.')[0]` 无法排除 `com.android.providers.*` 的缺陷）、AMPE 引用计数与归类修正、
+唤醒锁与 CPU 证据的归属限定。
 """
 open(os.path.join(DOC, 'app_dependency_analysis.md'), 'w', encoding='utf-8').write(dep)
 print('app_dependency_analysis.md written', len(dep))

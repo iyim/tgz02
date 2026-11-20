@@ -1,4 +1,4 @@
-﻿"""Build the decision tables, CSVs and markdown fragments for the debloat report.
+"""Build the decision tables, CSVs and markdown fragments for the debloat report.
 
 Classification is authored here (one row per package dir) and every row carries the
 evidence tokens that were actually observed. No numbers are invented: space figures
@@ -9,6 +9,10 @@ import csv
 import json
 import os
 import re
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import filters
 
 OUT = r'D:\tgz02\OS\_analysis\debloat\out'
 DEV = os.path.join(OUT, 'device')
@@ -152,8 +156,8 @@ CLASS = {
    cls='B', note='OTA 升级（persistent=true，snapshot 中 20% CPU / 17% user），framework 字符串引用其 RebootUpdateActivity',
    ev='已验证', how='可禁用（pm disable-user）；升级前再启用', grade_note='dumpsys cpuinfo + flags PERSISTENT + services.vdex 字符串'),
  'app/AMPE': dict(
-   cls='B', note='支付宝/Genie 小程序容器（com.alipay.arome.app，87MB）：被 smartapp、Guide、GenieAicare、GenieBrowser、GenieIoT、GenieLauncher 以 com.alibaba.ailabs.genie.webapps.START/INIT 与 GwaReceiver 显式引用；快照时刻未运行',
-   ev='较可信', how='可禁用（不影响其它包启动）；删除需先确认小程序/H5 技能全部下线', grade_note='跨包 action 引用（非 SDK 噪声）+ meminfo 无进程'),
+   cls='C', note='支付宝/Genie 小程序容器（com.alipay.arome.app，87.18 MB）。存在真实跨包引用：smartapp、Guide、GenieAicare、GenieBrowser、GenieIoT、GenieLauncher 以 com.alibaba.ailabs.genie.webapps.START/INIT 与 GwaReceiver 组件显式引用（降噪后 app 级证据 9 action + 3 component，来自 7 个包）。快照时刻未运行。',
+   ev='较可信', how='暂留：仅当明确放弃原厂小程序/H5 技能并完成动态验证后，才考虑禁用或删除', grade_note='跨包 action/组件引用（非 SDK 噪声）+ meminfo 无进程'),
  'app/dangbei.apk': dict(
    cls='B', note='当贝桌面（com.dangbei1.tvlauncher）：96MB PSS、JPush/XMPush 双推送、527 次闹钟唤醒、62 次 COCKROACH 唤醒；非默认 HOME（HOME 为 GenieLauncher）；降噪后无应用级入向引用（唯一命中为华为推送 SDK 字符串）',
    ev='已验证', how='可禁用；RAM 收益最直接', grade_note='meminfo + alarm Top + cpuinfo xmpushservice'),
@@ -245,8 +249,8 @@ CLASS = {
    cls='C', note='Magisk 安装包副本（实际运行版本为 /data/app 27.0），保留作 root 恢复手段',
    ev='已验证', how='暂留：删除不回收空间但失去离线恢复包', grade_note='pm path /data/app + pm path 系统副本'),
  'app/ES.apk': dict(
-   cls='A', note='ES 文件浏览器（com.estrongs.android.pop）：第三方预装，唯一 LAUNCHER 入口为自身，无入向引用、无进程、无系统权限',
-   ev='较可信', how='可删除（或先禁用观察）', grade_note='bundled 过滤后 0 入向；meminfo 无进程'),
+   cls='A', note='ES 文件浏览器（com.estrongs.android.pop，4.60 MB）——A 类候选：第三方预装散装 APK，无 oat、无 native 库、无系统签名权限，降噪后 0 条 app 级入向引用，快照时刻无进程。静态分析通过，但尚未做删后动态验证；需先用 pm uninstall -k --user 0 观察，且须经用户授权。',
+   ev='较可信', how='A 类候选：静态通过，动态未验证；未获授权不执行卸载', grade_note='bundled 过滤后 0 入向；meminfo 无进程；未做删后开机验证'),
  'app/raShow': dict(
    cls='C', note='raShow（com.alira.info，含 DreamerReceiver/WRITE_SECURE_SETTINGS，0.79MB）',
    ev='未知', how='暂留：功能与依赖均不明', grade_note='仅 manifest'),
@@ -269,10 +273,13 @@ for e in apps:
     c = CLASS[d]
     comps = len(m['activities']) + len(m['services']) + len(m['receivers']) + len(m['providers'])
     inbound = refs2['inbound'].get(d, [])
-    strong = [x for x in inbound if x['kind'] in ('component', 'authority')
-              and not (x['kind'] == 'authority' and x['token'].split('.')[0] in ('com.android', 'media', 'settings'))]
-    act = [x for x in inbound if x['kind'] == 'action']
-    amb = [x for x in inbound if x['kind'] == 'action_amb']
+    # Only app-level evidence counts as a dependency signal; AOSP provider authorities and
+    # vendored SDK namespaces are filtered through the shared, unit-tested rules.
+    strong = [x for x in inbound
+              if x['kind'] in ('component', 'authority') and filters.is_app_level_evidence(x['kind'], x['token'])]
+    act = [x for x in inbound
+           if x['kind'] == 'action' and filters.is_app_level_evidence(x['kind'], x['token'])]
+    amb = [x for x in inbound if x['kind'] == 'action_amb' and not filters.is_sdk_noise(x['token'])]
     running = {p: v for p, v in pss.items()
                if p == pkg or p.startswith(pkg + ':') or p.startswith(pkg + '.')}
     rows.append({
@@ -329,10 +336,53 @@ summary = {
     'total_mb': round(sum(float(r['total_mb']) for r in rows), 2),
     'by_class': {k: {'packages': v['n'], 'total_mb': round(v['total'], 2), 'apk_mb': round(v['apk'], 2),
                      'lib_mb': round(v['lib'], 2), 'oat_mb': round(v['oat'], 2),
-                     'pss_mb': round(v['pss'] / 1024, 1)} for k, v in sorted(by_cls.items())},
-    'device_total_ram_mb': 984.99,
-    'device_used_pss_mb': round(879079 / 1024, 1),
-    'device_free_mb': round(223708 / 1024, 1),
+                     'pss_sum_kb': v['pss']} for k, v in sorted(by_cls.items())},
+    'revision': {
+        'current': 'rev2 (2026-11-20)',
+        'basis': 'independent review of my-doc/07_system_debloat (pre-move path)',
+        'changes': [
+            'AMPE com.alipay.arome.app: B -> C (real cross-package webapps.START/INIT + GwaReceiver references)',
+            'ES com.estrongs.android.pop: A worded as A-candidate (static pass, no post-removal dynamic validation)',
+            'report.py platform-provider filter replaced by filters.is_platform_authority() + unit tests',
+            '/data/app UPDATED_SYSTEM_APP count corrected from 2 to 3 (GenieAicare added)',
+            'disable batches split into single-package experiments; OTA CPU figure marked single-snapshot',
+            'runtime wording: 216,324 kB scoped to smartapp only; memory metrics labelled by source',
+        ],
+    },
+    'memory_snapshot': {
+        'source': 'read-only: adb shell dumpsys meminfo + /proc/meminfo',
+        'primary_snapshot': '2026-11-20T16:03:19+08:00 (dumpsys Uptime 236883195 ms)',
+        'second_sample': '2026-11-20T16:38:52+08:00 (uptime 239424 s)',
+        'metrics': {
+            'MemTotal_kB': {'value': 1008628, 'meaning': '内核可见物理内存总量（/proc/meminfo）'},
+            'MemFree_kB_1603': {'value': 89812, 'meaning': '完全空闲物理页（/proc/meminfo，不含可回收 cache）'},
+            'MemFree_kB_1638': {'value': 44332, 'meaning': '同一指标 35 分钟后的第二次采样，说明该值波动很大'},
+            'MemAvailable_kB_1638': {'value': 265332, 'meaning': '内核估计可再分配内存（/proc/meminfo MemAvailable）'},
+            'dumpsys_FreeRAM_kB': {'value': 223708, 'meaning': 'dumpsys 口径 Free RAM = 0 cached pss + 120024 cached kernel + 103684 free；与 MemFree / MemAvailable 不是同一指标，不可混用'},
+            'dumpsys_UsedRAM_kB': {'value': 968931, 'meaning': 'dumpsys 口径 Used RAM = used pss 879079 + kernel 89852'},
+            'used_pss_kB': {'value': 879079, 'meaning': 'dumpsys 汇总的各进程 PSS 之和；是"进程占用"口径，不是可释放量'},
+            'lost_RAM_kB': {'value': 31142, 'meaning': 'dumpsys 无法归类的内存'},
+            'zram_used_kB': {'value': 77792, 'meaning': 'ZRAM 物理占用'},
+            'swap_total_kB': {'value': 504308, 'meaning': 'swap 总容量（ZRAM 承载）'},
+            'swap_pss_kB': {'value': 292945, 'meaning': 'SwapPss（已换出页的 PSS）'},
+            'status': {'value': 'critical', 'meaning': 'dumpsys 自带的内存状态评级（low-ram 设备）'},
+        },
+        'accounting_caveat': 'Used RAM + Free RAM + Lost RAM 之和（1,223,781 kB）大于 MemTotal（1,008,628 kB），'
+                             '因为 swap/ZRAM 与共享页的记账口径不同；三者不可相加当作总内存。',
+        'ram_savings': '不提供禁用/删除后节省 RAM 的推算值：PSS 随进程重拉、ZRAM 换出、page cache 复用而剧烈变化。',
+    },
+    'updated_system_apps': [
+        {'package': 'com.alibaba.ailabs.genie.aicare', 'dir': 'app/GenieAicare',
+         'system_version': '4.0.26', 'loaded_version': '4.0.62',
+         'loaded_path': '/data/app/com.alibaba.ailabs.genie.aicare-zsBAkMuEJlOe5ygOiDbDbw==/base.apk'},
+        {'package': 'com.alibaba.ailabs.genie.rtc', 'dir': 'app/GenieRTC',
+         'system_version': '4.0.16', 'loaded_version': '5.2.78.53746723.dc',
+         'loaded_path': '/data/app/com.alibaba.ailabs.genie.rtc-iD7ciUfp9lpYBtIqAEiqeA==/base.apk'},
+        {'package': 'com.topjohnwu.magisk', 'dir': 'app/magisk.apk',
+         'system_version': '25.2', 'loaded_version': '27.0',
+         'loaded_path': '/data/app/com.topjohnwu.magisk-EuMSu4VItaK3widDq122zw==/base.apk'},
+    ],
+    'process_pss_kb': pss,
     'wakelocks': wakelocks, 'top_alarms': alarms,
 }
 json.dump(summary, open(os.path.join(DOC, 'summary_stats.json'), 'w', encoding='utf-8'),
