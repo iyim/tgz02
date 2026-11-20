@@ -3,7 +3,7 @@ import json
 import os
 import shutil
 
-DOC = r'D:\tgz02\OS\system\my-doc\07_system_debloat'
+DOC = r'D:\tgz02\OS\system\system_debloat'
 SRC = r'D:\tgz02\OS\_analysis\debloat'
 rows = json.load(open(os.path.join(DOC, 'app_inventory.json'), encoding='utf-8'))
 stats = json.load(open(os.path.join(DOC, 'summary_stats.json'), encoding='utf-8'))
@@ -213,9 +213,14 @@ open(os.path.join(TOOLS, 'collect_baseline.sh'), 'w', encoding='utf-8').write(ba
 
 tools_readme = """# 复现用脚本
 
-这些脚本用于从**原始解包镜像**重新生成 `../app_inventory.*` 与报告中的表格。
-脚本里写死了本机路径（`D:\\tgz02\\OS\\system` 为解包后的 system 根，`D:\\tgz02\\OS\\_analysis\\debloat\\out`
-为输出目录），换机器时改 `axml.py` 之外的三个常量即可。
+本目录位于 `system_debloat/tools/`（仓库根 = 解包后的 system 分区根目录）。
+
+这些脚本用于从**原始解包镜像**重新生成 `../app_inventory.*` 与 `../` 下各报告中的表格。
+脚本里写死了本机路径（`D:\\tgz02\\OS\\system` 为解包后的 system 根，`D:\\tgz02\\OS\\system\\system_debloat`
+为输出目录），换机器时改各脚本顶部的 `ROOT` / `DOC` / `OUT` 常量即可。
+
+> 注意：`system_debloat/` 是纯文档目录，系统不会读取它；但**重新打包 `system.img` 前需把它从打包树中排除**，
+> 否则它会被打进 `/system/system_debloat`。详见 `../README.md` 第 0 节。
 
 | 脚本 | 作用 |
 |---|---|

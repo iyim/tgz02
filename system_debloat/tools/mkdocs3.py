@@ -1,9 +1,9 @@
-"""Generate app_removal_recommendations.md, risk_assessment.md, optimization_plan.md."""
+﻿"""Generate app_removal_recommendations.md, risk_assessment.md, optimization_plan.md."""
 import json
 import os
 
 OUT = r'D:\tgz02\OS\_analysis\debloat\out'
-DOC = r'D:\tgz02\OS\system\my-doc\07_system_debloat'
+DOC = r'D:\tgz02\OS\system\system_debloat'
 rows = json.load(open(os.path.join(DOC, 'app_inventory.json'), encoding='utf-8'))
 stats = json.load(open(os.path.join(DOC, 'summary_stats.json'), encoding='utf-8'))
 R = {r['dir']: r for r in rows}
@@ -230,7 +230,7 @@ adb shell cmd package install-existing --user 0 <pkg>
 
 ## 5. 禁止操作清单（本次分析已遵守）
 
-1. 不修改 / 删除 `system` 包内任何文件（本报告只新增 `my-doc/07_system_debloat/`）。
+1. 不修改 / 删除 `system` 包内任何文件（本报告只新增 `system_debloat/`）。
 2. 不生成未经验证的精简 `system.img`。
 3. 不删除原厂核心 APK 与 native 库（D 类 + `lib/`、`lib/hw`、`vendor/lib`）。
 4. 不以 APK 体积等同 RAM 占用。

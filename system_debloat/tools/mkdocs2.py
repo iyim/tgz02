@@ -1,4 +1,4 @@
-"""Generate app_dependency_analysis.md, app_removal_recommendations.md,
+﻿"""Generate app_dependency_analysis.md, app_removal_recommendations.md,
 risk_assessment.md and optimization_plan.md."""
 import json
 import os
@@ -6,7 +6,7 @@ import re
 
 OUT = r'D:\tgz02\OS\_analysis\debloat\out'
 DEV = os.path.join(OUT, 'device')
-DOC = r'D:\tgz02\OS\system\my-doc\07_system_debloat'
+DOC = r'D:\tgz02\OS\system\system_debloat'
 rows = json.load(open(os.path.join(DOC, 'app_inventory.json'), encoding='utf-8'))
 stats = json.load(open(os.path.join(DOC, 'summary_stats.json'), encoding='utf-8'))
 refs2 = json.load(open(os.path.join(OUT, 'refs2.json'), encoding='utf-8'))

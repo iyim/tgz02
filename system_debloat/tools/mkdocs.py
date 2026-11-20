@@ -1,4 +1,4 @@
-"""Generate the my-doc/07_system_debloat deliverable set.
+"""Generate the system_debloat deliverable set.
 
 All tables are computed from out/apps.json, out/refs2.json and the read-only device
 snapshots in out/device/. Prose and the per-package classification are authored here.
@@ -8,7 +8,7 @@ import json
 import os
 
 OUT = r'D:\tgz02\OS\_analysis\debloat\out'
-DOC = r'D:\tgz02\OS\system\my-doc\07_system_debloat'
+DOC = r'D:\tgz02\OS\system\system_debloat'
 rows = json.load(open(os.path.join(DOC, 'app_inventory.json'), encoding='utf-8'))
 stats = json.load(open(os.path.join(DOC, 'summary_stats.json'), encoding='utf-8'))
 refs2 = json.load(open(os.path.join(OUT, 'refs2.json'), encoding='utf-8'))
@@ -56,6 +56,21 @@ readme = f"""# TG-Z02 系统 App 精简与内存优化分析
 本目录是对 TG-Z02（CCH，MT8167S，Android 8.1 / SDK 27，armeabi-v7a，产品名 AILABS_S1L）`system` 分区内
 全部预装 App 的**盘点、依赖分析与精简建议**。分析只读取镜像与设备运行时状态，**不修改、不删除任何镜像文件**，
 也不触碰 `my-doc/06_t5_bridge`（T5 AI Bridge）相关内容。
+
+## 0. 关于本目录 `system_debloat/`
+
+| 项目 | 说明 |
+|---|---|
+| 位置 | 仓库根（= 解包后的 **system 分区根目录**）下的独立文件夹 `system_debloat/`，与 `app/`、`priv-app/`、`framework/`、`lib/` 平级 |
+| 内容 | 本任务的全部分析资料：6 份报告、机器可读清单与依赖边、复现脚本 |
+| 性质 | **纯文档目录**。不是 Android 系统目录，系统启动、PackageManager、任何 App 都不会读取它 |
+| 与 T5 的关系 | 不再写入 `my-doc/`；`my-doc/06_t5_bridge` 等既有 T5 资料保持原样，由 T5 任务独立维护 |
+| 体积 | 约 0.44 MB（全部为文本，无二进制） |
+
+> ⚠️ **打包注意（重要）**：本仓库根就是解包后的 system 分区树。若日后直接用本目录重新打包 `system.img`，
+> `system_debloat/` 会被一并打进镜像，最终出现在 `/system/system_debloat` 并占用分区空间。
+> 打包前请把该目录加入排除清单（或把分析资料移出打包工作区）。本次任务**未生成任何镜像**，
+> 现有 `flash/ori/system.bin`、`flash/change/system.bin` 中也不含该目录。
 
 ## 1. 任务与范围
 
@@ -110,9 +125,9 @@ readme = f"""# TG-Z02 系统 App 精简与内存优化分析
 
 ## 5. 最终回答（任务书第十节）
 
-1. **一共有多少个 App？** 系统分区内 {stats['packages']} 个包（`app/` 32 目录 + 5 散装 APK + `priv-app/` 18），
-   与设备 `pm list packages -s` 的 61 条中的系统包一一对应（差额为 `vendor` 分区 2 个 + overlay 1 个 +
-   `framework-res`/`yunos-framework-res` 2 个资源包）。
+1. **一共有多少个 App？** 系统分区内 {stats['packages']} 个包（`app/` 32 目录 + 5 散装 APK + `priv-app/` 18）。
+   设备 `pm list packages -s` 共 61 条 = 本表 55 个 App + 3 个资源包（`android`/framework-res、
+   `com.yunos`/yunos-framework-res、`com.mediatek`/mediatek-res）+ `vendor/app` 2 个 + `vendor/overlay` 1 个。
 2. **哪些可以安全删除？** 仅 `app/ES.apk`（com.estrongs.android.pop，4.60 MB）。另有 3 个包在完成指定验证后可升级为 A：
    `AMPE`、`dangbei.apk`、`qxg.apk`（见 `app_removal_recommendations.md`）。
 3. **哪些适合禁用？** 14 个 B 类，合计 {cls_counts['B']['total_mb']} MB；优先 `dangbei.apk`、`easytouch.apk`、
@@ -128,7 +143,7 @@ readme = f"""# TG-Z02 系统 App 精简与内存优化分析
 7. **哪些应用可能影响运行时 RAM？** 以实测 PSS 排序：smartapp 三进程 216,324 KB、当贝桌面 96,912 KB、
    Waft 83,190 KB、Launcher 48,762 KB、IoT:service 22,416 KB、GenieRTC 22,329 KB、ags 21,599 KB、
    悬浮触控 38,422 KB（两进程）、SystemUI 20,828 KB、OTA 16,011 KB、SettingsProvider 11,825 KB。
-   （快照时刻 `dumpsys meminfo` 的 Total PSS by process，非节省量，见第 7 节警告。）
+   （快照时刻 `dumpsys meminfo` 的 Total PSS by process，非节省量，见第 6 节声明。）
 8. **推荐按什么顺序精简？** 见 `optimization_plan.md`：P0 备份与基线 → P1 纯禁用（3 个高收益项，逐项观察 24 h）
    → P2 删除已验证项（重新打包镜像前先做用户态卸载验证）→ P3 结构性优化（不做 odex 清理）。
 9. **如何逐项恢复？** `pm enable`（禁用项）、`cmd package install-existing`（`pm uninstall -k --user 0` 项）、
@@ -143,6 +158,8 @@ kernel page cache 复用时剧烈变化，且“禁用”只是让进程不再�
 
 ## 7. 目录
 
+本目录 `system_debloat/`（与本文件同级）包含：
+
 | 文件 | 内容 |
 |---|---|
 | [README.md](README.md) | 任务说明、方法、证据等级、结论与 9 问回答 |
@@ -151,7 +168,8 @@ kernel page cache 复用时剧烈变化，且“禁用”只是让进程不再�
 | [app_removal_recommendations.md](app_removal_recommendations.md) | A/B/C/D 逐项建议与操作方式 |
 | [risk_assessment.md](risk_assessment.md) | 风险矩阵、误删后果、回退与恢复策略 |
 | [optimization_plan.md](optimization_plan.md) | P0–P3 分阶段方案、测量与验收、逐项恢复命令 |
-| [app_inventory.csv](app_inventory.csv) / [app_inventory.json](app_inventory.json) | 机器可读清单 |
+| [app_inventory.csv](app_inventory.csv) / [app_inventory.json](app_inventory.json) | 机器可读清单（55 行全字段） |
+| [dependency_edges.csv](dependency_edges.csv) | 机器可读依赖边（含 `evidence_class`：app / sdk_noise / ambiguous / platform_provider） |
 | [summary_stats.json](summary_stats.json) | 分类汇总与运行时快照摘要 |
 | [tools/](tools/) | 解析与生成脚本（axml.py / scan.py / refs2.py / report.py），可对原始镜像复现 |
 
@@ -222,8 +240,9 @@ GenieLauncher 20.48），合计 340 MB，占分区内 App 体积的 65%。
 
 ## 5. 与设备实际安装状态的一致性
 
-- 设备 `pm list packages -s` 共 61 条，其中 `system` 分区 55 条与本表一一对应；
-  另 2 条来自 `vendor/app`，1 条来自 `vendor/overlay`，2 条为 `framework-res` / `yunos-framework-res` 资源包。
+- 设备 `pm list packages -s` 共 61 条 = 本表 55 个 App + 3 个框架资源包（`android` → `framework-res.apk`、
+  `com.yunos` → `yunos-framework-res.apk`、`com.mediatek` → `framework/mediatek-res/mediatek-res.apk`）
+  + `vendor/app` 2 个（`GooglePinyinIME`、`MTKThermalManager`）+ `vendor/overlay` 1 个（`android.auto_generated_rro__`）。
 - 设备 `pm list packages -d` 为空 → **当前没有任何包被禁用**，`enabled=0`（默认）状态为 55 个系统包的全部现状。
 - `com.alibaba.ailabs.genie.rtc` 与 `com.topjohnwu.magisk` 的 `codePath` 指向 `/data/app`，
   即系统内 prebuilt 被用户更新覆盖；**删除系统内 prebuilt 需先确认 data 版本可独立运行**。

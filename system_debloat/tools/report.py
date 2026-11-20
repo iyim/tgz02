@@ -1,4 +1,4 @@
-"""Build the decision tables, CSVs and markdown fragments for the debloat report.
+﻿"""Build the decision tables, CSVs and markdown fragments for the debloat report.
 
 Classification is authored here (one row per package dir) and every row carries the
 evidence tokens that were actually observed. No numbers are invented: space figures
@@ -12,7 +12,7 @@ import re
 
 OUT = r'D:\tgz02\OS\_analysis\debloat\out'
 DEV = os.path.join(OUT, 'device')
-DOC = r'D:\tgz02\OS\system\my-doc\07_system_debloat'
+DOC = r'D:\tgz02\OS\system\system_debloat'
 
 apps = json.load(open(os.path.join(OUT, 'apps.json'), encoding='utf-8'))
 refs2 = json.load(open(os.path.join(OUT, 'refs2.json'), encoding='utf-8'))
