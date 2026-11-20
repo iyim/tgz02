@@ -1,0 +1,81 @@
+﻿libace.so                        -> libm.so, liblog.so, libdl.so, libc.so
+libaceAsr.so                     -> libace.so, libaceNlu.so, libm.so, libdl.so, libc.so
+libaceNlu.so                     -> libace.so, liblog.so, libandroid.so, libm.so, libdl.so, libc.so
+libagaudio.so                    -> libagutils.so, libOpenSLES.so, liblog.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libagaudio_system.so             -> libagutils.so, libOpenSLES.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libaginput.so                    -> libandroid.so, liblog.so, libagutils.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libagjni.so                      -> libandroid.so, liblog.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libaglight.so                    -> libandroid.so, libagutils.so, libjson_c_ali.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libaglight_common.so             -> libagutils.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libaglog.so                      -> libandroid.so, liblog.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libagmc.so                       -> libsmartaudioplayer.so, libhttpdns.so, libagutils.so, libservicemanager.so, libandroid.so, libsmartbox.so, libu3player.so, libjson_c_ali.so, libagpal.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libagmmi.so                      -> libspeex-ogg.so, libjson_c_ali.so, libgcs_ali.so, libagmc.so, libservicemanager.so, libagutils.so, libagutils_hack.so, libssl.so, libcrypto.so, libnghttp2_ali.so, libwebsockets.so, libsmartaudioplayer.so, libu3player.so, libagpal.so, libhttpdns.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libagpal.so                      -> libdl.so, libjson_c_ali.so, libagutils.so, libandroid.so, liblog.so, libc++_shared.so, libm.so, libc.so
+libagsigmesh.so                  -> libaglog.so, libandroid.so, liblog.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libagspeech.so                   -> libagpal.so, librecheck_api.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libagsystem.so                   -> libandroid.so, liblog.so, libagpal.so, libagutils.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libagui.so                       -> libjson_c_ali.so, libsmartbox.so, libagmc.so, libandroid.so, libagutils.so, libagpal.so, libsaladapter.so, libagutils_hack.so, libsmartaudioplayer.so, libu3player.so, libhttpdns.so, libservicemanager.so, liblog.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libagutils.so                    -> liblog.so, libandroid.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libAGUtilsExt.so                 -> libc++_shared.so, libm.so, libdl.so, libc.so
+libagutils_hack.so               -> libagutils.so, liblog.so, libandroid.so, libcrypto.so, libcurl.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libagwifi.so                     -> libaglog.so, libandroid.so, liblog.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libalibabacloud-oss-cpp-sdk.so   -> libcrypto.so, libssl.so, libcurl.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libapolloffmpeg.so               -> liblog.so, libc.so, libm.so, libz.so, libdl.so
+libautotestframework.so          -> libc++_shared.so, libagpal.so, libjson_c_ali.so, libagutils.so, libdl.so, liblog.so, libandroid.so, libm.so, libc.so
+libautotestutils.so              -> libcrypto.so, libcurl.so, libc++_shared.so, libagpal.so, libdl.so, libjson_c_ali.so, libagutils.so, liblog.so, libandroid.so, libm.so, libc.so
+libbluetooth_delegate.so         -> libservicemanager.so, libagutils.so, liblog.so, libandroid.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libcapem.so                      -> 
+libconfigure.bin.so              -> 
+libconnectivity.so               -> libagpal.so, libev.so, libcurl.so, libjson_c_ali.so, libagutils.so, libdl.so, libandroid.so, liblog.so, libm.so, libc++_shared.so, libc.so
+libcrashsdk.so                   -> liblog.so, libz.so, libm.so, libc.so, libdl.so
+libcunit.so                      -> libc.so, libdl.so
+libcurl.so                       -> libcrypto.so, libssl.so, libz.so, libc++.so, libc.so, libm.so, libdl.so
+libdisplay_delegate.so           -> libservicemanager.so, libagutils.so, liblog.so, libandroid.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libev.so                         -> libm.so, libdl.so, libc.so
+libframesequence.so              -> libgiflib.so, liblog.so, libjnigraphics.so, libstdc++.so, libc.so, libm.so, libdl.so
+libgcs_ali.so                    -> libagutils_hack.so, libjson_c_ali.so, libwebsockets.so, libhttpdns.so, libssl.so, libcrypto.so, libnghttp2_ali.so, libagutils.so, libandroid.so, liblog.so, libcurl.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libGenieCommon.so                -> liblog.so, libandroid.so, libm.so, libstdc++.so, libdl.so, libc.so
+libGenieJson.so                  -> libGenieCommon.so, liblog.so, libandroid.so, libm.so, libstdc++.so, libdl.so, libc.so
+libgiflib.so                     -> libc.so, libm.so, libstdc++.so, libdl.so
+libhttpdns.so                    -> libagutils.so, libcurl.so, libssl.so, liblog.so, libandroid.so, libdl.so, libc.so
+libinput_delegate.so             -> libservicemanager.so, libagutils.so, libc++_shared.so, libcrypto.so, libcurl.so, libagpal.so, libdl.so, libandroid.so, liblog.so, libjson_c_ali.so, libAGUtilsExt.so, libm.so, libc.so
+libinteraction_delegate.so       -> libservicemanager.so, libagutils.so, liblog.so, libandroid.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libiot_delegate.so               -> libservicemanager.so, libagutils.so, liblog.so, libandroid.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libjson_c_ali.so                 -> libagutils.so, liblog.so, libandroid.so, libc++_shared.so, libm.so, libdl.so, libc.so
+liblogProducer.so                -> libhttpdns.so, libcurl.so, libcrypto.so, libagutils.so, libandroid.so, libssl.so, liblog.so, libdl.so, libc.so
+libmarsulog.so                   -> liblog.so, libz.so, libstdc++.so, libm.so, libc.so, libdl.so
+libmarsxlog.so                   -> libc++_shared.so, liblog.so, libz.so, libc.so, libm.so, libdl.so
+libmb_delegate.so                -> libservicemanager.so, libagutils.so, liblog.so, libandroid.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libmodel.bin.so                  -> 
+libmodelmanager.so               -> libm.so, libdl.so, libc.so
+libnghttp2.so                    -> libdl.so, libc.so
+libnghttp2_ali.so                -> libdl.so, libc.so
+libopus-ogg.so                   -> libm.so, libdl.so, libc.so
+libortp.so                       -> libagpal.so, libm.so, libjson_c_ali.so, libdl.so, libandroid.so, liblog.so, libc.so
+libota_delegate.so               -> libservicemanager.so, libagutils.so, liblog.so, libandroid.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libpl_droidsonroids_gif.so       -> libjnigraphics.so, libandroid.so, libGLESv2.so, liblog.so, libm.so, libdl.so, libc.so
+librecheck_api.so                -> libdl.so, libm.so, libc.so
+librecheck_bin.so                -> 
+libsaladapter.so                 -> liblog.so, libagutils.so, libagutils_hack.so, libjson_c_ali.so, libagpal.so, libsmartbox.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libsed_api.so                    -> libc++_shared.so, libm.so, libdl.so, libc.so
+libsed_bin.so                    -> 
+libserveradapter_delegate.so     -> libservicemanager.so, libagutils.so, liblog.so, libandroid.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libservicemanager.so             -> libagutils.so, liblog.so, libandroid.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libshoppingSdk.so                -> libGenieJson.so, libGenieCommon.so, liblog.so, libandroid.so, libm.so, libstdc++.so, libdl.so, libc.so
+libsmartaudioplayer.so           -> libu3player.so, libjson_c_ali.so, libagpal.so, libagutils.so, libservicemanager.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libsmartbox.so                   -> libm.so, libcurl.so, libconnectivity.so, libwebsockets.so, libautotestutils.so, libusertrace.so, libcrypto.so, libssl.so, libautotestframework.so, libcunit.so, libinteraction_delegate.so, libbluetooth_delegate.so, libmb_delegate.so, libiot_delegate.so, libdisplay_delegate.so, libota_delegate.so, libserveradapter_delegate.so, libvoip_delegate.so, libservicemanager.so, libgcs_ali.so, libalibabacloud-oss-cpp-sdk.so, libdl.so, libopus-ogg.so, libspeex-ogg.so, libev.so, liblogProducer.so, libagpal.so, libc++_shared.so, libc.so, libagutils_hack.so, libjson_c_ali.so, libnghttp2_ali.so, libhttpdns.so, libagutils.so, libandroid.so, liblog.so
+libspeex-ogg.so                  -> libm.so, libdl.so, libc.so
+libsqlcipher.so                  -> liblog.so, libstdc++.so, libm.so, libc.so, libdl.so
+libu3player.so                   -> libc++_shared.so, liblog.so, libapolloffmpeg.so, libdl.so, libstdc++.so, libm.so, libc.so
+libunet.so                       -> libc.so, libdl.so, libm.so, liblog.so
+libusertrace.so                  -> liblogProducer.so, libagutils_hack.so, libservicemanager.so, libjson_c_ali.so, libhttpdns.so, libssl.so, libcurl.so, libcrypto.so, libagutils.so, liblog.so, libandroid.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libvad_api.so                    -> libc++_shared.so, libm.so, libdl.so, libc.so
+libvad_bin.so                    -> 
+libvoip_delegate.so              -> libservicemanager.so, libagutils.so, liblog.so, libandroid.so, libc++_shared.so, libm.so, libdl.so, libc.so
+libwakeup_bin_S1.so              -> 
+libwakeup_bin_S1L_S3.so          -> 
+libwakeup_sync_api_S1.so         -> liblog.so, libdl.so, libm.so, libc.so
+libwakeup_sync_api_S1L_S3.so     -> liblog.so, libdl.so, libm.so, libc.so
+libwebsockets.so                 -> liblog.so, libhttpdns.so, libz.so, libssl.so, libcrypto.so, libm.so, libagutils.so, libandroid.so, libcurl.so, libdl.so, libc.so
+libz.so                          -> libdl.so, libc.so
+libzcachecore.so                 -> libandroid.so, liblog.so, libz.so, libm.so, libc++_shared.so, libdl.so, libc.so

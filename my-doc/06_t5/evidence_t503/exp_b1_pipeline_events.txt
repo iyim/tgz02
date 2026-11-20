@@ -1,0 +1,302 @@
+11-20 10:00:37.413 16112 16265 D XEGNLocalEngine.cpp: mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 37, cost of feed is 0
+11-20 10:00:42.959 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (578) from memory pool (angle result,523) fail
+11-20 10:00:43.143 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (615) from memory pool (angle result,523) fail
+11-20 10:00:43.304 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (578) from memory pool (angle result,523) fail
+11-20 10:00:43.390 16112 16265 D XEGNLocalEngine.cpp: mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 37, cost of feed is 0
+11-20 10:00:43.603 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:00:43.603944 [16112] [I] [wkuegn] xengine.cpp:769: tian mao jing ling, 0.720266, 0, 8530, 8558, 1, 0
+11-20 10:00:43.618 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:00:43.618247 [16112] [I] [wkuegn] xengine.cpp:769: tian mao jing ling, 0.727906, 2, 8529, 8558, 1, 0
+11-20 10:00:43.659 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:00:43.659074 [16112] [I] [wkuegn] xengine.cpp:1464: recheck_rst:1, wakeup_is_end: 0
+11-20 10:00:43.661 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:00:43.661510 [16112] [I] [wkuegn] xengine.cpp:1479: {"max_score_smooth":0.828457,"left_frame_10":10,"left_frame_10_sil":10,"left_frame_10_sp":0,"avg_10_sp_score":0,"left_frame_all":25,"left_frame_all_sil":23,"left_frame_all_sp":2,"avg_all_sp_score":0.304484,"frame_cnt":[9,7,8,4],"avg_max_score":[0.939048,0.990196,0.949737,0.533419],"gop_max_score":[0,0,0,0]}
+11-20 10:00:43.661 16112 16314 D XEGNLocalEngine.cpp: algtracelog string is :{"result": {"rec": "1", "score" : "0.727906", "start_frame" : "8529", "end_frame" : "8558","wakeup_words" : "tian mao jing ling", "wku_index" : "2", "low_snr" : "0", "wku_state" : "3", "wku_type" : "1", "DOA" : "42", "recheck":{"is_wakeup" : "1", "score_arr" : [0.3867, 0.6133, 0.0000 ]}, "faulty_mic_index" : "0", "snr_arr" : [15.768, 64.820, 119.791, 235.341, 2.000], "wku_eng_arr" : [311.505, 39.903, 44.265, 41.205, 19.032, 7.238], "wku_ftr" : {"max_score_smooth":0.828457,"left_frame_10":10,"left_frame_10_sil":10,"left_frame_10_sp":0,"avg_10_sp_score":0,"left_frame_all":25,"left_frame_all_sil":23,"left_frame_all_sp":2,"avg_all_sp_score":0.304484,"frame_cnt":[9,7,8,4],"avg_max_score":[0.939048,0.990196,0.949737,0.533419],"gop_max_score":[0,0,0,0]}, "is_last_cloud":0, "is_cloud":0}}, length is 791
+11-20 10:00:43.661 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:00:43.661781 [16112] [I] [wkuegn] wakeup_sync_api.cpp:109: wakeup info: {"result": {"rec": "1", "score" : "0.727906", "start_frame" : "8529", "end_frame" : "8558","wakeup_words" : "tian mao jing ling", "wku_index" : "2", "low_snr" : "0", "wku_state" : "3", "wku_type" : "1", "DOA" : "42", "recheck":{"is_wakeup" : "1", "score_arr" : [0.3867, 0.6133, 0.0000 ]}, "faulty_mic_index" : "0", "snr_arr" : [15.768, 64.820, 119.791, 235.341, 2.000], "wku_eng_arr" : [311.505, 39.903, 44.265, 41.205, 19.032, 7.238], "wku_ftr" : {"max_score_smooth":0.828457,"left_frame_10":10,"left_frame_10_sil":10,"left_frame_10_sp":0,"avg_10_sp_score":0,"left_frame_all":25,"left_frame_all_sil":23,"left_frame_all_sp":2,"avg_all_sp_score":0.304484,"frame_cnt":[9,7,8,4],"avg_max_score":[0.939048,0.990196,0.949737,0.533419],"gop_max_score":[0,0,0,0]}, "is_last_cloud":0, "is_cloud":0}}
+11-20 10:00:43.662 16112 16264 D XEGNLocalEngine.cpp: handleWkuResult,608:Wakeup Info is {"result": {"rec": "1", "score" : "0.727906", "start_frame" : "8529", "end_frame" : "8558","wakeup_words" : "tian mao jing ling", "wku_index" : "2", "low_snr" : "0", "wku_state" : "3", "wku_type" : "1", "DOA" : "42", "recheck":{"is_wakeup" : "1", "score_arr" : [0.3867, 0.6133, 0.0000 ]}, "faulty_mic_index" : "0", "snr_arr" : [15.768, 64.820, 119.791, 235.341, 2.000], "wku_eng_arr" : [311.505, 39.903, 44.265, 41.205, 19.032, 7.238], "wku_ftr" : {"max_score_smooth":0.828457,"left_frame_10":10,"left_frame_10_sil":10,"left_frame_10_sp":0,"avg_10_sp_score":0,"left_frame_all":25,"left_frame_all_sil":23,"left_frame_all_sp":2,"avg_all_sp_score":0.304484,"frame_cnt":[9,7,8,4],"avg_max_score":[0.939048,0.990196,0.949737,0.533419],"gop_max_score":[0,0,0,0]}, "is_last_cloud":0, "is_cloud":0}}, wakeup scence is 0,xengine sdk wku sync version:0604Nov  9 2021 11:14:39
+11-20 10:00:43.662 16112 16264 D XEGNLocalEngine.cpp: handleWkuResult,669: doa is 42
+11-20 10:00:43.662 16112 16264 D AGSpeechEngine: onSpeechWakeup,530:tian mao jing ling,天猫精灵
+11-20 10:00:43.664 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 8
+11-20 10:00:43.664 16112 16275 D AGSpeechEngine: onWakeup,1141: process wakeup of device(1)
+11-20 10:00:43.664 16112 16275 D AGSpeechEngine: startListenInternal,192
+11-20 10:00:43.664 16112 16275 D CloudASRManager: isASR30,385: use ASRXX
+11-20 10:00:43.664 16112 16275 D AGSpeechEngine: onListenStarted,1202: useASR30=0
+11-20 10:00:43.664 16112 16275 D AGSpeechEngineProxy: onListenStarted,684
+11-20 10:00:43.664 16112 16275 D AGSpeechEngineProxy: onListenStarted,696: 0, tian mao jing ling, 天猫精灵, 0.727906, 42, 0, 0, <hexid>
+11-20 10:00:43.672 16112 16275 D SessionManager: JNI_AILABS SessionManager.cpp:onStartTalk:255 [16275] sessionId = 1970115, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-20 10:00:43.672 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 1, preStatus = 6, sessionId = 1970115, preSessionId = 1970111
+11-20 10:00:43.677 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [16213] set status: notify status=1, session=1970115
+11-20 10:00:43.683 16112 16112 E NativeUIManager: iuiManager what = 1004,sessionId = 1970115
+11-20 10:00:43.683 16112 16213 E NativeUIManager: onRecordStart what = 1004sessionId = 1970115
+11-20 10:00:43.683 16112 16112 D GenieAssistantUIManager: onRecordStart: session id:1970115, wakeup type:ACTIVE
+11-20 10:00:43.684 16112 16275 D AGSpeechEngineProxy: onListenStarted,732, sessionID is 1970115
+11-20 10:00:43.684 16112 16275 D AGSpeechEngine: onListenStarted,1210: session id is 1970115, request id is <hexid>1970115
+11-20 10:00:43.684 16112 16275 D LocalASRManager: shouldEnableLocalASR,167: can't enable local asr
+11-20 10:00:43.684 16112 16275 D AGSpeechEngine: startListenInternal,269: needVAD = 1
+11-20 10:00:43.684 16112 16275 D CloudASRManager: start,104
+11-20 10:00:43.684 16112 16275 D CloudASRManager: start,106:locked
+11-20 10:00:43.685 16112 16275 D CloudASRManager: start,120: real asr
+11-20 10:00:43.685 16112 16275 D CloudASRManager: start,148
+11-20 10:00:43.685 16112 16275 D CloudASRManager: [2026-11-20 10:00:43.497][FullLink]voice encode start
+11-20 10:00:43.685 16112 16275 D CloudASRManager: onData,476:send 108 when 2026-11-20 10:00:43.628
+11-20 10:00:43.685 16112 16275 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.686 16112 16275 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [16275] sending, requestId = 4037, eventNs = AliGenie.Microphone, eventName =Active
+11-20 10:00:43.689 16112 16275 D SessionManager: JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [16275] foreground info, packageName = com.dangbei1.tvlauncher, className = com.dangbei.launcher.ui.main.MainActivity, pkg = 
+11-20 10:00:43.689 16112 16275 W SessionManager: JNI_AILABS SessionManager.cpp:onGetClientContext:1438 [16275] no context
+11-20 10:00:43.689 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [16213] onGetSystemContext sessionId = 1970115  mSystemContextCallback = 0x89c1ad00
+11-20 10:00:43.691 16112 16496 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:503 [16496] send text--0::{ "digest": "<redacted>", "timestamp": "2026-11-20 10:00:43.787", "requestId": "<redacted>", "version": "3.0", "bizType": "AILABS", "bizGroup": "S1L", "uuid": "<redacted>", "eventNs": "AliGenie.Microphone", "eventName": "Active", "attachmentCount": 0, "logId": "<redacted>", "returnType": "list", "payload": { "reason": "user" }
+11-20 10:00:43.691 16112 16112 D GenieAssistantUIManager: ScreenBrightness=   102
+11-20 10:00:43.691 16112 16112 D AliTVASR: AliTVASR(GenieAssistantUIManager)->(2)->forceShowGenieAssistantBar.
+11-20 10:00:43.728 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 1010
+11-20 10:00:43.728 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_TALK_STATUS; arg1=1; arg2=0; data=null
+11-20 10:00:43.777 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:00:43.777791 [16112] [I] [wkuegn] wakeup_sync_api.cpp:233: change agp channal to index: 2
+11-20 10:00:43.810 16112 16275 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [16275] sending, requestId = 1970115, eventNs = AliGenie.Microphone, eventName =ListenStarted
+11-20 10:00:43.815 16112 16496 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:503 [16496] send text--0::{ "digest": "<redacted>", "timestamp": "2026-11-20 10:00:43.992", "requestId": "<redacted>", "version": "3.0", "bizType": "AILABS", "bizGroup": "S1L", "uuid": "<redacted>", "eventNs": "AliGenie.Microphone", "eventName": "ListenStarted", "attachmentCount": 1, "logId": "<redacted>", "wakeupId": "<hexid>", "returnType": "list", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "<hexid>", "wakeupWord": "tian mao jing ling", "doa": "{\"param_arr\":[2.500000,0,7.500000,0,12.500000,0],\"score_arr\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2.500000]}", "confidence": 0.7279059886932373, "listenDuration": 7332, "voiceDuration": 7332, "duplexDialog
+11-20 10:00:43.815 16112 16496 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:503 [16496] send text--1::Renew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visionInfomation": "", "voiceInfomation": "" }, "format": ".ogg", "binaryExtensions": "EOF_ACTION", "eventContext": { "screenStatus": "online", "backgroundApps": [ "com.alibaba.ailabs.genie.gms", "com.alibaba.ailabs.genie.smartapp", "com.aligenie.ags" ], "foregroundApp": { "packageName": "com.dangbei1.tvlauncher", "appName": "当贝桌面", "appVersion": "83", "fingerPrint": "<hexid>e7118fb5", "executeLevel": "bot", "skillContext": { } } }, "asrProtocol": "simple" }
+11-20 10:00:43.815 16112 16496 W Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:520 [16496] MSG_TYPE_SEND_BIN_START:1970115
+11-20 10:00:43.816 16112 16275 W SessionManager: JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [16275] send startListened sessionId = 1970115
+11-20 10:00:43.816 16112 16275 D CloudASRManager: onData,476:send 69 when 2026-11-20 10:00:43.564
+11-20 10:00:43.816 16112 16275 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.816 16112 16275 D CloudASRManager: [FullLink]voice encode start done
+11-20 10:00:43.816 16112 16275 D CloudASRManager: start,152
+11-20 10:00:43.816 16112 16275 D CloudASRManager: start,167
+11-20 10:00:43.816 16112 16275 D AGSpeechEngine: startListenInternal,302: should not use local asr
+11-20 10:00:43.817 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 8
+11-20 10:00:43.840 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.216
+11-20 10:00:43.840 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.851 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.792
+11-20 10:00:43.851 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.864 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.009
+11-20 10:00:43.864 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.877 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.788
+11-20 10:00:43.877 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.886 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.876
+11-20 10:00:43.887 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.896 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.612
+11-20 10:00:43.896 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.905 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.725
+11-20 10:00:43.905 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.915 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.359
+11-20 10:00:43.915 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.924 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.611
+11-20 10:00:43.924 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.936 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.908
+11-20 10:00:43.937 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.946 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.015
+11-20 10:00:43.946 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.955 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.152
+11-20 10:00:43.955 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.960 16112 16112 D GenieAssistantUIManager: onWindowChange. topPackageAndActivityName = com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity
+11-20 10:00:43.964 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.261
+11-20 10:00:43.964 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.973 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.326
+11-20 10:00:43.973 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.975 16112 16274 D VadStateMachine: handleSpeech,407:  energy is 0.131655, count is 20
+11-20 10:00:43.983 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.674
+11-20 10:00:43.983 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:43.993 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:43.980
+11-20 10:00:43.993 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:44.036 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 11
+11-20 10:00:44.036 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_PROMPT_STATUS; arg1=0; arg2=3149764; data=null
+11-20 10:00:44.098 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:44.611
+11-20 10:00:44.098 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:44.159 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (594) from memory pool (angle result,523) fail
+11-20 10:00:44.194 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:44.403
+11-20 10:00:44.194 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:44.228 16112 16257 D AGSpeechEngine: handleWakeupPromptFinish,895
+11-20 10:00:44.229 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 21
+11-20 10:00:44.229 16112 16275 D CloudASRManager: wakeupRemindPromptFinished,245:time span from wakeup to remind finish is 567
+11-20 10:00:44.229 16112 16275 D VadStateMachine: setRemindFinishTime,471:remind finish at 2267 when 440 feeded
+11-20 10:00:44.229 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 21
+11-20 10:00:44.229 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 11
+11-20 10:00:44.229 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_PROMPT_STATUS; arg1=12; arg2=3149764; data=null
+11-20 10:00:44.230 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 17
+11-20 10:00:44.230 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3149764; data=null
+11-20 10:00:44.233 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:44.685
+11-20 10:00:44.233 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:44.310 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:44.844
+11-20 10:00:44.310 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:44.416 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:44.476
+11-20 10:00:44.416 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:44.494 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (547) from memory pool (angle result,523) fail
+11-20 10:00:44.535 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:44.663
+11-20 10:00:44.535 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:44.692 16112 16112 D GenieAssistantUIManager: onWindowChange. topPackageAndActivityName = com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity
+11-20 10:00:44.696 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (561) from memory pool (angle result,523) fail
+11-20 10:00:44.697 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:44.586
+11-20 10:00:44.697 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:44.780 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:44.693
+11-20 10:00:44.780 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:44.850 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (554) from memory pool (angle result,523) fail
+11-20 10:00:44.917 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:44.134
+11-20 10:00:44.917 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:45.090 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:45.767
+11-20 10:00:45.090 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:45.196 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:45.974
+11-20 10:00:45.196 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:45.257 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:45.641
+11-20 10:00:45.257 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:45.350 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:45.562
+11-20 10:00:45.350 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:45.496 16112 16496 W Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:595 [16496] LWS_CALLBACK_TIMEOUT_ERROR:17
+11-20 10:00:45.517 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:45.670
+11-20 10:00:45.517 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:45.653 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:45.351
+11-20 10:00:45.653 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:45.756 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:45.688
+11-20 10:00:45.756 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:45.865 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:45.363
+11-20 10:00:45.865 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:45.962 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:45.135
+11-20 10:00:45.962 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:46.194 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:46.095
+11-20 10:00:46.194 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:46.237 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:46.176
+11-20 10:00:46.237 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:46.328 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:46.008
+11-20 10:00:46.328 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:46.460 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:46.919
+11-20 10:00:46.461 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:46.499 16112 16496 W Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:595 [16496] LWS_CALLBACK_TIMEOUT_ERROR:17
+11-20 10:00:46.500 16112 16496 W Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:368 [16496] close or destroy error, reason :33, errStr = timed out on 17,timed out on 17
+11-20 10:00:46.500 16112 16420 D Websocket-gateway: JNI_AILABS WebSocket.cpp:setStatus:1609 [16420] status = 6, prev status = 2
+11-20 10:00:46.501 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:getRetryTimeout:1596 [16420] timeout = 595, retry count = 1, index = 1, size = 23
+11-20 10:00:46.501 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:setStatus:1665 [16420] retry after time = 595
+11-20 10:00:46.501 16112 16496 W Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:368 [16496] close or destroy error, reason :4, errStr = timed out on 17,timed out on 17
+11-20 10:00:46.501 16112 16421 D Websocket-gateway: JNI_AILABS GateWay.cpp:onStatusChange:428 [16421] onStatusChange status:1
+11-20 10:00:46.502 16112 16420 D Websocket-gateway: JNI_AILABS WebSocket.cpp:setStatus:1609 [16420] status = 6, prev status = 6
+11-20 10:00:46.502 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:getRetryTimeout:1596 [16420] timeout = 508, retry count = 1, index = 1, size = 23
+11-20 10:00:46.502 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:setStatus:1665 [16420] retry after time = 508
+11-20 10:00:46.503 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 0
+11-20 10:00:46.503 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_TYPE_ONLINE_STATUS; arg1=0; arg2=0; data=null
+11-20 10:00:46.503 16112 16496 W Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:368 [16496] close or destroy error, reason :30, errStr = timed out on 17,timed out on 17
+11-20 10:00:46.503 16112 16420 D Websocket-gateway: JNI_AILABS WebSocket.cpp:setStatus:1609 [16420] status = 6, prev status = 6
+11-20 10:00:46.503 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:getRetryTimeout:1596 [16420] timeout = 651, retry count = 1, index = 1, size = 23
+11-20 10:00:46.503 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:setStatus:1665 [16420] retry after time = 651
+11-20 10:00:46.505 16112 16496 W Websocket-gateway: JNI_AILABS WebSocket.cpp:checkThreadEntry:2080 [16496] exit check thread
+11-20 10:00:46.508 16112 16112 D GenieAssistantUIManager: core router orange config maybeInit
+11-20 10:00:46.637 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:46.249
+11-20 10:00:46.637 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:46.671 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:cleanWebsocket:863 [16420] clean websocket, hasLwsCtx = 1
+11-20 10:00:46.671 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:cleanWebsocket:895 [16420] connect time = 2092, keepTime = 52121204, retryCount = 0, mErrorCode = 30, mRetryCount = 0
+11-20 10:00:46.672 16112 16420 W Websocket-gateway: JNI_AILABS GateWay.cpp:hasNetwork:334 [16420] hasNetwork:1
+11-20 10:00:46.672 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:connect:970 [16420] start to connect, status = 6, hasNetwork = 1, real hasNetwork = 1, mRetryCount = 0
+11-20 10:00:46.672 16112 16420 D Websocket-gateway: JNI_AILABS WebSocket.cpp:connect:1049 [16420] lws context init info, name = ai-protocol-v1,rx buffer size = 8192, pre session size = 0, caPath = /data/data/com.alibaba.ailabs.genie.smartapp/lib/libcapem.so
+11-20 10:00:46.672 16112 16420 D Websocket-gateway: JNI_AILABS WebSocket.cpp:connect:1052 [16420] get context info success status = 6
+11-20 10:00:46.697 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:46.262
+11-20 10:00:46.697 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:46.759 16112 16420 D Websocket-gateway: JNI_AILABS WebSocket.cpp:connect:1062 [16420] create websocket context success status = 6
+11-20 10:00:46.759 16112 16420 D Websocket-gateway: JNI_AILABS WebSocket.cpp:httpdnsResolve:98 [16420] httpdnsResolve:fetch cache result:0x0
+11-20 10:00:46.795 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:46.230
+11-20 10:00:46.795 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:47.045 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:47.247
+11-20 10:00:47.045 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:47.080 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:47.602
+11-20 10:00:47.080 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:47.197 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:47.520
+11-20 10:00:47.197 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:47.295 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:47.264
+11-20 10:00:47.295 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:47.445 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:47.204
+11-20 10:00:47.445 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:47.576 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:47.492
+11-20 10:00:47.576 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:47.640 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:47.447
+11-20 10:00:47.640 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:47.779 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:47.606
+11-20 10:00:47.779 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:47.902 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:47.663
+11-20 10:00:47.902 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:47.914 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (615) from memory pool (angle result,523) fail
+11-20 10:00:48.072 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:48.980
+11-20 10:00:48.072 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:48.134 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (615) from memory pool (angle result,523) fail
+11-20 10:00:48.137 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:48.207
+11-20 10:00:48.137 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:48.148 16112 16266 D VadStateMachine: handleVadStatus,188:voice when 4240
+11-20 10:00:48.276 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:48.280
+11-20 10:00:48.276 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:48.336 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (615) from memory pool (angle result,523) fail
+11-20 10:00:48.381 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:48.995
+11-20 10:00:48.381 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:48.539 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 10013
+11-20 10:00:48.539 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_CALL_STATUS; arg1=0; arg2=0; data=null
+11-20 10:00:48.554 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (652) from memory pool (angle result,523) fail
+11-20 10:00:48.555 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:48.870
+11-20 10:00:48.555 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:48.617 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:48.270
+11-20 10:00:48.617 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:48.704 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (652) from memory pool (angle result,523) fail
+11-20 10:00:48.717 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:48.474
+11-20 10:00:48.717 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:48.888 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:48.411
+11-20 10:00:48.888 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:48.894 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (541) from memory pool (angle result,523) fail
+11-20 10:00:49.017 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:49.300
+11-20 10:00:49.017 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:49.117 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:49.111
+11-20 10:00:49.117 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:49.149 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:httpdnsResolve:121 [16420] httpdnsResolve:fetch fail
+11-20 10:00:49.149 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:connect:1080 [16420] httpdnsResolve failed
+11-20 10:00:49.149 16112 16420 D Websocket-gateway: JNI_AILABS WebSocket.cpp:connect:1093 [16420] try to  get connect info
+11-20 10:00:49.151 16112 16420 D Websocket-gateway: JNI_AILABS GateWay.cpp:onGetLwsConnectInfo:318 [16420] start connect
+11-20 10:00:49.152 16112 16420 D Websocket-gateway: JNI_AILABS WebSocket.cpp:connect:1099 [16420]  [start]lws create info,host = g-aicloud.alibaba.com:443, path = /ws/AILABS/S1L?requestId=117648369&timestamp=2026-11-20-10:00:49.149&authType=oauth&token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjdnpQendnY2dPdW1xZ0VTRXczaXpNIiwiYml6R3JvdXAiOiJTMUwiLCJjbGllbnRJZCI6ImN2elB6d2djZ091bXFnRVNFdzNpek0iLCJhY2Nlc3MiOiI0ZmJlZDc3YzA4ZGM2NGNhOTVlNjAwZDU4Zjk4OGM2YiIsImJpelR5cGUiOiJBSUxBQlMiLCJwcm9kdWN0SWQiOiI4MjQiLCJyZWZyZXNoIjoiMzA3MWMzMjhhM2YwMjEwNmE0YmNkNWEzNmMzNGRjYTQiLCJwcm9kdWN0S2V5IjoiODI0IiwiZGV2aWNlSWQiOiJENDNGRjZDNzk3NEVFMDAyNTRENjY3MjMzRTJBQjJENSIsInRiVXNlcklkIjoiMjY5NDgyMTg0NSIsImV4cGlyZUluIjoxNTU1MjAwMCwiZXhwIjoxODEwMzkxNTQ3LCJnZW5pZUlkIjoiMTYzMDE3NzM4NjQ1NTg3ODE3MCIsImlhdCI6MTc5NDgzOTU0N30.cVN0vRH1T2OEjGjojdK4IhIqwIrZF3DZbg3QaMOHPZY&version=3.0&uuid=<id>&cmdReturnType=list, addr = g-aicloud.alibaba.com
+11-20 10:00:49.172 16112 16420 D Websocket-gateway: JNI_AILABS WebSocket.cpp:connect:1106 [16420] [end]lws create info,host = g-aicloud.alibaba.com:443, path = /ws/AILABS/S1L?requestId=117648369&timestamp=2026-11-20-10:00:49.149&authType=oauth&token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjdnpQendnY2dPdW1xZ0VTRXczaXpNIiwiYml6R3JvdXAiOiJTMUwiLCJjbGllbnRJZCI6ImN2elB6d2djZ091bXFnRVNFdzNpek0iLCJhY2Nlc3MiOiI0ZmJlZDc3YzA4ZGM2NGNhOTVlNjAwZDU4Zjk4OGM2YiIsImJpelR5cGUiOiJBSUxBQlMiLCJwcm9kdWN0SWQiOiI4MjQiLCJyZWZyZXNoIjoiMzA3MWMzMjhhM2YwMjEwNmE0YmNkNWEzNmMzNGRjYTQiLCJwcm9kdWN0S2V5IjoiODI0IiwiZGV2aWNlSWQiOiJENDNGRjZDNzk3NEVFMDAyNTRENjY3MjMzRTJBQjJENSIsInRiVXNlcklkIjoiMjY5NDgyMTg0NSIsImV4cGlyZUluIjoxNTU1MjAwMCwiZXhwIjoxODEwMzkxNTQ3LCJnZW5pZUlkIjoiMTYzMDE3NzM4NjQ1NTg3ODE3MCIsImlhdCI6MTc5NDgzOTU0N30.cVN0vRH1T2OEjGjojdK4IhIqwIrZF3DZbg3QaMOHPZY&version=3.0&uuid=<id>&cmdReturnType=list, addr = g-aicloud.alibaba.com
+11-20 10:00:49.172 16112 16420 D Websocket-gateway: JNI_AILABS WebSocket.cpp:setStatus:1609 [16420] status = 1, prev status = 6
+11-20 10:00:49.173 16112 16420 D Websocket-gateway: JNI_AILABS WebSocket.cpp:connect:1123 [16420] lws socket_client_connect success, mCurId = -1!!
+11-20 10:00:49.175 16112 24501 W Websocket-gateway: JNI_AILABS WebSocket.cpp:checkThreadEntry:2040 [24501] entry
+11-20 10:00:49.177 16112 16420 W Websocket-gateway: JNI_AILABS GateWay.cpp:hasNetwork:334 [16420] hasNetwork:1
+11-20 10:00:49.177 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:onSend:1246 [16420] enforce = 0, real network = 1
+11-20 10:00:49.177 16112 16420 W Websocket-gateway: JNI_AILABS WebSocket.cpp:onSend:1251 [16420] status 1, error or exist connect, but continue
+11-20 10:00:49.269 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:49.609
+11-20 10:00:49.269 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:49.343 16112 16266 D CloudASRManager: onVadCheckPointerEvent,467
+11-20 10:00:49.345 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:49.545
+11-20 10:00:49.345 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:49.428 16112 16265 D XEGNLocalEngine.cpp: mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 37, cost of feed is 0
+11-20 10:00:49.496 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:49.406
+11-20 10:00:49.496 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:49.574 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:00:49.927
+11-20 10:00:49.575 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:49.680 16112 16266 D VadStateMachine: handleVadStatus,140:end when 5880
+11-20 10:00:49.681 16112 16266 D AGSpeechEngine: onCloudEOUEvent,646
+11-20 10:00:49.681 16112 16266 D CloudASRManager: onVadCheckPointerEvent,467
+11-20 10:00:49.681 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 9
+11-20 10:00:49.681 16112 16275 D AGSpeechEngine: stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-20 10:00:49.681 16112 16275 D AGSpeechEngine: stopListenInternal,348
+11-20 10:00:49.681 16112 16275 D CloudASRManager: stop,173
+11-20 10:00:49.681 16112 16275 D CloudASRManager: stop,175:locked
+11-20 10:00:49.682 16112 16275 D CloudASRManager: onData,476:send 311 when 2026-11-20 10:00:49.830
+11-20 10:00:49.682 16112 16275 D AGSpeechEngineProxy: onListenData,739
+11-20 10:00:49.683 16112 16275 D CloudASRManager: [2026-11-20 10:00:49.998][FullLink]voice encode finish
+11-20 10:00:49.683 16112 16275 D AGSpeechEngine: onListenStopped,1225
+11-20 10:00:49.683 16112 16275 D AGSpeechEngineProxy: onListenStopped,747
+11-20 10:00:49.683 16112 16275 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:697 [16275] onStopTalk, mStopTalkReason = 0, reason = normal
+11-20 10:00:49.683 16112 16275 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:749 [16275] on stop talk, session=1970115
+11-20 10:00:49.683 16112 16275 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:786 [16275] on stop talk, send end frame, sessionId = 1970115
+11-20 10:00:49.684 16112 16275 E SessionManager: size = 1148, offset = 1201, max_size = 1022
+11-20 10:00:49.684 16112 16275 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:842 [16275] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "<hexid>", "wakeupWord": "tian mao jing ling", "doa": "{\"param_arr\":[47.500000,0.659574,52.500000,0.188774,62.500000,0.151652],\"score_arr\":[22297988,22298854,22301344,22305132,22309692,22314310,22318108,22320092,22319188,22314296,22304360,22288418,22265676,22235572,22197800,22152350,22099526,22039906,21974350,21903916,21829816,21753368,21675900,21598736,21523120,21450192,21380962,21316308,21256960,21203526,21156472,21116170,21082896,21056842,21038144,21026896,21023142,47.500000]}", "confidence": 0.7279059886932373, "listenDuration": 7748, "voiceDuration": 7748, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visionInfomation": "", "voiceInfomation": "" }, "extensionContext": { "commonSelectContext": { "version": 2, "pa
+11-20 10:00:49.684 16112 16275 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [16275] sending, requestId = 4039, eventNs = AliGenie.Microphone, eventName =Inactive
+11-20 10:00:49.685 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 3, preStatus = 1, sessionId = 1970115, preSessionId = 1970115
+11-20 10:00:49.685 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [16213] set status: notify status=3, session=1970115
+11-20 10:00:49.685 16112 16112 E NativeUIManager: iuiManager what = 1011,sessionId = 1970115
+11-20 10:00:49.685 16112 16112 D GenieAssistantUIManager: onRecordStop. sessionId:1970115; mInFullDuplexDialogMode:false
+11-20 10:00:49.687 16112 16275 D AGSpeechEngine: onListenStopped,1232: reset to use global deviceId 1 for wakeup
+11-20 10:00:49.687 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 9
+11-20 10:00:50.628 16112 21164 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [21164] sending, requestId = 4198344, eventNs = AliGenie.Communication, eventName =AliRtcSdkEventReport
+11-20 10:00:50.629 16112 21164 D GcsManager: JNI_AILABS GcsManager.cpp:send:187 [21164] requestId = 4198344, eventNs = AliGenie.Communication, eventName = AliRtcSdkEventReport, payLoad = 1, sharedPtr = 1, flag = 4
+11-20 10:00:54.686 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 6, preStatus = 3, sessionId = 1970115, preSessionId = 1970115
+11-20 10:00:54.686 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [16213] set status: notify status=6, session=1970115
+11-20 10:00:54.688 16112 16213 D GenieAssistantUIManager: onPretreatedResult session:1970115; domain:null, command:null
+11-20 10:00:54.688 16112 16213 D GenieAssistantUIManager: onPretreatedResult, return:CONTINUE
+11-20 10:00:54.690 16112 16112 E NativeUIManager: iuiManager what = 1009,sessionId = 1970115
+11-20 10:00:54.690 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionTtsStatus:1049 [16213] session=1970115, status = 6, tts status = 7
+11-20 10:00:54.691 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:exitTalk:1176 [16213] exit talk, input session=1970115, real session=1970115 exit=0
+11-20 10:00:54.691 16112 16213 D AGSpeechEngine: stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-20 10:00:54.691 16112 16213 E AGSpeechEngine: stopListenInternal,382: stop listen when 0
+11-20 10:00:54.691 16112 16213 D AGSpeechEngine: abortListen,395,wakeup type is active
+11-20 10:00:54.691 16112 16112 D GenieAssistantUIManager: onRecognizeResult. sessionId:1970115, data:ProtocolData{code=PAUSE, type=0, question='null', domain='null', intent='null', spokenText='null', writtenText='null', emotion=0, data=null, extraData=ProtocolExtra{, nlgResultJSON=, nluResultJSON=, dmResultJson=, toUrls=, toApp=空的吗}, recordTime=0, hasCommand=false, openFarMic=false, nluMode=0, uiData=null, serviceCode='null', flag=0, retCode=0, nluData='null', needTts=true, voiceId='null', commandId='null', traceId='null', asrLogId='null', talkStartTime=0, streamFirstTime=0, nlpTime=0, parserTime=0, mIsWakeupFree=false, mFullScreen=false, wakeupType=ACTIVE, mTips='null', hasResultList=false, queryMakeSense=false}
+11-20 10:00:54.697 16112 16112 D GenieAssistantUIManager: onRecognizeResult. retCode: CONTINUE, in full duplex dialog mode:false; mFullDuplexDialogEnabled:false
+11-20 10:00:55.198 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 6, preStatus = 6, sessionId = 1970115, preSessionId = 1970115
+11-20 10:00:55.419 16112 16265 D XEGNLocalEngine.cpp: mainProcess,1737: mAudioDataQueue's size is 1, mSystemInfo->volume_level_ is 37, cost of feed is 0
+11-20 10:00:56.697 16112 16112 D GenieAssistantUIManager: handleMessage. what:MESSAGE_SESSION_END 
+11-20 10:01:00.628 16112 16502 W GcsManager: JNI_AILABS GcsManager.cpp:onHandler:382 [16502] onResponse requestId = 4198344, what = 1
+11-20 10:01:00.638 16112 16540 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [16540] sending, requestId = 4198345, eventNs = AliGenie.Communication, eventName =AliRtcSdkEventReport
+11-20 10:01:00.640 16112 16540 D GcsManager: JNI_AILABS GcsManager.cpp:send:187 [16540] requestId = 4198345, eventNs = AliGenie.Communication, eventName = AliRtcSdkEventReport, payLoad = 1, sharedPtr = 1, flag = 4
+11-20 10:01:01.465 16112 16265 D XEGNLocalEngine.cpp: mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 37, cost of feed is 0

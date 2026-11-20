@@ -1,0 +1,284 @@
+﻿### libagspeech.so exports (local speech engine module: XEGN wakeup/VAD + TGEngine local ASR/NLU)
+00000000      DF *UND*	00000000              recheck_delete
+00000000      DF *UND*	00000000              recheck_handle_message
+00000000      DF *UND*	00000000              recheck_new
+00000000      DF *UND*	00000000              recheck_register_log
+00000000      DF *UND*	00000000              recheck_version
+0000b2c4 g    DF .text	000000a4  Base        TGEngineAdapterHook::onVADStatus(AILabs::TGEngineNotification, float)
+0000b368 g    DF .text	000000a0  Base        TGEngineAdapterHook::onWakeupStatus(AILabs::TGEngineNotification, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)
+0000b408 g    DF .text	00000090  Base        TGEngineAdapterHook::onWakeupPCMData(char const*, int)
+0000b498 g    DF .text	0000033c  Base        TGEngineAdapterHook::onASRResult(AILabs::TGEngineNotification, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)
+0000b7d4 g    DF .text	00000130  Base        TGEngineAdapterHook::onNLUResult(AILabs::TGEngineNotification, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)
+0000b904 g    DF .text	000000f0  Base        TGEngineAdapter::TGEngineAdapter()
+0000b9f4 g    DF .text	000000a4  Base        TGEngineAdapter::~TGEngineAdapter()
+0000ba98 g    DF .text	00000014  Base        TGEngineAdapter::~TGEngineAdapter()
+0000baac g    DF .text	00000008  Base        TGEngineAdapter::setLocalASRListener(AGLocalASRListener*)
+0000bab4 g    DF .text	0000001c  Base        TGEngineAdapter::onLocalASRResult(AGLocalASRResult*)
+0000bad0 g    DF .text	00000170  Base        TGEngineAdapter::init(AGSpeechConfig*)
+0000bc54 g    DF .text	00000b48  Base        TGEngineAdapter::onInit()
+0000c79c g    DF .text	000000e0  Base        TGEngineAdapter::deinit()
+0000c87c g    DF .text	000000c0  Base        TGEngineAdapter::onDeinit()
+0000c93c g    DF .text	0000006c  Base        TGEngineAdapter::startLocalASR(AGLocalASRStartInfo const&)
+0000c9a8 g    DF .text	00000058  Base        TGEngineAdapter::feedLocalASR(void const*, int)
+0000ca00 g    DF .text	00000058  Base        TGEngineAdapter::feedASRData(void const*, int)
+0000ca58 g    DF .text	00000048  Base        TGEngineAdapter::stopLocalASR()
+0000caa0 g    DF .text	00000254  Base        TGEngineAdapter::onStartLocalASR()
+0000cd30 g    DF .text	00000234  Base        TGEngineAdapter::onFeedLocalASR(void const*, int)
+0000cf64 g    DF .text	0000008c  Base        TGEngineAdapter::onFeedASRData(void const*, int)
+0000cff0 g    DF .text	000000c4  Base        TGEngineAdapter::onStopLocalASR()
+0000d0b4 g    DF .text	000002c4  Base        TGEngineAdapter::mainProcess()
+0000d47c  w   DF .text	00000004  Base        TGEngineAdapterHook::~TGEngineAdapterHook()
+0000d5e0  w   DF .text	00000004  Base        AILabs::TGEngineHook::~TGEngineHook()
+00011780 g    DF .text	00000028  Base        createAGModuleFactory
+000117a8  w   DF .text	00000004  Base        AGModuleFactory::~AGModuleFactory()
+000117ac  w   DF .text	00000004  Base        AGSpeechModule::~AGSpeechModule()
+000117b0  w   DF .text	00000008  Base        AGModuleFactory::createAGAudioTrack()
+000117b8  w   DF .text	00000008  Base        AGModuleFactory::createAGAudioTrack(_AudioParameters&)
+000117c0  w   DF .text	00000008  Base        AGModuleFactory::createAGAudioSystem()
+000117c8  w   DF .text	00000008  Base        AGModuleFactory::createAGLog()
+000117d0  w   DF .text	00000008  Base        AGModuleFactory::createAGAudioDump()
+000117d8  w   DF .text	00000008  Base        AGModuleFactory::createAGSpeechSystemInfo()
+000117e0  w   DF .text	00000008  Base        AGModuleFactory::createAGLight()
+000117e8  w   DF .text	00000008  Base        AGModuleFactory::createAGBluetooth()
+000117f0  w   DF .text	00000008  Base        AGModuleFactory::createAGAudioRecord()
+000117f8  w   DF .text	00000034  Base        AGSpeechModule::createSpeechComponentManager()
+0001182c  w   DF .text	00000008  Base        AGModuleFactory::createAGInput()
+00011834  w   DF .text	00000008  Base        AGModuleFactory::createAGWifi()
+0001183c  w   DF .text	00000008  Base        AGModuleFactory::createAGSigmesh()
+00011844  w   DF .text	00000008  Base        AGModuleFactory::createAGGatt()
+0001184c  w   DF .text	00000008  Base        AGModuleFactory::createAGGattServer()
+00011854  w   DF .text	00000008  Base        AGModuleFactory::createAGSystem()
+0001185c  w   DF .text	00000008  Base        AGModuleFactory::createAGSecurity()
+00011864  w   DF .text	00000008  Base        AGModuleFactory::createAGPower()
+0001186c  w   DF .text	00000008  Base        AGModuleFactory::createAGShake()
+00011dd0 g    DF .text	000000b8  Base        XEGNWakeupEnv::init(AGSpeechConfig*, XEGNLocalEngine*)
+00011e88 g    DF .text	00000548  Base        XEGNWakeupEnv::processWakeupWords(cJSON*, cJSON*, cJSON*, AGWakeupScence, std::__ndk1::set<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::less<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > >, std::__ndk1::allocator<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > > > const&, bool)
+000123d0 g    DF .text	0000018c  Base        XEGNLocalEngine::getWakeupWordInfo(char const*, char const*)
+0001255c g    DF .text	000001a4  Base        XEGNWakeupEnv::getWakeupInitEnv(bool)
+00012700 g    DF .text	00000134  Base        XEGNWakeupEnv::getWakeupEnv(AGWakeupScence)
+00012834 g    DF .text	00000028  Base        XEGNWakeupEnv::discardWakeup(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)
+0001285c g    DF .text	000000b4  Base        XEGNWakeupEnv::getChnString(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&)
+00012910 g    DF .text	000000ac  Base        XEGNWakeupEnv::needASRVerify(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)
+000129bc g    DF .text	00000054  Base        XEGNLOCAL_FEED::FeedData::~FeedData()
+00012a10 g    DF .text	000000a8  Base        XEGNLOCAL_FEED::FeedData::FeedData(void const*, int, XEGNLOCAL_FEED::FeedData::meaage_type_t, bool)
+00012ab8 g    DF .text	000000a8  Base        XEGNLOCAL_FEED::FeedData::FeedData(void const*, int, XEGNLOCAL_FEED::FeedData::meaage_type_t, int, bool)
+00012b60 g    DF .text	0000013c  Base        XEGNLOCAL_FEED::FeedData::FeedData(AGMemoryPool*, void const*, int, XEGNLOCAL_FEED::FeedData::meaage_type_t)
+00012c9c g    DF .text	00000140  Base        XEGNLOCAL_FEED::FeedData::FeedData(AGMemoryPool*, void const*, int, XEGNLOCAL_FEED::FeedData::meaage_type_t, int)
+00012ddc g    DF .text	00000070  Base        XEGNLOCAL_FEED::FeedData::copyData(void const*, int, XEGNLOCAL_FEED::FeedData::meaage_type_t)
+00012e4c g    DF .text	000000b4  Base        XEGNLocalEngine::handleLowThresWkuResult(char const*, int, int)
+00012f00 g    DF .text	00000020  Base        XEGNLocalEngine::handleAngleResult(char const*, int)
+00012f20 g    DF .text	000005d4  Base        XEGNLocalEngine::handleWkuResult(char const*, int, int)
+000134f4 g    DF .text	0000002c  Base        XEGNLocalEngine::handleSgpResult(char const*, int, int)
+00013520 g    DF .text	00000020  Base        XEGNLocalEngine::handleNoBFSgpResult(char const*, int, int)
+00013540 g    DF .text	00000030  Base        XEGNLocalEngine::handleVisionSgpAudio(char const*, int, int, int)
+00013570 g    DF .text	000000ec  Base        XEGNLocalEngine::pushSgpVadResult(char const*, int, int)
+0001365c g    DF .text	00000020  Base        XEGNLocalEngine::handleVadSgpAudio(char const*, int, int)
+0001367c g    DF .text	00000020  Base        XEGNLocalEngine::handleAlgTraceLog(char const*, int)
+0001369c g    DF .text	00000320  Base        XEGNLocalEngine::XEGNLocalEngine(ALISpeechComponentManager*)
+000139bc g    DF .text	000001e4  Base        XEGNLocalEngine::~XEGNLocalEngine()
+00013ba0 g    DF .text	00000014  Base        XEGNLocalEngine::~XEGNLocalEngine()
+00013bb4 g    DF .text	00000008  Base        XEGNLocalEngine::setWakeupEngineListener(AGWakeupEngineListener*)
+00013bc0 g    DF .text	00000764  Base        XEGNLocalEngine::init(AGSpeechConfig*, AGWakeupScence)
+0001434c g    DF .text	00000020  Base        XEGNLocalEngine::getAudioDataFormat(int*, int*, int*)
+0001436c g    DF .text	00000080  Base        XEGNLocalEngine::setDualThres(bool)
+000143f0 g    DF .text	000000f0  Base        XEGNLocalEngine::setWakeupScence(AGWakeupScence)
+000144e0 g    DF .text	0000014c  Base        XEGNLocalEngine::useWakeupWords(char const**)
+0001462c g    DF .text	0000001c  Base        XEGNLocalEngine::handleSystemInfo(AGSystemInfo*)
+00014648 g    DF .text	00000060  Base        XEGNLocalEngine::startWakeupEngine()
+000146a8 g    DF .text	000000e4  Base        XEGNLocalEngine::feedWakeupEngine(void const*, int)
+0001478c g    DF .text	00000008  Base        XEGNLocalEngine::pause()
+00014794 g    DF .text	00000008  Base        XEGNLocalEngine::resume()
+000147a0 g    DF .text	00000060  Base        XEGNLocalEngine::stopWakeupEngine()
+00014800 g    DF .text	000001c8  Base        XEGNLocalEngine::deinit()
+000149c8 g    DF .text	00000194  Base        XEGNLocalEngine::clearBuffer()
+00014b5c g    DF .text	00000394  Base        XEGNLocalEngine::changeEngineEnv()
+00014ef0 g    DF .text	00000060  Base        XEGNLocalEngine::startWakeupEngine(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&)
+00014f50 g    DF .text	00000094  Base        XEGNLocalEngine::pushLowThresWkuResult(char const*, int, int)
+00014fe4 g    DF .text	00000094  Base        XEGNLocalEngine::pushWkuResult(char const*, int, int)
+00015078 g    DF .text	000000ec  Base        XEGNLocalEngine::pushSgpResult(char const*, int, int)
+00015164 g    DF .text	000000ec  Base        XEGNLocalEngine::pushAngleResult(char const*, int, int)
+00015250 g    DF .text	00000058  Base        XEGNLocalEngine::pushAlgTraceLog(char const*, int)
+000152a8 g    DF .text	000000ec  Base        XEGNLocalEngine::pushNoBFSgpResult(char const*, int, int, int)
+00015394 g    DF .text	000000f0  Base        XEGNLocalEngine::pushVisionSgpAudio(char const*, int, int, int)
+00015484 g    DF .text	00000214  Base        XEGNLocalEngine::wkuEvenProcess()
+00015698 g    DF .text	00000244  Base        XEGNLocalEngine::wakeupModelInit(char const*)
+000158f0 g    DF .text	0000002c  Base        XEGNLocalEngine::wakeupModelPreInit()
+0001591c g    DF .text	00000e14  Base        XEGNLocalEngine::mainProcess()
+00016898 g    DF .text	00000134  Base        XEGNLocalEngine::isWakeupValid(char const*, char const*)
+000169cc g    DF .text	000001c4  Base        XEGNLocalEngine::workaroundForWakeupByTTS(char const*)
+00016c28  w   DF .text	00000058  Base        threadsafe_queue<XEGNLOCAL_FEED::FeedData*>::push(XEGNLOCAL_FEED::FeedData*)
+00016ca8  w   DF .text	00000084  Base        threadsafe_queue<XEGNLOCAL_FEED::FeedData*>::wait_and_pop(XEGNLOCAL_FEED::FeedData*&)
+00016d2c  w   DF .text	000000ac  Base        XEGNWakeupEnv::useWakeupWords(std::__ndk1::set<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::less<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > >, std::__ndk1::allocator<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > > > const&)
+00016e84  w   DF .text	00000038  Base        std::__ndk1::__deque_base<XEGNLOCAL_FEED::FeedData*, std::__ndk1::allocator<XEGNLOCAL_FEED::FeedData*> >::~__deque_base()
+00016ebc  w   DF .text	000000d8  Base        std::__ndk1::__deque_base<XEGNLOCAL_FEED::FeedData*, std::__ndk1::allocator<XEGNLOCAL_FEED::FeedData*> >::clear()
+00016f94  w   DF .text	00000048  Base        std::__ndk1::__split_buffer<XEGNLOCAL_FEED::FeedData**, std::__ndk1::allocator<XEGNLOCAL_FEED::FeedData**> >::~__split_buffer()
+000185e8  w   DF .text	00000070  Base        std::__ndk1::deque<XEGNLOCAL_FEED::FeedData*, std::__ndk1::allocator<XEGNLOCAL_FEED::FeedData*> >::push_back(XEGNLOCAL_FEED::FeedData* const&)
+00018658  w   DF .text	000001ec  Base        std::__ndk1::deque<XEGNLOCAL_FEED::FeedData*, std::__ndk1::allocator<XEGNLOCAL_FEED::FeedData*> >::__add_back_capacity()
+00018984  w   DF .text	00000140  Base        std::__ndk1::__split_buffer<XEGNLOCAL_FEED::FeedData**, std::__ndk1::allocator<XEGNLOCAL_FEED::FeedData**> >::push_back(XEGNLOCAL_FEED::FeedData**&&)
+00018ac4  w   DF .text	00000144  Base        std::__ndk1::__split_buffer<XEGNLOCAL_FEED::FeedData**, std::__ndk1::allocator<XEGNLOCAL_FEED::FeedData**> >::push_front(XEGNLOCAL_FEED::FeedData**&&)
+00018c08  w   DF .text	00000140  Base        std::__ndk1::__split_buffer<XEGNLOCAL_FEED::FeedData**, std::__ndk1::allocator<XEGNLOCAL_FEED::FeedData**>&>::push_back(XEGNLOCAL_FEED::FeedData**&&)
+00018d48  w   DF .text	00000144  Base        std::__ndk1::__split_buffer<XEGNLOCAL_FEED::FeedData**, std::__ndk1::allocator<XEGNLOCAL_FEED::FeedData**>&>::push_front(XEGNLOCAL_FEED::FeedData** const&)
+00018e8c  w   DF .text	00000054  Base        std::__ndk1::deque<XEGNLOCAL_FEED::FeedData*, std::__ndk1::allocator<XEGNLOCAL_FEED::FeedData*> >::pop_front()
+00019038 g    DF .text	000000d8  Base        ALIUnconvWakeup::ALIUnconvWakeup()
+00019110 g    DF .text	000000a0  Base        ALIUnconvWakeup::~ALIUnconvWakeup()
+000191b0 g    DF .text	000000f8  Base        ALIUnconvWakeup::deinit()
+000192a8 g    DF .text	00000014  Base        ALIUnconvWakeup::~ALIUnconvWakeup()
+000192bc g    DF .text	00000418  Base        ALIUnconvWakeup::init(AGSpeechConfig*)
+000196e8 g    DF .text	00000008  Base        ALIUnconvWakeup::setListener(AGUnconvWakeupListener*)
+000196f0 g    DF .text	00000048  Base        ALIUnconvWakeup::startWakeup()
+00019738 g    DF .text	00000058  Base        ALIUnconvWakeup::feedData(void const*, int)
+00019790 g    DF .text	00000048  Base        ALIUnconvWakeup::stopWakeup()
+000197d8 g    DF .text	00000048  Base        ALIUnconvWakeup::resetWakeup()
+00019820 g    DF .text	000000b0  Base        ALIUnconvWakeup::onWakeup(int)
+000198d0 g    DF .text	000001fc  Base        ALIUnconvWakeup::mainProcess()
+00019acc g    DF .text	00000234  Base        ALIUnconvWakeup::onInit()
+00019d00 g    DF .text	0000025c  Base        ALIUnconvWakeup::onStart()
+00019f5c g    DF .text	00000150  Base        ALIUnconvWakeup::onStop()
+0001a0ac g    DF .text	00000030  Base        ALIUnconvWakeup::onReset()
+0001a0dc g    DF .text	00000048  Base        ALIUnconvWakeup::onDeinit()
+0001a124 g    DF .text	000000ac  Base        ALIUnconvWakeup::onFeed(void const*, int)
+0001a300 g    DF .text	00000070  Base        log_func_for_recheck
+0001a370 g    DF .text	0000004c  Base        XEGNLocalEngineProxy::XEGNLocalEngineProxy()
+0001a3bc g    DF .text	00000064  Base        XEGNLocalEngineProxy::~XEGNLocalEngineProxy()
+0001a420 g    DF .text	0000002c  Base        XEGNLocalEngineProxy::deinit()
+0001a44c g    DF .text	00000008  Base        non-virtual thunk to XEGNLocalEngineProxy::~XEGNLocalEngineProxy()
+0001a454 g    DF .text	00000014  Base        XEGNLocalEngineProxy::~XEGNLocalEngineProxy()
+0001a468 g    DF .text	00000018  Base        non-virtual thunk to XEGNLocalEngineProxy::~XEGNLocalEngineProxy()
+0001a480 g    DF .text	00000008  Base        XEGNLocalEngineProxy::setWakeupEngineListener(AGWakeupEngineListener*)
+0001a488 g    DF .text	00000478  Base        XEGNLocalEngineProxy::init(AGSpeechConfig*, AGWakeupScence, _ag_inter_unit_communication_t*)
+0001a900 g    DF .text	00000020  Base        XEGNLocalEngineProxy::getAudioDataFormat(int*, int*, int*)
+0001a920 g    DF .text	00000008  Base        XEGNLocalEngineProxy::setDualThres(bool)
+0001a928 g    DF .text	00000130  Base        XEGNLocalEngineProxy::setWakeupScence(AGWakeupScence)
+0001aa58 g    DF .text	00000380  Base        XEGNLocalEngineProxy::useWakeupWords(char const**)
+0001add8 g    DF .text	0000014c  Base        XEGNLocalEngineProxy::handleSystemInfo(AGSystemInfo*)
+0001af70 g    DF .text	000000b0  Base        XEGNLocalEngineProxy::startWakeupEngine()
+0001b020 g    DF .text	00000008  Base        XEGNLocalEngineProxy::feedWakeupEngine(void const*, int)
+0001b028 g    DF .text	00000008  Base        XEGNLocalEngineProxy::stopWakeupEngine()
+0001b030 g    DF .text	000006bc  Base        XEGNLocalEngineProxy::handleMessageV1(ASEMessageID, void*, int, void*, int)
+0001b6ec g    DF .text	00000008  Base        non-virtual thunk to XEGNLocalEngineProxy::handleMessageV1(ASEMessageID, void*, int, void*, int)
+00022b04 g    DO .rodata	00000016  Base        typeinfo name for TGEngineAdapterHook
+00022b1a g    DO .rodata	00000012  Base        typeinfo name for TGEngineAdapter
+00022b2c  w   DO .rodata	00000018  Base        typeinfo name for AILabs::TGEngineHook
+00022b73  w   DO .rodata	00000011  Base        typeinfo name for AGSpeechModule
+00022b84  w   DO .rodata	00000012  Base        typeinfo name for AGModuleFactory
+00022bcd g    DO .rodata	00000012  Base        typeinfo name for XEGNLocalEngine
+00022bf0 g    DO .rodata	00000012  Base        typeinfo name for ALIUnconvWakeup
+00022c2a g    DO .rodata	00000017  Base        typeinfo name for XEGNLocalEngineProxy
+00024588 g    DO .data.rel.ro	00000024  Base        vtable for TGEngineAdapter
+000245ac g    DO .data.rel.ro	00000024  Base        vtable for TGEngineAdapterHook
+000245d0 g    DO .data.rel.ro	0000000c  Base        typeinfo for TGEngineAdapterHook
+000245dc g    DO .data.rel.ro	0000000c  Base        typeinfo for TGEngineAdapter
+000245e8  w   DO .data.rel.ro	00000008  Base        typeinfo for AILabs::TGEngineHook
+00024634  w   DO .data.rel.ro	0000005c  Base        vtable for AGSpeechModule
+00024690  w   DO .data.rel.ro	00000008  Base        typeinfo for AGModuleFactory
+00024698  w   DO .data.rel.ro	0000000c  Base        typeinfo for AGSpeechModule
+000246ec g    DO .data.rel.ro	0000003c  Base        vtable for XEGNLocalEngine
+00024728 g    DO .data.rel.ro	0000000c  Base        typeinfo for XEGNLocalEngine
+0002473c g    DO .data.rel.ro	00000028  Base        vtable for ALIUnconvWakeup
+00024764 g    DO .data.rel.ro	0000000c  Base        typeinfo for ALIUnconvWakeup
+00024778 g    DO .data.rel.ro	00000060  Base        vtable for XEGNLocalEngineProxy
+000247d8 g    DO .data.rel.ro	00000020  Base        typeinfo for XEGNLocalEngineProxy
+const
+
+### libaceAsr.so exports (local ASR engine, TGLEngine)
+00000000      DF *UND*	00000000              NluDestroy
+00000000      DF *UND*	00000000              NluInit
+00000000      DF *UND*	00000000              NluProcess
+0002bcd4 g    DF .text	0000042c  Base        AceAMHandler::AceAMHandler(AceAmSetting)
+0002c100 g    DF .text	000000da  Base        AceAMHandler::~AceAMHandler()
+0002c1e4 g    DF .text	000001f8  Base        AceAMHandler::RunInference(float*, float*&, int&)
+0002c3dc g    DF .text	00000048  Base        AceAMHandler::AmReset()
+0002c424 g    DF .text	0000007c  Base        AceAMHandler::LstmReset()
+0002df58 g    DF .text	00000d90  Base        BeamSearch::FeedBPE(float const*, int, bool, AceLMHandler*, DictHandler*)
+00030a30 g    DF .text	000000ce  Base        DictHandler::DictHandler()
+00030afe g    DF .text	00000106  Base        DictHandler::~DictHandler()
+00030c04 g    DF .text	00000584  Base        DictHandler::InitPY2WordDict(char const*)
+00031390 g    DF .text	00000604  Base        DictHandler::InitPY2WordDictByString(char const*)
+00031994 g    DF .text	0000032c  Base        DictHandler::InitDictByString(char const*)
+00031d98 g    DF .text	000002a4  Base        DictHandler::InitDict(char const*)
+0003203c g    DF .text	00000050  Base        DictHandler::IsAllEnglish(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&)
+0003208c g    DF .text	00000130  Base        DictHandler::SplitChinese(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&)
+000334f0 g    DF .text	000001e4  Base        AceLMHandler::AceLMHandler(AceLmSetting)
+000336e8 g    DF .text	00000040  Base        AceLMHandler::~AceLMHandler()
+00033728 g    DF .text	00000044  Base        AceLMHandler::SetHiddenState(unsigned char*, unsigned char*)
+0003376c g    DF .text	00000022  Base        AceLMHandler::Reset()
+00033790 g    DF .text	00000134  Base        AceLMHandler::RunInference(long long, float&)
+00033a74 g    DF .text	00000016  Base        AceNluHandler::AceNluHandler(AceNluSetting)
+00033a8a g    DF .text	00000014  Base        AceNluHandler::~AceNluHandler()
+00033aa0 g    DF .text	0000003c  Base        AceNluHandler::Init()
+00033adc g    DF .text	00000022  Base        AceNluHandler::nluParse(InputBuffer*, IntermediateBuffer*, IntermediateBuffer*, AceNluProcessSetting)
+00044f54 g    DF .text	000000a4  Base        AILabs::TGLEngine::TGLEngine()
+00044ff8 g    DF .text	00000038  Base        AILabs::TGLEngine::InitBeamSearch(char const*)
+00045030 g    DF .text	0000004c  Base        AILabs::TGLEngine::InitDict(char const*, char const*)
+0004507c g    DF .text	0000003a  Base        AILabs::TGLEngine::InitLmModel(AceLmSetting)
+000450b6 g    DF .text	00000048  Base        AILabs::TGLEngine::InitAmModel(AceAmSetting)
+000450fe g    DF .text	00000054  Base        AILabs::TGLEngine::InitNluModel(AceNluSetting)
+00045154 g    DF .text	00000694  Base        AILabs::TGLEngine::InitModels(char const*, char const*)
+000457e8 g    DF .text	00000024  Base        AILabs::TGLEngine::GetAdaptAmModelVersion(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&)
+0004580c g    DF .text	00000024  Base        AILabs::TGLEngine::GetFreezeAmModelVersion(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&)
+00045830 g    DF .text	00000108  Base        AILabs::TGLEngine::~TGLEngine()
+00045970 g    DF .text	00000034  Base        AILabs::TGLEngine::Reset()
+000459a4 g    DF .text	00000022  Base        AILabs::TGLEngine::Start(char const*, int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >)
+000459c8 g    DF .text	000001d4  Base        AILabs::TGLEngine::FeedPCM(char const*, int)
+00045e7c g    DF .text	000000a0  Base        AILabs::TGLEngine::FeedAMData(float const*, int, bool)
+00045f1c g    DF .text	000000ec  Base        AILabs::TGLEngine::nluParse(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, SyllableBuffer_, IntermediateBuffer*)
+00046008 g    DF .text	000001ac  Base        AILabs::TGLEngine::FeedFBank(float const*, int, bool)
+0004631c g    DF .text	00000168  Base        AILabs::TGLEngine::End()
+00046484 g    DF .text	00000004  Base        AILabs::TGLEngine::GetWavTime()
+00046488 g    DF .text	0000000a  Base        AILabs::TGLEngine::ProcessNLU(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >)
+00062d38 g    DF .text	0000003c  Base        TGEngine::TGEngine()
+00062d74 g    DF .text	00000044  Base        TGEngine::~TGEngine()
+00062db8 g    DF .text	00000010  Base        TGEngine::~TGEngine()
+00062dc8 g    DF .text	00000054  Base        TGEngine::loadResourceBin(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >)
+00062e1c g    DF .text	00000006  Base        TGEngine::getAsrResourceVersion(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&)
+00062e22 g    DF .text	00000006  Base        TGEngine::getBigAsrResourceVersion(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&)
+00062e28 g    DF .text	00000012  Base        TGEngine::feedPCMData(int, char const*, int)
+00062e3a g    DF .text	00000010  Base        TGEngine::feedFbank(float const*, int)
+00062e4c g    DF .text	00000064  Base        TGEngine::feedASRData(char const*, int)
+00062eb0 g    DF .text	00000018  Base        TGEngine::setEngineHook(AILabs::TGEngineHook*)
+00062ec8 g    DF .text	00000434  Base        TGEngine::_onAsrResult(TGEngine*, char const*, int, float const*, int)
+000632fc g    DF .text	0000001a  Base        TGEngine::reset()
+00063318 g    DF .text	00000080  Base        TGEngine::start()
+00063398 g    DF .text	0000000e  Base        TGEngine::stop(bool)
+000633a6 g    DF .text	0000000a  Base        TGEngine::setWakeupType(int)
+000633b0 g    DF .text	00000004  Base        TGEngine::getVersion()
+000633b4 g    DF .text	00000028  Base        TGEngine::cacheAMData(float const*, int)
+000633dc g    DF .text	00000014  Base        TGEngine::getSyllableBuffer(SyllableBuffer_&)
+000633f0 g    DF .text	0000008c  Base        TGEngine::nluParse(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, SyllableBuffer_, IntermediateBuffer*)
+0006347c g    DF .text	00000040  Base        TGEngineCreate
+000634bc g    DF .text	0000000a  Base        TGEngineDestroy
+000634c8 g    DF .text	00000150  Base        TGEngineLoadResourceBin
+00063618 g    DF .text	00000012  Base        TGEngineFeedPCMData
+0006362a g    DF .text	0000000c  Base        TGEngineFeedASRData
+00063636 g    DF .text	00000010  Base        TGEngineFeedFbank
+00063648 g    DF .text	00000044  Base        TGEngineSetWakeupType
+0006368c g    DF .text	0000000c  Base        TGEngineStart
+00063698 g    DF .text	0000000e  Base        TGEngineStop
+000636a8 g    DF .text	00000018  Base        TGEngineSetHook
+000636c0 g    DF .text	00000004  Base        TGEngineGetVersion
+000636c4 g    DF .text	0000000e  Base        AsrGetVersion
+000636d4 g    DF .text	00000248  Base        asr_handle_command
+00075bf8 g    DO .rodata	0000000a  Base        typeinfo name for TGEngine
+00077964 g    DO .data.rel.ro	00000010  Base        vtable for TGEngine
+00077974 g    DO .data.rel.ro	00000008  Base        typeinfo for TGEngine
+
+### libaceAsr.so notable embedded strings
+      "name": "local_big_asr",
+     "name": "local_asr",
+/Users/dinghuanghao/local-asr-engine/src/core/config.cpp
+/Users/dinghuanghao/local-asr-engine/src/core/extractor.cpp
+/Users/dinghuanghao/local-asr-engine/src/engine/TGLEngine.cpp
+/Users/dinghuanghao/local-asr-engine/src/math/matrix/matrix.cpp
+/Users/dinghuanghao/local-asr-engine/src/math/matrix/matrix_eigen.cpp
+/Users/dinghuanghao/local-asr-engine/src/shared/aceAsr.cpp
+asr.cfg.json
+asr_handle_command
+asr_local
+lm_model_vad.tflite
+local_asr_version
+local_big_asr_version
+localDialog
+model.cfg.json
+py2char_chn.txt_3000
+
+### libmodel.bin.so / libconfigure.bin.so are TFLite model containers (magic = 18 00 00 00 54 46 4c 33 = TFL3)

@@ -1,0 +1,427 @@
+11-20 10:02:19.419 16112 16265 D XEGNLocalEngine.cpp: mainProcess,1737: mAudioDataQueue's size is 1, mSystemInfo->volume_level_ is 37, cost of feed is 0
+11-20 10:02:24.129 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (578) from memory pool (angle result,523) fail
+11-20 10:02:24.324 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (578) from memory pool (angle result,523) fail
+11-20 10:02:24.514 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (578) from memory pool (angle result,523) fail
+11-20 10:02:24.741 16112 16314 D XEGNLocalEngine.cpp: algtracelog string is :{"low_wakeup_score" : "0.554670","wakeup_words" : "tian mao jing ling","frame_index" : "5045"}, length is 94
+11-20 10:02:24.741 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:02:24.741525 [16112] [I] [wkuegn] xengine.cpp:769: tian mao jing ling, 0.887292, 0, 5015, 5046, 1, 0
+11-20 10:02:24.755 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:02:24.755620 [16112] [I] [wkuegn] xengine.cpp:769: tian mao jing ling, 0.847808, 2, 5015, 5046, 1, 0
+11-20 10:02:24.762 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:02:24.762821 [16112] [I] [wkuegn] xengine.cpp:769: tian mao jing ling, 0.756975, 3, 5015, 5046, 1, 0
+11-20 10:02:24.796 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:02:24.796354 [16112] [I] [wkuegn] xengine.cpp:1464: recheck_rst:1, wakeup_is_end: 0
+11-20 10:02:24.798 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:02:24.798664 [16112] [I] [wkuegn] xengine.cpp:1479: {"max_score_smooth":0.921101,"left_frame_10":10,"left_frame_10_sil":10,"left_frame_10_sp":0,"avg_10_sp_score":0,"left_frame_all":25,"left_frame_all_sil":19,"left_frame_all_sp":6,"avg_all_sp_score":0.232973,"frame_cnt":[10,7,8,5],"avg_max_score":[0.984825,0.995778,0.990857,0.740792],"gop_max_score":[0,0,0,0]}
+11-20 10:02:24.798 16112 16314 D XEGNLocalEngine.cpp: algtracelog string is :{"result": {"rec": "1", "score" : "0.847808", "start_frame" : "5015", "end_frame" : "5046","wakeup_words" : "tian mao jing ling", "wku_index" : "2", "low_snr" : "0", "wku_state" : "3", "wku_type" : "1", "DOA" : "42", "recheck":{"is_wakeup" : "1", "score_arr" : [0.0000, 0.9961, 0.0000 ]}, "faulty_mic_index" : "0", "snr_arr" : [41.124, 156.006, 146.068, 189.714, 2.000], "wku_eng_arr" : [319.790, 40.201, 46.217, 39.969, 18.051, 7.238], "wku_ftr" : {"max_score_smooth":0.921101,"left_frame_10":10,"left_frame_10_sil":10,"left_frame_10_sp":0,"avg_10_sp_score":0,"left_frame_all":25,"left_frame_all_sil":19,"left_frame_all_sp":6,"avg_all_sp_score":0.232973,"frame_cnt":[10,7,8,5],"avg_max_score":[0.984825,0.995778,0.990857,0.740792],"gop_max_score":[0,0,0,0]}, "is_last_cloud":0, "is_cloud":0}}, length is 793
+11-20 10:02:24.798 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:02:24.798905 [16112] [I] [wkuegn] wakeup_sync_api.cpp:109: wakeup info: {"result": {"rec": "1", "score" : "0.847808", "start_frame" : "5015", "end_frame" : "5046","wakeup_words" : "tian mao jing ling", "wku_index" : "2", "low_snr" : "0", "wku_state" : "3", "wku_type" : "1", "DOA" : "42", "recheck":{"is_wakeup" : "1", "score_arr" : [0.0000, 0.9961, 0.0000 ]}, "faulty_mic_index" : "0", "snr_arr" : [41.124, 156.006, 146.068, 189.714, 2.000], "wku_eng_arr" : [319.790, 40.201, 46.217, 39.969, 18.051, 7.238], "wku_ftr" : {"max_score_smooth":0.921101,"left_frame_10":10,"left_frame_10_sil":10,"left_frame_10_sp":0,"avg_10_sp_score":0,"left_frame_all":25,"left_frame_all_sil":19,"left_frame_all_sp":6,"avg_all_sp_score":0.232973,"frame_cnt":[10,7,8,5],"avg_max_score":[0.984825,0.995778,0.990857,0.740792],"gop_max_score":[0,0,0,0]}, "is_last_cloud":0, "is_cloud":0}}
+11-20 10:02:24.799 16112 16264 D XEGNLocalEngine.cpp: handleWkuResult,608:Wakeup Info is {"result": {"rec": "1", "score" : "0.847808", "start_frame" : "5015", "end_frame" : "5046","wakeup_words" : "tian mao jing ling", "wku_index" : "2", "low_snr" : "0", "wku_state" : "3", "wku_type" : "1", "DOA" : "42", "recheck":{"is_wakeup" : "1", "score_arr" : [0.0000, 0.9961, 0.0000 ]}, "faulty_mic_index" : "0", "snr_arr" : [41.124, 156.006, 146.068, 189.714, 2.000], "wku_eng_arr" : [319.790, 40.201, 46.217, 39.969, 18.051, 7.238], "wku_ftr" : {"max_score_smooth":0.921101,"left_frame_10":10,"left_frame_10_sil":10,"left_frame_10_sp":0,"avg_10_sp_score":0,"left_frame_all":25,"left_frame_all_sil":19,"left_frame_all_sp":6,"avg_all_sp_score":0.232973,"frame_cnt":[10,7,8,5],"avg_max_score":[0.984825,0.995778,0.990857,0.740792],"gop_max_score":[0,0,0,0]}, "is_last_cloud":0, "is_cloud":0}}, wakeup scence is 0,xengine sdk wku sync version:0604Nov  9 2021 11:14:39
+11-20 10:02:24.799 16112 16264 D XEGNLocalEngine.cpp: handleWkuResult,669: doa is 42
+11-20 10:02:24.800 16112 16264 D AGSpeechEngine: onSpeechWakeup,530:tian mao jing ling,天猫精灵
+11-20 10:02:24.801 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 8
+11-20 10:02:24.802 16112 16275 D AGSpeechEngine: onWakeup,1141: process wakeup of device(1)
+11-20 10:02:24.802 16112 16275 D AGSpeechEngine: startListenInternal,192
+11-20 10:02:24.802 16112 16275 D CloudASRManager: isASR30,385: use ASRXX
+11-20 10:02:24.802 16112 16275 D AGSpeechEngine: onListenStarted,1202: useASR30=0
+11-20 10:02:24.802 16112 16275 D AGSpeechEngineProxy: onListenStarted,684
+11-20 10:02:24.802 16112 16275 D AGSpeechEngineProxy: onListenStarted,696: 0, tian mao jing ling, 天猫精灵, 0.847808, 42, 0, 0, <hexid>
+11-20 10:02:24.805 16112 16275 D SessionManager: JNI_AILABS SessionManager.cpp:onStartTalk:255 [16275] sessionId = 1970129, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-20 10:02:24.805 16112 16275 D AGSpeechEngineProxy: onListenStarted,732, sessionID is 1970129
+11-20 10:02:24.806 16112 16275 D AGSpeechEngine: onListenStarted,1210: session id is 1970129, request id is <hexid>1970129
+11-20 10:02:24.806 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 1, preStatus = 6, sessionId = 1970129, preSessionId = 1970115
+11-20 10:02:24.806 16112 16275 D LocalASRManager: shouldEnableLocalASR,167: can't enable local asr
+11-20 10:02:24.806 16112 16275 D AGSpeechEngine: startListenInternal,269: needVAD = 1
+11-20 10:02:24.806 16112 16275 D CloudASRManager: start,104
+11-20 10:02:24.806 16112 16275 D CloudASRManager: start,106:locked
+11-20 10:02:24.806 16112 16275 D CloudASRManager: start,120: real asr
+11-20 10:02:24.806 16112 16275 D CloudASRManager: start,148
+11-20 10:02:24.807 16112 16275 D CloudASRManager: [2026-11-20 10:02:24.343][FullLink]voice encode start
+11-20 10:02:24.807 16112 16275 D CloudASRManager: onData,476:send 108 when 2026-11-20 10:02:24.473
+11-20 10:02:24.807 16112 16275 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:24.807 16112 16275 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [16275] sending, requestId = 4050, eventNs = AliGenie.Microphone, eventName =Active
+11-20 10:02:24.809 16112 16275 D SessionManager: JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [16275] foreground info, packageName = com.dangbei1.tvlauncher, className = com.dangbei.launcher.ui.main.MainActivity, pkg = 
+11-20 10:02:24.809 16112 16275 W SessionManager: JNI_AILABS SessionManager.cpp:onGetClientContext:1438 [16275] no context
+11-20 10:02:24.811 16112 24585 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:503 [24585] send text--0::{ "digest": "<redacted>", "timestamp": "2026-11-20 10:02:24.631", "requestId": "<redacted>", "version": "3.0", "bizType": "AILABS", "bizGroup": "S1L", "uuid": "<redacted>", "eventNs": "AliGenie.Microphone", "eventName": "Active", "attachmentCount": 0, "logId": "<redacted>", "returnType": "list", "payload": { "reason": "user" }
+11-20 10:02:24.814 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [16213] set status: notify status=1, session=1970129
+11-20 10:02:24.816 16112 16213 E NativeUIManager: onRecordStart what = 1004sessionId = 1970129
+11-20 10:02:24.816 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [16213] onGetSystemContext sessionId = 1970129  mSystemContextCallback = 0x89effdb0
+11-20 10:02:24.816 16112 16112 E NativeUIManager: iuiManager what = 1004,sessionId = 1970129
+11-20 10:02:24.817 16112 16112 D GenieAssistantUIManager: onRecordStart: session id:1970129, wakeup type:ACTIVE
+11-20 10:02:24.833 16112 16112 D GenieAssistantUIManager: ScreenBrightness=   102
+11-20 10:02:24.833 16112 16112 D AliTVASR: AliTVASR(GenieAssistantUIManager)->(2)->forceShowGenieAssistantBar.
+11-20 10:02:24.842 16112 16275 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [16275] sending, requestId = 1970129, eventNs = AliGenie.Microphone, eventName =ListenStarted
+11-20 10:02:24.843 16112 16275 W SessionManager: JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [16275] send startListened sessionId = 1970129
+11-20 10:02:24.843 16112 16275 D CloudASRManager: onData,476:send 69 when 2026-11-20 10:02:24.905
+11-20 10:02:24.843 16112 16275 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:24.843 16112 16275 D CloudASRManager: [FullLink]voice encode start done
+11-20 10:02:24.844 16112 16275 D CloudASRManager: start,152
+11-20 10:02:24.844 16112 16275 D CloudASRManager: start,167
+11-20 10:02:24.844 16112 16275 D AGSpeechEngine: startListenInternal,302: should not use local asr
+11-20 10:02:24.844 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 8
+11-20 10:02:24.851 16112 24585 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:503 [24585] send text--0::{ "digest": "<redacted>", "timestamp": "2026-11-20 10:02:24.312", "requestId": "<redacted>", "version": "3.0", "bizType": "AILABS", "bizGroup": "S1L", "uuid": "<redacted>", "eventNs": "AliGenie.Microphone", "eventName": "ListenStarted", "attachmentCount": 1, "logId": "<redacted>", "wakeupId": "<hexid>", "returnType": "list", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "<hexid>", "wakeupWord": "tian mao jing ling", "doa": "{\"param_arr\":[42.500000,0.439210,52.500000,0.437827,57.500000,0.122963],\"score_arr\":[33544758,33548100,33558000,33574064,33595656,33621868,33651516,33683168,33715148,33745568,33772400,33793552,33806952,33810692,33803112,33782952,33749444,33702
+11-20 10:02:24.852 16112 24585 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:503 [24585] send text--1::380,33642144,33569712,33486602,33394758,33296456,33194152,33090336,32987436,32887672,32793022,32705150,32625412,32554852,32494254,32444150,32404908,32376760,32359828,32354180,42.500000]}", "confidence": 0.84780800342559814, "listenDuration": 7748, "voiceDuration": 7748, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visionInfomation": "", "voiceInfomation": "" }, "format": ".ogg", "binaryExtensions": "EOF_ACTION", "eventContext": { "screenStatus": "online", "backgroundApps": [ "com.alibaba.ailabs.genie.gms", "com.alibaba.ailabs.genie.smartapp", "com.aligenie.ags" ], "foregroundApp": { "packageName": "com.dangbei1.tvlauncher", "appName": "当贝桌面", "appVersion": "83", "fingerPrint": "<hexid>e7118fb5", "executeLevel": "bot", "skillContext": { } } }, "asrProtocol":
+11-20 10:02:24.852 16112 24585 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:503 [24585] send text--2:: "simple" }
+11-20 10:02:24.852 16112 24585 W Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:520 [24585] MSG_TYPE_SEND_BIN_START:1970129
+11-20 10:02:24.903 16112 16314 D XEGNLocalEngine.cpp: [WAKEUP_ENGINE]2026-11-20 10:02:24.903940 [16112] [I] [wkuegn] wakeup_sync_api.cpp:233: change agp channal to index: 2
+11-20 10:02:24.916 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:24.897
+11-20 10:02:24.917 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:24.927 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:24.044
+11-20 10:02:24.927 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:24.936 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:24.891
+11-20 10:02:24.937 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:24.948 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:24.000
+11-20 10:02:24.948 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:24.958 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:24.345
+11-20 10:02:24.958 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:24.968 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:24.762
+11-20 10:02:24.968 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:24.979 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:24.772
+11-20 10:02:24.979 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:24.990 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:24.117
+11-20 10:02:24.990 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.001 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.279
+11-20 10:02:25.001 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.014 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.738
+11-20 10:02:25.014 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.024 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.017
+11-20 10:02:25.024 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.036 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.544
+11-20 10:02:25.036 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.047 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.705
+11-20 10:02:25.047 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.050 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--0::{"asrLogId":"<hexid>","attachmentCount":0,"bizGroup":"S1L","bizType":"AILABS","commandType":"response","commands":[{"commandDomain":"AliGenie.Text","commandId":"VuEzDjnVp4bI5c6xQjSqv9xKsNGlfNrH","commandName":"ListenResult","payload":{"isLast":false,"outputText":"天天","recordId":"<hexid>","isValid":false}}],"isLast":false,"requestId": "<redacted>","timestamp":"2026-11-20 10:02:25.498","traceId":"<id>","uuid": "<redacted>","version":"3.0
+11-20 10:02:25.050 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [16421] sessionId = 1970129, commandDomain =AliGenie.Text  type =3
+11-20 10:02:25.050 16112 16421 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [16421] sessionId = 1970129, text = 天天, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-20 10:02:25.050 16112 16421 W Performance: JNI_AILABS PerformanceData.cpp:setTextTime:145 [16421] asr first text = 天天, sessionId = 1970129
+11-20 10:02:25.057 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.111
+11-20 10:02:25.057 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.058 16112 16112 D GenieAssistantUIManager: onWindowChange. topPackageAndActivityName = com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity
+11-20 10:02:25.066 16112 16274 D VadStateMachine: handleSpeech,407:  energy is 0.183752, count is 20
+11-20 10:02:25.079 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--0::{"asrLogId":"<hexid>","attachmentCount":0,"bizGroup":"S1L","bizType":"AILABS","commandType":"response","commands":[{"commandDomain":"AliGenie.Text","commandId":"t34yRjNMd5wYk9pQumbpyVyYQLlljor7","commandName":"ListenResult","payload":{"isLast":false,"outputText":"天天猫猫精","recordId":"<hexid>","isValid":false}}],"isLast":false,"requestId": "<redacted>","timestamp":"2026-11-20 10:02:25.530","traceId":"<id>","uuid": "<redacted>","version":"3.0
+11-20 10:02:25.079 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [16421] sessionId = 1970129, commandDomain =AliGenie.Text  type =3
+11-20 10:02:25.079 16112 16421 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [16421] sessionId = 1970129, text = 天天猫猫精, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-20 10:02:25.080 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.647
+11-20 10:02:25.080 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.089 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.631
+11-20 10:02:25.089 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.131 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--0::{"asrLogId":"<hexid>","attachmentCount":0,"bizGroup":"S1L","bizType":"AILABS","commandType":"response","commands":[{"commandDomain":"AliGenie.Text","commandId":"4bLm9UlbMDhBLMx58gpGzoQfhqHsRTyJ","commandName":"ListenResult","payload":{"isLast":false,"outputText":"天猫精灵","recordId":"<hexid>","isValid":false}}],"isLast":false,"requestId": "<redacted>","timestamp":"2026-11-20 10:02:25.563","traceId":"<id>","uuid": "<redacted>","version":"3.0
+11-20 10:02:25.131 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [16421] sessionId = 1970129, commandDomain =AliGenie.Text  type =3
+11-20 10:02:25.131 16112 16421 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [16421] sessionId = 1970129, text = 天猫精灵, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-20 10:02:25.215 16112 16213 D AGSpeechEngine: handleListenResult,815
+11-20 10:02:25.215 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 2, preStatus = 1, sessionId = 1970129, preSessionId = 1970129
+11-20 10:02:25.216 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [16213] set status: notify status=2, session=1970129
+11-20 10:02:25.216 16112 16213 D AGSpeechEngine: handleListenResult,815
+11-20 10:02:25.216 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 2, preStatus = 2, sessionId = 1970129, preSessionId = 1970129
+11-20 10:02:25.216 16112 16213 D AGSpeechEngine: handleListenResult,815
+11-20 10:02:25.216 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 2, preStatus = 2, sessionId = 1970129, preSessionId = 1970129
+11-20 10:02:25.216 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 1010
+11-20 10:02:25.216 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_TALK_STATUS; arg1=1; arg2=0; data=null
+11-20 10:02:25.216 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 11
+11-20 10:02:25.216 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_PROMPT_STATUS; arg1=0; arg2=3149779; data=null
+11-20 10:02:25.216 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 19
+11-20 10:02:25.216 16112 16275 D VadStateMachine: handleAsrResult,346:dirty=天天,clean=
+11-20 10:02:25.216 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 19
+11-20 10:02:25.216 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 19
+11-20 10:02:25.216 16112 16275 D VadStateMachine: handleAsrResult,346:dirty=天天猫猫精,clean=
+11-20 10:02:25.216 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 19
+11-20 10:02:25.216 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 19
+11-20 10:02:25.216 16112 16275 D VadStateMachine: handleAsrResult,346:dirty=天猫精灵,clean=
+11-20 10:02:25.216 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 19
+11-20 10:02:25.233 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.006
+11-20 10:02:25.233 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.320 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.039
+11-20 10:02:25.320 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.358 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.016
+11-20 10:02:25.358 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.360 16112 16257 D AGSpeechEngine: handleWakeupPromptFinish,895
+11-20 10:02:25.360 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 21
+11-20 10:02:25.361 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 11
+11-20 10:02:25.361 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_PROMPT_STATUS; arg1=12; arg2=3149779; data=null
+11-20 10:02:25.362 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 17
+11-20 10:02:25.362 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3149779; data=null
+11-20 10:02:25.363 16112 16275 D CloudASRManager: wakeupRemindPromptFinished,245:time span from wakeup to remind finish is 563
+11-20 10:02:25.363 16112 16275 D VadStateMachine: setRemindFinishTime,471:remind finish at 2263 when 460 feeded
+11-20 10:02:25.363 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 21
+11-20 10:02:25.502 16112 16265 D XEGNLocalEngine.cpp: mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 37, cost of feed is 0
+11-20 10:02:25.543 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.041
+11-20 10:02:25.543 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.544 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (603) from memory pool (angle result,523) fail
+11-20 10:02:25.617 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.709
+11-20 10:02:25.617 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.672 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (617) from memory pool (angle result,523) fail
+11-20 10:02:25.718 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.026
+11-20 10:02:25.718 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.840 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.769
+11-20 10:02:25.840 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:25.855 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (631) from memory pool (angle result,523) fail
+11-20 10:02:25.907 16112 16112 D GenieAssistantUIManager: onWindowChange. topPackageAndActivityName = com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity
+11-20 10:02:25.921 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:25.325
+11-20 10:02:25.921 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:26.048 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:26.942
+11-20 10:02:26.049 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:26.187 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:26.003
+11-20 10:02:26.189 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:26.405 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:26.329
+11-20 10:02:26.405 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:26.463 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:26.788
+11-20 10:02:26.463 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:26.560 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:26.707
+11-20 10:02:26.560 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:26.696 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:26.455
+11-20 10:02:26.696 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:26.793 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:26.250
+11-20 10:02:26.793 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:26.897 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:26.127
+11-20 10:02:26.897 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:26.989 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:26.250
+11-20 10:02:26.989 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:27.160 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:27.614
+11-20 10:02:27.160 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:27.294 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:27.066
+11-20 10:02:27.294 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:27.398 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:27.056
+11-20 10:02:27.398 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:27.521 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:27.181
+11-20 10:02:27.521 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:27.612 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:27.635
+11-20 10:02:27.612 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:27.770 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:27.802
+11-20 10:02:27.770 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:27.856 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:27.696
+11-20 10:02:27.856 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:27.989 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:27.165
+11-20 10:02:27.989 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:28.095 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:28.857
+11-20 10:02:28.095 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:28.322 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:28.532
+11-20 10:02:28.322 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:28.368 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:28.638
+11-20 10:02:28.368 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:28.436 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:28.647
+11-20 10:02:28.436 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:28.577 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:28.593
+11-20 10:02:28.577 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:28.703 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:28.309
+11-20 10:02:28.703 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:28.714 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (578) from memory pool (angle result,523) fail
+11-20 10:02:28.840 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:28.995
+11-20 10:02:28.840 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:28.934 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (578) from memory pool (angle result,523) fail
+11-20 10:02:28.936 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:28.705
+11-20 10:02:28.936 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:29.076 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:29.336
+11-20 10:02:29.076 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:29.092 16112 16266 D VadStateMachine: handleVadStatus,188:voice when 4040
+11-20 10:02:29.135 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (615) from memory pool (angle result,523) fail
+11-20 10:02:29.184 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:29.317
+11-20 10:02:29.184 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:29.218 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--0::{"asrLogId":"<hexid>","attachmentCount":0,"bizGroup":"S1L","bizType":"AILABS","commandType":"response","commands":[{"commandDomain":"AliGenie.Text","commandId":"GnYN58Y8xeiFHeosDCxJMXstNooCLZuy","commandName":"ListenResult","payload":{"isLast":false,"outputText":"天猫精灵今","recordId":"<hexid>","isValid":false}}],"isLast":false,"requestId": "<redacted>","timestamp":"2026-11-20 10:02:29.668","traceId":"<id>","uuid": "<redacted>","version":"3.0
+11-20 10:02:29.219 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [16421] sessionId = 1970129, commandDomain =AliGenie.Text  type =3
+11-20 10:02:29.219 16112 16421 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [16421] sessionId = 1970129, text = 天猫精灵今, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-20 10:02:29.219 16112 16213 D AGSpeechEngine: handleListenResult,815
+11-20 10:02:29.219 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 2, preStatus = 2, sessionId = 1970129, preSessionId = 1970129
+11-20 10:02:29.219 16112 16213 E NativeUIManager: onStreaming sessionId = 1970129streamText = 今
+11-20 10:02:29.220 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 19
+11-20 10:02:29.220 16112 16275 D VadStateMachine: handleAsrResult,346:dirty=天猫精灵今,clean=今
+11-20 10:02:29.220 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 19
+11-20 10:02:29.220 16112 16112 E NativeUIManager: iuiManager what = 1005,sessionId = 1970129
+11-20 10:02:29.229 16112 16112 D GenieAssistantUIManager: onStreaming. sessionId = 1970129 ;streamText = 今 ;isFinish = false
+11-20 10:02:29.280 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:29.477
+11-20 10:02:29.280 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:29.355 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (578) from memory pool (angle result,523) fail
+11-20 10:02:29.405 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:29.385
+11-20 10:02:29.405 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:29.435 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--0::{"asrLogId":"<hexid>","attachmentCount":0,"bizGroup":"S1L","bizType":"AILABS","commandType":"response","commands":[{"commandDomain":"AliGenie.Text","commandId":"7nNG6WhcoPCdaN5ga956b8lx7YD1I6v4","commandName":"ListenResult","payload":{"isLast":false,"outputText":"天猫精灵今天","recordId":"<hexid>","isValid":false}}],"isLast":false,"requestId": "<redacted>","timestamp":"2026-11-20 10:02:29.886","traceId":"<id>","uuid": "<redacted>","version":"3.0
+11-20 10:02:29.435 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [16421] sessionId = 1970129, commandDomain =AliGenie.Text  type =3
+11-20 10:02:29.435 16112 16421 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [16421] sessionId = 1970129, text = 天猫精灵今天, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-20 10:02:29.435 16112 16213 D AGSpeechEngine: handleListenResult,815
+11-20 10:02:29.436 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 2, preStatus = 2, sessionId = 1970129, preSessionId = 1970129
+11-20 10:02:29.436 16112 16213 E NativeUIManager: onStreaming sessionId = 1970129streamText = 今天
+11-20 10:02:29.436 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 19
+11-20 10:02:29.436 16112 16275 D VadStateMachine: handleAsrResult,346:dirty=天猫精灵今天,clean=今天
+11-20 10:02:29.436 16112 16275 D VadStateMachine: handleAsrResult,127:asr result is valid when silence,end when 4540
+11-20 10:02:29.436 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 19
+11-20 10:02:29.436 16112 16112 E NativeUIManager: iuiManager what = 1005,sessionId = 1970129
+11-20 10:02:29.437 16112 16112 D GenieAssistantUIManager: onStreaming. sessionId = 1970129 ;streamText = 今天 ;isFinish = false
+11-20 10:02:29.534 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (615) from memory pool (angle result,523) fail
+11-20 10:02:29.558 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:29.002
+11-20 10:02:29.558 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:29.690 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:29.613
+11-20 10:02:29.690 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:29.694 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (615) from memory pool (angle result,523) fail
+11-20 10:02:29.715 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--0::{"asrLogId":"<hexid>","attachmentCount":0,"bizGroup":"S1L","bizType":"AILABS","commandType":"response","commands":[{"commandDomain":"AliGenie.Text","commandId":"lyUBu4D0fZhX0TLdSNemb9nVoSto5hIC","commandName":"ListenResult","payload":{"isLast":false,"outputText":"天猫精灵今天天气","recordId":"<hexid>","isValid":false}}],"isLast":false,"requestId": "<redacted>","timestamp":"2026-11-20 10:02:30.166","traceId":"<id>","uuid": "<redacted>","version":"3.0
+11-20 10:02:29.715 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [16421] sessionId = 1970129, commandDomain =AliGenie.Text  type =3
+11-20 10:02:29.715 16112 16421 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [16421] sessionId = 1970129, text = 天猫精灵今天天气, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-20 10:02:29.715 16112 16213 D AGSpeechEngine: handleListenResult,815
+11-20 10:02:29.716 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 2, preStatus = 2, sessionId = 1970129, preSessionId = 1970129
+11-20 10:02:29.716 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 19
+11-20 10:02:29.716 16112 16275 D VadStateMachine: handleAsrResult,346:dirty=天猫精灵今天天气,clean=今天天气
+11-20 10:02:29.716 16112 16275 D VadStateMachine: handleAsrResult,127:asr result is valid when silence,end when 4860
+11-20 10:02:29.716 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 19
+11-20 10:02:29.718 16112 16213 E NativeUIManager: onStreaming sessionId = 1970129streamText = 今天天气
+11-20 10:02:29.719 16112 16112 E NativeUIManager: iuiManager what = 1005,sessionId = 1970129
+11-20 10:02:29.720 16112 16112 D GenieAssistantUIManager: onStreaming. sessionId = 1970129 ;streamText = 今天天气 ;isFinish = false
+11-20 10:02:29.780 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:29.180
+11-20 10:02:29.780 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:29.916 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (652) from memory pool (angle result,523) fail
+11-20 10:02:29.919 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:29.647
+11-20 10:02:29.919 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:29.951 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--0::{"asrLogId":"<hexid>","attachmentCount":0,"bizGroup":"S1L","bizType":"AILABS","commandType":"response","commands":[{"commandDomain":"AliGenie.Text","commandId":"XPn8CKxWdfun041IutvTpRlbYBh8iMAb","commandName":"ListenResult","payload":{"isLast":false,"outputText":"天猫精灵今天天气怎么","recordId":"<hexid>","isValid":false}}],"isLast":false,"requestId": "<redacted>","timestamp":"2026-11-20 10:02:30.396","traceId":"<id>","uuid": "<redacted>","version":"3.0
+11-20 10:02:29.952 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [16421] sessionId = 1970129, commandDomain =AliGenie.Text  type =3
+11-20 10:02:29.952 16112 16421 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [16421] sessionId = 1970129, text = 天猫精灵今天天气怎么, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-20 10:02:29.952 16112 16213 D AGSpeechEngine: handleListenResult,815
+11-20 10:02:29.952 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 2, preStatus = 2, sessionId = 1970129, preSessionId = 1970129
+11-20 10:02:29.952 16112 16213 E NativeUIManager: onStreaming sessionId = 1970129streamText = 今天天气怎么
+11-20 10:02:29.953 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 19
+11-20 10:02:29.953 16112 16275 D VadStateMachine: handleAsrResult,346:dirty=天猫精灵今天天气怎么,clean=今天天气怎么
+11-20 10:02:29.953 16112 16275 D VadStateMachine: handleAsrResult,127:asr result is valid when silence,end when 5020
+11-20 10:02:29.953 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 19
+11-20 10:02:29.953 16112 16112 E NativeUIManager: iuiManager what = 1005,sessionId = 1970129
+11-20 10:02:29.955 16112 16112 D GenieAssistantUIManager: onStreaming. sessionId = 1970129 ;streamText = 今天天气怎么 ;isFinish = false
+11-20 10:02:30.021 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:30.856
+11-20 10:02:30.021 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:30.096 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (541) from memory pool (angle result,523) fail
+11-20 10:02:30.159 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:30.528
+11-20 10:02:30.159 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:30.183 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--0::{"asrLogId":"<hexid>","attachmentCount":0,"bizGroup":"S1L","bizType":"AILABS","commandType":"response","commands":[{"commandDomain":"AliGenie.Text","commandId":"ggOZHeRxFd4vE5FfrqXOwQBTS5WVmdJK","commandName":"ListenResult","payload":{"isLast":false,"outputText":"天猫精灵今天天气怎么样","recordId":"<hexid>","isValid":false}}],"isLast":false,"requestId": "<redacted>","timestamp":"2026-11-20 10:02:30.635","traceId":"<id>","uuid": "<redacted>","version":"3.0
+11-20 10:02:30.184 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [16421] sessionId = 1970129, commandDomain =AliGenie.Text  type =3
+11-20 10:02:30.184 16112 16421 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [16421] sessionId = 1970129, text = 天猫精灵今天天气怎么样, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-20 10:02:30.184 16112 16213 D AGSpeechEngine: handleListenResult,815
+11-20 10:02:30.184 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 19
+11-20 10:02:30.184 16112 16275 D VadStateMachine: handleAsrResult,346:dirty=天猫精灵今天天气怎么样,clean=今天天气怎么样
+11-20 10:02:30.184 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 2, preStatus = 2, sessionId = 1970129, preSessionId = 1970129
+11-20 10:02:30.184 16112 16275 D VadStateMachine: handleAsrResult,127:asr result is valid when silence,end when 5260
+11-20 10:02:30.184 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 19
+11-20 10:02:30.184 16112 16213 E NativeUIManager: onStreaming sessionId = 1970129streamText = 今天天气怎么样
+11-20 10:02:30.184 16112 16112 E NativeUIManager: iuiManager what = 1005,sessionId = 1970129
+11-20 10:02:30.185 16112 16112 D GenieAssistantUIManager: onStreaming. sessionId = 1970129 ;streamText = 今天天气怎么样 ;isFinish = false
+11-20 10:02:30.291 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:30.648
+11-20 10:02:30.291 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:30.349 16112 16274 D CloudASRManager: onData,476:send 453 when 2026-11-20 10:02:30.724
+11-20 10:02:30.349 16112 16274 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:30.381 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--0::{"asrLogId":"<hexid>","attachmentCount":0,"bizGroup":"S1L","bizType":"AILABS","commandType":"response","commands":[{"commandDomain":"AliGenie.Microphone","commandId":"37mAcRG3whHF9fGoiyBkk29fNjfrbX3w","commandName":"StopListen","payload":{"recordId":"<hexid>","vadDelayInMillis":0,"vadSource":"unknow","vadFrameSeq":722}}],"isLast":false,"requestId": "<redacted>","timestamp":"2026-11-20 10:02:30.829","traceId":"<id>","uuid": "<redacted>","version":"3.0
+11-20 10:02:30.381 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [16421] sessionId = 1970129, commandDomain =AliGenie.Microphone  type =1
+11-20 10:02:30.381 16112 16421 D AGSpeechEngine: stopListen,790
+11-20 10:02:30.381 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 9
+11-20 10:02:30.382 16112 16275 D AGSpeechEngine: threadLoop,1013: stop info is '{ "recordId": "<hexid>", "vadDelayInMillis": 0, "vadSource": "unknow", "vadFrameSeq": 722 }'
+11-20 10:02:30.382 16112 16275 D CloudASRManager: stopListen,253
+11-20 10:02:30.382 16112 16275 D VadStateMachine: stopListen,495:stop listen when 5280
+11-20 10:02:30.382 16112 16275 D AGSpeechEngine: onCloudEOUEvent,646
+11-20 10:02:30.383 16112 16275 D CloudASRManager: onVadCheckPointerEvent,467
+11-20 10:02:30.383 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 9
+11-20 10:02:30.383 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 9
+11-20 10:02:30.383 16112 16275 D AGSpeechEngine: stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-20 10:02:30.383 16112 16275 D AGSpeechEngine: stopListenInternal,348
+11-20 10:02:30.384 16112 16266 D CloudASRManager: onVadCheckPointerEvent,467
+11-20 10:02:30.384 16112 16275 D CloudASRManager: stop,173
+11-20 10:02:30.384 16112 16275 D CloudASRManager: stop,175:locked
+11-20 10:02:30.392 16112 16275 D CloudASRManager: onData,476:send 98 when 2026-11-20 10:02:30.389
+11-20 10:02:30.392 16112 16275 D AGSpeechEngineProxy: onListenData,739
+11-20 10:02:30.392 16112 16275 D CloudASRManager: [2026-11-20 10:02:30.664][FullLink]voice encode finish
+11-20 10:02:30.393 16112 16275 D AGSpeechEngine: onListenStopped,1225
+11-20 10:02:30.393 16112 16275 D AGSpeechEngineProxy: onListenStopped,747
+11-20 10:02:30.394 16112 16275 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:697 [16275] onStopTalk, mStopTalkReason = 0, reason = normal
+11-20 10:02:30.394 16112 16275 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:749 [16275] on stop talk, session=1970129
+11-20 10:02:30.394 16112 16275 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:786 [16275] on stop talk, send end frame, sessionId = 1970129
+11-20 10:02:30.395 16112 16275 E SessionManager: size = 1223, offset = 1276, max_size = 1022
+11-20 10:02:30.395 16112 16275 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:842 [16275] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "<hexid>", "wakeupWord": "tian mao jing ling", "doa": "{\"param_arr\":[47.500000,0.767891,52.500000,0.170155,57.500000,0.061954],\"score_arr\":[2580852736,2580943360,2581211136,2581640704,2582208256,2582879232,2583609856,2584347648,2585031168,2585594624,2585967616,2586082304,2585873920,2585288960,2584286720,2582846208,2580966656,2578670848,2576002304,2573024256,2569814784,2566462208,2563056640,2559686912,2556433408,2553363712,2550530560,2547972096,2545709824,2543752960,2542098944,2540738304,2539656704,2538836992,2538264320,2537926144,2537814272,47.500000]}", "confidence": 0.84780800342559814, "listenDuration": 7332, "voiceDuration": 7332, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visionInfomation": "", "voiceInfomati
+11-20 10:02:30.397 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 3, preStatus = 2, sessionId = 1970129, preSessionId = 1970129
+11-20 10:02:30.397 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [16213] set status: notify status=3, session=1970129
+11-20 10:02:30.397 16112 16112 E NativeUIManager: iuiManager what = 1011,sessionId = 1970129
+11-20 10:02:30.397 16112 16112 D GenieAssistantUIManager: onRecordStop. sessionId:1970129; mInFullDuplexDialogMode:false
+11-20 10:02:30.398 16112 16275 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [16275] sending, requestId = 4052, eventNs = AliGenie.Microphone, eventName =Inactive
+11-20 10:02:30.399 16112 16275 D AGSpeechEngine: onListenStopped,1232: reset to use global deviceId 1 for wakeup
+11-20 10:02:30.399 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 9
+11-20 10:02:30.400 16112 24585 W Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:546 [24585] MSG_TYPE_SEND_BIN_FINAL:1970129
+11-20 10:02:30.400 16112 24585 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onWebSocketCallback:503 [24585] send text--0::{ "digest": "<redacted>", "timestamp": "2026-11-20 10:02:30.556", "requestId": "<redacted>", "version": "3.0", "bizType": "AILABS", "bizGroup": "S1L", "uuid": "<redacted>", "eventNs": "AliGenie.Microphone", "eventName": "Inactive", "attachmentCount": 0, "logId": "<redacted>", "returnType": "list", "payload": { "reason": "normal", "speechLen": 5280, "wakeupType": "active", "extension": "" }
+11-20 10:02:30.415 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--0::{"asrLogId":"<hexid>","attachmentCount":0,"bizGroup":"S1L","bizType":"AILABS","commandType":"response","commands":[{"commandDomain":"AliGenie.Text","commandId":"v8BqfOpZnOENd3zefI1XIcJqDvxqJUQ5","commandName":"ListenResult","payload":{"isLast":true,"outputText":"天猫精灵今天天气怎么样","recordId":"<hexid>","isValid":false}}],"isLast":false,"requestId": "<redacted>","timestamp":"2026-11-20 10:02:30.867","traceId":"<id>","uuid": "<redacted>","version":"3.0
+11-20 10:02:30.415 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [16421] sessionId = 1970129, commandDomain =AliGenie.Text  type =3
+11-20 10:02:30.415 16112 16421 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [16421] sessionId = 1970129, text = 天猫精灵今天天气怎么样, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-20 10:02:30.415 16112 16421 W Performance: JNI_AILABS PerformanceData.cpp:setTextTime:149 [16421] asr-asrResult last text = 天猫精灵今天天气怎么样, sessionId = 1970129
+11-20 10:02:30.416 16112 16213 D AGSpeechEngine: handleListenResult,815
+11-20 10:02:30.417 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 4, preStatus = 3, sessionId = 1970129, preSessionId = 1970129
+11-20 10:02:30.417 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [16213] set status: notify status=4, session=1970129
+11-20 10:02:30.417 16112 16213 E NativeUIManager: onStreaming sessionId = 1970129streamText = 今天天气怎么样
+11-20 10:02:30.418 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 19
+11-20 10:02:30.418 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 19
+11-20 10:02:30.418 16112 16112 E NativeUIManager: iuiManager what = 1005,sessionId = 1970129
+11-20 10:02:30.420 16112 16112 D GenieAssistantUIManager: onStreaming. sessionId = 1970129 ;streamText = 今天天气怎么样 ;isFinish = true
+11-20 10:02:30.694 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--0::{"asrLogId":"<hexid>","attachmentCount":1,"bizGroup":"S1L","bizType":"AILABS","commandType":"response","commands":[{"commandDomain":"AliGenie.Speaker","commandId":"56dq41q60jnu3w69rzt3d8r1k44osckg","commandName":"Speak","payload":{"needVoice":true,"expectSpeech":false,"format":"mp3","needLight":true,"text":"今天昌平区多云转晴，-2度到8度，空气质量指数22优，现在晴。 ","type":"stream"}},{"commandDomain":"AliGenie.Screen","commandId":"7npo60ocnpbrsn6a864l2kaxap20wa6u","commandName":"Render","payload":{"pageType":"TPL.RenderTemplate","data":{"template":"genie_voice_weather","screenSceneContext":{"context":{"skillId":20308,"scheduleType":"SKILL_PAGE_UNRECOVERABLE","keepScreenOn":false}},"iaId":2020033152294,"id":"2020033152294","dialogId":"<hexid><hexid>5e094f18ba","bu
+11-20 10:02:30.694 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--1::ndle":"https://ailabs-iot.aligenie.com/tpl2/<hexid>/index.aot","dataSource":{"hoursPage":[{"date":"2026-11-20","hourTime":"10:00","temp":5,"hour":"10","weather":"晴","uvi":5,"rainProbability":0},{"date":"2026-11-20","hourTime":"11:00","temp":7,"hour":"11","weather":"晴","uvi":5,"rainProbability":0},{"date":"2026-11-20","hourTime":"12:00","temp":7,"hour":"12","weather":"晴","uvi":5,"rainProbability":0},{"date":"2026-11-20","hourTime":"13:00","temp":8,"hour":"13","weather":"晴","uvi":5,"rainProbability":0},{"date":"2026-11-20","hourTime":"14:00","temp":8,"hour":"14","weather":"晴","uvi":5,"rainProbability":0},{"date":"2026-11-20","hourTime":"15:00","temp":7,"hour":"15","weather":"晴","uvi":4,"rainProbability":0}],"mojiLivePageData":{"ydDesc":"天气较好，无雨水困扰，较适宜进行各种运动，但因气温较低，在户�
+11-20 10:02:30.694 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--2::�运动请注意增减衣物。","ydDegree":"较适宜运动","xcDesc":"适宜洗车，至少可维持5天","xcDegree":"适宜洗车","cyDegree":"适宜穿厚毛衣","cyDesc":"建议着厚外套加毛衣等服装。年老体弱者宜着大衣、呢外套加羊毛衫。"},"intentName":"base","interval":5,"sort":["homePage","hoursPage","daysPage","mojiLivePage"],"daysPageData":[{"date":"11/20","high":"8","weatherName":"多云","dayName":"今天","low":"-2","currentTemp":"3","airQualityLevelDesc":"优"},{"date":"11/21","high":"7","weatherName":"晴","dayName":"明天","low":"-4","airQualityLevelDesc":"优"},{"date":"11/22","high":"4","weatherName":"多云","dayName":"后天","low":"-2","airQualityLevelDesc":"优"},{"date":"11/23","high":"7","weatherName":"晴","dayName":"周一","low":"-5"}],"queryCase":"current","homePageData":{"country":"中国","windDirectDesc":
+11-20 10:02:30.694 16112 16421 D Websocket-gateway: JNI_AILABS WebSocket.cpp:onReceive:1437 [16421] receive text--3::"西北风","warningTypeName":"大风","windPower":"<3","airQualityLevelDesc":"优","warningDegreeName":"蓝色","current":false,"high":"8","weatherName":"多云转晴","areaName":"昌平区","low":"-2","weatherInGeneral":"多云","currentTemp":"3"}},"skillTest":"false","deviceInfo":{"botId":"74536"},"md5":"<hexid>"},"packageName":"com.alibaba.genie.waft","uri":"waft://com.alibaba.genie.waft/tpl","launchModel":"Service"}}],"isLast":true,"requestId": "<redacted>","sessionId":"c03b8639-4b04-4898-badb-d36f2d9fc4b3","timestamp":"2026-11-20 10:02:31.145","timestampReceived":"2026-11-20 10:02:30.873","traceId":"<id>","userMemberId":"nomatch","uuid": "<redacted>","version":"3.0
+11-20 10:02:30.695 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [16421] sessionId = 1970129, commandDomain =AliGenie.Speaker  type =4
+11-20 10:02:30.695 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:203 [16421] NAMESAPCE_SPEAKER alarmMock2 =NULL
+11-20 10:02:30.695 16112 16421 W ProtocolParser: JNI_AILABS ProtocolParser.cpp:parserSpeakerCommand:549 [16421] stream to text = { "needVoice": true, "expectSpeech": false, "format": "mp3", "needLight": true, "text": "今天昌平区多云转晴，-2度到8度，空气质量指数22优，现在晴。 ", "type": "stream" }
+11-20 10:02:30.695 16112 16421 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [16421] sessionId = 1970129, commandDomain =AliGenie.Screen  type =2
+11-20 10:02:30.695 16112 16421 W ProtocolParser: JNI_AILABS ProtocolParser.cpp:parserScreenCommand:608 [16421] type = 2,commandName= Render 
+11-20 10:02:30.696 16112 16421 W ProtocolParser: JNI_AILABS ProtocolParser.cpp:parserScreenCommand:670 [16421] type = 2,commandName= Render url = waft://com.alibaba.genie.waft/tpl
+11-20 10:02:30.696 16112 16421 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsStart:141 [16421] sessionId = 1970129, isStreaming = 1, tts = 今天昌平区多云转晴，-2度到8度，空气质量指数22优，现在晴。 
+11-20 10:02:30.697 16112 16421 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsStart:152 [16421] TTS_TIME receive command with stream, report TtsStreamCmdReceived.
+11-20 10:02:30.697 16112 16421 D SessionManager: JNI_AILABS SessionManager.cpp:onNlpResult:895 [16421] on nlp result, code = 0 , sessionId = 1970129, data = 1
+11-20 10:02:30.699 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 5, preStatus = 4, sessionId = 1970129, preSessionId = 1970129
+11-20 10:02:30.700 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [16213] set status: notify status=5, session=1970129
+11-20 10:02:30.702 16112 16213 D GenieAssistantUIManager: onPretreatedResult session:1970129; domain:null, command:null
+11-20 10:02:30.702 16112 16213 D GenieAssistantUIManager: onPretreatedResult, return:CONTINUE
+11-20 10:02:30.704 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:exitTalk:1176 [16213] exit talk, input session=1970129, real session=1970129 exit=0
+11-20 10:02:30.704 16112 16213 D AGSpeechEngine: stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-20 10:02:30.704 16112 16112 E NativeUIManager: iuiManager what = 1009,sessionId = 1970129
+11-20 10:02:30.704 16112 16213 E AGSpeechEngine: stopListenInternal,382: stop listen when 0
+11-20 10:02:30.704 16112 16213 D AGSpeechEngine: abortListen,395,wakeup type is active
+11-20 10:02:30.741 16112 16112 D GenieAssistantUIManager: onRecognizeResult. sessionId:1970129, data:ProtocolData{code=CONTINUE, type=0, question='null', domain='null', intent='null', spokenText='今天昌平区多云转晴，-2度到8度，空气质量指数22优，现在晴。 ', writtenText='今天昌平区多云转晴，-2度到8度，空气质量指数22优，现在晴。 ', emotion=0, data=null, extraData=ProtocolExtra{, nlgResultJSON=, nluResultJSON=, dmResultJson=, toUrls=, toApp=[appName:null, renderType:0, packageName:com.alibaba.genie.waft, minVersion:0, callbackId:null, maxVersion:0, url:waft://com.alibaba.genie.waft/tpl, action:null, homeUrl:null]}, recordTime=0, hasCommand=false, openFarMic=false, nluMode=0, uiData=null, serviceCode='null', flag=0, retCode=4, nluData='null', needTts=true, voiceId='null', commandId='7npo60ocnpbrsn6a864l2kaxap20wa6u', traceId='<id>', asrLogId='<hexid>', talkStartTime=0, streamFirstTime=0, nlpTime=0, parserTime=0, mIsWakeupFree=false, mFullScreen=false, wakeupType=PRESS, mTips='null', hasResultList=false, queryMakeSense=false}
+11-20 10:02:30.742 16112 16112 D GenieAssistantUIManager: onRecognizeResult. retCode: APP_JUMP, in full duplex dialog mode:false; mFullDuplexDialogEnabled:false
+11-20 10:02:30.756 16112 16421 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsData:205 [16421] TTS_TIME receive stream data actually.
+11-20 10:02:30.777 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 1011
+11-20 10:02:30.778 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_TTS_PLAY_TXT; arg1=1; arg2=0; data=今天昌平区多云转晴，-2度到8度，空气质量指数22优，现在晴。 
+11-20 10:02:30.795 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 10
+11-20 10:02:30.795 16112 16112 E NativeUIManager: status  = 10  ttsId = 1970129
+11-20 10:02:30.800 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_PLAY; arg2=1970129; data=null
+11-20 10:02:30.821 16112 24790 D AGSpeechEngineProxy: audioCheckPoint,1057:Audio check position is 513.
+11-20 10:02:30.909 16112 24585 D Websocket-gateway: JNI_AILABS WebSocket.cpp:getRequestTrace:2134 [24585] getRequestTrace: requestId 1970129, detail [CREATED:215636353][SENDING:215636362][BIN_SENDING:215636363][SENT:215641911][RECEIVING:215636557][BIN_RECEIVING:215642252][RECEIVED:215642420][CANCELING:][FINISH:215642420]
+11-20 10:02:30.910 16112 16421 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsEnd:220 [16421] sessionId = 1970129
+11-20 10:02:31.112 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (526) from memory pool (angle result,523) fail
+11-20 10:02:31.242 16112 16213 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [16213] status = 6, preStatus = 5, sessionId = 1970129, preSessionId = 1970129
+11-20 10:02:31.242 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [16213] set status: notify status=6, session=1970129
+11-20 10:02:31.276 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (589) from memory pool (angle result,523) fail
+11-20 10:02:31.379 16112 16112 D GenieAssistantUIManager: onWindowChange. topPackageAndActivityName = com.alibaba.genie.waft/com.alibaba.genie.waft.ui.tpl.WaftTplActivity
+11-20 10:02:31.397 16112 16265 D XEGNLocalEngine.cpp: mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 37, cost of feed is 0
+11-20 10:02:31.406 16112 16112 D GenieAssistantUIManager: onActivityChange, packageAndActivityName:com.alibaba.genie.waft/com.alibaba.genie.waft.ui.tpl.WaftTplActivity; current top:, hasFocus:true, listenMode:false
+11-20 10:02:31.406 16112 16112 D SessionManager: JNI_AILABS SessionManager.cpp:fullDuplexDialogPageChangeToBlackList:1031 [16112] full duplex dialog, page change to: com.alibaba.genie.waft/com.alibaba.genie.waft.ui.tpl.WaftTplActivity
+11-20 10:02:31.409 16112 16275 D AGSpeechEngine: threadLoop,988: begin to process 3
+11-20 10:02:31.409 16112 16275 D XEGNLocalEngine.cpp: useWakeupWords,1036:use 9 wakeup words
+11-20 10:02:31.409 16112 16265 D XEGNLocalEngine.cpp: mainProcess,1619:received msg 6
+11-20 10:02:31.409 16112 16275 D AGSpeechEngine: threadLoop,1090: end to process 3
+11-20 10:02:31.409 16112 16265 D XEGNLocalEngine.cpp: mainProcess,1763: wakeup words not change, ignore
+11-20 10:02:31.427 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 1102
+11-20 10:02:31.427 16112 16112 D GenieAssistantUIManager: onNotify. type = INVALID:1102; arg1=0; arg2=0; data=null
+11-20 10:02:31.542 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (610) from memory pool (angle result,523) fail
+11-20 10:02:31.672 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (526) from memory pool (angle result,523) fail
+11-20 10:02:31.797 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (582) from memory pool (angle result,523) fail
+11-20 10:02:32.220 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (561) from memory pool (angle result,523) fail
+11-20 10:02:32.776 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (575) from memory pool (angle result,523) fail
+11-20 10:02:33.556 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (602) from memory pool (angle result,523) fail
+11-20 10:02:33.708 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (582) from memory pool (angle result,523) fail
+11-20 10:02:33.935 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (533) from memory pool (angle result,523) fail
+11-20 10:02:34.127 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (587) from memory pool (angle result,523) fail
+11-20 10:02:34.318 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (589) from memory pool (angle result,523) fail
+11-20 10:02:34.875 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (568) from memory pool (angle result,523) fail
+11-20 10:02:35.095 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (617) from memory pool (angle result,523) fail
+11-20 10:02:35.316 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (561) from memory pool (angle result,523) fail
+11-20 10:02:35.435 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (589) from memory pool (angle result,523) fail
+11-20 10:02:35.655 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (596) from memory pool (angle result,523) fail
+11-20 10:02:35.857 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (596) from memory pool (angle result,523) fail
+11-20 10:02:36.258 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (615) from memory pool (angle result,523) fail
+11-20 10:02:36.419 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (568) from memory pool (angle result,523) fail
+11-20 10:02:36.636 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (601) from memory pool (angle result,523) fail
+11-20 10:02:36.821 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (575) from memory pool (angle result,523) fail
+11-20 10:02:37.383 16112 16265 D XEGNLocalEngine.cpp: mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 37, cost of feed is 0
+11-20 10:02:37.541 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (582) from memory pool (angle result,523) fail
+11-20 10:02:37.802 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (638) from memory pool (angle result,523) fail
+11-20 10:02:37.955 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (587) from memory pool (angle result,523) fail
+11-20 10:02:37.990 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionTtsStatus:1049 [16213] session=1970129, status = 6, tts status = 7
+11-20 10:02:37.990 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 10
+11-20 10:02:37.990 16112 16112 E NativeUIManager: status  = 10  ttsId = 1970129
+11-20 10:02:37.996 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=1970129; data=null
+11-20 10:02:37.998 16112 16112 D GenieAssistantUIManager: onNotify. NOTIFY_TTS_STATUS. MESSAGE_SESSION_END.
+11-20 10:02:37.998 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 17
+11-20 10:02:37.998 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=1970129; data=null
+11-20 10:02:37.998 16112 16112 D GenieAssistantUIManager: handleMessage. what:MESSAGE_SESSION_END 
+11-20 10:02:38.157 16112 16314 D XEGNLocalEngine.cpp: FeedData,431: allocate (596) from memory pool (angle result,523) fail
+11-20 10:02:38.815 16112 16213 D SessionManager: JNI_AILABS SessionManager.cpp:onGetMediaPolicy:1593 [16213] get policy, policy=0, packageName=com.alibaba.genie.waft
+11-20 10:02:38.817 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 1010
+11-20 10:02:38.817 16112 16112 D GenieAssistantUIManager: onNotify. type = NOTIFY_TALK_STATUS; arg1=0; arg2=0; data=null
