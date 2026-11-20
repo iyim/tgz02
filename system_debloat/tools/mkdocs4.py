@@ -77,22 +77,27 @@ plan = f"""# 分阶段精简方案
 
 | 队列 | 对象 | 理由 |
 |---|---|---|
-| V0（只读，不禁用） | OTA | 10 个候选里唯一有实测 PSS（16,011 kB）与 CPU（343 s 窗口 20%）的；先量化再决定 |
+| V0（只读，不禁用） | OTA | 唯一有实测占用的候选；**rev4.1 已完成**：6 h 持续负载 21.53% CPU、PSS 中位 16,557 kB |
 | V1（单包禁用） | OTA | 若 V0 证明为周期性负载才做；风险最高，需最严格观测 |
 | V2（可选） | 开机引导 | 5.42 MB 存储收益，但**只有删除才有**；无进程，禁用不产生 RAM 收益 |
 | V3（可选） | 存储管理 | 2.32 MB 存储收益，同上 |
 | 不进入队列 | 其余 7 个平台小组件 | 合计 0.42 MB、无进程、无长期 CPU 证据；仅供功能取舍 |
 
-### 2.0 V0：OTA 只读观测（本轮不执行，需另行授权）
+### 2.0 V0：OTA 只读观测（**rev4.1 已完成**）
 
-| 观测项 | 方法 | 判据 |
+结果见 [ota_observation_report.md](ota_observation_report.md)：73 次样本 / 300 s 间隔 / 窗口 21,600 s（6.0 h），
+PID 全程 6667 未重启；CPU 均值 **21.53%**（72/72 区间 ≥10%，最小 17.85%，P90 24.59%）；
+PSS 12,636–19,687 kB，中位 16,557 kB；UpdateService 73/73 样本 `startRequested=true`；
+`dumpsys alarm` / `power` 均 0 命中；`FOTA_UPDATE` **本次观测窗口未捕获到**（不代表设备从未使用）。
+
+| 观测项 | 方法 | 本轮结果 |
 |---|---|---|
-| 是否周期性 | 每 30 min 采样 `dumpsys cpuinfo`，连续 ≥6 h | 仅偶发高占比 → 不必禁用；每次都有 → 进入 V1 |
-| 触发源 | `logcat` 关键字 `osupdate` / `FOTA` / `UpdateService` | 与升级检查同现 → 属升级检查开销 |
-| 常驻成本 | 多次 `dumpsys meminfo` 取 PSS 中位数 | 替代单次 16,011 kB |
-| 调用路径 | `dumpsys activity broadcasts` 是否收到 `FOTA_UPDATE` | 从未收到 → 该路径本机未使用 |
+| 是否周期性 | 每 5 min 采样 `/proc/<pid>/stat` 增量，连续 ≥6 h | **否**：lag1=−0.56 / lag2=+0.50（短间隔交替），按小时均值 21.05%–22.68% → 持续负载 |
+| 触发源 | `logcat` 关键字 `osupdate` / `FOTA` / `UpdateService` | 捕获 1,204 行；`upload log file` 776 行、`upload file fail` 404 行（跨 7 个小时）→ 上传失败重试循环 |
+| 常驻成本 | 多次 `dumpsys meminfo` 取 PSS | 中位数 16,557 kB（n=73） |
+| 调用路径 | `FOTA_UPDATE` 广播 / 日志 | **未捕获** → 标记未知（静态引用仍成立） |
 
-### 2.1 V1：OTA 单包禁用（仅在 V0 判定为周期性负载后）
+### 2.1 V1：OTA 单包禁用（V0 已完成，待你授权后执行）
 
 ```bash
 # 执行前：记录基线（uptime、alarm、meminfo、cpuinfo）
@@ -114,13 +119,15 @@ adb -s {SERIAL} shell pm disable-user --user 0 com.alibaba.ailabs.genie.osupdate
 adb -s {SERIAL} shell pm disable-user --user 0 com.alibaba.ailabs.genie.guide
 ```
 
-> 注意：该包**快照无进程**，禁用不会带来可测量的 RAM 收益；其 5.42 MB 只有在“删除 APK”时才会释放。
-> 禁用的唯一意义是验证“移除引导是否影响使用”，为后续是否删除提供依据。
+| 观测项 | 方法 | 通过判据 |
+|---|---|---|
+| 进程出现情况 | `dumpsys meminfo \\| grep guide`（快照中无进程） | 仍无进程，且无异常拉起 |
 | 引导不再弹出 | 重启一次，观察是否进入正常桌面 | 无引导页阻塞 |
 | 回滚 | `pm enable com.alibaba.ailabs.genie.guide`（恢复出厂前必须启用） | 立即恢复 |
 
-> 注意：该包**快照无进程**，禁用不会带来可测量的 RAM 收益；其 5.42 MB 只有在“删除 APK”时才会释放。
-> 禁用的唯一意义是验证“移除引导是否影响使用”，为后续是否删除提供依据。
+> 注意（rev4.1 去重，只保留一处）：该包**快照无进程**，禁用不会带来可测量的 RAM 收益；
+> 其 5.42 MB 只有在“删除 APK”时才会释放。禁用的唯一意义是验证“移除引导是否影响使用”，
+> 为后续是否删除提供依据。
 
 ### 2.3 已取消的旧实验（rev3）
 
@@ -316,8 +323,10 @@ TOOLS = os.path.join(DOC, 'tools')
 os.makedirs(TOOLS, exist_ok=True)
 for fn in ('axml.py', 'scan.py', 'refs2.py', 'report.py', 'digest.py', 'edges.py',
            'filters.py', 'protection.py', 'test_filters.py', 'test_protection.py',
-           'test_b_class.py', 'mkdocs.py', 'mkdocs2.py', 'mkdocs3.py', 'mkdocs4.py',
-           'mkdocs5.py'):
+           'test_b_class.py', 'ota_observe.py', 'ota_analyze.py', 'ota_observe.ps1',
+           'test_ota_observation.py',
+           'mkdocs.py', 'mkdocs2.py', 'mkdocs3.py', 'mkdocs4.py',
+           'mkdocs5.py', 'mkdocs6.py'):
     src = os.path.join(SRC, fn)
     if os.path.exists(src):
         shutil.copy2(src, os.path.join(TOOLS, fn))
@@ -367,6 +376,10 @@ tools_readme = """# 复现用脚本
 | `report.py` | 分类裁定 + 保护过滤 + `app_inventory.csv/json`、`summary_stats.json`、`user_protected.json` |
 | `mkdocs*.py` | 生成 `README.md` 与本目录其余报告 |
 | `collect_baseline.sh` | 设备只读基线采集（meminfo / cpuinfo / power / alarm / services / pm） |
+| `ota_observe.py` | **rev4.1** OTA 六小时只读采样器（`/proc/<pid>/stat` 增量、PSS、services、alarm、power、logcat），每样本一行 JSON |
+| `ota_observe.ps1` | 同上功能的 PowerShell 版（无 Python 环境时可用） |
+| `ota_analyze.py` | **rev4.1** 观测聚合器：ticks 差值算 CPU%、PSS min/max/median/count、PID 变更事件、自相关、按小时曲线、日志构成 |
+| `test_ota_observation.py` | **rev4.1** 观测报告与原始样本的一致性测试（11 条） |
 
 ## 运行顺序
 
@@ -398,14 +411,29 @@ open(os.path.join(TOOLS, 'README.md'), 'w', encoding='utf-8').write(tools_readme
 # ---------------------------------------------------------------- revisions.md
 rev = f"""# 修订记录（rev3 / rev3.1 / rev4）
 
-- 修订时间：2026-11-20
+- 修订时间：2026-11-20（rev4.1 观测跨至 2026-11-21 02:00）
 - 修订对象：本目录（`system_debloat/`）下全部报告与机器可读数据；不涉及 `system` 镜像、APK、T5 代码或设备分区
 - 修订触发：rev3 = ① 操作者指定六个 App 必须保留；② rev2 遗留的三个 P2 问题。
   rev3.1 = rev3 审查的三项小范围修订（A 类映射、README 旧实验顺序、保护期限措辞）。
-  rev4 = 对剩余 10 个 B 类候选做收益/风险重估，形成下一阶段真机验证计划
-- 本轮**未执行**任何 `pm disable-user` / `pm uninstall` / 镜像或 boot 写操作；设备 `pm list packages -d` 仍为空
+  rev4 = 对剩余 10 个 B 类候选做收益/风险重估。rev4.1 = OTA 六小时只读观测与证据表述修正
+- 本轮**未执行**任何 `pm disable-user` / `pm enable` / `pm uninstall` / 镜像或 boot 写操作；
+  设备 `pm list packages -d` 仍为空
 
-## 0. rev4：B 类候选收益与风险（2026-11-20）
+## 0. rev4.1：OTA 只读观测与证据修正（2026-11-21）
+
+| 项 | 内容 |
+|---|---|
+| 新增文件 | `ota_observation_report.md`（观测报告）、`ota_observation/samples.jsonl`（73 条原始样本）、`ota_observation/analysis.json`（聚合）、`ota_observation/sampler.log`、`tools/ota_observe.py`（采样器）、`tools/ota_analyze.py`（聚合器）、`tools/ota_observe.ps1`（等价 PowerShell 版）、`tools/test_ota_observation.py`（11 条测试） |
+| 观测方式 | 每 300 s 一次，连续 73 次 / 21,600 s；`/proc/<pid>/stat` 的 `utime+stime` 差值算 CPU，`dumpsys meminfo` 取 PSS，`dumpsys activity services|alarm|power` + `logcat -d` 取服务/唤醒/日志；**全程只读** |
+| CPU 结论 | 均值 **21.53%**、中位 21.09%、最小 17.85%、P90 24.59%；**72/72 区间 ≥10%**；lag1=−0.564 / lag2=+0.502，按小时均值 21.05%–22.68% → **持续负载，不是周期尖峰** |
+| RAM 结论 | PSS n=73，min 12,636 / median **16,557** / max 19,687 kB；不据此推算“禁用后释放量” |
+| 服务结论 | `UpdateService` 73/73 样本存在且 `startRequested=true`；PID 6667 全程未重启 |
+| 唤醒结论 | `dumpsys alarm` 0/73、`dumpsys power` 0/73 → 无定时唤醒、无持锁 |
+| 广播/日志 | `FOTA_UPDATE` / `RebootUpdate` **本次观测窗口未捕获到**（标记未知，静态引用仍成立）；捕获 1,204 行 `tv_osupdate` 日志，其中上传 776 行、失败 404 行，跨 7 个小时 → 上传失败重试循环（仅日志可见，未做代码级归因） |
+| 证据表述修正 | ① `dumpsys activity broadcasts` 未见 `FOTA_UPDATE` 不再解释为“未使用”，统一为“未捕获 → 未知”；② 四条证据规则写入 `b_class_priority_analysis.md`（2.3 节前）；③ 清理 `optimization_plan.md` 中重复的 Guide 说明并修复被截断的观测表 |
+| 判定 | V0 完成；按 rev4.1 第六节标准，前 5 条满足（连续 6 h、持续负载可量化、PSS 分布已测、风险已核对、恢复步骤明确），第 6 条无法在禁用前证明 → **可进入 V1 单包禁用验证，但需你明确接受“升级链路被切断”的功能取舍** |
+
+## 1. rev4：B 类候选收益与风险（2026-11-20）
 
 | 项 | 内容 |
 |---|---|

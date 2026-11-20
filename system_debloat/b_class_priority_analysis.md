@@ -30,8 +30,8 @@
 | BOOT_COMPLETED | `com.alibaba.ailabs.genie.osupdate.UpdateBroadcastReceiver` |
 | 其他 App 调用（app 级） | `com.aliyun.cloudapp.FOTA_UPDATE` ← com.alibaba.ailabs.genie.smartapp<br>`com.aliyun.cloudapp.FOTA_UPDATE` ← com.android.settings<br>`com.alibaba.ailabs.genie.osupdate.front.UpdateActivity` ← com.android.settings |
 | framework 侧 | 2 处：包名 + `front.RebootUpdateActivity`（framework 直接点名该类） |
-| RAM 收益 | **中**：实测 PSS 16,011 kB（单快照，persistent 常驻） |
-| CPU 收益 | **无长期证据**：`dumpsys cpuinfo` 单窗口 343.337 s（16:03:41–16:08:41）内 20%（17% user），伴随 145,059 minor faults；无 alarm、无 wakelock，不能外推为持续占用 |
+| RAM 收益 | **中**：rev4.1 六小时观测 PSS 12,636–19,687 kB，中位 **16,557 kB**（n=73）；早期单快照值 16,011 kB 与之吻合 |
+| CPU 收益 | **高（有量化证据）**：rev4.1 用 `/proc/<pid>/stat` ticks 差值测得 6 h 均值 **21.53%**、中位 21.09%、最小 17.85%、P90 24.59%，72/72 个区间 ≥10%；早期单窗口 343.337 s 的 20% 与之吻合。无 alarm、无 wakelock，属持续负载而非周期尖峰 |
 | 功能影响 | 高：设置页"系统更新"入口、FOTA 广播处理、framework 侧重启升级流程 |
 | 原厂兼容风险 | 高：system uid + `INSTALL_PACKAGES` / `REBOOT` / `MASTER_CLEAR` / `DELETE_PACKAGES`，targetSdk 20 且 persistent |
 | 回退难度 | 低难度：`pm enable`；但 persistent 进程需重启一次才回到常驻状态 |
@@ -263,7 +263,16 @@ CPU usage from 343337ms to 43280ms ago (2026-11-20 16:03:41.530 to 16:08:41.587)
 | framework / system_server | 包名 + `front.RebootUpdateActivity` 类名 | 较可信（vdex 字符串） |
 
 未观察到的是“运行时实际发送过该广播/启动过该 Activity”——快照中没有对应的事件记录。
-结论：**存在静态调用路径，运行时调用未证实**。
+结论：**存在静态调用路径（三处，均已核实字符串）；运行时是否真的发送/接收广播，属于未观测项。**
+
+证据规则（rev4.1 修正，适用于本文件所有候选）：
+
+| 情形 | 正确写法 | 错误写法 |
+|---|---|---|
+| 观测到广播接收 / 服务启动 / 日志 | “已观察到的运行时证据” | — |
+| 本次窗口未观测到 | “本次观测窗口未捕获到，不代表设备从未使用” → **标记未知** | “设备没有使用该广播” |
+| 日志里没有关键词 | “该窗口日志未出现关键词” → **标记未知** | “功能未使用” |
+| 静态引用存在但未见运行时调用 | “静态引用成立，运行时调用未观测” → 保留该引用 | “因为没有调用，可以忽略该引用” |
 
 ### 2.4 禁用是否影响原厂升级 / 恢复 / 维护
 
@@ -291,16 +300,36 @@ CPU usage from 343337ms to 43280ms ago (2026-11-20 16:03:41.530 to 16:08:41.587)
 3. 因此正确的下一步是**把它变成可量化的对象**：在只读观测下确认 CPU 负载是偶发还是周期性，
    然后再决定是否需要单包禁用试验。
 
-建议的只读观测（**本轮不执行**，需另行授权）：
+建议的只读观测（**rev4.1 已实际完成**，见 2.7）：
 
 | 观测项 | 方法 | 判据 |
 |---|---|---|
-| 是否周期性 | 每 30 min 采样一次 `dumpsys cpuinfo` 的窗口增量，连续 ≥6 h | 若仅在特定时刻出现高占比 → 偶发；若每次都有 → 需进一步查原因 |
+| 是否周期性 | 每 5 min 采样 `/proc/<pid>/stat` 增量 + `dumpsys cpuinfo`，连续 ≥6 h | 若仅在特定时刻出现高占比 → 偶发；若每次都有 → 持续负载 |
 | 是否与升级检查相关 | 同时抓 `logcat` 关键字 `osupdate` / `FOTA` / `UpdateService` | 出现升级检查日志时 CPU 同步升高 |
-| 常驻成本 | `dumpsys meminfo` 多次采样取其 PSS 中位数 | 用于替代单次 16,011 kB |
-| 触发源 | 观察 `dumpsys activity broadcasts` 是否收到 `FOTA_UPDATE` | 若从未收到 → 该路径在本机未被使用 |
+| 常驻成本 | `dumpsys meminfo` 多次采样取 PSS 中位数 | 用于替代单次 16,011 kB |
+| 触发源 | 观察 `dumpsys activity broadcasts` / 日志是否出现 `FOTA_UPDATE` | 收到 → 运行时证据；未收到 → **标记未知**（不代表设备从未使用） |
 
 **在完成上述观测前，不应把 OTA 列入“建议禁用”的结论。**
+
+### 2.7 rev4.1 只读观测结果（6 小时实测）
+
+观测详情见 [ota_observation_report.md](ota_observation_report.md)；原始样本 `ota_observation/samples.jsonl`。
+
+| 观测项 | 结果 |
+|---|---|
+| 采样量 | 73 次 / 间隔 300 s / 窗口 21,600 s（6.0 h），PID 变化 0 次 |
+| CPU（ticks 差值法） | 均值 **21.53%**、中位数 21.09%、最小 17.85%、P90 24.59%；**72/72 个区间 ≥10%**，47/72 ≥20% |
+| 周期性 | 不成立：lag1 = −0.564、lag2 = +0.502（短间隔交替抖动），按小时均值 21.05%–22.68%（极差 1.63%）→ **持续负载**，不是周期尖峰 |
+| 定时唤醒 | `dumpsys alarm` 含该包样本 **0/73**；`dumpsys power` 含该包样本 **0/73** → 不来自定时闹钟/持锁 |
+| PSS | n=73，最小 12,636 kB / 中位 **16,557 kB** / 最大 19,687 kB |
+| UpdateService | 73/73 样本均有 ServiceRecord 且 `startRequested=true` → 持续运行的 started service |
+| minor page fault | 约 **496 次/秒**（窗口内 10.7M 次） |
+| `FOTA_UPDATE` | **本次观测窗口未捕获到，不代表设备从未使用**（静态引用仍成立：smartapp、S1Settings、framework） |
+| 日志行为 | 1,204 行关键词日志（`tv_osupdate`），其中 `upload log file` 776 行、`upload file fail` 404 行，覆盖 7 个不同小时 → 存在“上传日志文件失败 → 重试”的循环（仅日志可见，未做代码级归因） |
+
+**对 rev4 结论的修正**：rev4 只基于单窗口 20% 快照，写的是“CPU 无长期证据”；rev4.1 用 6 小时 ticks 差值证明
+这是**持续约 21.5% 的负载**（不是偶发）。因此 OTA 的 CPU 收益应从“无证据”升级为
+**“有量化证据的持续负载（21.53% 均值）”** —— 但**是否禁用仍取决于功能取舍**，见第 3 节与观测报告第 3 节。
 ## 3. 收益与风险排序
 
 评价口径（所有“收益”均指**可测量**的收益，没有测量就标“无证据”）：
@@ -316,7 +345,7 @@ CPU usage from 343337ms to 43280ms ago (2026-11-20 16:03:41.530 to 16:08:41.587)
 
 | 候选 | APK MB | lib MB | oat MB | 合计 MB | persistent | 实测 PSS kB | framework 命中 | RAM 收益 | CPU 收益 | 功能影响 | 兼容风险 | 回退 | 结论 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `com.alibaba.ailabs.genie.osupdate` | 1.98 | 0.00 | 3.49 | 5.47 | 是 | 16,011 | 2 | **中**：实测 PSS 16,011 kB（单快照，persistent 常驻） | **无长期证据**：`dumpsys cpuinfo` 单窗口 343.337 s（16:03:41–16:08:41）内 20%（17% user），伴随 145,059 minor faults；无 alarm、无 wakelock，不能外推为持续占用 | 高：设置页"系统更新"入口、FOTA 广播处理、framework 侧重启升级流程 | 高：system uid + `INSTALL_PACKAGES` / `REBOOT` / `MASTER_CLEAR` / `DELETE_PACKAGES`，targetSdk 20 且 persistent | 低难度：`pm enable`；但 persistent 进程需重启一次才回到常驻状态 | **优先验证（观测驱动），不直接禁用** |
+| `com.alibaba.ailabs.genie.osupdate` | 1.98 | 0.00 | 3.49 | 5.47 | 是 | 16,011 | 2 | **中**：rev4.1 六小时观测 PSS 12,636–19,687 kB，中位 **16,557 kB**（n=73）；早期单快照值 16,011 kB 与之吻合 | **高（有量化证据）**：rev4.1 用 `/proc/<pid>/stat` ticks 差值测得 6 h 均值 **21.53%**、中位 21.09%、最小 17.85%、P90 24.59%，72/72 个区间 ≥10%；早期单窗口 343.337 s 的 20% 与之吻合。无 alarm、无 wakelock，属持续负载而非周期尖峰 | 高：设置页"系统更新"入口、FOTA 广播处理、framework 侧重启升级流程 | 高：system uid + `INSTALL_PACKAGES` / `REBOOT` / `MASTER_CLEAR` / `DELETE_PACKAGES`，targetSdk 20 且 persistent | 低难度：`pm enable`；但 persistent 进程需重启一次才回到常驻状态 | **优先验证（观测驱动），不直接禁用** |
 | `com.alibaba.ailabs.genie.guide` | 4.67 | 0.75 | 0.00 | 5.42 | 否 | — | 0 | **无证据**（无进程；禁用不会释放可测量的 PSS） | **无证据** | 中：首次开机引导、Wi-Fi 添加、扫码/账号绑定入口（设备已过引导阶段） | 中：`NETWORK_SETUP_WIZARD`、system uid；恢复出厂后若被禁用将无引导 | 低难度：`pm enable`（建议恢复出厂前先启用） | **次优先（存储驱动，需删除才有收益）** |
 | `com.android.storagemanager` | 0.66 | 0.00 | 1.66 | 2.32 | 否 | — | 0 | **无证据** | **无证据**（BOOT 接收器会在开机时短暂拉起一次，未测量） | 低-中：存储告警通知与"释放空间"入口 | 低 | 低难度：`pm enable` | **次优先（存储驱动）** |
 | `com.android.mtp` | 0.05 | 0.00 | 0.08 | 0.13 | 否 | — | 0 | **无证据** | **无证据** | 中：USB 连接 PC 后的文件访问；移除后只能靠 adb 传文件 | 低 | 低难度：`pm enable` | **不建议为收益禁用** |
@@ -331,7 +360,7 @@ CPU usage from 343337ms to 43280ms ago (2026-11-20 16:03:41.530 to 16:08:41.587)
 
 | 顺序 | 候选 | 为什么优先 | 预期收益（可测量部分） | 证据等级 |
 |---|---|---|---|---|
-| 1 | `com.alibaba.ailabs.genie.osupdate` | 唯一有实测 RAM/CPU 的候选；persistent + started service 持续存活 | RAM：PSS 16,011 kB（单快照）；CPU：存在 343 s 窗口 20% 的活动，长期未知 | 较可信（单快照 + 单窗口） |
+| 1 | `com.alibaba.ailabs.genie.osupdate` | 唯一有实测 RAM/CPU 的候选；persistent + started service 持续存活 | **RAM**：PSS 12,636–19,687 kB，中位 **16,557 kB**（n=73）；**CPU**：6 h ticks 差值均值 **21.53%**（72/72 区间 ≥10%）——持续负载，非周期尖峰 | **已验证**（rev4.1 六小时连续观测；见 `ota_observation_report.md`） |
 
 ### 3.2 次优先（存储驱动，只有删除才有收益）
 

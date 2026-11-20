@@ -1,0 +1,130 @@
+{
+  "samples": 73,
+  "first_ts": "2026-11-20T20:00:29.454+08:00",
+  "last_ts": "2026-11-21T02:00:29.594+08:00",
+  "uptime_first_s": 251520.93,
+  "uptime_last_s": 273121.1,
+  "window_s": 21600.2,
+  "pid_events": [],
+  "cpu": {
+    "intervals": 72,
+    "mean_pct": 21.53,
+    "median_pct": 21.09,
+    "p90_pct": 24.59,
+    "max_pct": 26.81,
+    "min_pct": 17.85,
+    "intervals_over_10pct": 72,
+    "intervals_over_20pct": 47,
+    "autocorr_5min_lags": {
+      "1": -0.564,
+      "2": 0.502,
+      "3": -0.257,
+      "4": 0.171,
+      "5": 0.006,
+      "6": 0.008,
+      "7": 0.05,
+      "8": 0.012,
+      "9": 0.097,
+      "10": -0.048,
+      "11": 0.158,
+      "12": -0.115
+    }
+  },
+  "pss": {
+    "count": 73,
+    "min_kb": 12636,
+    "max_kb": 19687,
+    "median_kb": 16557,
+    "mean_kb": 16165
+  },
+  "services": {
+    "samples_with_record": 73,
+    "samples_with_started": 73,
+    "samples_total": 73
+  },
+  "alarm": {
+    "samples_with_hits": 0
+  },
+  "wakelock": {
+    "samples_with_hits": 0
+  },
+  "logs": {
+    "samples_with_new_lines": 52,
+    "total_new_lines": 1204,
+    "fota_update_seen": false,
+    "reboot_update_seen": false,
+    "update_application_seen": false
+  },
+  "cpuinfo_lines": 70,
+  "errors": 0,
+  "minute_of_hour_profile": {
+    "00": {
+      "n": 12,
+      "mean": 21.99,
+      "min": 18.69,
+      "max": 25.92
+    },
+    "01": {
+      "n": 12,
+      "mean": 22.68,
+      "min": 18.01,
+      "max": 26.81
+    },
+    "02": {
+      "n": 1,
+      "mean": 19.42,
+      "min": 19.42,
+      "max": 19.42
+    },
+    "20": {
+      "n": 11,
+      "mean": 21.05,
+      "min": 17.85,
+      "max": 24.63
+    },
+    "21": {
+      "n": 12,
+      "mean": 21.42,
+      "min": 18.18,
+      "max": 25.5
+    },
+    "22": {
+      "n": 12,
+      "mean": 21.07,
+      "min": 18.76,
+      "max": 23.52
+    },
+    "23": {
+      "n": 12,
+      "mean": 21.13,
+      "min": 17.86,
+      "max": 26.32
+    }
+  },
+  "faults": {
+    "intervals": 72,
+    "mean_per_s": 495.9,
+    "total": 10711079
+  },
+  "log_breakdown": {
+    "total_lines": 1204,
+    "tags": {
+      "I/tv_osupdate": 754,
+      "E/tv_osupdate": 422,
+      "D/tv_osupdate": 24,
+      "other": 3,
+      "E/ActivityThread": 1
+    },
+    "upload_lines": 776,
+    "fail_lines": 404,
+    "fail_hours": [
+      "00",
+      "01",
+      "02",
+      "20",
+      "21",
+      "22",
+      "23"
+    ]
+  }
+}

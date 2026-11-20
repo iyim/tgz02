@@ -1,13 +1,28 @@
 # 修订记录（rev3 / rev3.1 / rev4）
 
-- 修订时间：2026-11-20
+- 修订时间：2026-11-20（rev4.1 观测跨至 2026-11-21 02:00）
 - 修订对象：本目录（`system_debloat/`）下全部报告与机器可读数据；不涉及 `system` 镜像、APK、T5 代码或设备分区
 - 修订触发：rev3 = ① 操作者指定六个 App 必须保留；② rev2 遗留的三个 P2 问题。
   rev3.1 = rev3 审查的三项小范围修订（A 类映射、README 旧实验顺序、保护期限措辞）。
-  rev4 = 对剩余 10 个 B 类候选做收益/风险重估，形成下一阶段真机验证计划
-- 本轮**未执行**任何 `pm disable-user` / `pm uninstall` / 镜像或 boot 写操作；设备 `pm list packages -d` 仍为空
+  rev4 = 对剩余 10 个 B 类候选做收益/风险重估。rev4.1 = OTA 六小时只读观测与证据表述修正
+- 本轮**未执行**任何 `pm disable-user` / `pm enable` / `pm uninstall` / 镜像或 boot 写操作；
+  设备 `pm list packages -d` 仍为空
 
-## 0. rev4：B 类候选收益与风险（2026-11-20）
+## 0. rev4.1：OTA 只读观测与证据修正（2026-11-21）
+
+| 项 | 内容 |
+|---|---|
+| 新增文件 | `ota_observation_report.md`（观测报告）、`ota_observation/samples.jsonl`（73 条原始样本）、`ota_observation/analysis.json`（聚合）、`ota_observation/sampler.log`、`tools/ota_observe.py`（采样器）、`tools/ota_analyze.py`（聚合器）、`tools/ota_observe.ps1`（等价 PowerShell 版）、`tools/test_ota_observation.py`（11 条测试） |
+| 观测方式 | 每 300 s 一次，连续 73 次 / 21,600 s；`/proc/<pid>/stat` 的 `utime+stime` 差值算 CPU，`dumpsys meminfo` 取 PSS，`dumpsys activity services|alarm|power` + `logcat -d` 取服务/唤醒/日志；**全程只读** |
+| CPU 结论 | 均值 **21.53%**、中位 21.09%、最小 17.85%、P90 24.59%；**72/72 区间 ≥10%**；lag1=−0.564 / lag2=+0.502，按小时均值 21.05%–22.68% → **持续负载，不是周期尖峰** |
+| RAM 结论 | PSS n=73，min 12,636 / median **16,557** / max 19,687 kB；不据此推算“禁用后释放量” |
+| 服务结论 | `UpdateService` 73/73 样本存在且 `startRequested=true`；PID 6667 全程未重启 |
+| 唤醒结论 | `dumpsys alarm` 0/73、`dumpsys power` 0/73 → 无定时唤醒、无持锁 |
+| 广播/日志 | `FOTA_UPDATE` / `RebootUpdate` **本次观测窗口未捕获到**（标记未知，静态引用仍成立）；捕获 1,204 行 `tv_osupdate` 日志，其中上传 776 行、失败 404 行，跨 7 个小时 → 上传失败重试循环（仅日志可见，未做代码级归因） |
+| 证据表述修正 | ① `dumpsys activity broadcasts` 未见 `FOTA_UPDATE` 不再解释为“未使用”，统一为“未捕获 → 未知”；② 四条证据规则写入 `b_class_priority_analysis.md`（2.3 节前）；③ 清理 `optimization_plan.md` 中重复的 Guide 说明并修复被截断的观测表 |
+| 判定 | V0 完成；按 rev4.1 第六节标准，前 5 条满足（连续 6 h、持续负载可量化、PSS 分布已测、风险已核对、恢复步骤明确），第 6 条无法在禁用前证明 → **可进入 V1 单包禁用验证，但需你明确接受“升级链路被切断”的功能取舍** |
+
+## 1. rev4：B 类候选收益与风险（2026-11-20）
 
 | 项 | 内容 |
 |---|---|

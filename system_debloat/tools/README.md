@@ -23,6 +23,10 @@
 | `report.py` | 分类裁定 + 保护过滤 + `app_inventory.csv/json`、`summary_stats.json`、`user_protected.json` |
 | `mkdocs*.py` | 生成 `README.md` 与本目录其余报告 |
 | `collect_baseline.sh` | 设备只读基线采集（meminfo / cpuinfo / power / alarm / services / pm） |
+| `ota_observe.py` | **rev4.1** OTA 六小时只读采样器（`/proc/<pid>/stat` 增量、PSS、services、alarm、power、logcat），每样本一行 JSON |
+| `ota_observe.ps1` | 同上功能的 PowerShell 版（无 Python 环境时可用） |
+| `ota_analyze.py` | **rev4.1** 观测聚合器：ticks 差值算 CPU%、PSS min/max/median/count、PID 变更事件、自相关、按小时曲线、日志构成 |
+| `test_ota_observation.py` | **rev4.1** 观测报告与原始样本的一致性测试（11 条） |
 
 ## 运行顺序
 
