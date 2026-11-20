@@ -1,0 +1,51 @@
+﻿# T5-05C 事件落盘对照（events.jsonl 前后快照）
+
+## C1 (bridge kill -9 + restart): before=18 after=37 unique_event_id=37 duplicate_event_id=0 new=19
+  + t5b-16112-1967614-g1  text=天猫精灵现在几点了  recv_at_ms=1795159104427  stored_at_ms=1795159104428
+  + t5b-16112-1967618-g1  text=天猫精灵今天天气怎么样  recv_at_ms=1795159110822  stored_at_ms=1795159110822
+  + t5b-16112-1967622-g1  text=天猫精灵打开电视  recv_at_ms=1795159116492  stored_at_ms=1795159116492
+  + t5b-16112-1967626-g1  text=天猫精灵关灯  recv_at_ms=1795159121198  stored_at_ms=1795159121199
+  + t5b-16112-1967630-g1  text=天猫精灵明天会下雨吗  recv_at_ms=1795159126856  stored_at_ms=1795159126856
+  + t5b-16112-1967634-g1  text=天猫精灵你叫什么名字  recv_at_ms=1795159132783  stored_at_ms=1795159132783
+  + t5b-16112-1967638-g1  text=天猫精灵播放一首  recv_at_ms=1795159137780  stored_at_ms=1795159137780
+  + t5b-16112-1967643-g1  text=天猫精灵帮我算一下三  recv_at_ms=1795159144111  stored_at_ms=1795159144111
+  + t5b-16112-1967647-g1  text=天猫精灵今天适合出门吗  recv_at_ms=1795159151281  stored_at_ms=1795159151281
+  + t5b-16112-1967651-g1  text=天猫精灵现在北京时间几点  recv_at_ms=1795159157547  stored_at_ms=1795159157547
+  + t5b-16112-1967656-g1  text=天猫精灵把音量调到五十  recv_at_ms=1795159164143  stored_at_ms=1795159164144
+  + t5b-16112-1967660-g1  text=天猫精灵今天星期几  recv_at_ms=1795159169699  stored_at_ms=1795159169699
+  + t5b-16112-1967664-g1  text=天猫精灵停止播放  recv_at_ms=1795159175104  stored_at_ms=1795159175104
+  + t5b-16112-1967670-g1  text=天猫精灵把音量调到五十  recv_at_ms=1795159223965  stored_at_ms=1795159223965
+  + t5b-16112-1967674-g1  text=天猫精灵今天星期几  recv_at_ms=1795159223985  stored_at_ms=1795159223985
+  + t5b-16112-1967678-g1  text=天猫精灵停止播放  recv_at_ms=1795159224006  stored_at_ms=1795159224006
+  + t5b-16112-1967684-g1  text=天猫精灵现在几点了  recv_at_ms=1795159224028  stored_at_ms=1795159224028
+  + t5b-16112-1967688-g1  text=天猫精灵今天天气怎么样  recv_at_ms=1795159224047  stored_at_ms=1795159224047
+  + t5b-16112-1967693-g1  text=天猫精灵打开电视  recv_at_ms=1795159224077  stored_at_ms=1795159224077
+
+## C2 (stop + reload): before=89 after=102 unique_event_id=102 duplicate_event_id=0 new=13
+  + t5b-29413-1969791-g1  text=天猫精灵现在几点了  recv_at_ms=1795161549879  stored_at_ms=1795161549879
+  + t5b-29413-1969796-g1  text=天猫精灵今天天气怎么样  recv_at_ms=1795161555694  stored_at_ms=1795161555694
+  + t5b-29413-1969808-g1  text=天猫精灵明天会下雨吗  recv_at_ms=1795161572098  stored_at_ms=1795161572098
+  + t5b-29413-1969812-g1  text=天猫精灵你叫什么名字  recv_at_ms=1795161595102  stored_at_ms=1795161595102
+  + t5b-29413-1969817-g1  text=天猫精灵播放一首轻音乐  recv_at_ms=1795161601015  stored_at_ms=1795161601015
+  + t5b-29413-1969822-g1  text=天猫精灵帮我算一下  recv_at_ms=1795161606284  stored_at_ms=1795161606284
+  + t5b-29413-1969830-g1  text=天猫精灵今天适合出门吗  recv_at_ms=1795161613745  stored_at_ms=1795161613745
+  + t5b-29413-1969834-g1  text=天猫精灵现在北京时间几点  recv_at_ms=1795161619705  stored_at_ms=1795161619705
+  + t5b-29413-1969844-g1  text=天猫精灵现在几点了  recv_at_ms=1795161643874  stored_at_ms=1795161643874
+  + t5b-29413-1969849-g1  text=天猫精灵今天天气怎么样  recv_at_ms=1795161649805  stored_at_ms=1795161649805
+  + t5b-29413-1969853-g1  text=天猫精灵打开电视  recv_at_ms=1795161655402  stored_at_ms=1795161655402
+  + t5b-29413-1969857-g1  text=天猫精灵关灯  recv_at_ms=1795161660694  stored_at_ms=1795161660694
+  + t5b-29413-1969861-g1  text=天猫精灵明天会下雨吗  recv_at_ms=1795161666111  stored_at_ms=1795161666111
+
+## C3 (forced unload): before=64 after=66 unique_event_id=66 duplicate_event_id=0 new=2
+  + t5b-16112-1967857-g1  text=天猫精灵帮我算一下三  recv_at_ms=1795159689584  stored_at_ms=1795159689584
+  + t5b-16112-1967861-g1  text=天猫精灵今天适合出门吗  recv_at_ms=1795159696768  stored_at_ms=1795159696768
+
+## C4 (core restart): before=66 after=73 unique_event_id=73 duplicate_event_id=0 new=7
+  + t5b-29413-1969456-g1  text=天猫精灵今天天气怎么样  recv_at_ms=1795159761310  stored_at_ms=1795159761310
+  + t5b-29413-1969468-g1  text=天猫精灵明天会下雨吗  recv_at_ms=1795159777408  stored_at_ms=1795159777408
+  + t5b-29413-1969472-g1  text=天猫精灵你叫什么名字  recv_at_ms=1795159804895  stored_at_ms=1795159804895
+  + t5b-29413-1969476-g1  text=天猫精灵播放一首  recv_at_ms=1795159810018  stored_at_ms=1795159810018
+  + t5b-29413-1969482-g1  text=天猫精灵帮我算一下三  recv_at_ms=1795159816285  stored_at_ms=1795159816285
+  + t5b-29413-1969486-g1  text=天猫精灵今天适合出门吗  recv_at_ms=1795159823361  stored_at_ms=1795159823361
+  + t5b-29413-1969490-g1  text=天猫精灵现在北京时间几点  recv_at_ms=1795159829510  stored_at_ms=1795159829510
+

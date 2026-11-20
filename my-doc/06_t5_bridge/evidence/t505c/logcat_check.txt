@@ -1,0 +1,16 @@
+﻿# T5-05C logcat 检查（T5-05C 开始时 logcat -c；C1 之后 core 进程重启过一次）
+# 缓冲区时间范围: 11-20 15:18:22.118 .. 11-20 15:52:08.734   行数: 13429
+ANR in          : 0
+FATAL EXCEPTION : 0
+SIGPIPE         : 0
+signal 13       : 0
+Fatal signal    : 1
+
+# 唯一一条 Fatal signal（第三方进程，与 smartapp:core 无关）
+11-20 15:43:01.539  3920  3920 F libc    : Fatal signal 11 (SIGSEGV), code 1, fault addr 0x4 in tid 3920 (.ayland:channel), pid 3920 (.ayland:channel)
+
+# 原厂语音链路活动标记（AliTVASR），用于共存说明
+11-20 15:52:05.727 29413 29413 D AliTVASR: AliTVASR(AccessibilityMonitorService)->(2)->TYPE_WINDOW_CONTENT_CHANGED   EventType: TYPE_WINDOW_CONTENT_CHANGED; EventTime: 236616836; PackageName: com.android.systemui; MovementGranularity: 0; Action: 0 [ ClassName: android.widget.FrameLayout; Text: []; ContentDescription: null; ItemCount: -1; CurrentItemIndex: -1; IsEnabled: true; IsPassword: false; IsChecked: false; IsFullScreen: false; Scrollable: false; BeforeText: null; FromIndex: -1; ToIndex: -1; ScrollX: -1; ScrollY: -1; MaxScrollX: -1; MaxScrollY: -1; AddedCount: -1; RemovedCount: -1; ParcelableData: null ]; recordCount: 0
+11-20 15:52:05.821 29413 29413 D AliTVASR: AliTVASR(AppUtils)->(2)->openApp: success url = genie://com.alibaba.ailabs.genie.musicplayer.service reply:3149341
+11-20 15:52:05.827 29413 29413 D AliTVASR: AliTVASR(AccessibilityMonitorService)->(2)->TYPE_WINDOW_CONTENT_CHANGED   EventType: TYPE_WINDOW_CONTENT_CHANGED; EventTime: 236616936; PackageName: com.android.systemui; MovementGranularity: 0; Action: 0 [ ClassName: android.widget.FrameLayout; Text: []; ContentDescription: null; ItemCount: -1; CurrentItemIndex: -1; IsEnabled: true; IsPassword: false; IsChecked: false; IsFullScreen: false; Scrollable: false; BeforeText: null; FromIndex: -1; ToIndex: -1; ScrollX: -1; ScrollY: -1; MaxScrollX: -1; MaxScrollY: -1; AddedCount: -1; RemovedCount: -1; ParcelableData: null ]; recordCount: 0
+11-20 15:52:05.853 29502 29502 D AliTVASRManager: register observer url = content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/3149341

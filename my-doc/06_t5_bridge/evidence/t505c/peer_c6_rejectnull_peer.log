@@ -1,0 +1,8 @@
+peer listening abstract:tgz2_asr_bridge mode=rejectnull flag=-
+accepted cfd=4
+RX n=1 id=t5b-29413-1969678-g1 bytes=204 mode=rejectnull
+TX id=(null) status=rejected code=bad_crc tweak=0 bytes=109
+RX n=2 id=t5b-29413-1969678-g1 bytes=204 mode=rejectnull
+TX id=t5b-29413-1969678-g1 status=stored code=ok tweak=0 bytes=120
+client closed
+connection done, frames_total=2

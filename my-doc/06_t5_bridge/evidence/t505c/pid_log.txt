@@ -1,0 +1,15 @@
+﻿# T5-05C PID 变化记录（全部来自 adb shell pidof / ps 实测）
+#
+# C1  15:18:12 - 15:20:37   core pid 16112   （bridge kill -9 -> 重启；19 条事件全部 stored）
+# C2  15:58:58 - 16:01:09   core pid 29413   （stop() -> 重新加载；gen1 8 条 + gen2 5 条）
+#    注：C2 之前有两次试跑（15:24-15:27、15:54-15:55），因测试脚本自身的时序缺陷作废，
+#        作废试跑的数据不计入本报告验收结论；正式数据为 15:58:58 那次。
+# C3  15:27:45 - 15:28:20   core pid 16112   （no-ack 对端 + 强制卸载，损失 1 条事件）
+# C4  15:28:49              old core pid = 16112
+# C4  15:28:54              am force-stop com.alibaba.ailabs.genie.smartapp；
+#                           系统在约 3 秒内自行拉起（pidof 复核 new core pid = 29413）
+# C4  15:28:56              new core pid = 29413；module base 0x94c05000 / hook 0x94d1853c
+#                           （旧进程为 0x8e384000 / 0x8e49753c），precheck 三级校验全过
+# C5  15:31:07 - 15:47:12   core pid 29413   （47 条 final，队列封顶 32，溢出 15）
+# C6  15:47:31 - 15:51:07   core pid 29413   （8 个 ACK 异常用例 + bridge 去重）
+# 16:01                    core pid 29413   （检查点，未再重启）

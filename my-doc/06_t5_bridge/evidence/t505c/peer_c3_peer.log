@@ -1,0 +1,10 @@
+peer listening abstract:tgz2_asr_bridge mode=noack flag=/data/local/tmp/t5_bridge/c3_ack
+accepted cfd=4
+RX n=1 id=t5b-16112-1967850-g1 bytes=207 mode=noack
+client closed
+connection done, frames_total=1
+accepted cfd=4
+RX n=2 id=t5b-16112-1967850-g1 bytes=207 mode=noack
+client closed
+connection done, frames_total=2
+accepted cfd=4

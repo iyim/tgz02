@@ -60,13 +60,15 @@
 ├── frida/
 │   ├── t505b_asr_bridge_sender.js    T5-05B 发送端（H1 hook + 有界队列 + 非阻塞 STREAM + ACK）
 │   └── t505b_runner.py               宿主编排：加载脚本、记录消息、RPC stats/stop
-├── evidence/              编译日志、单测日志、集成日志+结果 JSON、真机冒烟日志、T5-05B 验收证据
-│   └── t505b/             Frida 侧 JSONL、播放日志、events.jsonl 快照、对照表
-│       └── p1_sigpipe/    P1 证据：内核语义夹具输出、T1/T2b 轨迹、落盘对照、logcat、工具源码
+├── evidence/              编译日志、单测日志、集成日志+结果 JSON、真机冒烟日志、验收证据
+│   ├── t505b/             Frida 侧 JSONL、播放日志、events.jsonl 快照、对照表
+│   │   └── p1_sigpipe/    P1 证据：内核语义夹具输出、T1/T2b 轨迹、落盘对照、logcat、工具源码
+│   └── t505c/             C1–C6 验收证据：时间线、发送端轨迹、统计摘要、JSONL 快照、丢失分析、夹具源码
 ├── t5_05a_bridge_receiver_report.md   接收端实施报告
 ├── t5_05a_p1p2_fix_record.md          接收端 P1/P2 修复记录
 ├── t5_05b_asr_bridge_sender_report.md 发送端实施报告（含真机验收）
-└── t5_05b_p1_sigpipe_report.md        P1：发送端 SIGPIPE 抑制与真机 EPIPE 验证
+├── t5_05b_p1_sigpipe_report.md        P1：发送端 SIGPIPE 抑制与真机 EPIPE 验证
+└── t5_05c_reliability_acceptance_report.md  C1–C6 异常/重启/恢复/背压验收报告
 ```
 
 构建：
@@ -520,3 +522,28 @@ integration: 153 通过 / 0 失败  （15 用例，27.9 s）
 事件按原 `event_id` 回队列并在 Bridge 恢复后落盘一次；反过来不加标志的同条件连接会把进程
 以 signal 13 打死（隔离夹具）。细节与"为什么只停 Bridge 不会触发 EPIPE"（`tick()` 先
 `recv()` 后 `send()`）见 [t5_05b_p1_sigpipe_report.md](t5_05b_p1_sigpipe_report.md)。
+
+---
+
+## 10. T5-05C 可靠性验收（已执行，真机）
+
+C1～C6 六项在真机全部执行完成，结论：**C1/C2/C3/C4/C5/C6 全部 PASS**，
+报告见 [t5_05c_reliability_acceptance_report.md](t5_05c_reliability_acceptance_report.md)。
+本轮**未改生产代码**：`android/`、`frida/`、`tests/`、T5-04、T3/T4 全部零改动。
+
+要点：
+
+- C1：Bridge 正常停止期间 6 条 final 留在内存队列（`stored` 冻结在 13），重启后 1.3 s 内按原
+  `event_id` 全部补存；JSONL 18→37 行、0 重复。
+- C2：`stop()` 后 hook 已 detach（`attached=false`）、定时器清空、fd 关闭；空窗期语音不产生事件；
+  重新加载的新实例计数从 0 起，两代事件总数精确相加、Bridge `duplicates` 不变 → 无重复 Hook。
+- C3：强制 `Script.unload()` 会**永久丢掉**当时 `pending_count=1` 的事件
+  （`t5b-16112-1967850-g1` 在 JSONL 中 0 次出现）。内存队列 ≠ 持久化。
+- C4：`am force-stop` 后系统自起新 core `pid 29413`，新地址 `0x94d1853c` 上 precheck 全过，
+  7 条事件全部带新 PID。
+- C5：47 条 final，`queue_depth` 封顶 32、`queue_overflow=15`（47 = 32 + 15），
+  ACK 恢复后 4.7 s 排空；**明确不是零丢失**。
+- C6：错 id / 坏 CRC / 错类型 / duplicate / 超时 / 临时 error / 永久 reject / 帧级 reject
+  八项行为自洽；Bridge 去重与 T5-05A 一致（同一 `event_id` 发 4 次仍只落盘 1 行）。
+- 顺带发现：`tests/tgb_client.c` 的 `recv_ack()` 在 `--timeout-ms >= 1000` 时 `tv_usec` 溢出，
+  属测试工具缺陷，本轮未改（记录在报告 §9）。

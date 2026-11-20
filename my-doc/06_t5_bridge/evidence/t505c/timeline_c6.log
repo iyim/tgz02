@@ -1,0 +1,108 @@
+﻿
+[15:47:31.565] === c6 start ===
+[15:47:31.584] --- case badid ---
+[15:47:32.309] bridge stop : no valid pid file
+[15:47:33.647] peer stopped, ps count=0
+[15:47:35.469] peer[badid] peer listening abstract:tgz2_asr_bridge mode=badid flag=-
+[15:47:35.625] sender runner started pid=48848 tag=c6_badid frida_pid=29413
+[15:47:40.061] badid connected=true
+[15:47:40.128] playing s01 (pid=43256)
+[15:47:47.391] play done: s01
+[15:47:56.419] badid stats: conn=true connErr=0 dup=0 empty=0 final=1 hooks=7 lastErr=- ovf=0 partial=6 q=0 readErr=0 recvErr=0 rej=0 retry=1 sendErr=0 stored=1
+[15:47:56.737] peer log tail: peer listening abstract:tgz2_asr_bridge mode=badid flag=- | accepted cfd=4 | RX n=1 id=t5b-29413-1969646-g1 bytes=207 mode=badid | TX id=t5b-29413-1969646-g1-g9 status=stored code=ok tweak=0 bytes=123 | client closed | connection done, frames_total=1 | accepted cfd=4 | RX n=2 id=t5b-29413-1969646-g1 bytes=207 mode=badid | TX id=t5b-29413-1969646-g1 status=stored code=ok tweak=0 bytes=120
+[15:47:57.063] badid runner exited=True
+[15:47:58.371] peer stopped, ps count=0
+[15:47:58.373] --- case badcrc ---
+[15:47:58.497] bridge stop : no valid pid file
+[15:47:59.640] peer stopped, ps count=0
+[15:48:01.157] peer[badcrc] peer listening abstract:tgz2_asr_bridge mode=badcrc flag=-
+[15:48:01.344] sender runner started pid=48044 tag=c6_badcrc frida_pid=29413
+[15:48:05.768] badcrc connected=true
+[15:48:05.790] playing s03 (pid=16304)
+[15:48:12.796] play done: s03
+[15:48:26.803] badcrc stats: conn=true connErr=0 dup=0 empty=0 final=1 hooks=7 lastErr=- ovf=0 partial=6 q=0 readErr=0 recvErr=1 rej=0 retry=1 sendErr=0 stored=1
+[15:48:26.935] peer log tail: peer listening abstract:tgz2_asr_bridge mode=badcrc flag=- | accepted cfd=4 | RX n=1 id=t5b-29413-1969651-g1 bytes=204 mode=badcrc | TX id=t5b-29413-1969651-g1 status=stored code=ok tweak=1 bytes=120 | client closed | connection done, frames_total=1 | accepted cfd=4 | RX n=2 id=t5b-29413-1969651-g1 bytes=204 mode=badcrc | TX id=t5b-29413-1969651-g1 status=stored code=ok tweak=0 bytes=120
+[15:48:27.249] badcrc runner exited=True
+[15:48:28.362] peer stopped, ps count=0
+[15:48:28.363] --- case badtype ---
+[15:48:28.491] bridge stop : no valid pid file
+[15:48:29.644] peer stopped, ps count=0
+[15:48:31.126] peer[badtype] peer listening abstract:tgz2_asr_bridge mode=badtype flag=-
+[15:48:31.258] sender runner started pid=23004 tag=c6_badtype frida_pid=29413
+[15:48:35.646] badtype connected=true
+[15:48:35.668] playing s05 (pid=43748)
+[15:48:43.065] play done: s05
+[15:48:52.076] badtype stats: conn=true connErr=0 dup=0 empty=0 final=1 hooks=9 lastErr=- ovf=0 partial=8 q=0 readErr=0 recvErr=1 rej=0 retry=1 sendErr=0 stored=1
+[15:48:52.201] peer log tail: peer listening abstract:tgz2_asr_bridge mode=badtype flag=- | accepted cfd=4 | RX n=1 id=t5b-29413-1969655-g1 bytes=210 mode=badtype | TX id=t5b-29413-1969655-g1 status=stored code=ok tweak=2 bytes=120 | client closed | connection done, frames_total=1 | accepted cfd=4 | RX n=2 id=t5b-29413-1969655-g1 bytes=210 mode=badtype | TX id=t5b-29413-1969655-g1 status=stored code=ok tweak=0 bytes=120
+[15:48:52.522] badtype runner exited=True
+[15:48:53.676] peer stopped, ps count=0
+[15:48:53.677] --- case dup ---
+[15:48:53.818] bridge stop : no valid pid file
+[15:48:54.966] peer stopped, ps count=0
+[15:48:56.490] peer[dup] peer listening abstract:tgz2_asr_bridge mode=dup flag=-
+[15:48:56.636] sender runner started pid=38192 tag=c6_dup frida_pid=29413
+[15:49:01.028] dup connected=true
+[15:49:01.051] playing s07 (pid=43736)
+[15:49:08.555] play done: s07
+[15:49:17.563] dup stats: conn=true connErr=0 dup=1 empty=0 final=1 hooks=6 lastErr=- ovf=0 partial=5 q=0 readErr=0 recvErr=0 rej=0 retry=0 sendErr=0 stored=0
+[15:49:17.700] peer log tail: peer listening abstract:tgz2_asr_bridge mode=dup flag=- | accepted cfd=4 | RX n=1 id=t5b-29413-1969659-g1 bytes=207 mode=dup | TX id=t5b-29413-1969659-g1 status=duplicate code=dup_event_id tweak=0 bytes=133
+[15:49:18.035] dup runner exited=True
+[15:49:19.243] peer stopped, ps count=0
+[15:49:19.246] --- case error ---
+[15:49:19.388] bridge stop : no valid pid file
+[15:49:20.557] peer stopped, ps count=0
+[15:49:22.108] peer[error] peer listening abstract:tgz2_asr_bridge mode=error flag=-
+[15:49:22.260] sender runner started pid=45952 tag=c6_error frida_pid=29413
+[15:49:26.953] error connected=true
+[15:49:26.976] playing s09 (pid=16040)
+[15:49:34.638] play done: s09
+[15:49:43.656] error stats: conn=true connErr=0 dup=0 empty=0 final=1 hooks=10 lastErr=store:store_failed ovf=0 partial=9 q=0 readErr=0 recvErr=0 rej=0 retry=2 sendErr=0 stored=1
+[15:49:43.776] peer log tail: peer listening abstract:tgz2_asr_bridge mode=error flag=- | accepted cfd=4 | RX n=1 id=t5b-29413-1969668-g1 bytes=213 mode=error | TX id=t5b-29413-1969668-g1 status=error code=store_failed tweak=0 bytes=129 | RX n=2 id=t5b-29413-1969668-g1 bytes=213 mode=error | TX id=t5b-29413-1969668-g1 status=error code=store_failed tweak=0 bytes=129 | RX n=3 id=t5b-29413-1969668-g1 bytes=213 mode=error | TX id=t5b-29413-1969668-g1 status=stored code=ok tweak=0 bytes=120
+[15:49:44.105] error runner exited=True
+[15:49:45.286] peer stopped, ps count=0
+[15:49:45.288] --- case reject ---
+[15:49:45.420] bridge stop : no valid pid file
+[15:49:46.592] peer stopped, ps count=0
+[15:49:48.132] peer[reject] peer listening abstract:tgz2_asr_bridge mode=reject flag=-
+[15:49:48.303] sender runner started pid=43576 tag=c6_reject frida_pid=29413
+[15:49:53.618] reject connected=true
+[15:49:53.641] playing s11 (pid=23420)
+[15:50:01.376] play done: s11
+[15:50:10.383] reject stats: conn=true connErr=0 dup=0 empty=0 final=1 hooks=9 lastErr=rejected:bad_field_type ovf=0 partial=8 q=0 readErr=0 recvErr=0 rej=1 retry=0 sendErr=0 stored=0
+[15:50:10.494] peer log tail: peer listening abstract:tgz2_asr_bridge mode=reject flag=- | accepted cfd=4 | RX n=1 id=t5b-29413-1969672-g1 bytes=213 mode=reject | TX id=t5b-29413-1969672-g1 status=rejected code=bad_field_type tweak=0 bytes=134
+[15:50:10.817] reject runner exited=True
+[15:50:12.006] peer stopped, ps count=0
+[15:50:12.008] --- case rejectnull ---
+[15:50:12.147] bridge stop : no valid pid file
+[15:50:13.294] peer stopped, ps count=0
+[15:50:14.812] peer[rejectnull] peer listening abstract:tgz2_asr_bridge mode=rejectnull flag=-
+[15:50:14.967] sender runner started pid=15400 tag=c6_rejectnull frida_pid=29413
+[15:50:19.664] rejectnull connected=true
+[15:50:19.689] playing s13 (pid=31520)
+[15:50:26.644] play done: s13
+[15:50:35.660] rejectnull stats: conn=true connErr=0 dup=0 empty=0 final=1 hooks=7 lastErr=frame_rejected:bad_crc ovf=0 partial=6 q=0 readErr=0 recvErr=0 rej=0 retry=1 sendErr=0 stored=1
+[15:50:35.763] peer log tail: peer listening abstract:tgz2_asr_bridge mode=rejectnull flag=- | accepted cfd=4 | RX n=1 id=t5b-29413-1969678-g1 bytes=204 mode=rejectnull | TX id=(null) status=rejected code=bad_crc tweak=0 bytes=109 | RX n=2 id=t5b-29413-1969678-g1 bytes=204 mode=rejectnull | TX id=t5b-29413-1969678-g1 status=stored code=ok tweak=0 bytes=120
+[15:50:36.092] rejectnull runner exited=True
+[15:50:37.306] peer stopped, ps count=0
+[15:50:37.308] --- case silent ---
+[15:50:37.440] bridge stop : no valid pid file
+[15:50:38.568] peer stopped, ps count=0
+[15:50:40.089] peer[silent] peer listening abstract:tgz2_asr_bridge mode=silent flag=-
+[15:50:40.221] sender runner started pid=34264 tag=c6_silent frida_pid=29413
+[15:50:44.595] silent connected=true
+[15:50:44.617] playing s02 (pid=42784)
+[15:50:52.278] play done: s02
+[15:51:01.282] silent stats: conn=true connErr=0 dup=0 empty=0 final=1 hooks=9 lastErr=- ovf=0 partial=8 q=0 readErr=0 recvErr=0 rej=0 retry=3 sendErr=0 stored=0
+[15:51:01.415] peer log tail: peer listening abstract:tgz2_asr_bridge mode=silent flag=- | accepted cfd=4
+[15:51:01.730] silent runner exited=True
+[15:51:02.971] peer stopped, ps count=0
+[15:51:04.269] bridge start : started: pid=7373 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work | {"type":"CONFIG","sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","max_clients":8,"dedup_cap":8192,"fault_after_writes":-1,"text_max_bytes":511,"body_max":1024} | {"type":"READY","pid":7373,"events_stored":0,"replay_lines":73,"bad_lines":0,"truncated_bytes":0,"dedup_size":73}
+[15:51:06.392] bridge dedupe baseline events: 73 /data/local/tmp/t5_bridge/work/events.jsonl
+[15:51:06.484] tgb_client dup: {"type":"CLIENT_SUMMARY","scenario":"dup","sent":2,"acks":0,"elapsed_ms":0,"peer_closed":false}
+[15:51:06.581] tgb_client bad_crc: {"type":"CLIENT_SUMMARY","scenario":"bad_crc","sent":1,"acks":0,"elapsed_ms":0,"peer_closed":false}
+[15:51:06.694] tgb_client bad_type: {"type":"CLIENT_SUMMARY","scenario":"bad_type","sent":1,"acks":0,"elapsed_ms":0,"peer_closed":false}
+[15:51:06.799] tgb_client resend_after_ack: {"type":"CLIENT_SUMMARY","scenario":"resend_after_ack","sent":2,"acks":0,"elapsed_ms":0,"peer_closed":false}
+[15:51:06.966] bridge dedupe events after: 75 /data/local/tmp/t5_bridge/work/events.jsonl
+[15:51:07.238] bridge status: {"state":"running","pid":7373,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":0,"duplicates":0,"rejected":0,"frames":0,"clients":0,"clients_accepted":0,"clients_closed":0,"client_aborts":0,"client_overflow":0,"frame_errors":0,"store_errors":0,"replay_lines":73,"bad_lines":0,"truncated_bytes":0,"dedup_size":73,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-20T15:51:06"}
+[15:51:07.422] core pid = 29413
+[15:51:07.423] === c6 end ===

@@ -1,0 +1,25 @@
+﻿
+[15:27:45.281] === c3 start ===
+[15:27:46.186] bridge stop : stopped: pid=27380 | {"type":"READY","pid":27380,"events_stored":0,"replay_lines":31,"bad_lines":0,"truncated_bytes":0,"dedup_size":31} | {"type":"STATS","tag":"final","frames":33,"stored":33,"duplicate":0,"rejected":0,"frame_errors":0,"store_errors":0,"clients_accepted":5,"clients_closed":5,"client_aborts":5,"client_overflow":0,"replay_lines":31,"replay_bad":0,"truncated_bytes":0,"dedup_evicted":0,"store_failed":false}
+[15:27:46.548] events before: 64 /data/local/tmp/t5_bridge/work/events.jsonl
+[15:27:46.704] core pid = 16112
+[15:27:48.514] peer[noack] peer listening abstract:tgz2_asr_bridge mode=noack flag=/data/local/tmp/t5_bridge/c3_ack
+[15:27:48.547] sender runner started pid=49548 tag=c3
+[15:27:52.970] gen1 connected to no-ack peer: true
+[15:27:53.004] playing s07 (pid=33116)
+[15:28:00.514] play done: s07
+[15:28:00.520] frame written (awaiting ACK) = True
+[15:28:02.547] pre-unload stats line: conn=true connErr=0 dup=0 empty=0 final=1 hooks=7 lastErr=- ovf=0 partial=6 q=0 readErr=0 recvErr=0 rej=0 retry=1 sendErr=0 stored=0
+[15:28:02.779] peer log tail: peer listening abstract:tgz2_asr_bridge mode=noack flag=/data/local/tmp/t5_bridge/c3_ack | accepted cfd=4 | RX n=1 id=t5b-16112-1967850-g1 bytes=207 mode=noack | client closed | connection done, frames_total=1 | accepted cfd=4 | RX n=2 id=t5b-16112-1967850-g1 bytes=207 mode=noack
+[15:28:03.049] forced unload observed = True
+[15:28:04.287] peer stopped, ps count=0
+[15:28:05.619] bridge start : started: pid=29260 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work | {"type":"CONFIG","sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","max_clients":8,"dedup_cap":8192,"fault_after_writes":-1,"text_max_bytes":511,"body_max":1024} | {"type":"READY","pid":29260,"events_stored":0,"replay_lines":64,"bad_lines":0,"truncated_bytes":0,"dedup_size":64}
+[15:28:05.631] gen2 reloaded = True
+[15:28:05.633] gen2 connected: true
+[15:28:05.665] playing s08,s09 (pid=46884)
+[15:28:19.664] play done: s08,s09
+[15:28:19.672] gen2 stats: conn=true connErr=4 dup=0 empty=0 final=2 hooks=16 lastErr=connect:111 ovf=0 partial=14 q=0 readErr=0 recvErr=1 rej=0 retry=0 sendErr=0 stored=2
+[15:28:19.941] events after: 66 /data/local/tmp/t5_bridge/work/events.jsonl
+[15:28:20.057] core pid = 16112
+[15:28:20.377] runner exited = True
+[15:28:20.378] === c3 end ===

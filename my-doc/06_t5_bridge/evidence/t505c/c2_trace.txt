@@ -1,0 +1,70 @@
+[precheck][g1] {"t": "precheck", "ok": true, "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": false, "why": "", "base": "0x94c05000", "addr": "0x94d1853c"}, "pid": 29413, "arch": "arm", "pointer_size": 4, "sock": "abstract:tgz2_asr_bridge", "queue_cap": 32, "tick_ms": 20, "ack_timeout_ms": 3000}
+[ready][g1] {"t": "ready", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x94c05000", "addr": "0x94d1853c"}, "pid": 29413, "sock": "abstract:tgz2_asr_bridge"}
+[runner] script gen1 loaded[conn][g1] {"t": "conn", "state": "connected", "fd": 126, "reconnect_count": 0}
+[stat][g1] hooks=0 final=0 partial=0 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g1] hooks=4 final=0 partial=4 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g1] {"t": "sent", "event_id": "t5b-29413-1969791-g1", "session_id": "1969791", "frame_bytes": 207}
+[ack][g1] {"t": "ack", "event_id": "t5b-29413-1969791-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 17}
+[stat][g1] hooks=7 final=1 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g1] hooks=11 final=1 partial=10 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g1] {"t": "sent", "event_id": "t5b-29413-1969796-g1", "session_id": "1969796", "frame_bytes": 213}
+[ack][g1] {"t": "ack", "event_id": "t5b-29413-1969796-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 18}
+[stat][g1] hooks=15 final=2 partial=13 empty=0 readErr=0 q=0 ovf=0 stored=2 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g1] hooks=19 final=2 partial=17 empty=0 readErr=0 q=0 ovf=0 stored=2 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g1] hooks=21 final=2 partial=19 empty=0 readErr=0 q=0 ovf=0 stored=2 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g1] hooks=27 final=2 partial=25 empty=0 readErr=0 q=0 ovf=0 stored=2 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g1] hooks=32 final=2 partial=30 empty=0 readErr=0 q=0 ovf=0 stored=2 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g1] {"t": "sent", "event_id": "t5b-29413-1969808-g1", "session_id": "1969808", "frame_bytes": 210}
+[ack][g1] {"t": "ack", "event_id": "t5b-29413-1969808-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 19}
+[stat][g1] hooks=39 final=3 partial=36 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g1] hooks=46 final=3 partial=43 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g1] {"t": "sent", "event_id": "t5b-29413-1969812-g1", "session_id": "1969812", "frame_bytes": 210}
+[ack][g1] {"t": "ack", "event_id": "t5b-29413-1969812-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 20}
+[stat][g1] hooks=47 final=4 partial=43 empty=0 readErr=0 q=0 ovf=0 stored=4 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g1] hooks=54 final=4 partial=50 empty=0 readErr=0 q=0 ovf=0 stored=4 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g1] {"t": "sent", "event_id": "t5b-29413-1969817-g1", "session_id": "1969817", "frame_bytes": 213}
+[ack][g1] {"t": "ack", "event_id": "t5b-29413-1969817-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 21}
+[stat][g1] hooks=56 final=5 partial=51 empty=0 readErr=0 q=0 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g1] {"t": "sent", "event_id": "t5b-29413-1969822-g1", "session_id": "1969822", "frame_bytes": 207}
+[ack][g1] {"t": "ack", "event_id": "t5b-29413-1969822-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 22}
+[stat][g1] hooks=62 final=6 partial=56 empty=0 readErr=0 q=0 ovf=0 stored=6 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g1] hooks=68 final=6 partial=62 empty=0 readErr=0 q=0 ovf=0 stored=6 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g1] {"t": "sent", "event_id": "t5b-29413-1969830-g1", "session_id": "1969830", "frame_bytes": 213}
+[ack][g1] {"t": "ack", "event_id": "t5b-29413-1969830-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 23}
+[stat][g1] hooks=72 final=7 partial=65 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g1] hooks=78 final=7 partial=71 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g1] {"t": "sent", "event_id": "t5b-29413-1969834-g1", "session_id": "1969834", "frame_bytes": 216}
+[ack][g1] {"t": "ack", "event_id": "t5b-29413-1969834-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 24}
+[stat][g1] hooks=82 final=8 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=8 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[runner] pre_unload_stats stats: {"hook_hits": 82, "final_count": 8, "partial_count": 74, "empty_count": 0, "read_errors": 0, "queue_depth": 0, "pending_count": 0, "queue_overflow": 0, "connect_errors": 0, "send_errors": 0, "recv_errors": 0, "ack_stored": 8, "ack_duplicate": 0, "ack_rejected": 0, "retry_count": 0, "text_too_long": 0, "ack_mismatch": 0, "ack_timeouts": 0, "frame_rejects": 0, "dropped": 0, "protocol_errors": 0, "dup_session_final": 0, "reconnect_count": 0, "enqueued": 8, "requeued": 0, "sent_frames": 8, "rejected_codes": {}, "connected": true, "fd": 126, "last_error": "", "last_close_reason": "", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x94c05000", "addr": "0x94d1853c"}, "sock_name": "tgz2_asr_bridge", "stopped": false}
+[stopped][g1] {"t": "stopped", "reason": "rpc", "pending_count": 0, "queue_depth": 0}
+[runner] stop() -> pending=0 queue=0
+[precheck][g2] {"t": "precheck", "ok": true, "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": false, "why": "", "base": "0x94c05000", "addr": "0x94d1853c"}, "pid": 29413, "arch": "arm", "pointer_size": 4, "sock": "abstract:tgz2_asr_bridge", "queue_cap": 32, "tick_ms": 20, "ack_timeout_ms": 3000}
+[ready][g2] {"t": "ready", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x94c05000", "addr": "0x94d1853c"}, "pid": 29413, "sock": "abstract:tgz2_asr_bridge"}
+[runner] script gen2 loaded
+[conn][g2] {"t": "conn", "state": "connected", "fd": 124, "reconnect_count": 0}
+[stat][g2] hooks=0 final=0 partial=0 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g2] hooks=4 final=0 partial=4 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g2] {"t": "sent", "event_id": "t5b-29413-1969844-g1", "session_id": "1969844", "frame_bytes": 207}
+[ack][g2] {"t": "ack", "event_id": "t5b-29413-1969844-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 25}
+[stat][g2] hooks=7 final=1 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g2] hooks=11 final=1 partial=10 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g2] {"t": "sent", "event_id": "t5b-29413-1969849-g1", "session_id": "1969849", "frame_bytes": 213}
+[ack][g2] {"t": "ack", "event_id": "t5b-29413-1969849-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 26}
+[stat][g2] hooks=15 final=2 partial=13 empty=0 readErr=0 q=0 ovf=0 stored=2 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g2] hooks=20 final=2 partial=18 empty=0 readErr=0 q=0 ovf=0 stored=2 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g2] {"t": "sent", "event_id": "t5b-29413-1969853-g1", "session_id": "1969853", "frame_bytes": 204}
+[ack][g2] {"t": "ack", "event_id": "t5b-29413-1969853-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 27}
+[stat][g2] hooks=22 final=3 partial=19 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g2] {"t": "sent", "event_id": "t5b-29413-1969857-g1", "session_id": "1969857", "frame_bytes": 198}
+[ack][g2] {"t": "ack", "event_id": "t5b-29413-1969857-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 28}
+[stat][g2] hooks=28 final=4 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=4 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g2] hooks=31 final=4 partial=27 empty=0 readErr=0 q=0 ovf=0 stored=4 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g2] {"t": "sent", "event_id": "t5b-29413-1969861-g1", "session_id": "1969861", "frame_bytes": 210}
+[ack][g2] {"t": "ack", "event_id": "t5b-29413-1969861-g1", "status": "stored", "code": "ok", "dup_count": 11, "events_stored": 29}
+[stat][g2] hooks=36 final=5 partial=31 empty=0 readErr=0 q=0 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[runner] stop flag seen, finishing gracefully
+[runner] final_stats stats: {"hook_hits": 36, "final_count": 5, "partial_count": 31, "empty_count": 0, "read_errors": 0, "queue_depth": 0, "pending_count": 0, "queue_overflow": 0, "connect_errors": 0, "send_errors": 0, "recv_errors": 0, "ack_stored": 5, "ack_duplicate": 0, "ack_rejected": 0, "retry_count": 0, "text_too_long": 0, "ack_mismatch": 0, "ack_timeouts": 0, "frame_rejects": 0, "dropped": 0, "protocol_errors": 0, "dup_session_final": 0, "reconnect_count": 0, "enqueued": 5, "requeued": 0, "sent_frames": 5, "rejected_codes": {}, "connected": true, "fd": 124, "last_error": "", "last_close_reason": "", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x94c05000", "addr": "0x94d1853c"}, "sock_name": "tgz2_asr_bridge", "stopped": false}
+[stopped][g2] {"t": "stopped", "reason": "rpc", "pending_count": 0, "queue_depth": 0}
+[runner] stop() -> pending=0 queue=0
+[runner] detached

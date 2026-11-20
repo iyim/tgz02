@@ -1,0 +1,26 @@
+﻿
+[15:58:58.205] === c2 start ===
+[15:58:59.273] bridge status : running: pid=7373 | {"state":"running","pid":7373,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":16,"duplicates":11,"rejected":8,"frames":27,"clients":0,"clients_accepted":20,"clients_closed":20,"client_aborts":9,"client_overflow":0,"frame_errors":8,"store_errors":0,"replay_lines":73,"bad_lines":0,"truncated_bytes":0,"dedup_size":89,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-20T15:58:58"}
+[15:58:59.830] events before: 89 /data/local/tmp/t5_bridge/work/events.jsonl
+[15:58:59.990] core pid = 29413
+[15:59:00.401] sender runner started pid=47016 tag=c2 frida_pid=29413
+[15:59:04.875] gen1 connected: true
+[15:59:04.945] playing s01,s02,s03,s04,s05 (pid=7304)
+[15:59:34.964] play done: s01,s02,s03,s04,s05
+[15:59:50.096] playing s06,s07,s08,s09,s10 (pid=46212)
+[16:00:22.808] play done: s06,s07,s08,s09,s10
+[16:00:22.829] round1 stats: conn=true connErr=0 dup=0 empty=0 final=8 gen=1 hooks=82 lastErr=- ovf=0 partial=74 q=0 readErr=0 recvErr=0 rej=0 retry=0 sendErr=0 stored=8
+[16:00:23.095] graceful stop() observed = True
+[16:00:24.475] bridge status after stop: {"state":"running","pid":7373,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":24,"duplicates":11,"rejected":8,"frames":35,"clients":0,"clients_accepted":21,"clients_closed":21,"client_aborts":10,"client_overflow":0,"frame_errors":8,"store_errors":0,"replay_lines":73,"bad_lines":0,"truncated_bytes":0,"dedup_size":97,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-20T16:00:23"}
+[16:00:24.507] playing s06 (pid=8916)
+[16:00:31.914] play done: s06
+[16:00:37.337] gen2 reloaded = True
+[16:00:39.156] gen2 emitted its own stat line = True
+[16:00:39.160] gen2 first stat: conn=true connErr=0 dup=0 empty=0 final=0 gen=2 hooks=0 lastErr=- ovf=0 partial=0 q=0 readErr=0 recvErr=0 rej=0 retry=0 sendErr=0 stored=0
+[16:00:39.198] playing s01,s02,s03,s04,s05 (pid=42804)
+[16:01:09.061] play done: s01,s02,s03,s04,s05
+[16:01:09.076] round2 stats: conn=true connErr=0 dup=0 empty=0 final=5 gen=2 hooks=36 lastErr=- ovf=0 partial=31 q=0 readErr=0 recvErr=0 rej=0 retry=0 sendErr=0 stored=5
+[16:01:09.298] events after: 102 /data/local/tmp/t5_bridge/work/events.jsonl
+[16:01:09.421] core pid = 29413
+[16:01:09.733] runner exited = True
+[16:01:09.735] === c2 end ===

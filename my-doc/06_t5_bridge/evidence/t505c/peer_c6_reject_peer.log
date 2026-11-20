@@ -1,0 +1,6 @@
+peer listening abstract:tgz2_asr_bridge mode=reject flag=-
+accepted cfd=4
+RX n=1 id=t5b-29413-1969672-g1 bytes=213 mode=reject
+TX id=t5b-29413-1969672-g1 status=rejected code=bad_field_type tweak=0 bytes=134
+client closed
+connection done, frames_total=1

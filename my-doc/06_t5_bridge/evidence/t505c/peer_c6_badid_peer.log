@@ -1,0 +1,11 @@
+peer listening abstract:tgz2_asr_bridge mode=badid flag=-
+accepted cfd=4
+RX n=1 id=t5b-29413-1969646-g1 bytes=207 mode=badid
+TX id=t5b-29413-1969646-g1-g9 status=stored code=ok tweak=0 bytes=123
+client closed
+connection done, frames_total=1
+accepted cfd=4
+RX n=2 id=t5b-29413-1969646-g1 bytes=207 mode=badid
+TX id=t5b-29413-1969646-g1 status=stored code=ok tweak=0 bytes=120
+client closed
+connection done, frames_total=2

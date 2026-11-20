@@ -1,0 +1,737 @@
+{
+ "tag": "c5",
+ "stat_lines": 163,
+ "max_queue_depth": 32,
+ "max_pending_seen": null,
+ "last_stat": {
+  "hooks": "387",
+  "final": "47",
+  "partial": "340",
+  "empty": "0",
+  "readErr": "0",
+  "q": "0",
+  "ovf": "15",
+  "stored": "32",
+  "dup": "0",
+  "rej": "0",
+  "retry": "3",
+  "conn": "true",
+  "connErr": "1032",
+  "sendErr": "0",
+  "recvErr": "0",
+  "lastErr": "connect:111"
+ },
+ "final_stats": {
+  "hook_hits": 387,
+  "final_count": 47,
+  "partial_count": 340,
+  "empty_count": 0,
+  "read_errors": 0,
+  "queue_depth": 0,
+  "pending_count": 0,
+  "queue_overflow": 15,
+  "connect_errors": 1032,
+  "send_errors": 0,
+  "recv_errors": 0,
+  "ack_stored": 32,
+  "ack_duplicate": 0,
+  "ack_rejected": 0,
+  "retry_count": 3,
+  "text_too_long": 0,
+  "ack_mismatch": 0,
+  "ack_timeouts": 3,
+  "frame_rejects": 0,
+  "dropped": 0,
+  "protocol_errors": 0,
+  "dup_session_final": 0,
+  "reconnect_count": 3,
+  "enqueued": 47,
+  "requeued": 3,
+  "sent_frames": 35,
+  "rejected_codes": {},
+  "connected": true,
+  "fd": 120,
+  "last_error": "connect:111",
+  "last_close_reason": "",
+  "hook": {
+   "module_ok": true,
+   "symbol_ok": true,
+   "offset_ok": true,
+   "attached": true,
+   "why": "",
+   "base": "0x94c05000",
+   "addr": "0x94d1853c"
+  },
+  "sock_name": "tgz2_asr_bridge",
+  "stopped": false
+ },
+ "pre_unload_stats": null,
+ "pre_unload_wall": null,
+ "sends": [
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970027-g1",
+   "session_id": "1970027",
+   "frame_bytes": 198,
+   "gen": 1,
+   "wall": "2026-11-20 15:46:58.127"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970027-g1",
+   "session_id": "1970027",
+   "frame_bytes": 198,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:01.358"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970027-g1",
+   "session_id": "1970027",
+   "frame_bytes": 198,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:04.769"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970027-g1",
+   "session_id": "1970027",
+   "frame_bytes": 198,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.600"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970031-g1",
+   "session_id": "1970031",
+   "frame_bytes": 210,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.624"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970035-g1",
+   "session_id": "1970035",
+   "frame_bytes": 210,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.645"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970040-g1",
+   "session_id": "1970040",
+   "frame_bytes": 207,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.664"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970045-g1",
+   "session_id": "1970045",
+   "frame_bytes": 207,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.687"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970053-g1",
+   "session_id": "1970053",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.706"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970057-g1",
+   "session_id": "1970057",
+   "frame_bytes": 216,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.727"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970062-g1",
+   "session_id": "1970062",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.750"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970066-g1",
+   "session_id": "1970066",
+   "frame_bytes": 207,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.787"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970070-g1",
+   "session_id": "1970070",
+   "frame_bytes": 204,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.805"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970076-g1",
+   "session_id": "1970076",
+   "frame_bytes": 207,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.816"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970080-g1",
+   "session_id": "1970080",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.831"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970085-g1",
+   "session_id": "1970085",
+   "frame_bytes": 204,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.857"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970089-g1",
+   "session_id": "1970089",
+   "frame_bytes": 210,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.878"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970093-g1",
+   "session_id": "1970093",
+   "frame_bytes": 210,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.897"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970098-g1",
+   "session_id": "1970098",
+   "frame_bytes": 207,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.945"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970105-g1",
+   "session_id": "1970105",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.949"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970109-g1",
+   "session_id": "1970109",
+   "frame_bytes": 216,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.962"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970114-g1",
+   "session_id": "1970114",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.988"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970118-g1",
+   "session_id": "1970118",
+   "frame_bytes": 207,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.006"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970123-g1",
+   "session_id": "1970123",
+   "frame_bytes": 204,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.024"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970129-g1",
+   "session_id": "1970129",
+   "frame_bytes": 207,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.047"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970133-g1",
+   "session_id": "1970133",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.069"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970146-g1",
+   "session_id": "1970146",
+   "frame_bytes": 210,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.094"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970150-g1",
+   "session_id": "1970150",
+   "frame_bytes": 210,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.106"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970155-g1",
+   "session_id": "1970155",
+   "frame_bytes": 204,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.128"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970162-g1",
+   "session_id": "1970162",
+   "frame_bytes": 210,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.153"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970166-g1",
+   "session_id": "1970166",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.173"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1970170-g1",
+   "session_id": "1970170",
+   "frame_bytes": 216,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.188"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1969630-g1",
+   "session_id": "1969630",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.209"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1969634-g1",
+   "session_id": "1969634",
+   "frame_bytes": 207,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.233"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1969638-g1",
+   "session_id": "1969638",
+   "frame_bytes": 204,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.259"
+  }
+ ],
+ "acks": [
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970027-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.620"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970031-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.641"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970035-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.662"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970040-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.685"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970045-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.705"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970053-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.726"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970057-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.746"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970062-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.767"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970066-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.804"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970070-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.816"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970076-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.830"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970080-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.855"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970085-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.878"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970089-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.895"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970093-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.939"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970098-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.946"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970105-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.961"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970109-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:08.983"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970114-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.004"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970118-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.022"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970123-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.043"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970129-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.064"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970133-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.089"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970146-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.105"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970150-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.125"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970155-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.146"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970162-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.172"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970166-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.187"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1970170-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.207"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1969630-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.229"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1969634-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.258"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1969638-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:47:09.271"
+  }
+ ],
+ "rejected": [],
+ "frame_rejected": [],
+ "retries": [],
+ "drops": [],
+ "mismatches": [],
+ "unloads": [
+  {
+   "t": "runner_load",
+   "gen": 1,
+   "wall": "2026-11-20 15:41:40.629",
+   "rel": 0.076
+  },
+  {
+   "t": "runner_stop",
+   "gen": 1,
+   "wall": "2026-11-20 15:47:11.486",
+   "rel": 330.933,
+   "teardown": {
+    "hook_hits": 387,
+    "final_count": 47,
+    "partial_count": 340,
+    "empty_count": 0,
+    "read_errors": 0,
+    "queue_depth": 0,
+    "pending_count": 0,
+    "queue_overflow": 15,
+    "connect_errors": 1032,
+    "send_errors": 0,
+    "recv_errors": 0,
+    "ack_stored": 32,
+    "ack_duplicate": 0,
+    "ack_rejected": 0,
+    "retry_count": 3,
+    "text_too_long": 0,
+    "ack_mismatch": 0,
+    "ack_timeouts": 3,
+    "frame_rejects": 0,
+    "dropped": 0,
+    "protocol_errors": 0,
+    "dup_session_final": 0,
+    "reconnect_count": 3,
+    "enqueued": 47,
+    "requeued": 3,
+    "sent_frames": 35,
+    "rejected_codes": {},
+    "connected": false,
+    "fd": -1,
+    "last_error": "connect:111",
+    "last_close_reason": "",
+    "hook": {
+     "module_ok": true,
+     "symbol_ok": true,
+     "offset_ok": true,
+     "attached": false,
+     "why": "",
+     "base": "0x94c05000",
+     "addr": "0x94d1853c"
+    },
+    "sock_name": "tgz2_asr_bridge",
+    "stopped": true
+   }
+  }
+ ]
+}

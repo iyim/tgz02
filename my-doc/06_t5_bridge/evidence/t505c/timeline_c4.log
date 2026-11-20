@@ -1,0 +1,22 @@
+﻿
+[15:28:49.031] === c4 start ===
+[15:28:49.707] old core pid = 16112
+[15:28:49.909] events before: 66 /data/local/tmp/t5_bridge/work/events.jsonl
+[15:28:50.250] sender runners alive = 0
+[15:28:54.037] after force-stop, pidof core: 29413 rc=0
+[15:28:54.493] all ailabs processes:  6667 com.alibaba.ailabs.genie.osupdate | 14681 com.alibaba.ailabs.genie.iot:service | 20133 com.alibaba.ailabs.genie.launcher | 29413 com.alibaba.ailabs.genie.smartapp:core | 29434 com.alibaba.ailabs.genie.smartapp | 29502 com.alibaba.ailabs.genie.smartapp:business | 29709 com.alibaba.ailabs.genie.rtc
+[15:28:56.348] new core pid = 29413 (old=16112)
+[15:28:57.058] all ailabs processes:  6667 com.alibaba.ailabs.genie.osupdate | 14681 com.alibaba.ailabs.genie.iot:service | 20133 com.alibaba.ailabs.genie.launcher | 29413 com.alibaba.ailabs.genie.smartapp:core | 29434 com.alibaba.ailabs.genie.smartapp | 29502 com.alibaba.ailabs.genie.smartapp:business | 29709 com.alibaba.ailabs.genie.rtc
+[15:29:05.469] bridge status : running: pid=29260 | {"state":"running","pid":29260,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":2,"duplicates":0,"rejected":0,"frames":2,"clients":0,"clients_accepted":1,"clients_closed":1,"client_aborts":1,"client_overflow":0,"frame_errors":0,"store_errors":0,"replay_lines":64,"bad_lines":0,"truncated_bytes":0,"dedup_size":66,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-20T15:29:04"}
+[15:29:05.503] sender runner started pid=49492 tag=c4
+[15:29:10.551] connected on new pid: true
+[15:29:10.554] precheck: {"t": "precheck", "ok": true, "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": false, "why": "", "base": "0x94c05000", "addr": "0x94d1853c"}, "pid": 29413, "arch": "arm", "pointer_size": 4, "sock": "abstract:tgz2_asr_bridge", "queue_cap": 32, "tick_ms": 20, "ack_timeout_ms": 3000, "gen": 1, "wall": "2026-11-20 15:29:08.511"}
+[15:29:10.598] playing s01,s02,s03,s04,s05 (pid=42120)
+[15:29:40.377] play done: s01,s02,s03,s04,s05
+[15:30:00.450] playing s06,s07,s08,s09,s10 (pid=32492)
+[15:30:32.627] play done: s06,s07,s08,s09,s10
+[15:30:32.640] final stats: conn=true connErr=0 dup=0 empty=0 final=7 hooks=81 lastErr=- ovf=0 partial=74 q=0 readErr=0 recvErr=0 rej=0 retry=0 sendErr=0 stored=7
+[15:30:32.898] events after: 73 /data/local/tmp/t5_bridge/work/events.jsonl
+[15:30:33.016] core pid now = 29413
+[15:30:33.333] runner exited = True
+[15:30:33.334] === c4 end ===

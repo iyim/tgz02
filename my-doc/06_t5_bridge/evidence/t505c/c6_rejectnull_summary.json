@@ -1,0 +1,171 @@
+{
+ "tag": "c6_rejectnull",
+ "stat_lines": 3,
+ "max_queue_depth": 0,
+ "max_pending_seen": null,
+ "last_stat": {
+  "hooks": "7",
+  "final": "1",
+  "partial": "6",
+  "empty": "0",
+  "readErr": "0",
+  "q": "0",
+  "ovf": "0",
+  "stored": "1",
+  "dup": "0",
+  "rej": "0",
+  "retry": "1",
+  "conn": "true",
+  "connErr": "0",
+  "sendErr": "0",
+  "recvErr": "0",
+  "lastErr": "frame_rejected:bad_crc"
+ },
+ "final_stats": {
+  "hook_hits": 7,
+  "final_count": 1,
+  "partial_count": 6,
+  "empty_count": 0,
+  "read_errors": 0,
+  "queue_depth": 0,
+  "pending_count": 0,
+  "queue_overflow": 0,
+  "connect_errors": 0,
+  "send_errors": 0,
+  "recv_errors": 0,
+  "ack_stored": 1,
+  "ack_duplicate": 0,
+  "ack_rejected": 0,
+  "retry_count": 1,
+  "text_too_long": 0,
+  "ack_mismatch": 0,
+  "ack_timeouts": 0,
+  "frame_rejects": 1,
+  "dropped": 0,
+  "protocol_errors": 0,
+  "dup_session_final": 0,
+  "reconnect_count": 0,
+  "enqueued": 1,
+  "requeued": 1,
+  "sent_frames": 2,
+  "rejected_codes": {},
+  "connected": true,
+  "fd": 124,
+  "last_error": "frame_rejected:bad_crc",
+  "last_close_reason": "",
+  "hook": {
+   "module_ok": true,
+   "symbol_ok": true,
+   "offset_ok": true,
+   "attached": true,
+   "why": "",
+   "base": "0x94c05000",
+   "addr": "0x94d1853c"
+  },
+  "sock_name": "tgz2_asr_bridge",
+  "stopped": false
+ },
+ "pre_unload_stats": null,
+ "pre_unload_wall": null,
+ "sends": [
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1969678-g1",
+   "session_id": "1969678",
+   "frame_bytes": 204,
+   "gen": 1,
+   "wall": "2026-11-20 15:50:24.168"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-29413-1969678-g1",
+   "session_id": "1969678",
+   "frame_bytes": 204,
+   "gen": 1,
+   "wall": "2026-11-20 15:50:24.390"
+  }
+ ],
+ "acks": [
+  {
+   "t": "ack",
+   "event_id": "t5b-29413-1969678-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:50:24.415"
+  }
+ ],
+ "rejected": [],
+ "frame_rejected": [
+  {
+   "t": "frame_rejected",
+   "code": "bad_crc",
+   "tries": 0,
+   "gen": 1,
+   "wall": "2026-11-20 15:50:24.184"
+  }
+ ],
+ "retries": [],
+ "drops": [],
+ "mismatches": [],
+ "unloads": [
+  {
+   "t": "runner_load",
+   "gen": 1,
+   "wall": "2026-11-20 15:50:17.455",
+   "rel": 0.078
+  },
+  {
+   "t": "runner_stop",
+   "gen": 1,
+   "wall": "2026-11-20 15:50:35.931",
+   "rel": 18.553,
+   "teardown": {
+    "hook_hits": 7,
+    "final_count": 1,
+    "partial_count": 6,
+    "empty_count": 0,
+    "read_errors": 0,
+    "queue_depth": 0,
+    "pending_count": 0,
+    "queue_overflow": 0,
+    "connect_errors": 0,
+    "send_errors": 0,
+    "recv_errors": 0,
+    "ack_stored": 1,
+    "ack_duplicate": 0,
+    "ack_rejected": 0,
+    "retry_count": 1,
+    "text_too_long": 0,
+    "ack_mismatch": 0,
+    "ack_timeouts": 0,
+    "frame_rejects": 1,
+    "dropped": 0,
+    "protocol_errors": 0,
+    "dup_session_final": 0,
+    "reconnect_count": 0,
+    "enqueued": 1,
+    "requeued": 1,
+    "sent_frames": 2,
+    "rejected_codes": {},
+    "connected": false,
+    "fd": -1,
+    "last_error": "frame_rejected:bad_crc",
+    "last_close_reason": "",
+    "hook": {
+     "module_ok": true,
+     "symbol_ok": true,
+     "offset_ok": true,
+     "attached": false,
+     "why": "",
+     "base": "0x94c05000",
+     "addr": "0x94d1853c"
+    },
+    "sock_name": "tgz2_asr_bridge",
+    "stopped": true
+   }
+  }
+ ]
+}

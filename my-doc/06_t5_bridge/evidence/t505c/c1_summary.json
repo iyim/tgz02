@@ -1,0 +1,479 @@
+{
+ "tag": "c1",
+ "stat_lines": 46,
+ "max_queue_depth": 6,
+ "max_pending_seen": null,
+ "last_stat": {
+  "hooks": "150",
+  "final": "19",
+  "partial": "131",
+  "empty": "0",
+  "readErr": "0",
+  "q": "0",
+  "ovf": "0",
+  "stored": "19",
+  "dup": "0",
+  "rej": "0",
+  "retry": "0",
+  "conn": "true",
+  "connErr": "138",
+  "sendErr": "0",
+  "recvErr": "1",
+  "lastErr": "connect:111"
+ },
+ "final_stats": {
+  "hook_hits": 150,
+  "final_count": 19,
+  "partial_count": 131,
+  "empty_count": 0,
+  "read_errors": 0,
+  "queue_depth": 0,
+  "pending_count": 0,
+  "queue_overflow": 0,
+  "connect_errors": 138,
+  "send_errors": 0,
+  "recv_errors": 1,
+  "ack_stored": 19,
+  "ack_duplicate": 0,
+  "ack_rejected": 0,
+  "retry_count": 0,
+  "text_too_long": 0,
+  "ack_mismatch": 0,
+  "ack_timeouts": 0,
+  "frame_rejects": 0,
+  "dropped": 0,
+  "protocol_errors": 0,
+  "dup_session_final": 0,
+  "reconnect_count": 1,
+  "enqueued": 19,
+  "requeued": 0,
+  "sent_frames": 19,
+  "rejected_codes": {},
+  "connected": true,
+  "fd": 124,
+  "last_error": "connect:111",
+  "last_close_reason": "",
+  "hook": {
+   "module_ok": true,
+   "symbol_ok": true,
+   "offset_ok": true,
+   "attached": true,
+   "why": "",
+   "base": "0x8e384000",
+   "addr": "0x8e49753c"
+  },
+  "sock_name": "tgz2_asr_bridge",
+  "stopped": false
+ },
+ "pre_unload_stats": null,
+ "pre_unload_wall": null,
+ "sends": [
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967614-g1",
+   "session_id": "1967614",
+   "frame_bytes": 207,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:24.638"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967618-g1",
+   "session_id": "1967618",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:31.032"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967622-g1",
+   "session_id": "1967622",
+   "frame_bytes": 204,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:36.700"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967626-g1",
+   "session_id": "1967626",
+   "frame_bytes": 198,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:41.406"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967630-g1",
+   "session_id": "1967630",
+   "frame_bytes": 210,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:47.062"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967634-g1",
+   "session_id": "1967634",
+   "frame_bytes": 210,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:52.991"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967638-g1",
+   "session_id": "1967638",
+   "frame_bytes": 204,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:57.990"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967643-g1",
+   "session_id": "1967643",
+   "frame_bytes": 210,
+   "gen": 1,
+   "wall": "2026-11-20 15:19:04.317"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967647-g1",
+   "session_id": "1967647",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:19:11.498"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967651-g1",
+   "session_id": "1967651",
+   "frame_bytes": 216,
+   "gen": 1,
+   "wall": "2026-11-20 15:19:17.754"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967656-g1",
+   "session_id": "1967656",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:19:24.350"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967660-g1",
+   "session_id": "1967660",
+   "frame_bytes": 207,
+   "gen": 1,
+   "wall": "2026-11-20 15:19:29.906"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967664-g1",
+   "session_id": "1967664",
+   "frame_bytes": 204,
+   "gen": 1,
+   "wall": "2026-11-20 15:19:35.311"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967670-g1",
+   "session_id": "1967670",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:20:24.173"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967674-g1",
+   "session_id": "1967674",
+   "frame_bytes": 207,
+   "gen": 1,
+   "wall": "2026-11-20 15:20:24.194"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967678-g1",
+   "session_id": "1967678",
+   "frame_bytes": 204,
+   "gen": 1,
+   "wall": "2026-11-20 15:20:24.214"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967684-g1",
+   "session_id": "1967684",
+   "frame_bytes": 207,
+   "gen": 1,
+   "wall": "2026-11-20 15:20:24.234"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967688-g1",
+   "session_id": "1967688",
+   "frame_bytes": 213,
+   "gen": 1,
+   "wall": "2026-11-20 15:20:24.256"
+  },
+  {
+   "t": "sent",
+   "event_id": "t5b-16112-1967693-g1",
+   "session_id": "1967693",
+   "frame_bytes": 204,
+   "gen": 1,
+   "wall": "2026-11-20 15:20:24.284"
+  }
+ ],
+ "acks": [
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967614-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:24.651"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967618-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 2,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:31.054"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967622-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 3,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:36.719"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967626-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 4,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:41.430"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967630-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 5,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:47.083"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967634-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 6,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:53.011"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967638-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 7,
+   "gen": 1,
+   "wall": "2026-11-20 15:18:58.009"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967643-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 8,
+   "gen": 1,
+   "wall": "2026-11-20 15:19:04.337"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967647-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 9,
+   "gen": 1,
+   "wall": "2026-11-20 15:19:11.508"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967651-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 10,
+   "gen": 1,
+   "wall": "2026-11-20 15:19:17.775"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967656-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 11,
+   "gen": 1,
+   "wall": "2026-11-20 15:19:24.369"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967660-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 12,
+   "gen": 1,
+   "wall": "2026-11-20 15:19:29.926"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967664-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 13,
+   "gen": 1,
+   "wall": "2026-11-20 15:19:35.321"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967670-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 1,
+   "gen": 1,
+   "wall": "2026-11-20 15:20:24.193"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967674-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 2,
+   "gen": 1,
+   "wall": "2026-11-20 15:20:24.213"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967678-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 3,
+   "gen": 1,
+   "wall": "2026-11-20 15:20:24.233"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967684-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 4,
+   "gen": 1,
+   "wall": "2026-11-20 15:20:24.253"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967688-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 5,
+   "gen": 1,
+   "wall": "2026-11-20 15:20:24.274"
+  },
+  {
+   "t": "ack",
+   "event_id": "t5b-16112-1967693-g1",
+   "status": "stored",
+   "code": "ok",
+   "dup_count": 0,
+   "events_stored": 6,
+   "gen": 1,
+   "wall": "2026-11-20 15:20:24.297"
+  }
+ ],
+ "rejected": [],
+ "frame_rejected": [],
+ "retries": [],
+ "drops": [],
+ "mismatches": [],
+ "unloads": [
+  {
+   "t": "runner_load",
+   "gen": 1,
+   "wall": "2026-11-20 15:18:17.873",
+   "rel": 0.066
+  },
+  {
+   "t": "runner_stop",
+   "gen": 1,
+   "wall": "2026-11-20 15:20:36.860",
+   "rel": 139.052,
+   "teardown": {
+    "hook_hits": 150,
+    "final_count": 19,
+    "partial_count": 131,
+    "empty_count": 0,
+    "read_errors": 0,
+    "queue_depth": 0,
+    "pending_count": 0,
+    "queue_overflow": 0,
+    "connect_errors": 138,
+    "send_errors": 0,
+    "recv_errors": 1,
+    "ack_stored": 19,
+    "ack_duplicate": 0,
+    "ack_rejected": 0,
+    "retry_count": 0,
+    "text_too_long": 0,
+    "ack_mismatch": 0,
+    "ack_timeouts": 0,
+    "frame_rejects": 0,
+    "dropped": 0,
+    "protocol_errors": 0,
+    "dup_session_final": 0,
+    "reconnect_count": 1,
+    "enqueued": 19,
+    "requeued": 0,
+    "sent_frames": 19,
+    "rejected_codes": {},
+    "connected": false,
+    "fd": -1,
+    "last_error": "connect:111",
+    "last_close_reason": "",
+    "hook": {
+     "module_ok": true,
+     "symbol_ok": true,
+     "offset_ok": true,
+     "attached": false,
+     "why": "",
+     "base": "0x8e384000",
+     "addr": "0x8e49753c"
+    },
+    "sock_name": "tgz2_asr_bridge",
+    "stopped": true
+   }
+  }
+ ]
+}

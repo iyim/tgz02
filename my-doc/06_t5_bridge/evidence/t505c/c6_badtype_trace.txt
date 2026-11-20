@@ -1,0 +1,16 @@
+[precheck][g1] {"t": "precheck", "ok": true, "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": false, "why": "", "base": "0x94c05000", "addr": "0x94d1853c"}, "pid": 29413, "arch": "arm", "pointer_size": 4, "sock": "abstract:tgz2_asr_bridge", "queue_cap": 32, "tick_ms": 20, "ack_timeout_ms": 3000}
+[ready][g1] {"t": "ready", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x94c05000", "addr": "0x94d1853c"}, "pid": 29413, "sock": "abstract:tgz2_asr_bridge"}
+[runner] script gen1 loaded
+[conn][g1] {"t": "conn", "state": "connected", "fd": 124, "reconnect_count": 0}
+[stat][g1] hooks=0 final=0 partial=0 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat][g1] hooks=6 final=0 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent][g1] {"t": "sent", "event_id": "t5b-29413-1969655-g1", "session_id": "1969655", "frame_bytes": 210}
+[conn][g1] {"t": "conn", "state": "connected", "fd": 124, "reconnect_count": 1}
+[sent][g1] {"t": "sent", "event_id": "t5b-29413-1969655-g1", "session_id": "1969655", "frame_bytes": 210}
+[ack][g1] {"t": "ack", "event_id": "t5b-29413-1969655-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 1}
+[stat][g1] hooks=9 final=1 partial=8 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=1 conn=true connErr=0 sendErr=0 recvErr=1 lastErr=-
+[runner] stop flag seen, finishing gracefully
+[runner] final_stats stats: {"hook_hits": 9, "final_count": 1, "partial_count": 8, "empty_count": 0, "read_errors": 0, "queue_depth": 0, "pending_count": 0, "queue_overflow": 0, "connect_errors": 0, "send_errors": 0, "recv_errors": 1, "ack_stored": 1, "ack_duplicate": 0, "ack_rejected": 0, "retry_count": 1, "text_too_long": 0, "ack_mismatch": 0, "ack_timeouts": 0, "frame_rejects": 0, "dropped": 0, "protocol_errors": 1, "dup_session_final": 0, "reconnect_count": 1, "enqueued": 1, "requeued": 1, "sent_frames": 2, "rejected_codes": {}, "connected": true, "fd": 124, "last_error": "", "last_close_reason": "", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x94c05000", "addr": "0x94d1853c"}, "sock_name": "tgz2_asr_bridge", "stopped": false}
+[stopped][g1] {"t": "stopped", "reason": "rpc", "pending_count": 0, "queue_depth": 0}
+[runner] stop() -> pending=0 queue=0
+[runner] detached

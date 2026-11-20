@@ -1,0 +1,23 @@
+﻿
+[15:18:12.815] === c1 start ===
+[15:18:13.615] bridge stop : no valid pid file
+[15:18:13.891] events before: 18 /data/local/tmp/t5_bridge/work/events.jsonl
+[15:18:15.337] bridge start : started: pid=26338 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work | {"type":"CONFIG","sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","max_clients":8,"dedup_cap":8192,"fault_after_writes":-1,"text_max_bytes":511,"body_max":1024} | {"type":"READY","pid":26338,"events_stored":0,"replay_lines":18,"bad_lines":0,"truncated_bytes":0,"dedup_size":18}
+[15:18:15.486] core pid = 16112
+[15:18:15.530] sender runner started pid=49156 tag=c1
+[15:18:19.997] connected: true
+[15:18:20.059] playing s01,s02,s03,s04,s05,s06,s07,s08,s09,s10,s11,s12,s13 (pid=2348)
+[15:19:38.040] play done: s01,s02,s03,s04,s05,s06,s07,s08,s09,s10,s11,s12,s13
+[15:19:41.070] phaseA stats: conn=true connErr=0 dup=0 empty=0 final=13 hooks=104 lastErr=- ovf=0 partial=91 q=0 readErr=0 recvErr=0 rej=0 retry=0 sendErr=0 stored=13
+[15:19:42.173] bridge stop : stopped: pid=26338 | {"type":"READY","pid":26338,"events_stored":0,"replay_lines":18,"bad_lines":0,"truncated_bytes":0,"dedup_size":18} | {"type":"STATS","tag":"final","frames":13,"stored":13,"duplicate":0,"rejected":0,"frame_errors":0,"store_errors":0,"clients_accepted":1,"clients_closed":1,"client_aborts":0,"client_overflow":0,"replay_lines":18,"replay_bad":0,"truncated_bytes":0,"dedup_evicted":0,"store_failed":false}
+[15:19:42.221] playing s11,s12,s13,s01,s02,s03 (pid=39364)
+[15:20:18.487] play done: s11,s12,s13,s01,s02,s03
+[15:20:23.498] phaseB stats: conn=false connErr=131 dup=0 empty=0 final=19 hooks=150 lastErr=connect:111 ovf=0 partial=131 q=6 readErr=0 recvErr=1 rej=0 retry=0 sendErr=0 stored=13
+[15:20:23.500] phaseB finals added = 6, stored during outage = 13 (before outage=13)
+[15:20:24.987] bridge start : started: pid=27380 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work | {"type":"CONFIG","sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","max_clients":8,"dedup_cap":8192,"fault_after_writes":-1,"text_max_bytes":511,"body_max":1024} | {"type":"READY","pid":27380,"events_stored":0,"replay_lines":31,"bad_lines":0,"truncated_bytes":0,"dedup_size":31}
+[15:20:26.240] phaseC stats: conn=true connErr=138 dup=0 empty=0 final=19 hooks=150 lastErr=connect:111 ovf=0 partial=131 q=0 readErr=0 recvErr=1 rej=0 retry=0 sendErr=0 stored=19
+[15:20:36.260] final stat line: conn=true connErr=138 dup=0 empty=0 final=19 hooks=150 lastErr=connect:111 ovf=0 partial=131 q=0 readErr=0 recvErr=1 rej=0 retry=0 sendErr=0 stored=19
+[15:20:36.633] events after: 37 /data/local/tmp/t5_bridge/work/events.jsonl
+[15:20:36.764] core pid = 16112
+[15:20:37.078] runner exited = True
+[15:20:37.080] === c1 end ===

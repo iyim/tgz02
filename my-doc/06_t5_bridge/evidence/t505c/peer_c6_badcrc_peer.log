@@ -1,0 +1,11 @@
+peer listening abstract:tgz2_asr_bridge mode=badcrc flag=-
+accepted cfd=4
+RX n=1 id=t5b-29413-1969651-g1 bytes=204 mode=badcrc
+TX id=t5b-29413-1969651-g1 status=stored code=ok tweak=1 bytes=120
+client closed
+connection done, frames_total=1
+accepted cfd=4
+RX n=2 id=t5b-29413-1969651-g1 bytes=204 mode=badcrc
+TX id=t5b-29413-1969651-g1 status=stored code=ok tweak=0 bytes=120
+client closed
+connection done, frames_total=2

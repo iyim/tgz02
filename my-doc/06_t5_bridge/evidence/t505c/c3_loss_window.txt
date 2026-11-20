@@ -1,0 +1,60 @@
+# C3：未 ACK 事件在强制卸载时的损失（逐条记录，不做美化）
+
+## 被测事件
+
+```
+event_id   = t5b-16112-1967850-g1
+session_id = 1967850
+text       = 天猫精灵播放一首          （s07.wav，真实原厂 ASR final）
+frame      = 207 B，协议帧写成功两次（同一 event_id 重试）
+```
+
+## 时间线（2026-11-20，core pid 16112）
+
+| 时刻 | 事件 |
+|---|---|
+| 15:27:48.5 | 启动测试对端 `t5c_peer noack tgz2_asr_bridge`（接受连接、读帧、**永不回 ACK**） |
+| 15:27:52.9 | Sender(gen1) 连上该对端 |
+| 15:27:56.8 | 事件入队并整帧写成功（`[sent]` 第一次，207 B），进入等待 ACK |
+| 15:28:00.0 | ACK 超时 3 s → `ack_timeouts=1`、关连接、同 `event_id` 回队列头；重连后第二次写成功（`[sent]` 第二次） |
+| **15:28:02.968** | `stats()`：`hook_hits=7 final_count=1 enqueued=1 queue_depth=0 pending_count=1 retry_count=1 ack_stored=0 sent_frames=2 ack_timeouts=1 recv_errors=0` |
+| **15:28:02.983** | **强制卸载**：`Script.unload()`，**没有**调用 `stop()`，没有 `[stopped]` 消息，队列/pending 直接随脚本销毁 |
+| 15:28:03.047 | 新实例(gen2) 加载（间隔 64 ms） |
+| 15:28:09.8 / 15:28:17.0 | gen2 两条新事件（1967857 / 1967861）写成功并 `stored` |
+| 15:28:20.1 | gen2 `stop()`：`final_count=2 ack_stored=2 pending_count=0` |
+
+## 损失判定
+
+```
+events.jsonl：C3 前 64 行 → C3 后 66 行（新增 2 行 = 1967857 / 1967861）
+grep -c 't5b-16112-1967850-g1' events.jsonl  →  0
+grep -c '1967850'              events.jsonl  →  0
+```
+
+**结论：`t5b-16112-1967850-g1` 永久丢失，从未落盘，也从未收到 stored ACK。**
+它不是"队列里等重发"的事件——脚本已被销毁，`qSlots` / `pending` 全在 JS 堆里，随之消失。
+
+## 丢失窗口（当前设计的边界）
+
+```
+H1 onStream(final)                     ← 工厂线程
+  └─ 拷贝 sid/text/event_id，enqueueEvent()   ← 此后事件只存在于 JS 堆的 32 槽数组里（内存）
+       └─ tick(): buildFrame → send() → 等 ACK
+            └─ Bridge: 校验/去重/追加 JSONL + fsync → 回 stored ACK
+                 └─ 收到匹配 ACK 后才算"持久化完成"
+```
+
+丢失窗口 = **从 enqueue 成功到收到 stored/duplicate ACK 之间的整段时间**。
+这段窗口内发生下列任一情况都会丢事件，且不会有任何"已落盘"的假象：
+
+1. Frida 脚本被卸载（`unload()` 或 session detach）——本用例实测 1 条；
+2. `smartapp:core` 进程退出/被杀（C4 用了 force-stop，但当时 Sender 已停，所以未丢）；
+3. Bridge 长时间不可用且队列满（C5 实测丢 15 条，计入 `queue_overflow`）；
+4. 设备掉电/重启。
+
+`queue_overflow` 与 `dropped` 是两条不同的丢事件路径：
+- `queue_overflow`：队列满时挤掉最老的一条（有计数，无 event_id 记录）；
+- `dropped`：帧级拒收 3 次后放弃，或 build-frame 失败（有 event_id 记录）。
+本用例两者都是 0——它是**第 1 类（脚本生命周期）**的丢失，当前设计里**没有任何计数器能反映**，
+只能在卸载前用 `stats()` 的 `pending_count/queue_depth` 观测到"还没落地"。
+这正说明：**内存队列不等于持久化**。

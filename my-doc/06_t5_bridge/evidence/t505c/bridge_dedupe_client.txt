@@ -1,0 +1,22 @@
+﻿# T5-05C bridge-side dedupe / frame-reject evidence (real tgb_bridge + repo tgb_client)
+# NOTE: keep --timeout-ms < 1000; tgb_client recv_ack sets tv_usec = left*1000, so >=1000 ms
+#       overflows tv_usec and select() returns EINVAL immediately (test-tool defect, not fixed here).
+# events.jsonl before: 102 /data/local/tmp/t5_bridge/work/events.jsonl
+== scenario dup ==
+ACK {"version":1,"ack":"evt-dup-1","status":"duplicate","code":"duplicate_event_id","dup_count":12,"events_stored":29,"recv_at_ms":1795161694790,"stored_at_ms":0}
+ACK {"version":1,"ack":"evt-dup-1","status":"duplicate","code":"duplicate_event_id","dup_count":13,"events_stored":29,"recv_at_ms":1795161694790,"stored_at_ms":0}
+{"type":"CLIENT_SUMMARY","scenario":"dup","sent":2,"acks":2,"elapsed_ms":902,"peer_closed":false}
+== scenario bad_crc ==
+ACK {"version":1,"ack":null,"status":"rejected","code":"bad_crc","dup_count":13,"events_stored":29,"recv_at_ms":1795161696051,"stored_at_ms":0}
+{"type":"CLIENT_SUMMARY","scenario":"bad_crc","sent":1,"acks":1,"elapsed_ms":1,"peer_closed":true}
+== scenario bad_type ==
+ACK {"version":1,"ack":null,"status":"rejected","code":"bad_frame_type","dup_count":13,"events_stored":29,"recv_at_ms":1795161696157,"stored_at_ms":0}
+{"type":"CLIENT_SUMMARY","scenario":"bad_type","sent":1,"acks":1,"elapsed_ms":1,"peer_closed":true}
+== scenario resend_after_ack ==
+ACK {"version":1,"ack":"evt-resend-1","status":"duplicate","code":"duplicate_event_id","dup_count":14,"events_stored":29,"recv_at_ms":1795161696270,"stored_at_ms":0}
+ACK {"version":1,"ack":"evt-resend-1","status":"duplicate","code":"duplicate_event_id","dup_count":15,"events_stored":29,"recv_at_ms":1795161697171,"stored_at_ms":0}
+{"type":"CLIENT_SUMMARY","scenario":"resend_after_ack","sent":2,"acks":2,"elapsed_ms":1803,"peer_closed":false}
+# events.jsonl after: 102 /data/local/tmp/t5_bridge/work/events.jsonl
+# bridge status: {"state":"running","pid":7373,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":29,"duplicates":15,"rejected":10,"frames":44,"clients":1,"clients_accepted":26,"clients_closed":25,"client_aborts":12,"client_overflow":0,"frame_errors":10,"store_errors":0,"replay_lines":73,"bad_lines":0,"truncated_bytes":0,"dedup_size":102,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-20T16:01:37"}
+# evt-dup-1 lines in JSONL: 1
+# evt-resend-1 lines in JSONL: 1
