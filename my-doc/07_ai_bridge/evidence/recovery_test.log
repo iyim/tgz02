@@ -1,0 +1,96 @@
+﻿
+################ T5-06B device recovery (stage 3) ################
+host time : 2026-11-20 17:00:48
+
+===== baseline :: 2026-11-20 17:00:48 =====
+> adb shell sh /data/local/tmp/t5_bridge/run_ai_worker.sh status
+  running: pid=15324
+  {"version":1,"state":"running","pid":15324,"started_at":"2026-11-20T16:56:49","updated_at":"2026-11-20T17:00:48","started_at_ms":1795165009977,"updated_at_ms":1795165248214,"events_file":"/data/local/tmp/t5_bridge/work/events.jsonl","state_file":"/data/local/tmp/t5_bridge/ai_worker/consumer_state.json","offset":32602,"file_size":32602,"dev":45846,"ino":86131,"provider":"mock","mock_calls":106,"counters":{"lines_read":106,"events_accepted":106,"events_processed":106,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":0,"gap_missing_total":0,"seq_resets":12,"seq_unknown_start":1,"state_saves":106,"state_errors":0,"provider_ok":106,"provider_err":0,"provider_timeout":0},"last_seq":4,"last_event_id":"t5b-29413-1969899-g1","last_event_at":"2026-11-20T17:00:07","last_gap_from":0,"last_gap_to":0,"last_invalid":"","last_error":"","exit_reason":"running"}
+worker pid       : 15324
+events lines     : 106
+state offset     : 32602
+processed_total  : 106
+state json       : {"version":1,"dev":45846,"ino":86131,"offset":32602,"seq_last":4,"last_event_id":"t5b-29413-1969899-g1","processed_total":106,"updated_at_ms":1795165207945,"recent_cap":128,"recent_n":106,"recent_ids":"t5b-16112-1967345-g1,t5b-16112-1967349-g1,t5b-16112-1967353-g1,t5b-16112-1967357-g1,t5b-16112-1967361-g1,t5b-16112-1967365-g1,t5b-16112-1967369-g1,t5b-16112-1967381-g1,t5b-16112-1967399-g1,t5b-16112-1967412-g1,t5b-16112-1967421-g1,t5b-16112-1967425-g1,t5b-16112-1967451-g1,t5b-16112-1967536-g1,t5b-16112-1967540-g1,t5b-16112-1967544-g1,t5b-16112-1967553-g1,t5b-16112-1967567-g1,t5b-16112-1967614-g1,t5b-16112-1967618-g1,t5b-16112-1967622-g1,t5b-16112-1967626-g1,t5b-16112-1967630-g1,t5b-16112-1967634-g1,t5b-16112-1967638-g1,t5b-16112-1967643-g1,t5b-16112-1967647-g1,t5b-16112-1967651-g1,t5b-16112-1967656-g1,t5b-16112-1967660-g1,t5b-16112-1967664-g1,t5b-16112-1967670-g1,t5b-16112-1967674-g1,t5b-16112-1967678-g1,t5b-16112-1967684-g1,t5b-16112-1967688-g1,t5b-16112-1967693-g1,t5b-16112-1967701-g1,t5b-16112-1967705-g1,t5b-16112-1967717-g1,t5b-16112-1967725-g1,t5b-16112-1967729-g1,t5b-16112-1967736-g1,t5b-16112-1967740-g1,t5b-16112-1967744-g1,t5b-16112-1967748-g1,t5b-16112-1967756-g1,t5b-16112-1967760-g1,t5b-16112-1967768-g1,t5b-16112-1967772-g1,t5b-16112-1967776-g1,t5b-16112-1967781-g1,t5b-16112-1967788-g1,t5b-16112-1967792-g1,t5b-16112-1967796-g1,t5b-16112-1967801-g1,t5b-16112-1967810-g1,t5b-16112-1967815-g1,t5b-16112-1967819-g1,t5b-16112-1967823-g1,t5b-16112-1967827-g1,t5b-16112-1967834-g1,t5b-16112-1967838-g1,t5b-16112-1967843-g1,t5b-16112-1967857-g1,t5b-16112-1967861-g1,t5b-29413-1969456-g1,t5b-29413-1969468-g1,t5b-29413-1969472-g1,t5b-29413-1969476-g1,t5b-29413-1969482-g1,t5b-29413-1969486-g1,t5b-29413-1969490-g1,evt-dup-1,evt-resend-1,t5b-29413-1969706-g1,t5b-29413-1969710-g1,t5b-29413-1969714-g1,t5b-29413-1969718-g1,t5b-29413-1969722-g1,t5b-29413-1969736-g1,t5b-29413-1969740-g1,t5b-29413-1969749-g1,t5b-29413-1969753-g1,t5b-29413-1969760-g1,t5b-29413-1969765-g1,t5b-29413-1969772-g1,t5b-29413-1969776-g1,t5b-29413-1969780-g1,t5b-29413-1969791-g1,t5b-29413-1969796-g1,t5b-29413-1969808-g1,t5b-29413-1969812-g1,t5b-29413-1969817-g1,t5b-29413-1969822-g1,t5b-29413-1969830-g1,t5b-29413-1969834-g1,t5b-29413-1969844-g1,t5b-29413-1969849-g1,t5b-29413-1969853-g1,t5b-29413-1969857-g1,t5b-29413-1969861-g1,t5b-29413-1969886-g1,t5b-29413-1969890-g1,t5b-29413-1969895-g1,t5b-29413-1969899-g1"}
+
+===== simulate crash: kill -9 the worker :: 2026-11-20 17:00:49 =====
+> adb shell kill -9 15324
+> adb shell pidof ai_worker
+> adb shell ls -l /data/local/tmp/t5_bridge/ai_worker/ai_worker.lock
+  -rw------- 1 shell shell 6 2026-11-20 16:56 /data/local/tmp/t5_bridge/ai_worker/ai_worker.lock
+> adb shell cat /data/local/tmp/t5_bridge/ai_worker/ai_worker.lock
+  15324
+lock content after kill (stale): 15324
+
+===== restart after crash: must take over the stale lock and resume :: 2026-11-20 17:00:51 =====
+> adb shell sh /data/local/tmp/t5_bridge/run_ai_worker.sh start
+  started: pid=16072 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+  [aiw] 2026-11-20T17:00:51 stale lock removed (owner pid=15324 not alive)
+  [aiw] 2026-11-20T17:00:51 start pid=16072 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5_bridge/ai_worker/consumer_state.json provider=mock offset=32602 (mock only, no network)
+> adb shell sh /data/local/tmp/t5_bridge/run_ai_worker.sh log 10
+  [aiw] 2026-11-20T17:00:51 stale lock removed (owner pid=15324 not alive)
+  [aiw] 2026-11-20T17:00:51 start pid=16072 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5_bridge/ai_worker/consumer_state.json provider=mock offset=32602 (mock only, no network)
+> adb shell sh /data/local/tmp/t5_bridge/run_ai_worker.sh status
+  running: pid=16072
+  {"version":1,"state":"running","pid":16072,"started_at":"2026-11-20T17:00:51","updated_at":"2026-11-20T17:00:54","started_at_ms":1795165251885,"updated_at_ms":1795165254912,"events_file":"/data/local/tmp/t5_bridge/work/events.jsonl","state_file":"/data/local/tmp/t5_bridge/ai_worker/consumer_state.json","offset":32602,"file_size":32602,"dev":45846,"ino":86131,"provider":"mock","mock_calls":0,"counters":{"lines_read":0,"events_accepted":0,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":0,"state_errors":0,"provider_ok":0,"provider_err":0,"provider_timeout":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"last_invalid":"","last_error":"","exit_reason":"running"}
+after restart offset    : 32602
+after restart processed : 106
+after restart counters  : "events_processed":0 "duplicates":0 "state_errors":0
+
+===== inject ONE new event through the real bridge UDS (tgb_client) :: 2026-11-20 17:00:56 =====
+> adb shell /data/local/tmp/t5_bridge/tgb_client --sock tgz2_asr_bridge --scenario batch --count 1 --id-prefix t506b-r1 --timeout-ms 900
+  ACK {"version":1,"ack":"t506b-r1-0000","status":"stored","code":"ok","dup_count":0,"events_stored":5,"recv_at_ms":1795165256000,"stored_at_ms":1795165256000}
+  {"type":"CLIENT_SUMMARY","scenario":"batch","sent":1,"acks":1,"elapsed_ms":904,"peer_closed":false}
+> adb shell tail -1 /data/local/tmp/t5_bridge/work/events.jsonl
+  {"version":1,"rec":"asr_final","event_id":"t506b-r1-0000","event_type":"asr_final","pid":16112,"session_id":"1967100","text":"第几条测试文本","text_bytes":21,"text_chars":7,"is_final":true,"received_at_ms":1763000000000,"recv_at_ms":1795165256000,"stored_at_ms":1795165256000,"seq":5}
+> adb shell sh /data/local/tmp/t5_bridge/run_ai_worker.sh log 4
+  [aiw] 2026-11-20T17:00:51 stale lock removed (owner pid=15324 not alive)
+  [aiw] 2026-11-20T17:00:51 start pid=16072 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5_bridge/ai_worker/consumer_state.json provider=mock offset=32602 (mock only, no network)
+events lines now        : 107
+processed_total now     : 107
+offset now              : 32894
+jsonl size              : 32894 /data/local/tmp/t5_bridge/work/events.jsonl
+
+===== double start must be refused :: 2026-11-20 17:01:00 =====
+> adb shell sh /data/local/tmp/t5_bridge/run_ai_worker.sh start; echo script_rc=$?
+  already running: pid=16072
+  script_rc=1
+> adb shell /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --idle-exit-ms 200; echo binary_rc=$?
+  [aiw] 2026-11-20T17:01:00 another ai_worker is running: pid=16072
+  already running (lock held)
+  binary_rc=3
+
+===== graceful stop (SIGINT) :: 2026-11-20 17:01:00 =====
+> adb shell sh /data/local/tmp/t5_bridge/run_ai_worker.sh stop
+  stopped: pid=16072
+  [aiw] 2026-11-20T17:00:51 start pid=16072 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5_bridge/ai_worker/consumer_state.json provider=mock offset=32602 (mock only, no network)
+  [aiw] 2026-11-20T17:01:00 exit reason=signal processed=1 duplicates=0 invalid=0 gaps=0 resets=0 offset=32894 state_saves=2
+> adb shell pidof ai_worker
+> adb shell sh /data/local/tmp/t5_bridge/run_ai_worker.sh stats
+  {"version":1,"state":"stopped","pid":16072,"started_at":"2026-11-20T17:00:51","updated_at":"2026-11-20T17:01:00","started_at_ms":1795165251885,"updated_at_ms":1795165260583,"events_file":"/data/local/tmp/t5_bridge/work/events.jsonl","state_file":"/data/local/tmp/t5_bridge/ai_worker/consumer_state.json","offset":32894,"file_size":32894,"dev":45846,"ino":86131,"provider":"mock","mock_calls":1,"counters":{"lines_read":1,"events_accepted":1,"events_processed":1,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":1,"state_saves":2,"state_errors":0,"provider_ok":1,"provider_err":0,"provider_timeout":0},"last_seq":5,"last_event_id":"t506b-r1-0000","last_event_at":"2026-11-20T17:00:56","last_gap_from":0,"last_gap_to":0,"last_invalid":"","last_error":"","exit_reason":"signal"}
+> adb shell ls -l /data/local/tmp/t5_bridge/ai_worker/
+  total 12
+  -rw-rw-rw- 1 shell shell  402 2026-11-20 17:01 ai_worker.log
+  -rw------- 1 shell shell  892 2026-11-20 17:01 ai_worker_status.json
+  -rw------- 1 shell shell 2418 2026-11-20 17:01 consumer_state.json
+final processed_total   : 107
+final offset            : 32894
+final jsonl size        : 32894 /data/local/tmp/t5_bridge/work/events.jsonl
+
+===== restart is idempotent (nothing new to consume) :: 2026-11-20 17:01:02 =====
+> adb shell sh /data/local/tmp/t5_bridge/run_ai_worker.sh start
+  started: pid=16167 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+  [aiw] 2026-11-20T17:01:02 start pid=16167 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5_bridge/ai_worker/consumer_state.json provider=mock offset=32894 (mock only, no network)
+idle restart counters   : {"version":1,"state":"running","pid":16167,"started_at":"2026-11-20T17:01:02","updated_at":"2026-11-20T17:01:05","started_at_ms":1795165262548,"updated_at_ms":1795165265586,"events_file":"/data/local/tmp/t5_bridge/work/events.jsonl","state_file":"/data/local/tmp/t5_bridge/ai_worker/consumer_state.json","offset":32894,"file_size":32894,"dev":45846,"ino":86131,"provider":"mock","mock_calls":0,"counters":{"lines_read":0,"events_accepted":0,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":0,"state_errors":0,"provider_ok":0,"provider_err":0,"provider_timeout":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"last_invalid":"","last_error":"","exit_reason":"running"}
+> adb shell sh /data/local/tmp/t5_bridge/run_ai_worker.sh stop
+  stopped: pid=16167
+  [aiw] 2026-11-20T17:01:02 start pid=16167 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5_bridge/ai_worker/consumer_state.json provider=mock offset=32894 (mock only, no network)
+  [aiw] 2026-11-20T17:01:06 exit reason=signal processed=0 duplicates=0 invalid=0 gaps=0 resets=0 offset=32894 state_saves=1
+
+===== core and bridge still healthy :: 2026-11-20 17:01:06 =====
+> adb shell pidof com.alibaba.ailabs.genie.smartapp:core
+  29413
+> adb shell sh /data/local/tmp/t5_bridge/run_bridge.sh status
+  running: pid=15181
+  {"state":"running","pid":15181,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":5,"duplicates":0,"rejected":0,"frames":5,"clients":0,"clients_accepted":3,"clients_closed":3,"client_aborts":3,"client_overflow":0,"frame_errors":0,"store_errors":0,"replay_lines":102,"bad_lines":0,"truncated_bytes":0,"dedup_size":107,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-20T17:01:05"}
+
+######## stage 3 done ########

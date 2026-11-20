@@ -1,7 +1,20 @@
-# T5-06A 证据（真机实测原始输出）
+# T5-06A / T5-06B 证据（主机测试 + 真机实测原始输出）
 
-所有文件都是 TG-Z02 上 `adb shell` 的直接输出，未做美化；时间：2026-11-20 16:20–16:35。
-探针是**一次性夹具**（见 `tools/`），不属于任何生产代码，也没有改动设备文件/系统分区。
+所有真机文件都是 TG-Z02 上 `adb shell` 的直接输出，未做美化；T5-06A 时间：2026-11-20 16:20–16:35，
+T5-06B 时间：2026-11-20 16:54–17:03。探针与测试脚本都是**一次性夹具**（见 `tools/`、
+`../tests/`、`../android/`），不属于生产代码，也没有改动设备文件/系统分区。
+
+## T5-06B（独立 AI Worker）
+
+| 文件 | 产生方式 | 关键内容 |
+|---|---|---|
+| `ndk_build.log` | `android/build.ps1`（NDK r21e，API 26，`-O2 -Wall -Wextra -fPIE -pie`） | 零警告；产物 93408 B / sha256 `2cbd1f86…`；`ELF32 / ARM / Type: DYN`；`INTERP /system/bin/linker`；`NEEDED libc.so` |
+| `host_unit_test.log` | `tests/run_host_tests.ps1` → `worker_unit_test.exe` | **215 checks / 0 failed**（解析、拒收、seq、状态、游标、Provider、状态文件） |
+| `host_integration_test.log` | 同上 → `worker_integration_test.py`（真起进程） | **14/14 PASS**：只读消费、半行、非法行、去重、缺口、崩溃续跑、截断、重建、状态损坏、Provider 失败、超长、双实例、3000 条内存恒定 |
+| `device_smoke.log` | `_analysis/t506b/d1_smoke.ps1`、`d2_voice.ps1`、`d4_factory.ps1` | 推送/启动/历史 102 条消费（`gaps=0, seq_resets=11`）/事件文件 sha256 不变/真实语音 2 条自动消费/原厂 TTS 正常 |
+| `recovery_test.log` | `_analysis/t506b/d3_recovery.ps1` | `kill -9` → 陈旧锁接管 → 断点续跑；真实 UDS 注入 1 条被消费；双实例 rc=3；SIGINT 优雅停止；重启幂等 |
+
+T5-06A 探针的原始输出见下表。
 
 | 文件 | 产生方式 | 关键内容 |
 |---|---|---|

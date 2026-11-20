@@ -1,0 +1,5 @@
+# T5-06B build outputs and test run directories (evidence/*.log is committed)
+android/out/
+tests/out/
+tests/_run/
+tests/__pycache__/

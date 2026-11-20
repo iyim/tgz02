@@ -1,0 +1,83 @@
+/*
+ * worker_status.h -- Worker 的运行状态与计数（可查询，供 run_ai_worker.sh stats 读取）
+ *
+ * 输出：<state_dir>/ai_worker_status.json
+ *   - 位置在 ai_worker 自己的目录里，不写进桥接端的 work 目录（不干扰 T5-05A 的产物）。
+ *   - 写入同样是 tmp + fsync + rename + fsync(dir)，所以任意时刻读到的是完整 JSON。
+ *   - 字段命名与 bridge_status.json 保持一致的风格（state / pid / *_at / 计数），
+ *     便于以后把两个进程的状态并排看。
+ */
+#ifndef T6B_WORKER_STATUS_H
+#define T6B_WORKER_STATUS_H
+
+#include <stddef.h>
+
+#include "event_reader.h"
+#include "provider.h"
+
+#define T6B_STATUS_FILE "ai_worker_status.json"
+
+typedef struct {
+    int                version;
+    char               state[24];          /* starting/running/idle/stopping/stopped/exited/error */
+    long long          pid;
+    char               started_at[24];
+    char               updated_at[24];
+    long long          started_at_ms;
+    long long          updated_at_ms;
+
+    char               events_file[T6B_PATH_MAX];
+    char               state_file[T6B_PATH_MAX];
+    long long          offset;             /* 已提交消费偏移 */
+    long long          file_size;          /* events.jsonl 当前大小（探测失败为 -1） */
+    unsigned long long dev;
+    unsigned long long ino;
+
+    char               provider[T6B_PROVIDER_NAME_MAX];
+    unsigned long long mock_calls;
+
+    /* 消费侧计数 */
+    unsigned long long lines_read;         /* 从文件里读出的完整行（含非法） */
+    unsigned long long events_accepted;    /* 解析校验通过 */
+    unsigned long long events_processed;   /* 交给 Provider 处理并完成 */
+    unsigned long long duplicates;         /* event_id 已在最近窗口里 */
+    unsigned long long invalid_lines;      /* 解析失败被跳过 */
+    unsigned long long oversize_lines;     /* 超长被跳过 */
+    unsigned long long io_errors;          /* 读文件失败次数 */
+    unsigned long long truncations;        /* 检测到文件变短 */
+    unsigned long long replacements;       /* 检测到 inode 更换（文件被重建） */
+
+    /* seq 缺口 */
+    unsigned long long gaps;
+    unsigned long long gap_missing_total;
+    unsigned long long seq_resets;         /* seq 回退（桥接端重启）：不算丢事件 */
+    unsigned long long seq_unknown_start;  /* 新 pid 段从 seq>1 开始：无法判定，仅记录 */
+
+    /* 状态文件写入 */
+    unsigned long long state_saves;
+    unsigned long long state_errors;
+
+    /* Provider */
+    unsigned long long provider_ok;
+    unsigned long long provider_err;
+    unsigned long long provider_timeout;
+
+    unsigned long      last_seq;
+    char               last_event_id[T6B_ID_MAX + 1];
+    char               last_event_at[24];
+    unsigned long      last_gap_from;
+    unsigned long      last_gap_to;
+    char               last_invalid[64];   /* 最近一次非法原因 */
+    char               last_error[192];
+    char               exit_reason[32];
+} t6b_status;
+
+void t6b_status_init(t6b_status *st);
+
+/* 原子写状态文件；0 = 成功 */
+int  t6b_status_write(const t6b_status *st, const char *path, char *err, size_t errlen);
+
+/* 记录一条错误（同时写入 last_error 与时间戳；不会退出进程） */
+void t6b_status_note_error(t6b_status *st, const char *fmt, ...);
+
+#endif /* T6B_WORKER_STATUS_H */

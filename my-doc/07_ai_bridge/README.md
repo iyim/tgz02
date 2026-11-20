@@ -1,6 +1,7 @@
-# 07 · AI Bridge 接入前置盘点（T5-06A）
+# 07 · AI Bridge 接入（T5-06A 调查 + T5-06B 独立 Worker 框架）
 
-本目录只做**调查与记录**，不含任何生产代码改动。基线：`e6aa8110`（T5-05C 验收通过）。
+本目录 T5-06A 只做**调查与记录**；T5-06B 只做**独立 Worker 框架**（Mock Provider，不联网）。
+基线：`e6aa8110`（T5-05C 验收通过）。
 调查对象：设备 TG-Z02（`AILABS_S1L`，MT8167S，armv7l，Android 8.1 / SDK 27，
 vendor release 串 `6.1.8-RS-20221104.1459`，kernel `4.4.95+`）。
 
@@ -12,7 +13,19 @@ vendor release 串 `6.1.8-RS-20221104.1459`，kernel `4.4.95+`）。
 | [t5_06a_device_environment.md](t5_06a_device_environment.md) | B：设备运行环境（网络接口、TLS/HTTP/JSON 库、CA、NDK、ARM32 静态限制），含真机探针输出 |
 | [t5_06a_model_api_compatibility.md](t5_06a_model_api_compatibility.md) | C：OpenAI / DeepSeek / 通义（百炼）/ 豆包（方舟）接口兼容性事实 |
 | [t5_06a_risk_assessment.md](t5_06a_risk_assessment.md) | D+E：安全与资源约束、T5-05 遗留风险对 AI 接入的影响 |
-| [evidence/](evidence) | 真机探针原始输出、设备事实快照、NDK 检查、探针源码 |
+| [t5_06b_worker_report.md](t5_06b_worker_report.md) | **T5-06B：独立 AI Worker 的实现与测试报告**（消费语义、Provider 抽象、主机 215+14 项测试、真机实测） |
+| [android/](android) | T5-06B Worker 源码 + `build.ps1`（NDK 动态链接）+ `run_ai_worker.sh` |
+| [tests/](tests) | T5-06B 主机单元测试 / 集成测试 / 一键运行脚本 |
+| [evidence/](evidence) | 真机探针原始输出、设备事实快照、NDK 检查、主机与真机测试日志 |
+
+## T5-06B 一句话结论
+
+`ai_worker` 已作为**独立动态链接进程**在 TG-Z02 上跑通：只读消费 `events.jsonl`、
+原子持久化消费进度、严格校验 + event_id 去重 + seq 缺口三态判定（回退=桥接重启，不误判丢失）、
+单实例锁 + 崩溃后续跑、Provider 抽象只落地 Mock（**零网络、零 key**）。
+真机实测：历史 102 条一次消费完成（`gaps=0`、`seq_resets=11`、offset=文件大小）；
+真实语音 2 条自动消费；`kill -9` 后接管陈旧锁并断点续跑；双实例被拒绝；
+`tgb_bridge` 与 `smartapp:core` 全程无异常。详见 [t5_06b_worker_report.md](t5_06b_worker_report.md)。
 
 ## 结论标记约定
 

@@ -1,0 +1,2 @@
+# Device-side shell scripts must stay LF: they are pushed to Android and run by /system/bin/sh.
+*.sh text eol=lf

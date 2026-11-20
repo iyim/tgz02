@@ -1,0 +1,22 @@
+﻿=== T5-06B worker integration test (host, Mock provider only) ===
+exe : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_170303
+
+PASS i1_basic_consume_and_readonly   0.81s  10 events, file untouched, rerun is a no-op
+PASS i2_half_line                   1.11s  half line waited ~1s then consumed after completion
+PASS i3_invalid_json                0.37s  1 invalid line skipped, 2 valid processed
+PASS i4_duplicate_event_id          0.41s  duplicate event_id skipped, counted
+PASS i5_seq_gap                     0.42s  gap [3,4] recorded, no fabricated events
+PASS i6_crash_and_resume            1.27s  killed after 6 processed (offset=1494), resumed to cumulative total=20, dup=0
+PASS i7_resume_after_clean_exit     0.67s  append after restart consumed incrementally (2 new)
+PASS i8_truncation                  0.68s  truncation detected, rescan from 0, 1 record processed
+PASS i9_recreated                   0.62s  same-size recreated file detected via file identity
+PASS i10_corrupt_state              0.72s  corrupt state archived as consumer_state.json.corrupt-2026_11_20T17_03_10, rescanned from 0 (4 records reprocessed)
+PASS i11_provider_failure           0.42s  provider errors 3/5, consumer unaffected
+PASS i12_oversize                   0.39s  1 oversize line skipped (limit 1024), neighbours processed
+PASS i13_double_start               0.22s  second instance exits 3, lock held by first
+PASS i14_memory_stable              0.42s  RSS [3920, 3920, 3920] KB, growth 0 KB over 3000 events
+
+cases: 14, failed: 0
+RESULT: PASS
+
