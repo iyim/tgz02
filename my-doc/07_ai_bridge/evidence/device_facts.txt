@@ -1,0 +1,39 @@
+﻿# T5-06A device facts (TG-Z02, adb shell, verbatim)
+## uname / props
+Linux localhost 4.4.95+ #1 SMP PREEMPT Fri Nov 4 14:52:25 CST 2022 armv7l
+6.1.8-RS-20221104.1459
+27
+O11019 test-keys
+armeabi-v7a,armeabi
+AILABS_S1L
+## tls/http/json libs
+-rw-r--r-- 1 root root 718488 2026-11-17 19:45 /system/lib/libcrypto.so
+-rw-r--r-- 1 root root 226080 2026-11-17 19:45 /system/lib/libcurl.so
+-rw-r--r-- 1 root root 166616 2026-11-17 19:45 /system/lib/libjson-c.so
+-rw-r--r-- 1 root root 193860 2026-11-17 19:45 /system/lib/libssl.so
+## cli tools
+-rwxr-xr-x 1 root shell  276332 2026-11-17 19:45 /system/bin/curl
+-rwxr-xr-x 1 root shell 2424344 2026-11-17 19:45 /system/bin/openssl
+curl 7.52.0-DEV (Android) libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+Protocols: file http https 
+Features: IPv6 NTLM SSL libz UnixSockets 
+OpenSSL 1.1.0i  14 Aug 2018
+## ca store
+135
+00673b5b.0
+02756ea4.0
+04f60c28.0
+/system/etc/security/cacerts
+## interfaces / routes / dns
+1: lo    inet 127.0.0.1/8 scope host lo\       valid_lft forever preferred_lft forever
+1: lo    inet6 ::1/128 scope host \       valid_lft forever preferred_lft forever
+11: wlan0    inet 192.168.1.9/24 brd 192.168.1.255 scope global wlan0\       valid_lft forever preferred_lft forever
+12: p2p0    inet6 fe80::f8a7:63ff:fee6:cbfd/64 scope link \       valid_lft forever preferred_lft forever
+192.168.1.0/24 dev wlan0  proto kernel  scope link  src 192.168.1.9 
+default via 192.168.1.1 dev wlan0  proto static 
+192.168.1.0/24 dev wlan0  proto static  scope link 
+192.168.1.1
+## vendor libs (tls/http/json)
+## bridge binary on device
+-rwxr-xr-x 1 shell shell 3553180 2026-11-20 13:06 /data/local/tmp/t5_bridge/tgb_bridge
+-rw-rw-r-- 1 shell shell 31368 2026-11-20 16:01 /data/local/tmp/t5_bridge/work/events.jsonl

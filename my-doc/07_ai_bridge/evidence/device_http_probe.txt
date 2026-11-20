@@ -1,0 +1,26 @@
+﻿URL  https://www.baidu.com/
+CODE 200
+BODY <!DOCTYPE html>
+ <!--STATUS OK--><html> <head><meta http-equiv=content-type content=text/html;charset=utf-8><meta http-equiv=X-UA-Compatible content=IE=Edge><meta content=always name=referrer><link re
+
+URL  https://api.deepseek.com/
+CODE 401
+BODY {"error":{"message":"Authentication Fails (missing key) (request_id: dfa1dc9b-2a19-40d6-ad85-c52dbf5ffd78)","type":"authentication_error","param":null,"code":"invalid_request_error"}} 
+
+URL  https://api.deepseek.com/v1/models
+CODE 401
+BODY {"error":{"message":"Authentication Fails (governor) (request_id: 5a6cf2c3-fec1-448c-9ed7-329bd6408c91)","type":"authentication_error","param":null,"code":"invalid_request_error"}} 
+
+URL  https://dashscope.aliyuncs.com/compatible-mode/v1/models
+CODE 401
+BODY {"error":{"message":"You didn't provide an API key. You need to provide your API key in an Authorization header using Bearer auth (i.e. Authorization: Bearer YOUR_KEY). ","type":"invalid_request_error
+
+URL  https://ark.cn-beijing.volces.com/api/v3/models
+CODE 401
+BODY {"error":{"code":"AuthenticationError","message":"the API key or AK/SK in the request is missing or invalid. request id: 021795162941645619b169e3834457b465f4a1674da52f88e969a","param":"","type":"Unaut
+
+URL  https://api.openai.com/v1/models
+
+CODE 000
+BODY  
+

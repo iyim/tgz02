@@ -1,0 +1,18 @@
+﻿# T5-06A NDK check (r21e / 21.4.7075529)
+## source.properties
+Pkg.Desc = Android NDK
+Pkg.Revision = 21.4.7075529
+## sysroot include dirs (openssl/curl/json?)
+aarch64-linux-android, aaudio, amidi, android, arm-linux-androideabi, arpa, asm-generic, bits, camera, drm, EGL, GLES, GLES2, GLES3, i686-linux-android, KHR, linux, media, misc, mtd, net, netinet, netpacket, OMXAL, rdma, scsi, SLES, sound, sys, video, vulkan, x86_64-linux-android, xen
+## search for openssl dir / curl.h inside NDK
+(no openssl directory)
+(no curl.h)
+(no json.h)
+## armv7 sysroot libs (ssl/crypto/curl/json)
+(none)
+## bridge binary properties
+Class:                             ELF32
+Type:                              EXEC (Executable file)
+Machine:                           ARM
+Entry point address:               0x81C4
+dynamic section: 

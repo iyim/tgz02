@@ -1,0 +1,7 @@
+﻿CURL version: libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+CURL url=https://www.baidu.com/
+CURL result=0 http_status=200 bytes=17143
+CURL body_head="<!DOCTYPE html>
+<html>
+<head>
+    <meta "

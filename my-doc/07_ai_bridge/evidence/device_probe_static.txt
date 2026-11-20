@@ -1,0 +1,13 @@
+﻿== dlopen / dlsym ==
+DL libssl.so          OPEN_FAIL  libdl.a is a stub --- use libdl.so instead
+DL libcrypto.so       OPEN_FAIL  libdl.a is a stub --- use libdl.so instead
+DL libjson-c.so       OPEN_FAIL  libdl.a is a stub --- use libdl.so instead
+DL libcurl.so         OPEN_FAIL  libdl.a is a stub --- use libdl.so instead
+DL liblog.so          OPEN_FAIL  libdl.a is a stub --- use libdl.so instead
+
+== TCP 443 reachability (no TLS, no HTTP, no credentials) ==
+NET www.baidu.com                    DNS_FAIL (No address associated with hostname)
+NET api.deepseek.com                 DNS_FAIL (No address associated with hostname)
+NET dashscope.aliyuncs.com           DNS_FAIL (No address associated with hostname)
+NET ark.cn-beijing.volces.com        DNS_FAIL (No address associated with hostname)
+NET api.openai.com                   DNS_FAIL (No address associated with hostname)

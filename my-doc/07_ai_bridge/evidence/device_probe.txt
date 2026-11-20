@@ -1,0 +1,26 @@
+﻿== dlopen / dlsym ==
+DL libssl.so          OPEN_OK
+   sym SSL_CTX_new              OK
+   sym SSL_new                  OK
+   sym SSL_connect              OK
+   sym TLS_client_method        OK
+DL libcrypto.so       OPEN_OK
+   sym CRYPTO_malloc            MISSING
+   sym EVP_DigestInit_ex        OK
+   sym OPENSSL_init_ssl         MISSING
+DL libjson-c.so       OPEN_OK
+   sym json_tokener_new         OK
+   sym json_object_get_string   OK
+DL libcurl.so         OPEN_OK
+   sym curl_easy_init           OK
+   sym curl_easy_perform        OK
+DL liblog.so          OPEN_OK
+   sym __android_log_print      OK
+
+== TCP 443 reachability (no TLS, no HTTP, no credentials) ==
+NET www.baidu.com                    addr=110.242.70.57    CONNECT_OK 30ms
+NET api.deepseek.com                 addr=123.125.246.121  CONNECT_OK 22ms
+NET dashscope.aliyuncs.com           addr=39.96.198.249    CONNECT_OK 38ms
+NET ark.cn-beijing.volces.com        addr=101.126.13.31    CONNECT_OK 31ms
+NET api.openai.com                   addr=157.240.0.35     TIMEOUT 5000ms
+NET api.openai.com                   addr=ipv6             CONNECT_FAIL errno=101 (Network is unreachable)
