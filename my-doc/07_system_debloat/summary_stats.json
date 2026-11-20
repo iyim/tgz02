@@ -1,0 +1,69 @@
+{
+ "packages": 55,
+ "total_mb": 526.72,
+ "by_class": {
+  "A": {
+   "packages": 1,
+   "total_mb": 4.6,
+   "apk_mb": 4.6,
+   "lib_mb": 0.0,
+   "oat_mb": 0.0,
+   "pss_mb": 0.0
+  },
+  "B": {
+   "packages": 14,
+   "total_mb": 115.33,
+   "apk_mb": 48.1,
+   "lib_mb": 61.76,
+   "oat_mb": 5.46,
+   "pss_mb": 147.8
+  },
+  "C": {
+   "packages": 19,
+   "total_mb": 153.89,
+   "apk_mb": 58.35,
+   "lib_mb": 36.71,
+   "oat_mb": 58.85,
+   "pss_mb": 103.0
+  },
+  "D": {
+   "packages": 21,
+   "total_mb": 252.9,
+   "apk_mb": 135.2,
+   "lib_mb": 58.1,
+   "oat_mb": 59.6,
+   "pss_mb": 341.5
+  }
+ },
+ "device_total_ram_mb": 984.99,
+ "device_used_pss_mb": 858.5,
+ "device_free_mb": 218.5,
+ "wakelocks": [
+  "PARTIAL_WAKE_LOCK              'NativeService' ACQ=-40m34s592ms LONG (uid=1000 pid=29434)",
+  "PARTIAL_WAKE_LOCK              'AudioIn' ACQ=-40m34s556ms LONG (uid=1041 ws=WorkSource{1000})",
+  "PARTIAL_WAKE_LOCK              'NativeService' ACQ=-40m32s826ms LONG (uid=1000 pid=29413)",
+  "PARTIAL_WAKE_LOCK              'ScreenWakeManager' ACQ=-39m12s398ms LONG (uid=1000 pid=29502)"
+ ],
+ "top_alarms": [
+  "+1m36s273ms running, 0 wakeups, 2619 alarms: 1000:android",
+  "*alarm*:android.intent.action.TIME_TICK",
+  "+41s489ms running, 5250 wakeups, 5250 alarms: 1000:android",
+  "*walarm*:*job.deadline*",
+  "+41s205ms running, 5260 wakeups, 5260 alarms: 1000:android",
+  "*walarm*:*job.delay*",
+  "+36s573ms running, 527 wakeups, 527 alarms: u0a39:com.dangbei1.tvlauncher",
+  "*walarm*:com.dangbei1.tvlauncher/cn.jpush.android.service.AlarmReceiver",
+  "+22s413ms running, 0 wakeups, 2621 alarms: 1000:com.aligenie.ags",
+  "*alarm*:com.yunos.tv.device.ALIICX_HEART_BEAT_START",
+  "+5s678ms running, 0 wakeups, 88 alarms: 1000:android",
+  "*alarm*:com.android.server.action.NETWORK_STATS_POLL",
+  "+4s411ms running, 576 wakeups, 576 alarms: 1000:android",
+  "*walarm*:WifiConnectivityManager Schedule Periodic Scan Timer",
+  "+4s342ms running, 0 wakeups, 101 alarms: 1000:com.aligenie.ags",
+  "*alarm*:com.aligenie.ic.COLLECTOR_ALARM",
+  "+453ms running, 62 wakeups, 62 alarms: u0a39:com.dangbei1.tvlauncher",
+  "*walarm*:com.dangbei1.tvlauncher.intent.action.COCKROACH",
+  "+341ms running, 8 wakeups, 8 alarms: 1000:android",
+  "*walarm*:ScheduleConditionProvider.EVALUATE"
+ ]
+}
