@@ -19,7 +19,7 @@
 | 主机单元测试 | **131 断言全通过**（帧/CRC/解析/UTF-8/记录/去重/存储） |
 | 主机集成测试 | **15 用例 / 153 断言全通过**（28.2 s，含并发、kill -9、故障注入） |
 | Android ARM32 编译 | `-O2 -Wall -Wextra -static`，**0 警告 0 错误**，两个产物均静态链接 |
-| 真机冒烟 | 13 条事件落盘、1 条重复、2 条拒收、2 次重启（`replay_lines=13`、`dedup_size=13`） |
+| 真机冒烟 | 13 条事件落盘、1 条重复、3 条拒收、2 次重启（`replay_lines=13`、`dedup_size=13`） |
 | T3/T4 生产代码 | **零改动**（`03_uds_test/`、`05_t4/` 无 diff） |
 | 原厂 APK / native / 分区 | **零改动**（只在 `/data/local/tmp/t5_bridge/` 下新增文件） |
 
@@ -123,11 +123,11 @@ socket 平台薄封装复用 `03_uds_test/tgz2_frame.h`（T3/T4 已在用）。
 
 ```
 $ sha256sum /data/local/tmp/t5_bridge/tgb_bridge
-eeea0b2e4725b8403de094db60ebbd0da0341c394a6c53083f0d0336b8c49a9f   （= 本地 ARM 产物）
+e95ecbb067acee1602fd1c24af1b2b39b56c4e7760019791ac4948b3e94cd6aa   （= 本地 ARM 产物）
 
 $ sh run_bridge.sh start
-started: pid=13590 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work
-{"type":"READY","pid":13590,"events_stored":0,"replay_lines":0,...}
+started: pid=13880 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work
+{"type":"READY","pid":13880,"events_stored":0,"replay_lines":0,...}
 
 $ ./tgb_client --scenario basic          → ACK ... "status":"stored"   （中文 27 B / 9 字）
 $ ./tgb_client --scenario cjk_escaped    → "status":"stored"           （\uXXXX 解出同一句）
@@ -138,12 +138,13 @@ $ ./tgb_client --scenario text_too_long  → rejected / text_too_long
 $ ./tgb_client --scenario batch --count 10 → 10 条 stored
 
 $ sh run_bridge.sh stop
-{"type":"STATS","tag":"final","frames":13,"stored":13,"duplicate":1,"rejected":2,
- "frame_errors":0,"store_errors":0,"client_aborts":..,"client_overflow":0,"store_failed":false}
+{"type":"STATS","tag":"final","frames":17,"stored":13,"duplicate":1,"rejected":3,
+ "frame_errors":0,"store_errors":0,"clients_accepted":7,"client_aborts":7,
+ "client_overflow":0,"store_failed":false}
 
 --- 重启：去重状态从 events.jsonl 重建 ---
 $ sh run_bridge.sh start
-{"type":"READY","pid":13645,"events_stored":0,"replay_lines":13,"bad_lines":0,
+{"type":"READY","pid":13928,"events_stored":0,"replay_lines":13,"bad_lines":0,
  "truncated_bytes":0,"dedup_size":13}
 $ ./tgb_client --scenario basic → "status":"duplicate","dup_count":1
 $ wc -l work/events.jsonl → 13        （重复事件没有写第二条）

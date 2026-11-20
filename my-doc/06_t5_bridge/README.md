@@ -366,15 +366,15 @@ sh run_bridge.sh stats            # 只打印状态文件
 
 ```
 $ sh run_bridge.sh start
-started: pid=13590 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work
-{"type":"READY","pid":13590,"events_stored":0,"replay_lines":0,...}
+started: pid=13880 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work
+{"type":"READY","pid":13880,"events_stored":0,"replay_lines":0,...}
 
 $ ./tgb_client --scenario basic
 ACK {"version":1,"ack":"evt-basic-1","status":"stored","code":"ok",...}
 
 $ sh run_bridge.sh stop
-stopped: pid=13590
-{"type":"STATS","tag":"final","frames":13,"stored":13,"duplicate":1,"rejected":2,...}
+stopped: pid=13880
+{"type":"STATS","tag":"final","frames":17,"stored":13,"duplicate":1,"rejected":3,...}
 ```
 
 ### 6.3 清理
