@@ -1,6 +1,6 @@
 === T5-06B integration subset (host, Mock provider only) ===
 exe    : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_203723
+run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_204953
 filter : i22
 
 PASS i22_legacy_state_migration         0.48s  v1 -> v2, rescan from 0, 1 duplicate suppressed, 2 processed

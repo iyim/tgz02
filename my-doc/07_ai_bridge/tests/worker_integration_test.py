@@ -1084,6 +1084,57 @@ def i24_append_does_not_reset(exe):
         stop_bg(proc)
 
 
+@case
+def i25_prefix_fold_partial_atomic(exe):
+    """指纹提交中途失败（P2-2 复审 P1）：落盘的 offset 与 prefix_hash 必须仍成对自洽"""
+    work = path_of("i25/work")
+    state = path_of("i25/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+
+    first = rec(1, 4242, "t5b-4242-pa01-g1", "atomic-1")
+    # 超长行必须长过一个读块（65536）：整行放不进缓存，提交它只能回读文件，
+    # 这样才能在"第一块读完、第二块还没读"的位置注入中途失败。
+    big = '{"junk":"' + ("q" * 70000) + '"}\n'
+    write_events("i25/work/events.jsonl",
+                 [first, big, rec(2, 4242, "t5b-4242-pa02-g1", "atomic-2")])
+    ev = path_of("i25/work/events.jsonl")
+    size = os.path.getsize(ev)
+    head = len(first.encode("utf-8"))
+    assert_ge(size, head + 70000, "fixture: one oversize line longer than a read chunk")
+
+    # 第一轮：第一条正常消费并落盘，接着提交超长行时中途失败 → 退出码 6
+    rc, out, _ = run_once(exe, work, state, ["--idle-exit-ms", "3000"],
+                          env={"T6B_FAULT_PREFIX": "fold_partial"})
+    assert_eq(rc, 6, "mid-way fold fault: exit code must be 6")
+    assert_in("prefix hash update failed", out, "mid-way fold fault logged")
+    st = state_of(state)
+    assert_eq(st.get("version"), 2, "state stays v2 after the fault")
+    assert_eq(st.get("offset"), head, "offset stays at the last committed record")
+    assert_eq(st.get("prefix_hash"), "%016x" % prefix_hash_of(ev, head),
+              "durable offset and prefix hash still describe the same bytes")
+    assert_eq(status_of(state).get("exit_reason"), "identity_hash_failed",
+              "exit reason recorded in status")
+    c = counters_of(state)
+    assert_eq(c.get("events_processed"), 1, "the failing record was not committed")
+    assert_ge(c.get("io_errors", 0), 1, "mid-way fold fault counted as an io error")
+
+    # 第二轮：状态自洽 → 指纹核对通过，没提交成功的超长行重新处理，后面继续消费
+    rc2, out2, _ = run_once(exe, work, state, ["--idle-exit-ms", "800"])
+    assert_eq(rc2, 0, "restart after a mid-way failure exits cleanly")
+    st2 = state_of(state)
+    assert_eq(st2.get("offset"), size, "restart: offset reaches end of file")
+    assert_eq(st2.get("prefix_hash"), "%016x" % prefix_hash_of(ev, size),
+              "restart: fingerprint matches a fresh full computation")
+    assert_eq(st2.get("processed_total"), 2, "the retried record was not lost")
+    c2 = counters_of(state)
+    assert_eq(c2.get("oversize_lines"), 1, "the skipped oversize record was committed on retry")
+    assert_eq(c2.get("identity_resets"), 0, "restart must not look like a content change")
+    assert_eq(c2.get("events_processed"), 1, "record 3 consumed exactly once")
+    return ("rc=6 with offset/hash pair kept at %d, restart completes, "
+            "1 record retried" % head)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--exe", default=DEFAULT_EXE)

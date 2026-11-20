@@ -29,11 +29,11 @@ T5-06B 时间：2026-11-20 16:54–17:03。探针与测试脚本都是**一次�
 
 | 文件 | 产生方式 | 关键内容 |
 |---|---|---|
-| `ndk_build.log` | `_analysis/t506b/n1_ndk_build.ps1`（NDK r21e，API 26） | 两个产物：`ai_worker` 106796 B / sha256 `32c98df0…`，`worker_unit_test` 162868 B / sha256 `f0d3a2f4…`；均 `ELF32/ARM/DYN` + `NEEDED libc.so`；**0 warning、0 error** |
+| `ndk_build.log` | `_analysis/t506b/n1_ndk_build.ps1`（NDK r21e，API 26） | 两个产物（本轮重建）：`ai_worker` 106796 B / sha256 `85d931ef…`，`worker_unit_test` 173040 B / sha256 `f74eccf4…`；均 `ELF32/ARM/DYN` + `NEEDED libc.so`；**0 warning、0 error** |
 | `device_numeric_fix.log` | `_analysis/t506b/n2_device.ps1` | 真机：**ARM32 单元测试 284/284 PASS**（`abi: 32-bit long, ULONG_MAX=4294967295`）；历史 111 行全消费（`invalid=0`、`offset=34119=size`、sha256 前后一致）；窄化拒收 4 行（`bad_seq`×2 / `bad_version` / `bad_type:text_bytes`）+ 1 行合法 |
 | `device_p2p2_inode_reuse.log` | 同上 + 基线 `f3c9f3bf` 的旧单元测试二进制 | 旁证：同目录删除重建后 `st_dev:st_ino` 完全相同（inode 复用）；基线 `f3c9f3bf` 在真机 **257/1 failed**，本轮 **284/0** → 该失败早于本轮存在 |
-| `host_unit_test.log` | `tests/run_host_tests.ps1` | **359 checks / 0 failed**（新增窄化/范围/一致性/前缀指纹/迁移/故障注入用例；Windows LLP64 的 `long` 也是 32 位，与 ARM32 同一分支） |
-| `host_integration_test.log` | 同上（真起进程） | **26/26 PASS**，Mock Provider，无网络 |
+| `host_unit_test.log` | `tests/run_host_tests.ps1` | **401 checks / 0 failed**（窄化/范围/一致性/前缀指纹/迁移/故障注入 + 本轮 `test_reader_prefix_atomic()`；Windows LLP64 的 `long` 也是 32 位，与 ARM32 同一分支） |
+| `host_integration_test.log` | 同上（真起进程） | **27/27 PASS**，Mock Provider，无网络 |
 
 ### T5-06B P2-2 补充修复（events.jsonl 前缀指纹 / inode 复用）
 
@@ -45,6 +45,15 @@ T5-06B 时间：2026-11-20 16:54–17:03。探针与测试脚本都是**一次�
 | `host_legacy_state.log` | `--only i22` | v1 → v2 迁移：从 0 重扫、`recent_ids` 抑制 1 条重复、状态写入 16 位十六进制指纹 |
 | `host_prefix_fault.log` | `--only i23` | `T6B_FAULT_PREFIX=read` → `rc=6`；`=fold` → `rc=6`、`processed=0`、偏移不动 |
 | `host_append_no_reset.log` | `--only i24` | 4 次追加 `resets/replacements/truncations` 全 0，增量指纹等于整段重算 |
+
+### T5-06B P2-2 复审 P1（指纹提交原子性）
+
+| 文件 | 产生方式 | 关键内容 |
+|---|---|---|
+| `device_p22_atomic_fold.log` | `_analysis/t506b/n4_device_atomic.ps1`（真机 TG-Z02，Mock Provider） | 5 段：真机 ARM32 单元 **401/401 PASS**；先正常消费第 1 条得到 `offset=285 / prefix_hash=dcbe3ddf0f0b22f7`；追加 70297 B 超长行后注入 `T6B_FAULT_PREFIX=fold_partial` → `prefix fold failed mid-way (4381/70297)`、`rc=6`、落盘 `offset` 与 `prefix_hash` **与故障前逐字节相同**；重启 `resets=0`、超长行重试提交、第 3 条处理一次；再重启为 no-op；真实桥接文件 sha256 不变 |
+| `host_prefix_atomic.log` | `worker_integration_test.py --only i25` | 中途失败 → `rc=6`、状态文件 `offset=250` 与其 `prefix_hash` 仍成对（等于外部独立算出的 `[0,250)` 指纹）、`exit_reason=identity_hash_failed`、`processed_total=2` |
+
+## T5-06A 探针证据
 
 T5-06A 探针的原始输出见下表。
 

@@ -1,11 +1,11 @@
-﻿# T5-06B P2 numeric validation fix -- ARM32 build log
+﻿# T5-06B P2-2 prefix fingerprint atomic commit -- ARM32 build log
 # ndk : D:\tgz02\OS\_analysis\tools\android-ndk-r21e
 # cc  : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd
 
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c
 (no compiler output: 0 warning, 0 error)
 # exit: 0
-# artifact: ai_worker  106796 B  sha256=32c98df0281658a25dcf88d5c7e10be2b15ed15570442f08b946887afc14648a
+# artifact: ai_worker  106796 B  sha256=85d931ef04f36d161f0334e98e91bd59b82974ba8415e1c23dddf5bf9305964c
 #     Type:                              DYN (Shared object file)
 #     Machine:                           ARM
 #     Entry point address:               0x1030
@@ -14,7 +14,7 @@
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\worker_unit_test D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\worker_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c
 (no compiler output: 0 warning, 0 error)
 # exit: 0
-# artifact: worker_unit_test  162868 B  sha256=f0d3a2f49f95fa36adea4c10e05edc80bc61d83251e2c6123c97806b3c30cbb6
+# artifact: worker_unit_test  173040 B  sha256=f74eccf4b5593bf7dc3464bf400c342b237d2a4cdbc9cdbaf7a4b941daea1a6d
 #     Type:                              DYN (Shared object file)
 #     Machine:                           ARM
 #     Entry point address:               0x1230

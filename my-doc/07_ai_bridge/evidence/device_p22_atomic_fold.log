@@ -1,0 +1,81 @@
+﻿
+################ T5-06B P2-2 P1 atomic prefix-hash commit -- device checks ################
+device    : 192.168.1.9:5555 (TG-Z02, MT8167S, armv7l, Android 8.1 / SDK 27)
+
+===== 0. push ARM32 binaries + fresh dirs (real bridge file must stay untouched) :: 2026-11-20 20:52:21 =====
+real bridge events.jsonl (must stay untouched): 072ea60602d88d72192cb44ebe4e0dc9f8730c69a0d3474edb0b71eb4b4480ea  /data/local/tmp/t5_bridge/work/events.jsonl
+> adb shell rm -rf /data/local/tmp/t506h; mkdir -p /data/local/tmp/t506h/bin /data/local/tmp/t506h/work /data/local/tmp/t506h/state /data/local/tmp/t506h/scripts
+  D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker: 1 file pushed, 0 skipped. 152.4 MB/s (106796 bytes in 0.001s)
+  D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\worker_unit_test: 1 file pushed, 0 skipped. 181.9 MB/s (173040 bytes in 0.001s)
+> adb shell chmod 755 /data/local/tmp/t506h/bin/ai_worker /data/local/tmp/t506h/bin/worker_unit_test; sha256sum /data/local/tmp/t506h/bin/ai_worker /data/local/tmp/t506h/bin/worker_unit_test; uname -m; getprop ro.build.version.sdk
+  85d931ef04f36d161f0334e98e91bd59b82974ba8415e1c23dddf5bf9305964c  /data/local/tmp/t506h/bin/ai_worker
+  f74eccf4b5593bf7dc3464bf400c342b237d2a4cdbc9cdbaf7a4b941daea1a6d  /data/local/tmp/t506h/bin/worker_unit_test
+  armv7l
+  27
+
+===== A. device ARM32 unit test (same checks as the host run) :: 2026-11-20 20:52:23 =====
+=== T5-06B worker unit test ===
+abi: 32-bit long, ULONG_MAX=4294967295 (seq upper bound depends on this)
+
+checks passed: 401, failed: 0
+RESULT: PASS
+unit: checks passed: 401, failed: 0
+> adb shell rm -rf /data/local/tmp/t506h/_t6b_unit
+
+===== B. phase 1: consume record 1 normally -> durable (offset, prefix_hash) pair :: 2026-11-20 20:52:23 =====
+record 1 bytes = 285
+> adb shell /data/local/tmp/t506h/bin/ai_worker --work-dir /data/local/tmp/t506h/work --state-dir /data/local/tmp/t506h/state --max-runtime-ms 15000 --status-every-ms 200 --idle-exit-ms 1200 ; echo rc=$?
+  [aiw] 2026-11-20T20:52:24 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T20:52:24 start pid=5757 events=/data/local/tmp/t506h/work/events.jsonl state=/data/local/tmp/t506h/state/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T20:52:25 exit reason=idle_timeout processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=285 state_saves=2 state_errors=0
+  [aiw] 2026-11-20T20:52:25 file identity: reason=first_open offset=285 prefix_hash=dcbe3ddf0f0b22f7 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  rc=0
+state  : {"version":2,"dev":45846,"ino":86202,"offset":285,"prefix_hash":"dcbe3ddf0f0b22f7","seq_last":1,"last_event_id":"p22n-a1","processed_total":1,"updated_at_ms":1795179145712,"recent_cap":128,"recent_n":1,"recent_ids":"p22n-a1"}
+status : {"version":1,"state":"stopped","pid":5757,"started_at":"2026-11-20T20:52:24","updated_at":"2026-11-20T20:52:25","started_at_ms":1795179144452,"updated_at_ms":1795179145721,"events_file":"/data/local/tmp/t506h/work/events.jsonl","state_file":"/data/local/tmp/t506h/state/consumer_state.json","offset":285,"file_size":285,"dev":45846,"ino":86202,"prefix_hash":"dcbe3ddf0f0b22f7","prefix_hash_valid":1,"provider":"mock","mock_calls":1,"counters":{"lines_read":1,"events_accepted":1,"events_processed":1,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":2,"state_errors":0,"provider_ok":1,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":1,"last_event_id":"p22n-a1","last_event_at":"2026-11-20T20:52:24","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"","exit_reason":"idle_timeout"}
+ACCEPT: phase 1 offset=285 prefix_hash=dcbe3ddf0f0b22f7
+
+===== C. phase 2: append >64KB oversize line + record 3, inject T6B_FAULT_PREFIX=fold_partial :: 2026-11-20 20:52:26 =====
+> adb shell cat /data/local/tmp/t506h/tail.jsonl >> /data/local/tmp/t506h/work/events.jsonl; stat -c %s /data/local/tmp/t506h/work/events.jsonl
+  70582
+file size after append = 70582 (oversize line is longer than one 65536-byte read chunk)
+> adb shell T6B_FAULT_PREFIX=fold_partial /data/local/tmp/t506h/bin/ai_worker --work-dir /data/local/tmp/t506h/work --state-dir /data/local/tmp/t506h/state --max-runtime-ms 15000 --status-every-ms 200 --idle-exit-ms 1200 ; echo rc=$?
+  [aiw] 2026-11-20T20:52:27 lock acquired; previous owner pid=5757 no longer holding it
+  [aiw] 2026-11-20T20:52:27 start pid=5771 events=/data/local/tmp/t506h/work/events.jsonl state=/data/local/tmp/t506h/state/consumer_state.json provider=mock offset=285 (mock only, no network)
+  [aiw] 2026-11-20T20:52:27 skip oversize record at offset 285 (limit=8192 bytes)
+  [aiw] 2026-11-20T20:52:27 prefix hash update failed (injected fault: prefix fold failed mid-way (4381/70297 bytes)): offset NOT advanced; stopping consumption
+  [aiw] 2026-11-20T20:52:27 exit reason=identity_hash_failed processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=285 state_saves=1 state_errors=0
+  [aiw] 2026-11-20T20:52:27 file identity: reason=first_open offset=285 prefix_hash=dcbe3ddf0f0b22f7 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  file identity failed; prefix fingerprint cannot be verified or updated
+  rc=6
+state  : {"version":2,"dev":45846,"ino":86202,"offset":285,"prefix_hash":"dcbe3ddf0f0b22f7","seq_last":1,"last_event_id":"p22n-a1","processed_total":1,"updated_at_ms":1795179147376,"recent_cap":128,"recent_n":1,"recent_ids":"p22n-a1"}
+status : {"version":1,"state":"stopped","pid":5771,"started_at":"2026-11-20T20:52:27","updated_at":"2026-11-20T20:52:27","started_at_ms":1795179147367,"updated_at_ms":1795179147383,"events_file":"/data/local/tmp/t506h/work/events.jsonl","state_file":"/data/local/tmp/t506h/state/consumer_state.json","offset":285,"file_size":70582,"dev":45846,"ino":86202,"prefix_hash":"dcbe3ddf0f0b22f7","prefix_hash_valid":1,"provider":"mock","mock_calls":0,"counters":{"lines_read":0,"events_accepted":0,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":1,"io_errors":1,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":1,"state_errors":0,"provider_ok":0,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"prefix hash update failed: injected fault: prefix fold failed mid-way (4381/70297 bytes)","exit_reason":"identity_hash_failed"}
+ACCEPT: offset stays 285, prefix_hash stays dcbe3ddf0f0b22f7 (byte-identical to phase 1), rc=6
+
+===== D. phase 3: restart without the fault -> fingerprint verified, oversize line retried :: 2026-11-20 20:52:28 =====
+> adb shell /data/local/tmp/t506h/bin/ai_worker --work-dir /data/local/tmp/t506h/work --state-dir /data/local/tmp/t506h/state --max-runtime-ms 15000 --status-every-ms 200 --idle-exit-ms 1200 ; echo rc=$?
+  [aiw] 2026-11-20T20:52:28 lock acquired; previous owner pid=5771 no longer holding it
+  [aiw] 2026-11-20T20:52:28 start pid=5778 events=/data/local/tmp/t506h/work/events.jsonl state=/data/local/tmp/t506h/state/consumer_state.json provider=mock offset=285 (mock only, no network)
+  [aiw] 2026-11-20T20:52:28 skip oversize record at offset 285 (limit=8192 bytes)
+  [aiw] 2026-11-20T20:52:29 exit reason=idle_timeout processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=70582 state_saves=3 state_errors=0
+  [aiw] 2026-11-20T20:52:29 file identity: reason=first_open offset=70582 prefix_hash=6ba0c7c5abfe4f72 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  rc=0
+status : {"version":1,"state":"stopped","pid":5778,"started_at":"2026-11-20T20:52:28","updated_at":"2026-11-20T20:52:29","started_at_ms":1795179148072,"updated_at_ms":1795179149350,"events_file":"/data/local/tmp/t506h/work/events.jsonl","state_file":"/data/local/tmp/t506h/state/consumer_state.json","offset":70582,"file_size":70582,"dev":45846,"ino":86202,"prefix_hash":"6ba0c7c5abfe4f72","prefix_hash_valid":1,"provider":"mock","mock_calls":1,"counters":{"lines_read":1,"events_accepted":1,"events_processed":1,"duplicates":0,"invalid_lines":0,"oversize_lines":1,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":1,"state_saves":3,"state_errors":0,"provider_ok":1,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":3,"last_event_id":"p22n-a3","last_event_at":"2026-11-20T20:52:28","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"","exit_reason":"idle_timeout"}
+state  : {"version":2,"dev":45846,"ino":86202,"offset":70582,"prefix_hash":"6ba0c7c5abfe4f72","seq_last":3,"last_event_id":"p22n-a3","processed_total":2,"updated_at_ms":1795179149344,"recent_cap":128,"recent_n":2,"recent_ids":"p22n-a1,p22n-a3"}
+ACCEPT: retry rc=0, resets=0, oversize retried once, offset=70582
+
+===== E. phase 4: restart again -> complete no-op :: 2026-11-20 20:52:29 =====
+> adb shell /data/local/tmp/t506h/bin/ai_worker --work-dir /data/local/tmp/t506h/work --state-dir /data/local/tmp/t506h/state --max-runtime-ms 15000 --status-every-ms 200 --idle-exit-ms 1200 ; echo rc=$?
+  [aiw] 2026-11-20T20:52:29 lock acquired; previous owner pid=5778 no longer holding it
+  [aiw] 2026-11-20T20:52:29 start pid=5785 events=/data/local/tmp/t506h/work/events.jsonl state=/data/local/tmp/t506h/state/consumer_state.json provider=mock offset=70582 (mock only, no network)
+  [aiw] 2026-11-20T20:52:30 exit reason=idle_timeout processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=70582 state_saves=1 state_errors=0
+  [aiw] 2026-11-20T20:52:30 file identity: reason=first_open offset=70582 prefix_hash=6ba0c7c5abfe4f72 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  rc=0
+ACCEPT: no-op restart, offset still 70582
+
+===== F. cleanup + proof that the real pipeline was not touched :: 2026-11-20 20:52:31 =====
+real bridge events.jsonl after: 072ea60602d88d72192cb44ebe4e0dc9f8730c69a0d3474edb0b71eb4b4480ea  /data/local/tmp/t5_bridge/work/events.jsonl
+> adb shell rm -rf /data/local/tmp/t506h
+> adb shell ls -d /data/local/tmp/t506h 2>/dev/null; ps -A | grep -E 'ai_worker|worker_unit_test' | grep -v grep; echo cleanup=done
+  cleanup=done
+
+RESULT: PASS (device unit: checks passed: 401, failed: 0; atomic fold fault rc=6 with offset/hash untouched; retry clean)

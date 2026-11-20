@@ -1,12 +1,15 @@
-# T5-06B P2-2 补充修复：Android 文件重建的内容身份识别（前缀指纹）
+# T5-06B P2-2 补充修复：Android 文件重建的内容身份识别（前缀指纹）+ 指纹提交原子性
 
 - 基线提交：`2f0a08a6`（T5-06B P2 数字字段窄化修复）
-- 本轮范围：**文件身份识别**。Provider 接口、消费语义（at-least-once）、单实例锁、
+- 第一轮（内容身份识别）：`40342109`
+- 本轮（复审 P1，**指纹提交原子性**）：先算局部哈希，`[off,pending)` 全部字节成功后才落到正式指纹
+- 本轮范围：文件身份识别 + 其提交原子性。Provider 接口、消费语义（at-least-once）、单实例锁、
   events.jsonl 协议、T5-05A/B/C 生产代码均未改。
-- 证据：`evidence/device_p22_prefix_fingerprint.log`、`evidence/device_p2p2_inode_reuse.log`、
-  `evidence/host_unit_test.log`、`evidence/host_integration_test.log`、`evidence/host_recreate_longer.log`、
-  `evidence/host_prefix_same.log`、`evidence/host_legacy_state.log`、`evidence/host_prefix_fault.log`、
-  `evidence/host_append_no_reset.log`、`evidence/ndk_build.log`。
+- 证据：`evidence/device_p22_atomic_fold.log`（本轮真机原子性）、`evidence/host_prefix_atomic.log`
+  （本轮主机子集）、`evidence/device_p22_prefix_fingerprint.log`、
+  `evidence/device_p2p2_inode_reuse.log`、`evidence/host_unit_test.log`、`evidence/host_integration_test.log`、
+  `evidence/host_recreate_longer.log`、`evidence/host_prefix_same.log`、`evidence/host_legacy_state.log`、
+  `evidence/host_prefix_fault.log`、`evidence/host_append_no_reset.log`、`evidence/ndk_build.log`。
 
 ## 1. 结论摘要
 
@@ -19,10 +22,13 @@
 | 真机正常追加 | 4 次真追加（inode 不变），`resets=0 / replacements=0 / truncations=0`，6 条各处理一次 |
 | 真机 v1 状态迁移 | 从 0 重扫 + `recent_ids` 去重（有界重复 1 条），状态就地升级为 version=2 |
 | 真机故障 | `T6B_FAULT_PREFIX=read` → 退出码 6、偏移不动；`=fold` → 退出码 6、`processed=0`、偏移 0 |
-| 主机单元 | **359 checks / 0 failed**（基线 284，新增 75 项） |
-| 主机集成 | **26/26 PASS**（新增 i18–i24） |
+| **指纹提交原子性（本轮 P1）** | `fold_range()` 只累加局部 `next_hash`，全部字节成功后才赋值给 `r->prefix_hash`；任何失败时指纹/偏移/pending **三者都不动** |
+| **真机中途失败注入** | `=fold_partial`（读完第一块 4096 B 之后失败）→ 退出码 6，落盘 `offset=285`、`prefix_hash=dcbe3ddf0f0b22f7` 与故障前**逐字节相同**；重启核对 `resets=0`，超长行重试成功 |
+| **突变测试（证明用例有效）** | 把 `fold_range()` 改回"逐块写正式指纹"的旧写法：主机单元 3 项失败、集成 i25 失败（状态文件落盘 `offset=250` 配半截指纹 `f35ed3df…` ≠ `7c7db664…`） |
+| 主机单元 | **401 checks / 0 failed**（P2-2 首轮 359，本轮新增 42 项） |
+| 主机集成 | **27/27 PASS**（新增 i18–i24；本轮新增 i25） |
 | ARM32 构建 | NDK r21e，`-O2 -Wall -Wextra`，**0 warning / 0 error** |
-| 真机 ARM32 单元测试 | **359 / 359 PASS**（设备上执行，非主机） |
+| 真机 ARM32 单元测试 | **401 / 401 PASS**（设备上执行，非主机） |
 | 真实 `events.jsonl` | 全程 `sha256=072ea606…` 未变 |
 
 ## 2. 原问题
@@ -85,6 +91,34 @@ T5-06B 原来的文件身份只有 `(st_dev, st_ino)`，于是：
 | 提交时指纹推进失败（回读失败） | 退出码 **6**，`offset` 不前进、`events_processed` 不计数，pending 事件保留 |
 | 状态落盘失败 | 既有路径不变：停止消费、退出码 5 |
 
+### 3.6 指纹提交的原子性（本轮复审 P1）
+
+**问题**：`fold_range()` 原来在回读 `[off,pending)` 的循环里逐块写 `r->prefix_hash`。
+如果第一块读成功、第二块 I/O 失败，函数虽然返回 -1（`commit` 不前进 offset），
+但**正式指纹已经被推进了一半**；退出前 `state_save()` 会把"旧 offset + 半截指纹"写进
+`consumer_state.json`，这对值互不自洽，下次启动必然把健康文件判成"内容身份变化"。
+
+**修复**（只动 `fold_range()`，不改算法、状态格式、Provider 与消费语义）：
+
+```
+unsigned long long next_hash = r->prefix_hash;   /* 局部变量，正式指纹只读 */
+...
+缓存快速路径:  next_hash = wu_hash64_ext(next_hash, p, n);  /* 整段一次算完 */
+回读路径:      逐块 next_hash = wu_hash64_ext(next_hash, tmp, got);
+               任何 seek/read 失败 → return -1   （next_hash 丢弃）
+最后一步:      r->prefix_hash = next_hash;        /* 全部字节成功，才提交 */
+```
+
+- 失败时 `r->prefix_hash` 不变、`r->off` 不变、`r->pending` 不变（`t6b_reader_commit()`
+  只在 `fold_range()` 返回 0 之后才 `off = pending`；失败分支直接 return -1）。
+- 因此 `state_save()` 落盘的永远是"某个 offset + 该 offset 之前的字节的指纹"这一对自洽值。
+- 缓存快速路径同样"整段算完再提交"；它没有 I/O，不存在中途状态。
+
+**中途失败注入** `T6B_FAULT_PREFIX=fold_partial`：在回读路径**读完第一块 4096 B 之后、
+第二块之前**返回 -1（`injected fault: prefix fold failed mid-way (pos/to bytes)`）。
+与已有的 `=fold`（一开始就失败）互补：后者证明"失败即停"，前者证明"失败不留半截指纹"。
+该注入只在多块回读路径生效——缓存路径一次算完，没有"中途"这个概念（已有用例显式断言这一点）。
+
 ## 4. 修改文件
 
 | 文件 | 改动 |
@@ -98,6 +132,15 @@ T5-06B 原来的文件身份只有 `(st_dev, st_ino)`，于是：
 | `tests/worker_unit_test.c` | `rd_init_seed()` / `rd_init_hash()` 夹具；v1 迁移、增量指纹、故障注入三组新用例；P2-2 用例改为"指纹说话"的两分支断言 |
 | `tests/worker_integration_test.py` | 新增 i18–i24；`prefix_hash_of()` 独立实现用于交叉校验 |
 | `tests/run_host_tests.ps1` | 新增 5 个子集日志（i18/i21/i22/i23/i24） |
+
+本轮（复审 P1，原子提交）只改这四个文件：
+
+| 文件 | 改动 |
+|---|---|
+| `android/event_reader.c` | `fold_range()` 改为局部 `next_hash` + 末尾一次性提交；新增 `T6B_FAULT_PREFIX=fold_partial` 注入（回读路径第一块之后失败）；故障注入注释同步 |
+| `tests/worker_unit_test.c` | 新增 `test_reader_prefix_atomic()`：回读路径中途失败（指纹/偏移/pending 三者不动 + 恢复后等于一次性 FNV）、缓存路径"全有或全无"；新增 42 项检查 |
+| `tests/worker_integration_test.py` | 新增 i25：真实进程中途失败 → 退出码 6、状态文件 offset 与 prefix_hash 仍成对、重启核对通过、未提交记录重试 |
+| `tests/run_host_tests.ps1` | 新增子集日志 `host_prefix_atomic.log`（i25） |
 
 未改动：`provider.*`、`mock_provider.c`、`seq_gap.*`、`06_t5_bridge/`、`06_t5/`、`03_uds_test/`、原厂 APK/native 库。
 
@@ -187,18 +230,72 @@ APPEND_OK   (processed=6，每条一次)
 
 `/data/local/tmp/t5_bridge/work/events.jsonl` 全程 `sha256=072ea606…`、111 行不变。
 
+### 5.9 指纹提交中途失败 → 落盘的 offset/指纹仍成对（本轮 P1，真机）
+
+原始输出：`evidence/device_p22_atomic_fold.log`（脚本 `_analysis/t506b/n4_device_atomic.ps1`，
+推上去的正是本轮 ARM32 产物 `sha256=85d931ef…`）。
+
+```
+# 阶段 1：先正常消费第 1 条（285 B），拿到一对自洽的落盘值
+exit reason=idle_timeout processed=1 … offset=285
+file identity: reason=first_open offset=285 prefix_hash=dcbe3ddf0f0b22f7
+state: {"version":2,…,"offset":285,"prefix_hash":"dcbe3ddf0f0b22f7",…}
+
+# 阶段 2：追加一条 70297 B 的超长行 + 第 3 条（总 70582 B），注入 T6B_FAULT_PREFIX=fold_partial
+skip oversize record at offset 285 (limit=8192 bytes)
+prefix hash update failed (injected fault: prefix fold failed mid-way (4381/70297 bytes)):
+      offset NOT advanced; stopping consumption
+exit reason=identity_hash_failed … offset=285        ← rc=6
+state: {"version":2,…,"offset":285,"prefix_hash":"dcbe3ddf0f0b22f7",…}   ← 与阶段 1 逐字节相同
+counters: oversize_lines=1 io_errors=1 events_processed=0
+
+# 阶段 3：去掉故障重启 → 指纹核对通过（resets=0），超长行重试提交，第 3 条处理一次
+start … offset=285 → exit reason=idle_timeout processed=1 resets=0 offset=70582
+file identity: reason=first_open offset=70582 prefix_hash=6ba0c7c5abfe4f72 resets=0 legacy_rescans=0
+counters: oversize_lines=1 events_processed=1 duplicates=0 identity_resets=0
+state: {"offset":70582,"prefix_hash":"6ba0c7c5abfe4f72","processed_total":2,…}
+
+# 阶段 4：再重启 → 完全 no-op（processed=0、offset 不变）
+# 阶段 5：真实桥接文件 sha256 仍为 072ea606…，临时目录已删除、无残留进程
+ASSERT OK / RESULT: PASS
+```
+
+要点：
+- 注入点 `(4381/70297)` = `285 + 4096`，即**恰好折入了第一块**之后失败——正是旧实现
+  会留下半截指纹的那一步；真机落盘值与阶段 1 完全相同，说明半截结果没有泄漏。
+- 阶段 3 的 `resets=0` 是**设备侧的一致性证明**：重启时 `hash_prefix([0,285))` 与落盘指纹相等，
+  若写下了半截指纹，这里必然变成 `prefix_mismatch` + 归零重扫 + 重复处理。
+- 超长行（第 2 条，`seq=2`）在阶段 2 未提交成功，阶段 3 被重新跳过并成功提交
+  （`oversize_lines=1`），第 3 条随后处理一次，`duplicates=0`。
+  阶段 3 的 `seq_unknown_start=1` 来自夹具：被跳过的超长行本身携带 `seq=2`，可见序列从 1 跳到 3；
+  该计数规则属于上一轮既有语义，与本次修复无关，也不影响偏移/指纹。
+
 ## 6. 主机测试
 
-- 单元：`evidence/host_unit_test.log` — **359 checks / 0 failed**。
-  新增：v1 迁移（`legacy_rescans=1`、偏移归零、第一条重读）、增量指纹等于整段一次性哈希
+- 单元：`evidence/host_unit_test.log` — **401 checks / 0 failed**。
+  第一轮新增：v1 迁移（`legacy_rescans=1`、偏移归零、第一条重读）、增量指纹等于整段一次性哈希
   （含跳过超长行后的回读补齐）、半行不计入指纹、`T6B_FAULT_PREFIX=read` → init 返回 -2、
   `=fold` → commit 返回 -1 且偏移不动、v2 状态往返（`prefix_hash` 16 位十六进制）、
   无指纹拒写、v1 无指纹可读但不假装验证、v2 缺字段判损坏。
-- 集成：`evidence/host_integration_test.log` — **26/26 PASS**，新增：
+  本轮新增 `test_reader_prefix_atomic()`（42 项）：
+  - 回读路径：70473 B 超长行（> 一个 65536 B 读块，必走文件回读）→ `fold_partial` 注入 →
+    `commit` 返回 -1，**指纹 = 故障前值**、`off` 不变、`pending` 不变、`io_errors+1`，
+    且显式断言"指纹 ≠ 整段哈希"（证明既没提交也没半截推进）；清故障后一次提交成功，
+    指纹等于独立计算的**一次性 FNV-1a 64**，偏移等于该行结束位置；后续记录继续处理。
+  - 缓存路径：20001 B 超长行（整行仍在缓存）→ `=fold` 注入 → 指纹/偏移/pending 全不变；
+    `=fold_partial` 对缓存路径不生效（无"中途"概念），一次算完即提交，结果同样等于一次性哈希。
+- 集成：`evidence/host_integration_test.log` — **27/27 PASS**，新增：
   i18 运行期重建更长、i19 先消失后重建更长、i20 停机期重建（重启识别）、
-  i21 前缀相同继续读、i22 v1 迁移、i23 指纹故障 → 退出码 6、i24 追加不误判。
-- 子集日志：`host_recreate_longer.log`、`host_prefix_same.log`、`host_legacy_state.log`、
-  `host_prefix_fault.log`、`host_append_no_reset.log`（各 `RESULT: PASS`）。
+  i21 前缀相同继续读、i22 v1 迁移、i23 指纹故障 → 退出码 6、i24 追加不误判、
+  i25（本轮）中途失败 → `rc=6`、状态文件 `offset=250` 与 `prefix_hash` 仍成对
+  （等于外部独立算出的 `[0,250)` 指纹）、`exit_reason=identity_hash_failed`、
+  重启 `identity_resets=0` 且未提交的超长行被重试、`processed_total=2`。
+- 突变验证（证明新用例真的能抓到 P1）：把 `fold_range()` 改回"逐块写正式指纹"的旧写法后，
+  主机单元该用例 **3 项失败**（指纹被推进/二次提交重复折叠导致最终值不符），
+  集成 i25 在真实进程上失败：状态文件落盘 `offset=250` 配半截指纹 `f35ed3df745b0792`，
+  与正确值 `7c7db664618143d6` 不等。修复版本全绿。
+- 子集日志：`host_prefix_atomic.log`（本轮 i25）、`host_recreate_longer.log`、`host_prefix_same.log`、
+  `host_legacy_state.log`、`host_prefix_fault.log`、`host_append_no_reset.log`（各 `RESULT: PASS`）。
 - 回归未受影响：`host_provider_retry.log`、`host_state_fault.log`、
   `host_reader_half_oversize.log`、`host_file_recreate.log`、`host_lock_stress.log`
   （100 轮 × 20 进程，0 失败）。
@@ -207,10 +304,12 @@ APPEND_OK   (processed=6，每条一次)
 
 `evidence/ndk_build.log`（NDK r21e，`armv7a-linux-androideabi26-clang`，`-O2 -Wall -Wextra -std=gnu99 -fPIE -pie`）：
 
-- `ai_worker`：106796 B，`sha256=32c98df0281658a25dcf88d5c7e10be2b15ed15570442f08b946887afc14648a`；
+- `ai_worker`：106796 B，`sha256=85d931ef04f36d161f0334e98e91bd59b82974ba8415e1c23dddf5bf9305964c`；
   `ELF32 / ARM / DYN`，`NEEDED libc.so`；**编译器零输出**。
-- `worker_unit_test`：162868 B，`sha256=f0d3a2f49f95fa36adea4c10e05edc80bc61d83251e2c6123c97806b3c30cbb6`。
-- 真机执行单元测试：`abi: 32-bit long, ULONG_MAX=4294967295`、**359 / 359 PASS**。
+- `worker_unit_test`：173040 B，`sha256=f74eccf4b5593bf7dc3464bf400c342b237d2a4cdbc9cdbaf7a4b941daea1a6d`。
+- 真机执行单元测试：`abi: 32-bit long, ULONG_MAX=4294967295`、**401 / 401 PASS**。
+- 真机原子性用例：`evidence/device_p22_atomic_fold.log`（§5.9），推上去的 `ai_worker`
+  与上表同一 `sha256`；`uname -m=armv7l`、`sdk=27`。
 
 ## 8. 已知限制 / 权衡（如实记录）
 
@@ -226,11 +325,18 @@ APPEND_OK   (processed=6，每条一次)
    默认路径不变；是否在 release 构建里编译掉，仍等评审决定。
 5. 去重窗口仍是 128 个 `event_id`：迁移/重建导致的重复处理是有界的，但窗口之外的极老事件
    若被重新扫到仍会再次处理（at-least-once 语义，未变）。
+6. **原子性的边界**：本修复保证"一次提交里，偏移与指纹要么一起前进，要么都不动"。
+   它不做跨进程/跨文件的事务，也不需要回滚——因为 `t6b_reader_commit()` 是**先算指纹、后移动
+   offset**，失败时 offset 从未写过，磁盘上的旧 `(offset, prefix_hash)` 依旧自洽。
+7. `fold_partial` 注入点只在**多块回读**路径（缓存路径一次算完，没有"中途"）；`fold` 注入点
+   仍在两条路径之前，用来覆盖"一开始就失败"。
+8. 失败后进程带退出码 6 停止；重试由外部拉起进程完成（与现有 supervisor 语义一致），
+   本模块不自己重试——避免"读失败但仍继续消费"的退化。
 
 ## 9. 复现
 
 ```powershell
-# 主机：单元 + 集成(26) + 子集 + 100 轮锁压测
+# 主机：单元(401) + 集成(27) + 子集 + 100 轮锁压测
 cd D:\tgz02\OS\system\my-doc\07_ai_bridge\tests
 powershell -ExecutionPolicy Bypass -File .\run_host_tests.ps1
 
@@ -238,4 +344,14 @@ powershell -ExecutionPolicy Bypass -File .\run_host_tests.ps1
 cd D:\tgz02\OS\_analysis\t506b
 powershell -ExecutionPolicy Bypass -File .\n1_ndk_build.ps1
 powershell -ExecutionPolicy Bypass -File .\n3_device_p22.ps1
+
+# 本轮：真机 ARM32 单元 + 指纹提交中途失败的原子性（§5.9）
+powershell -ExecutionPolicy Bypass -File .\n4_device_atomic.ps1
+```
+
+只看中途失败这一条：
+
+```powershell
+cd D:\tgz02\OS\system\my-doc\07_ai_bridge\tests
+py -3 worker_integration_test.py --only i25
 ```

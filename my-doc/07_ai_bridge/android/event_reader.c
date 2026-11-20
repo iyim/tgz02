@@ -502,8 +502,10 @@ const char *t6b_open_reason_name(t6b_open_reason r)
  * 测试用故障注入（只在环境变量存在时生效；生产不设置就是空操作）。
  * 与 consumer_state 的 T6B_FAULT_STATE 同一套路，用来证明
  * "指纹核对失败 / 指纹推进失败必须停止消费，不许退化成只比 inode"。
- *   T6B_FAULT_PREFIX = read  → 前缀重算失败（init/换文件时）
- *   T6B_FAULT_PREFIX = fold  → 提交时推进指纹失败
+ *   T6B_FAULT_PREFIX = read        → 前缀重算失败（init/换文件时）
+ *   T6B_FAULT_PREFIX = fold        → 提交时推进指纹失败（一开始就失败）
+ *   T6B_FAULT_PREFIX = fold_partial → 提交回读时**中途**失败（第一块已折入局部哈希），
+ *                                    用来证明部分推进不会漏到正式指纹上
  */
 static int t6b_fault_prefix(const char *which)
 {
@@ -552,10 +554,24 @@ static int hash_prefix(t6b_reader *r, long long upto, unsigned long long *out)
     return 0;
 }
 
-/* 把 [from,to) 的字节并入前缀指纹：缓存命中就直接算，否则回读（只有跳过超长行会走到） */
+/*
+ * 把 [from,to) 的字节并入前缀指纹：缓存命中就直接算，否则回读（只有跳过超长行会走到）。
+ *
+ * 原子提交（T5-06B P2-2 复审 P1）：
+ *   整个推进过程只累加到局部 next_hash，绝不中途改写 r->prefix_hash。
+ *   只有 [from,to) 的每一个字节都成功读到并折入之后，才执行一次
+ *       r->prefix_hash = next_hash;
+ *   任何 seek/read/注入故障都立即返回 -1，此时
+ *     r->prefix_hash 不变、r->off 不变、r->pending 不变（由 t6b_reader_commit 保证），
+ *   因此退出时的 state_save() 落盘的仍是"旧 offset + 与之对应的旧指纹"这对自洽的值，
+ *   绝不会出现"offset 没前进、指纹却前进了一半"的损坏状态。
+ *
+ * 返回 0 = 已提交（偏移与指纹成对推进）；-1 = 失败（三者均保持原值）。
+ */
 static int fold_range(t6b_reader *r, long long from, long long to)
 {
     long long n = to - from;
+    unsigned long long next_hash = r->prefix_hash;
 
     if (n <= 0) return 0;
     if (t6b_fault_prefix("fold")) {
@@ -566,18 +582,31 @@ static int fold_range(t6b_reader *r, long long from, long long to)
     if (r->buf_len > 0 && from >= r->buf_off &&
         to <= r->buf_off + (long long)r->buf_len) {
         const char *p = r->buf + (size_t)(from - r->buf_off);
-        r->prefix_hash = wu_hash64_ext(r->prefix_hash, p, (size_t)n);
+
+        next_hash = wu_hash64_ext(next_hash, p, (size_t)n);
+        r->prefix_hash = next_hash;          /* 缓存路径同样是"整段算完再提交" */
         return 0;
     }
     {
         char tmp[4096];
         long long pos = from;
+        int chunks = 0;
 
         while (pos < to) {
-            size_t want = (to - pos > (long long)sizeof(tmp))
-                            ? sizeof(tmp) : (size_t)(to - pos);
+            size_t want;
             int got;
 
+            /* 中途失败注入（测试用）：第一块已经读完并折入局部 next_hash，
+             * 在处理第二块之前失败 —— 局部的部分结果在这里被丢弃。 */
+            if (chunks >= 1 && t6b_fault_prefix("fold_partial")) {
+                snprintf(r->last_error, sizeof(r->last_error),
+                         "injected fault: prefix fold failed mid-way (%lld/%lld bytes)",
+                         pos, to);
+                r->io_errors++;
+                return -1;                   /* next_hash 丢弃：r->prefix_hash 保持原值 */
+            }
+            want = (to - pos > (long long)sizeof(tmp))
+                     ? sizeof(tmp) : (size_t)(to - pos);
             if (wu_seek(r->fd, pos) != 0) {
                 snprintf(r->last_error, sizeof(r->last_error), "hash seek failed");
                 r->io_errors++;
@@ -590,10 +619,12 @@ static int fold_range(t6b_reader *r, long long from, long long to)
                 r->io_errors++;
                 return -1;
             }
-            r->prefix_hash = wu_hash64_ext(r->prefix_hash, tmp, (size_t)got);
+            next_hash = wu_hash64_ext(next_hash, tmp, (size_t)got);
             pos += got;
+            chunks++;
         }
     }
+    r->prefix_hash = next_hash;              /* 全部字节都成功，才提交 */
     return 0;
 }
 

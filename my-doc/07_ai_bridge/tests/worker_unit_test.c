@@ -1301,6 +1301,145 @@ static void test_reader_fault_prefix(void)
     t6b_reader_free(&r);
 }
 
+/* ---------------- P2-2 复审 P1：前缀哈希提交的原子性 ---------------- */
+
+/* 独立的一次性 FNV-1a 64 对照答案（不经 reader，只读文件前 upto 字节） */
+static unsigned long long fnv_prefix_of_file(const char *path, long long upto)
+{
+    unsigned long long h = WU_HASH64_SEED;
+    char buf[4096];
+    long long left = upto;
+    FILE *f = fopen(path, "rb");
+
+    if (f == NULL) return 0;
+    while (left > 0) {
+        size_t want = (left > (long long)sizeof(buf)) ? sizeof(buf) : (size_t)left;
+        size_t got = fread(buf, 1, want, f);
+        if (got == 0) break;
+        h = wu_hash64_ext(h, buf, got);
+        left -= (long long)got;
+    }
+    fclose(f);
+    return h;
+}
+
+/* 超长记录长度（不含换行）：
+ *   ATOMIC_BIG 必须 > 一个读块，整行放不进缓存，commit 只能回读文件 → 中途失败可注入；
+ *   ATOMIC_MID 只超过单行上限但仍整行在缓存里，commit 走缓存快速路径。 */
+#define ATOMIC_BIG   (T6B_READ_CHUNK + 8192)
+#define ATOMIC_MID   20000
+
+static void test_reader_prefix_atomic(void)
+{
+    t6b_reader r;
+    t6b_event ev;
+    char path[600];
+    char err[192];
+    char rec[512];
+    const char *reason = NULL;
+    const char *field = NULL;
+    unsigned long long h0;
+    long long off0;
+    long long pend0;
+    long long errs0;
+    int n;
+    size_t i;
+    char *big;
+
+    /* ---------- 1) 回读路径：读完第一块之后失败，正式指纹必须保持原值 ---------- */
+    T("reader/atomic fold: mid-way read fault keeps prefix hash (re-read path)");
+    mk_path(path, sizeof(path), "events_atomic_partial.jsonl");
+    remove_file(path);
+    n = mk_rec(rec, sizeof(rec), 1, 1, "atom-a", "alpha");
+    write_bytes(path, rec, (size_t)n, 0);
+    off0 = (long long)n;
+
+    big = (char *)malloc(ATOMIC_BIG + 1);
+    OK(big != NULL);
+    for (i = 0; i < ATOMIC_BIG; i++) big[i] = (i == 0) ? '{' : 'z';
+    big[ATOMIC_BIG] = '\n';
+    write_bytes(path, big, ATOMIC_BIG + 1, 1);
+    n = mk_rec(rec, sizeof(rec), 2, 1, "atom-b", "beta");     /* 故障恢复后还能继续消费 */
+    write_bytes(path, rec, (size_t)n, 1);
+
+    EQ_LL(rd_init_seed(&r, path, 0, 0, 0, WU_HASH64_SEED, T6B_REC_DEFAULT), 0);
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+    EQ_STR(ev.event_id, "atom-a");
+    EQ_LL(t6b_reader_commit(&r), 0);
+    EQ_LL(r.off, off0);
+
+    /* 超长行：整行跳过，pending 指向它的结尾；提交它必须回读文件 */
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), -3);
+    OK(reason != NULL && strcmp(reason, "record_too_long") == 0);
+    pend0 = t6b_reader_pending(&r);
+    EQ_LL(pend0, off0 + (long long)ATOMIC_BIG + 1);
+    h0 = t6b_reader_prefix_hash(&r);
+    EQ_LL(h0, fnv_prefix_of_file(path, off0));
+
+    errs0 = r.io_errors;
+    set_fault_prefix("fold_partial");
+    EQ_LL(t6b_reader_commit(&r), -1);                       /* 第一块之后失败 */
+    EQ_LL(r.io_errors, errs0 + 1);
+    EQ_LL(t6b_reader_prefix_hash(&r), h0);                  /* 指纹一个字节都没前进 */
+    OK(t6b_reader_prefix_hash(&r) != fnv_prefix_of_file(path, pend0));
+    EQ_LL(r.off, off0);                                     /* 偏移没前进 */
+    EQ_LL(t6b_reader_pending(&r), pend0);                   /* pending 没被推进也没被清零 */
+    EQ_LL(t6b_reader_hash_valid(&r), 1);                    /* 状态仍自洽：指纹对应 [0,off) */
+    set_fault_prefix("");
+
+    EQ_LL(t6b_reader_commit(&r), 0);                        /* 故障消失后一次性提交 */
+    EQ_LL(r.off, pend0);
+    EQ_LL(t6b_reader_prefix_hash(&r), fnv_prefix_of_file(path, pend0));
+
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+    EQ_STR(ev.event_id, "atom-b");
+    EQ_LL(t6b_reader_commit(&r), 0);
+    EQ_LL(r.off, wu_file_size(path));
+    EQ_LL(t6b_reader_prefix_hash(&r), fnv_prefix_of_file(path, wu_file_size(path)));
+    t6b_reader_free(&r);
+    free(big);
+
+    /* ---------- 2) 缓存快速路径：整段算完才提交，失败则完全不动 ---------- */
+    T("reader/atomic fold: cache path commits the whole span or nothing");
+    mk_path(path, sizeof(path), "events_atomic_cache.jsonl");
+    remove_file(path);
+    big = (char *)malloc(ATOMIC_MID + 1);
+    OK(big != NULL);
+    for (i = 0; i < ATOMIC_MID; i++) big[i] = (i == 0) ? '{' : 'y';
+    big[ATOMIC_MID] = '\n';
+    write_bytes(path, big, ATOMIC_MID + 1, 0);
+    n = mk_rec(rec, sizeof(rec), 3, 1, "atom-c", "gamma");
+    write_bytes(path, rec, (size_t)n, 1);
+    free(big);
+
+    EQ_LL(rd_init_seed(&r, path, 0, 0, 0, WU_HASH64_SEED, T6B_REC_DEFAULT), 0);
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), -3);
+    pend0 = t6b_reader_pending(&r);
+    EQ_LL(pend0, (long long)ATOMIC_MID + 1);
+    EQ_LL(t6b_reader_prefix_hash(&r), WU_HASH64_SEED);
+
+    set_fault_prefix("fold");
+    EQ_LL(t6b_reader_commit(&r), -1);
+    EQ_LL(t6b_reader_prefix_hash(&r), WU_HASH64_SEED);      /* 缓存路径同样是全有或全无 */
+    EQ_LL(r.off, 0);
+    EQ_LL(t6b_reader_pending(&r), pend0);
+    set_fault_prefix("");
+
+    /* fold_partial 只作用于多块回读：缓存路径没有"中途"，一次算完即提交 */
+    set_fault_prefix("fold_partial");
+    EQ_LL(t6b_reader_commit(&r), 0);
+    set_fault_prefix("");
+    EQ_LL(r.off, pend0);
+    EQ_LL(t6b_reader_prefix_hash(&r), fnv_prefix_of_file(path, pend0));
+
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+    EQ_STR(ev.event_id, "atom-c");
+    EQ_LL(t6b_reader_commit(&r), 0);
+    EQ_LL(r.off, wu_file_size(path));
+    EQ_LL(t6b_reader_prefix_hash(&r), fnv_prefix_of_file(path, wu_file_size(path)));
+    t6b_reader_free(&r);
+}
+
 static void test_provider_mock(void)
 {
     t6b_provider p;
@@ -1440,6 +1579,7 @@ int main(void)
     test_reader_legacy_state();
     test_reader_prefix_incremental();
     test_reader_fault_prefix();
+    test_reader_prefix_atomic();
     test_provider_mock();
     test_status_file();
 

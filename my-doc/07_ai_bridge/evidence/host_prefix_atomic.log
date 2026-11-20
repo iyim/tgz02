@@ -1,0 +1,9 @@
+=== T5-06B integration subset (host, Mock provider only) ===
+exe    : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
+run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_204956
+filter : i25
+
+PASS i25_prefix_fold_partial_atomic     0.95s  rc=6 with offset/hash pair kept at 250, restart completes, 1 record retried
+
+cases: 1, failed: 0
+RESULT: PASS

@@ -16,7 +16,7 @@ vendor release 串 `6.1.8-RS-20221104.1459`，kernel `4.4.95+`）。
 | [t5_06b_worker_report.md](t5_06b_worker_report.md) | **T5-06B：独立 AI Worker 的实现与测试报告**（消费语义、Provider 抽象、主机 215+14 项测试、真机实测） |
 | [t5_06b_p1p2_fix_report.md](t5_06b_p1p2_fix_report.md) | **T5-06B P1/P2 修复报告**：内核锁、Provider 失败不消费、落盘失败即停、半行超长、删除重建身份检测 |
 | [t5_06b_numeric_validation_fix_report.md](t5_06b_numeric_validation_fix_report.md) | **T5-06B P2 补充修复**：`event_reader` 数字字段窄化与范围校验（version/pid/text_bytes/text_chars/时间/seq）、文本诊断字段一致性、ARM32 与 LLP64 的 `ULONG_MAX` 差异、真机 284 项全过 |
-| [t5_06b_p22_prefix_fingerprint_report.md](t5_06b_p22_prefix_fingerprint_report.md) | **T5-06B P2-2 补充修复**：events.jsonl 前缀指纹（`[0,offset)` 增量 FNV-1a）、状态版本 2、inode 复用下的换文件识别、指纹故障即停（退出码 6）、真机 inode 复用实证 |
+| [t5_06b_p22_prefix_fingerprint_report.md](t5_06b_p22_prefix_fingerprint_report.md) | **T5-06B P2-2 补充修复**：events.jsonl 前缀指纹（`[0,offset)` 增量 FNV-1a）、状态版本 2、inode 复用下的换文件识别、指纹故障即停（退出码 6）、**指纹提交原子性**（中途失败不留半截指纹）、真机 inode 复用实证 |
 | [android/](android) | T5-06B Worker 源码 + `build.ps1`（NDK 动态链接）+ `run_ai_worker.sh` |
 | [tests/](tests) | T5-06B 主机单元测试 / 集成测试 / 一键运行脚本 |
 | [evidence/](evidence) | 真机探针原始输出、设备事实快照、NDK 检查、主机与真机测试日志 |
@@ -49,6 +49,13 @@ P2-2 补充修复（`t5_06b_p22_prefix_fingerprint_report.md`）：文件身份�
 状态文件升到 version=2，**v1 旧状态没有指纹时安全回退重扫**并明确记录有界重复；
 指纹核对/推进失败一律**停止消费**（退出码 6），不许退化成只比 inode。真机全部通过，
 正常追加 4 次 `resets=0 / replacements=0 / truncations=0`。
+
+P2-2 复审 P1（同一报告 §3.6 / §5.9）：指纹推进改成**原子提交**——`fold_range()` 只用局部
+`next_hash` 累加，`[off,pending)` 的全部字节成功读完才写回正式 `r->prefix_hash`；
+中途 seek/read 失败时指纹、偏移、pending **三者都不动**，退出时落盘的
+`offset` 与 `prefix_hash` 永远是一对自洽值。主机单元 **401 项**、集成 **27 项**（新增 i25）、
+真机 ARM32 单元 **401 项**全过；真机注入 `T6B_FAULT_PREFIX=fold_partial`（读完第一块 4096 B
+之后失败）→ 退出码 6，落盘指纹与故障前**逐字节相同**，重启核对 `resets=0`、未提交的超长行重试成功。
 
 ## 结论标记约定
 
