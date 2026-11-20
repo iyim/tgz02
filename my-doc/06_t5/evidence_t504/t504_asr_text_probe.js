@@ -71,24 +71,32 @@ var HOOKS = [
 
 function nowIso() { return new Date().toISOString(); }
 
-/* 有界读取 NUL 结尾的 UTF-8 C 字符串。
+/* 有界读取 NUL 结尾的 UTF-8 C 字符串（P2：逐字节，遇 NUL 立即停止）。
  *
  * 为什么不是一行 readUtf8String(MAX_TEXT)：
  *   本机 frida 16.7.19 的 NativePointer.readUtf8String(size) 在“显式给定长度”模式下
  *   只要窗口内出现 0x00 就抛 `Error: can't decode byte 0x00 in position N`；
  *   而 readCString(size) 不会在 NUL 处停止（实测返回 512 字节的越界垃圾）。
  *   两者都会让每条识别文本变成读取失败（实测见 T5-04 P1 测试记录）。
- *   因此这里把 MAX_TEXT 作为**底层读取长度上界**：先有界读取字节，定位 NUL，
- *   再用已知长度解码。全程不存在"无界读取后再 slice"。
+ *
+ * 为什么不是 readByteArray(MAX_TEXT)：
+ *   一次性读取 512 字节的区域可能跨越内存页边界，落到未映射页会整段读取失败。
+ *   逐字节 readU8 在遇到 NUL 时立即返回，实际访问长度 = 字符串长度 + 1，
+ *   上限仍由 MAX_TEXT 约束；超限视为异常字符串并抛错（由上层记为 read error）。
  */
 function readCString(p) {
   if (p.isNull()) return '';
-  var raw = p.readByteArray(MAX_TEXT);
-  if (raw === null) return '';
-  var u8 = new Uint8Array(raw), n = 0;
-  while (n < u8.length && u8[n] !== 0) n++;
-  if (n === 0) return '';
-  return p.readUtf8String(n);
+
+  var n = 0;
+
+  while (n < MAX_TEXT) {
+    if (p.add(n).readU8() === 0) {
+      return n === 0 ? '' : p.readUtf8String(n);
+    }
+    n++;
+  }
+
+  throw new Error('unterminated C string within MAX_TEXT bound');
 }
 
 function readStdString(addr) {
