@@ -14,6 +14,7 @@
 #include "worker_util.h"
 
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -216,6 +217,9 @@ static char *kdst(int idx, t6b_event *out)
     }
 }
 
+/* 单字段落值。所有整数字段都必须在窄化（long long → int / unsigned long）之前
+ * 做范围校验：协议里每个数字字段都有真实的定义域，任何越界值都是坏记录，
+ * 不能靠截断后的结果"恰好"通过后续检查（T5-06B P2 补充修复）。 */
 static t6b_eval one_field(jcur *c, int idx, t6b_event *out, const char **field)
 {
     long long v;
@@ -229,24 +233,64 @@ static t6b_eval one_field(jcur *c, int idx, t6b_event *out, const char **field)
         if (trunc) return T6B_EV_TOO_LONG;
         return T6B_EV_OK;
     }
+
     if (K_KIND[idx] == 2) {
         int b;
         if (jbool(c, &b) != 0) return T6B_EV_BAD_TYPE;
         if (idx == K_IS_FINAL) out->is_final = b;
         return T6B_EV_OK;
     }
+
     if (jint(c, &v) != 0) return T6B_EV_BAD_TYPE;
+
     switch (idx) {
-    case K_VERSION:     out->version = (int)v; break;
-    case K_PID:         out->pid = v; break;
-    case K_TEXT_BYTES:  out->text_bytes = (int)v; break;
-    case K_TEXT_CHARS:  out->text_chars = (int)v; break;
-    case K_RECEIVED_AT: out->received_at_ms = v; break;
-    case K_RECV_AT:     out->recv_at_ms = v; break;
-    case K_STORED_AT:   out->stored_at_ms = v; break;
-    case K_SEQ:         out->seq = (unsigned long)v; break;
-    default: break;
+    case K_VERSION:
+        /* 版本号协议只允许精确的 1，禁止先窄化再比较 */
+        if (v != 1) return T6B_EV_BAD_VERSION;
+        out->version = 1;
+        break;
+
+    case K_PID:
+        if (v <= 0 || v > 2147483647LL) return T6B_EV_BAD_PID;
+        out->pid = v;
+        break;
+
+    case K_TEXT_BYTES:
+        if (v < 0 || v > T6B_TEXT_MAX) return T6B_EV_BAD_TYPE;
+        out->text_bytes = (int)v;
+        break;
+
+    case K_TEXT_CHARS:
+        if (v < 0 || v > T6B_TEXT_MAX) return T6B_EV_BAD_TYPE;
+        out->text_chars = (int)v;
+        break;
+
+    case K_RECEIVED_AT:
+        if (v < 0) return T6B_EV_BAD_TIME;
+        out->received_at_ms = v;
+        break;
+
+    case K_RECV_AT:
+        if (v < 0) return T6B_EV_BAD_TIME;
+        out->recv_at_ms = v;
+        break;
+
+    case K_STORED_AT:
+        if (v < 0) return T6B_EV_BAD_TIME;
+        out->stored_at_ms = v;
+        break;
+
+    case K_SEQ:
+        /* seq 在 ARM32 上是 32 位 unsigned long，必须先检查再转换 */
+        if (v <= 0 || (unsigned long long)v > (unsigned long long)ULONG_MAX)
+            return T6B_EV_BAD_SEQ;
+        out->seq = (unsigned long)v;
+        break;
+
+    default:
+        return T6B_EV_BAD_TYPE;
     }
+
     return T6B_EV_OK;
 }
 
@@ -383,9 +427,20 @@ t6b_eval t6b_parse_record(const char *line, size_t len, t6b_event *out,
     NEED(K_SEQ);
     if (out->seq == 0) BAD(K_SEQ, T6B_EV_BAD_SEQ);
 
-    /* 诊断字段缺失时按实测补齐（不因此拒收） */
-    if (!(seen & (1u << K_TEXT_BYTES))) out->text_bytes = (int)tlen;
-    if (!(seen & (1u << K_TEXT_CHARS))) out->text_chars = wu_utf8_count(out->text, tlen);
+    /* 诊断字段允许缺失；存在时必须与实际文本一致 */
+    if (seen & (1u << K_TEXT_BYTES)) {
+        if (out->text_bytes != (int)tlen)
+            BAD(K_TEXT_BYTES, T6B_EV_BAD_TYPE);
+    } else {
+        out->text_bytes = (int)tlen;
+    }
+
+    if (seen & (1u << K_TEXT_CHARS)) {
+        if (out->text_chars != wu_utf8_count(out->text, tlen))
+            BAD(K_TEXT_CHARS, T6B_EV_BAD_TYPE);
+    } else {
+        out->text_chars = wu_utf8_count(out->text, tlen);
+    }
     if ((seen & (1u << K_RECEIVED_AT)) && out->received_at_ms < 0)
         BAD(K_RECEIVED_AT, T6B_EV_BAD_TIME);
     if ((seen & (1u << K_RECV_AT)) && out->recv_at_ms < 0)

@@ -1,0 +1,30 @@
+﻿# T5-06B P2 numeric fix -- side finding: Android inode reuse vs (dev,ino) identity
+# host time: 2026-11-20 19:42:35
+
+## 1. stat probe: delete + recreate in the same directory reuses the inode number
+  create1 dev:ino=45846:86194 size=5
+  create2 dev:ino=45846:86194 size=25
+  create3 dev:ino=45846:86194 size=7
+
+## 2. control: unit test built from baseline f3c9f3bf (before this change) on ARM32
+  D:\tgz02\OS\_analysis\t506b\ctrl_unit_f3c9f3bf: 1 file pushed, 0 skipped. 249.9 MB/s (133856 bytes in 0.001s)
+  === T5-06B worker unit test (host) ===
+    FAIL [reader/P2-2 saved identity + file absent then recreated (shorter)] D:\tgz02\OS\_analysis\t506b\ctrl_f3c9f3bf\my-doc\07_ai_bridge\tests\worker_unit_test.c:869  r.replacements : got 0 want 1
+  
+  checks passed: 257, failed: 1
+  RESULT: FAIL
+
+## 3. current commit: same test on ARM32 (P2-2 assertion now platform-truthful)
+  D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\worker_unit_test: 1 file pushed, 0 skipped. 242.5 MB/s (138364 bytes in 0.001s)
+  === T5-06B worker unit test ===
+  abi: 32-bit long, ULONG_MAX=4294967295 (seq upper bound depends on this)
+  
+  checks passed: 282, failed: 0
+  RESULT: PASS
+
+## 4. conclusion
+  - st_dev/st_ino are identical across delete+recreate on this fs (ext4/f2fs), so (dev,ino) alone
+    cannot prove 'the file was replaced' on Android.
+  - shorter recreate still resets the offset via the 'size < offset => truncation' rule (safe).
+  - recreate that is LONGER than the old offset is NOT detectable by (dev,ino): residual risk,
+    reported as a follow-up item (would need e.g. ctime/i_version in the saved identity).

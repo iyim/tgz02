@@ -1,26 +1,26 @@
 ﻿=== T5-06B worker integration test (host, Mock provider only) ===
 exe : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_184959
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_194340
 
-PASS i1_basic_consume_and_readonly   0.79s  10 events, file untouched, rerun is a no-op
-PASS i2_half_line                   1.06s  half line waited ~1s then consumed after completion
-PASS i3_invalid_json                0.41s  1 invalid line skipped, 2 valid processed
-PASS i4_duplicate_event_id          0.40s  duplicate event_id skipped, counted
-PASS i5_seq_gap                     0.41s  gap [3,4] recorded, no fabricated events
-PASS i6_crash_and_resume            1.98s  killed after 20 processed (offset=5002), resumed to cumulative total=20, dup=0
-PASS i7_resume_after_clean_exit     1.18s  append after restart consumed incrementally (2 new)
-PASS i8_truncation                  0.67s  truncation detected, rescan from 0, 1 record processed
-PASS i9_recreated                   0.61s  same-size recreated file detected via file identity
-PASS i10_corrupt_state              0.66s  corrupt state archived as consumer_state.json.corrupt-2026_11_20T18_50_07, rescanned from 0 (4 records reprocessed)
+PASS i1_basic_consume_and_readonly   0.72s  10 events, file untouched, rerun is a no-op
+PASS i2_half_line                   1.16s  half line waited ~1s then consumed after completion
+PASS i3_invalid_json                0.39s  1 invalid line skipped, 2 valid processed
+PASS i4_duplicate_event_id          0.38s  duplicate event_id skipped, counted
+PASS i5_seq_gap                     0.39s  gap [3,4] recorded, no fabricated events
+PASS i6_crash_and_resume            1.92s  killed after 20 processed (offset=5002), resumed to cumulative total=20, dup=0
+PASS i7_resume_after_clean_exit     0.60s  append after restart consumed incrementally (2 new)
+PASS i8_truncation                  0.60s  truncation detected, rescan from 0, 1 record processed
+PASS i9_recreated                   0.60s  same-size recreated file detected via file identity
+PASS i10_corrupt_state              0.67s  corrupt state archived as consumer_state.json.corrupt-2026_11_20T19_43_47, rescanned from 0 (4 records reprocessed)
 PASS i11_provider_retry_recover     0.58s  2 failed attempts then recovery; 3 events processed exactly once
-PASS i11b_provider_stuck_no_skip    2.93s  stuck at [t5b-4242-f000-g1], offset 0, recent_n 0; recovered after restart
-PASS i11c_kill9_keeps_failed_event   0.58s  killed while retrying; event survived and completed after restart
-PASS i12_oversize                   0.42s  1 oversize line skipped (limit 1024), neighbours processed
+PASS i11b_provider_stuck_no_skip    2.91s  stuck at [t5b-4242-f000-g1], offset 0, recent_n 0; recovered after restart
+PASS i11c_kill9_keeps_failed_event   0.57s  killed while retrying; event survived and completed after restart
+PASS i12_oversize                   0.37s  1 oversize line skipped (limit 1024), neighbours processed
 PASS i13_double_start               0.22s  second instance exits 3, lock held by first
-PASS i14_memory_stable              0.36s  RSS [3924, 3924, 3924] KB, growth 0 KB over 3000 events
-PASS i15_half_line_oversize         1.37s  8500B half line waited; skipped only after newline; next record processed
-PASS i16_file_deleted_while_running   0.88s  absent -> shorter -> longer recreation all detected via file identity
-PASS i17_state_persist_failure      2.79s  create: rc=5, processed<=1, durable offset=0/732; write: rc=5, processed<=1, durable offset=0/732; fsync: rc=5, processed<=1, durable offset=0/732; rename: rc=5, processed<=1, durable offset=0/732; dirfsync: rc=5, processed<=1, durable offset=244/732
+PASS i14_memory_stable              0.31s  RSS [3924, 3924, 3924] KB, growth 0 KB over 3000 events
+PASS i15_half_line_oversize         1.31s  8500B half line waited; skipped only after newline; next record processed
+PASS i16_file_deleted_while_running   0.83s  absent -> shorter -> longer recreation all detected via file identity
+PASS i17_state_persist_failure      2.72s  create: rc=5, processed<=1, durable offset=0/732; write: rc=5, processed<=1, durable offset=0/732; fsync: rc=5, processed<=1, durable offset=0/732; rename: rc=5, processed<=1, durable offset=0/732; dirfsync: rc=5, processed<=1, durable offset=244/732
 
 cases: 19, failed: 0
 RESULT: PASS

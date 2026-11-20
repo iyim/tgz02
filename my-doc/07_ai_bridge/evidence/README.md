@@ -24,7 +24,16 @@ T5-06B 时间：2026-11-20 16:54–17:03。探针与测试脚本都是**一次�
 | `host_reader_half_oversize.log` | `worker_integration_test.py --only i15` | 8500 B 半行先等待，补 `\n` 后才跳过整行，邻居记录正常 |
 | `host_file_recreate.log` | `worker_integration_test.py --only i16` | 运行中删除→重建（先短后长）全部按 `(dev,ino)` 识别并从 0 重读 |
 | `device_p1p2_fix.log` | `_analysis/t506b/d5_fix.ps1` | 真机：Provider 重试/stuck 恢复；真实故障（tmp 是目录 / 目标是目录）→ rc=5 且未继续消费 |
-| `ndk_build.log` | `android/build.ps1` | 修复后产物 102204 B / sha256 `a0bd55cf…`，DYN + INTERP + NEEDED libc.so |
+
+### T5-06B P2 补充修复（数字字段窄化与范围校验）
+
+| 文件 | 产生方式 | 关键内容 |
+|---|---|---|
+| `ndk_build.log` | `_analysis/t506b/n1_ndk_build.ps1`（NDK r21e，API 26） | 两个产物：`ai_worker` 102204 B / sha256 `1c75f4d7…`，`worker_unit_test` 138504 B / sha256 `0d4f8f09…`；均 `ELF32/ARM/DYN` + `NEEDED libc.so`；**0 warning、0 error** |
+| `device_numeric_fix.log` | `_analysis/t506b/n2_device.ps1` | 真机：**ARM32 单元测试 284/284 PASS**（`abi: 32-bit long, ULONG_MAX=4294967295`）；历史 111 行全消费（`invalid=0`、`offset=34119=size`、sha256 前后一致）；窄化拒收 4 行（`bad_seq`×2 / `bad_version` / `bad_type:text_bytes`）+ 1 行合法 |
+| `device_p2p2_inode_reuse.log` | 同上 + 基线 `f3c9f3bf` 的旧单元测试二进制 | 旁证：同目录删除重建后 `st_dev:st_ino` 完全相同（inode 复用）；基线 `f3c9f3bf` 在真机 **257/1 failed**，本轮 **284/0** → 该失败早于本轮存在 |
+| `host_unit_test.log` | `tests/run_host_tests.ps1` | **284 checks / 0 failed**（新增窄化/范围/一致性用例；注意 Windows LLP64 的 `long` 也是 32 位，与 ARM32 同一分支） |
+| `host_integration_test.log` | 同上（真起进程） | **19/19 PASS**，Mock Provider，无网络 |
 
 T5-06A 探针的原始输出见下表。
 

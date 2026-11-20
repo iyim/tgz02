@@ -1,0 +1,333 @@
+﻿
+################ T5-06B P2 numeric validation fix -- device checks ################
+host time : 2026-11-20 19:45:01
+device    : 6.1.8-RS-20221104.1459 armeabi-v7a
+
+===== 0. push ARM32 binaries (ndk r21e, -O2 -Wall -Wextra) :: 2026-11-20 19:45:02 =====
+> adb shell rm -rf /data/local/tmp/t506b_num
+> adb shell mkdir -p /data/local/tmp/t506b_num/bin /data/local/tmp/t506b_num/state
+  D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker: 1 file pushed, 0 skipped. 153.0 MB/s (102204 bytes in 0.001s)
+  D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\worker_unit_test: 1 file pushed, 0 skipped. 168.6 MB/s (138504 bytes in 0.001s)
+> adb shell chmod 755 /data/local/tmp/t506b_num/bin/*; ls -l /data/local/tmp/t506b_num/bin
+  total 236
+  -rwxr-xr-x 1 shell shell 102204 2026-11-20 19:44 ai_worker
+  -rwxr-xr-x 1 shell shell 138504 2026-11-20 19:44 worker_unit_test
+> adb shell sha256sum /data/local/tmp/t506b_num/bin/ai_worker /data/local/tmp/t506b_num/bin/worker_unit_test
+  1c75f4d7314d422fe6ac79abc689bfb0e7f0a80df7b08effefc28623f41b97de  /data/local/tmp/t506b_num/bin/ai_worker
+  0d4f8f0954f0c70b6e8a2777646a6a18e96c778db89558c136233741d97ba00d  /data/local/tmp/t506b_num/bin/worker_unit_test
+
+===== A. ARM32 unit test on device (real 32-bit unsigned long) :: 2026-11-20 19:45:03 =====
+> adb shell cd /data/local/tmp/t506b_num && ./bin/worker_unit_test; echo rc=$?
+  === T5-06B worker unit test ===
+  abi: 32-bit long, ULONG_MAX=4294967295 (seq upper bound depends on this)
+  
+  checks passed: 284, failed: 0
+  RESULT: PASS
+  rc=0
+unit tail: abi: 32-bit long, ULONG_MAX=4294967295 (seq upper bound depends on this)
+
+checks passed: 284, failed: 0
+RESULT: PASS
+unit checks passed=284 failed=0
+unit header: === T5-06B worker unit test === | abi: 32-bit long, ULONG_MAX=4294967295 (seq upper bound depends on this)
+
+===== A2. does the device filesystem reuse inode numbers after delete (identity detection limits) :: 2026-11-20 19:45:04 =====
+> adb shell rm -f /data/local/tmp/t506b_num/ident_probe.jsonl; echo aaaa > /data/local/tmp/t506b_num/ident_probe.jsonl; stat -c 'before dev:ino=%d:%i size=%s' /data/local/tmp/t506b_num/ident_probe.jsonl
+  before dev:ino=45846:86216 size=5
+> adb shell rm -f /data/local/tmp/t506b_num/ident_probe.jsonl; echo bbbbbbbbbbbbbbbbbbbbbbbb > /data/local/tmp/t506b_num/ident_probe.jsonl; stat -c 'after  dev:ino=%d:%i size=%s' /data/local/tmp/t506b_num/ident_probe.jsonl
+  after  dev:ino=45846:86216 size=25
+> adb shell rm -f /data/local/tmp/t506b_num/ident_probe.jsonl
+FINDING: dev:ino reused (45846:86216 == 45846:86216) -> (dev,ino) cannot detect delete+recreate on this fs
+
+===== B. real events.jsonl before consumption :: 2026-11-20 19:45:05 =====
+sha256 : 072ea60602d88d72192cb44ebe4e0dc9f8730c69a0d3474edb0b71eb4b4480ea  /data/local/tmp/t5_bridge/work/events.jsonl
+lines  : 111   size: 34119
+
+===== C. consume real historical events (read-only work dir, fresh state dir) :: 2026-11-20 19:45:05 =====
+> adb shell /data/local/tmp/t506b_num/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t506b_num/state --max-events 111 --max-runtime-ms 20000 --status-every-ms 500 --verbose; echo rc=$?
+  [aiw] 2026-11-20T19:45:05 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T19:45:05 start pid=30691 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t506b_num/state/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967345-g1 seq=1 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=305 processed=1
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967349-g1 seq=2 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=617 processed=2
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967353-g1 seq=3 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=926 processed=3
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967357-g1 seq=4 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=1235 processed=4
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967361-g1 seq=5 pid=16112 text_bytes=36 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=1550 processed=5
+  [aiw] 2026-11-20T19:45:05 seq reset pid=16112 -> 1 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967365-g1 seq=1 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=1855 processed=6
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967369-g1 seq=2 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=2160 processed=7
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967381-g1 seq=3 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=2472 processed=8
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967399-g1 seq=4 pid=16112 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=2774 processed=9
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967412-g1 seq=5 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=3079 processed=10
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967421-g1 seq=6 pid=16112 text_bytes=18 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=3375 processed=11
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967425-g1 seq=7 pid=16112 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=3677 processed=12
+  [aiw] 2026-11-20T19:45:05 seq reset pid=16112 -> 1 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967451-g1 seq=1 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=3986 processed=13
+  [aiw] 2026-11-20T19:45:05 seq reset pid=16112 -> 1 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967536-g1 seq=1 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=4291 processed=14
+  [aiw] 2026-11-20T19:45:05 seq reset pid=16112 -> 1 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967540-g1 seq=1 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=4603 processed=15
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967544-g1 seq=2 pid=16112 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=4905 processed=16
+  [aiw] 2026-11-20T19:45:05 seq reset pid=16112 -> 1 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967553-g1 seq=1 pid=16112 text_bytes=18 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=5201 processed=17
+  [aiw] 2026-11-20T19:45:05 seq reset pid=16112 -> 1 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967567-g1 seq=1 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=5510 processed=18
+  [aiw] 2026-11-20T19:45:05 seq reset pid=16112 -> 1 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967614-g1 seq=1 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=5815 processed=19
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967618-g1 seq=2 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=6127 processed=20
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967622-g1 seq=3 pid=16112 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=6429 processed=21
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967626-g1 seq=4 pid=16112 text_bytes=18 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=6725 processed=22
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967630-g1 seq=5 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=7034 processed=23
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967634-g1 seq=6 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=7343 processed=24
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967638-g1 seq=7 pid=16112 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=7645 processed=25
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967643-g1 seq=8 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=7954 processed=26
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967647-g1 seq=9 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:05 state saved (sync) offset=8266 processed=27
+  [aiw] 2026-11-20T19:45:05 event id=t5b-16112-1967651-g1 seq=10 pid=16112 text_bytes=36 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=8582 processed=28
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967656-g1 seq=11 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=8895 processed=29
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967660-g1 seq=12 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=9201 processed=30
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967664-g1 seq=13 pid=16112 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=9504 processed=31
+  [aiw] 2026-11-20T19:45:06 seq reset pid=16112 -> 1 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967670-g1 seq=1 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=9816 processed=32
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967674-g1 seq=2 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=10121 processed=33
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967678-g1 seq=3 pid=16112 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=10423 processed=34
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967684-g1 seq=4 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=10728 processed=35
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967688-g1 seq=5 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=11040 processed=36
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967693-g1 seq=6 pid=16112 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=11342 processed=37
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967701-g1 seq=7 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=11647 processed=38
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967705-g1 seq=8 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=11959 processed=39
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967717-g1 seq=9 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=12268 processed=40
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967725-g1 seq=10 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=12578 processed=41
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967729-g1 seq=11 pid=16112 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=12881 processed=42
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967736-g1 seq=12 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=13191 processed=43
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967740-g1 seq=13 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=13504 processed=44
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967744-g1 seq=14 pid=16112 text_bytes=36 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=13820 processed=45
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967748-g1 seq=15 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=14133 processed=46
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967756-g1 seq=16 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=14439 processed=47
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967760-g1 seq=17 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=14752 processed=48
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967768-g1 seq=18 pid=16112 text_bytes=18 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=15049 processed=49
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967772-g1 seq=19 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=15359 processed=50
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967776-g1 seq=20 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=15669 processed=51
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967781-g1 seq=21 pid=16112 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=15972 processed=52
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967788-g1 seq=22 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=16282 processed=53
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967792-g1 seq=23 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=16595 processed=54
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967796-g1 seq=24 pid=16112 text_bytes=36 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=16911 processed=55
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967801-g1 seq=25 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=17221 processed=56
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967810-g1 seq=26 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=17534 processed=57
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967815-g1 seq=27 pid=16112 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=17837 processed=58
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967819-g1 seq=28 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=18147 processed=59
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967823-g1 seq=29 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=18457 processed=60
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967827-g1 seq=30 pid=16112 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=18760 processed=61
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967834-g1 seq=31 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=19070 processed=62
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967838-g1 seq=32 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=19383 processed=63
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967843-g1 seq=33 pid=16112 text_bytes=36 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=19699 processed=64
+  [aiw] 2026-11-20T19:45:06 seq reset pid=16112 -> 1 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967857-g1 seq=1 pid=16112 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=20008 processed=65
+  [aiw] 2026-11-20T19:45:06 event id=t5b-16112-1967861-g1 seq=2 pid=16112 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=20320 processed=66
+  [aiw] 2026-11-20T19:45:06 new pid segment pid=29413 starts at seq=3 (no baseline, not counted as gap)
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969456-g1 seq=3 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=20632 processed=67
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969468-g1 seq=4 pid=29413 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=20941 processed=68
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969472-g1 seq=5 pid=29413 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=21250 processed=69
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969476-g1 seq=6 pid=29413 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=21552 processed=70
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969482-g1 seq=7 pid=29413 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=21861 processed=71
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969486-g1 seq=8 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=22173 processed=72
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969490-g1 seq=9 pid=29413 text_bytes=36 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=22488 processed=73
+  [aiw] 2026-11-20T19:45:06 seq reset pid=16112 -> 1 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:06 event id=evt-dup-1 seq=1 pid=16112 text_bytes=12 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=22767 processed=74
+  [aiw] 2026-11-20T19:45:06 event id=evt-resend-1 seq=2 pid=16112 text_bytes=15 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=23052 processed=75
+  [aiw] 2026-11-20T19:45:06 seq reset pid=29413 -> 3 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969706-g1 seq=3 pid=29413 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=23357 processed=76
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969710-g1 seq=4 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=23669 processed=77
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969714-g1 seq=5 pid=29413 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=23971 processed=78
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969718-g1 seq=6 pid=29413 text_bytes=18 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=24267 processed=79
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969722-g1 seq=7 pid=29413 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=24576 processed=80
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969736-g1 seq=8 pid=29413 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=24881 processed=81
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969740-g1 seq=9 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=25193 processed=82
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969749-g1 seq=10 pid=29413 text_bytes=18 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=25490 processed=83
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969753-g1 seq=11 pid=29413 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=25800 processed=84
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969760-g1 seq=12 pid=29413 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=26110 processed=85
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969765-g1 seq=13 pid=29413 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=26413 processed=86
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969772-g1 seq=14 pid=29413 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=26723 processed=87
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969776-g1 seq=15 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=27036 processed=88
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969780-g1 seq=16 pid=29413 text_bytes=36 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=27352 processed=89
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969791-g1 seq=17 pid=29413 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=27658 processed=90
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969796-g1 seq=18 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=27971 processed=91
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969808-g1 seq=19 pid=29413 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=28281 processed=92
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969812-g1 seq=20 pid=29413 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=28591 processed=93
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969817-g1 seq=21 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=28904 processed=94
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969822-g1 seq=22 pid=29413 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=29210 processed=95
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969830-g1 seq=23 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=29523 processed=96
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969834-g1 seq=24 pid=29413 text_bytes=36 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=29839 processed=97
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969844-g1 seq=25 pid=29413 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=30145 processed=98
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969849-g1 seq=26 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=30458 processed=99
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969853-g1 seq=27 pid=29413 text_bytes=24 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=30761 processed=100
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969857-g1 seq=28 pid=29413 text_bytes=18 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=31058 processed=101
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969861-g1 seq=29 pid=29413 text_bytes=30 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=31368 processed=102
+  [aiw] 2026-11-20T19:45:06 seq reset pid=29413 -> 1 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969886-g1 seq=1 pid=29413 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=31673 processed=103
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969890-g1 seq=2 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=31985 processed=104
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969895-g1 seq=3 pid=29413 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=32290 processed=105
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969899-g1 seq=4 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=32602 processed=106
+  [aiw] 2026-11-20T19:45:06 seq gap pid=16112 missing=2 range=[3,4] (recorded, NOT fabricated)
+  [aiw] 2026-11-20T19:45:06 event id=t506b-r1-0000 seq=5 pid=16112 text_bytes=21 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=32894 processed=107
+  [aiw] 2026-11-20T19:45:06 seq reset pid=29413 -> 1 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969946-g1 seq=1 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=33206 processed=108
+  [aiw] 2026-11-20T19:45:06 seq reset pid=16112 -> 2 (bridge restart, not a loss)
+  [aiw] 2026-11-20T19:45:06 event id=t506b-185453-0000 seq=2 pid=16112 text_bytes=21 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=33502 processed=109
+  [aiw] 2026-11-20T19:45:06 seq gap pid=29413 missing=1 range=[2,2] (recorded, NOT fabricated)
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969962-g1 seq=3 pid=29413 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=33807 processed=110
+  [aiw] 2026-11-20T19:45:06 event id=t5b-29413-1969966-g1 seq=4 pid=29413 text_bytes=33 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:06 state saved (sync) offset=34119 processed=111
+  [aiw] 2026-11-20T19:45:06 state saved (exit) offset=34119 processed=111
+  [aiw] 2026-11-20T19:45:06 exit reason=max_events processed=111 duplicates=0 invalid=0 gaps=2 resets=14 provider_retries=0 offset=34119 state_saves=112 state_errors=0
+  rc=0
+status : {"version":1,"state":"stopped","pid":30691,"started_at":"2026-11-20T19:45:05","updated_at":"2026-11-20T19:45:06","started_at_ms":1795175105708,"updated_at_ms":1795175106862,"events_file":"/data/local/tmp/t5_bridge/work/events.jsonl","state_file":"/data/local/tmp/t506b_num/state/consumer_state.json","offset":34119,"file_size":34119,"dev":45846,"ino":86131,"provider":"mock","mock_calls":111,"counters":{"lines_read":111,"events_accepted":111,"events_processed":111,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":2,"gap_missing_total":3,"seq_resets":14,"seq_unknown_start":1,"state_saves":112,"state_errors":0,"provider_ok":111,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":4,"last_event_id":"t5b-29413-1969966-g1","last_event_at":"2026-11-20T19:45:06","last_gap_from":2,"last_gap_to":2,"pending_event_id":"","last_invalid":"","last_error":"","exit_reason":"max_events"}
+counters: processed=111 invalid=0 oversize=0 offset=34119 file_size=34119 gaps=2 seq_resets=14 seq_unknown_start=1 duplicates=0
+ASSERT OK: all historical lines accepted, offset == file size, 0 invalid, 0 oversize
+
+===== D. real events.jsonl after consumption (must be byte-identical) :: 2026-11-20 19:45:07 =====
+sha256 : 072ea60602d88d72192cb44ebe4e0dc9f8730c69a0d3474edb0b71eb4b4480ea  /data/local/tmp/t5_bridge/work/events.jsonl
+lines  : 111
+ASSERT OK: events.jsonl unchanged (sha256 + line count identical)
+
+===== E. narrowing rejection on device (seq out of 32-bit range, version 2^32+1) :: 2026-11-20 19:45:07 =====
+> adb shell mkdir -p /data/local/tmp/t506b_num/neg && rm -f /data/local/tmp/t506b_num/neg/events.jsonl
+  C:\Users\mac\AppData\Local\Temp\t506b_neg_events.jsonl: 1 file pushed, 0 skipped. 1.8 MB/s (745 bytes in 0.000s)
+> adb shell wc -l /data/local/tmp/t506b_num/neg/events.jsonl
+  5 /data/local/tmp/t506b_num/neg/events.jsonl
+> adb shell /data/local/tmp/t506b_num/bin/ai_worker --work-dir /data/local/tmp/t506b_num/neg --state-dir /data/local/tmp/t506b_num/negstate --max-events 1 --max-runtime-ms 15000 --status-every-ms 200 --verbose; echo rc=$?
+  [aiw] 2026-11-20T19:45:08 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T19:45:08 start pid=30709 events=/data/local/tmp/t506b_num/neg/events.jsonl state=/data/local/tmp/t506b_num/negstate/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T19:45:08 skip invalid record at offset 0: bad_seq (field=seq)
+  [aiw] 2026-11-20T19:45:08 state saved (sync) offset=142 processed=0
+  [aiw] 2026-11-20T19:45:08 skip invalid record at offset 142: bad_version (field=version)
+  [aiw] 2026-11-20T19:45:08 state saved (sync) offset=284 processed=0
+  [aiw] 2026-11-20T19:45:08 skip invalid record at offset 284: bad_seq (field=seq)
+  [aiw] 2026-11-20T19:45:08 state saved (sync) offset=426 processed=0
+  [aiw] 2026-11-20T19:45:08 skip invalid record at offset 426: bad_type (field=text_bytes)
+  [aiw] 2026-11-20T19:45:08 state saved (sync) offset=578 processed=0
+  [aiw] 2026-11-20T19:45:08 new pid segment pid=1 starts at seq=2 (no baseline, not counted as gap)
+  [aiw] 2026-11-20T19:45:08 event id=n4 seq=2 pid=1 text_bytes=5 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T19:45:08 state saved (sync) offset=745 processed=1
+  [aiw] 2026-11-20T19:45:08 state saved (exit) offset=745 processed=1
+  [aiw] 2026-11-20T19:45:08 exit reason=max_events processed=1 duplicates=0 invalid=4 gaps=0 resets=0 provider_retries=0 offset=745 state_saves=6 state_errors=0
+  rc=0
+ASSERT OK (log): bad_seq/seq (x2: 2^32 and 2^32+1), bad_version/version, bad_type/text_bytes all observed
+status : {"version":1,"state":"stopped","pid":30709,"started_at":"2026-11-20T19:45:08","updated_at":"2026-11-20T19:45:08","started_at_ms":1795175108278,"updated_at_ms":1795175108346,"events_file":"/data/local/tmp/t506b_num/neg/events.jsonl","state_file":"/data/local/tmp/t506b_num/negstate/consumer_state.json","offset":745,"file_size":745,"dev":45846,"ino":86222,"provider":"mock","mock_calls":1,"counters":{"lines_read":1,"events_accepted":1,"events_processed":1,"duplicates":0,"invalid_lines":4,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":1,"state_saves":6,"state_errors":0,"provider_ok":1,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":2,"last_event_id":"n4","last_event_at":"2026-11-20T19:45:08","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"bad_type:text_bytes","last_error":"","exit_reason":"max_events"}
+counters: processed=1 invalid=4 provider_ok=1
+ASSERT OK: seq=2^32, version=2^32+1 and text_bytes mismatch rejected on ARM32; valid line accepted
+
+===== F. cleanup :: 2026-11-20 19:45:08 =====
+> adb shell rm -rf /data/local/tmp/t506b_num
+> adb shell ls -d /data/local/tmp/t506b_num 2>/dev/null; echo gone=$?
+  gone=1
+
+RESULT: PASS (ARM32 unit test + real history regression + events.jsonl untouched + narrowing on device)

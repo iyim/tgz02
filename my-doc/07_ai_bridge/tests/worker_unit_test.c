@@ -26,6 +26,7 @@
 #include "worker_status.h"
 #include "worker_util.h"
 
+#include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,16 +90,20 @@ static int remove_file(const char *path)
     return remove(path);
 }
 
-/* 造一条合法的 asr_final 记录（与桥接端 tgb_event_to_record 的输出格式一致） */
+/* 造一条合法的 asr_final 记录（与桥接端 tgb_event_to_record 的输出格式一致）。
+ * text_bytes / text_chars 必须按实际文本计算：解析层现在会校验两者与文本一致
+ * （T5-06B P2 补充修复），写死常量会让"合法记录"变成坏记录。 */
 static int mk_rec(char *buf, size_t cap, int seq, long long pid, const char *id,
                   const char *text)
 {
+    size_t blen = strlen(text);
+
     return snprintf(buf, cap,
         "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"%s\",\"event_type\":\"asr_final\","
-        "\"pid\":%lld,\"session_id\":\"1000\",\"text\":\"%s\",\"text_bytes\":%d,\"text_chars\":1,"
+        "\"pid\":%lld,\"session_id\":\"1000\",\"text\":\"%s\",\"text_bytes\":%d,\"text_chars\":%d,"
         "\"is_final\":true,\"received_at_ms\":100,\"recv_at_ms\":101,\"stored_at_ms\":102,"
         "\"seq\":%d}\n",
-        id, pid, text, (int)strlen(text), seq);
+        id, pid, text, (int)blen, wu_utf8_count(text, blen), seq);
 }
 
 /* ---------------- U3/U4：解析与校验 ---------------- */
@@ -230,6 +235,49 @@ static void test_parse_rejects(void)
         { "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\",\"event_type\":\"asr_final\","
           "\"pid\":0,\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,\"seq\":1}",
           T6B_EV_BAD_PID, "pid" },
+        /* ---- T5-06B P2 补充修复：数字字段窄化与范围校验 ---- */
+        /* pid 超过 32 位上界：必须先拒收，不能截成负数/别的值 */
+        { "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\",\"event_type\":\"asr_final\","
+          "\"pid\":2147483648,\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,\"seq\":1}",
+          T6B_EV_BAD_PID, "pid" },
+        /* version 只能是精确的 1：4294967297 窄化成 int 后是 1，禁止因此通过 */
+        { "{\"version\":4294967297,\"rec\":\"asr_final\",\"event_id\":\"a\","
+          "\"event_type\":\"asr_final\",\"pid\":1,\"session_id\":\"s\",\"text\":\"x\","
+          "\"is_final\":true,\"seq\":1}", T6B_EV_BAD_VERSION, "version" },
+        /* seq = -1：负数，拒收 */
+        { "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\",\"event_type\":\"asr_final\","
+          "\"pid\":1,\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,\"seq\":-1}",
+          T6B_EV_BAD_SEQ, "seq" },
+        /* seq 超过 64 位有符号整数：JSON 整数解析阶段就拒收（不进入窄化路径） */
+        { "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\",\"event_type\":\"asr_final\","
+          "\"pid\":1,\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,"
+          "\"seq\":18446744073709551616}", T6B_EV_BAD_TYPE, "seq" },
+        /* text_bytes / text_chars：负数、超上限、与文本不符，全部拒收 */
+        { "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\",\"event_type\":\"asr_final\","
+          "\"pid\":1,\"session_id\":\"s\",\"text\":\"hello\",\"text_bytes\":-1,"
+          "\"is_final\":true,\"seq\":1}", T6B_EV_BAD_TYPE, "text_bytes" },
+        { "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\",\"event_type\":\"asr_final\","
+          "\"pid\":1,\"session_id\":\"s\",\"text\":\"hello\",\"text_bytes\":512,"
+          "\"is_final\":true,\"seq\":1}", T6B_EV_BAD_TYPE, "text_bytes" },
+        { "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\",\"event_type\":\"asr_final\","
+          "\"pid\":1,\"session_id\":\"s\",\"text\":\"hello\",\"text_bytes\":4,"
+          "\"is_final\":true,\"seq\":1}", T6B_EV_BAD_TYPE, "text_bytes" },
+        { "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\",\"event_type\":\"asr_final\","
+          "\"pid\":1,\"session_id\":\"s\",\"text\":\"hello\",\"text_chars\":4,"
+          "\"is_final\":true,\"seq\":1}", T6B_EV_BAD_TYPE, "text_chars" },
+        /* 时间字段为负：拒收 */
+        { "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\",\"event_type\":\"asr_final\","
+          "\"pid\":1,\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,"
+          "\"received_at_ms\":-1,\"seq\":1}", T6B_EV_BAD_TIME, "received_at_ms" },
+        /* 中文字符数按码点算：6 字节 / 2 个码点，合法 */
+        { "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\",\"event_type\":\"asr_final\","
+          "\"pid\":1,\"session_id\":\"s\",\"text\":\"\xe4\xbd\xa0" "\xe5\xa5\xbd\","
+          "\"text_bytes\":6,\"text_chars\":2,\"is_final\":true,\"seq\":1}",
+          T6B_EV_OK, NULL },
+        /* 不提供诊断字段：仍然通过（自动补齐，不因此拒收） */
+        { "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\",\"event_type\":\"asr_final\","
+          "\"pid\":1,\"session_id\":\"s\",\"text\":\"\xe4\xbd\xa0" "\xe5\xa5\xbd\","
+          "\"is_final\":true,\"seq\":1}", T6B_EV_OK, NULL },
         /* 没有顶层对象 */
         { "", T6B_EV_BAD_JSON, NULL },
         { "[]", T6B_EV_BAD_JSON, NULL }
@@ -252,6 +300,39 @@ static void test_parse_rejects(void)
                           f ? f : "(null)");
             } else {
                 g_pass++;
+            }
+        }
+    }
+
+    /* seq 的上下界由 unsigned long 的位宽决定（注意 Windows LLP64 的 long 也是 32 位）：
+     *   ULONG_MAX == 0xFFFFFFFF（ARM32 / Windows x64 / ILP32）→ 两个值都越界，必须拒收；
+     *       4294967296 窄化后是 0（旧实现靠 "seq==0" 偶然拒收），
+     *       4294967297 窄化后是 1 —— 旧实现会静默当成 seq=1（最危险的静默错误）。
+     *   ULONG_MAX > 0xFFFFFFFF（LP64，如 Linux x86_64）→ 两个值都在范围内，必须原值保留。 */
+    {
+        static const char *seq_lines[2] = {
+            "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\","
+            "\"event_type\":\"asr_final\",\"pid\":1,\"session_id\":\"s\",\"text\":\"x\","
+            "\"is_final\":true,\"seq\":4294967296}",
+            "{\"version\":1,\"rec\":\"asr_final\",\"event_id\":\"a\","
+            "\"event_type\":\"asr_final\",\"pid\":1,\"session_id\":\"s\",\"text\":\"x\","
+            "\"is_final\":true,\"seq\":4294967297}"
+        };
+        static const long long seq_want[2] = { 4294967296LL, 4294967297LL };
+        int k;
+
+        for (k = 0; k < 2; k++) {
+            const char *fld = NULL;
+            t6b_eval rc = t6b_parse_record(seq_lines[k], strlen(seq_lines[k]), &ev, &fld);
+
+            if ((unsigned long long)seq_want[k] <= (unsigned long long)ULONG_MAX) {
+                T("parse/seq inside unsigned long range keeps its value");
+                EQ_LL(rc, T6B_EV_OK);
+                EQ_LL((long long)ev.seq, seq_want[k]);
+            } else {
+                T("parse/seq above ULONG_MAX rejected (no narrowing)");
+                EQ_LL(rc, T6B_EV_BAD_SEQ);
+                EQ_STR(fld, "seq");
             }
         }
     }
@@ -862,11 +943,23 @@ static void test_reader_recreate_while_absent(void)
     EQ_LL(r.last_reason, T6B_OPEN_ABSENT);
     EQ_LL(r.replacements, 0);
 
-    /* 新文件（更短）出现：身份不同 → 判重建、偏移归零 */
+    /* 新文件（更短）出现。这里要区分两种文件系统行为：
+     *   - Windows（文件索引不复用）/ 大多数桌面文件系统 → 身份不同 → 判"重建"，replacements++
+     *   - Android ext4/f2fs 会立刻复用 inode 号（已实测：同一路径删掉重建，st_dev/st_ino 完全相同）
+     *     → 身份无法区分，只能落到"变小即截断"这条兜底规则，truncations++
+     * 两条路径都必须把偏移归零、把新文件的第一条读出来；这个断言对两种结果都严格。
+     * 【遗留】身份相同且新文件"更长"时无法判断重建 —— 见修复报告 §已知限制。 */
     n = mk_rec(a, sizeof(a), 1, 1, "new-1", "x");
     write_bytes(path, a, (size_t)n, 0);
+    EQ_LL(wu_file_identity(path, &dev2, &ino2, NULL), 0);
     EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
-    EQ_LL(r.replacements, 1);
+    if (dev2 == dev1 && ino2 == ino1) {
+        EQ_LL(r.replacements, 0);                    /* inode 被复用：身份看不出来 */
+        EQ_LL(r.truncations, 1);                     /* 靠"变小"兜底 */
+    } else {
+        EQ_LL(r.replacements, 1);
+        EQ_LL(r.truncations, 0);
+    }
     EQ_STR(ev.event_id, "new-1");                    /* 第一条没被跳过 */
     EQ_LL(r.off, 0);                                 /* 还没 commit */
     t6b_reader_commit(&r);
@@ -1012,7 +1105,9 @@ static void test_status_file(void)
 
 int main(void)
 {
-    printf("=== T5-06B worker unit test (host) ===\n");
+    printf("=== T5-06B worker unit test ===\n");
+    printf("abi: %d-bit long, ULONG_MAX=%llu (seq upper bound depends on this)\n",
+           (int)(sizeof(long) * 8), (unsigned long long)ULONG_MAX);
     snprintf(g_dir, sizeof(g_dir), "_t6b_unit");
     (void)wu_mkdir_p(g_dir);
 

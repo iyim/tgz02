@@ -15,6 +15,7 @@ vendor release 串 `6.1.8-RS-20221104.1459`，kernel `4.4.95+`）。
 | [t5_06a_risk_assessment.md](t5_06a_risk_assessment.md) | D+E：安全与资源约束、T5-05 遗留风险对 AI 接入的影响 |
 | [t5_06b_worker_report.md](t5_06b_worker_report.md) | **T5-06B：独立 AI Worker 的实现与测试报告**（消费语义、Provider 抽象、主机 215+14 项测试、真机实测） |
 | [t5_06b_p1p2_fix_report.md](t5_06b_p1p2_fix_report.md) | **T5-06B P1/P2 修复报告**：内核锁、Provider 失败不消费、落盘失败即停、半行超长、删除重建身份检测 |
+| [t5_06b_numeric_validation_fix_report.md](t5_06b_numeric_validation_fix_report.md) | **T5-06B P2 补充修复**：`event_reader` 数字字段窄化与范围校验（version/pid/text_bytes/text_chars/时间/seq）、文本诊断字段一致性、ARM32 与 LLP64 的 `ULONG_MAX` 差异、真机 284 项全过 |
 | [android/](android) | T5-06B Worker 源码 + `build.ps1`（NDK 动态链接）+ `run_ai_worker.sh` |
 | [tests/](tests) | T5-06B 主机单元测试 / 集成测试 / 一键运行脚本 |
 | [evidence/](evidence) | 真机探针原始输出、设备事实快照、NDK 检查、主机与真机测试日志 |
@@ -31,7 +32,14 @@ vendor release 串 `6.1.8-RS-20221104.1459`，kernel `4.4.95+`）。
 P1/P2 修复后（`t5_06b_p1p2_fix_report.md`）：单实例改用内核 `flock`/`LockFileEx`（100 轮 × 20 进程
 并发全过、`kill -9` 后立即可拿锁）；Provider 失败**不再消费事件**（退避重试、超限 stuck 但不跳过）；
 消费进度落盘失败**立即停止消费**并以退出码 5 退出；半行超长只在见到换行符后才跳过；
-文件删除重建按 `(dev,ino)` 识别（先短后长都覆盖）。语义为 **at-least-once**，不承诺 exactly-once。
+文件删除重建按 `(dev,ino)` 识别（Windows 上先短后长都覆盖；**Android ext4/f2fs 会复用 inode，
+"重建且变长"识别不到**，见下方 P2 补充修复）。语义为 **at-least-once**，不承诺 exactly-once。
+
+P2 补充修复（`t5_06b_numeric_validation_fix_report.md`）：解析层所有整数字段**先校验范围再窄化**
+（`version` 只认精确 1；`pid` 限 32 位正数；`text_bytes`/`text_chars` 限 `0..511` 且必须与文本实测一致；
+时间戳非负；`seq` 必须 `>0` 且不超过 `ULONG_MAX`）。ARM32 真机执行同一份单元测试 **284/284 通过**，
+历史 111 条真实记录**零拒收**、`events.jsonl` 前后 sha256 不变。附一个旁证结论：Android ext4/f2fs 会复用
+inode，`(dev,ino)` 无法识别"重建且变长"的场景，已列为待评审的遗留项。
 
 ## 结论标记约定
 

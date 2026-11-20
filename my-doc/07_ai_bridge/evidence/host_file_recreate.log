@@ -1,9 +1,9 @@
 === T5-06B integration subset (host, Mock provider only) ===
 exe    : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_185024
+run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_194404
 filter : i16
 
-PASS i16_file_deleted_while_running     0.88s  absent -> shorter -> longer recreation all detected via file identity
+PASS i16_file_deleted_while_running     1.08s  absent -> shorter -> longer recreation all detected via file identity
 
 cases: 1, failed: 0
 RESULT: PASS
