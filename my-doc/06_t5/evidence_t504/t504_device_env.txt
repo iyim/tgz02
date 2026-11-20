@@ -1,0 +1,26 @@
+﻿# T5-04 设备环境与版本核对
+采集时间: 2026-11-20 10:52:31 +08:00
+设备: AILABS_S1L
+内部版本: O11019 test-keys
+AliOS 版本: 6.1.8-RS-20221104.1459
+
+## 目标进程
+pid 16112  (com.alibaba.ailabs.genie.smartapp:core)
+
+## 模块 SHA256（设备文件 = 仓库文件，逐字节一致）
+f6e3c3543ff6da5b59bf60b884b6ce4332897c75aa6b89b8dccc0c266df80940  /system/app/smartapp/lib/arm/libsmartbox.so
+65062e2d95a6055d0786ef20c3201737b65975b6d16ad0ea8987746a23f05b78  /system/app/smartapp/lib/arm/libagmmi.so
+
+## 运行期模块（Frida Process.enumerateModules / findExportByName 校验）
+libsmartbox.so  base=0x8e384000  size=2064384  path=/system/app/smartapp/lib/arm/libsmartbox.so
+libagmmi.so    未加载于本进程（T5-03 报告 §3.1 的模块归属修正：MMI/GCS/ProtocolParser 实现实际静态链接进 libsmartbox.so）
+
+## Hook 点偏移校验（每次加载都做 base+offset 比对）
+SessionManager::onStream            0x11353c  match=True
+PerformanceData::setTextTime        0x137dbc  match=True
+AGVadStateMachine::handleAsrResult  0xde9e4   match=True
+CloudASRManager::handleCloudASRResult 0xd9e30 match=True
+
+## 工具版本
+frida (host python): 16.7.19
+frida-server (device /data/local/tmp/fs32): 16.7.19
