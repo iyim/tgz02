@@ -1,0 +1,64 @@
+﻿# T5-05B P1 主机侧检查（node --check / 常量 / 参数 / diff）
+
+$ node --check my-doc/06_t5_bridge/frida/t505b_asr_bridge_sender.js
+(exit=0)
+
+$ node -e <constant + pumpWrite dump>
+MSG_NOSIGNAL literal = 0x4000  decimal = 16384
+---- pumpWrite() 源码 ----
+function pumpWrite() {
+    while (sock.writeOff < frameLen) {
+        var n = libc.send(sock.fd, frameBuf.add(sock.writeOff), frameLen - sock.writeOff,
+                          MSG_NOSIGNAL);
+        if (n > 0) { sock.writeOff += n; continue; }
+        if (n < 0) {
+            var e = errnoOf();
+            if (e === EINTR) continue;
+            if (e === EAGAIN || e === EWOULDBLOCK) return;   /* 下个 tick 继续 */
+            counters.send_errors++;
+            counters.last_error = 'send:' + e;
+            closeConn('send:' + e);
+            requeuePending();
+            return;
+        }
+        counters.send_errors++;                 /* n === 0：流式 socket 不应出现 */
+        counters.last_error = 'send:0';
+        closeConn('send:0');
+        requeuePending();
+        return;
+    }
+    sock.waitingAck = true;
+    sock.sentAt = nowMs();
+    counters.sent_frames++;
+    report({ t: 'sent', event_id: pending ? pending.event_id : '',
+             session_id: pending ? pending.session_id : '',
+             frame_bytes: frameLen });
+}
+
+$ git diff -- my-doc/06_t5_bridge/frida/t505b_asr_bridge_sender.js
+warning: in the working copy of 'my-doc/06_t5_bridge/frida/t505b_asr_bridge_sender.js', LF will be replaced by CRLF the next time Git touches it
+diff --git a/my-doc/06_t5_bridge/frida/t505b_asr_bridge_sender.js b/my-doc/06_t5_bridge/frida/t505b_asr_bridge_sender.js
+index dd64d6d4..00dc60f8 100644
+--- a/my-doc/06_t5_bridge/frida/t505b_asr_bridge_sender.js
++++ b/my-doc/06_t5_bridge/frida/t505b_asr_bridge_sender.js
+@@ -72,6 +72,10 @@ var SOL_SOCKET = 1, SO_ERROR = 4;
+ var EINTR = 4, EAGAIN = 11, EWOULDBLOCK = 11;
+ var EALREADY = 114, EINPROGRESS = 115, EISCONN = 106;
+ var EPIPE = 32, ECONNRESET = 104, ENOTCONN = 107, ECONNREFUSED = 111;
++/* MSG_NOSIGNAL：对端已关闭时，send() 只返回 EPIPE，不向进程投递 SIGPIPE。
++ * 脚本运行在原厂 smartapp:core 进程内，绝不能改动进程级 SIGPIPE 处置，
++ * 只能逐次 send 带该标志，避免影响原厂其他线程（T5-05B P1）。 */
++var MSG_NOSIGNAL = 0x4000;
+ 
+ /* ============================ 统计 ============================ */
+ 
+@@ -549,7 +553,8 @@ function checkConnecting() {
+ /* 写一帧（可部分写）；成功写完则进入等 ACK 状态 */
+ function pumpWrite() {
+     while (sock.writeOff < frameLen) {
+-        var n = libc.send(sock.fd, frameBuf.add(sock.writeOff), frameLen - sock.writeOff, 0);
++        var n = libc.send(sock.fd, frameBuf.add(sock.writeOff), frameLen - sock.writeOff,
++                          MSG_NOSIGNAL);
+         if (n > 0) { sock.writeOff += n; continue; }
+         if (n < 0) {
+             var e = errnoOf();

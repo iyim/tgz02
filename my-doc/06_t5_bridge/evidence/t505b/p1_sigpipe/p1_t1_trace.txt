@@ -1,0 +1,26 @@
+﻿[sendwatch] fd=None len=None flags=None
+[runner] loaded on pid=16112, running 92.0s
+[conn] {"t": "conn", "state": "connected", "fd": 125, "reconnect_count": 0, "tag": "sender"}
+[stat] hooks=0 final=0 partial=0 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=4 final=0 partial=4 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sendwatch] fd=125 len=207 flags=0x4000
+[sent] {"t": "sent", "event_id": "t5b-16112-1967536-g1", "session_id": "1967536", "frame_bytes": 207, "tag": "sender"}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967536-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 1, "tag": "sender"}
+[stat] hooks=7 final=1 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=7 final=1 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=false connErr=1 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=14 final=1 partial=13 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=false connErr=7 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=15 final=2 partial=13 empty=0 readErr=0 q=1 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=false connErr=14 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=15 final=2 partial=13 empty=0 readErr=0 q=1 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=false connErr=20 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=22 final=3 partial=19 empty=0 readErr=0 q=2 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=false connErr=27 sendErr=0 recvErr=1 lastErr=connect:111
+[conn] {"t": "conn", "state": "connected", "fd": 125, "reconnect_count": 1, "tag": "sender"}
+[sendwatch] fd=125 len=213 flags=0x4000
+[sent] {"t": "sent", "event_id": "t5b-16112-1967540-g1", "session_id": "1967540", "frame_bytes": 213, "tag": "sender"}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967540-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 1, "tag": "sender"}
+[sendwatch] fd=125 len=204 flags=0x4000
+[sent] {"t": "sent", "event_id": "t5b-16112-1967544-g1", "session_id": "1967544", "frame_bytes": 204, "tag": "sender"}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967544-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 2, "tag": "sender"}
+[stat] hooks=22 final=3 partial=19 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=32 sendErr=0 recvErr=1 lastErr=connect:111
+[runner] final stats: {"hook_hits": 22, "final_count": 3, "partial_count": 19, "empty_count": 0, "read_errors": 0, "queue_depth": 0, "pending_count": 0, "queue_overflow": 0, "connect_errors": 32, "send_errors": 0, "recv_errors": 1, "ack_stored": 3, "ack_duplicate": 0, "ack_rejected": 0, "retry_count": 0, "text_too_long": 0, "ack_mismatch": 0, "ack_timeouts": 0, "frame_rejects": 0, "dropped": 0, "protocol_errors": 0, "dup_session_final": 0, "reconnect_count": 1, "enqueued": 3, "requeued": 0, "sent_frames": 3, "rejected_codes": {}, "connected": true, "fd": 125, "last_error": "connect:111", "last_close_reason": "", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x8e384000", "addr": "0x8e49753c"}, "sock_name": "tgz2_asr_bridge", "stopped": false}
+[runner] sendwatch stats: {"total": 3, "logged": 3}
+[runner] teardown: pending=0 queue=0
+[runner] detached

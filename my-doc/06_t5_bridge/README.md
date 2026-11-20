@@ -62,9 +62,11 @@
 │   └── t505b_runner.py               宿主编排：加载脚本、记录消息、RPC stats/stop
 ├── evidence/              编译日志、单测日志、集成日志+结果 JSON、真机冒烟日志、T5-05B 验收证据
 │   └── t505b/             Frida 侧 JSONL、播放日志、events.jsonl 快照、对照表
+│       └── p1_sigpipe/    P1 证据：内核语义夹具输出、T1/T2b 轨迹、落盘对照、logcat、工具源码
 ├── t5_05a_bridge_receiver_report.md   接收端实施报告
 ├── t5_05a_p1p2_fix_record.md          接收端 P1/P2 修复记录
-└── t5_05b_asr_bridge_sender_report.md 发送端实施报告（含真机验收）
+├── t5_05b_asr_bridge_sender_report.md 发送端实施报告（含真机验收）
+└── t5_05b_p1_sigpipe_report.md        P1：发送端 SIGPIPE 抑制与真机 EPIPE 验证
 ```
 
 构建：
@@ -510,3 +512,11 @@ integration: 153 通过 / 0 失败  （15 用例，27.9 s）
    队列满时**优先丢最老的未 ACK 事件**并计数（并明确记录丢了多少文本），绝不阻塞 Hook。
 4. 与 T5-04 的关系：T5-04 的探针只读、只打印；T5-05B 在同一位置做同样的只读读取，
    唯一的额外动作是"把复制出来的字符串交给队列"。
+
+### 9.1 P1：发送侧 SIGPIPE
+
+`pumpWrite()` 的 `send()` 带 `MSG_NOSIGNAL(0x4000)`（逐次标志，不动进程级 SIGPIPE 处置），
+对端破裂时只返回 `EPIPE`。真机实测：发送端 `send()` 返回 `-1/errno=32`、core PID 不变、
+事件按原 `event_id` 回队列并在 Bridge 恢复后落盘一次；反过来不加标志的同条件连接会把进程
+以 signal 13 打死（隔离夹具）。细节与"为什么只停 Bridge 不会触发 EPIPE"（`tick()` 先
+`recv()` 后 `send()`）见 [t5_05b_p1_sigpipe_report.md](t5_05b_p1_sigpipe_report.md)。

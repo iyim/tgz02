@@ -1,0 +1,39 @@
+﻿# T5-05B P1 设备端 SIGPIPE 语义验证（一次性夹具 /data/local/tmp/sigpipe_probe）
+# 设备：TG-Z02 Android 8.1 armv7l kernel 4.4.95+；mode 与源码见任务报告 §2
+
+=== mode 1 ===
+[pre] recv -> 0 (EOF, peer closed)
+[kid] recv -> 0 (EOF, peer closed)
+[kid] send(flags=0x4000) -> -1 errno=32 (Broken pipe)
+[RESULT] send child exit=0 (survived, no SIGPIPE)
+=== mode 1 done ===
+
+=== mode 2 ===
+[pre] recv -> 0 (EOF, peer closed)
+[kid] recv -> 0 (EOF, peer closed)
+[RESULT] send child killed by signal 13 (SIGPIPE)
+=== mode 2 done ===
+
+=== mode 3 ===
+[pre] recv -> -1 errno=11 (Try again)
+[kid] send(flags=0x4000) -> -1 errno=32 (Broken pipe)
+[RESULT] send child exit=0 (survived, no SIGPIPE)
+=== mode 3 done ===
+
+=== mode 4 ===
+[pre] recv -> 0 (EOF, peer closed)
+[kid] send(flags=0x4000) -> 64
+[RESULT] send child exit=0 (survived, no SIGPIPE)
+=== mode 4 done ===
+
+=== mode 5 ===
+[pre] recv -> 0 (EOF, peer closed)
+[kid] send(flags=0x4000) -> -1 errno=32 (Broken pipe)
+[RESULT] send child exit=0 (survived, no SIGPIPE)
+=== mode 5 done ===
+
+=== mode 6 ===
+[pre] recv -> 0 (EOF, peer closed)
+[RESULT] send child killed by signal 13 (SIGPIPE)
+=== mode 6 done ===
+

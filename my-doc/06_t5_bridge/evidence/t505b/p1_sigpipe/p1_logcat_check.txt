@@ -1,0 +1,21 @@
+﻿# T5-05B P1 logcat / 进程核查（T1 + T2 + T2b 全程，日志在 T1 前清空）
+# 日志行数：11728
+ANR in          : 0
+FATAL EXCEPTION : 0
+SIGPIPE         : 0
+signal 13       : 0
+smartapp:core 的 F/E 行（16112）：0
+
+# 全程唯一的 Fatal signal 行（与本任务无关：第三方桌面的反作弊 SDK 进程）
+11-20 15:02:18.904 24859 24859 F libc    : Fatal signal 11 (SIGSEGV), code 1, fault addr 0x4 in tid 24859 (CheatingService), pid 24859 (CheatingService)
+11-20 15:01:49.471  6489  6916 W ActivityManager: Invalid packageName: com.talkingdata.sdk.TDAntiCheatingService
+11-20 15:02:00.055  6489 19595 W ActivityManager: Invalid packageName: com.talkingdata.sdk.TDAntiCheatingService
+11-20 15:02:03.005  6489  7030 I ActivityManager: Process com.talkingdata.sdk.TDAntiCheatingService (pid 7821) has died: cch+2SVC 
+11-20 15:02:03.005  6489  7030 W ActivityManager: Scheduling restart of crashed service com.dangbei1.tvlauncher/com.talkingdata.sdk.TDAntiCheatingService in 1000ms
+11-20 15:02:18.871  6489 12156 I ActivityManager: Start proc 24859:com.talkingdata.sdk.TDAntiCheatingService/u0a39 for service com.dangbei1.tvlauncher/com.talkingdata.sdk.TDAntiCheatingService caller=com.dangbei1.tvlauncher
+
+# smartapp:core(16112) 的最后几行 E 级日志（只有周期性 ClockTimer/NativeUIManager）
+11-20 15:08:06.769 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 22
+11-20 15:08:26.766 16112 16216 E ClockTimer: ClockTimer: 02 sessionId = 200  status = 0x88f2b160
+11-20 15:08:26.767 16112 16112 E NativeUIManager: iuiManager what = 1101,sessionId = 22
+11-20 15:08:26.777 16112 16216 E ClockTimer: ClockTimer: 01 sessionId = 0  status = 5 string= com.alibaba.ailabs.genie.gms

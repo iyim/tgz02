@@ -1,0 +1,17 @@
+﻿
+[15:06:11.108] T2b start
+[15:06:12.144] bridge stop: stopped: pid=25086 | {"type":"READY","pid":25086,"events_stored":0,"replay_lines":16,"bad_lines":0,"truncated_bytes":0,"dedup_size":16} | {"type":"STATS","tag":"final","frames":1,"stored":1,"duplicate":0,"rejected":0,"frame_errors":0,"store_errors":0,"clients_accepted":1,"clients_closed":1,"client_aborts":1,"client_overflow":0,"replay_lines":16,"replay_bad":0,"truncated_bytes":0,"dedup_evicted":0,"store_failed":false}
+[15:06:12.359] ps tgb_bridge: 
+[15:06:14.340] peer log: listening abstract:tgz2_asr_bridge
+[15:06:14.393] runner started pid=9064
+[15:06:16.938] sender connected to test peer = True
+[15:06:17.258] peer log: listening abstract:tgz2_asr_bridge | accepted fd=4 | shutdown(SHUT_RD) done on fd=4; listener closed; idling 300s
+[15:06:17.283] player started pid=24720
+[15:06:22.881] EPIPE observed in stats = True
+[15:06:23.322] bridge log grep (should be empty, peer never wrote): 
+[15:06:23.815] core pid after EPIPE = 16112
+[15:06:25.089] ps t5p1_peer: 
+[15:06:26.432] bridge start: started: pid=25420 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work | {"type":"CONFIG","sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","max_clients":8,"dedup_cap":8192,"fault_after_writes":-1,"text_max_bytes":511,"body_max":1024} | {"type":"READY","pid":25420,"events_stored":0,"replay_lines":17,"bad_lines":0,"truncated_bytes":0,"dedup_size":17}
+[15:06:26.651] stored/duplicate ACK after bridge restart = True
+[15:08:17.092] runner exited = True
+[15:08:17.094] T2b end

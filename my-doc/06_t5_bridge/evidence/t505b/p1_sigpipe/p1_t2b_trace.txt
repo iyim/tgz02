@@ -1,0 +1,19 @@
+﻿[sendwatch] fd=None len=None flags=None
+[runner] loaded on pid=16112, running 120.0s
+[conn] {"t": "conn", "state": "connected", "fd": 124, "reconnect_count": 0, "tag": "sender"}
+[stat] hooks=0 final=0 partial=0 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=4 final=0 partial=4 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sendwatch] fd=124 len=210 flags=0x4000
+[sendret] fd=124 len=210 flags=0x4000 ret=-1 errno=32
+[stat] hooks=10 final=1 partial=9 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=1 conn=false connErr=3 sendErr=1 recvErr=0 lastErr=connect:111
+[stat] hooks=10 final=1 partial=9 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=1 conn=false connErr=9 sendErr=1 recvErr=0 lastErr=connect:111
+[conn] {"t": "conn", "state": "connected", "fd": 124, "reconnect_count": 1, "tag": "sender"}
+[sendwatch] fd=124 len=210 flags=0x4000
+[sendret] fd=124 len=210 flags=0x4000 ret=210 errno=11
+[sent] {"t": "sent", "event_id": "t5b-16112-1967567-g1", "session_id": "1967567", "frame_bytes": 210, "tag": "sender"}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967567-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 1, "tag": "sender"}
+[stat] hooks=10 final=1 partial=9 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=1 conn=true connErr=11 sendErr=1 recvErr=0 lastErr=connect:111
+[runner] final stats: {"hook_hits": 10, "final_count": 1, "partial_count": 9, "empty_count": 0, "read_errors": 0, "queue_depth": 0, "pending_count": 0, "queue_overflow": 0, "connect_errors": 11, "send_errors": 1, "recv_errors": 0, "ack_stored": 1, "ack_duplicate": 0, "ack_rejected": 0, "retry_count": 1, "text_too_long": 0, "ack_mismatch": 0, "ack_timeouts": 0, "frame_rejects": 0, "dropped": 0, "protocol_errors": 0, "dup_session_final": 0, "reconnect_count": 1, "enqueued": 1, "requeued": 1, "sent_frames": 1, "rejected_codes": {}, "connected": true, "fd": 124, "last_error": "connect:111", "last_close_reason": "", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x8e384000", "addr": "0x8e49753c"}, "sock_name": "tgz2_asr_bridge", "stopped": false}
+[runner] sendwatch stats: {"total": 2, "logged": 2, "rets": 2}
+[runner] teardown: pending=0 queue=0
+[runner] detached

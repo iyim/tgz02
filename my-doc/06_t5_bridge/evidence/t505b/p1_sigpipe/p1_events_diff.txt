@@ -1,0 +1,10 @@
+﻿# T5-05B P1 事件落盘对照（events.jsonl）
+# before: 13 行 / after: 18 行 / 唯一 event_id: 18
+# 新增行（按 stored_at_ms）：
+t5b-16112-1967536-g1  session=1967536  stored_at_ms=1795158115486  recv_at_ms=1795158115486  text=天猫精灵现在几点了
+t5b-16112-1967540-g1  session=1967540  stored_at_ms=1795158128384  recv_at_ms=1795158128384  text=天猫精灵今天天气怎么样
+t5b-16112-1967544-g1  session=1967544  stored_at_ms=1795158128404  recv_at_ms=1795158128404  text=天猫精灵打开电视
+t5b-16112-1967553-g1  session=1967553  stored_at_ms=1795158229594  recv_at_ms=1795158229593  text=天猫精灵关灯
+t5b-16112-1967567-g1  session=1967567  stored_at_ms=1795158385253  recv_at_ms=1795158385253  text=天猫精灵明天会下雨吗
+
+# 重复 event_id：0 个

@@ -72,6 +72,10 @@ var SOL_SOCKET = 1, SO_ERROR = 4;
 var EINTR = 4, EAGAIN = 11, EWOULDBLOCK = 11;
 var EALREADY = 114, EINPROGRESS = 115, EISCONN = 106;
 var EPIPE = 32, ECONNRESET = 104, ENOTCONN = 107, ECONNREFUSED = 111;
+/* MSG_NOSIGNAL：对端已关闭时，send() 只返回 EPIPE，不向进程投递 SIGPIPE。
+ * 脚本运行在原厂 smartapp:core 进程内，绝不能改动进程级 SIGPIPE 处置，
+ * 只能逐次 send 带该标志，避免影响原厂其他线程（T5-05B P1）。 */
+var MSG_NOSIGNAL = 0x4000;
 
 /* ============================ 统计 ============================ */
 
@@ -549,7 +553,8 @@ function checkConnecting() {
 /* 写一帧（可部分写）；成功写完则进入等 ACK 状态 */
 function pumpWrite() {
     while (sock.writeOff < frameLen) {
-        var n = libc.send(sock.fd, frameBuf.add(sock.writeOff), frameLen - sock.writeOff, 0);
+        var n = libc.send(sock.fd, frameBuf.add(sock.writeOff), frameLen - sock.writeOff,
+                          MSG_NOSIGNAL);
         if (n > 0) { sock.writeOff += n; continue; }
         if (n < 0) {
             var e = errnoOf();
