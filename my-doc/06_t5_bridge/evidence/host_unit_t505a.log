@@ -1,0 +1,148 @@
+tgb_unit_test -- scratch dir: _tgb_unit
+
+[U-FRAME] 帧编解码与边界
+  ok   U-F1 pack 成功
+  ok   U-F2 帧长 = 16 + body
+  ok   U-F3 解头通过
+  ok   U-F4 body_len 正确
+  ok   U-F5 CRC 通过
+  ok   U-F6 坏 magic 被拒
+  ok   U-F7 未知帧版本被拒
+  ok   U-F8 坏 hdr_len 被拒
+  ok   U-F9 非 REQ 帧被拒
+  ok   U-F10 body 超长被拒
+  ok   U-F11 CRC 不符被拒
+  ok   U-F12 不足 4 字节要求继续读
+  ok   U-F13 只有头也能解
+  ok   U-F14 body 未到齐要求继续读
+  ok   U-F15 pack 拒绝超长 body
+  ok   U-F16 pack 拒绝缓冲不足
+
+[U-CRC] 与 T3/T4 的 tgz2_fnv1a 逐值对拍
+  ok   U-C1 CRC 与 tgz2_fnv1a 完全一致
+  ok   U-C2 golden('a') = 0xe40c292c
+  ok   U-C3 golden('abc') = 0x1a47e90b
+
+[U-EVENT] 消息解析与校验
+  ok   U-E1 合法事件解析通过
+  ok   U-E2 event_id
+  ok   U-E3 session_id
+  ok   U-E4 text 原样保留
+  ok   U-E5 text_bytes = 27
+  ok   U-E6 text_chars = 9
+  ok   U-E7 pid
+  ok   U-E8 is_final
+  ok   U-E9 received_at_ms
+  ok   U-E10 \uXXXX 转义解出相同 UTF-8
+  ok   U-E11 转义后字符数一致
+  ok   U-E12 未知字段可忽略
+  ok   U-E13 未知消息版本被拒
+  ok   U-E14 非 asr_final 被拒
+  ok   U-E15 is_final=false 被拒
+  ok   U-E16 空 event_id 被拒
+  ok   U-E17 空 session_id 被拒
+  ok   U-E18 非法字符的 event_id 被拒
+  ok   U-E19 空文本被拒
+  ok   U-E20 pid=0 被拒
+  ok   U-E21 received_at_ms=0 被拒
+  ok   U-E22 文本含控制字符被拒
+  ok   U-E23 孤立代理项被拒
+  ok   U-E24 缺 text 被拒
+  ok   U-E25 重复字段被拒
+  ok   U-E26 尾随垃圾被拒
+  ok   U-E27 字段类型不对被拒
+  ok   U-E28 嵌套对象被拒
+  ok   U-E29 非 JSON 被拒
+  ok   U-E30 空 body 被拒
+  ok   U-E31 512 字节文本被拒（Hook 上限 511）
+  ok   U-E32 511 字节文本被接受
+  ok   U-E33 text_bytes = 511
+
+[U-UTF8] 严格 UTF-8 校验
+  ok   U-U1 ASCII 通过
+  ok   U-U2 中文通过
+  ok   U-U3 4 字节 emoji 通过
+  ok   U-U4 截断 2 字节序列被拒
+  ok   U-U5 overlong 被拒
+  ok   U-U6 3 字节 overlong 被拒
+  ok   U-U7 代理区(U+D800) 被拒
+  ok   U-U8 > U+10FFFF 被拒
+  ok   U-U9 非法首字节 0xF5 被拒
+  ok   U-U10 截断 3 字节序列被拒
+  ok   U-U11 码点计数（ASCII+中文+4 字节 emoji）
+  ok   U-U12 码点计数（纯中文 9 字）
+
+[U-RECORD] 落库记录序列化 / 反解
+  ok   U-R1 源事件解析
+  ok   U-R2 记录序列化成功
+  ok   U-R3 返回长度 = 字符串长度
+  ok   U-R4 记录以换行结尾
+  ok   U-R5 带 rec 标记
+  ok   U-R6 带服务端 seq
+  ok   U-R7 带服务端接收时刻
+  ok   U-R8 带落盘时刻
+  ok   U-R9 is_final 为布尔 true
+  ok   U-R10 记录能被同一解析器读回（回放用同一套校验）
+  ok   U-R11 回读 event_id 一致
+  ok   U-R12 回读 text 一致
+  ok   U-R13 回读 text_bytes 一致
+  ok   U-R14 缓冲不足时拒绝生成半条记录
+
+[U-DEDUP] 幂等去重与 FIFO 淘汰
+  ok   U-D1 建表
+  ok   U-D2 容量按 2 的幂
+  ok   U-D3 首次加入 = 新增
+  ok   U-D4 重复加入 = 命中
+  ok   U-D5 contains 命中
+  ok   U-D6 contains 未命中
+  ok   U-D7 未触发淘汰前全部新增
+  ok   U-D8 表已满
+  ok   U-D9 尚无淘汰
+  ok   U-D10 满表后仍可加入
+  ok   U-D11 触发一次 FIFO 淘汰
+  ok   U-D12 最老的被淘汰
+  ok   U-D13 新事件在表内
+  ok   U-D14 容量始终有界
+  ok   U-D15 大小写不同视为不同事件
+  ok   U-D16 同前缀不同名不误判
+
+[U-STORE] JSONL 追加 / 回放 / 尾部修复 / 故障注入
+  ok   U-S1 打开成功
+  ok   U-S2 记录生成
+  ok   U-S3 追加并 fsync 成功
+  ok   U-S2 记录生成
+  ok   U-S3 追加并 fsync 成功
+  ok   U-S2 记录生成
+  ok   U-S3 追加并 fsync 成功
+  ok   U-S4 文件里 3 条记录
+  ok   U-S5 回放成功
+  ok   U-S6 回放 3 条
+  ok   U-S7 无坏行
+  ok   U-S8 半条记录下回放仍成功
+  ok   U-S9 半条记录不计入有效行
+  ok   U-S10 半条记录计入坏行
+  ok   U-S11 尾部修复成功
+  ok   U-S12 修复确实截掉了字节
+  ok   U-S13 修复后文件以换行结尾
+  ok   U-S14 修复后回放 3 条 0 坏行
+  ok   U-S15 干净文件不需要修复（幂等）
+  ok   U-S16 重新打开
+  ok   U-S17 追加成功
+  ok   U-S18 修复后追加的记录可读（4 条 0 坏行）
+  ok   U-S19 带注入打开
+  ok   U-S20 前 2 条写入成功
+  ok   U-S20 前 2 条写入成功
+  ok   U-S21 第 3 条注入失败并进入 fail-stop
+  ok   U-S22 fail-stop 后直接拒绝（未尝试写盘）
+  ok   U-S23 失败的事件没有留下记录
+  ok   U-S24 故障后文件仍可完整回放
+  ok   U-S25 打开
+  ok   U-S26 以只读方式打开同一文件
+  ok   U-S27 真实写失败时 append 返回失败
+  ok   U-S28 写失败没有产生任何记录
+  ok   U-S29 全是半条时整体清空
+  ok   U-S30 清空后 0 行
+  ok   U-S31 首次运行回放 0 条
+  ok   U-S32 首次运行修复为 no-op
+
+=== unit: 131 passed, 0 failed ===

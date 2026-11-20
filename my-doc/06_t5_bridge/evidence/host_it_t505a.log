@@ -1,0 +1,210 @@
+T5-05A bridge host tests
+  bridge : D:\tgz02\OS\system\my-doc\06_t5_bridge\android\out\tgb_bridge.exe
+  client : D:\tgz02\OS\system\my-doc\06_t5_bridge\tests\out\tgb_client.exe
+  run dir: D:\tgz02\OS\system\my-doc\06_t5_bridge\tests\_run\20261120_114137
+  python : 3.11.9
+
+[C01] 正常事件接收（AF_UNIX STREAM / 落盘 / ACK / 状态文件）
+    PASS  C01    服务启动并写出 running 状态
+    PASS  C01    CONFIG 行声明文本上限 511
+    PASS  C01    收到 1 条 ACK
+    PASS  C01    ACK status=stored
+    PASS  C01    ACK 回带同一 event_id
+    PASS  C01    ACK events_stored=1
+    PASS  C01    JSONL 恰好 1 条记录
+    PASS  C01    记录 version=1 且 rec=asr_final
+    PASS  C01    记录字段齐全
+    PASS  C01    text 原样落盘
+    PASS  C01    is_final 为 true
+    PASS  C01    received_at_ms 保留客户端时间
+    PASS  C01    recv_at_ms/stored_at_ms 为服务端时间且有序
+    PASS  C01    seq 从 1 开始
+    PASS  C01    CTRL_BREAK 优雅退出且退出码 0
+    PASS  C01    退出时打印 STATS
+    PASS  C01    STATS stored=1 且无拒收
+    PASS  C01    停止后状态文件为 stopped
+
+[C02] 中文 UTF-8（原始字节 / \uXXXX 转义）
+    PASS  C02    服务就绪
+    PASS  C02    两条事件都 stored
+    PASS  C02    两条 ACK 都成功
+    PASS  C02    转义与原始文本解出同一字符串
+    PASS  C02    text_bytes=27
+    PASS  C02    text_chars=9
+    PASS  C02    落盘文件是合法 UTF-8
+
+[C03] 空文本、空 session_id、空 event_id
+    PASS  C03    服务就绪
+    PASS  C03    empty_text -> rejected/empty_text
+    PASS  C03    empty_text ACK 指出字段 text
+    PASS  C03    empty_text ACK 回带可信 event_id（发送端可对账）
+    PASS  C03    empty_sid -> rejected/empty_session_id
+    PASS  C03    empty_sid ACK 指出字段 session_id
+    PASS  C03    empty_sid ACK 回带可信 event_id（发送端可对账）
+    PASS  C03    empty_event_id -> rejected/empty_event_id
+    PASS  C03    empty_event_id ACK 指出字段 event_id
+    PASS  C03    empty_event_id ACK 的 ack 为 null（没有可信 event_id，不猜）
+    PASS  C03    被拒事件一条都没落盘
+    PASS  C03    STATS rejected=3 且 stored=0
+    PASS  C03    退出码 0
+
+[C04] 非法 UTF-8（truncated / overlong / lone surrogate）
+    PASS  C04    服务就绪
+    PASS  C04    bad_utf8 -> rejected/bad_utf8
+    PASS  C04    bad_utf8 的 ACK 回带 event_id 便于对账
+    PASS  C04    overlong_utf8 -> rejected/bad_utf8
+    PASS  C04    overlong_utf8 的 ACK 回带 event_id 便于对账
+    PASS  C04    lone_surrogate -> rejected/bad_utf8
+    PASS  C04    lone_surrogate 的 ACK 回带 event_id 便于对账
+    PASS  C04    非法 UTF-8 一条都没落盘
+    PASS  C04    STATS rejected=3
+
+[C05] 超长消息（text 511 收 / 512 拒、body 超长、CRC 错）
+    PASS  C05    服务就绪
+    PASS  C05    512 字节文本 -> rejected/text_too_long
+    PASS  C05    511 字节文本 -> stored
+    PASS  C05    CRC 不符 -> rejected/bad_crc
+    PASS  C05    声明 5000 字节 body -> rejected/oversize_frame
+    PASS  C05    声明超长后接收端主动断开（流已不可对齐）
+    PASS  C05    只有 511 字节那条落盘
+    PASS  C05    落盘文本正好 511 字节
+    PASS  C05    STATS frame_errors=2（坏 CRC + 超长）
+
+[C06] 未知协议版本
+    PASS  C06    服务就绪
+    PASS  C06    消息 version=2 -> rejected/bad_protocol_version
+    PASS  C06    帧头 ver=2 -> rejected/bad_frame_version
+    PASS  C06    帧头版本错后断开连接
+    PASS  C06    magic 错 -> rejected/bad_magic
+    PASS  C06    一条都没落盘
+
+[C07] 同一 event_id 重复（幂等 + duplicate_count）
+    PASS  C07    服务就绪
+    PASS  C07    第一次 stored、第二次 duplicate
+    PASS  C07    重复 ACK 的 code=duplicate_event_id
+    PASS  C07    重复 ACK 回带同一 event_id
+    PASS  C07    dup_count=1
+    PASS  C07    重复 ACK 的 events_stored 不增长
+    PASS  C07    JSONL 只有 1 条
+    PASS  C07    跨连接重发仍为 duplicate
+    PASS  C07    dup_count 累计到 2
+    PASS  C07    总计仍只有 2 条不同事件
+
+[C08] 不同 session、相同文本
+    PASS  C08    服务就绪
+    PASS  C08    两条都 stored
+    PASS  C08    两条都落盘
+    PASS  C08    文本相同
+    PASS  C08    session 不同
+    PASS  C08    event_id 不同
+    PASS  C08    seq 递增
+    PASS  C08    STATS duplicate=0
+
+[C09] 落盘后才 ACK（ACK 后立即 kill -9，重启必须还在）
+    PASS  C09    服务就绪
+    PASS  C09    5 条全部 stored
+    PASS  C09    强制终止（不等收尾）
+    PASS  C09    ACK 过的 5 条都已经在文件里
+    PASS  C09    重启就绪
+    PASS  C09    重启回放 5 条
+    PASS  C09    重启后不重复落盘（events_stored=0）
+    PASS  C09    重启后重发同样 5 条全部 duplicate
+    PASS  C09    文件仍只有 5 条
+
+[C10] 模拟落盘失败（--fault-after-writes 1）
+    PASS  C10    服务就绪
+    PASS  C10    收到 3 条 ACK
+    PASS  C10    第 1 条 stored
+    PASS  C10    第 2 条为 error（不是 stored）
+    PASS  C10    第 2 条 code=store_unavailable/store_failed
+    PASS  C10    第 3 条同样 error（fail-stop 不再尝试写盘）
+    PASS  C10    只有成功的那 1 条落盘
+    PASS  C10    文件没有被半条记录污染（每行都能解析）
+    PASS  C10    STATS store_errors>=2 且 store_failed=true
+    PASS  C10    重启就绪
+    PASS  C10    重启回放 1 条
+    PASS  C10    重启后重发：失败过的会被真正存入，已存的仍是 duplicate
+    PASS  C10    文件最终 2 条
+
+[C11] JSONL 尾部半条记录恢复
+    PASS  C11    服务就绪（面对半条记录也能起来）
+    PASS  C11    READY 报告截掉了字节
+    PASS  C11    回放 2 条有效记录
+    PASS  C11    半条被计为 bad_line
+    PASS  C11    文件被截断到最后一个换行之后
+    PASS  C11    修复后正好 2 行
+    PASS  C11    修复后可继续接收新事件
+    PASS  C11    新事件追加成独立第 3 行（没有和半条粘连）
+    PASS  C11    3 行全部可解析
+
+[C12] 重启后去重
+    PASS  C12    第一次启动就绪
+    PASS  C12    首次 stored
+    PASS  C12    第二次启动就绪
+    PASS  C12    重启回放 1 条
+    PASS  C12    重启后同 event_id -> duplicate
+    PASS  C12    dup_count=1
+    PASS  C12    文件仍只有 1 条
+
+[C13] 连续 100 条事件
+    PASS  C13    服务就绪
+    PASS  C13    100 条 ACK 全部 stored
+    PASS  C13    JSONL 100 行
+    PASS  C13    每行都能解析
+    PASS  C13    seq 连续 1..100
+    PASS  C13    100 个 event_id 互不相同
+    PASS  C13    文本无损
+          （100 条往返耗时 2078 ms，含客户端 1.5 s 收尾等待）
+    PASS  C13    STATS stored=100 duplicate=0
+
+[C14] 并发发送与队列边界
+    PASS  C14    服务就绪
+    PASS  C14    4 个并发客户端共 100 条 ACK
+    PASS  C14    100 条全部 stored
+    PASS  C14    100 条全部落盘且可解析
+    PASS  C14    并发写入没有交错损坏（行数 == 记录数 == 100）
+    PASS  C14    seq 仍递增且唯一
+    PASS  C14    event_id 两两不同
+    PASS  C14    只发不读的客户端被接收端断开（ACK 缓冲有界）
+    PASS  C14    被断开的客户端已发出的部分仍然完整落盘（0 < 条数 <= 600）
+    PASS  C14    断开后文件仍是合法 JSONL
+    PASS  C14    断开后去重仍然正确（无重复 event_id）
+    PASS  C14    过载断开后接收端仍可正常服务
+    PASS  C14    STATS 记录 client_overflow>=1
+    PASS  C14    max_clients=1 的服务就绪
+    PASS  C14    超过 max_clients 的连接被立即关闭（无 ACK）
+    PASS  C14    被拒连接没有产生任何记录
+    PASS  C14    max_clients 溢出被计数
+    PASS  C14    接收端没有崩溃（退出码 0）
+
+[C15] 客户端异常断开（半帧 / 只发头 / 静默连接）
+    PASS  C15    服务就绪
+    PASS  C15    只发 8 字节就断开：客户端无 ACK
+    PASS  C15    声明 100 字节 body 但只发 20 字节就断开：无 ACK
+    PASS  C15    静默连接 300 ms 后断开：无 ACK
+    PASS  C15    接收端进程仍然存活
+    PASS  C15    异常断开之后仍能正常接收事件
+    PASS  C15    只落盘了那条合法事件
+    PASS  C15    STATS client_aborts>=3
+    PASS  C15    STATS clients_closed>=4
+
+==============================================================================
+断言：153 通过 / 0 失败   （用时 28.7 s）
+
+按用例汇总：
+  C01   18 通过 / 0 失败  OK
+  C02    7 通过 / 0 失败  OK
+  C03   13 通过 / 0 失败  OK
+  C04    9 通过 / 0 失败  OK
+  C05    9 通过 / 0 失败  OK
+  C06    6 通过 / 0 失败  OK
+  C07   10 通过 / 0 失败  OK
+  C08    8 通过 / 0 失败  OK
+  C09    9 通过 / 0 失败  OK
+  C10   13 通过 / 0 失败  OK
+  C11    9 通过 / 0 失败  OK
+  C12    7 通过 / 0 失败  OK
+  C13    8 通过 / 0 失败  OK
+  C14   18 通过 / 0 失败  OK
+  C15    9 通过 / 0 失败  OK
+==============================================================================

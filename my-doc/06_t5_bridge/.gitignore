@@ -1,0 +1,7 @@
+out/
+tests/out/
+tests/_run/
+_tgb_unit/
+*.exe
+*.o
+_obj/
