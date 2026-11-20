@@ -61,6 +61,13 @@ typedef struct {
     unsigned long long provider_ok;
     unsigned long long provider_err;
     unsigned long long provider_timeout;
+    unsigned long long provider_retries;   /* 因超时/错误而重试的总次数（P1-2） */
+    unsigned long long stuck_attempts;     /* 当前卡住事件的累计尝试次数 */
+    int                provider_stuck;     /* 1 = 已超过重试上限，等待死信策略（不跳过） */
+    char               pending_event_id[T6B_ID_MAX + 1]; /* 正在重试/卡住的事件 */
+
+    /* 状态落盘（P1-3） */
+    int                state_persist_failed;   /* 1 = 上次落盘失败，已停止推进消费 */
 
     unsigned long      last_seq;
     char               last_event_id[T6B_ID_MAX + 1];

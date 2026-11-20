@@ -768,6 +768,137 @@ static void test_reader_resume_offset(void)
 
 /* ---------------- U12：Provider ---------------- */
 
+static void test_reader_half_line_oversize(void)
+{
+    t6b_reader r;
+    t6b_event ev;
+    char path[600];
+    char err[192];
+    const char *reason = NULL;
+    const char *field = NULL;
+    static char big[9000];
+    char good[512];
+    int n;
+    int rc;
+    long long off_before;
+
+    T("reader/P2-1 8500-byte half line must not be skipped");
+    mk_path(path, sizeof(path), "events_half_big.jsonl");
+    remove_file(path);
+    memset(big, 'z', sizeof(big));
+    big[0] = '{';
+    big[8500] = '\0';
+    write_bytes(path, big, 8500, 0);                 /* 没有换行符 */
+
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 8192, err, sizeof(err)), 0);
+    off_before = r.off;
+    rc = t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err));
+    EQ_LL(rc, 0);                                    /* 半行：只等待，不判超长 */
+    EQ_LL(r.off, off_before);
+    EQ_LL(t6b_reader_pending(&r), off_before);
+    EQ_LL(r.oversize_skips, 0);
+
+    T("reader/P2-1 completing the same half line then judges oversize");
+    write_bytes(path, big + 8500, 512, 1);           /* 继续写剩余内容 */
+    write_bytes(path, "\n", 1, 1);                   /* 补上换行符 */
+    rc = t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err));
+    EQ_LL(rc, -3);
+    OK(reason != NULL && strcmp(reason, "record_too_long") == 0);
+    EQ_LL(r.oversize_skips, 1);
+    EQ_LL(t6b_reader_pending(&r), wu_file_size(path));   /* 整行被跳过 */
+    t6b_reader_commit(&r);
+
+    T("reader/P2-1 next valid record still readable");
+    n = mk_rec(good, sizeof(good), 7, 1, "after_huge", "fine");
+    write_bytes(path, good, (size_t)n, 1);
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+    EQ_STR(ev.event_id, "after_huge");
+    t6b_reader_commit(&r);
+    t6b_reader_free(&r);
+}
+
+static void test_reader_recreate_while_absent(void)
+{
+    t6b_reader r;
+    t6b_event ev;
+    char path[600];
+    char err[192];
+    char a[512];
+    const char *reason = NULL;
+    const char *field = NULL;
+    unsigned long long dev1 = 0, ino1 = 0, dev2 = 0, ino2 = 0;
+    int n;
+
+    T("reader/P2-2 saved identity + file absent then recreated (shorter)");
+    mk_path(path, sizeof(path), "events_gone.jsonl");
+    remove_file(path);
+    n = mk_rec(a, sizeof(a), 1, 1, "old-1", "first-life-record");
+    write_bytes(path, a, (size_t)n, 0);
+    n = mk_rec(a, sizeof(a), 2, 1, "old-2", "second-life-record");
+    write_bytes(path, a, (size_t)n, 1);
+
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+    t6b_reader_commit(&r);
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+    t6b_reader_commit(&r);
+    EQ_LL(r.replacements, 0);
+    EQ_LL(wu_file_identity(path, &dev1, &ino1, NULL), 0);
+    t6b_reader_free(&r);
+
+    /* 用保存的身份重新构造（模拟 worker 重启后文件不见了） */
+    remove_file(path);
+    EQ_LL(t6b_reader_init(&r, path, wu_file_size(path) > 0 ? wu_file_size(path) : 0,
+                          dev1, ino1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    {
+        /* 重启时 offset 用刚才的偏移（这里简单取文件末尾前的位置） */
+        long long off = 0;
+        t6b_reader_free(&r);
+        n = mk_rec(a, sizeof(a), 1, 1, "old-1", "first-life-record");
+        off = n;
+        EQ_LL(t6b_reader_init(&r, path, off, dev1, ino1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    }
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 0);   /* 文件不在：等待 */
+    EQ_LL(r.last_reason, T6B_OPEN_ABSENT);
+    EQ_LL(r.replacements, 0);
+
+    /* 新文件（更短）出现：身份不同 → 判重建、偏移归零 */
+    n = mk_rec(a, sizeof(a), 1, 1, "new-1", "x");
+    write_bytes(path, a, (size_t)n, 0);
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+    EQ_LL(r.replacements, 1);
+    EQ_STR(ev.event_id, "new-1");                    /* 第一条没被跳过 */
+    EQ_LL(r.off, 0);                                 /* 还没 commit */
+    t6b_reader_commit(&r);
+    t6b_reader_free(&r);
+
+    T("reader/P2-2 same identity keeps offset");
+    mk_path(path, sizeof(path), "events_same.jsonl");
+    remove_file(path);
+    n = mk_rec(a, sizeof(a), 1, 1, "same-1", "aaa");
+    write_bytes(path, a, (size_t)n, 0);
+    EQ_LL(wu_file_identity(path, &dev2, &ino2, NULL), 0);
+    EQ_LL(t6b_reader_init(&r, path, (long long)n, dev2, ino2, T6B_REC_DEFAULT,
+                          err, sizeof(err)), 0);
+    EQ_LL(r.replacements, 0);
+    EQ_LL(r.truncations, 0);
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 0);   /* 已在末尾 */
+    EQ_LL(r.replacements, 0);
+    t6b_reader_free(&r);
+
+    T("reader/P2-2 first run without saved identity is not a replacement");
+    mk_path(path, sizeof(path), "events_first.jsonl");
+    remove_file(path);
+    n = mk_rec(a, sizeof(a), 1, 1, "first-1", "bbb");
+    write_bytes(path, a, (size_t)n, 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+    EQ_LL(r.replacements, 0);
+    EQ_LL(r.truncations, 0);
+    t6b_reader_commit(&r);
+    t6b_reader_free(&r);
+}
+
 static void test_provider_mock(void)
 {
     t6b_provider p;
@@ -818,6 +949,22 @@ static void test_provider_mock(void)
     t6b_provider_init(&p, err, sizeof(err));
     EQ_LL(t6b_provider_complete(&p, "", &rep), -1);
     EQ_LL(m.calls, 0);
+    t6b_provider_fini(&p);
+    t6b_mock_close(&p);
+
+    T("provider/mock fails the first N calls then recovers (P1-2 retry path)");
+    t6b_mock_defaults(&cfg);
+    cfg.fail_first_calls = 2;
+    t6b_mock_open(&p, &m, &cfg);
+    t6b_provider_init(&p, err, sizeof(err));
+    EQ_LL(t6b_provider_complete(&p, "a", &rep), 0);
+    EQ_LL(rep.status, T6B_P_ERROR);          /* 第 1 次失败 */
+    EQ_LL(t6b_provider_complete(&p, "a", &rep), 0);
+    EQ_LL(rep.status, T6B_P_ERROR);          /* 第 2 次失败 */
+    EQ_LL(t6b_provider_complete(&p, "a", &rep), 0);
+    EQ_LL(rep.status, T6B_P_OK);             /* 第 3 次成功 */
+    EQ_STR(rep.text, T6B_MOCK_REPLY_DEFAULT);
+    EQ_LL(m.calls, 3);
     t6b_provider_fini(&p);
     t6b_mock_close(&p);
 
@@ -884,6 +1031,8 @@ int main(void)
     test_reader_replaced();
     test_reader_absent();
     test_reader_resume_offset();
+    test_reader_half_line_oversize();
+    test_reader_recreate_while_absent();
     test_provider_mock();
     test_status_file();
 

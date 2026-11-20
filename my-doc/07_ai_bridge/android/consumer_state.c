@@ -10,6 +10,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* ==================== 极小 JSON 读取器 ==================== */
@@ -300,12 +301,47 @@ int t6b_state_load(t6b_state *s, const char *path, char *err, size_t errlen)
     return 0;
 }
 
+/* ---------------- 测试用故障注入 ----------------
+ *
+ * P1-3 要求逐个证明"落盘失败就不许推进偏移"。真实故障（磁盘满、EIO、目录只读）在测试里
+ * 不可控地复现，所以这里留一个**只在环境变量存在时生效**的注入点：
+ *
+ *   T6B_FAULT_STATE = create | write | fsync | rename | dirfsync | append
+ *
+ * 生产运行不会设置这个变量，因此默认路径与之前完全一致（分支判断只在 getenv 命中时进入）。
+ * 设备上也用真实手段（chmod 000 目录）复验了一次，见 evidence/t5_06b_p1p2_state_fault.log。
+ */
+#define T6B_FAULT_NONE  0
+#define T6B_FAULT_CREATE 1
+#define T6B_FAULT_WRITE  2
+#define T6B_FAULT_FSYNC  3
+#define T6B_FAULT_RENAME 4
+#define T6B_FAULT_DIRFSYNC 5
+
+static int t6b_fault_state(void)
+{
+    static int cached = -1;
+    const char *v;
+
+    if (cached >= 0) return cached;
+    v = getenv("T6B_FAULT_STATE");
+    cached = T6B_FAULT_NONE;
+    if (v == NULL || v[0] == '\0') return cached;
+    if (strcmp(v, "create") == 0) cached = T6B_FAULT_CREATE;
+    else if (strcmp(v, "write") == 0) cached = T6B_FAULT_WRITE;
+    else if (strcmp(v, "fsync") == 0) cached = T6B_FAULT_FSYNC;
+    else if (strcmp(v, "rename") == 0) cached = T6B_FAULT_RENAME;
+    else if (strcmp(v, "dirfsync") == 0) cached = T6B_FAULT_DIRFSYNC;
+    return cached;
+}
+
 int t6b_state_save(const t6b_state *s, const char *path, char *err, size_t errlen)
 {
     static char buf[32768];
     char tmp[T6B_PATH_MAX + 8];
     char dir[T6B_PATH_MAX];
     size_t used = 0;
+    int fault = t6b_fault_state();
     int fd;
     int i;
 
@@ -344,9 +380,19 @@ int t6b_state_save(const t6b_state *s, const char *path, char *err, size_t errle
     }
     wu_dir_name(path, dir, sizeof(dir));
 
+    if (fault == T6B_FAULT_CREATE) {
+        if (err) snprintf(err, errlen, "injected fault: temp create failed");
+        return -1;
+    }
     fd = wu_open_wo(tmp);
     if (fd < 0) {
         if (err) snprintf(err, errlen, "state temp open failed: %s", tmp);
+        return -1;
+    }
+    if (fault == T6B_FAULT_WRITE) {
+        if (err) snprintf(err, errlen, "injected fault: write failed");
+        wu_close(fd);
+        wu_unlink(tmp);
         return -1;
     }
     if (wu_write_all(fd, buf, used) != 0) {
@@ -355,17 +401,27 @@ int t6b_state_save(const t6b_state *s, const char *path, char *err, size_t errle
         wu_unlink(tmp);
         return -1;
     }
-    if (wu_fsync(fd) != 0) {
-        if (err) snprintf(err, errlen, "state fsync failed");
+    if (fault == T6B_FAULT_FSYNC || wu_fsync(fd) != 0) {
+        if (err) {
+            if (fault == T6B_FAULT_FSYNC) snprintf(err, errlen, "injected fault: fsync failed");
+            else snprintf(err, errlen, "state fsync failed");
+        }
         wu_close(fd);
         wu_unlink(tmp);
         return -1;
     }
     wu_close(fd);
 
-    if (wu_rename_replace(tmp, path) != 0) {
-        if (err) snprintf(err, errlen, "state rename failed");
+    if (fault == T6B_FAULT_RENAME || wu_rename_replace(tmp, path) != 0) {
+        if (err) {
+            if (fault == T6B_FAULT_RENAME) snprintf(err, errlen, "injected fault: rename failed");
+            else snprintf(err, errlen, "state rename failed");
+        }
         wu_unlink(tmp);
+        return -1;
+    }
+    if (fault == T6B_FAULT_DIRFSYNC) {
+        if (err) snprintf(err, errlen, "injected fault: dir fsync failed");
         return -1;
     }
     if (wu_fsync_dir(dir) != 0) {

@@ -94,8 +94,11 @@ typedef struct {
     char          path[T6B_PATH_MAX];
     int           fd;
     int           have_fd;
-    unsigned long long dev;
+    unsigned long long dev;            /* fd 当前指向的文件身份 */
     unsigned long long ino;
+    unsigned long long saved_dev;      /* 上次成功读取（或状态文件里保存）的身份 */
+    unsigned long long saved_ino;
+    int           have_saved;          /* 0 = 没有任何历史身份（首次运行） */
     long long     off;             /* 已提交偏移：下一条待读记录的起点 */
     long long     pending;         /* 本次拿到记录之后应提交到的偏移 */
     long long     max_record;
@@ -116,9 +119,10 @@ typedef struct {
 } t6b_reader;
 
 /* start_off = 上次保存的消费偏移（首次运行为 0）。
- * start_dev/start_ino = 上次保存的文件身份；0/0 表示未知（首次运行或平台不支持）。
- *   文件已存在但比 start_off 短      → 按"被截断"处理：偏移归零并计数
- *   文件身份与保存值不同（重建/换人） → 同样偏移归零并计数 */
+ * start_dev/start_ino = 上次保存的文件身份；0/0 表示没有历史身份（首次运行）。
+ *   文件已存在但比 start_off 短        → 按"被截断"处理：偏移归零并计数
+ *   文件身份与保存值不同（重建/换人）   → 同样偏移归零并计数
+ *   文件一开始不存在、运行中出现       → 出现时与保存身份比较；不同则视为重建（偏移归零） */
 int  t6b_reader_init(t6b_reader *r, const char *path, long long start_off,
                      unsigned long long start_dev, unsigned long long start_ino,
                      int max_record, char *err, size_t errlen);

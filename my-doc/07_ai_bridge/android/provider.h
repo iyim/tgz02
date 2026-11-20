@@ -64,8 +64,9 @@ const char *t6b_pstatus_name(t6b_pstatus s);
     "（T5-06B Mock）我收到了你的语音，本轮不接真实模型。"
 
 typedef struct {
-    int  fail_from_call;     /* >0：从第 N 次调用起返回错误（0 = 不失败） */
-    int  timeout_from_call;  /* >0：从第 N 次调用起返回超时 */
+    int  fail_from_call;     /* >0：从第 N 次调用起一直返回错误（模拟"永久失败"） */
+    int  fail_first_calls;   /* >0：前 N 次调用失败，之后恢复正常（模拟"临时失败后重试成功"） */
+    int  timeout_from_call;  /* >0：从第 N 次调用起一直返回超时 */
     int  delay_ms;           /* 每次调用模拟耗时（受 --mock-delay-ms 控制） */
     char reply[T6B_REPLY_TEXT_MAX];
 } t6b_mock_cfg;

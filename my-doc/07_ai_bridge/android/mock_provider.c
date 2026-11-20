@@ -21,6 +21,7 @@ void t6b_mock_defaults(t6b_mock_cfg *c)
     if (c == NULL) return;
     memset(c, 0, sizeof(*c));
     c->fail_from_call = 0;
+    c->fail_first_calls = 0;
     c->timeout_from_call = 0;
     c->delay_ms = 0;
     snprintf(c->reply, sizeof(c->reply), "%s", T6B_MOCK_REPLY_DEFAULT);
@@ -59,6 +60,13 @@ static int mock_complete(t6b_provider *p, const char *user_text, t6b_reply *out)
         out->status = T6B_P_TIMEOUT;
         out->code = 1;
         snprintf(out->message, sizeof(out->message), "mock timeout at call %lu", m->calls);
+    } else if (m->cfg.fail_first_calls > 0 &&
+               (long long)m->calls <= (long long)m->cfg.fail_first_calls) {
+        /* 前 N 次失败、之后成功：用来验证"失败不推进偏移 + 重试后只算成功一次" */
+        out->status = T6B_P_ERROR;
+        out->code = 3;
+        snprintf(out->message, sizeof(out->message), "mock transient failure at call %lu",
+                 m->calls);
     } else if (m->cfg.fail_from_call > 0 &&
                (long long)m->calls >= (long long)m->cfg.fail_from_call) {
         out->status = T6B_P_ERROR;

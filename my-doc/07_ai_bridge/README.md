@@ -14,6 +14,7 @@ vendor release 串 `6.1.8-RS-20221104.1459`，kernel `4.4.95+`）。
 | [t5_06a_model_api_compatibility.md](t5_06a_model_api_compatibility.md) | C：OpenAI / DeepSeek / 通义（百炼）/ 豆包（方舟）接口兼容性事实 |
 | [t5_06a_risk_assessment.md](t5_06a_risk_assessment.md) | D+E：安全与资源约束、T5-05 遗留风险对 AI 接入的影响 |
 | [t5_06b_worker_report.md](t5_06b_worker_report.md) | **T5-06B：独立 AI Worker 的实现与测试报告**（消费语义、Provider 抽象、主机 215+14 项测试、真机实测） |
+| [t5_06b_p1p2_fix_report.md](t5_06b_p1p2_fix_report.md) | **T5-06B P1/P2 修复报告**：内核锁、Provider 失败不消费、落盘失败即停、半行超长、删除重建身份检测 |
 | [android/](android) | T5-06B Worker 源码 + `build.ps1`（NDK 动态链接）+ `run_ai_worker.sh` |
 | [tests/](tests) | T5-06B 主机单元测试 / 集成测试 / 一键运行脚本 |
 | [evidence/](evidence) | 真机探针原始输出、设备事实快照、NDK 检查、主机与真机测试日志 |
@@ -26,6 +27,11 @@ vendor release 串 `6.1.8-RS-20221104.1459`，kernel `4.4.95+`）。
 真机实测：历史 102 条一次消费完成（`gaps=0`、`seq_resets=11`、offset=文件大小）；
 真实语音 2 条自动消费；`kill -9` 后接管陈旧锁并断点续跑；双实例被拒绝；
 `tgb_bridge` 与 `smartapp:core` 全程无异常。详见 [t5_06b_worker_report.md](t5_06b_worker_report.md)。
+
+P1/P2 修复后（`t5_06b_p1p2_fix_report.md`）：单实例改用内核 `flock`/`LockFileEx`（100 轮 × 20 进程
+并发全过、`kill -9` 后立即可拿锁）；Provider 失败**不再消费事件**（退避重试、超限 stuck 但不跳过）；
+消费进度落盘失败**立即停止消费**并以退出码 5 退出；半行超长只在见到换行符后才跳过；
+文件删除重建按 `(dev,ino)` 识别（先短后长都覆盖）。语义为 **at-least-once**，不承诺 exactly-once。
 
 ## 结论标记约定
 

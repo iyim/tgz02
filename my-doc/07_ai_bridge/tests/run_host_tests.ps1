@@ -61,7 +61,7 @@ Pop-Location
 Get-Content $unitLog -Encoding UTF8 | Select-Object -Last 3 | ForEach-Object { Write-Host $_ }
 Write-Host ("unit exit: " + $rcUnit + "  (log: " + $unitLog + ")")
 
-Write-Host "`n=== [4/4] integration test (real processes) ==="
+Write-Host "`n=== [4/5] integration test (real processes) ==="
 Push-Location $Here
 $env:PYTHONIOENCODING = "utf-8"
 $itLog = Join-Path $Ev "host_integration_test.log"
@@ -72,10 +72,35 @@ Pop-Location
 $pyOut -split "`r?`n" | Where-Object { $_ -match '^(PASS|FAIL|cases|RESULT)' } | ForEach-Object { Write-Host $_ }
 Write-Host ("integration exit: " + $rcIt + "  (log: " + $itLog + ")")
 
-if ($rcUnit -ne 0 -or $rcIt -ne 0) {
+# 按主题再跑几个子集，各自的日志单独落盘（验收要求逐项证据）
+function Run-Subset([string]$filter, [string]$logName) {
+    Push-Location $Here
+    $out = & py -3 (Join-Path $Here "worker_integration_test.py") --only $filter `
+        --log (Join-Path $Ev $logName) 2>&1 | Out-String
+    $rc = $LASTEXITCODE
+    Pop-Location
+    $out -split "`r?`n" | Where-Object { $_ -match '^(PASS|FAIL|RESULT)' } | ForEach-Object { Write-Host $_ }
+    return $rc
+}
+
+Write-Host "`n=== [5/5] focused subsets + lock stress ==="
+$rcSub = 0
+$rcSub += Run-Subset "i11" "host_provider_retry.log"
+$rcSub += Run-Subset "i15" "host_reader_half_oversize.log"
+$rcSub += Run-Subset "i16" "host_file_recreate.log"
+$rcSub += Run-Subset "i17" "host_state_fault.log"
+
+Push-Location $Here
+$lockOut = & py -3 (Join-Path $Here "worker_lock_stress_test.py") --rounds 100 --procs 20 `
+    --log (Join-Path $Ev "host_lock_stress.log") --quiet 2>&1 | Out-String
+$rcLock = $LASTEXITCODE
+Pop-Location
+$lockOut -split "`r?`n" | Where-Object { $_ -match '^(rounds|RESULT)' } | ForEach-Object { Write-Host $_ }
+
+if ($rcUnit -ne 0 -or $rcIt -ne 0 -or $rcSub -ne 0 -or $rcLock -ne 0) {
     Write-Host "`nRESULT: FAIL"
     exit 1
 }
-Write-Host "`nRESULT: PASS (host unit + integration, Mock provider only)"
+Write-Host "`nRESULT: PASS (host unit + integration + subsets + 100-round lock stress, Mock only)"
 exit 0
 

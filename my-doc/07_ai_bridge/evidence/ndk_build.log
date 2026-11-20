@@ -5,7 +5,7 @@
 
 
 exit: 0
-artifact: ai_worker  93408 B  sha256=2cbd1f86f2b67396d8992f9e41491efa50483ca7f8601a83966e3136f9473b4f
+artifact: ai_worker  102204 B  sha256=a0bd55cfd0033e43cf244e294c49acfb0ef9b04e478fc91c8c04a746b9b51471
 
 # --- readelf -h (ELF header) ---
 ELF Header:
@@ -18,9 +18,9 @@ ELF Header:
   Type:                              DYN (Shared object file)
   Machine:                           ARM
   Version:                           0x1
-  Entry point address:               0xf70
+  Entry point address:               0xff0
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          91928 (bytes into file)
+  Start of section headers:          100724 (bytes into file)
   Flags:                             0x5000200, Version5 EABI, soft-float ABI
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)
@@ -30,40 +30,40 @@ ELF Header:
   Section header string table index: 36
 # --- readelf -d (dynamic section) ---
 
-Dynamic section at offset 0xbde0 contains 28 entries:
+Dynamic section at offset 0xddd4 contains 28 entries:
   Tag        Type                         Name/Value
- 0x00000003 (PLTGOT)                     0xcf1c
- 0x00000002 (PLTRELSZ)                   432 (bytes)
- 0x00000017 (JMPREL)                     0xb1c
+ 0x00000003 (PLTGOT)                     0xef10
+ 0x00000002 (PLTRELSZ)                   456 (bytes)
+ 0x00000017 (JMPREL)                     0xb68
  0x00000014 (PLTREL)                     REL
- 0x00000011 (REL)                        0x89c
+ 0x00000011 (REL)                        0x8e8
  0x00000012 (RELSZ)                      640 (bytes)
  0x00000013 (RELENT)                     8 (bytes)
  0x6ffffffa (RELCOUNT)                   76
  0x00000015 (DEBUG)                      0x0
  0x00000006 (SYMTAB)                     0x200
  0x0000000b (SYMENT)                     16 (bytes)
- 0x00000005 (STRTAB)                     0x5a0
- 0x0000000a (STRSZ)                      573 (bytes)
- 0x6ffffef5 (GNU_HASH)                   0x7e0
+ 0x00000005 (STRTAB)                     0x5d0
+ 0x0000000a (STRSZ)                      596 (bytes)
+ 0x6ffffef5 (GNU_HASH)                   0x824
  0x00000001 (NEEDED)                     Shared library: [libdl.so]
  0x00000001 (NEEDED)                     Shared library: [libc.so]
- 0x00000020 (PREINIT_ARRAY)              0xccbc
+ 0x00000020 (PREINIT_ARRAY)              0xecb0
  0x00000021 (PREINIT_ARRAYSZ)            0x8
- 0x00000019 (INIT_ARRAY)                 0xccc4
+ 0x00000019 (INIT_ARRAY)                 0xecb8
  0x0000001b (INIT_ARRAYSZ)               8 (bytes)
- 0x0000001a (FINI_ARRAY)                 0xcccc
+ 0x0000001a (FINI_ARRAY)                 0xecc0
  0x0000001c (FINI_ARRAYSZ)               8 (bytes)
  0x0000001e (FLAGS)                      BIND_NOW
  0x6ffffffb (FLAGS_1)                    Flags: NOW
- 0x6ffffff0 (VERSYM)                     0x7f8
- 0x6ffffffe (VERNEED)                    0x86c
+ 0x6ffffff0 (VERSYM)                     0x83c
+ 0x6ffffffe (VERNEED)                    0x8b8
  0x6fffffff (VERNEEDNUM)                 1
  0x00000000 (NULL)                       0x0
 # --- readelf -l (INTERP) ---
   INTERP         0x000154 0x00000154 0x00000154 0x00013 0x00013 R   0x1
       [Requesting program interpreter: /system/bin/linker]
-  LOAD           0x000000 0x00000000 0x00000000 0x0b5b8 0x0b5b8 R E 0x1000
-  LOAD           0x00bcbc 0x0000ccbc 0x0000ccbc 0x00344 0x174e4 RW  0x1000
+  LOAD           0x000000 0x00000000 0x00000000 0x0cdd0 0x0cdd0 R E 0x1000
+  LOAD           0x00dcb0 0x0000ecb0 0x0000ecb0 0x00354 0x17958 RW  0x1000
    01     .interp 
    02     .interp .note.android.ident .dynsym .dynstr .gnu.hash .gnu.version .gnu.version_r .rel.dyn .rel.plt .plt .text .ARM.exidx .rodata .ARM.extab 

@@ -33,6 +33,7 @@
 #else
 #  include <dirent.h>
 #  include <signal.h>
+#  include <sys/file.h>      /* flock */
 #  include <unistd.h>
 #  define WU_MKDIR(p)      mkdir((p), 0775)
 #  define WU_OPEN_RO(p)    open((p), O_RDONLY | O_CLOEXEC)
@@ -358,6 +359,152 @@ int wu_pid_alive(long long pid)
     if (kill((pid_t)pid, 0) == 0) return 1;
     return errno == EPERM ? 1 : 0;
 #endif
+}
+
+/* ---------------- 单实例锁 ---------------- */
+
+static void lock_write_pid(int fd, long long pid)
+{
+    char buf[32];
+    int n = snprintf(buf, sizeof(buf), "%lld\n", pid);
+
+    if (n <= 0) return;
+    if (wu_seek(fd, 0) != 0) return;
+#ifdef _WIN32
+    _chsize(fd, 0);            /* msvcrt 没有 ftruncate 的统一名字 */
+#else
+    if (ftruncate(fd, 0) != 0) { /* 诊断信息，写不进去也不影响锁 */ }
+#endif
+    (void)wu_write_all(fd, buf, (size_t)n);
+    (void)wu_fsync(fd);
+}
+
+static long long lock_read_pid(int fd)
+{
+    char buf[32];
+    int n;
+
+    if (wu_seek(fd, 0) != 0) return 0;
+    n = wu_read_some(fd, buf, sizeof(buf) - 1);
+    if (n <= 0) return 0;
+    buf[n] = '\0';
+    return (long long)strtol(buf, NULL, 10);
+}
+
+int wu_lock_acquire(wu_lockfile *lk, const char *path, char *err, size_t errlen)
+{
+    long long me = wu_self_pid();
+
+    if (lk == NULL || path == NULL) return -1;
+    lk->fd = -1;
+    lk->held = 0;
+    lk->owner_pid = 0;
+
+#ifdef _WIN32
+    {
+        HANDLE h;
+        int fd = -1;
+        OVERLAPPED ov;
+
+        /* 用 CreateFileA 而不是 _open：_open 的默认共享模式会让别的进程
+         * 连"只读打开"都失败（主机测试读不到锁文件里的 PID）。
+         * 这里显式给全共享，锁的互斥完全交给 LockFileEx。 */
+        h = CreateFileA(path, GENERIC_READ | GENERIC_WRITE,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                        NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (h == INVALID_HANDLE_VALUE) {
+            if (err) snprintf(err, errlen, "lock open failed: %s", path);
+            return -1;
+        }
+        fd = _open_osfhandle((intptr_t)h, _O_RDWR | _O_BINARY);
+        if (fd < 0) { CloseHandle(h); if (err) snprintf(err, errlen, "lock fd wrap failed"); return -1; }
+
+        memset(&ov, 0, sizeof(ov));
+        /* 只锁 PID 文本之后的一个字节（偏移 64）：LockFileEx 会阻止别的进程读被锁区间，
+         * 全文件加锁会让"读 PID 做诊断"在 Windows 上直接失败。锁的互斥性不变。 */
+        ov.Offset = 64;
+        ov.OffsetHigh = 0;
+        if (!LockFileEx(h, LOCKFILE_EXCLUSIVE_LOCK | LOCKFILE_FAIL_IMMEDIATELY,
+                        0, 1, 0, &ov)) {
+            DWORD e = GetLastError();
+            if (e == ERROR_LOCK_VIOLATION || e == ERROR_SHARING_VIOLATION) {
+                lk->owner_pid = lock_read_pid(fd);
+                _close(fd);
+                if (err) {
+                    if (lk->owner_pid > 1)
+                        snprintf(err, errlen, "another ai_worker holds the lock: %s (owner pid=%lld)",
+                                 path, lk->owner_pid);
+                    else
+                        snprintf(err, errlen, "another ai_worker holds the lock: %s", path);
+                }
+                return 1;
+            }
+            _close(fd);
+            if (err) snprintf(err, errlen, "LockFileEx failed: %lu", (unsigned long)e);
+            return -1;
+        }
+        lk->fd = fd;
+        lk->held = 1;
+        lk->owner_pid = lock_read_pid(fd);
+        lock_write_pid(fd, me);
+        return 0;
+    }
+#else
+    {
+        int fd = open(path, O_CREAT | O_RDWR | O_CLOEXEC, 0600);
+
+        if (fd < 0) {
+            if (err) snprintf(err, errlen, "lock open failed: %s (%s)", path, strerror(errno));
+            return -1;
+        }
+        if (flock(fd, LOCK_EX | LOCK_NB) != 0) {
+            int e = errno;
+            if (e == EWOULDBLOCK) {
+                long long owner = lock_read_pid(fd);
+                close(fd);
+                lk->owner_pid = owner;
+                if (err) {
+                    if (owner > 1)
+                        snprintf(err, errlen, "another ai_worker holds the lock: %s (owner pid=%lld)",
+                                 path, owner);
+                    else
+                        snprintf(err, errlen, "another ai_worker holds the lock: %s", path);
+                }
+                return 1;
+            }
+            close(fd);
+            if (err) snprintf(err, errlen, "flock failed: %s", strerror(e));
+            return -1;
+        }
+        lk->fd = fd;
+        lk->held = 1;
+        lk->owner_pid = lock_read_pid(fd);
+        lock_write_pid(fd, me);
+        return 0;
+    }
+#endif
+}
+
+void wu_lock_release(wu_lockfile *lk)
+{
+    if (lk == NULL || lk->fd < 0) return;
+#ifdef _WIN32
+    {
+        HANDLE h = (HANDLE)_get_osfhandle(lk->fd);
+        OVERLAPPED ov;
+
+        memset(&ov, 0, sizeof(ov));
+        ov.Offset = 64;
+        ov.OffsetHigh = 0;
+        if (lk->held) (void)UnlockFileEx(h, 0, 1, 0, &ov);
+        _close(lk->fd);
+    }
+#else
+    if (lk->held) (void)flock(lk->fd, LOCK_UN);
+    close(lk->fd);
+#endif
+    lk->fd = -1;
+    lk->held = 0;
 }
 
 unsigned long long wu_hash64(const void *data, size_t len)

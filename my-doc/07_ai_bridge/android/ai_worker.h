@@ -33,6 +33,11 @@ typedef struct {
     long long   idle_exit_ms;                /* 空闲 N ms 后退出（0 = 常驻） */
     long long   max_events;                  /* 处理 N 条后退出（0 = 不限） */
     long long   max_runtime_ms;              /* 运行 N ms 后退出（0 = 不限） */
+    int         provider_retry_max;          /* 超过 N 次尝试仍失败 → 报 stuck（继续重试，不跳过） */
+    int         provider_backoff_ms;         /* 首次重试间隔 */
+    int         provider_backoff_max_ms;     /* 重试间隔上限 */
+    int         state_retry_ms;              /* 进度落盘失败后的重试间隔 */
+    long long   state_fail_exit_ms;          /* 持续失败多久后带错误退出（0 = 立即退出） */
     int         verbose;
     t6b_mock_cfg mock;
 } t6b_config;
@@ -42,7 +47,7 @@ void t6b_config_defaults(t6b_config *c);
 /* 参数合法性检查；0 = 通过，-1 = 不合法（err 里写原因） */
 int  t6b_config_check(const t6b_config *c, char *err, size_t errlen);
 
-/* 退出码：0 正常；2 参数错误；3 已有实例在跑；4 初始化失败 */
+/* 退出码：0 正常；2 参数错误；3 已有实例在跑；4 初始化失败；5 消费进度无法落盘 */
 int  t6b_worker_run(const t6b_config *c, t6b_status *out);
 
 #endif /* T6B_AI_WORKER_H */

@@ -471,12 +471,32 @@ int t6b_reader_init(t6b_reader *r, const char *path, long long start_off,
     r->off = (start_off > 0) ? start_off : 0;
     r->pending = r->off;
 
+    /* 保存历史身份：即使文件此刻不存在也要留着，等它出现时用它判断"是不是同一个文件"。
+     * 0/0 表示第一次运行（没有历史），此时绝不能把"第一次看到文件"误判成重建。 */
+    if (start_dev != 0 || start_ino != 0) {
+        r->saved_dev = start_dev;
+        r->saved_ino = start_ino;
+        r->have_saved = 1;
+    }
+
     if (wu_file_identity(r->path, &dev, &ino, &size) == 0) {
-        if ((start_dev != 0 || start_ino != 0) && (start_dev != dev || start_ino != ino)) {
+        if (!r->have_saved) {
+            r->saved_dev = dev;
+            r->saved_ino = ino;
+            r->have_saved = 1;
+            if (r->off > 0 && size < r->off) {
+                r->truncations++;
+                r->last_reason = T6B_OPEN_TRUNCATED;
+                r->off = 0;
+                r->pending = 0;
+            }
+        } else if (r->saved_dev != dev || r->saved_ino != ino) {
             r->replacements++;
             r->last_reason = T6B_OPEN_REPLACED;
             r->off = 0;
             r->pending = 0;
+            r->saved_dev = dev;
+            r->saved_ino = ino;
         } else if (r->off > 0 && size < r->off) {
             r->truncations++;
             r->last_reason = T6B_OPEN_TRUNCATED;
@@ -523,6 +543,12 @@ int t6b_reader_stat(const t6b_reader *r, long long *size)
 }
 
 /* 打开/保持 fd，并处理"文件不存在 / 被重建 / 变短"三种情况 */
+/* 打开/保持 fd，并处理"文件不存在 / 被重建 / 变短"三种情况。
+ *
+ * 身份判断放在**每次（重新）打开**时做，而不是只在 fd 还活着的时候做：
+ * 文件被删除后重建（尤其 worker 正在跑、先看到 ENOENT 再看到新文件）时，
+ * have_fd 已经是 0，只有跟 saved_dev/saved_ino 比才能发现"换人了"。
+ */
 static int ensure_open(t6b_reader *r)
 {
     unsigned long long dev = 0;
@@ -534,22 +560,25 @@ static int ensure_open(t6b_reader *r)
         r->last_reason = T6B_OPEN_ABSENT;
         r->buf_off = r->off;
         r->buf_len = 0;
-        return 0;                       /* 等文件出现（不当作错误） */
+        return 0;                       /* 等文件出现（不当作错误），身份与偏移都保留 */
     }
 
     if (r->have_fd && (r->dev != dev || r->ino != ino)) {
         wu_close(r->fd);
         r->have_fd = 0;
         r->fd = -1;
-        r->replacements++;
-        r->last_reason = T6B_OPEN_REPLACED;
-        r->off = 0;
-        r->pending = 0;
-        r->buf_off = 0;
-        r->buf_len = 0;
     }
 
     if (!r->have_fd) {
+        if (r->have_saved && (r->saved_dev != dev || r->saved_ino != ino)) {
+            /* 出现/再次打开时身份不同：文件被重建，从头读（靠 event_id 去重） */
+            r->replacements++;
+            r->last_reason = T6B_OPEN_REPLACED;
+            r->off = 0;
+            r->pending = 0;
+            r->buf_off = 0;
+            r->buf_len = 0;
+        }
         r->fd = wu_open_ro(r->path);
         if (r->fd < 0) {
             r->last_reason = T6B_OPEN_IO_ERROR;
@@ -558,6 +587,9 @@ static int ensure_open(t6b_reader *r)
         r->have_fd = 1;
         r->dev = dev;
         r->ino = ino;
+        r->saved_dev = dev;
+        r->saved_ino = ino;
+        r->have_saved = 1;
         r->opens++;
         if (r->opens == 1 && r->last_reason == T6B_OPEN_NONE)
             r->last_reason = T6B_OPEN_FIRST;
@@ -692,15 +724,10 @@ int t6b_reader_next(t6b_reader *r, t6b_event *ev, const char **reason,
                 return -1;
             }
             if (n == 0) {
-                /* EOF：缓冲区剩余内容就是半行，等它被补全 */
-                if (r->buf_len > 0 && (long long)r->buf_len > r->max_record) {
-                    r->oversize_skips++;
-                    r->pending = r->off + (long long)r->buf_len;
-                    r->buf_off = r->pending;
-                    r->buf_len = 0;
-                    if (reason) *reason = "record_too_long";
-                    return -3;
-                }
+                /* EOF 且没有换行符：缓冲区里剩的只是"半行"，无论它多长都不许跳过。
+                 * 之前这里在 buf_len > max_record 时直接返回 -3 并推进偏移，
+                 * 会把一条还没写完的超长记录当成坏行丢掉（T5-06B P2-1）。
+                 * 现在一律等待；等 '\n' 到了再由上面的"找到换行符"分支判定是否超长。 */
                 return 0;
             }
             r->buf_len += (size_t)n;

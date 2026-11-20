@@ -41,6 +41,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     char esc_state[T6B_PATH_MAX * 2];
     char esc_invalid[T6B_PROVIDER_MSG_MAX * 2];
     char esc_error[sizeof(((t6b_status *)0)->last_error) * 2];
+    char esc_pending[(T6B_ID_MAX + 1) * 2];
     char tmp[T6B_PATH_MAX + 8];
     char dir[T6B_PATH_MAX];
     int n;
@@ -54,6 +55,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     wu_json_escape(esc_state, sizeof(esc_state), st->state_file);
     wu_json_escape(esc_invalid, sizeof(esc_invalid), st->last_invalid);
     wu_json_escape(esc_error, sizeof(esc_error), st->last_error);
+    wu_json_escape(esc_pending, sizeof(esc_pending), st->pending_event_id);
 
     n = snprintf(buf, sizeof(buf),
         "{\"version\":%d,\"state\":\"%s\",\"pid\":%lld,"
@@ -67,9 +69,12 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"io_errors\":%llu,\"truncations\":%llu,\"replacements\":%llu,"
         "\"gaps\":%llu,\"gap_missing_total\":%llu,\"seq_resets\":%llu,\"seq_unknown_start\":%llu,"
         "\"state_saves\":%llu,\"state_errors\":%llu,"
-        "\"provider_ok\":%llu,\"provider_err\":%llu,\"provider_timeout\":%llu},"
+        "\"provider_ok\":%llu,\"provider_err\":%llu,\"provider_timeout\":%llu,"
+        "\"provider_retries\":%llu,\"stuck_attempts\":%llu,"
+        "\"provider_stuck\":%d,\"state_persist_failed\":%d},"
         "\"last_seq\":%lu,\"last_event_id\":\"%s\",\"last_event_at\":\"%s\","
         "\"last_gap_from\":%lu,\"last_gap_to\":%lu,"
+        "\"pending_event_id\":\"%s\","
         "\"last_invalid\":\"%s\",\"last_error\":\"%s\",\"exit_reason\":\"%s\"}\n",
         st->version, st->state, st->pid,
         st->started_at, st->updated_at,
@@ -83,8 +88,11 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         st->gaps, st->gap_missing_total, st->seq_resets, st->seq_unknown_start,
         st->state_saves, st->state_errors,
         st->provider_ok, st->provider_err, st->provider_timeout,
+        st->provider_retries, st->stuck_attempts,
+        st->provider_stuck, st->state_persist_failed,
         st->last_seq, st->last_event_id, st->last_event_at,
         st->last_gap_from, st->last_gap_to,
+        esc_pending,
         esc_invalid, esc_error, st->exit_reason);
     if (n < 0 || (size_t)n >= sizeof(buf)) {
         if (err) snprintf(err, errlen, "status buffer too small");

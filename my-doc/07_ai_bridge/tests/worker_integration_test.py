@@ -99,6 +99,12 @@ def state_of(state_dir):
     return read_json(os.path.join(state_dir, "consumer_state.json"), {}) or {}
 
 
+def durable_offset(state_dir):
+    """磁盘上真正落盘的消费偏移；没有状态文件 = 0（什么都还没持久化）"""
+    st = state_of(state_dir)
+    return st.get("offset", 0) if st else 0
+
+
 def worker_cmd(exe, work, state, extra):
     cmd = [exe, "--work-dir", work, "--state-dir", state,
            "--poll-ms", "25", "--status-every-ms", "150"]
@@ -106,11 +112,14 @@ def worker_cmd(exe, work, state, extra):
     return cmd
 
 
-def run_once(exe, work, state, extra, timeout=60):
+def run_once(exe, work, state, extra, timeout=90, env=None):
     t0 = time.time()
+    e = dict(os.environ)
+    if env:
+        e.update(env)
     proc = subprocess.run(worker_cmd(exe, work, state, extra),
                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                          timeout=timeout)
+                          timeout=timeout, env=e)
     out = proc.stdout.decode("utf-8", "replace")
     return proc.returncode, out, time.time() - t0
 
@@ -365,7 +374,7 @@ def i6_crash_and_resume(exe):
 
     rc, out, _ = run_once(exe, work, state, ["--idle-exit-ms", "400"])
     assert_eq(rc, 0, "restart exit code")
-    assert_in("stale lock removed", out, "stale lock taken over")
+    assert_in("previous owner pid=", out, "kernel released the flock, new owner acquired it")
     c = counters_of(state)
     st = state_of(state)
     dup = c.get("duplicates", 0)
@@ -485,23 +494,99 @@ def i10_corrupt_state(exe):
 
 
 @case
-def i11_provider_failure(exe):
-    """Mock Provider 失败 → 只计数，消费者继续"""
+def i11_provider_retry_recover(exe):
+    """Provider 前两次失败、第三次成功 → 事件只计成功一次，偏移最终到 EOF"""
     work = path_of("i11/work")
     state = path_of("i11/state")
     os.makedirs(work, exist_ok=True)
     os.makedirs(state, exist_ok=True)
     write_events("i11/work/events.jsonl",
-                 [rec(i + 1, 4242, "t5b-4242-b%03d-g1" % i, "p%d" % i) for i in range(5)])
+                 [rec(i + 1, 4242, "t5b-4242-b%03d-g1" % i, "p%d" % i) for i in range(3)])
     rc, out, _ = run_once(exe, work, state,
-                          ["--idle-exit-ms", "300", "--mock-fail-from", "3"])
+                          ["--idle-exit-ms", "400", "--mock-fail-times", "2", "--verbose",
+                           "--provider-backoff-ms", "20", "--provider-backoff-max-ms", "50"])
     assert_eq(rc, 0, "worker exit code stays 0")
     c = counters_of(state)
-    assert_eq(c.get("events_processed"), 5, "all events consumed despite provider errors")
-    assert_eq(c.get("provider_ok"), 2, "first 2 ok")
-    assert_eq(c.get("provider_err"), 3, "last 3 failed")
-    assert_in("mock failure", status_of(state).get("last_error", ""), "provider failure in status")
-    return "provider errors 3/5, consumer unaffected"
+    st = state_of(state)
+    assert_eq(c.get("events_processed"), 3, "all 3 events processed exactly once")
+    assert_eq(c.get("provider_ok"), 3, "3 successes (failed attempts are not successes)")
+    assert_eq(c.get("provider_err"), 2, "2 failed attempts")
+    assert_eq(c.get("provider_retries"), 2, "2 retries scheduled")
+    assert_eq(c.get("provider_stuck"), 0, "never stuck")
+    assert_eq(st.get("processed_total"), 3, "processed_total counted once per event")
+    assert_eq(st.get("offset"), os.path.getsize(path_of("i11/work/events.jsonl")),
+              "offset reached EOF after recovery")
+    assert_eq(st.get("recent_n"), 3, "all three event ids remembered")
+    assert_in("retrying", out, "retry logged")
+    return "2 failed attempts then recovery; 3 events processed exactly once"
+
+
+@case
+def i11b_provider_stuck_no_skip(exe):
+    """Provider 永久失败 → 卡在该事件：不推进偏移、不记 recent_ids、不越过它"""
+    work = path_of("i11b/work")
+    state = path_of("i11b/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    lines = [rec(i + 1, 4242, "t5b-4242-f%03d-g1" % i, "s%d" % i) for i in range(3)]
+    ev = write_events("i11b/work/events.jsonl", lines)
+
+    rc, out, _ = run_once(exe, work, state,
+                          ["--max-runtime-ms", "2500", "--mock-fail-from", "1",
+                           "--provider-retry-max", "2",
+                           "--provider-backoff-ms", "20", "--provider-backoff-max-ms", "50"])
+    assert_eq(rc, 0, "worker exits normally on max-runtime")
+    c = counters_of(state)
+    st = state_of(state)
+    sst = status_of(state)
+    assert_eq(c.get("events_processed"), 0, "nothing was consumed")
+    assert_eq(c.get("provider_stuck"), 1, "event reported stuck")
+    assert_eq(durable_offset(state), 0, "offset did not move")
+    assert_eq(sst.get("pending_event_id"), "t5b-4242-f000-g1", "first event kept, not skipped")
+    assert_eq(st.get("recent_n", 0), 0, "failed event must NOT be in recent_ids")
+    assert_eq(st.get("processed_total", 0), 0, "processed_total unchanged")
+    assert_in("stuck", out, "stuck reported")
+
+    # 换一个不失败的上游重启：卡住的事件必须还在，并被重新处理（顺序不变）
+    rc, out2, _ = run_once(exe, work, state, ["--idle-exit-ms", "300"])
+    assert_eq(rc, 0, "restart exit")
+    st2 = state_of(state)
+    c2 = counters_of(state)
+    assert_eq(st2.get("processed_total"), 3, "all three events processed after recovery")
+    assert_eq(st2.get("offset"), os.path.getsize(ev), "offset reached EOF")
+    assert_eq(c2.get("duplicates"), 0, "nothing was half-processed before")
+    return "stuck at [t5b-4242-f000-g1], offset 0, recent_n 0; recovered after restart"
+
+
+@case
+def i11c_kill9_keeps_failed_event(exe):
+    """Provider 失败期间 kill -9：失败事件仍在，重启后重试并成功"""
+    work = path_of("i11c/work")
+    state = path_of("i11c/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    ev = write_events("i11c/work/events.jsonl",
+                      [rec(1, 4242, "t5b-4242-g001-g1", "keepme")])
+
+    proc = start_bg(exe, work, state,
+                    ["--mock-fail-from", "1", "--provider-retry-max", "100",
+                     "--provider-backoff-ms", "20", "--provider-backoff-max-ms", "50"],
+                    "i11c/worker1.log")
+    try:
+        wait_until(lambda: counters_of(state).get("provider_err", 0) >= 3, 15,
+                   what="provider attempts while failing")
+        assert_eq(durable_offset(state), 0, "offset stayed at 0 while failing")
+        assert_eq(state_of(state).get("recent_n", 0), 0, "no recent id while failing")
+    finally:
+        stop_bg(proc, kill=True)
+
+    rc, out, _ = run_once(exe, work, state, ["--idle-exit-ms", "300"])
+    assert_eq(rc, 0, "restart exit")
+    st = state_of(state)
+    assert_eq(st.get("processed_total"), 1, "the failed event was processed after restart")
+    assert_eq(st.get("offset"), os.path.getsize(ev), "offset at EOF")
+    assert_in("previous owner pid=", out, "lock taken over after kill -9")
+    return "killed while retrying; event survived and completed after restart"
 
 @case
 def i12_oversize(exe):
@@ -587,11 +672,137 @@ def i14_memory_stable(exe):
 
 # ---------------------------------------------------------------- 主流程
 
+@case
+def i15_half_line_oversize(exe):
+    """半行超过长度上限（P2-1）：先等待，补全并出现换行后才跳过整行"""
+    work = path_of("i15/work")
+    state = path_of("i15/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    ev = path_of("i15/work/events.jsonl")
+    head = '{"version":1,"rec":"asr_final","text":"' + ("z" * 8500)
+    with open(ev, "wb") as f:
+        f.write(head.encode("utf-8"))                 # 8500+ 字节，无换行
+
+    proc = start_bg(exe, work, state,
+                    ["--max-record-bytes", "8192", "--idle-exit-ms", "8000"],
+                    "i15/worker.log")
+    try:
+        time.sleep(1.0)
+        c = counters_of(state)
+        assert_eq(c.get("oversize_lines"), 0, "half line must NOT be counted as oversize")
+        assert_eq(durable_offset(state), 0, "offset must not advance on a half line")
+
+        with open(ev, "ab") as f:
+            f.write(("y" * 200).encode("utf-8"))
+            f.write(b"\n")
+        wait_until(lambda: counters_of(state).get("oversize_lines") == 1, 10,
+                   what="oversize after newline arrived")
+        assert_eq(state_of(state).get("offset"), os.path.getsize(ev), "whole line skipped")
+        assert_eq(counters_of(state).get("events_processed"), 0, "nothing fabricated")
+
+        append_events("i15/work/events.jsonl", [rec(9, 4242, "t5b-4242-h009-g1", "after")])
+        wait_until(lambda: counters_of(state).get("events_processed") == 1, 10,
+                   what="valid neighbour processed")
+    finally:
+        stop_bg(proc)
+    return "8500B half line waited; skipped only after newline; next record processed"
+
+
+@case
+def i16_file_deleted_while_running(exe):
+    """运行中文件被删除再重建（先短后长，P2-2）：必须识别身份变化并从 0 重读"""
+    work = path_of("i16/work")
+    state = path_of("i16/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    ev = path_of("i16/work/events.jsonl")
+    write_events("i16/work/events.jsonl",
+                 [rec(i + 1, 4242, "t5b-4242-k%03d-g1" % i, "old%d" % i) for i in range(2)])
+
+    proc = start_bg(exe, work, state, ["--idle-exit-ms", "9000"], "i16/worker.log")
+    try:
+        wait_until(lambda: counters_of(state).get("events_processed") == 2, 15,
+                   what="first file consumed")
+
+        # 1) 删除：必须观察到"文件不存在"，同时保留偏移与身份
+        os.remove(ev)
+        wait_until(lambda: status_of(state).get("file_size") == -1, 10,
+                   what="file absent detected")
+        assert_ge(durable_offset(state), 1, "offset kept while file is absent")
+        assert_eq(counters_of(state).get("replacements"), 0, "absence is not a replacement")
+
+        # 2) 更短的新文件：身份变化 → 从头读，第一条不能被跳过
+        write_events("i16/work/events.jsonl",
+                     [rec(1, 4242, "t5b-4242-m001-g1", "short-1")])
+        wait_until(lambda: counters_of(state).get("replacements") == 1, 10,
+                   what="replacement detected after recreation")
+        wait_until(lambda: durable_offset(state) == os.path.getsize(ev), 10,
+                   what="shorter file consumed from offset 0")
+        assert_ge(counters_of(state).get("events_processed", 0), 3,
+                  "old 2 + new 1 processed (counters accumulate within one run)")
+
+        # 3) 更长的重建文件：同样必须识别（只靠 size 会漏）
+        os.remove(ev)
+        wait_until(lambda: status_of(state).get("file_size") == -1, 10,
+                   what="file absent detected again")
+        write_events("i16/work/events.jsonl",
+                     [rec(i + 1, 4242, "t5b-4242-n%03d-g1" % i, "long-%d" % i) for i in range(3)])
+        wait_until(lambda: counters_of(state).get("replacements") == 2, 10,
+                   what="replacement detected for longer file")
+        wait_until(lambda: durable_offset(state) == os.path.getsize(ev), 10,
+                   what="longer file consumed from offset 0")
+        assert_ge(counters_of(state).get("events_processed", 0), 6,
+                  "old 2 + short 1 + long 3 processed")
+    finally:
+        stop_bg(proc)
+    return "absent -> shorter -> longer recreation all detected via file identity"
+
+
+@case
+def i17_state_persist_failure(exe):
+    """进度落盘失败（P1-3）：不得继续推进偏移，带错误退出（退出码 5）"""
+    results = []
+    for fault in ("create", "write", "fsync", "rename", "dirfsync"):
+        work = path_of("i17/%s/work" % fault)
+        state = path_of("i17/%s/state" % fault)
+        os.makedirs(work, exist_ok=True)
+        os.makedirs(state, exist_ok=True)
+        lines = [rec(i + 1, 4242, "t5b-4242-p%03d-g1" % i, "f%d" % i) for i in range(3)]
+        write_events("i17/%s/work/events.jsonl" % fault, lines)
+
+        rc, out, _ = run_once(exe, work, state,
+                              ["--state-fail-exit-ms", "400", "--state-retry-ms", "50"],
+                              env={"T6B_FAULT_STATE": fault})
+        assert_eq(rc, 5, "%s: exit code must be 5 (state persist failed)" % fault)
+        assert_in("state save failed", out, "%s: failure logged" % fault)
+        st = status_of(state)
+        c = counters_of(state)
+        assert_eq(c.get("state_persist_failed"), 1, "%s: status marks persist failure" % fault)
+        assert_eq(st.get("state"), "error", "%s: state becomes error" % fault)
+        assert_ge(c.get("state_errors", 0), 1, "%s: state_errors counted" % fault)
+        # 关键性质：失败之后**不再继续消费**（最多处理到触发失败的那一条）
+        assert_ge(c.get("events_processed", 0), 1, "%s: it did try one event" % fault)
+        if c.get("events_processed", 0) > 1:
+            raise AssertionError("%s: worker kept consuming after a persist failure (%r)"
+                                 % (fault, c.get("events_processed")))
+        ev_size = os.path.getsize(path_of("i17/%s/work/events.jsonl" % fault))
+        off = durable_offset(state)
+        if off >= ev_size:
+            raise AssertionError("%s: claimed full progress on disk (%d >= %d)"
+                                 % (fault, off, ev_size))
+        results.append("%s: rc=5, processed<=1, durable offset=%d/%d" % (fault, off, ev_size))
+
+    assert_eq(len(results), 5, "all five fault stages exercised")
+    return "; ".join(results)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--exe", default=DEFAULT_EXE)
     ap.add_argument("--keep", action="store_true", help="keep run directory")
     ap.add_argument("--only", default=None, help="run only cases whose name contains this")
+    ap.add_argument("--log", default=None, help="also write a readable summary to this file")
     args = ap.parse_args()
 
     global RUN_DIR
@@ -638,6 +849,22 @@ def main():
     with open(os.path.join(RUN_DIR, "host_integration_test.log"), "w", encoding="utf-8") as f:
         for r in RESULTS:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+    if args.log:
+        with open(args.log, "w", encoding="utf-8") as f:
+            f.write("=== T5-06B integration subset (host, Mock provider only) ===\n")
+            f.write("exe    : %s\n" % exe)
+            f.write("run    : %s\n" % RUN_DIR)
+            f.write("filter : %s\n\n" % (args.only or "(all cases)"))
+            for r in RESULTS:
+                if r["ok"]:
+                    f.write("PASS %-32s %6.2fs  %s\n"
+                            % (r["case"], r["seconds"], r.get("note", "")))
+                else:
+                    f.write("FAIL %-32s %6.2fs  %s\n"
+                            % (r["case"], r["seconds"], r.get("error", "")))
+            f.write("\ncases: %d, failed: %d\n" % (len(RESULTS), failures))
+            f.write("RESULT: %s\n" % ("PASS" if failures == 0 else "FAIL"))
 
     if not args.keep:
         pass   # 保留目录便于取证；由调用方决定是否清理

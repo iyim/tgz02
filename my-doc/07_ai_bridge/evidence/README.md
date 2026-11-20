@@ -14,6 +14,18 @@ T5-06B 时间：2026-11-20 16:54–17:03。探针与测试脚本都是**一次�
 | `device_smoke.log` | `_analysis/t506b/d1_smoke.ps1`、`d2_voice.ps1`、`d4_factory.ps1` | 推送/启动/历史 102 条消费（`gaps=0, seq_resets=11`）/事件文件 sha256 不变/真实语音 2 条自动消费/原厂 TTS 正常 |
 | `recovery_test.log` | `_analysis/t506b/d3_recovery.ps1` | `kill -9` → 陈旧锁接管 → 断点续跑；真实 UDS 注入 1 条被消费；双实例 rc=3；SIGINT 优雅停止；重启幂等 |
 
+### T5-06B P1/P2 修复（内核锁 / Provider 重试 / 落盘失败 / 半行超长 / 删除重建）
+
+| 文件 | 产生方式 | 关键内容 |
+|---|---|---|
+| `host_lock_stress.log` | `tests/worker_lock_stress_test.py --rounds 100 --procs 20` | 100 轮全部"恰好 1 个持锁 + 19 个 rc=3 + kill -9 后立刻可拿锁"，逐轮打印 `lock_pid` |
+| `host_provider_retry.log` | `worker_integration_test.py --only i11` | 前 2 次失败第三次成功（只计成功一次）；永久失败→stuck 不跳过；失败期间 kill -9 后仍可恢复 |
+| `host_state_fault.log` | `worker_integration_test.py --only i17` | create/write/fsync/rename/dirfsync 五种注入：全部 rc=5、`processed<=1`、磁盘进度未前进 |
+| `host_reader_half_oversize.log` | `worker_integration_test.py --only i15` | 8500 B 半行先等待，补 `\n` 后才跳过整行，邻居记录正常 |
+| `host_file_recreate.log` | `worker_integration_test.py --only i16` | 运行中删除→重建（先短后长）全部按 `(dev,ino)` 识别并从 0 重读 |
+| `device_p1p2_fix.log` | `_analysis/t506b/d5_fix.ps1` | 真机：Provider 重试/stuck 恢复；真实故障（tmp 是目录 / 目标是目录）→ rc=5 且未继续消费 |
+| `ndk_build.log` | `android/build.ps1` | 修复后产物 102204 B / sha256 `a0bd55cf…`，DYN + INTERP + NEEDED libc.so |
+
 T5-06A 探针的原始输出见下表。
 
 | 文件 | 产生方式 | 关键内容 |

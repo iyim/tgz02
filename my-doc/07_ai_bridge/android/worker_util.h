@@ -81,8 +81,28 @@ int wu_rename_replace(const char *from, const char *to);
 /* 睡眠；被信号打断时返回剩余毫秒（>=0），便于尽快响应 SIGINT */
 long long wu_sleep_ms(long long ms);
 
-/* 进程是否存活（Linux: kill(pid,0)；Windows: OpenProcess） */
+/* 进程是否存活（Linux: kill(pid,0)；Windows: OpenProcess + WaitForSingleObject） */
 int wu_pid_alive(long long pid);
+
+/* ---------------- 单实例锁（内核 advisory lock） ----------------
+ *
+ * POSIX: open(O_CREAT|O_RDWR) 后 flock(LOCK_EX|LOCK_NB)，成功后 **fd 一直持有到进程退出**。
+ *        fd 一旦关闭（含进程被 kill -9 时内核回收）锁立即释放，因此不依赖 unlink。
+ * Windows: LockFileEx(LOCKFILE_EXCLUSIVE_LOCK|LOCKFILE_FAIL_IMMEDIATELY)，同一 fd 上锁，
+ *        fd 关闭或进程结束时由内核释放。
+ * 锁文件里写 PID 只是为了诊断（ps/日志里对得上），锁的正确性不依赖它。
+ */
+typedef struct {
+    int       fd;      /* 持有期间保持打开；-1 表示没拿到 */
+    int       held;
+    long long owner_pid;   /* 拿锁时文件里读到的上一个 PID（仅诊断，0 = 无） */
+} wu_lockfile;
+
+/* 0 = 拿到锁；1 = 已被其他进程持有；-1 = 其它错误（err 里写原因） */
+int  wu_lock_acquire(wu_lockfile *lk, const char *path, char *err, size_t errlen);
+
+/* 释放：先 unlock 再 close；**不删除锁文件**（删除会让并发的第二个进程开新 inode 直接成功） */
+void wu_lock_release(wu_lockfile *lk);
 
 /* FNV-1a 64 */
 unsigned long long wu_hash64(const void *data, size_t len);

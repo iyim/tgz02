@@ -2,12 +2,16 @@
  * ai_worker.c -- 独立 AI Worker 进程（见 ai_worker.h）
  *
  * 主循环（单线程，固定内存）：
- *   读一条完整记录 → 校验 → event_id 去重 → seq 缺口判定 → Provider 调用
- *   → 提交偏移（必要时落盘消费进度）→ 刷新状态文件
+ *   读一条完整记录 → 校验 → event_id 去重 → seq 缺口判定 → Provider 调用（失败则退避重试，
+ *   期间不读下一条）→ 成功才提交偏移并落盘消费进度 → 刷新状态文件
  *
- * 为什么不用线程/异步：本阶段的瓶颈是"人手写脚本"而不是 CPU，单线程顺序执行
- * 让"处理完才推进偏移"这条语义在代码上是显然的，不需要任何锁；
- * Provider 的网络适配器（T5-06C）会带自己的超时，也不会把阻塞传染给读文件。
+ * 三条硬约束（T5-06B P1 修复后）：
+ *   1) 单实例靠 **内核 advisory lock**（flock/LockFileEx），fd 持有到进程退出；
+ *      锁文件里的 PID 只做诊断，不参与正确性判断。
+ *   2) Provider 失败 **不推进偏移、不写 recent_ids、不计成功数**：失败事件被保留并重试，
+ *      后续事件不许越过它。超过重试上限只进入 error 状态继续重试，绝不静默跳过。
+ *   3) 消费进度落盘失败 **不许继续读下一条事件**：状态转 error，反复重试，
+ *      超过 --state-fail-exit-ms 仍未成功就带着最后一次尝试的结果退出（退出码 5）。
  */
 #include "ai_worker.h"
 #include "consumer_state.h"
@@ -39,11 +43,20 @@ typedef struct {
     t6b_provider prov;
     t6b_mock     mock;
     t6b_gaptrack gaps;
+    wu_lockfile  lock;
+
+    /* 待 Provider 成功的事件（失败期间一直保留，不读下一条） */
+    t6b_event    pend;
+    int          have_pend;
+    int          pend_attempts;
+    int          pend_stuck;
+    long long    pend_next_ms;
+    long long    pend_backoff_ms;
+    char         pend_error[160];
 
     long long    last_status_ms;
     long long    last_activity_ms;
     int          pending_advances;      /* 已提交但尚未写入消费状态文件的推进次数 */
-    int          lock_held;
 } t6b_worker;
 
 static volatile sig_atomic_t g_stop = 0;
@@ -89,82 +102,57 @@ static void join_path(char *out, size_t cap, const char *dir, const char *name)
     snprintf(out, cap, "%s/%s", dir, name);
 }
 
+/* 前置声明：进度落盘失败的处理路径要先刷新状态文件 */
+static void publish_status(t6b_worker *w, const char *state);
+
 /* ---------------- 单实例锁 ---------------- */
 
-static long long read_pid_file(const char *path)
-{
-    char buf[64];
-    size_t len = 0;
-    long v;
-
-    if (wu_read_file(path, buf, sizeof(buf), &len) != 0) return -1;
-    if (len == 0) return -1;
-    v = strtol(buf, NULL, 10);
-    return (v > 1) ? (long long)v : -1;
-}
-
-/* 0 = 拿到锁；-2 = 已有实例；-1 = 其它错误 */
+/* 0 = 拿到锁；1 = 已有实例；-1 = 其它错误 */
 static int lock_acquire(t6b_worker *w, char *err, size_t errlen)
 {
-    int fd;
-    char pidbuf[32];
-    int n;
+    int rc = wu_lock_acquire(&w->lock, w->lock_path, err, errlen);
 
-    fd = wu_open_excl(w->lock_path);
-    if (fd < 0) {
-        long long owner;
-        if (errno != EEXIST) {
-            if (err) snprintf(err, errlen, "lock create failed: %s", w->lock_path);
-            return -1;
+    if (rc == 0) {
+        if (w->lock.owner_pid > 1 && w->lock.owner_pid != wu_self_pid()) {
+            /* 上一个实例被 kill -9：内核已释放 flock，这里只是把发现过程写进日志 */
+            always("lock acquired; previous owner pid=%lld no longer holding it",
+                   w->lock.owner_pid);
         }
-        owner = read_pid_file(w->lock_path);
-        if (owner > 1 && wu_pid_alive(owner)) {
-            if (err) snprintf(err, errlen, "another ai_worker is running: pid=%lld", owner);
-            return -2;
-        }
-        /* 陈旧锁（上一个实例被 kill -9）：清掉再试一次 */
-        wu_unlink(w->lock_path);
-        fd = wu_open_excl(w->lock_path);
-        if (fd < 0) {
-            if (err) snprintf(err, errlen, "lock recreate failed: %s", w->lock_path);
-            return -1;
-        }
-        always("stale lock removed (owner pid=%lld not alive)", owner);
+        return 0;
     }
-
-    n = snprintf(pidbuf, sizeof(pidbuf), "%lld\n", wu_self_pid());
-    if (wu_write_all(fd, pidbuf, (size_t)n) != 0 || wu_fsync(fd) != 0) {
-        wu_close(fd);
-        wu_unlink(w->lock_path);
-        if (err) snprintf(err, errlen, "lock write failed");
-        return -1;
+    if (rc == 1) {
+        if (err) {
+            if (w->lock.owner_pid > 1)
+                snprintf(err, errlen, "another ai_worker is running: pid=%lld (flock held)",
+                         w->lock.owner_pid);
+            else
+                snprintf(err, errlen, "another ai_worker is running (flock held)");
+        }
+        return 1;
     }
-    wu_close(fd);
-    w->lock_held = 1;
-    return 0;
+    return -1;
 }
 
 static void lock_release(t6b_worker *w)
 {
-    long long owner;
-
-    if (!w->lock_held) return;
-    owner = read_pid_file(w->lock_path);
-    if (owner == wu_self_pid()) wu_unlink(w->lock_path);
-    w->lock_held = 0;
+    wu_lock_release(&w->lock);
 }
 
 /* ---------------- 消费进度 ---------------- */
 
-static void state_save(t6b_worker *w, const char *why)
+/*
+ * 返回 0 = 已原子落盘；-1 = 失败（两次都失败）。
+ * 失败时**绝不允许调用方继续推进消费**：调用方要么停止读取并重试，要么带错误退出。
+ */
+static int state_save(t6b_worker *w, const char *why)
 {
     char err[192];
     char dir[T6B_PATH_MAX];
 
     err[0] = '\0';
     w->state.offset = w->rd.off;
-    w->state.dev = w->rd.dev;
-    w->state.ino = w->rd.ino;
+    w->state.dev = w->rd.saved_dev;
+    w->state.ino = w->rd.saved_ino;
     w->state.updated_at_ms = wu_wall_ms();
 
     if (t6b_state_save(&w->state, w->state_path, err, sizeof(err)) == 0) {
@@ -172,19 +160,59 @@ static void state_save(t6b_worker *w, const char *why)
         w->pending_advances = 0;
         logf_(&w->cfg, "state saved (%s) offset=%lld processed=%llu", why,
               w->state.offset, w->state.processed_total);
-    } else {
-        w->st.state_errors++;
-        t6b_status_note_error(&w->st, "state save failed: %s", err);
-        always("state save failed: %s", err);
-        /* 目录可能被删：重建一次再试；仍失败就继续跑（进度会退回到上一次成功点） */
-        wu_dir_name(w->state_path, dir, sizeof(dir));
-        if (wu_mkdir_p(dir) == 0) {
-            if (t6b_state_save(&w->state, w->state_path, err, sizeof(err)) == 0) {
-                w->st.state_saves++;
-                w->pending_advances = 0;
-            }
-        }
+        return 0;
     }
+
+    /* 目录可能被删：重建一次再试（保留原有的二次尝试） */
+    wu_dir_name(w->state_path, dir, sizeof(dir));
+    if (wu_mkdir_p(dir) == 0) {
+        char err2[192];
+        err2[0] = '\0';
+        if (t6b_state_save(&w->state, w->state_path, err2, sizeof(err2)) == 0) {
+            w->st.state_saves++;
+            w->pending_advances = 0;
+            logf_(&w->cfg, "state saved (%s) after dir recreate, offset=%lld", why,
+                  w->state.offset);
+            return 0;
+        }
+        snprintf(err, sizeof(err), "%s", err2);
+    }
+
+    w->st.state_errors++;
+    w->st.state_persist_failed = 1;
+    snprintf(w->st.state, sizeof(w->st.state), "error");
+    t6b_status_note_error(&w->st, "state save failed (%s): %s", why, err);
+    always("state save failed (%s): %s -> stop consuming, retrying", why, err);
+    return -1;
+}
+
+/* 落盘失败后的重试：期间不读任何事件；超过 state_fail_exit_ms 就放弃并返回 -1 */
+static int state_persist_recover(t6b_worker *w)
+{
+    long long deadline = wu_now_ms() + w->cfg.state_fail_exit_ms;
+    long long backoff = w->cfg.state_retry_ms;
+
+    for (;;) {
+        long long left;
+
+        publish_status(w, "error");
+        if (g_stop) return -1;
+        if (wu_now_ms() >= deadline) break;
+        (void)wu_sleep_ms(backoff);
+        if (backoff < 1000) backoff *= 2;
+        if (backoff > 1000) backoff = 1000;
+
+        /* 重试保存；成功则清掉错误标记，恢复正常运行 */
+        if (state_save(w, "retry") == 0) {
+            w->st.state_persist_failed = 0;
+            snprintf(w->st.state, sizeof(w->st.state), "running");
+            always("state save recovered; resuming consumption at offset=%lld", w->rd.off);
+            return 0;
+        }
+        left = deadline - wu_now_ms();
+        (void)left;
+    }
+    return -1;
 }
 
 /* ---------------- 状态文件 ---------------- */
@@ -199,8 +227,8 @@ static void publish_status(t6b_worker *w, const char *state)
     if (state != NULL) snprintf(w->st.state, sizeof(w->st.state), "%s", state);
 
     w->st.offset = w->rd.off;
-    w->st.dev = w->rd.dev;
-    w->st.ino = w->rd.ino;
+    w->st.dev = w->rd.saved_dev;
+    w->st.ino = w->rd.saved_ino;
     w->st.invalid_lines = w->rd.invalid_skips;
     w->st.oversize_lines = w->rd.oversize_skips;
     w->st.io_errors = w->rd.io_errors;
@@ -213,12 +241,17 @@ static void publish_status(t6b_worker *w, const char *state)
     w->st.seq_unknown_start = w->gaps.unknown_start;
     w->st.last_gap_from = w->gaps.last_gap_from;
     w->st.last_gap_to = w->gaps.last_gap_to;
+    w->st.provider_stuck = w->pend_stuck;
+    w->st.stuck_attempts = (unsigned long long)w->pend_attempts;
+    if (w->have_pend)
+        snprintf(w->st.pending_event_id, sizeof(w->st.pending_event_id), "%s", w->pend.event_id);
+    else
+        w->st.pending_event_id[0] = '\0';
     w->st.file_size = (t6b_reader_stat(&w->rd, &size) == 0) ? size : -1;
 
     err[0] = '\0';
     if (t6b_status_write(&w->st, w->status_path, err, sizeof(err)) != 0) {
         w->st.state_errors++;
-        /* 状态文件写不出来不是致命错误：继续消费，日志里留痕 */
         fprintf(stdout, "[aiw] status write failed: %s\n", err);
         fflush(stdout);
     }
@@ -252,69 +285,116 @@ static void gap_report(t6b_worker *w, const t6b_event *ev)
     }
 }
 
-/* ---------------- 单条事件处理 ---------------- */
+/* ---------------- 事件提交（Provider 成功之后） ---------------- */
 
-static void handle_event(t6b_worker *w, const t6b_event *ev)
+/* 返回 0 = 已提交并落盘；-1 = 落盘失败（调用方必须停止消费） */
+static int commit_event(t6b_worker *w)
 {
-    t6b_reply rep;
-    int dup;
-
-    w->st.lines_read++;
-    w->last_activity_ms = wu_now_ms();
-
-    dup = t6b_state_has_recent(&w->state, ev->event_id);
-    if (dup) {
-        w->st.duplicates++;
-        logf_(&w->cfg, "duplicate event_id=%s seq=%lu (skipped, counted)", ev->event_id, ev->seq);
-        t6b_reader_commit(&w->rd);
-        w->pending_advances++;
-        return;
-    }
-
-    w->st.events_accepted++;
-    gap_report(w, ev);
-
-    if (t6b_provider_complete(&w->prov, ev->text, &rep) != 0) {
-        /* Provider 不可用（配置问题）：计入错误，事件仍然算处理完，绝不阻塞消费 */
-        w->st.provider_err++;
-        t6b_status_note_error(&w->st, "provider unavailable: %s", rep.message);
-        always("provider unavailable: %s", rep.message);
-    } else {
-        switch (rep.status) {
-        case T6B_P_OK:
-            w->st.provider_ok++;
-            break;
-        case T6B_P_TIMEOUT:
-            w->st.provider_timeout++;
-            t6b_status_note_error(&w->st, "provider timeout: %s", rep.message);
-            break;
-        default:
-            w->st.provider_err++;
-            t6b_status_note_error(&w->st, "provider error: %s", rep.message);
-            break;
-        }
-        logf_(&w->cfg,
-              "event id=%s seq=%lu pid=%lld text_bytes=%d -> provider=%s status=%s "
-              "latency=%lldms reply_bytes=%d",
-              ev->event_id, ev->seq, ev->pid, ev->text_bytes,
-              "mock", t6b_pstatus_name(rep.status), rep.latency_ms, rep.text_bytes);
-    }
-
     w->st.events_processed++;
     w->state.processed_total++;
-    w->state.seq_last = ev->seq;
-    snprintf(w->state.last_event_id, sizeof(w->state.last_event_id), "%s", ev->event_id);
-    t6b_state_remember(&w->state, ev->event_id);
-    w->st.last_seq = ev->seq;
-    snprintf(w->st.last_event_id, sizeof(w->st.last_event_id), "%s", ev->event_id);
+    w->state.seq_last = w->pend.seq;
+    snprintf(w->state.last_event_id, sizeof(w->state.last_event_id), "%s", w->pend.event_id);
+    t6b_state_remember(&w->state, w->pend.event_id);
+
+    w->st.last_seq = w->pend.seq;
+    snprintf(w->st.last_event_id, sizeof(w->st.last_event_id), "%s", w->pend.event_id);
     wu_time_str(w->st.last_event_at, sizeof(w->st.last_event_at));
+    w->last_activity_ms = wu_now_ms();
 
     t6b_reader_commit(&w->rd);
     w->pending_advances++;
 
     if (w->pending_advances >= (w->cfg.state_sync_every > 0 ? w->cfg.state_sync_every : 1)) {
-        state_save(w, "sync");
+        return state_save(w, "sync");
     }
+    return 0;
+}
+
+/* ---------------- Provider 调用与重试（P1-2） ---------------- */
+
+/*
+ * 一次尝试。返回值：
+ *    0 = 成功（已提交偏移并落盘）
+ *   -1 = 本次失败，稍后重试（偏移不动、recent_ids 不动、成功计数不动）
+ *   -2 = 本次失败且已超过重试上限 -> 进入 error 状态，但仍继续重试，绝不跳过该事件
+ *   -3 = Provider 成功但消费进度落盘失败（调用方必须停止消费）
+ */
+static int provider_attempt(t6b_worker *w)
+{
+    t6b_reply rep;
+    long long t0 = wu_now_ms();
+    int rc;
+
+    w->pend_attempts++;
+    rc = t6b_provider_complete(&w->prov, w->pend.text, &rep);
+
+    if (rc != 0) {
+        w->st.provider_err++;
+        snprintf(w->pend_error, sizeof(w->pend_error), "%s", rep.message);
+        t6b_status_note_error(&w->st, "provider unavailable: %s", rep.message);
+        return -1;
+    }
+
+    if (rep.status == T6B_P_OK) {
+        w->st.provider_ok++;
+        logf_(&w->cfg,
+              "event id=%s seq=%lu pid=%lld text_bytes=%d -> provider=%s status=ok "
+              "latency=%lldms reply_bytes=%d (attempt %d)",
+              w->pend.event_id, w->pend.seq, w->pend.pid, w->pend.text_bytes,
+              "mock", rep.latency_ms, rep.text_bytes, w->pend_attempts);
+        if (w->pend_stuck) {
+            always("provider recovered for event id=%s after %d attempts; resuming normal pace",
+                   w->pend.event_id, w->pend_attempts);
+        }
+        w->pend_stuck = 0;
+        w->pend_error[0] = '\0';
+        if (commit_event(w) != 0) return -3;
+        return 0;
+    }
+
+    if (rep.status == T6B_P_TIMEOUT) {
+        w->st.provider_timeout++;
+        snprintf(w->pend_error, sizeof(w->pend_error), "%s", rep.message);
+        t6b_status_note_error(&w->st, "provider timeout: %s", rep.message);
+    } else {
+        w->st.provider_err++;
+        snprintf(w->pend_error, sizeof(w->pend_error), "%s", rep.message);
+        t6b_status_note_error(&w->st, "provider error: %s", rep.message);
+    }
+
+    logf_(&w->cfg,
+          "event id=%s seq=%lu attempt %d failed: %s %s (offset NOT advanced, retrying)",
+          w->pend.event_id, w->pend.seq, w->pend_attempts,
+          t6b_pstatus_name(rep.status), rep.message);
+
+    if (w->cfg.provider_retry_max > 0 && w->pend_attempts >= w->cfg.provider_retry_max) {
+        if (!w->pend_stuck) {
+            w->pend_stuck = 1;
+            snprintf(w->st.state, sizeof(w->st.state), "error");
+            always("event id=%s stuck after %d attempts (%s): keeping it, waiting for a "
+                   "dead-letter policy; no event will be skipped",
+                   w->pend.event_id, w->pend_attempts, w->pend_error);
+        }
+        return -2;
+    }
+    (void)t0;
+    return -1;
+}
+
+static void schedule_retry(t6b_worker *w, int stuck)
+{
+    long long cap = (long long)(w->cfg.provider_backoff_max_ms > 0 ?
+                                w->cfg.provider_backoff_max_ms : 2000);
+
+    if (w->pend_backoff_ms <= 0)
+        w->pend_backoff_ms = (w->cfg.provider_backoff_ms > 0 ? w->cfg.provider_backoff_ms : 200);
+    else
+        w->pend_backoff_ms *= 2;
+    if (w->pend_backoff_ms > cap) w->pend_backoff_ms = cap;
+    if (stuck && w->pend_backoff_ms < cap) w->pend_backoff_ms = cap;
+
+    w->st.provider_retries++;
+    w->pend_next_ms = wu_now_ms() + w->pend_backoff_ms;
 }
 
 /* ---------------- 主循环 ---------------- */
@@ -334,12 +414,79 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
         const char *field = NULL;
         int rc;
 
+        /* 0) 运行上限：无论是否卡在重试里都必须生效（否则 --max-runtime-ms 会被重试饿死） */
+        if (w->cfg.max_events > 0 && (long long)w->st.events_processed >= w->cfg.max_events) {
+            *exit_reason = "max_events";
+            return 0;
+        }
+        if (w->cfg.max_runtime_ms > 0 && wu_now_ms() - started >= w->cfg.max_runtime_ms) {
+            *exit_reason = "max_runtime";
+            return 0;
+        }
+
+        /* 1) 有待处理事件：先把它处理完（成功前不读下一条） */
+        if (w->have_pend) {
+            if (wu_now_ms() < w->pend_next_ms) {
+                if (wu_now_ms() - w->last_status_ms >= w->cfg.status_interval_ms) {
+                    publish_status(w, w->pend_stuck ? "error" : "running");
+                }
+                (void)wu_sleep_ms(20);
+                continue;
+            }
+            rc = provider_attempt(w);
+            if (rc == 0) {
+                w->have_pend = 0;
+                w->pend_attempts = 0;
+                w->pend_backoff_ms = 0;
+                w->pend_next_ms = 0;
+                if (w->st.state_persist_failed == 0)
+                    snprintf(w->st.state, sizeof(w->st.state), "running");
+            } else if (rc == -1) {
+                schedule_retry(w, 0);
+            } else if (rc == -2) {
+                schedule_retry(w, 1);
+            } else {
+                /* Provider 成功但进度没落盘：不许继续读下一条 */
+                if (state_persist_recover(w) != 0) {
+                    *exit_reason = "state_persist_failed";
+                    return 5;
+                }
+                w->have_pend = 0;
+                w->pend_attempts = 0;
+                w->pend_backoff_ms = 0;
+                w->pend_next_ms = 0;
+                snprintf(w->st.state, sizeof(w->st.state), "running");
+                w->st.state_persist_failed = 0;
+            }
+            continue;
+        }
+
+        /* 2) 读下一条记录 */
         err[0] = '\0';
         rc = t6b_reader_next(&w->rd, &ev, &reason, &field, err, sizeof(err));
 
         if (rc == 1) {
             backoff_ms = 0;
-            handle_event(w, &ev);
+            w->st.lines_read++;
+
+            if (t6b_state_has_recent(&w->state, ev.event_id)) {
+                w->st.duplicates++;
+                logf_(&w->cfg, "duplicate event_id=%s seq=%lu (skipped, counted)",
+                      ev.event_id, ev.seq);
+                t6b_reader_commit(&w->rd);
+                w->pending_advances++;
+            } else {
+                w->st.events_accepted++;
+                gap_report(w, &ev);
+                w->pend = ev;
+                w->have_pend = 1;
+                w->pend_attempts = 0;
+                w->pend_stuck = 0;
+                w->pend_backoff_ms = 0;
+                w->pend_next_ms = 0;
+                w->pend_error[0] = '\0';
+                continue;      /* 立刻进入 Provider 处理分支 */
+            }
         } else if (rc == 0) {
             backoff_ms = 0;
         } else if (rc == -2) {
@@ -350,7 +497,8 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
             t6b_reader_commit(&w->rd);
             w->pending_advances++;
         } else if (rc == -3) {
-            always("skip oversize record at offset %lld (limit=%d bytes)", w->rd.off, w->rd.max_record);
+            always("skip oversize record at offset %lld (limit=%d bytes)",
+                   w->rd.off, w->rd.max_record);
             t6b_reader_commit(&w->rd);
             w->pending_advances++;
         } else {
@@ -359,28 +507,25 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
             if (backoff_ms > 2000) backoff_ms = 2000;
         }
 
-        if (rc != -1 && w->pending_advances >= (w->cfg.state_sync_every > 0 ? w->cfg.state_sync_every : 1)) {
-            state_save(w, "sync");
+        if (rc != -1 && w->pending_advances >=
+                       (w->cfg.state_sync_every > 0 ? w->cfg.state_sync_every : 1)) {
+            if (state_save(w, "sync") != 0) {
+                if (state_persist_recover(w) != 0) {
+                    *exit_reason = "state_persist_failed";
+                    return 5;
+                }
+            }
         }
 
         if (wu_now_ms() - w->last_status_ms >= w->cfg.status_interval_ms) {
             publish_status(w, "running");
         }
 
-        if (w->cfg.max_events > 0 && (long long)w->st.events_processed >= w->cfg.max_events) {
-            *exit_reason = "max_events";
-            return 0;
-        }
-        if (w->cfg.max_runtime_ms > 0 && wu_now_ms() - started >= w->cfg.max_runtime_ms) {
-            *exit_reason = "max_runtime";
-            return 0;
-        }
-        if (w->cfg.idle_exit_ms > 0 && wu_now_ms() - w->last_activity_ms >= w->cfg.idle_exit_ms) {
-            *exit_reason = "idle_timeout";
-            return 0;
-        }
-
         if (rc == 0) {
+            if (w->cfg.idle_exit_ms > 0 && wu_now_ms() - w->last_activity_ms >= w->cfg.idle_exit_ms) {
+                *exit_reason = "idle_timeout";
+                return 0;
+            }
             /* 无完整记录：睡一轮；被信号打断时尽快回到循环顶部 */
             (void)wu_sleep_ms((long long)(w->cfg.poll_ms > 0 ? w->cfg.poll_ms : 50));
         } else if (rc == -1) {
@@ -408,6 +553,11 @@ void t6b_config_defaults(t6b_config *c)
     c->idle_exit_ms = 0;
     c->max_events = 0;
     c->max_runtime_ms = 0;
+    c->provider_retry_max = 5;
+    c->provider_backoff_ms = 200;
+    c->provider_backoff_max_ms = 2000;
+    c->state_retry_ms = 100;
+    c->state_fail_exit_ms = 3000;
     c->verbose = 0;
     t6b_mock_defaults(&c->mock);
 }
@@ -440,6 +590,24 @@ int t6b_config_check(const t6b_config *c, char *err, size_t errlen)
         if (err) snprintf(err, errlen, "state-sync-every out of range [1,100000]");
         return -1;
     }
+    if (c->provider_retry_max < 0 || c->provider_retry_max > 100000) {
+        if (err) snprintf(err, errlen, "provider-retry-max out of range [0,100000]");
+        return -1;
+    }
+    if (c->provider_backoff_ms < 1 || c->provider_backoff_ms > 60000 ||
+        c->provider_backoff_max_ms < c->provider_backoff_ms ||
+        c->provider_backoff_max_ms > 600000) {
+        if (err) snprintf(err, errlen, "provider backoff out of range");
+        return -1;
+    }
+    if (c->state_retry_ms < 1 || c->state_retry_ms > 60000) {
+        if (err) snprintf(err, errlen, "state-retry-ms out of range [1,60000]");
+        return -1;
+    }
+    if (c->state_fail_exit_ms < 0 || c->state_fail_exit_ms > 3600000) {
+        if (err) snprintf(err, errlen, "state-fail-exit-ms out of range [0,3600000]");
+        return -1;
+    }
     return 0;
 }
 
@@ -455,6 +623,7 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
     memset(&w, 0, sizeof(w));
     w.cfg = *c;
     w.rd.fd = -1;
+    w.lock.fd = -1;
     t6b_state_init(&w.state);
     t6b_status_init(&w.st);
     t6b_gap_init(&w.gaps);
@@ -472,7 +641,7 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
     rc = lock_acquire(&w, err, sizeof(err));
     if (rc != 0) {
         always("%s", err);
-        if (rc == -2 && out != NULL) {
+        if (rc == 1 && out != NULL) {
             t6b_status_init(out);
             snprintf(out->state, sizeof(out->state), "refused");
             snprintf(out->exit_reason, sizeof(out->exit_reason), "already_running");
@@ -548,13 +717,29 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
     rc = worker_loop(&w, &exit_reason);
 
     snprintf(w.st.exit_reason, sizeof(w.st.exit_reason), "%s", exit_reason);
-    state_save(&w, "exit");
-    publish_status(&w, "stopped");
+
+    /* 退出前的最后一次落盘：失败也不许假装成功 */
+    if (state_save(&w, "exit") != 0) {
+        w.st.state_errors++;
+        w.st.state_persist_failed = 1;
+        always("FINAL state save failed; progress on disk stays at the last successful offset");
+        if (rc == 0 && (w.pending_advances > 0 || w.st.state_persist_failed)) {
+            if (exit_reason != NULL && strcmp(exit_reason, "state_persist_failed") != 0)
+                snprintf(w.st.exit_reason, sizeof(w.st.exit_reason), "state_persist_failed");
+            rc = 5;
+        }
+    }
+    publish_status(&w, rc == 5 ? "error" : "stopped");
 
     always("exit reason=%s processed=%llu duplicates=%llu invalid=%llu gaps=%llu resets=%llu "
-           "offset=%lld state_saves=%llu",
-           exit_reason, w.st.events_processed, w.st.duplicates, w.st.invalid_lines,
-           w.st.gaps, w.st.seq_resets, w.rd.off, w.st.state_saves);
+           "provider_retries=%llu offset=%lld state_saves=%llu state_errors=%llu",
+           w.st.exit_reason, w.st.events_processed, w.st.duplicates, w.st.invalid_lines,
+           w.st.gaps, w.st.seq_resets, w.st.provider_retries, w.rd.off,
+           w.st.state_saves, w.st.state_errors);
+
+    if (w.have_pend)
+        always("WARNING: event id=%s was still unprocessed at exit (%d attempts, offset kept at %lld)",
+               w.pend.event_id, w.pend_attempts, w.rd.off);
 
     t6b_provider_fini(&w.prov);
     t6b_mock_close(&w.prov);
@@ -581,12 +766,19 @@ static void usage(void)
         "  --idle-exit-ms N      exit after N ms without new data (0 = run forever)\n"
         "  --max-events N        exit after N processed events (0 = no limit)\n"
         "  --max-runtime-ms N    exit after N ms of runtime (0 = no limit)\n"
+        "  --provider-retry-max N  retries before the event is reported stuck (default 5)\n"
+        "  --provider-backoff-ms N first retry backoff (default 200)\n"
+        "  --provider-backoff-max-ms N retry backoff cap (default 2000)\n"
+        "  --state-retry-ms N    state persist retry interval (default 100)\n"
+        "  --state-fail-exit-ms N give up consuming after N ms of failed persists (default 3000)\n"
         "  --mock-reply TEXT     fixed mock reply text\n"
         "  --mock-delay-ms N     simulate provider latency\n"
-        "  --mock-fail-from N    mock returns error from call N on\n"
-        "  --mock-timeout-from N mock returns timeout from call N on\n"
+        "  --mock-fail-from N    mock always fails from call N on\n"
+        "  --mock-fail-times N   mock fails the first N calls, then succeeds\n"
+        "  --mock-timeout-from N mock always times out from call N on\n"
         "  --verbose             per-event log lines\n"
-        "  --help                this help\n",
+        "  --help                this help\n"
+        "\nexit codes: 0 ok, 2 usage, 3 already running, 4 init failed, 5 state persist failed\n",
         T6B_WORK_DIR_DEFAULT, T6B_STATE_DIR_DEFAULT, T6B_EVENTS_NAME_DEFAULT);
 }
 
@@ -634,9 +826,15 @@ int main(int argc, char **argv)
         else if (strcmp(a, "--idle-exit-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.idle_exit_ms = atoll(v); i++; }
         else if (strcmp(a, "--max-events") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.max_events = atoll(v); i++; }
         else if (strcmp(a, "--max-runtime-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.max_runtime_ms = atoll(v); i++; }
+        else if (strcmp(a, "--provider-retry-max") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.provider_retry_max = atoi(v); i++; }
+        else if (strcmp(a, "--provider-backoff-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.provider_backoff_ms = atoi(v); i++; }
+        else if (strcmp(a, "--provider-backoff-max-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.provider_backoff_max_ms = atoi(v); i++; }
+        else if (strcmp(a, "--state-retry-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.state_retry_ms = atoi(v); i++; }
+        else if (strcmp(a, "--state-fail-exit-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.state_fail_exit_ms = atoll(v); i++; }
         else if (strcmp(a, "--mock-reply") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.mock.reply, sizeof(cfg.mock.reply), "%s", v); i++; }
         else if (strcmp(a, "--mock-delay-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.mock.delay_ms = atoi(v); i++; }
         else if (strcmp(a, "--mock-fail-from") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.mock.fail_from_call = atoi(v); i++; }
+        else if (strcmp(a, "--mock-fail-times") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.mock.fail_first_calls = atoi(v); i++; }
         else if (strcmp(a, "--mock-timeout-from") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.mock.timeout_from_call = atoi(v); i++; }
         else {
             fprintf(stderr, "unknown option: %s\n", a);
@@ -657,12 +855,16 @@ bad:
 
     rc = t6b_worker_run(&cfg, NULL);
     if (rc == 3) {
-        fprintf(stderr, "already running (lock held)\n");
+        fprintf(stderr, "already running (flock held)\n");
         return 3;
     }
     if (rc == 4) {
         fprintf(stderr, "worker init failed\n");
         return 4;
+    }
+    if (rc == 5) {
+        fprintf(stderr, "state persist failed; progress not durable\n");
+        return 5;
     }
     return 0;
 }

@@ -1,0 +1,206 @@
+﻿
+################ T5-06B P1/P2 device checks (Mock only) ################
+host time : 2026-11-20 18:52:29
+> adb shell sha256sum /data/local/tmp/t5_bridge/bin/ai_worker
+  a0bd55cfd0033e43cf244e294c49acfb0ef9b04e478fc91c8c04a746b9b51471  /data/local/tmp/t5_bridge/bin/ai_worker
+binary    : a0bd55cfd0033e43cf244e294c49acfb0ef9b04e478fc91c8c04a746b9b51471  /data/local/tmp/t5_bridge/bin/ai_worker
+
+===== A. provider transient failure then success (mock-fail-times 2) :: 2026-11-20 18:52:30 =====
+> adb shell rm -rf /data/local/tmp/t506b_fix
+> adb shell mkdir -p /data/local/tmp/t506b_fix/work /data/local/tmp/t506b_fix/state
+> adb shell cp /data/local/tmp/t5_bridge/work/events.jsonl /data/local/tmp/t506b_fix/work/events.jsonl
+> adb shell wc -l /data/local/tmp/t506b_fix/work/events.jsonl
+  107 /data/local/tmp/t506b_fix/work/events.jsonl
+> adb shell /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t506b_fix/work --state-dir /data/local/tmp/t506b_fix/state --max-events 1 --mock-fail-times 2 --provider-backoff-ms 50 --provider-backoff-max-ms 200 --status-every-ms 200 --verbose; echo rc=True
+  [aiw] 2026-11-20T18:52:30 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T18:52:30 start pid=23506 events=/data/local/tmp/t506b_fix/work/events.jsonl state=/data/local/tmp/t506b_fix/state/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T18:52:30 event id=t5b-16112-1967345-g1 seq=1 attempt 1 failed: error mock transient failure at call 1 (offset NOT advanced, retrying)
+  [aiw] 2026-11-20T18:52:30 event id=t5b-16112-1967345-g1 seq=1 attempt 2 failed: error mock transient failure at call 2 (offset NOT advanced, retrying)
+  [aiw] 2026-11-20T18:52:30 event id=t5b-16112-1967345-g1 seq=1 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 3)
+  [aiw] 2026-11-20T18:52:30 state saved (sync) offset=305 processed=1
+  [aiw] 2026-11-20T18:52:31 state saved (exit) offset=305 processed=1
+  [aiw] 2026-11-20T18:52:31 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=2 offset=305 state_saves=2 state_errors=0
+  rc=True
+> adb shell cat /data/local/tmp/t506b_fix/state/ai_worker_status.json
+  {"version":1,"state":"stopped","pid":23506,"started_at":"2026-11-20T18:52:30","updated_at":"2026-11-20T18:52:31","started_at_ms":1795171950821,"updated_at_ms":1795171951005,"events_file":"/data/local/tmp/t506b_fix/work/events.jsonl","state_file":"/data/local/tmp/t506b_fix/state/consumer_state.json","offset":305,"file_size":32894,"dev":45846,"ino":86185,"provider":"mock","mock_calls":3,"counters":{"lines_read":1,"events_accepted":1,"events_processed":1,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":2,"state_errors":0,"provider_ok":1,"provider_err":2,"provider_timeout":0,"provider_retries":2,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":1,"last_event_id":"t5b-16112-1967345-g1","last_event_at":"2026-11-20T18:52:30","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"provider error: mock transient failure at call 2","exit_reason":"max_events"}
+A summary: processed=1 provider_ok=1 provider_err=2 retries=2 offset=305 file_size=32894
+A: PASS (2 failed attempts, then success; offset advanced exactly one record)
+
+===== B. provider permanent failure -> stuck, offset unchanged, event kept :: 2026-11-20 18:52:32 =====
+> adb shell rm -rf /data/local/tmp/t506b_fix/stateB
+> adb shell mkdir -p /data/local/tmp/t506b_fix/stateB
+> adb shell /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t506b_fix/work --state-dir /data/local/tmp/t506b_fix/stateB --mock-fail-from 1 --provider-retry-max 2 --max-runtime-ms 3000 --provider-backoff-ms 50 --provider-backoff-max-ms 200 --status-every-ms 200; echo rc=True
+  [aiw] 2026-11-20T18:52:32 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T18:52:32 start pid=23522 events=/data/local/tmp/t506b_fix/work/events.jsonl state=/data/local/tmp/t506b_fix/stateB/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T18:52:32 event id=t5b-16112-1967345-g1 stuck after 2 attempts (mock failure at call 2): keeping it, waiting for a dead-letter policy; no event will be skipped
+  [aiw] 2026-11-20T18:52:35 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=15 offset=0 state_saves=1 state_errors=0
+  [aiw] 2026-11-20T18:52:35 WARNING: event id=t5b-16112-1967345-g1 was still unprocessed at exit (15 attempts, offset kept at 0)
+  rc=True
+B status: {"version":1,"state":"stopped","pid":23522,"started_at":"2026-11-20T18:52:32","updated_at":"2026-11-20T18:52:35","started_at_ms":1795171952389,"updated_at_ms":1795171955424,"events_file":"/data/local/tmp/t506b_fix/work/events.jsonl","state_file":"/data/local/tmp/t506b_fix/stateB/consumer_state.json","offset":0,"file_size":32894,"dev":45846,"ino":86185,"provider":"mock","mock_calls":15,"counters":{"lines_read":1,"events_accepted":1,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":1,"state_errors":0,"provider_ok":0,"provider_err":15,"provider_timeout":0,"provider_retries":15,"stuck_attempts":15,"provider_stuck":1,"state_persist_failed":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"pending_event_id":"t5b-16112-1967345-g1","last_invalid":"","last_error":"provider error: mock failure at call 15","exit_reason":"max_runtime"}
+B summary: processed=0 stuck=1 pending=t5b-16112-1967345-g1 state=stopped
+ASSERT FAILED: B: state=stopped (want error)
+
+################ T5-06B P1/P2 device checks (Mock only) ################
+host time : 2026-11-20 18:52:50
+> adb shell sha256sum /data/local/tmp/t5_bridge/bin/ai_worker
+  a0bd55cfd0033e43cf244e294c49acfb0ef9b04e478fc91c8c04a746b9b51471  /data/local/tmp/t5_bridge/bin/ai_worker
+binary    : a0bd55cfd0033e43cf244e294c49acfb0ef9b04e478fc91c8c04a746b9b51471  /data/local/tmp/t5_bridge/bin/ai_worker
+
+===== A. provider transient failure then success (mock-fail-times 2) :: 2026-11-20 18:52:51 =====
+> adb shell rm -rf /data/local/tmp/t506b_fix
+> adb shell mkdir -p /data/local/tmp/t506b_fix/work /data/local/tmp/t506b_fix/state
+> adb shell cp /data/local/tmp/t5_bridge/work/events.jsonl /data/local/tmp/t506b_fix/work/events.jsonl
+> adb shell wc -l /data/local/tmp/t506b_fix/work/events.jsonl
+  107 /data/local/tmp/t506b_fix/work/events.jsonl
+> adb shell /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t506b_fix/work --state-dir /data/local/tmp/t506b_fix/state --max-events 1 --mock-fail-times 2 --provider-backoff-ms 50 --provider-backoff-max-ms 200 --status-every-ms 200 --verbose; echo rc=True
+  [aiw] 2026-11-20T18:52:51 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T18:52:51 start pid=23568 events=/data/local/tmp/t506b_fix/work/events.jsonl state=/data/local/tmp/t506b_fix/state/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T18:52:51 event id=t5b-16112-1967345-g1 seq=1 attempt 1 failed: error mock transient failure at call 1 (offset NOT advanced, retrying)
+  [aiw] 2026-11-20T18:52:51 event id=t5b-16112-1967345-g1 seq=1 attempt 2 failed: error mock transient failure at call 2 (offset NOT advanced, retrying)
+  [aiw] 2026-11-20T18:52:51 event id=t5b-16112-1967345-g1 seq=1 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 3)
+  [aiw] 2026-11-20T18:52:51 state saved (sync) offset=305 processed=1
+  [aiw] 2026-11-20T18:52:51 state saved (exit) offset=305 processed=1
+  [aiw] 2026-11-20T18:52:51 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=2 offset=305 state_saves=2 state_errors=0
+  rc=True
+> adb shell cat /data/local/tmp/t506b_fix/state/ai_worker_status.json
+  {"version":1,"state":"stopped","pid":23568,"started_at":"2026-11-20T18:52:51","updated_at":"2026-11-20T18:52:51","started_at_ms":1795171971698,"updated_at_ms":1795171971877,"events_file":"/data/local/tmp/t506b_fix/work/events.jsonl","state_file":"/data/local/tmp/t506b_fix/state/consumer_state.json","offset":305,"file_size":32894,"dev":45846,"ino":86185,"provider":"mock","mock_calls":3,"counters":{"lines_read":1,"events_accepted":1,"events_processed":1,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":2,"state_errors":0,"provider_ok":1,"provider_err":2,"provider_timeout":0,"provider_retries":2,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":1,"last_event_id":"t5b-16112-1967345-g1","last_event_at":"2026-11-20T18:52:51","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"provider error: mock transient failure at call 2","exit_reason":"max_events"}
+A summary: processed=1 provider_ok=1 provider_err=2 retries=2 offset=305 file_size=32894
+A: PASS (2 failed attempts, then success; offset advanced exactly one record)
+
+===== B. provider permanent failure -> stuck, offset unchanged, event kept :: 2026-11-20 18:52:52 =====
+> adb shell rm -rf /data/local/tmp/t506b_fix/stateB
+> adb shell mkdir -p /data/local/tmp/t506b_fix/stateB
+> adb shell /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t506b_fix/work --state-dir /data/local/tmp/t506b_fix/stateB --mock-fail-from 1 --provider-retry-max 2 --max-runtime-ms 3000 --provider-backoff-ms 50 --provider-backoff-max-ms 200 --status-every-ms 200; echo rc=True
+  [aiw] 2026-11-20T18:52:52 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T18:52:52 start pid=23584 events=/data/local/tmp/t506b_fix/work/events.jsonl state=/data/local/tmp/t506b_fix/stateB/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T18:52:53 event id=t5b-16112-1967345-g1 stuck after 2 attempts (mock failure at call 2): keeping it, waiting for a dead-letter policy; no event will be skipped
+  [aiw] 2026-11-20T18:52:55 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=16 offset=0 state_saves=1 state_errors=0
+  [aiw] 2026-11-20T18:52:55 WARNING: event id=t5b-16112-1967345-g1 was still unprocessed at exit (16 attempts, offset kept at 0)
+  rc=True
+B status: {"version":1,"state":"stopped","pid":23584,"started_at":"2026-11-20T18:52:52","updated_at":"2026-11-20T18:52:55","started_at_ms":1795171972956,"updated_at_ms":1795171975972,"events_file":"/data/local/tmp/t506b_fix/work/events.jsonl","state_file":"/data/local/tmp/t506b_fix/stateB/consumer_state.json","offset":0,"file_size":32894,"dev":45846,"ino":86185,"provider":"mock","mock_calls":16,"counters":{"lines_read":1,"events_accepted":1,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":1,"state_errors":0,"provider_ok":0,"provider_err":16,"provider_timeout":0,"provider_retries":16,"stuck_attempts":16,"provider_stuck":1,"state_persist_failed":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"pending_event_id":"t5b-16112-1967345-g1","last_invalid":"","last_error":"provider error: mock failure at call 16","exit_reason":"max_runtime"}
+B summary: processed=0 stuck=1 pending=t5b-16112-1967345-g1 state=stopped
+B: PASS (stuck on t5b-16112-1967345-g1, offset 0, no skip)
+
+===== B2. same state dir, no failure -> the stuck event is processed :: 2026-11-20 18:52:56 =====
+> adb shell /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t506b_fix/work --state-dir /data/local/tmp/t506b_fix/stateB --max-events 3 --status-every-ms 200; echo rc=True
+  [aiw] 2026-11-20T18:52:56 lock acquired; previous owner pid=23584 no longer holding it
+  [aiw] 2026-11-20T18:52:56 start pid=23591 events=/data/local/tmp/t506b_fix/work/events.jsonl state=/data/local/tmp/t506b_fix/stateB/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T18:52:56 exit reason=max_events processed=3 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=926 state_saves=4 state_errors=0
+  rc=True
+B2 state: {"version":1,"dev":45846,"ino":86185,"offset":926,"seq_last":3,"last_event_id":"t5b-16112-1967353-g1","processed_total":3,"updated_at_ms":1795171976424,"recent_cap":128,"recent_n":3,"recent_ids":"t5b-16112-1967345-g1,t5b-16112-1967349-g1,t5b-16112-1967353-g1"}
+B2: PASS (processed_total=3 after recovery)
+
+===== C1. real fault: temp file cannot be created (consumer_state.json.tmp is a directory) :: 2026-11-20 18:52:56 =====
+> adb shell rm -rf /data/local/tmp/t506b_fix/stateC1
+> adb shell mkdir -p /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp
+> adb shell /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t506b_fix/work --state-dir /data/local/tmp/t506b_fix/stateC1 --state-fail-exit-ms 600 --state-retry-ms 100 --status-every-ms 200; echo rc=True
+  [aiw] 2026-11-20T18:52:57 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T18:52:57 start pid=23600 events=/data/local/tmp/t506b_fix/work/events.jsonl state=/data/local/tmp/t506b_fix/stateC1/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T18:52:57 state save failed (sync): state temp open failed: /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp -> stop consuming, retrying
+  [aiw] 2026-11-20T18:52:57 state save failed (retry): state temp open failed: /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp -> stop consuming, retrying
+  [aiw] 2026-11-20T18:52:57 state save failed (retry): state temp open failed: /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp -> stop consuming, retrying
+  [aiw] 2026-11-20T18:52:57 state save failed (retry): state temp open failed: /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp -> stop consuming, retrying
+  [aiw] 2026-11-20T18:52:57 state save failed (exit): state temp open failed: /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp -> stop consuming, retrying
+  [aiw] 2026-11-20T18:52:57 FINAL state save failed; progress on disk stays at the last successful offset
+  [aiw] 2026-11-20T18:52:57 exit reason=state_persist_failed processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=305 state_saves=0 state_errors=6
+  [aiw] 2026-11-20T18:52:57 WARNING: event id=t5b-16112-1967345-g1 was still unprocessed at exit (1 attempts, offset kept at 305)
+  state persist failed; progress not durable
+  rc=True
+C1 exit line: rc=True
+ASSERT FAILED: C1: expected rc=5, got: rc=True
+
+################ T5-06B P1/P2 device checks (Mock only) ################
+host time : 2026-11-20 18:53:10
+> adb shell sha256sum /data/local/tmp/t5_bridge/bin/ai_worker
+  a0bd55cfd0033e43cf244e294c49acfb0ef9b04e478fc91c8c04a746b9b51471  /data/local/tmp/t5_bridge/bin/ai_worker
+binary    : a0bd55cfd0033e43cf244e294c49acfb0ef9b04e478fc91c8c04a746b9b51471  /data/local/tmp/t5_bridge/bin/ai_worker
+
+===== A. provider transient failure then success (mock-fail-times 2) :: 2026-11-20 18:53:11 =====
+> adb shell rm -rf /data/local/tmp/t506b_fix
+> adb shell mkdir -p /data/local/tmp/t506b_fix/work /data/local/tmp/t506b_fix/state
+> adb shell cp /data/local/tmp/t5_bridge/work/events.jsonl /data/local/tmp/t506b_fix/work/events.jsonl
+> adb shell wc -l /data/local/tmp/t506b_fix/work/events.jsonl
+  107 /data/local/tmp/t506b_fix/work/events.jsonl
+> adb shell /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t506b_fix/work --state-dir /data/local/tmp/t506b_fix/state --max-events 1 --mock-fail-times 2 --provider-backoff-ms 50 --provider-backoff-max-ms 200 --status-every-ms 200 --verbose; echo rc=$?
+  [aiw] 2026-11-20T18:53:11 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T18:53:11 start pid=23621 events=/data/local/tmp/t506b_fix/work/events.jsonl state=/data/local/tmp/t506b_fix/state/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T18:53:11 event id=t5b-16112-1967345-g1 seq=1 attempt 1 failed: error mock transient failure at call 1 (offset NOT advanced, retrying)
+  [aiw] 2026-11-20T18:53:12 event id=t5b-16112-1967345-g1 seq=1 attempt 2 failed: error mock transient failure at call 2 (offset NOT advanced, retrying)
+  [aiw] 2026-11-20T18:53:12 event id=t5b-16112-1967345-g1 seq=1 pid=16112 text_bytes=27 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 3)
+  [aiw] 2026-11-20T18:53:12 state saved (sync) offset=305 processed=1
+  [aiw] 2026-11-20T18:53:12 state saved (exit) offset=305 processed=1
+  [aiw] 2026-11-20T18:53:12 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=2 offset=305 state_saves=2 state_errors=0
+  rc=0
+> adb shell cat /data/local/tmp/t506b_fix/state/ai_worker_status.json
+  {"version":1,"state":"stopped","pid":23621,"started_at":"2026-11-20T18:53:11","updated_at":"2026-11-20T18:53:12","started_at_ms":1795171991945,"updated_at_ms":1795171992131,"events_file":"/data/local/tmp/t506b_fix/work/events.jsonl","state_file":"/data/local/tmp/t506b_fix/state/consumer_state.json","offset":305,"file_size":32894,"dev":45846,"ino":86185,"provider":"mock","mock_calls":3,"counters":{"lines_read":1,"events_accepted":1,"events_processed":1,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":2,"state_errors":0,"provider_ok":1,"provider_err":2,"provider_timeout":0,"provider_retries":2,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":1,"last_event_id":"t5b-16112-1967345-g1","last_event_at":"2026-11-20T18:53:12","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"provider error: mock transient failure at call 2","exit_reason":"max_events"}
+A summary: processed=1 provider_ok=1 provider_err=2 retries=2 offset=305 file_size=32894
+A: PASS (2 failed attempts, then success; offset advanced exactly one record)
+
+===== B. provider permanent failure -> stuck, offset unchanged, event kept :: 2026-11-20 18:53:13 =====
+> adb shell rm -rf /data/local/tmp/t506b_fix/stateB
+> adb shell mkdir -p /data/local/tmp/t506b_fix/stateB
+> adb shell /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t506b_fix/work --state-dir /data/local/tmp/t506b_fix/stateB --mock-fail-from 1 --provider-retry-max 2 --max-runtime-ms 3000 --provider-backoff-ms 50 --provider-backoff-max-ms 200 --status-every-ms 200; echo rc=$?
+  [aiw] 2026-11-20T18:53:13 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T18:53:13 start pid=23637 events=/data/local/tmp/t506b_fix/work/events.jsonl state=/data/local/tmp/t506b_fix/stateB/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T18:53:13 event id=t5b-16112-1967345-g1 stuck after 2 attempts (mock failure at call 2): keeping it, waiting for a dead-letter policy; no event will be skipped
+  [aiw] 2026-11-20T18:53:16 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=15 offset=0 state_saves=1 state_errors=0
+  [aiw] 2026-11-20T18:53:16 WARNING: event id=t5b-16112-1967345-g1 was still unprocessed at exit (15 attempts, offset kept at 0)
+  rc=0
+B status: {"version":1,"state":"stopped","pid":23637,"started_at":"2026-11-20T18:53:13","updated_at":"2026-11-20T18:53:16","started_at_ms":1795171993421,"updated_at_ms":1795171996443,"events_file":"/data/local/tmp/t506b_fix/work/events.jsonl","state_file":"/data/local/tmp/t506b_fix/stateB/consumer_state.json","offset":0,"file_size":32894,"dev":45846,"ino":86185,"provider":"mock","mock_calls":15,"counters":{"lines_read":1,"events_accepted":1,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":1,"state_errors":0,"provider_ok":0,"provider_err":15,"provider_timeout":0,"provider_retries":15,"stuck_attempts":15,"provider_stuck":1,"state_persist_failed":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"pending_event_id":"t5b-16112-1967345-g1","last_invalid":"","last_error":"provider error: mock failure at call 15","exit_reason":"max_runtime"}
+B summary: processed=0 stuck=1 pending=t5b-16112-1967345-g1 state=stopped
+B: PASS (stuck on t5b-16112-1967345-g1, offset 0, no skip)
+
+===== B2. same state dir, no failure -> the stuck event is processed :: 2026-11-20 18:53:16 =====
+> adb shell /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t506b_fix/work --state-dir /data/local/tmp/t506b_fix/stateB --max-events 3 --status-every-ms 200; echo rc=$?
+  [aiw] 2026-11-20T18:53:16 lock acquired; previous owner pid=23637 no longer holding it
+  [aiw] 2026-11-20T18:53:16 start pid=23644 events=/data/local/tmp/t506b_fix/work/events.jsonl state=/data/local/tmp/t506b_fix/stateB/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T18:53:16 exit reason=max_events processed=3 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=926 state_saves=4 state_errors=0
+  rc=0
+B2 state: {"version":1,"dev":45846,"ino":86185,"offset":926,"seq_last":3,"last_event_id":"t5b-16112-1967353-g1","processed_total":3,"updated_at_ms":1795171996776,"recent_cap":128,"recent_n":3,"recent_ids":"t5b-16112-1967345-g1,t5b-16112-1967349-g1,t5b-16112-1967353-g1"}
+B2: PASS (processed_total=3 after recovery)
+
+===== C1. real fault: temp file cannot be created (consumer_state.json.tmp is a directory) :: 2026-11-20 18:53:17 =====
+> adb shell rm -rf /data/local/tmp/t506b_fix/stateC1
+> adb shell mkdir -p /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp
+> adb shell /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t506b_fix/work --state-dir /data/local/tmp/t506b_fix/stateC1 --state-fail-exit-ms 600 --state-retry-ms 100 --status-every-ms 200; echo rc=$?
+  [aiw] 2026-11-20T18:53:17 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T18:53:17 start pid=23653 events=/data/local/tmp/t506b_fix/work/events.jsonl state=/data/local/tmp/t506b_fix/stateC1/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T18:53:17 state save failed (sync): state temp open failed: /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp -> stop consuming, retrying
+  [aiw] 2026-11-20T18:53:17 state save failed (retry): state temp open failed: /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp -> stop consuming, retrying
+  [aiw] 2026-11-20T18:53:17 state save failed (retry): state temp open failed: /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp -> stop consuming, retrying
+  [aiw] 2026-11-20T18:53:18 state save failed (retry): state temp open failed: /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp -> stop consuming, retrying
+  [aiw] 2026-11-20T18:53:18 state save failed (exit): state temp open failed: /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp -> stop consuming, retrying
+  [aiw] 2026-11-20T18:53:18 FINAL state save failed; progress on disk stays at the last successful offset
+  [aiw] 2026-11-20T18:53:18 exit reason=state_persist_failed processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=305 state_saves=0 state_errors=6
+  [aiw] 2026-11-20T18:53:18 WARNING: event id=t5b-16112-1967345-g1 was still unprocessed at exit (1 attempts, offset kept at 305)
+  rc=5
+  state persist failed; progress not durable
+C1 exit line: rc=5
+
+===== C2. real fault: rename cannot replace (consumer_state.json is a directory) :: 2026-11-20 18:53:18 =====
+> adb shell rm -rf /data/local/tmp/t506b_fix/stateC2
+> adb shell mkdir -p /data/local/tmp/t506b_fix/stateC2/consumer_state.json
+> adb shell /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t506b_fix/work --state-dir /data/local/tmp/t506b_fix/stateC2 --state-fail-exit-ms 600 --state-retry-ms 100 --status-every-ms 200; echo rc=$?
+  [aiw] 2026-11-20T18:53:18 consumer state read failed (state read failed: /data/local/tmp/t506b_fix/stateC2/consumer_state.json); starting from offset 0
+  [aiw] 2026-11-20T18:53:18 start pid=23661 events=/data/local/tmp/t506b_fix/work/events.jsonl state=/data/local/tmp/t506b_fix/stateC2/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T18:53:18 state save failed (sync): state rename failed -> stop consuming, retrying
+  [aiw] 2026-11-20T18:53:18 state save failed (retry): state rename failed -> stop consuming, retrying
+  [aiw] 2026-11-20T18:53:19 state save failed (retry): state rename failed -> stop consuming, retrying
+  [aiw] 2026-11-20T18:53:19 state save failed (retry): state rename failed -> stop consuming, retrying
+  [aiw] 2026-11-20T18:53:19 state save failed (exit): state rename failed -> stop consuming, retrying
+  [aiw] 2026-11-20T18:53:19 FINAL state save failed; progress on disk stays at the last successful offset
+  [aiw] 2026-11-20T18:53:19 exit reason=state_persist_failed processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=305 state_saves=0 state_errors=6
+  [aiw] 2026-11-20T18:53:19 WARNING: event id=t5b-16112-1967345-g1 was still unprocessed at exit (1 attempts, offset kept at 305)
+  state persist failed; progress not durable
+  rc=5
+C2 exit line: rc=5
+C1 status: {"version":1,"state":"error","pid":23653,"started_at":"2026-11-20T18:53:17","updated_at":"2026-11-20T18:53:18","started_at_ms":1795171997441,"updated_at_ms":1795171998215,"events_file":"/data/local/tmp/t506b_fix/work/events.jsonl","state_file":"/data/local/tmp/t506b_fix/stateC1/consumer_state.json","offset":305,"file_size":32894,"dev":45846,"ino":86185,"provider":"mock","mock_calls":1,"counters":{"lines_read":1,"events_accepted":1,"events_processed":1,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":0,"state_errors":6,"provider_ok":1,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":1,"provider_stuck":0,"state_persist_failed":1},"last_seq":1,"last_event_id":"t5b-16112-1967345-g1","last_event_at":"2026-11-20T18:53:17","last_gap_from":0,"last_gap_to":0,"pending_event_id":"t5b-16112-1967345-g1","last_invalid":"","last_error":"state save failed (exit): state temp open failed: /data/local/tmp/t506b_fix/stateC1/consumer_state.json.tmp","exit_reason":"state_persist_failed"}
+C1: PASS (rc=5, processed=1, offset=305, no durable progress claimed)
+C2 state dir: ai_worker.lock ai_worker_status.json consumer_state.json
+C2: PASS (rc=5 when rename cannot replace; last good state file untouched)
+
+===== cleanup :: 2026-11-20 18:53:20 =====
+> adb shell rm -rf /data/local/tmp/t506b_fix
+core pid after P1/P2 checks: 29413
+
+######## P1/P2 device checks done ########
