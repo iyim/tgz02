@@ -1,0 +1,48 @@
+[runner] loaded on pid=16112, running 75.0s
+[conn] {"t": "conn", "state": "connected", "fd": 121, "reconnect_count": 0}
+[stat] hooks=0 final=0 partial=0 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=4 final=0 partial=4 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent] {"t": "sent", "event_id": "t5b-16112-1967412-g1", "session_id": "1967412", "frame_bytes": 207}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967412-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 5}
+[stat] hooks=7 final=1 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=7 final=1 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=7 final=1 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=11 final=1 partial=10 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=13 final=1 partial=12 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=13 final=1 partial=12 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=13 final=1 partial=12 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=19 final=1 partial=18 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=19 final=1 partial=18 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=19 final=1 partial=18 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent] {"t": "sent", "event_id": "t5b-16112-1967421-g1", "session_id": "1967421", "frame_bytes": 198}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967421-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 6}
+[stat] hooks=20 final=2 partial=18 empty=0 readErr=0 q=0 ovf=0 stored=2 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent] {"t": "sent", "event_id": "t5b-16112-1967425-g1", "session_id": "1967425", "frame_bytes": 204}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967425-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 7}
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=27 final=3 partial=24 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[runner] final stats: {"hook_hits": 27, "final_count": 3, "partial_count": 24, "empty_count": 0, "read_errors": 0, "queue_depth": 0, "pending_count": 0, "queue_overflow": 0, "connect_errors": 0, "send_errors": 0, "recv_errors": 0, "ack_stored": 3, "ack_duplicate": 0, "ack_rejected": 0, "retry_count": 0, "text_too_long": 0, "ack_mismatch": 0, "ack_timeouts": 0, "frame_rejects": 0, "dropped": 0, "protocol_errors": 0, "dup_session_final": 0, "reconnect_count": 0, "enqueued": 3, "sent_frames": 3, "rejected_codes": {}, "connected": true, "fd": 121, "last_error": "", "last_close_reason": "", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x8e384000", "addr": "0x8e49753c"}, "sock_name": "tgz2_asr_bridge", "stopped": false}
+[runner] teardown: pending=0 queue=0
+[runner] detached

@@ -57,8 +57,14 @@
 │   ├── tgb_client.c       集成测试客户端（也是"最小可用发送端"参考实现）
 │   ├── run_host_tests.py  15 个集成用例（153 断言），真起进程/真收发/真落盘
 │   └── build_and_run.ps1  主机全套：编译 + 单测 + 集成
-├── evidence/              编译日志、单测日志、集成日志+结果 JSON、真机冒烟日志
-└── t5_05a_bridge_receiver_report.md   本轮实施报告
+├── frida/
+│   ├── t505b_asr_bridge_sender.js    T5-05B 发送端（H1 hook + 有界队列 + 非阻塞 STREAM + ACK）
+│   └── t505b_runner.py               宿主编排：加载脚本、记录消息、RPC stats/stop
+├── evidence/              编译日志、单测日志、集成日志+结果 JSON、真机冒烟日志、T5-05B 验收证据
+│   └── t505b/             Frida 侧 JSONL、播放日志、events.jsonl 快照、对照表
+├── t5_05a_bridge_receiver_report.md   接收端实施报告
+├── t5_05a_p1p2_fix_record.md          接收端 P1/P2 修复记录
+└── t5_05b_asr_bridge_sender_report.md 发送端实施报告（含真机验收）
 ```
 
 构建：
@@ -486,7 +492,12 @@ integration: 153 通过 / 0 失败  （15 用例，27.9 s）
 
 ---
 
-## 9. 下一轮（T5-05B 客户端）要点
+## 9. T5-05B 发送端（已实现）
+
+发送端已落地：`frida/t505b_asr_bridge_sender.js` + `frida/t505b_runner.py`，
+真机验收（13 条真实语音、离线重连、存储故障重试、原厂共存）见
+[t5_05b_asr_bridge_sender_report.md](t5_05b_asr_bridge_sender_report.md)。
+下面是当初给客户端定的要点，现已逐条实现，留作约束记录：
 
 接收端已经为客户端留好的形状：帧长自描述、CRC 可校验、ACK 按请求顺序、
 `event_id` 幂等、拒收带 `field`、断线可重连重发。客户端侧需要做到：

@@ -1,0 +1,65 @@
+[runner] loaded on pid=16112, running 40.0s
+[conn] {"t": "conn", "state": "connected", "fd": 121, "reconnect_count": 0}
+[stat] hooks=0 final=0 partial=0 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=4 final=0 partial=4 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 0}
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 1}
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 2}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=3 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 3}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=4 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 4}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=5 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 5}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=6 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 6}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=7 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 7}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=8 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 8}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=9 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 9}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=10 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 10}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=11 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 11}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=12 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 12}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=13 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 13}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=14 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 14}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=15 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 15}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=16 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 16}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=17 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 17}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=18 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 18}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=19 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[sent] {"t": "sent", "event_id": "t5b-16112-1967443-g1", "session_id": "1967443", "frame_bytes": 213}
+[retry] {"t": "retry", "event_id": "t5b-16112-1967443-g1", "code": "store_unavailable", "tries": 19}
+[runner] final stats: {"hook_hits": 8, "final_count": 1, "partial_count": 7, "empty_count": 0, "read_errors": 0, "queue_depth": 1, "pending_count": 1, "queue_overflow": 0, "connect_errors": 0, "send_errors": 0, "recv_errors": 0, "ack_stored": 0, "ack_duplicate": 0, "ack_rejected": 0, "retry_count": 20, "text_too_long": 0, "ack_mismatch": 0, "ack_timeouts": 0, "frame_rejects": 0, "dropped": 0, "protocol_errors": 0, "dup_session_final": 0, "reconnect_count": 0, "enqueued": 1, "requeued": 20, "sent_frames": 20, "rejected_codes": {}, "connected": true, "fd": 121, "last_error": "store:store_unavailable", "last_close_reason": "", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x8e384000", "addr": "0x8e49753c"}, "sock_name": "tgz2_asr_bridge", "stopped": false}
+[stat] hooks=8 final=1 partial=7 empty=0 readErr=0 q=1 ovf=0 stored=0 dup=0 rej=0 retry=20 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=store:store_unavailable
+[runner] teardown: pending=1 queue=1
+[runner] detached

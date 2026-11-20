@@ -1,0 +1,124 @@
+[runner] loaded on pid=16112, running 200.0s
+[conn] {"t": "conn", "state": "connected", "fd": 121, "reconnect_count": 0}
+[stat] hooks=0 final=0 partial=0 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=4 final=0 partial=4 empty=0 readErr=0 q=0 ovf=0 stored=0 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent] {"t": "sent", "event_id": "t5b-16112-1967345-g1", "session_id": "1967345", "frame_bytes": 207}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967345-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 1}
+[stat] hooks=7 final=1 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=7 final=1 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=7 final=1 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=10 final=1 partial=9 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent] {"t": "sent", "event_id": "t5b-16112-1967349-g1", "session_id": "1967349", "frame_bytes": 213}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967349-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 2}
+[stat] hooks=16 final=2 partial=14 empty=0 readErr=0 q=0 ovf=0 stored=2 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=16 final=2 partial=14 empty=0 readErr=0 q=0 ovf=0 stored=2 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=16 final=2 partial=14 empty=0 readErr=0 q=0 ovf=0 stored=2 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=16 final=2 partial=14 empty=0 readErr=0 q=0 ovf=0 stored=2 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent] {"t": "sent", "event_id": "t5b-16112-1967353-g1", "session_id": "1967353", "frame_bytes": 210}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967353-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 3}
+[stat] hooks=24 final=3 partial=21 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=24 final=3 partial=21 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=24 final=3 partial=21 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=24 final=3 partial=21 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=31 final=3 partial=28 empty=0 readErr=0 q=0 ovf=0 stored=3 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent] {"t": "sent", "event_id": "t5b-16112-1967357-g1", "session_id": "1967357", "frame_bytes": 210}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967357-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 4}
+[stat] hooks=32 final=4 partial=28 empty=0 readErr=0 q=0 ovf=0 stored=4 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=32 final=4 partial=28 empty=0 readErr=0 q=0 ovf=0 stored=4 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=32 final=4 partial=28 empty=0 readErr=0 q=0 ovf=0 stored=4 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=32 final=4 partial=28 empty=0 readErr=0 q=0 ovf=0 stored=4 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=32 final=4 partial=28 empty=0 readErr=0 q=0 ovf=0 stored=4 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=32 final=4 partial=28 empty=0 readErr=0 q=0 ovf=0 stored=4 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=32 final=4 partial=28 empty=0 readErr=0 q=0 ovf=0 stored=4 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=36 final=4 partial=32 empty=0 readErr=0 q=0 ovf=0 stored=4 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[sent] {"t": "sent", "event_id": "t5b-16112-1967361-g1", "session_id": "1967361", "frame_bytes": 216}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967361-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 5}
+[stat] hooks=41 final=5 partial=36 empty=0 readErr=0 q=0 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=41 final=5 partial=36 empty=0 readErr=0 q=0 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=41 final=5 partial=36 empty=0 readErr=0 q=0 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-
+[stat] hooks=41 final=5 partial=36 empty=0 readErr=0 q=0 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=false connErr=3 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=41 final=5 partial=36 empty=0 readErr=0 q=0 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=false connErr=10 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=47 final=5 partial=42 empty=0 readErr=0 q=0 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=false connErr=16 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=48 final=6 partial=42 empty=0 readErr=0 q=1 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=false connErr=23 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=48 final=6 partial=42 empty=0 readErr=0 q=1 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=false connErr=29 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=48 final=6 partial=42 empty=0 readErr=0 q=1 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=false connErr=36 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=54 final=7 partial=47 empty=0 readErr=0 q=2 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=false connErr=42 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=54 final=7 partial=47 empty=0 readErr=0 q=2 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=false connErr=49 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=54 final=7 partial=47 empty=0 readErr=0 q=2 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=false connErr=55 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=54 final=7 partial=47 empty=0 readErr=0 q=2 ovf=0 stored=5 dup=0 rej=0 retry=0 conn=false connErr=62 sendErr=0 recvErr=1 lastErr=connect:111
+[conn] {"t": "conn", "state": "connected", "fd": 121, "reconnect_count": 1}
+[sent] {"t": "sent", "event_id": "t5b-16112-1967365-g1", "session_id": "1967365", "frame_bytes": 207}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967365-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 1}
+[sent] {"t": "sent", "event_id": "t5b-16112-1967369-g1", "session_id": "1967369", "frame_bytes": 207}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967369-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 2}
+[stat] hooks=54 final=7 partial=47 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=54 final=7 partial=47 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=54 final=7 partial=47 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=54 final=7 partial=47 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=54 final=7 partial=47 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=54 final=7 partial=47 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=60 final=7 partial=53 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=60 final=7 partial=53 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=60 final=7 partial=53 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=60 final=7 partial=53 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=67 final=7 partial=60 empty=0 readErr=0 q=0 ovf=0 stored=7 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[sent] {"t": "sent", "event_id": "t5b-16112-1967381-g1", "session_id": "1967381", "frame_bytes": 213}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967381-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 3}
+[stat] hooks=70 final=8 partial=62 empty=0 readErr=0 q=0 ovf=0 stored=8 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=70 final=8 partial=62 empty=0 readErr=0 q=0 ovf=0 stored=8 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=70 final=8 partial=62 empty=0 readErr=0 q=0 ovf=0 stored=8 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=75 final=8 partial=67 empty=0 readErr=0 q=0 ovf=0 stored=8 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=75 final=8 partial=67 empty=0 readErr=0 q=0 ovf=0 stored=8 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=75 final=8 partial=67 empty=0 readErr=0 q=0 ovf=0 stored=8 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=75 final=8 partial=67 empty=0 readErr=0 q=0 ovf=0 stored=8 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[sent] {"t": "sent", "event_id": "t5b-16112-1967399-g1", "session_id": "1967399", "frame_bytes": 204}
+[ack] {"t": "ack", "event_id": "t5b-16112-1967399-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 4}
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[stat] hooks=83 final=9 partial=74 empty=0 readErr=0 q=0 ovf=0 stored=9 dup=0 rej=0 retry=0 conn=true connErr=63 sendErr=0 recvErr=1 lastErr=connect:111
+[runner] final stats: {"hook_hits": 83, "final_count": 9, "partial_count": 74, "empty_count": 0, "read_errors": 0, "queue_depth": 0, "pending_count": 0, "queue_overflow": 0, "connect_errors": 63, "send_errors": 0, "recv_errors": 1, "ack_stored": 9, "ack_duplicate": 0, "ack_rejected": 0, "retry_count": 0, "text_too_long": 0, "ack_mismatch": 0, "ack_timeouts": 0, "frame_rejects": 0, "dropped": 0, "protocol_errors": 0, "dup_session_final": 0, "reconnect_count": 1, "enqueued": 9, "sent_frames": 9, "rejected_codes": {}, "connected": true, "fd": 121, "last_error": "connect:111", "last_close_reason": "", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x8e384000", "addr": "0x8e49753c"}, "sock_name": "tgz2_asr_bridge", "stopped": false}
+[runner] teardown: pending=0 queue=0
+[runner] detached
