@@ -105,7 +105,14 @@ int  wu_lock_acquire(wu_lockfile *lk, const char *path, char *err, size_t errlen
 void wu_lock_release(wu_lockfile *lk);
 
 /* FNV-1a 64 */
+#define WU_HASH64_SEED 1469598103934665603ULL   /* FNV offset basis */
 unsigned long long wu_hash64(const void *data, size_t len);
+
+/*
+ * 增量形式：h_new = update(h_old, data)。FNV-1a 的状态就是一个 64 位字，
+ * 所以调用方只需把返回值存起来即可跨调用延续（用于 events.jsonl 的前缀指纹）。
+ */
+unsigned long long wu_hash64_ext(unsigned long long seed, const void *data, size_t len);
 
 /* JSON 字符串转义（不含两侧引号），返回写入长度；cap 不足时截断并保证 NUL */
 size_t wu_json_escape(char *dst, size_t cap, const char *src);

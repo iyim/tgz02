@@ -29,11 +29,22 @@ T5-06B 时间：2026-11-20 16:54–17:03。探针与测试脚本都是**一次�
 
 | 文件 | 产生方式 | 关键内容 |
 |---|---|---|
-| `ndk_build.log` | `_analysis/t506b/n1_ndk_build.ps1`（NDK r21e，API 26） | 两个产物：`ai_worker` 102204 B / sha256 `1c75f4d7…`，`worker_unit_test` 138504 B / sha256 `0d4f8f09…`；均 `ELF32/ARM/DYN` + `NEEDED libc.so`；**0 warning、0 error** |
+| `ndk_build.log` | `_analysis/t506b/n1_ndk_build.ps1`（NDK r21e，API 26） | 两个产物：`ai_worker` 106796 B / sha256 `32c98df0…`，`worker_unit_test` 162868 B / sha256 `f0d3a2f4…`；均 `ELF32/ARM/DYN` + `NEEDED libc.so`；**0 warning、0 error** |
 | `device_numeric_fix.log` | `_analysis/t506b/n2_device.ps1` | 真机：**ARM32 单元测试 284/284 PASS**（`abi: 32-bit long, ULONG_MAX=4294967295`）；历史 111 行全消费（`invalid=0`、`offset=34119=size`、sha256 前后一致）；窄化拒收 4 行（`bad_seq`×2 / `bad_version` / `bad_type:text_bytes`）+ 1 行合法 |
 | `device_p2p2_inode_reuse.log` | 同上 + 基线 `f3c9f3bf` 的旧单元测试二进制 | 旁证：同目录删除重建后 `st_dev:st_ino` 完全相同（inode 复用）；基线 `f3c9f3bf` 在真机 **257/1 failed**，本轮 **284/0** → 该失败早于本轮存在 |
-| `host_unit_test.log` | `tests/run_host_tests.ps1` | **284 checks / 0 failed**（新增窄化/范围/一致性用例；注意 Windows LLP64 的 `long` 也是 32 位，与 ARM32 同一分支） |
-| `host_integration_test.log` | 同上（真起进程） | **19/19 PASS**，Mock Provider，无网络 |
+| `host_unit_test.log` | `tests/run_host_tests.ps1` | **359 checks / 0 failed**（新增窄化/范围/一致性/前缀指纹/迁移/故障注入用例；Windows LLP64 的 `long` 也是 32 位，与 ARM32 同一分支） |
+| `host_integration_test.log` | 同上（真起进程） | **26/26 PASS**，Mock Provider，无网络 |
+
+### T5-06B P2-2 补充修复（events.jsonl 前缀指纹 / inode 复用）
+
+| 文件 | 产生方式 | 关键内容 |
+|---|---|---|
+| `device_p22_prefix_fingerprint.log` | `_analysis/t506b/n3_device_p22.ps1`（内含 `p22_c.sh`/`p22_h.sh` 两个设备端脚本） | 真机 9 段：inode 复用实证（`45846:86205` 前后相同）；停机期换文件 → `prefix_mismatch`、从 `p22-b1` 重读；运行期删除→重建更长 → `ABSENT_OK/SWAP_OK/REPLACED_OK`、`invalid=0`；更短替换；同前缀追加保留偏移；v1 状态迁移（`legacy_rescans=1`、1 条有界重复）；`read/fold` 故障 → `rc=6`；4 次真追加 `resets=replacements=truncations=0`；真实桥接文件 sha256 不变 |
+| `host_recreate_longer.log` | `worker_integration_test.py --only i18` | 运行期重建更长：新文件 3 条从第一条读起，状态 `prefix_hash` 等于独立算出的 FNV-1a |
+| `host_prefix_same.log` | `--only i21` | 截至旧偏移字节相同 → 偏移保留、只处理追加的 2 条、`identity_resets=0` |
+| `host_legacy_state.log` | `--only i22` | v1 → v2 迁移：从 0 重扫、`recent_ids` 抑制 1 条重复、状态写入 16 位十六进制指纹 |
+| `host_prefix_fault.log` | `--only i23` | `T6B_FAULT_PREFIX=read` → `rc=6`；`=fold` → `rc=6`、`processed=0`、偏移不动 |
+| `host_append_no_reset.log` | `--only i24` | 4 次追加 `resets/replacements/truncations` 全 0，增量指纹等于整段重算 |
 
 T5-06A 探针的原始输出见下表。
 

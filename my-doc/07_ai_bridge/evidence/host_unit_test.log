@@ -1,5 +1,5 @@
 === T5-06B worker unit test ===
 abi: 32-bit long, ULONG_MAX=4294967295 (seq upper bound depends on this)
 
-checks passed: 284, failed: 0
+checks passed: 359, failed: 0
 RESULT: PASS

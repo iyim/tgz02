@@ -485,24 +485,127 @@ const char *t6b_eval_name(t6b_eval c)
 const char *t6b_open_reason_name(t6b_open_reason r)
 {
     switch (r) {
-    case T6B_OPEN_FIRST:     return "first_open";
-    case T6B_OPEN_ABSENT:    return "file_absent";
-    case T6B_OPEN_TRUNCATED: return "truncated";
-    case T6B_OPEN_REPLACED:  return "file_replaced";
-    case T6B_OPEN_IO_ERROR:  return "io_error";
-    default:                 return "none";
+    case T6B_OPEN_FIRST:         return "first_open";
+    case T6B_OPEN_ABSENT:        return "file_absent";
+    case T6B_OPEN_TRUNCATED:     return "truncated";
+    case T6B_OPEN_REPLACED:      return "file_replaced";
+    case T6B_OPEN_HASH_MISMATCH: return "prefix_mismatch";
+    case T6B_OPEN_LEGACY_RESCAN: return "legacy_state_rescan";
+    case T6B_OPEN_IO_ERROR:      return "io_error";
+    default:                     return "none";
     }
 }
 
 /* ==================== 2. 增量文件游标 ==================== */
 
+/*
+ * 测试用故障注入（只在环境变量存在时生效；生产不设置就是空操作）。
+ * 与 consumer_state 的 T6B_FAULT_STATE 同一套路，用来证明
+ * "指纹核对失败 / 指纹推进失败必须停止消费，不许退化成只比 inode"。
+ *   T6B_FAULT_PREFIX = read  → 前缀重算失败（init/换文件时）
+ *   T6B_FAULT_PREFIX = fold  → 提交时推进指纹失败
+ */
+static int t6b_fault_prefix(const char *which)
+{
+    const char *v = getenv("T6B_FAULT_PREFIX");
+
+    return (v != NULL && strcmp(v, which) == 0) ? 1 : 0;
+}
+
+/*
+ * 前缀指纹：对 fd 的 [0, upto) 顺序重算 FNV-1a 64。
+ * 只在打开新文件/启动时调用一次，代价是顺序读 upto 字节（不解析、不分配）。
+ * 返回 0 = 成功（*out 给出指纹）；-1 = 读失败（调用方必须停止消费，不许当"没变化"处理）。
+ */
+static int hash_prefix(t6b_reader *r, long long upto, unsigned long long *out)
+{
+    char buf[4096];
+    long long pos = 0;
+    unsigned long long h = WU_HASH64_SEED;
+
+    if (t6b_fault_prefix("read")) {
+        snprintf(r->last_error, sizeof(r->last_error), "injected fault: prefix read failed");
+        r->io_errors++;
+        return -1;
+    }
+    while (pos < upto) {
+        size_t want = (upto - pos > (long long)sizeof(buf))
+                        ? sizeof(buf) : (size_t)(upto - pos);
+        int n;
+
+        if (wu_seek(r->fd, pos) != 0) {
+            snprintf(r->last_error, sizeof(r->last_error), "prefix seek failed");
+            r->io_errors++;
+            return -1;
+        }
+        n = wu_read_some(r->fd, buf, want);
+        if (n <= 0) {                 /* 读不到声明的前缀：无法核对，按失败处理 */
+            snprintf(r->last_error, sizeof(r->last_error),
+                     "prefix read failed (%lld/%lld bytes)", pos, upto);
+            r->io_errors++;
+            return -1;
+        }
+        h = wu_hash64_ext(h, buf, (size_t)n);
+        pos += n;
+    }
+    *out = h;
+    return 0;
+}
+
+/* 把 [from,to) 的字节并入前缀指纹：缓存命中就直接算，否则回读（只有跳过超长行会走到） */
+static int fold_range(t6b_reader *r, long long from, long long to)
+{
+    long long n = to - from;
+
+    if (n <= 0) return 0;
+    if (t6b_fault_prefix("fold")) {
+        snprintf(r->last_error, sizeof(r->last_error), "injected fault: prefix fold failed");
+        r->io_errors++;
+        return -1;
+    }
+    if (r->buf_len > 0 && from >= r->buf_off &&
+        to <= r->buf_off + (long long)r->buf_len) {
+        const char *p = r->buf + (size_t)(from - r->buf_off);
+        r->prefix_hash = wu_hash64_ext(r->prefix_hash, p, (size_t)n);
+        return 0;
+    }
+    {
+        char tmp[4096];
+        long long pos = from;
+
+        while (pos < to) {
+            size_t want = (to - pos > (long long)sizeof(tmp))
+                            ? sizeof(tmp) : (size_t)(to - pos);
+            int got;
+
+            if (wu_seek(r->fd, pos) != 0) {
+                snprintf(r->last_error, sizeof(r->last_error), "hash seek failed");
+                r->io_errors++;
+                return -1;
+            }
+            got = wu_read_some(r->fd, tmp, want);
+            if (got <= 0) {
+                snprintf(r->last_error, sizeof(r->last_error),
+                         "hash read failed (%lld/%lld bytes)", pos, to);
+                r->io_errors++;
+                return -1;
+            }
+            r->prefix_hash = wu_hash64_ext(r->prefix_hash, tmp, (size_t)got);
+            pos += got;
+        }
+    }
+    return 0;
+}
+
 int t6b_reader_init(t6b_reader *r, const char *path, long long start_off,
                     unsigned long long start_dev, unsigned long long start_ino,
+                    unsigned long long start_hash, int start_hash_valid,
                     int max_record, char *err, size_t errlen)
 {
     unsigned long long dev = 0;
     unsigned long long ino = 0;
     long long size = 0;
+    int identity_changed = 0;
 
     if (r == NULL || path == NULL) return -1;
     memset(r, 0, sizeof(*r));
@@ -524,6 +627,18 @@ int t6b_reader_init(t6b_reader *r, const char *path, long long start_off,
     snprintf(r->path, sizeof(r->path), "%s", path);
 
     r->off = (start_off > 0) ? start_off : 0;
+    r->prefix_hash = WU_HASH64_SEED;
+    r->hash_valid = 1;                      /* off=0 空前缀，恒等于 offset basis */
+
+    /* 旧状态（version 1）没有前缀指纹：**绝不假装验证成功**，安全回退为从 0 重扫。
+     * 已有 recent_ids 由调用方保留，重复处理是有界的（最多一个去重窗口）。 */
+    if (r->off > 0 && !start_hash_valid) {
+        r->legacy_rescans++;
+        r->last_reason = T6B_OPEN_LEGACY_RESCAN;
+        r->off = 0;
+    } else if (r->off > 0) {
+        r->prefix_hash = start_hash;
+    }
     r->pending = r->off;
 
     /* 保存历史身份：即使文件此刻不存在也要留着，等它出现时用它判断"是不是同一个文件"。
@@ -539,29 +654,64 @@ int t6b_reader_init(t6b_reader *r, const char *path, long long start_off,
             r->saved_dev = dev;
             r->saved_ino = ino;
             r->have_saved = 1;
-            if (r->off > 0 && size < r->off) {
-                r->truncations++;
-                r->last_reason = T6B_OPEN_TRUNCATED;
-                r->off = 0;
-                r->pending = 0;
-            }
         } else if (r->saved_dev != dev || r->saved_ino != ino) {
+            /* 身份不同本身不直接决定归零：下面统一用"前缀指纹是否一致"判定。 */
             r->replacements++;
             r->last_reason = T6B_OPEN_REPLACED;
-            r->off = 0;
-            r->pending = 0;
             r->saved_dev = dev;
             r->saved_ino = ino;
-        } else if (r->off > 0 && size < r->off) {
+            identity_changed = 1;
+        }
+        /* 身份相同：保留已有 last_reason（可能是 LEGACY_RESCAN），不要覆盖成 NONE */
+    } else {
+        /* 文件此刻不在：偏移与指纹都留着，等它出现时再核对 */
+        r->last_reason = T6B_OPEN_ABSENT;
+        r->buf_off = r->off;
+        return 0;
+    }
+
+    r->buf_off = r->off;
+
+    /* 打开并**一直持有** fd：只要这条 fd 活着，即使文件被 unlink，inode 也不会被复用，
+     * (dev,ino) 因此重新变得可靠 —— 这是 P2-2 的第二道防线。 */
+    r->fd = wu_open_ro(r->path);
+    if (r->fd < 0) {
+        r->last_reason = T6B_OPEN_IO_ERROR;
+        if (err) snprintf(err, errlen, "events open failed");
+        return -1;
+    }
+    r->have_fd = 1;
+    r->dev = dev;
+    r->ino = ino;
+    r->opens++;
+
+    if (r->off > 0 && size < r->off) {       /* 变短：截断，偏移归零 */
+        if (!identity_changed) {
             r->truncations++;
             r->last_reason = T6B_OPEN_TRUNCATED;
+        }
+        r->off = 0;
+        r->pending = 0;
+        r->buf_off = 0;
+        r->prefix_hash = WU_HASH64_SEED;
+    } else if (r->off > 0) {
+        unsigned long long h = 0;
+
+        if (hash_prefix(r, r->off, &h) != 0) {
+            if (err) snprintf(err, errlen, "%s", r->last_error);
+            return -2;                   /* 无法核对 → 调用方必须停止消费 */
+        }
+        if (h != r->prefix_hash) {
+            r->identity_resets++;
+            r->last_reason = T6B_OPEN_HASH_MISMATCH;
             r->off = 0;
             r->pending = 0;
+            r->buf_off = 0;
+            r->prefix_hash = WU_HASH64_SEED;
         }
-    } else {
-        r->last_reason = T6B_OPEN_ABSENT;
     }
-    r->buf_off = r->off;
+    if (r->last_reason == T6B_OPEN_NONE && r->opens == 1)
+        r->last_reason = T6B_OPEN_FIRST;
     return 0;
 }
 
@@ -580,11 +730,26 @@ long long t6b_reader_pending(const t6b_reader *r)
     return (r == NULL) ? 0 : r->pending;
 }
 
-void t6b_reader_commit(t6b_reader *r)
+unsigned long long t6b_reader_prefix_hash(const t6b_reader *r)
 {
-    if (r == NULL) return;
-    if (r->pending > r->off) r->off = r->pending;
+    return (r == NULL) ? WU_HASH64_SEED : r->prefix_hash;
+}
+
+int t6b_reader_hash_valid(const t6b_reader *r)
+{
+    return (r == NULL) ? 0 : r->hash_valid;
+}
+
+int t6b_reader_commit(t6b_reader *r)
+{
+    if (r == NULL) return 0;
+    if (r->pending > r->off) {
+        if (fold_range(r, r->off, r->pending) != 0) return -1;
+        r->off = r->pending;
+        r->hash_valid = 1;
+    }
     r->pending = r->off;
+    return 0;
 }
 
 int t6b_reader_stat(const t6b_reader *r, long long *size)
@@ -597,68 +762,104 @@ int t6b_reader_stat(const t6b_reader *r, long long *size)
     return 0;
 }
 
-/* 打开/保持 fd，并处理"文件不存在 / 被重建 / 变短"三种情况 */
 /* 打开/保持 fd，并处理"文件不存在 / 被重建 / 变短"三种情况。
  *
- * 身份判断放在**每次（重新）打开**时做，而不是只在 fd 还活着的时候做：
- * 文件被删除后重建（尤其 worker 正在跑、先看到 ENOENT 再看到新文件）时，
- * have_fd 已经是 0，只有跟 saved_dev/saved_ino 比才能发现"换人了"。
+ * 两条防线，缺一不可（T5-06B P2-2）：
+ *   1) 文件消失时**不关 fd**：只要这条 fd 还活着，内核就不会把这个 inode 号复用给新文件，
+ *      (dev,ino) 因此仍能区分"还是原来那个文件"与"换人了"。这正好补上 Android ext4/f2fs
+ *      上"删除后立刻重建、inode 号完全相同"的坑。
+ *   2) 每当真的打开一个新 fd（启动、换文件、文件消失后重新出现），只要 off>0 就重算
+ *      [0,off) 的前缀指纹：一致说明截至已消费位置内容没变（继续读在语义上安全，不归零）；
+ *      不一致说明内容身份变了（偏移归零、清缓存、从第一条重读，靠 recent_ids 去重）。
+ *
+ * 返回：1 = 有 fd 可读；0 = 暂时没有（文件不在/打不开）；-1 = 指纹无法核对（致命）
  */
 static int ensure_open(t6b_reader *r)
 {
     unsigned long long dev = 0;
     unsigned long long ino = 0;
     long long size = 0;
+    int identity_changed = 0;
 
     if (wu_file_identity(r->path, &dev, &ino, &size) != 0) {
-        if (r->have_fd) { wu_close(r->fd); r->have_fd = 0; r->fd = -1; }
+        /* 文件暂时不在：保留旧 fd（不让 inode 被复用），只作废缓存，偏移与指纹都留着 */
         r->last_reason = T6B_OPEN_ABSENT;
         r->buf_off = r->off;
         r->buf_len = 0;
-        return 0;                       /* 等文件出现（不当作错误），身份与偏移都保留 */
+        return 0;
     }
 
     if (r->have_fd && (r->dev != dev || r->ino != ino)) {
-        wu_close(r->fd);
+        wu_close(r->fd);                 /* 确认换人了才关旧 fd */
         r->have_fd = 0;
         r->fd = -1;
-    }
-
-    if (!r->have_fd) {
-        if (r->have_saved && (r->saved_dev != dev || r->saved_ino != ino)) {
-            /* 出现/再次打开时身份不同：文件被重建，从头读（靠 event_id 去重） */
-            r->replacements++;
-            r->last_reason = T6B_OPEN_REPLACED;
+        identity_changed = 1;
+    } else if (r->have_fd) {
+        /* 同一个 fd：正常追加，绝不重算整段前缀（否则每次追加都要重扫一遍文件） */
+        if (size < r->off) {
+            r->truncations++;
+            r->last_reason = T6B_OPEN_TRUNCATED;
             r->off = 0;
             r->pending = 0;
             r->buf_off = 0;
             r->buf_len = 0;
+            r->prefix_hash = WU_HASH64_SEED;
+        } else if (r->buf_len > 0 && size < r->buf_off + (long long)r->buf_len) {
+            r->buf_off = r->off;
+            r->buf_len = 0;
         }
-        r->fd = wu_open_ro(r->path);
-        if (r->fd < 0) {
-            r->last_reason = T6B_OPEN_IO_ERROR;
-            return 0;
-        }
-        r->have_fd = 1;
-        r->dev = dev;
-        r->ino = ino;
-        r->saved_dev = dev;
-        r->saved_ino = ino;
-        r->have_saved = 1;
-        r->opens++;
-        if (r->opens == 1 && r->last_reason == T6B_OPEN_NONE)
-            r->last_reason = T6B_OPEN_FIRST;
+        return 1;
+    } else if (r->have_saved && (r->saved_dev != dev || r->saved_ino != ino)) {
+        identity_changed = 1;
     }
 
-    if (size < r->off) {                 /* 桥接端修复 / 文件被截断 */
-        r->truncations++;
-        r->last_reason = T6B_OPEN_TRUNCATED;
+    r->fd = wu_open_ro(r->path);
+    if (r->fd < 0) {
+        r->last_reason = T6B_OPEN_IO_ERROR;
+        return 0;
+    }
+    r->have_fd = 1;
+    r->dev = dev;
+    r->ino = ino;
+    r->saved_dev = dev;
+    r->saved_ino = ino;
+    r->have_saved = 1;
+    r->opens++;
+
+    if (identity_changed) {
+        r->replacements++;
+        r->last_reason = T6B_OPEN_REPLACED;
+    } else if (r->opens == 1 && r->last_reason == T6B_OPEN_NONE) {
+        r->last_reason = T6B_OPEN_FIRST;
+    }
+
+    if (r->off > 0 && size < r->off) {
+        /* 变短：不论 inode 是否被复用，偏移都不可能还指着同一条记录 —— 归零重扫。
+         * 计数按原因区分：同一个文件缩水 = truncations；换了文件 = replacements。 */
+        if (!identity_changed) {
+            r->truncations++;
+            r->last_reason = T6B_OPEN_TRUNCATED;
+        }
         r->off = 0;
         r->pending = 0;
         r->buf_off = 0;
         r->buf_len = 0;
+        r->prefix_hash = WU_HASH64_SEED;
+    } else if (r->off > 0) {
+        unsigned long long h = 0;
+
+        if (hash_prefix(r, r->off, &h) != 0) return -1;
+        if (h != r->prefix_hash) {
+            /* 内容身份变了（inode 复用 / 文件被换掉）：从头读 */
+            r->identity_resets++;
+            r->last_reason = T6B_OPEN_HASH_MISMATCH;
+            r->off = 0;
+            r->pending = 0;
+            r->buf_off = 0;
+            r->buf_len = 0;
+            r->prefix_hash = WU_HASH64_SEED;
+        }
     } else if (r->buf_len > 0 && size < r->buf_off + (long long)r->buf_len) {
-        /* 文件在缓存有效区间内被截短：缓存作废，已提交偏移保持不变 */
         r->buf_off = r->off;
         r->buf_len = 0;
     }
@@ -716,7 +917,14 @@ int t6b_reader_next(t6b_reader *r, t6b_event *ev, const char **reason,
         if (r == NULL || r->buf == NULL) return -1;
         r->pending = r->off;
 
-        if (!ensure_open(r)) return 0;
+        {
+            int opened = ensure_open(r);
+            if (opened < 0) {            /* 指纹无法核对：致命，不许退化成只比 inode */
+                if (err) snprintf(err, errlen, "%s", r->last_error);
+                return -4;
+            }
+            if (opened == 0) return 0;
+        }
 
         skip = (size_t)(r->off - r->buf_off);
         if (r->off < r->buf_off || skip > r->buf_len) skip = r->buf_len;

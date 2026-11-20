@@ -16,6 +16,7 @@ vendor release 串 `6.1.8-RS-20221104.1459`，kernel `4.4.95+`）。
 | [t5_06b_worker_report.md](t5_06b_worker_report.md) | **T5-06B：独立 AI Worker 的实现与测试报告**（消费语义、Provider 抽象、主机 215+14 项测试、真机实测） |
 | [t5_06b_p1p2_fix_report.md](t5_06b_p1p2_fix_report.md) | **T5-06B P1/P2 修复报告**：内核锁、Provider 失败不消费、落盘失败即停、半行超长、删除重建身份检测 |
 | [t5_06b_numeric_validation_fix_report.md](t5_06b_numeric_validation_fix_report.md) | **T5-06B P2 补充修复**：`event_reader` 数字字段窄化与范围校验（version/pid/text_bytes/text_chars/时间/seq）、文本诊断字段一致性、ARM32 与 LLP64 的 `ULONG_MAX` 差异、真机 284 项全过 |
+| [t5_06b_p22_prefix_fingerprint_report.md](t5_06b_p22_prefix_fingerprint_report.md) | **T5-06B P2-2 补充修复**：events.jsonl 前缀指纹（`[0,offset)` 增量 FNV-1a）、状态版本 2、inode 复用下的换文件识别、指纹故障即停（退出码 6）、真机 inode 复用实证 |
 | [android/](android) | T5-06B Worker 源码 + `build.ps1`（NDK 动态链接）+ `run_ai_worker.sh` |
 | [tests/](tests) | T5-06B 主机单元测试 / 集成测试 / 一键运行脚本 |
 | [evidence/](evidence) | 真机探针原始输出、设备事实快照、NDK 检查、主机与真机测试日志 |
@@ -32,14 +33,22 @@ vendor release 串 `6.1.8-RS-20221104.1459`，kernel `4.4.95+`）。
 P1/P2 修复后（`t5_06b_p1p2_fix_report.md`）：单实例改用内核 `flock`/`LockFileEx`（100 轮 × 20 进程
 并发全过、`kill -9` 后立即可拿锁）；Provider 失败**不再消费事件**（退避重试、超限 stuck 但不跳过）；
 消费进度落盘失败**立即停止消费**并以退出码 5 退出；半行超长只在见到换行符后才跳过；
-文件删除重建按 `(dev,ino)` 识别（Windows 上先短后长都覆盖；**Android ext4/f2fs 会复用 inode，
-"重建且变长"识别不到**，见下方 P2 补充修复）。语义为 **at-least-once**，不承诺 exactly-once。
+文件删除重建按 `(dev,ino)` + `[0,offset)` 前缀指纹双重识别（inode 被复用时靠指纹；见 P2-2 报告）。
+语义为 **at-least-once**，不承诺 exactly-once。
 
 P2 补充修复（`t5_06b_numeric_validation_fix_report.md`）：解析层所有整数字段**先校验范围再窄化**
 （`version` 只认精确 1；`pid` 限 32 位正数；`text_bytes`/`text_chars` 限 `0..511` 且必须与文本实测一致；
 时间戳非负；`seq` 必须 `>0` 且不超过 `ULONG_MAX`）。ARM32 真机执行同一份单元测试 **284/284 通过**，
-历史 111 条真实记录**零拒收**、`events.jsonl` 前后 sha256 不变。附一个旁证结论：Android ext4/f2fs 会复用
-inode，`(dev,ino)` 无法识别"重建且变长"的场景，已列为待评审的遗留项。
+历史 111 条真实记录**零拒收**、`events.jsonl` 前后 sha256 不变。
+
+P2-2 补充修复（`t5_06b_p22_prefix_fingerprint_report.md`）：文件身份不再只看 `(dev,ino)`，
+而是给 `events.jsonl` 的 `[0,offset)` 维护**增量前缀指纹**（FNV-1a 64，随每条提交推进，
+启动/换文件时重算核对）。真机已实证 Android ext4/f2fs **删除后立刻重建会复用同一个 inode**
+（`45846:86205` → `45846:86205`）；指纹不符 → 偏移归零、清缓存、从新文件第一条重读（`recent_ids` 去重）；
+截至旧偏移字节完全相同时**保留偏移继续读**（语义安全）；文件消失时保留旧 fd 让 inode 不被复用；
+状态文件升到 version=2，**v1 旧状态没有指纹时安全回退重扫**并明确记录有界重复；
+指纹核对/推进失败一律**停止消费**（退出码 6），不许退化成只比 inode。真机全部通过，
+正常追加 4 次 `resets=0 / replacements=0 / truncations=0`。
 
 ## 结论标记约定
 

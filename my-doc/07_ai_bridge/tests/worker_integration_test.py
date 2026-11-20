@@ -797,6 +797,293 @@ def i17_state_persist_failure(exe):
     return "; ".join(results)
 
 
+# ---------------------------------------------------------------- P2-2 前缀指纹
+
+def prefix_hash_of(path, upto):
+    """独立实现：对文件 [0,upto) 算 FNV-1a 64，用来核对状态文件里的指纹
+
+    常量必须与 worker_util.h 的 WU_HASH64_SEED 一致（本项目自己的 64 位常量）。
+    """
+    h = 1469598103934665603
+    left = upto
+    with open(path, "rb") as f:
+        while left > 0:
+            chunk = f.read(min(4096, left))
+            if not chunk:
+                break
+            for b in chunk:
+                h = ((h ^ b) * 1099511628211) & 0xFFFFFFFFFFFFFFFF
+            left -= len(chunk)
+    return h
+
+
+@case
+def i18_recreate_longer_while_running(exe):
+    """运行期间删除并立刻创建**更长**的新文件：必须从新文件第一条开始读（P2-2 核心）"""
+    work = path_of("i18/work")
+    state = path_of("i18/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    ev = path_of("i18/work/events.jsonl")
+    write_events("i18/work/events.jsonl",
+                 [rec(i + 1, 4242, "t5b-4242-r1%02d-g1" % i, "old-%d" % i) for i in range(2)])
+
+    proc = start_bg(exe, work, state, ["--idle-exit-ms", "12000", "--verbose"], "i18/worker.log")
+    try:
+        wait_until(lambda: counters_of(state).get("events_processed") == 2, 15,
+                   what="old file consumed")
+        off_before = durable_offset(state)
+        assert_ge(off_before, 1, "old offset is durable")
+
+        # 新文件明显更长（3 条，每条 text 也更长），前缀与旧文件不同
+        os.remove(ev)
+        write_events("i18/work/events.jsonl",
+                     [rec(i + 1, 4242, "t5b-4242-r2%02d-g1" % i,
+                          "brand-new-file-record-%d-longer" % i) for i in range(3)])
+        new_size = os.path.getsize(ev)
+        assert_ge(new_size, off_before + 1, "new file must be longer than the old offset")
+
+        wait_until(lambda: counters_of(state).get("events_processed") >= 5, 20,
+                   what="new file consumed from its first record")
+        c = counters_of(state)
+        assert_eq(c.get("events_processed"), 5, "2 old + 3 new, nothing skipped")
+        st = status_of(state)
+        assert_eq(st.get("offset"), new_size, "reached the end of the new file")
+        assert_eq(st.get("prefix_hash"), "%016x" % prefix_hash_of(ev, new_size),
+                  "status prefix hash matches the new file")
+        assert_eq(st.get("prefix_hash_valid"), 1, "prefix hash flagged valid")
+        per_run = c.get("events_processed") - 2
+    finally:
+        stop_bg(proc)
+    with open(path_of("i18/worker.log"), "rb") as f:
+        log = f.read().decode("utf-8", "replace")
+    assert_in("t5b-4242-r200-g1", log, "log shows the first record of the new file was read")
+    return "offset %d -> new file %d B, %d records read from record 1" % (
+        off_before, new_size, per_run)
+
+
+@case
+def i19_absent_then_recreated_longer(exe):
+    """先观察到文件不存在，再创建更长的新文件：必须从第一条重读"""
+    work = path_of("i19/work")
+    state = path_of("i19/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    ev = path_of("i19/work/events.jsonl")
+    write_events("i19/work/events.jsonl",
+                 [rec(1, 4242, "t5b-4242-a100-g1", "first-life")])
+
+    proc = start_bg(exe, work, state, ["--idle-exit-ms", "12000"], "i19/worker.log")
+    try:
+        wait_until(lambda: counters_of(state).get("events_processed") == 1, 15,
+                   what="first life consumed")
+        off_before = durable_offset(state)
+
+        os.remove(ev)
+        wait_until(lambda: status_of(state).get("file_size") == -1, 10,
+                   what="absent observed")
+        time.sleep(0.4)                    # 明确处于"文件不存在"状态
+        write_events("i19/work/events.jsonl",
+                     [rec(i + 1, 4242, "t5b-4242-a2%02d-g1" % i,
+                          "second-life-record-number-%d" % i) for i in range(3)])
+        new_size = os.path.getsize(ev)
+        assert_ge(new_size, off_before + 1, "recreated file is longer")
+
+        wait_until(lambda: counters_of(state).get("events_processed") >= 4, 20,
+                   what="second life consumed")
+        assert_eq(counters_of(state).get("events_processed"), 4, "1 + 3 processed")
+        assert_eq(status_of(state).get("offset"), new_size, "end of new file")
+        return "absent window seen; recreated file consumed from record 1"
+    finally:
+        stop_bg(proc)
+
+
+@case
+def i20_restart_detects_recreate(exe):
+    """Worker 停止期间删除并重建更长文件：重启后必须靠前缀指纹识别并从 0 重扫"""
+    work = path_of("i20/work")
+    state = path_of("i20/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    ev = path_of("i20/work/events.jsonl")
+    write_events("i20/work/events.jsonl",
+                 [rec(i + 1, 4242, "t5b-4242-s1%02d-g1" % i, "old-%d" % i) for i in range(2)])
+
+    rc, _, _ = run_once(exe, work, state, ["--idle-exit-ms", "300"])
+    assert_eq(rc, 0, "first run exit code")
+    st = state_of(state)
+    assert_eq(st.get("version"), 2, "state upgraded to v2")
+    assert_eq(len(st.get("prefix_hash", "")), 16, "prefix hash stored as 16 hex chars")
+    off_before = st.get("offset")
+    assert_ge(off_before, 1, "offset durable")
+
+    # worker 不在时换文件：更长、前缀不同
+    os.remove(ev)
+    write_events("i20/work/events.jsonl",
+                 [rec(i + 1, 4242, "t5b-4242-s2%02d-g1" % i,
+                      "replacement-record-with-longer-text-%d" % i) for i in range(4)])
+    new_size = os.path.getsize(ev)
+    assert_ge(new_size, off_before + 1, "replacement is longer than the saved offset")
+
+    rc, out, _ = run_once(exe, work, state, ["--idle-exit-ms", "400"])
+    assert_eq(rc, 0, "second run exit code")
+    assert_in("content identity changed", out, "restart logged the identity change")
+    c = counters_of(state)
+    assert_eq(c.get("events_processed"), 4, "all 4 records of the new file processed")
+    assert_ge(c.get("identity_resets", 0), 1, "identity_resets counted")
+    assert_eq(state_of(state).get("offset"), new_size, "end of new file")
+    return "saved offset %d ignored, new file %d B consumed from 0" % (off_before, new_size)
+
+
+@case
+def i21_identical_prefix_keeps_offset(exe):
+    """新文件截至旧 offset 的前缀完全相同 → 继续读是安全的，不得误判为换文件"""
+    work = path_of("i21/work")
+    state = path_of("i21/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    ev = path_of("i21/work/events.jsonl")
+    head = [rec(i + 1, 4242, "t5b-4242-t1%02d-g1" % i, "head-%d" % i) for i in range(3)]
+    write_events("i21/work/events.jsonl", head)
+
+    rc, _, _ = run_once(exe, work, state, ["--idle-exit-ms", "300"])
+    assert_eq(rc, 0, "first run exit code")
+    off_before = state_of(state).get("offset")
+    assert_eq(off_before, os.path.getsize(ev), "consumed the whole head")
+
+    # 停止期间"重建"文件，但前 off 字节完全相同，只是在后面追加
+    with open(ev, "rb") as f:
+        same_prefix = f.read()
+    os.remove(ev)
+    with open(ev, "wb") as f:
+        f.write(same_prefix)
+    append_events("i21/work/events.jsonl",
+                  [rec(i + 4, 4242, "t5b-4242-t2%02d-g1" % i, "tail-%d" % i) for i in range(2)])
+    new_size = os.path.getsize(ev)
+
+    rc, out, _ = run_once(exe, work, state, ["--idle-exit-ms", "400"])
+    assert_eq(rc, 0, "second run exit code")
+    c = counters_of(state)
+    assert_eq(c.get("identity_resets"), 0, "identical prefix must NOT reset the offset")
+    assert_eq(c.get("events_processed"), 2, "only the two appended records processed")
+    assert_eq(c.get("duplicates"), 0, "no duplicate work")
+    assert_eq(state_of(state).get("offset"), new_size, "end of file")
+    return "prefix identical up to %d, appended 2 records processed, 0 resets" % off_before
+
+
+@case
+def i22_legacy_state_migration(exe):
+    """旧 version=1 状态（无指纹）：安全迁移，从 0 重扫并保留 recent_ids"""
+    work = path_of("i22/work")
+    state = path_of("i22/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    ev = path_of("i22/work/events.jsonl")
+    lines = [rec(i + 1, 4242, "t5b-4242-v1%02d-g1" % i, "legacy-%d" % i) for i in range(3)]
+    write_events("i22/work/events.jsonl", lines)
+
+    # 手写一份 v1 状态：offset 越过第一条，recent_ids 里已有第一条
+    first_len = len(lines[0].encode("utf-8"))
+    legacy = {
+        "version": 1, "dev": 1, "ino": 2, "offset": first_len,
+        "seq_last": 1, "last_event_id": "t5b-4242-v100-g1",
+        "processed_total": 1, "updated_at_ms": 1795164000000,
+        "recent_cap": 128, "recent_n": 1, "recent_ids": "t5b-4242-v100-g1",
+    }
+    with open(os.path.join(state, "consumer_state.json"), "w", encoding="utf-8") as f:
+        json.dump(legacy, f, separators=(",", ":"))
+
+    rc, out, _ = run_once(exe, work, state, ["--idle-exit-ms", "400"])
+    assert_eq(rc, 0, "exit code")
+    assert_in("no prefix fingerprint", out, "legacy state reported, not silently accepted")
+    c = counters_of(state)
+    assert_ge(c.get("legacy_rescans", 0), 1, "legacy_rescans counted")
+    assert_eq(c.get("events_processed"), 2, "records 2 and 3 processed")
+    assert_eq(c.get("duplicates"), 1, "record 1 suppressed by recent_ids (bounded duplicate)")
+    st = state_of(state)
+    assert_eq(st.get("version"), 2, "state rewritten as v2")
+    assert_eq(len(st.get("prefix_hash", "")), 16, "fingerprint now present")
+    assert_eq(st.get("offset"), os.path.getsize(ev), "reached end of file")
+    return "v1 -> v2, rescan from 0, 1 duplicate suppressed, 2 processed"
+
+
+@case
+def i23_prefix_fault_stops(exe):
+    """指纹核对/推进失败：必须停止消费并带退出码 6，不许退化成只比 inode"""
+    results = []
+    for fault, extra in (("read", []), ("fold", ["--idle-exit-ms", "3000"])):
+        work = path_of("i23/%s/work" % fault)
+        state = path_of("i23/%s/state" % fault)
+        os.makedirs(work, exist_ok=True)
+        os.makedirs(state, exist_ok=True)
+        lines = [rec(i + 1, 4242, "t5b-4242-f%02d-g1" % i, "fault-%d" % i) for i in range(3)]
+        write_events("i23/%s/work/events.jsonl" % fault, lines)
+        ev = path_of("i23/%s/work/events.jsonl" % fault)
+
+        if fault == "read":
+            # 先正常跑一轮留下 v2 状态（含指纹），再在核对阶段注入故障
+            rc, _, _ = run_once(exe, work, state, ["--idle-exit-ms", "300"])
+            assert_eq(rc, 0, "warm-up run ok")
+            off_before = durable_offset(state)
+            ev_size = os.path.getsize(ev)
+            rc, out, _ = run_once(exe, work, state, ["--idle-exit-ms", "500"],
+                                  env={"T6B_FAULT_PREFIX": "read"})
+            assert_eq(rc, 6, "read fault: exit code must be 6 (identity failed)")
+            assert_in("cannot be verified", out, "read fault logged")
+            st = status_of(state)
+            assert_eq(st.get("state"), "error", "read fault: state error")
+            assert_eq(durable_offset(state), off_before, "read fault: offset untouched")
+            assert_eq(off_before, ev_size, "read fault: had consumed everything before")
+            results.append("read: rc=6, offset kept at %d" % off_before)
+        else:
+            rc, out, _ = run_once(exe, work, state, extra,
+                                  env={"T6B_FAULT_PREFIX": "fold"})
+            assert_eq(rc, 6, "fold fault: exit code must be 6 (identity failed)")
+            assert_in("prefix hash update failed", out, "fold fault logged")
+            c = counters_of(state)
+            assert_eq(c.get("events_processed"), 0, "fold fault: event not committed")
+            assert_eq(durable_offset(state), 0, "fold fault: offset not advanced")
+            assert_ge(c.get("io_errors", 0), 1, "fold fault: io_errors counted")
+            results.append("fold: rc=6, offset stayed 0")
+    return "; ".join(results)
+
+
+@case
+def i24_append_does_not_reset(exe):
+    """正常追加写入：指纹延续，绝不能把每次追加误判成文件替换"""
+    work = path_of("i24/work")
+    state = path_of("i24/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    write_events("i24/work/events.jsonl",
+                 [rec(i + 1, 4242, "t5b-4242-ap%02d-g1" % i, "append-%d" % i) for i in range(2)])
+    ev = path_of("i24/work/events.jsonl")
+
+    proc = start_bg(exe, work, state, ["--idle-exit-ms", "12000"], "i24/worker.log")
+    try:
+        wait_until(lambda: counters_of(state).get("events_processed") == 2, 15,
+                   what="initial records")
+        for k in range(4):
+            append_events("i24/work/events.jsonl",
+                          [rec(3 + k, 4242, "t5b-4242-ap%02d-g1" % (2 + k), "more-%d" % k)])
+            want = 3 + k
+            wait_until(lambda: counters_of(state).get("events_processed") == want, 10,
+                       what="append %d consumed" % (k + 1))
+            assert_eq(status_of(state).get("offset"), os.path.getsize(ev),
+                      "offset follows the file after append %d" % (k + 1))
+        c = counters_of(state)
+        assert_eq(c.get("identity_resets"), 0, "append must never cause a reset")
+        assert_eq(c.get("replacements"), 0, "append must never look like a replacement")
+        assert_eq(c.get("truncations"), 0, "append must never look like a truncation")
+        assert_eq(c.get("events_processed"), 6, "2 + 4 processed exactly once")
+        st = status_of(state)
+        assert_eq(st.get("prefix_hash"), "%016x" % prefix_hash_of(ev, os.path.getsize(ev)),
+                  "incremental prefix hash equals a fresh full computation")
+        return "4 appends, 0 resets/replacements/truncations, prefix hash matches"
+    finally:
+        stop_bg(proc)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--exe", default=DEFAULT_EXE)

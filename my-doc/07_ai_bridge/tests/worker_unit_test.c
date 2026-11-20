@@ -108,6 +108,41 @@ static int mk_rec(char *buf, size_t cap, int seq, long long pid, const char *id,
 
 /* ---------------- U3/U4：解析与校验 ---------------- */
 
+/* 夹具：显式给出 [0,off) 的前缀指纹后初始化读取器（等价于 version=2 状态） */
+static int rd_init_seed(t6b_reader *r, const char *path, long long off,
+                        unsigned long long dev, unsigned long long ino,
+                        unsigned long long hash, int maxrec)
+{
+    char err[192];
+
+    err[0] = '\0';
+    return t6b_reader_init(r, path, off, dev, ino, hash, 1, maxrec, err, sizeof(err));
+}
+
+/* 夹具：按文件当前内容算出 [0,off) 的指纹再初始化（"状态里的指纹就是这份内容"） */
+static int rd_init_hash(t6b_reader *r, const char *path, long long off,
+                        unsigned long long dev, unsigned long long ino, int maxrec)
+{
+    unsigned long long h = WU_HASH64_SEED;
+
+    if (off > 0) {
+        FILE *f = fopen(path, "rb");
+        char buf[4096];
+        long long left = off;
+
+        if (f == NULL) return -1;
+        while (left > 0) {
+            size_t want = (left > (long long)sizeof(buf)) ? sizeof(buf) : (size_t)left;
+            size_t got = fread(buf, 1, want, f);
+            if (got == 0) break;
+            h = wu_hash64_ext(h, buf, got);
+            left -= (long long)got;
+        }
+        fclose(f);
+    }
+    return rd_init_seed(r, path, off, dev, ino, h, maxrec);
+}
+
 static void test_parse_valid(void)
 {
     t6b_event ev;
@@ -462,6 +497,8 @@ static void test_state_roundtrip(void)
     s.offset = 123456;
     s.dev = 2184104807ULL;
     s.ino = 1688849860469133ULL;      /* 故意用 Windows 量级的大文件索引 */
+    s.prefix_hash = 0x0123456789abcdefULL;
+    s.have_prefix_hash = 1;
     s.seq_last = 42;
     s.processed_total = 102;
     s.updated_at_ms = 1795164000000LL;
@@ -483,6 +520,43 @@ static void test_state_roundtrip(void)
     EQ_STR(back.last_event_id, "t5b-29413-1969861-g1");
     EQ_LL(back.recent_n, 5);
     OK(t6b_state_has_recent(&back, "id-4") == 1);
+    T("state/prefix hash roundtrip (v2)");
+    EQ_LL(back.version, 2);
+    EQ_LL(back.have_prefix_hash, 1);
+    EQ_LL(back.prefix_hash, 0x0123456789abcdefULL);
+
+    T("state/save without prefix hash is refused");
+    {
+        t6b_state noh;
+        t6b_state_init(&noh);
+        noh.offset = 10;
+        EQ_LL(t6b_state_save(&noh, path, err, sizeof(err)), -1);
+    }
+
+    T("state/v1 (no prefix_hash) loads but flags itself as unverifiable");
+    {
+        const char *v1 = "{\"version\":1,\"dev\":45846,\"ino\":86131,\"offset\":32894,"
+                         "\"seq_last\":28,\"last_event_id\":\"t5b-29413-1969857-g1\","
+                         "\"processed_total\":102,\"updated_at_ms\":1795164000000,"
+                         "\"recent_cap\":128,\"recent_n\":2,"
+                         "\"recent_ids\":\"t5b-29413-1969853-g1,t5b-29413-1969857-g1\"}";
+        mk_path(path, sizeof(path), "state_v1.json");
+        write_bytes(path, v1, strlen(v1), 0);
+        EQ_LL(t6b_state_load(&back, path, err, sizeof(err)), 0);
+        EQ_LL(back.offset, 32894);
+        EQ_LL(back.have_prefix_hash, 0);              /* 不许假装验证成功 */
+        EQ_LL(back.prefix_hash, 0);
+        EQ_LL(back.recent_n, 2);                      /* recent_ids 保留 */
+        EQ_LL(back.dev, 45846);
+    }
+
+    T("state/v2 without prefix_hash -> -2");
+    {
+        const char *v2 = "{\"version\":2,\"dev\":1,\"ino\":2,\"offset\":5}";
+        mk_path(path, sizeof(path), "state_v2_nohash.json");
+        write_bytes(path, v2, strlen(v2), 0);
+        EQ_LL(t6b_state_load(&back, path, err, sizeof(err)), -2);
+    }
 
     T("state/no temp file left behind");
     {
@@ -534,6 +608,8 @@ static void test_state_broken(void)
     {
         t6b_state zero;
         t6b_state_init(&zero);
+        zero.have_prefix_hash = 1;
+        zero.prefix_hash = WU_HASH64_SEED;
         EQ_LL(t6b_state_save(&zero, path, err, sizeof(err)), -1);
     }
 }
@@ -562,7 +638,7 @@ static void test_reader_basic(void)
         used += (size_t)n;
     }
     write_bytes(path, buf, used, 0);
-    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
 
     for (i = 0; i < 3; i++) {
         int rc = t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err));
@@ -577,11 +653,11 @@ static void test_reader_basic(void)
     T("reader/commit is required before advancing");
     {
         t6b_reader r2;
-        EQ_LL(t6b_reader_init(&r2, path, 0, 0, 0, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+        EQ_LL(t6b_reader_init(&r2, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
         EQ_LL(t6b_reader_next(&r2, &ev, &reason, &field, err, sizeof(err)), 1);
         EQ_LL(r2.off, 0);                       /* 未提交：偏移不动 */
         t6b_reader_free(&r2);
-        EQ_LL(t6b_reader_init(&r2, path, 0, 0, 0, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+        EQ_LL(t6b_reader_init(&r2, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
         EQ_LL(t6b_reader_next(&r2, &ev, &reason, &field, err, sizeof(err)), 1);
         EQ_STR(ev.event_id, "t5b-1-20-g1");     /* 重新读到同一条 */
         t6b_reader_free(&r2);
@@ -605,7 +681,7 @@ static void test_reader_half_line(void)
     remove_file(path);
     n = mk_rec(line, sizeof(line), 1, 1, "e1", "one");
     write_bytes(path, line, (size_t)n, 0);
-    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
     EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
     t6b_reader_commit(&r);
     EQ_LL(r.off, (long long)n);
@@ -652,7 +728,7 @@ static void test_reader_bad_and_oversize(void)
     n = mk_rec(good, sizeof(good), 2, 1, "ok2", "fine");
     write_bytes(path, good, (size_t)n, 1);
 
-    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
     EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
     EQ_STR(ev.event_id, "ok1");
     t6b_reader_commit(&r);
@@ -677,7 +753,7 @@ static void test_reader_bad_and_oversize(void)
     n = mk_rec(good, sizeof(good), 9, 1, "after_big", "fine");
     write_bytes(path, good, (size_t)n, 1);
 
-    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 1024, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, 1024, err, sizeof(err)), 0);
     rc = t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err));
     EQ_LL(rc, -3);
     OK(reason != NULL && strcmp(reason, "record_too_long") == 0);
@@ -695,7 +771,7 @@ static void test_reader_bad_and_oversize(void)
     big = (char *)malloc(T6B_READ_CHUNK + 4096);
     for (i = 0; i < T6B_READ_CHUNK + 4096; i++) big[i] = (i == 0) ? '{' : 'y';
     write_bytes(path, big, T6B_READ_CHUNK + 4096, 0);
-    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 4096, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, 4096, err, sizeof(err)), 0);
     rc = t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err));
     EQ_LL(rc, 0);                    /* 没有换行符：不消费、不误判 */
     write_bytes(path, "\n", 1, 1);
@@ -727,7 +803,7 @@ static void test_reader_truncate(void)
     n = mk_rec(a, sizeof(a), 2, 1, "t2", "bb");
     write_bytes(path, a, (size_t)n, 1);
 
-    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
     EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
     t6b_reader_commit(&r);
     EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
@@ -763,7 +839,7 @@ static void test_reader_replaced(void)
     remove_file(path);
     n = mk_rec(a, sizeof(a), 1, 1, "r1", "one");
     write_bytes(path, a, (size_t)n, 0);
-    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
     EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
     t6b_reader_commit(&r);
 
@@ -796,7 +872,7 @@ static void test_reader_absent(void)
     T("reader/absent file waits then picks up");
     mk_path(path, sizeof(path), "events_absent.jsonl");
     remove_file(path);
-    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
     EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 0);
     EQ_LL(r.last_reason, T6B_OPEN_ABSENT);
     EQ_LL(r.io_errors, 0);
@@ -832,16 +908,18 @@ static void test_reader_resume_offset(void)
     write_bytes(path, a, (size_t)n, 1);
 
     EQ_LL(wu_file_identity(path, &dev, &ino, NULL), 0);
-    EQ_LL(t6b_reader_init(&r, path, cut, dev, ino, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(rd_init_hash(&r, path, cut, dev, ino, T6B_REC_DEFAULT), 0);
     EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
     EQ_STR(ev.event_id, "s2");
     EQ_LL(r.replacements, 0);
     EQ_LL(r.truncations, 0);
+    EQ_LL(r.identity_resets, 0);                 /* 前缀指纹一致：不是换文件 */
     t6b_reader_commit(&r);
     t6b_reader_free(&r);
 
     T("reader/saved offset beyond EOF is treated as truncation");
-    EQ_LL(t6b_reader_init(&r, path, 1LL << 40, dev, ino, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_init(&r, path, 1LL << 40, dev, ino, 0, 1, T6B_REC_DEFAULT,
+                          err, sizeof(err)), 0);
     EQ_LL(r.off, 0);
     EQ_LL(r.truncations, 1);
     t6b_reader_free(&r);
@@ -871,7 +949,7 @@ static void test_reader_half_line_oversize(void)
     big[8500] = '\0';
     write_bytes(path, big, 8500, 0);                 /* 没有换行符 */
 
-    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 8192, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, 8192, err, sizeof(err)), 0);
     off_before = r.off;
     rc = t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err));
     EQ_LL(rc, 0);                                    /* 半行：只等待，不判超长 */
@@ -918,7 +996,7 @@ static void test_reader_recreate_while_absent(void)
     n = mk_rec(a, sizeof(a), 2, 1, "old-2", "second-life-record");
     write_bytes(path, a, (size_t)n, 1);
 
-    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
     EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
     t6b_reader_commit(&r);
     EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
@@ -927,43 +1005,90 @@ static void test_reader_recreate_while_absent(void)
     EQ_LL(wu_file_identity(path, &dev1, &ino1, NULL), 0);
     t6b_reader_free(&r);
 
-    /* 用保存的身份重新构造（模拟 worker 重启后文件不见了） */
-    remove_file(path);
-    EQ_LL(t6b_reader_init(&r, path, wu_file_size(path) > 0 ? wu_file_size(path) : 0,
-                          dev1, ino1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    /* 模拟 worker 停止期间文件被删掉重建（新文件更短）。
+     * 关键：状态里存的是**旧内容**的 [0,off) 指纹，而旧内容已经不在磁盘上了。 */
     {
-        /* 重启时 offset 用刚才的偏移（这里简单取文件末尾前的位置） */
-        long long off = 0;
-        t6b_reader_free(&r);
-        n = mk_rec(a, sizeof(a), 1, 1, "old-1", "first-life-record");
-        off = n;
-        EQ_LL(t6b_reader_init(&r, path, off, dev1, ino1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
-    }
-    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 0);   /* 文件不在：等待 */
-    EQ_LL(r.last_reason, T6B_OPEN_ABSENT);
-    EQ_LL(r.replacements, 0);
+        char oldrec[512];
+        int on = mk_rec(oldrec, sizeof(oldrec), 1, 1, "old-1", "first-life-record");
+        unsigned long long old_hash = wu_hash64(oldrec, (size_t)on);
 
-    /* 新文件（更短）出现。这里要区分两种文件系统行为：
-     *   - Windows（文件索引不复用）/ 大多数桌面文件系统 → 身份不同 → 判"重建"，replacements++
-     *   - Android ext4/f2fs 会立刻复用 inode 号（已实测：同一路径删掉重建，st_dev/st_ino 完全相同）
-     *     → 身份无法区分，只能落到"变小即截断"这条兜底规则，truncations++
-     * 两条路径都必须把偏移归零、把新文件的第一条读出来；这个断言对两种结果都严格。
-     * 【遗留】身份相同且新文件"更长"时无法判断重建 —— 见修复报告 §已知限制。 */
-    n = mk_rec(a, sizeof(a), 1, 1, "new-1", "x");
-    write_bytes(path, a, (size_t)n, 0);
-    EQ_LL(wu_file_identity(path, &dev2, &ino2, NULL), 0);
-    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
-    if (dev2 == dev1 && ino2 == ino1) {
-        EQ_LL(r.replacements, 0);                    /* inode 被复用：身份看不出来 */
-        EQ_LL(r.truncations, 1);                     /* 靠"变小"兜底 */
-    } else {
-        EQ_LL(r.replacements, 1);
-        EQ_LL(r.truncations, 0);
+        remove_file(path);
+        EQ_LL(rd_init_seed(&r, path, (long long)on, dev1, ino1, old_hash,
+                           T6B_REC_DEFAULT), 0);
+        EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 0);  /* 文件不在 */
+        EQ_LL(r.last_reason, T6B_OPEN_ABSENT);
+        EQ_LL(r.replacements, 0);
+
+        /* 新文件（更短）出现：新内容与旧前缀不同 → 必然归零重扫，第一条不能被跳过 */
+        n = mk_rec(a, sizeof(a), 1, 1, "new-1", "x");
+        write_bytes(path, a, (size_t)n, 0);
+        EQ_LL(wu_file_identity(path, &dev2, &ino2, NULL), 0);
+        EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+        EQ_STR(ev.event_id, "new-1");
+        EQ_LL(r.off, 0);                                 /* 还没 commit */
+        if (dev2 == dev1 && ino2 == ino1) {
+            /* inode 被复用：身份看不出来，但"变小"这一条就能兜住 */
+            EQ_LL(r.replacements, 0);
+            EQ_LL(r.truncations, 1);
+        } else {
+            EQ_LL(r.replacements, 1);
+            EQ_LL(r.truncations, 0);
+        }
+        t6b_reader_commit(&r);
+        t6b_reader_free(&r);
     }
-    EQ_STR(ev.event_id, "new-1");                    /* 第一条没被跳过 */
-    EQ_LL(r.off, 0);                                 /* 还没 commit */
-    t6b_reader_commit(&r);
-    t6b_reader_free(&r);
+
+    /* 同长度、替换内容：长度兜不住，只能靠前缀指纹 */
+    {
+        char oldrec[512];
+        char newrec[512];
+        int on = mk_rec(oldrec, sizeof(oldrec), 1, 1, "same-len", "aaaaaaaa");
+        int nn;
+
+        mk_path(path, sizeof(path), "events_samelen.jsonl");
+        remove_file(path);
+        write_bytes(path, oldrec, (size_t)on, 0);
+        EQ_LL(wu_file_identity(path, &dev1, &ino1, NULL), 0);
+        nn = mk_rec(newrec, sizeof(newrec), 1, 1, "same-len", "bbbbbbbb");
+        EQ_LL(nn, on);                                   /* 新旧记录等长 */
+        remove_file(path);
+        write_bytes(path, newrec, (size_t)nn, 0);
+        EQ_LL(wu_file_identity(path, &dev2, &ino2, NULL), 0);
+
+        T("reader/P2-2 same length, different content -> prefix mismatch");
+        EQ_LL(rd_init_seed(&r, path, (long long)on, dev1, ino1,
+                           wu_hash64(oldrec, (size_t)on), T6B_REC_DEFAULT), 0);
+        EQ_LL(r.identity_resets, 1);
+        EQ_LL(r.off, 0);
+        EQ_LL(t6b_reader_pending(&r), 0);
+        EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+        EQ_STR(ev.event_id, "same-len");
+        EQ_LL(ev.text[0], 'b');                          /* 读到的是新内容第一条 */
+        t6b_reader_commit(&r);
+        EQ_LL(r.off, (long long)nn);
+        t6b_reader_free(&r);
+    }
+
+    T("reader/P2-2 identical prefix up to offset keeps offset");
+    mk_path(path, sizeof(path), "events_prefix_same.jsonl");
+    remove_file(path);
+    n = mk_rec(a, sizeof(a), 1, 1, "p1", "same-prefix");
+    write_bytes(path, a, (size_t)n, 0);
+    {   /* 记下第一条的指纹与长度，再追加第二条：前缀到 off 完全一致 */
+        long long off = n;
+        char b2[512];
+        int n2 = mk_rec(b2, sizeof(b2), 2, 1, "p2", "appended-later");
+        write_bytes(path, b2, (size_t)n2, 1);
+        EQ_LL(wu_file_identity(path, &dev2, &ino2, NULL), 0);
+        EQ_LL(rd_init_hash(&r, path, off, dev2, ino2, T6B_REC_DEFAULT), 0);
+        EQ_LL(r.identity_resets, 0);                     /* 内容没变：不许误判成换文件 */
+        EQ_LL(r.off, off);                               /* 偏移原样保留 */
+        EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+        EQ_STR(ev.event_id, "p2");
+        t6b_reader_commit(&r);
+        EQ_LL(r.off, wu_file_size(path));
+        t6b_reader_free(&r);
+    }
 
     T("reader/P2-2 same identity keeps offset");
     mk_path(path, sizeof(path), "events_same.jsonl");
@@ -971,8 +1096,7 @@ static void test_reader_recreate_while_absent(void)
     n = mk_rec(a, sizeof(a), 1, 1, "same-1", "aaa");
     write_bytes(path, a, (size_t)n, 0);
     EQ_LL(wu_file_identity(path, &dev2, &ino2, NULL), 0);
-    EQ_LL(t6b_reader_init(&r, path, (long long)n, dev2, ino2, T6B_REC_DEFAULT,
-                          err, sizeof(err)), 0);
+    EQ_LL(rd_init_hash(&r, path, (long long)n, dev2, ino2, T6B_REC_DEFAULT), 0);
     EQ_LL(r.replacements, 0);
     EQ_LL(r.truncations, 0);
     EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 0);   /* 已在末尾 */
@@ -984,11 +1108,196 @@ static void test_reader_recreate_while_absent(void)
     remove_file(path);
     n = mk_rec(a, sizeof(a), 1, 1, "first-1", "bbb");
     write_bytes(path, a, (size_t)n, 0);
-    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
     EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
     EQ_LL(r.replacements, 0);
     EQ_LL(r.truncations, 0);
     t6b_reader_commit(&r);
+    t6b_reader_free(&r);
+}
+
+/* ---------------- P2-2：前缀指纹（v1 迁移 / 增量推进 / 故障即停） ---------------- */
+
+static void set_fault_prefix(const char *v)
+{
+    static char buf[64];
+
+    snprintf(buf, sizeof(buf), "T6B_FAULT_PREFIX=%s", v);
+    putenv(buf);
+}
+
+static void test_reader_legacy_state(void)
+{
+    t6b_reader r;
+    t6b_event ev;
+    char path[600];
+    char err[192];
+    char buf[1024];
+    const char *reason = NULL;
+    const char *field = NULL;
+    unsigned long long dev = 0, ino = 0;
+    size_t used = 0;
+    int n;
+
+    T("reader/P2-2 v1 state without prefix hash rescans from 0");
+    mk_path(path, sizeof(path), "events_legacy.jsonl");
+    remove_file(path);
+    n = mk_rec(buf, sizeof(buf), 1, 1, "v1-a", "alpha");
+    write_bytes(path, buf, (size_t)n, 0);
+    used = (size_t)n;
+    n = mk_rec(buf + used, sizeof(buf) - used, 2, 1, "v1-b", "beta");
+    write_bytes(path, buf + used, (size_t)n, 1);
+    EQ_LL(wu_file_identity(path, &dev, &ino, NULL), 0);
+    {
+        /* off 越过第一条记录（旧状态里的进度），但状态里没有指纹 */
+        long long off = (long long)used;
+
+        EQ_LL(t6b_reader_init(&r, path, off, dev, ino, 0, 0, T6B_REC_DEFAULT,
+                              err, sizeof(err)), 0);
+        EQ_LL(r.off, 0);
+        EQ_LL(r.legacy_rescans, 1);
+        EQ_LL(r.identity_resets, 0);
+        EQ_LL(r.last_reason, T6B_OPEN_LEGACY_RESCAN);
+        EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+        EQ_STR(ev.event_id, "v1-a");            /* 第一条被重读（有界重复） */
+        t6b_reader_commit(&r);
+        EQ_LL(r.off, off);
+        t6b_reader_free(&r);
+    }
+}
+
+static void test_reader_prefix_incremental(void)
+{
+    t6b_reader r;
+    t6b_event ev;
+    char path[600];
+    char err[192];
+    char rec[512];
+    const char *reason = NULL;
+    const char *field = NULL;
+    long long size;
+    int n;
+    int rc;
+
+    T("reader/prefix hash tracks committed bytes only");
+    mk_path(path, sizeof(path), "events_prefix.jsonl");
+    remove_file(path);
+    n = mk_rec(rec, sizeof(rec), 1, 1, "h1", "one");
+    write_bytes(path, rec, (size_t)n, 0);
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_prefix_hash(&r), WU_HASH64_SEED);
+    EQ_LL(t6b_reader_hash_valid(&r), 1);
+
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+    /* 未提交：指纹不动 */
+    EQ_LL(t6b_reader_prefix_hash(&r), WU_HASH64_SEED);
+    EQ_LL(t6b_reader_commit(&r), 0);
+    EQ_LL(r.off, (long long)n);
+    EQ_LL(t6b_reader_prefix_hash(&r), wu_hash64(rec, (size_t)n));
+
+    T("reader/half line does not move the prefix");
+    {
+        long long off_before = r.off;
+        unsigned long long h_before = t6b_reader_prefix_hash(&r);
+
+        write_bytes(path, "{\"version\":1,", 13, 1);
+        EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 0);
+        EQ_LL(r.off, off_before);
+        EQ_LL(t6b_reader_prefix_hash(&r), h_before);      /* 半行不计入指纹 */
+        remove_file(path);
+        {   /* 复原：重新写回完整的第一条，后面的断言重新建立 */
+            write_bytes(path, rec, (size_t)n, 0);
+        }
+        t6b_reader_free(&r);
+        EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+        EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+        EQ_LL(t6b_reader_commit(&r), 0);
+    }
+
+    T("reader/oversize skip still folds the skipped bytes");
+    {
+        /* >64KB 的行会走 scan_past_long_line，提交时必须回读补齐指纹 */
+        static char big[T6B_READ_CHUNK + 4096];
+        size_t blen = sizeof(big) - 2;
+        size_t before;
+        int nl;
+
+        memset(big, 'x', blen);
+        big[blen] = '\n';
+        big[blen + 1] = '\0';
+        write_bytes(path, big, blen + 1, 1);
+        nl = mk_rec(rec, sizeof(rec), 2, 1, "h2", "after-big");
+        write_bytes(path, rec, (size_t)nl, 1);
+
+        rc = t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err));
+        EQ_LL(rc, -3);
+        EQ_STR(reason, "record_too_long");
+        before = (size_t)r.off;
+        EQ_LL(t6b_reader_commit(&r), 0);                  /* 回读被跳过的字节 */
+        EQ_LL(r.off, (long long)(before + blen + 1));
+        EQ_LL(r.oversize_skips, 1);
+
+        rc = t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err));
+        EQ_LL(rc, 1);
+        EQ_STR(ev.event_id, "h2");                        /* 超长行没有吞掉后面的记录 */
+        EQ_LL(t6b_reader_commit(&r), 0);
+        EQ_LL(t6b_reader_stat(&r, &size), 0);
+        EQ_LL(r.off, size);
+        /* 增量维护的指纹必须等于"整段前缀一次性算"的结果 */
+        {
+            FILE *f = fopen(path, "rb");
+            unsigned long long whole = WU_HASH64_SEED;
+            char chunk[4096];
+            size_t got;
+
+            OK(f != NULL);
+            if (f != NULL) {
+                while ((got = fread(chunk, 1, sizeof(chunk), f)) > 0)
+                    whole = wu_hash64_ext(whole, chunk, got);
+                fclose(f);
+            }
+            EQ_LL(t6b_reader_prefix_hash(&r), whole);
+        }
+        t6b_reader_free(&r);
+    }
+}
+
+static void test_reader_fault_prefix(void)
+{
+    t6b_reader r;
+    t6b_event ev;
+    char path[600];
+    char err[192];
+    char rec[512];
+    const char *reason = NULL;
+    const char *field = NULL;
+    unsigned long long dev = 0, ino = 0;
+    int n;
+
+    T("reader/prefix verify fault -> -2 (must stop consumption)");
+    mk_path(path, sizeof(path), "events_fault.jsonl");
+    remove_file(path);
+    n = mk_rec(rec, sizeof(rec), 1, 1, "f1", "fault");
+    write_bytes(path, rec, (size_t)n, 0);
+    EQ_LL(wu_file_identity(path, &dev, &ino, NULL), 0);
+
+    set_fault_prefix("read");
+    EQ_LL(rd_init_hash(&r, path, (long long)n, dev, ino, T6B_REC_DEFAULT), -2);
+    EQ_LL(r.io_errors, 1);
+    t6b_reader_free(&r);
+    set_fault_prefix("");
+
+    T("reader/prefix fold fault -> commit -1, offset not advanced");
+    EQ_LL(t6b_reader_init(&r, path, 0, 0, 0, 0, 1, T6B_REC_DEFAULT, err, sizeof(err)), 0);
+    EQ_LL(t6b_reader_next(&r, &ev, &reason, &field, err, sizeof(err)), 1);
+    set_fault_prefix("fold");
+    EQ_LL(t6b_reader_commit(&r), -1);
+    EQ_LL(r.off, 0);                                       /* 偏移没有前进 */
+    EQ_LL(t6b_reader_prefix_hash(&r), WU_HASH64_SEED);
+    set_fault_prefix("");
+    EQ_LL(t6b_reader_commit(&r), 0);                        /* 故障消失后可以正常提交 */
+    EQ_LL(r.off, (long long)n);
+    EQ_LL(t6b_reader_prefix_hash(&r), wu_hash64(rec, (size_t)n));
     t6b_reader_free(&r);
 }
 
@@ -1128,6 +1437,9 @@ int main(void)
     test_reader_resume_offset();
     test_reader_half_line_oversize();
     test_reader_recreate_while_absent();
+    test_reader_legacy_state();
+    test_reader_prefix_incremental();
+    test_reader_fault_prefix();
     test_provider_mock();
     test_status_file();
 

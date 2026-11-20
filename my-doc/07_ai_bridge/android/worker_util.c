@@ -507,10 +507,10 @@ void wu_lock_release(wu_lockfile *lk)
     lk->held = 0;
 }
 
-unsigned long long wu_hash64(const void *data, size_t len)
+unsigned long long wu_hash64_ext(unsigned long long seed, const void *data, size_t len)
 {
     const unsigned char *p = (const unsigned char *)data;
-    unsigned long long h = 1469598103934665603ULL;   /* FNV offset basis */
+    unsigned long long h = seed;
     size_t i;
 
     for (i = 0; i < len; i++) {
@@ -518,6 +518,11 @@ unsigned long long wu_hash64(const void *data, size_t len)
         h *= 1099511628211ULL;
     }
     return h;
+}
+
+unsigned long long wu_hash64(const void *data, size_t len)
+{
+    return wu_hash64_ext(WU_HASH64_SEED, data, len);
 }
 
 size_t wu_json_escape(char *dst, size_t cap, const char *src)

@@ -153,6 +153,9 @@ static int state_save(t6b_worker *w, const char *why)
     w->state.offset = w->rd.off;
     w->state.dev = w->rd.saved_dev;
     w->state.ino = w->rd.saved_ino;
+    /* 偏移和它的前缀指纹必须成对落盘：只存 offset 的话，inode 被复用后无法判断这是不是同一个文件 */
+    w->state.prefix_hash = t6b_reader_prefix_hash(&w->rd);
+    w->state.have_prefix_hash = t6b_reader_hash_valid(&w->rd);
     w->state.updated_at_ms = wu_wall_ms();
 
     if (t6b_state_save(&w->state, w->state_path, err, sizeof(err)) == 0) {
@@ -229,11 +232,15 @@ static void publish_status(t6b_worker *w, const char *state)
     w->st.offset = w->rd.off;
     w->st.dev = w->rd.saved_dev;
     w->st.ino = w->rd.saved_ino;
+    w->st.prefix_hash = t6b_reader_prefix_hash(&w->rd);
+    w->st.prefix_hash_valid = t6b_reader_hash_valid(&w->rd);
     w->st.invalid_lines = w->rd.invalid_skips;
     w->st.oversize_lines = w->rd.oversize_skips;
     w->st.io_errors = w->rd.io_errors;
     w->st.truncations = w->rd.truncations;
     w->st.replacements = w->rd.replacements;
+    w->st.identity_resets = w->rd.identity_resets;
+    w->st.legacy_rescans = w->rd.legacy_rescans;
     w->st.mock_calls = w->mock.calls;
     w->st.gaps = w->gaps.gaps;
     w->st.gap_missing_total = w->gaps.missing_total;
@@ -287,9 +294,22 @@ static void gap_report(t6b_worker *w, const t6b_event *ev)
 
 /* ---------------- 事件提交（Provider 成功之后） ---------------- */
 
-/* 返回 0 = 已提交并落盘；-1 = 落盘失败（调用方必须停止消费） */
+/* 返回 0 = 已提交并落盘；
+ *     -1 = 状态落盘失败（调用方必须停止消费，走 state_persist_recover）；
+ *     -2 = 前缀指纹推进失败（读不回被跳过的字节）——致命，调用方必须退出（码 6）。 */
 static int commit_event(t6b_worker *w)
 {
+    /* 先提交偏移与指纹：失败时计数不许前进（否则状态里会出现"处理了但没推进"的假象） */
+    if (t6b_reader_commit(&w->rd) != 0) {
+        w->st.io_errors++;
+        snprintf(w->st.state, sizeof(w->st.state), "error");
+        t6b_status_note_error(&w->st, "prefix hash update failed: %s", w->rd.last_error);
+        always("prefix hash update failed (%s): offset NOT advanced; stopping consumption",
+               w->rd.last_error);
+        return -2;
+    }
+    w->pending_advances++;
+
     w->st.events_processed++;
     w->state.processed_total++;
     w->state.seq_last = w->pend.seq;
@@ -300,9 +320,6 @@ static int commit_event(t6b_worker *w)
     snprintf(w->st.last_event_id, sizeof(w->st.last_event_id), "%s", w->pend.event_id);
     wu_time_str(w->st.last_event_at, sizeof(w->st.last_event_at));
     w->last_activity_ms = wu_now_ms();
-
-    t6b_reader_commit(&w->rd);
-    w->pending_advances++;
 
     if (w->pending_advances >= (w->cfg.state_sync_every > 0 ? w->cfg.state_sync_every : 1)) {
         return state_save(w, "sync");
@@ -318,6 +335,7 @@ static int commit_event(t6b_worker *w)
  *   -1 = 本次失败，稍后重试（偏移不动、recent_ids 不动、成功计数不动）
  *   -2 = 本次失败且已超过重试上限 -> 进入 error 状态，但仍继续重试，绝不跳过该事件
  *   -3 = Provider 成功但消费进度落盘失败（调用方必须停止消费）
+ *   -4 = Provider 成功但前缀指纹推进失败（致命，调用方必须退出，码 6）
  */
 static int provider_attempt(t6b_worker *w)
 {
@@ -348,7 +366,11 @@ static int provider_attempt(t6b_worker *w)
         }
         w->pend_stuck = 0;
         w->pend_error[0] = '\0';
-        if (commit_event(w) != 0) return -3;
+        {
+            int cr = commit_event(w);
+            if (cr == -2) return -4;      /* 指纹推进失败：致命 */
+            if (cr != 0) return -3;       /* 状态落盘失败 */
+        }
         return 0;
     }
 
@@ -399,6 +421,23 @@ static void schedule_retry(t6b_worker *w, int stuck)
 
 /* ---------------- 主循环 ---------------- */
 
+/* 提交一条"不需要 Provider 的记录"（重复/非法/超长），同时推进前缀指纹。
+ * 0 = 可以继续；-1 = 致命（指纹推进失败），调用方必须带退出码 6 退出。 */
+static int commit_skipped(t6b_worker *w, const char **exit_reason)
+{
+    if (t6b_reader_commit(&w->rd) != 0) {
+        w->st.io_errors++;
+        snprintf(w->st.state, sizeof(w->st.state), "error");
+        t6b_status_note_error(&w->st, "prefix hash update failed: %s", w->rd.last_error);
+        always("prefix hash update failed (%s): offset NOT advanced; stopping consumption",
+               w->rd.last_error);
+        *exit_reason = "identity_hash_failed";
+        return -1;
+    }
+    w->pending_advances++;
+    return 0;
+}
+
 static int worker_loop(t6b_worker *w, const char **exit_reason)
 {
     long long started = wu_now_ms();
@@ -445,6 +484,10 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                 schedule_retry(w, 0);
             } else if (rc == -2) {
                 schedule_retry(w, 1);
+            } else if (rc == -4) {
+                /* 指纹推进失败：偏移没有前进，必须停止消费（不许退化成只比 inode） */
+                *exit_reason = "identity_hash_failed";
+                return 6;
             } else {
                 /* Provider 成功但进度没落盘：不许继续读下一条 */
                 if (state_persist_recover(w) != 0) {
@@ -473,8 +516,7 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                 w->st.duplicates++;
                 logf_(&w->cfg, "duplicate event_id=%s seq=%lu (skipped, counted)",
                       ev.event_id, ev.seq);
-                t6b_reader_commit(&w->rd);
-                w->pending_advances++;
+                if (commit_skipped(w, exit_reason) != 0) return 6;
             } else {
                 w->st.events_accepted++;
                 gap_report(w, &ev);
@@ -494,13 +536,18 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                      reason != NULL ? reason : "invalid", field != NULL ? field : "-");
             always("skip invalid record at offset %lld: %s (field=%s)",
                    w->rd.off, reason != NULL ? reason : "invalid", field != NULL ? field : "-");
-            t6b_reader_commit(&w->rd);
-            w->pending_advances++;
+            if (commit_skipped(w, exit_reason) != 0) return 6;
         } else if (rc == -3) {
             always("skip oversize record at offset %lld (limit=%d bytes)",
                    w->rd.off, w->rd.max_record);
-            t6b_reader_commit(&w->rd);
-            w->pending_advances++;
+            if (commit_skipped(w, exit_reason) != 0) return 6;
+        } else if (rc == -4) {
+            /* 前缀指纹无法核对：不许当作"没变化"继续跑，直接停止 */
+            snprintf(w->st.state, sizeof(w->st.state), "error");
+            t6b_status_note_error(&w->st, "prefix verify failed: %s", err);
+            always("prefix verify failed (%s): stopping consumption", err);
+            *exit_reason = "identity_verify_failed";
+            return 6;
         } else {
             t6b_status_note_error(&w->st, "events read error: %s", err);
             backoff_ms = (backoff_ms == 0) ? 200 : (backoff_ms * 2);
@@ -611,6 +658,34 @@ int t6b_config_check(const t6b_config *c, char *err, size_t errlen)
     return 0;
 }
 
+/* 初始化阶段（状态文件/文件身份/Provider 之前）就失败时，也要留下状态文件，
+ * 否则运维只能看到一个退出码。 */
+static void status_init_failure(t6b_worker *w, const char *reason, const char *detail)
+{
+    char err[192];
+
+    w->st.pid = wu_self_pid();
+    w->st.started_at_ms = wu_wall_ms();
+    w->st.updated_at_ms = w->st.started_at_ms;
+    wu_time_str(w->st.started_at, sizeof(w->st.started_at));
+    wu_time_str(w->st.updated_at, sizeof(w->st.updated_at));
+    snprintf(w->st.state, sizeof(w->st.state), "error");
+    snprintf(w->st.exit_reason, sizeof(w->st.exit_reason), "%s", reason);
+    snprintf(w->st.events_file, sizeof(w->st.events_file), "%s", w->events_path);
+    snprintf(w->st.state_file, sizeof(w->st.state_file), "%s", w->state_path);
+    snprintf(w->st.provider, sizeof(w->st.provider), "mock");
+    /* 报告磁盘上**仍然有效**的进度（不是 0）：身份核对失败时进度没有被改动 */
+    w->st.offset = w->state.offset;
+    w->st.dev = w->state.dev;
+    w->st.ino = w->state.ino;
+    w->st.prefix_hash = w->state.prefix_hash;
+    w->st.prefix_hash_valid = w->state.have_prefix_hash;
+    snprintf(w->st.last_error, sizeof(w->st.last_error), "%s", detail != NULL ? detail : "");
+    err[0] = '\0';
+    if (t6b_status_write(&w->st, w->status_path, err, sizeof(err)) != 0)
+        always("status write failed: %s", err);
+}
+
 int t6b_worker_run(const t6b_config *c, t6b_status *out)
 {
     static t6b_worker w;
@@ -674,13 +749,38 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         always("no consumer state yet (first run); scanning events from offset 0");
     }
 
-    if (t6b_reader_init(&w.rd, w.events_path, w.state.offset, w.state.dev, w.state.ino,
-                        c->max_record_bytes, err, sizeof(err)) != 0) {
-        always("reader init failed: %s", err);
-        lock_release(&w);
-        return 4;
+    /* 旧状态（version 1）没有前缀指纹：明确记录"即将有界重复"，不假装身份已验证 */
+    if (state_rc == 0 && !w.state.have_prefix_hash && w.state.offset > 0) {
+        always("state v1 has no prefix fingerprint (offset=%lld): cannot prove the file is the "
+               "same one; rescanning from offset 0 and relying on recent_ids (%d ids) for "
+               "bounded duplicates", w.state.offset, w.state.recent_n);
     }
-    if (w.rd.truncations > 0 || w.rd.replacements > 0) {
+
+    {
+        int rrc = t6b_reader_init(&w.rd, w.events_path, w.state.offset, w.state.dev,
+                                  w.state.ino, w.state.prefix_hash,
+                                  w.state.have_prefix_hash, c->max_record_bytes,
+                                  err, sizeof(err));
+        if (rrc == -2) {
+            always("reader init failed: prefix fingerprint cannot be verified (%s); "
+                   "refusing to run without file identity", err);
+            status_init_failure(&w, "identity_verify_failed", err);
+            lock_release(&w);
+            return 6;
+        }
+        if (rrc != 0) {
+            always("reader init failed: %s", err);
+            lock_release(&w);
+            return 4;
+        }
+    }
+    if (w.rd.identity_resets > 0) {
+        always("events.jsonl content identity changed (saved offset was %lld, prefix fingerprint "
+               "mismatch): rescanning from offset 0; recent_ids suppress duplicates",
+               w.state.offset);
+    } else if (w.rd.legacy_rescans > 0) {
+        always("legacy state migrated: rescanning from offset 0 with prefix tracking enabled");
+    } else if (w.rd.truncations > 0 || w.rd.replacements > 0) {
         always("events.jsonl changed while worker was down (%s); rescanning from offset 0",
                t6b_open_reason_name(w.rd.last_reason));
     }
@@ -736,6 +836,11 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
            w.st.exit_reason, w.st.events_processed, w.st.duplicates, w.st.invalid_lines,
            w.st.gaps, w.st.seq_resets, w.st.provider_retries, w.rd.off,
            w.st.state_saves, w.st.state_errors);
+    always("file identity: reason=%s offset=%lld prefix_hash=%016llx resets=%llu legacy_rescans=%llu "
+           "replacements=%llu truncations=%llu",
+           t6b_open_reason_name(w.rd.last_reason), w.rd.off,
+           t6b_reader_prefix_hash(&w.rd), w.rd.identity_resets, w.rd.legacy_rescans,
+           w.rd.replacements, w.rd.truncations);
 
     if (w.have_pend)
         always("WARNING: event id=%s was still unprocessed at exit (%d attempts, offset kept at %lld)",
@@ -778,7 +883,8 @@ static void usage(void)
         "  --mock-timeout-from N mock always times out from call N on\n"
         "  --verbose             per-event log lines\n"
         "  --help                this help\n"
-        "\nexit codes: 0 ok, 2 usage, 3 already running, 4 init failed, 5 state persist failed\n",
+        "\nexit codes: 0 ok, 2 usage, 3 already running, 4 init failed, 5 state persist failed,\n"
+        "            6 file identity failed (prefix fingerprint cannot be verified/updated)\n",
         T6B_WORK_DIR_DEFAULT, T6B_STATE_DIR_DEFAULT, T6B_EVENTS_NAME_DEFAULT);
 }
 
@@ -865,6 +971,10 @@ bad:
     if (rc == 5) {
         fprintf(stderr, "state persist failed; progress not durable\n");
         return 5;
+    }
+    if (rc == 6) {
+        fprintf(stderr, "file identity failed; prefix fingerprint cannot be verified or updated\n");
+        return 6;
     }
     return 0;
 }

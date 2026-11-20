@@ -62,11 +62,12 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"started_at\":\"%s\",\"updated_at\":\"%s\","
         "\"started_at_ms\":%lld,\"updated_at_ms\":%lld,"
         "\"events_file\":\"%s\",\"state_file\":\"%s\",\"offset\":%lld,\"file_size\":%lld,"
-        "\"dev\":%llu,\"ino\":%llu,"
+        "\"dev\":%llu,\"ino\":%llu,\"prefix_hash\":\"%016llx\",\"prefix_hash_valid\":%d,"
         "\"provider\":\"%s\",\"mock_calls\":%llu,"
         "\"counters\":{\"lines_read\":%llu,\"events_accepted\":%llu,\"events_processed\":%llu,"
         "\"duplicates\":%llu,\"invalid_lines\":%llu,\"oversize_lines\":%llu,"
         "\"io_errors\":%llu,\"truncations\":%llu,\"replacements\":%llu,"
+        "\"identity_resets\":%llu,\"legacy_rescans\":%llu,"
         "\"gaps\":%llu,\"gap_missing_total\":%llu,\"seq_resets\":%llu,\"seq_unknown_start\":%llu,"
         "\"state_saves\":%llu,\"state_errors\":%llu,"
         "\"provider_ok\":%llu,\"provider_err\":%llu,\"provider_timeout\":%llu,"
@@ -80,11 +81,12 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         st->started_at, st->updated_at,
         st->started_at_ms, st->updated_at_ms,
         esc_events, esc_state, st->offset, st->file_size,
-        st->dev, st->ino,
+        st->dev, st->ino, st->prefix_hash, st->prefix_hash_valid,
         st->provider, st->mock_calls,
         st->lines_read, st->events_accepted, st->events_processed,
         st->duplicates, st->invalid_lines, st->oversize_lines,
         st->io_errors, st->truncations, st->replacements,
+        st->identity_resets, st->legacy_rescans,
         st->gaps, st->gap_missing_total, st->seq_resets, st->seq_unknown_start,
         st->state_saves, st->state_errors,
         st->provider_ok, st->provider_err, st->provider_timeout,

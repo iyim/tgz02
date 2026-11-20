@@ -32,6 +32,9 @@ typedef struct {
     long long          file_size;          /* events.jsonl 当前大小（探测失败为 -1） */
     unsigned long long dev;
     unsigned long long ino;
+    /* 文件内容身份（P2-2）：offset 只和它的前缀指纹一起才有意义 */
+    unsigned long long prefix_hash;        /* [0,offset) 的 FNV-1a 64 */
+    int                prefix_hash_valid;  /* 1 = 指纹可信 */
 
     char               provider[T6B_PROVIDER_NAME_MAX];
     unsigned long long mock_calls;
@@ -46,6 +49,8 @@ typedef struct {
     unsigned long long io_errors;          /* 读文件失败次数 */
     unsigned long long truncations;        /* 检测到文件变短 */
     unsigned long long replacements;       /* 检测到 inode 更换（文件被重建） */
+    unsigned long long identity_resets;    /* 前缀指纹不符 → 偏移归零重扫（内容身份变化） */
+    unsigned long long legacy_rescans;     /* 旧状态无指纹 → 归零重扫（有界重复） */
 
     /* seq 缺口 */
     unsigned long long gaps;

@@ -174,7 +174,7 @@ void t6b_state_init(t6b_state *s)
 {
     if (s == NULL) return;
     memset(s, 0, sizeof(*s));
-    s->version = 1;
+    s->version = 2;
     s->recent_cap = T6B_STATE_RECENT;
 }
 
@@ -222,7 +222,8 @@ int t6b_state_load(t6b_state *s, const char *path, char *err, size_t errlen)
     size_t len = 0;
     long long version = 0, dev = 0, ino = 0, offset = 0, seq_last = 0;
     long long processed = 0, updated = 0;
-    s_want want[9];
+    char hash_hex[32];
+    s_want want[10];
     int i;
     char *piece;
 
@@ -240,6 +241,7 @@ int t6b_state_load(t6b_state *s, const char *path, char *err, size_t errlen)
     }
 
     memset(ids, 0, sizeof(ids));
+    memset(hash_hex, 0, sizeof(hash_hex));
     memset(s->last_event_id, 0, sizeof(s->last_event_id));
 
     memset(want, 0, sizeof(want));
@@ -252,18 +254,37 @@ int t6b_state_load(t6b_state *s, const char *path, char *err, size_t errlen)
     want[6].key = "processed_total"; want[6].num = &processed;
     want[7].key = "updated_at_ms"; want[7].num = &updated;
     want[8].key = "recent_ids";    want[8].dst = ids;  want[8].cap = sizeof(ids);
+    want[9].key = "prefix_hash";   want[9].dst = hash_hex; want[9].cap = sizeof(hash_hex);
 
-    if (s_scan(buf, len, want, 9) != 0) {
+    if (s_scan(buf, len, want, 10) != 0) {
         if (err) snprintf(err, errlen, "state json malformed");
         return -2;
     }
-    if (!want[0].found || version != 1) {
+    if (!want[0].found || (version != 1 && version != 2)) {
         if (err) snprintf(err, errlen, "state version unsupported: %lld", version);
         return -2;
     }
     if (!want[3].found || offset < 0) {
         if (err) snprintf(err, errlen, "state offset missing/invalid");
         return -2;
+    }
+
+    s->version = 2;                        /* 读进来之后就按新格式写回 */
+    s->have_prefix_hash = 0;
+    s->prefix_hash = 0;
+    if (version >= 2) {
+        char *endp = NULL;
+        if (!want[9].found || hash_hex[0] == '\0') {
+            /* version=2 却没有指纹：文件被改过/写坏了，不能当成"已验证" */
+            if (err) snprintf(err, errlen, "state v2 without prefix_hash");
+            return -2;
+        }
+        s->prefix_hash = (unsigned long long)strtoull(hash_hex, &endp, 16);
+        if (endp == NULL || *endp != '\0' || endp == hash_hex) {
+            if (err) snprintf(err, errlen, "state prefix_hash malformed");
+            return -2;
+        }
+        s->have_prefix_hash = 1;
     }
 
     s->dev = (unsigned long long)(dev < 0 ? 0 : dev);
@@ -346,13 +367,19 @@ int t6b_state_save(const t6b_state *s, const char *path, char *err, size_t errle
     int i;
 
     if (s == NULL || path == NULL) return -1;
+    if (!s->have_prefix_hash) {
+        /* 没有指纹的 offset 是不可信进度：宁可报错让调用方停止消费，也不写进状态文件 */
+        if (err) snprintf(err, errlen, "state save refused: no prefix_hash");
+        return -1;
+    }
 
     /* 序列化（手写，字段顺序固定，便于人眼看 diff） */
     {
         int n = snprintf(buf, sizeof(buf),
-                         "{\"version\":1,\"dev\":%llu,\"ino\":%llu,\"offset\":%lld,"
+                         "{\"version\":2,\"dev\":%llu,\"ino\":%llu,\"offset\":%lld,"
+                         "\"prefix_hash\":\"%016llx\","
                          "\"seq_last\":%lu,\"last_event_id\":\"",
-                         s->dev, s->ino, s->offset, s->seq_last);
+                         s->dev, s->ino, s->offset, s->prefix_hash, s->seq_last);
         if (n < 0 || (size_t)n >= sizeof(buf)) return -1;
         used = (size_t)n;
         used += wu_json_escape(buf + used, sizeof(buf) - used, s->last_event_id);

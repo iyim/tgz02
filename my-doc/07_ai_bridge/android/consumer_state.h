@@ -24,10 +24,14 @@
 #define T6B_STATE_RECENT  128
 
 typedef struct {
-    int                version;                              /* 固定 1 */
+    int                version;                              /* 2（1 为旧格式，只读兼容） */
     unsigned long long dev;                                  /* events.jsonl 所在设备 */
     unsigned long long ino;                                  /* events.jsonl inode */
     long long          offset;                               /* 下一条待读记录起点 */
+    /* events.jsonl 的 [0, offset) 前缀指纹（FNV-1a 64）。
+     * version=2 起才有：磁盘上的 inode 号可能被复用，偏移必须和内容指纹配对才可信。 */
+    unsigned long long prefix_hash;
+    int                have_prefix_hash;                      /* 0 = 旧状态没有指纹，必须回退重扫 */
     unsigned long      seq_last;                             /* 最近处理事件的 seq（诊断） */
     char               last_event_id[T6B_ID_MAX + 1];         /* 最近处理事件的 event_id */
     unsigned long long processed_total;                       /* 累计处理（不含重复/非法） */
@@ -45,6 +49,10 @@ void t6b_state_init(t6b_state *s);
  *   1 = 文件不存在（首次运行）
  *  -1 = I/O 错误
  *  -2 = 内容损坏/版本不符（调用方应把文件留档后从 0 开始）
+ *
+ * 版本兼容：磁盘上 version=1（没有 prefix_hash）时仍能读入，但 have_prefix_hash=0，
+ * 调用方必须据此把 offset 归零重扫，**不许把"没有指纹"当成"身份验证通过"**。
+ * version=2 缺少 prefix_hash 字段按损坏处理（-2），因为那说明文件被手工改过。
  */
 int t6b_state_load(t6b_state *s, const char *path, char *err, size_t errlen);
 

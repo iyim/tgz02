@@ -5,19 +5,19 @@
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c
 (no compiler output: 0 warning, 0 error)
 # exit: 0
-# artifact: ai_worker  102204 B  sha256=1c75f4d7314d422fe6ac79abc689bfb0e7f0a80df7b08effefc28623f41b97de
+# artifact: ai_worker  106796 B  sha256=32c98df0281658a25dcf88d5c7e10be2b15ed15570442f08b946887afc14648a
 #     Type:                              DYN (Shared object file)
 #     Machine:                           ARM
-#     Entry point address:               0xff0
+#     Entry point address:               0x1030
 #   NEEDED  0x00000001 (NEEDED)                     Shared library: [libc.so]
 
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\worker_unit_test D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\worker_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c
 (no compiler output: 0 warning, 0 error)
 # exit: 0
-# artifact: worker_unit_test  138504 B  sha256=0d4f8f0954f0c70b6e8a2777646a6a18e96c778db89558c136233741d97ba00d
+# artifact: worker_unit_test  162868 B  sha256=f0d3a2f49f95fa36adea4c10e05edc80bc61d83251e2c6123c97806b3c30cbb6
 #     Type:                              DYN (Shared object file)
 #     Machine:                           ARM
-#     Entry point address:               0x1190
+#     Entry point address:               0x1230
 #   NEEDED  0x00000001 (NEEDED)                     Shared library: [libc.so]
 
 # result: OK (0 warning, 0 error, both binaries built)

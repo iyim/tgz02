@@ -85,6 +85,8 @@ typedef enum {
     T6B_OPEN_ABSENT,
     T6B_OPEN_TRUNCATED,
     T6B_OPEN_REPLACED,
+    T6B_OPEN_HASH_MISMATCH,   /* 前缀指纹不符：内容身份变了（inode 可能被复用） */
+    T6B_OPEN_LEGACY_RESCAN,   /* 旧状态没有指纹：安全回退为从 0 重扫 */
     T6B_OPEN_IO_ERROR
 } t6b_open_reason;
 
@@ -102,6 +104,11 @@ typedef struct {
     long long     off;             /* 已提交偏移：下一条待读记录的起点 */
     long long     pending;         /* 本次拿到记录之后应提交到的偏移 */
     long long     max_record;
+    /* 前缀指纹：FNV-1a 64，覆盖 events.jsonl 的 [0, off) 全部已提交字节。
+     * 每提交一条记录增量推进（不重扫文件）；启动/换文件时重算 [0, off) 核对。
+     * 有了它，(dev,ino) 只是快速路径，不再单独作为文件身份依据。 */
+    unsigned long long prefix_hash;
+    int           hash_valid;          /* 1 = prefix_hash 覆盖 [0,off) 且与磁盘核对过 */
     /* 固定大小的读缓存（一次分配，不随文件增长） */
     char         *buf;
     size_t        buf_cap;
@@ -114,17 +121,34 @@ typedef struct {
     unsigned long long oversize_skips;
     unsigned long long invalid_skips;
     unsigned long long io_errors;
+    unsigned long long identity_resets;  /* 前缀指纹不符 → 偏移归零重扫（内容身份变了） */
+    unsigned long long legacy_rescans;   /* 状态里没有指纹（version 1）→ 归零重扫（有界重复） */
     t6b_open_reason    last_reason;
     char          last_error[160];
 } t6b_reader;
 
-/* start_off = 上次保存的消费偏移（首次运行为 0）。
+/*
+ * start_off = 上次保存的消费偏移（首次运行为 0）。
  * start_dev/start_ino = 上次保存的文件身份；0/0 表示没有历史身份（首次运行）。
- *   文件已存在但比 start_off 短        → 按"被截断"处理：偏移归零并计数
- *   文件身份与保存值不同（重建/换人）   → 同样偏移归零并计数
- *   文件一开始不存在、运行中出现       → 出现时与保存身份比较；不同则视为重建（偏移归零） */
+ * start_hash/start_hash_valid = 上次保存的 [0,start_off) 前缀指纹；valid=0 表示旧状态没有指纹。
+ *
+ * 返回值：
+ *    0 = 成功
+ *   -1 = 参数/内存/路径错误
+ *   -2 = 前缀指纹**无法核对**（打开/读取 [0,start_off) 失败）——调用方必须停止消费，
+ *        不许退化成"只比 inode 就继续跑"（T5-06B P2-2）。
+ *
+ * 处理顺序（每一步都只影响偏移/指纹，不改事件内容）：
+ *   1) start_off > 0 但 start_hash_valid = 0（旧 version=1 状态）→ 不敢假装验证成功，偏移归零
+ *   2) 文件存在且比 start_off 短                                          → 截断：偏移归零
+ *   3) 文件存在且 start_off > 0                                          → 重算 [0,start_off) 比对：
+ *        一致   → 偏移保留（哪怕 inode 变了：截至旧偏移的内容完全相同，继续读在语义上安全）
+ *        不一致 → 判定内容身份变化：偏移归零、缓存清空、更新身份、从第一条重读（靠 recent_ids 去重）
+ *   4) 文件一开始不存在、运行中出现                                      → 出现时同样执行 3)
+ */
 int  t6b_reader_init(t6b_reader *r, const char *path, long long start_off,
                      unsigned long long start_dev, unsigned long long start_ino,
+                     unsigned long long start_hash, int start_hash_valid,
                      int max_record, char *err, size_t errlen);
 void t6b_reader_free(t6b_reader *r);
 
@@ -135,13 +159,25 @@ void t6b_reader_free(t6b_reader *r);
  *  -1  = I/O 错误（r->io_errors++，错误信息在 err），稍后重试
  *  -2  = 跳过一条非法记录（r->invalid_skips++；*reason 与 *field 指出原因）
  *  -3  = 跳过一条超长记录（r->oversize_skips++）
+ *  -4  = 前缀指纹核对失败（无法读取 [0,off)）——**致命**，调用方必须停止消费
  * 调用方拿到 -2/-3 后同样要 commit，否则会反复读同一条坏行。
  */
 int  t6b_reader_next(t6b_reader *r, t6b_event *ev, const char **reason,
                      const char **field, char *err, size_t errlen);
 
-/* 把 pending 变成 off（只有"已处理完"才允许调用） */
-void t6b_reader_commit(t6b_reader *r);
+/*
+ * 把 pending 变成 off（只有"已处理完"才允许调用），同时把 [off,pending) 的字节
+ * 增量并入前缀指纹。
+ *   0  = 成功
+ *  -1  = 指纹推进失败（需要回读被跳过的超长行但读失败）——**致命**，调用方必须停止消费
+ */
+int  t6b_reader_commit(t6b_reader *r);
+
+/* 当前 [0,off) 的前缀指纹（供状态落盘） */
+unsigned long long t6b_reader_prefix_hash(const t6b_reader *r);
+
+/* 指纹是否可信（0 = 还没有可用的指纹；正常情况下恒为 1） */
+int  t6b_reader_hash_valid(const t6b_reader *r);
 
 /* pending == off 时表示没有待提交记录 */
 long long t6b_reader_pending(const t6b_reader *r);

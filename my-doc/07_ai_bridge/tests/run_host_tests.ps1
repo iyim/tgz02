@@ -89,6 +89,11 @@ $rcSub += Run-Subset "i11" "host_provider_retry.log"
 $rcSub += Run-Subset "i15" "host_reader_half_oversize.log"
 $rcSub += Run-Subset "i16" "host_file_recreate.log"
 $rcSub += Run-Subset "i17" "host_state_fault.log"
+$rcSub += Run-Subset "i18" "host_recreate_longer.log"
+$rcSub += Run-Subset "i21" "host_prefix_same.log"
+$rcSub += Run-Subset "i22" "host_legacy_state.log"
+$rcSub += Run-Subset "i23" "host_prefix_fault.log"
+$rcSub += Run-Subset "i24" "host_append_no_reset.log"
 
 Push-Location $Here
 $lockOut = & py -3 (Join-Path $Here "worker_lock_stress_test.py") --rounds 100 --procs 20 `

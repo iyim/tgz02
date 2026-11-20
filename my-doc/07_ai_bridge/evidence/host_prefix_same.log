@@ -1,0 +1,9 @@
+=== T5-06B integration subset (host, Mock provider only) ===
+exe    : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
+run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_203722
+filter : i21
+
+PASS i21_identical_prefix_keeps_offset   0.83s  prefix identical up to 744, appended 2 records processed, 0 resets
+
+cases: 1, failed: 0
+RESULT: PASS

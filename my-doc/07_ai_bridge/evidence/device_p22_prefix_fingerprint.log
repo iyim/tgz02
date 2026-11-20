@@ -1,0 +1,194 @@
+﻿
+################ T5-06B P2-2 prefix fingerprint -- device checks ################
+host time : 2026-11-20 20:36:03
+
+===== 0. push ARM32 binary + fresh work/state dirs :: 2026-11-20 20:36:03 =====
+real bridge events.jsonl (must stay untouched): 072ea60602d88d72192cb44ebe4e0dc9f8730c69a0d3474edb0b71eb4b4480ea  /data/local/tmp/t5_bridge/work/events.jsonl
+> adb shell rm -rf /data/local/tmp/t506c; mkdir -p /data/local/tmp/t506c/bin /data/local/tmp/t506c/work /data/local/tmp/t506c/state /data/local/tmp/t506c/scripts
+  D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker: 1 file pushed, 0 skipped. 191.9 MB/s (106796 bytes in 0.001s)
+  D:\tgz02\OS\_analysis\t506b\p22_c.sh: 1 file pushed, 0 skipped. 10.6 MB/s (4026 bytes in 0.000s)
+  D:\tgz02\OS\_analysis\t506b\p22_h.sh: 1 file pushed, 0 skipped. 6.8 MB/s (2973 bytes in 0.000s)
+> adb shell chmod 755 /data/local/tmp/t506c/bin/ai_worker /data/local/tmp/t506c/scripts/*.sh; ls -l /data/local/tmp/t506c/scripts; sha256sum /data/local/tmp/t506c/bin/ai_worker
+  total 8
+  -rwxr-xr-x 1 shell shell 4026 2026-11-20 20:30 p22_c.sh
+  -rwxr-xr-x 1 shell shell 2973 2026-11-20 20:30 p22_h.sh
+  32c98df0281658a25dcf88d5c7e10be2b15ed15570442f08b946887afc14648a  /data/local/tmp/t506c/bin/ai_worker
+
+===== A. inode reuse proof (delete + immediately create a LONGER file at the same path) :: 2026-11-20 20:36:05 =====
+original: 45846:86205 547
+> adb shell /data/local/tmp/t506c/bin/ai_worker --work-dir /data/local/tmp/t506c/work --state-dir /data/local/tmp/t506c/state --max-events 2 --max-runtime-ms 15000 --status-every-ms 200 --verbose; echo rc=$?
+  [aiw] 2026-11-20T20:36:05 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T20:36:05 start pid=4985 events=/data/local/tmp/t506c/work/events.jsonl state=/data/local/tmp/t506c/state/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T20:36:05 event id=p22-a1 seq=1 pid=29413 text_bytes=9 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:05 state saved (sync) offset=272 processed=1
+  [aiw] 2026-11-20T20:36:05 event id=p22-a2 seq=2 pid=29413 text_bytes=10 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:05 state saved (sync) offset=547 processed=2
+  [aiw] 2026-11-20T20:36:05 state saved (exit) offset=547 processed=2
+  [aiw] 2026-11-20T20:36:05 exit reason=max_events processed=2 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=547 state_saves=3 state_errors=0
+  [aiw] 2026-11-20T20:36:05 file identity: reason=first_open offset=547 prefix_hash=09fdf1c4a1ad776f resets=0 legacy_rescans=0 replacements=0 truncations=0
+  rc=0
+status: {"version":1,"state":"stopped","pid":4985,"started_at":"2026-11-20T20:36:05","updated_at":"2026-11-20T20:36:05","started_at_ms":1795178165468,"updated_at_ms":1795178165502,"events_file":"/data/local/tmp/t506c/work/events.jsonl","state_file":"/data/local/tmp/t506c/state/consumer_state.json","offset":547,"file_size":547,"dev":45846,"ino":86205,"prefix_hash":"09fdf1c4a1ad776f","prefix_hash_valid":1,"provider":"mock","mock_calls":2,"counters":{"lines_read":2,"events_accepted":2,"events_processed":2,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":3,"state_errors":0,"provider_ok":2,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":2,"last_event_id":"p22-a2","last_event_at":"2026-11-20T20:36:05","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"","exit_reason":"max_events"}
+> adb shell rm -f /data/local/tmp/t506c/work/events.jsonl
+recreated: 45846:86205 847
+FINDING: dev:ino reused (45846:86205) -> (dev,ino) alone cannot detect this; prefix fingerprint is required
+
+===== B. worker stopped during the swap: restart must detect the prefix change and read record 1 :: 2026-11-20 20:36:06 =====
+> adb shell /data/local/tmp/t506c/bin/ai_worker --work-dir /data/local/tmp/t506c/work --state-dir /data/local/tmp/t506c/state --max-events 3 --max-runtime-ms 15000 --status-every-ms 200 --verbose; echo rc=$?
+  [aiw] 2026-11-20T20:36:06 lock acquired; previous owner pid=4985 no longer holding it
+  [aiw] 2026-11-20T20:36:06 events.jsonl content identity changed (saved offset was 547, prefix fingerprint mismatch): rescanning from offset 0; recent_ids suppress duplicates
+  [aiw] 2026-11-20T20:36:06 start pid=4997 events=/data/local/tmp/t506c/work/events.jsonl state=/data/local/tmp/t506c/state/consumer_state.json provider=mock offset=547 (mock only, no network)
+  [aiw] 2026-11-20T20:36:06 event id=p22-b1 seq=1 pid=29413 text_bytes=35 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:06 state saved (sync) offset=300 processed=3
+  [aiw] 2026-11-20T20:36:06 event id=p22-b2 seq=2 pid=29413 text_bytes=10 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:06 state saved (sync) offset=575 processed=4
+  [aiw] 2026-11-20T20:36:06 event id=p22-b3 seq=3 pid=29413 text_bytes=9 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:06 state saved (sync) offset=847 processed=5
+  [aiw] 2026-11-20T20:36:06 state saved (exit) offset=847 processed=5
+  [aiw] 2026-11-20T20:36:06 exit reason=max_events processed=3 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=847 state_saves=4 state_errors=0
+  [aiw] 2026-11-20T20:36:06 file identity: reason=prefix_mismatch offset=847 prefix_hash=508903a3fe87df31 resets=1 legacy_rescans=0 replacements=0 truncations=0
+  rc=0
+status: {"version":1,"state":"stopped","pid":4997,"started_at":"2026-11-20T20:36:06","updated_at":"2026-11-20T20:36:06","started_at_ms":1795178166421,"updated_at_ms":1795178166460,"events_file":"/data/local/tmp/t506c/work/events.jsonl","state_file":"/data/local/tmp/t506c/state/consumer_state.json","offset":847,"file_size":847,"dev":45846,"ino":86205,"prefix_hash":"508903a3fe87df31","prefix_hash_valid":1,"provider":"mock","mock_calls":3,"counters":{"lines_read":3,"events_accepted":3,"events_processed":3,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":1,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":4,"state_errors":0,"provider_ok":3,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":3,"last_event_id":"p22-b3","last_event_at":"2026-11-20T20:36:06","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"","exit_reason":"max_events"}
+restart: processed=3 identity_resets=1 offset=847
+ASSERT OK: restart detected the prefix mismatch and read p22-b1 (no record skipped)
+
+===== C. worker running: delete (observe absent) then create a longer file -> read record 1 :: 2026-11-20 20:36:06 =====
+> adb shell sh /data/local/tmp/t506c/scripts/p22_c.sh 2>&1
+  base file: 552 B  45846:86212
+  worker pid=5008
+  BASE_OK processed=2
+  base offset=552
+  ABSENT_OK
+  new file size=871 ino=45846:86215 (old offset=552)
+  SWAP_OK processed=5 offset=871
+  --- counters ---
+  "counters":{"lines_read":5,"events_accepted":5,"events_processed":5,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":1,"identity_resets":1,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":1,"seq_unknown_start":0,"state_saves":5,"state_errors":0,"provider_ok":5,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0}
+  --- did the new first record get read? ---
+  FIRST_RECORD_OK
+  --- verdict ---
+  replacements=1 invalid=0
+  REPLACED_OK
+  --- worker log tail ---
+  [aiw] 2026-11-20T20:36:09 state saved (sync) offset=306 processed=3
+  [aiw] 2026-11-20T20:36:09 event id=p22-d2 seq=2 pid=29413 text_bytes=18 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:09 state saved (sync) offset=589 processed=4
+  [aiw] 2026-11-20T20:36:09 event id=p22-d3 seq=3 pid=29413 text_bytes=17 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:09 state saved (sync) offset=871 processed=5
+  [aiw] 2026-11-20T20:36:11 state saved (exit) offset=871 processed=5
+  [aiw] 2026-11-20T20:36:11 exit reason=signal processed=5 duplicates=0 invalid=0 gaps=0 resets=1 provider_retries=0 offset=871 state_saves=6 state_errors=0
+  [aiw] 2026-11-20T20:36:11 file identity: reason=prefix_mismatch offset=871 prefix_hash=e0ccaa360682686a resets=1 legacy_rescans=0 replacements=1 truncations=0
+ASSERT OK (C): absent window seen, new longer file read from its first record, 0 invalid
+
+===== D. replacement shorter than the old offset :: 2026-11-20 20:36:12 =====
+> adb shell rm -rf /data/local/tmp/t506c/state; mkdir -p /data/local/tmp/t506c/state
+> adb shell /data/local/tmp/t506c/bin/ai_worker --work-dir /data/local/tmp/t506c/work --state-dir /data/local/tmp/t506c/state --max-events 3 --max-runtime-ms 15000 --status-every-ms 200; echo rc=$?
+  [aiw] 2026-11-20T20:36:13 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T20:36:13 start pid=5046 events=/data/local/tmp/t506c/work/events.jsonl state=/data/local/tmp/t506c/state/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T20:36:13 exit reason=max_events processed=3 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=885 state_saves=4 state_errors=0
+  [aiw] 2026-11-20T20:36:13 file identity: reason=first_open offset=885 prefix_hash=b457670a49488ee3 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  rc=0
+> adb shell rm -f /data/local/tmp/t506c/work/events.jsonl
+> adb shell /data/local/tmp/t506c/bin/ai_worker --work-dir /data/local/tmp/t506c/work --state-dir /data/local/tmp/t506c/state --max-events 1 --max-runtime-ms 15000 --status-every-ms 200 --verbose; echo rc=$?
+  [aiw] 2026-11-20T20:36:14 lock acquired; previous owner pid=5046 no longer holding it
+  [aiw] 2026-11-20T20:36:14 events.jsonl changed while worker was down (truncated); rescanning from offset 0
+  [aiw] 2026-11-20T20:36:14 start pid=5057 events=/data/local/tmp/t506c/work/events.jsonl state=/data/local/tmp/t506c/state/consumer_state.json provider=mock offset=885 (mock only, no network)
+  [aiw] 2026-11-20T20:36:14 event id=p22-f1 seq=1 pid=29413 text_bytes=5 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:14 state saved (sync) offset=268 processed=4
+  [aiw] 2026-11-20T20:36:14 state saved (exit) offset=268 processed=4
+  [aiw] 2026-11-20T20:36:14 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=268 state_saves=2 state_errors=0
+  [aiw] 2026-11-20T20:36:14 file identity: reason=truncated offset=268 prefix_hash=5455df871df17102 resets=0 legacy_rescans=0 replacements=0 truncations=1
+  rc=0
+status: {"version":1,"state":"stopped","pid":5057,"started_at":"2026-11-20T20:36:14","updated_at":"2026-11-20T20:36:14","started_at_ms":1795178174034,"updated_at_ms":1795178174056,"events_file":"/data/local/tmp/t506c/work/events.jsonl","state_file":"/data/local/tmp/t506c/state/consumer_state.json","offset":268,"file_size":268,"dev":45846,"ino":86205,"prefix_hash":"5455df871df17102","prefix_hash_valid":1,"provider":"mock","mock_calls":1,"counters":{"lines_read":1,"events_accepted":1,"events_processed":1,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":1,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":2,"state_errors":0,"provider_ok":1,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":1,"last_event_id":"p22-f1","last_event_at":"2026-11-20T20:36:14","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"","exit_reason":"max_events"}
+ASSERT OK: shorter replacement consumed from its first record
+
+===== E. identical prefix up to the saved offset + appended tail -> offset kept, no false reset :: 2026-11-20 20:36:14 =====
+> adb shell rm -rf /data/local/tmp/t506c/state; mkdir -p /data/local/tmp/t506c/state
+> adb shell /data/local/tmp/t506c/bin/ai_worker --work-dir /data/local/tmp/t506c/work --state-dir /data/local/tmp/t506c/state --max-events 2 --max-runtime-ms 15000 --status-every-ms 200; echo rc=$?
+  [aiw] 2026-11-20T20:36:14 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T20:36:14 start pid=5067 events=/data/local/tmp/t506c/work/events.jsonl state=/data/local/tmp/t506c/state/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T20:36:14 exit reason=max_events processed=2 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=542 state_saves=3 state_errors=0
+  [aiw] 2026-11-20T20:36:14 file identity: reason=first_open offset=542 prefix_hash=f3e7cc38a4441e5f resets=0 legacy_rescans=0 replacements=0 truncations=0
+  rc=0
+> adb shell rm -f /data/local/tmp/t506c/work/events.jsonl
+> adb shell /data/local/tmp/t506c/bin/ai_worker --work-dir /data/local/tmp/t506c/work --state-dir /data/local/tmp/t506c/state --max-events 2 --max-runtime-ms 15000 --status-every-ms 200 --verbose; echo rc=$?
+  [aiw] 2026-11-20T20:36:14 lock acquired; previous owner pid=5067 no longer holding it
+  [aiw] 2026-11-20T20:36:14 start pid=5076 events=/data/local/tmp/t506c/work/events.jsonl state=/data/local/tmp/t506c/state/consumer_state.json provider=mock offset=542 (mock only, no network)
+  [aiw] 2026-11-20T20:36:14 new pid segment pid=29413 starts at seq=3 (no baseline, not counted as gap)
+  [aiw] 2026-11-20T20:36:14 event id=p22-g3 seq=3 pid=29413 text_bytes=10 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:14 state saved (sync) offset=817 processed=3
+  [aiw] 2026-11-20T20:36:14 event id=p22-g4 seq=4 pid=29413 text_bytes=9 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:14 state saved (sync) offset=1089 processed=4
+  [aiw] 2026-11-20T20:36:14 state saved (exit) offset=1089 processed=4
+  [aiw] 2026-11-20T20:36:15 exit reason=max_events processed=2 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=1089 state_saves=3 state_errors=0
+  [aiw] 2026-11-20T20:36:15 file identity: reason=first_open offset=1089 prefix_hash=93a21b17e6f50d75 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  rc=0
+status: {"version":1,"state":"stopped","pid":5076,"started_at":"2026-11-20T20:36:14","updated_at":"2026-11-20T20:36:14","started_at_ms":1795178174966,"updated_at_ms":1795178174993,"events_file":"/data/local/tmp/t506c/work/events.jsonl","state_file":"/data/local/tmp/t506c/state/consumer_state.json","offset":1089,"file_size":1089,"dev":45846,"ino":86205,"prefix_hash":"93a21b17e6f50d75","prefix_hash_valid":1,"provider":"mock","mock_calls":2,"counters":{"lines_read":2,"events_accepted":2,"events_processed":2,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":1,"state_saves":3,"state_errors":0,"provider_ok":2,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":4,"last_event_id":"p22-g4","last_event_at":"2026-11-20T20:36:14","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"","exit_reason":"max_events"}
+ASSERT OK: identical prefix kept the offset; only the 2 appended records were processed
+
+===== F. version=1 state (no prefix fingerprint) -> safe migration :: 2026-11-20 20:36:15 =====
+> adb shell rm -rf /data/local/tmp/t506c/state; mkdir -p /data/local/tmp/t506c/state
+> adb shell /data/local/tmp/t506c/bin/ai_worker --work-dir /data/local/tmp/t506c/work --state-dir /data/local/tmp/t506c/state --max-events 2 --max-runtime-ms 15000 --status-every-ms 200 --verbose; echo rc=$?
+  [aiw] 2026-11-20T20:36:15 state v1 has no prefix fingerprint (offset=275): cannot prove the file is the same one; rescanning from offset 0 and relying on recent_ids (1 ids) for bounded duplicates
+  [aiw] 2026-11-20T20:36:15 legacy state migrated: rescanning from offset 0 with prefix tracking enabled
+  [aiw] 2026-11-20T20:36:15 start pid=5090 events=/data/local/tmp/t506c/work/events.jsonl state=/data/local/tmp/t506c/state/consumer_state.json provider=mock offset=275 (mock only, no network)
+  [aiw] 2026-11-20T20:36:15 duplicate event_id=p22-h1 seq=1 (skipped, counted)
+  [aiw] 2026-11-20T20:36:15 state saved (sync) offset=275 processed=1
+  [aiw] 2026-11-20T20:36:15 new pid segment pid=29413 starts at seq=2 (no baseline, not counted as gap)
+  [aiw] 2026-11-20T20:36:15 event id=p22-h2 seq=2 pid=29413 text_bytes=10 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:15 state saved (sync) offset=550 processed=2
+  [aiw] 2026-11-20T20:36:15 event id=p22-h3 seq=3 pid=29413 text_bytes=12 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:15 state saved (sync) offset=827 processed=3
+  [aiw] 2026-11-20T20:36:15 state saved (exit) offset=827 processed=3
+  [aiw] 2026-11-20T20:36:15 exit reason=max_events processed=2 duplicates=1 invalid=0 gaps=0 resets=0 provider_retries=0 offset=827 state_saves=4 state_errors=0
+  [aiw] 2026-11-20T20:36:15 file identity: reason=file_replaced offset=827 prefix_hash=da1a855ebc94bfec resets=0 legacy_rescans=1 replacements=1 truncations=0
+  rc=0
+status: {"version":1,"state":"stopped","pid":5090,"started_at":"2026-11-20T20:36:15","updated_at":"2026-11-20T20:36:15","started_at_ms":1795178175606,"updated_at_ms":1795178175645,"events_file":"/data/local/tmp/t506c/work/events.jsonl","state_file":"/data/local/tmp/t506c/state/consumer_state.json","offset":827,"file_size":827,"dev":45846,"ino":86205,"prefix_hash":"da1a855ebc94bfec","prefix_hash_valid":1,"provider":"mock","mock_calls":2,"counters":{"lines_read":3,"events_accepted":2,"events_processed":2,"duplicates":1,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":1,"identity_resets":0,"legacy_rescans":1,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":1,"state_saves":4,"state_errors":0,"provider_ok":2,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":3,"last_event_id":"p22-h3","last_event_at":"2026-11-20T20:36:15","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"","exit_reason":"max_events"}
+state: {"version":2,"dev":45846,"ino":86205,"offset":827,"prefix_hash":"da1a855ebc94bfec","seq_last":3,"last_event_id":"p22-h3","processed_total":3,"updated_at_ms":1795178175633,"recent_cap":128,"recent_n":3,"recent_ids":"p22-h1,p22-h2,p22-h3"}
+ASSERT OK: v1 -> v2, rescan from 0, 1 duplicate suppressed
+
+===== G. prefix read / fold fault -> exit code 6 (stop consumption) :: 2026-11-20 20:36:16 =====
+> adb shell rm -rf /data/local/tmp/t506c/state; mkdir -p /data/local/tmp/t506c/state
+> adb shell /data/local/tmp/t506c/bin/ai_worker --work-dir /data/local/tmp/t506c/work --state-dir /data/local/tmp/t506c/state --max-events 2 --max-runtime-ms 15000 --status-every-ms 200; echo warm_rc=$?
+  [aiw] 2026-11-20T20:36:16 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T20:36:16 start pid=5102 events=/data/local/tmp/t506c/work/events.jsonl state=/data/local/tmp/t506c/state/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T20:36:16 exit reason=max_events processed=2 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=544 state_saves=3 state_errors=0
+  [aiw] 2026-11-20T20:36:16 file identity: reason=first_open offset=544 prefix_hash=39ff5879c0f528b3 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  warm_rc=0
+warm-up offset=544
+read fault: [aiw] 2026-11-20T20:36:16 lock acquired; previous owner pid=5102 no longer holding it | [aiw] 2026-11-20T20:36:16 reader init failed: prefix fingerprint cannot be verified (injected fault: prefix read failed); refusing to run without file identity | file identity failed; prefix fingerprint cannot be verified or updated | rc=6
+status: {"version":1,"state":"error","pid":5107,"started_at":"2026-11-20T20:36:16","updated_at":"2026-11-20T20:36:16","started_at_ms":1795178176465,"updated_at_ms":1795178176465,"events_file":"/data/local/tmp/t506c/work/events.jsonl","state_file":"/data/local/tmp/t506c/state/consumer_state.json","offset":544,"file_size":-1,"dev":45846,"ino":86205,"prefix_hash":"39ff5879c0f528b3","prefix_hash_valid":1,"provider":"mock","mock_calls":0,"counters":{"lines_read":0,"events_accepted":0,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":0,"state_errors":0,"provider_ok":0,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"injected fault: prefix read failed","exit_reason":"identity_verify_failed"}
+> adb shell rm -rf /data/local/tmp/t506c/state; mkdir -p /data/local/tmp/t506c/state
+fold fault: [aiw] 2026-11-20T20:36:16 no consumer state yet (first run); scanning events from offset 0 | [aiw] 2026-11-20T20:36:16 start pid=5117 events=/data/local/tmp/t506c/work/events.jsonl state=/data/local/tmp/t506c/state/consumer_state.json provider=mock offset=0 (mock only, no network) | [aiw] 2026-11-20T20:36:16 prefix hash update failed (injected fault: prefix fold failed): offset NOT advanced; stopping consumption | [aiw] 2026-11-20T20:36:16 exit reason=identity_hash_failed processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=0 state_saves=1 state_errors=0 | [aiw] 2026-11-20T20:36:16 file identity: reason=first_open offset=0 prefix_hash=14650fb0739d0383 resets=0 legacy_rescans=0 replacements=0 truncations=0 | [aiw] 2026-11-20T20:36:16 WARNING: event id=p22-j1 was still unprocessed at exit (1 attempts, offset kept at 0) | rc=6 | file identity failed; prefix fingerprint cannot be verified or updated
+status: {"version":1,"state":"stopped","pid":5117,"started_at":"2026-11-20T20:36:16","updated_at":"2026-11-20T20:36:16","started_at_ms":1795178176883,"updated_at_ms":1795178176893,"events_file":"/data/local/tmp/t506c/work/events.jsonl","state_file":"/data/local/tmp/t506c/state/consumer_state.json","offset":0,"file_size":542,"dev":45846,"ino":86205,"prefix_hash":"14650fb0739d0383","prefix_hash_valid":1,"provider":"mock","mock_calls":1,"counters":{"lines_read":1,"events_accepted":1,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":1,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":1,"state_errors":0,"provider_ok":1,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":1,"provider_stuck":0,"state_persist_failed":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"pending_event_id":"p22-j1","last_invalid":"","last_error":"prefix hash update failed: injected fault: prefix fold failed","exit_reason":"identity_hash_failed"}
+ASSERT OK: read fault rc=6 (offset kept), fold fault rc=6 (offset 0, nothing processed)
+
+===== H. normal append while running -> no replacement / reset / truncation :: 2026-11-20 20:36:17 =====
+> adb shell sh /data/local/tmp/t506c/scripts/p22_h.sh 2>&1
+  worker pid=5127
+  BASE_OK processed=2
+  inode before=45846:86222 after=45846:86222
+  APPEND_DONE processed=6
+  --- counters ---
+  "counters":{"lines_read":6,"events_accepted":6,"events_processed":6,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":6,"state_errors":0,"provider_ok":6,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0}
+  --- state ---
+  {"version":2,"dev":45846,"ino":86222,"offset":1650,"prefix_hash":"c864041003029a93","seq_last":6,"last_event_id":"p22-k6","processed_total":6,"updated_at_ms":1795178182477,"recent_cap":128,"recent_n":6,"recent_ids":"p22-k1,p22-k2,p22-k3,p22-k4,p22-k5,p22-k6"}
+  
+  --- verdict ---
+  resets=0 replacements=0 truncations=0 invalid=0 inode_same=yes
+  APPEND_OK
+  --- worker log tail ---
+  [aiw] 2026-11-20T20:36:22 event id=p22-k6 seq=6 pid=29413 text_bytes=10 -> provider=mock status=ok latency=0ms reply_bytes=71 (attempt 1)
+  [aiw] 2026-11-20T20:36:22 state saved (sync) offset=1650 processed=6
+  [aiw] 2026-11-20T20:36:24 state saved (exit) offset=1650 processed=6
+  [aiw] 2026-11-20T20:36:24 exit reason=signal processed=6 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=1650 state_saves=7 state_errors=0
+  [aiw] 2026-11-20T20:36:24 file identity: reason=first_open offset=1650 prefix_hash=c864041003029a93 resets=0 legacy_rescans=0 replacements=0 truncations=0
+ASSERT OK (H): 4 real appends (same inode), 0 resets/replacements/truncations, 6 events processed once
+
+===== I. the real bridge events.jsonl must be byte-identical :: 2026-11-20 20:36:26 =====
+real bridge events.jsonl after: 072ea60602d88d72192cb44ebe4e0dc9f8730c69a0d3474edb0b71eb4b4480ea  /data/local/tmp/t5_bridge/work/events.jsonl
+ASSERT OK: real bridge file untouched
+
+===== J. cleanup :: 2026-11-20 20:36:26 =====
+> adb shell killall ai_worker 2>/dev/null; rm -rf /data/local/tmp/t506c; ls -d /data/local/tmp/t506c 2>/dev/null; echo gone=$?
+  gone=1
+
+RESULT: PASS (inode reuse proof + stopped/running swap + shorter + identical prefix + v1 migration + fault exit 6 + append)
