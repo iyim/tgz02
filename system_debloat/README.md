@@ -1,8 +1,11 @@
 # TG-Z02 系统 App 精简与内存优化分析
 
 本目录是对 TG-Z02（CCH，MT8167S，Android 8.1 / SDK 27，armeabi-v7a，产品名 AILABS_S1L）`system` 分区内
-全部预装 App 的**盘点、依赖分析与精简建议**。分析只读取镜像与设备运行时状态，**不修改、不删除任何镜像文件**，
-也不触碰 `my-doc/06_t5_bridge`（T5 AI Bridge）相关内容。
+全部预装 App 的**盘点、依赖分析与精简建议**。分析只读取镜像与设备运行时状态，**不修改、不删除任何镜像文件**；
+也不触碰任何 T5 工程资料与代码。
+
+> **rev3（当前版本）**：按操作者指令，六个 App（当贝桌面、MT 管理器、ES 文件管理器、权限狗、EasyTouch、Magisk）
+> 进入**永久性用户保护**状态，即使静态分析认为可删也不会进入任何删除/禁用/精简清单，详见第 4 节。
 
 ## 0. 关于本目录 `system_debloat/`
 
@@ -11,8 +14,8 @@
 | 位置 | 仓库根（= 解包后的 **system 分区根目录**）下的独立文件夹 `system_debloat/`，与 `app/`、`priv-app/`、`framework/`、`lib/` 平级 |
 | 内容 | 本任务的全部分析资料：6 份报告、机器可读清单与依赖边、复现脚本 |
 | 性质 | **纯文档目录**。不是 Android 系统目录，系统启动、PackageManager、任何 App 都不会读取它 |
-| 与 T5 的关系 | 不再写入 `my-doc/`；`my-doc/06_t5_bridge` 等既有 T5 资料保持原样，由 T5 任务独立维护 |
-| 体积 | 约 0.44 MB（全部为文本，无二进制） |
+| 与 T5 的关系 | 完全独立：本目录只存放系统精简分析资料，不读取、不写入任何 T5 工程目录，T5 资料由其自身任务维护 |
+| 体积 | 约 0.46 MB（全部为文本，无二进制） |
 
 > ⚠️ **打包注意（重要）**：本仓库根就是解包后的 system 分区树。若日后直接用本目录重新打包 `system.img`，
 > `system_debloat/` 会被一并打进镜像，最终出现在 `/system/system_debloat` 并占用分区空间。
@@ -54,36 +57,104 @@
 | **较可信** | 有静态证据，未做动态验证 | Manifest + 跨包引用，但运行时未观察到调用 |
 | **未知** | 证据不足，不能据此删除 | 仅能读到 Manifest，功能与调用方均不明确 |
 
-## 4. 结论摘要
+## 4. 用户保护清单（rev3 · 最高优先级）
+
+操作者明确指定以下六个 App 必须保留。**保护优先于任何静态分析结论**：即使某个包被静态分析判为 A 类候选，
+也不得出现在删除、禁用、清数据清单中，不得限制其自启动 / 后台 / 权限，也不得通过脚本或过滤器间接处理。
+
+| App | 包名（inventory 实测） | 技术分类 | 系统镜像内 | 保护状态 |
+|---|---|---|---|---|
+| ES 文件管理器 | `com.estrongs.android.pop` | A | 是 | **user_protected = true** |
+| EasyTouch | `com.shere.assistivetouch` | B | 是 | **user_protected = true** |
+| MT 管理器 | `bin.mt.plus` | —（不在镜像内） | 否 | **user_protected = true** |
+| Magisk | `com.topjohnwu.magisk` | C | 是 | **user_protected = true** |
+| 当贝桌面 | `com.dangbei1.tvlauncher` | B | 是 | **user_protected = true** |
+| 权限狗 | `com.web1n.permissiondog` | B | 是 | **user_protected = true** |
+
+保护原因统一记录为：`用户明确指定保留，未经用户另行授权不得精简。`
+
+要点：
+
+- 六个包名均取自 `app_inventory.json` 的 Manifest `package` 字段，**不按显示名称推断**。
+- `bin.mt.plus`（MT 管理器）**不在系统镜像内**：55 个包的清单不含它，设备 `pm path` 指向
+  `/data/app/bin.mt.plus-xXCsOzsoTVa2gpDlsM2gnw==/base.apk`（`pm list packages -3`）。
+  它不是精简对象，但仍列入保护名单——不因为它不在镜像里就当作可处理项。
+- **ES 文件管理器**保留原技术分类 A（静态分析：0 条 app 级入向引用、无进程、无 native 库），
+  但被保护标记拦截，**从所有实际删除候选中排除**；不为了"方便"把它伪装成 D 类关键组件。
+- 当贝桌面、EasyTouch、权限狗仍是 B 类（技术上可禁用），但同样被保护规则拦截，**不进入 P1 试验清单**。
+- 保护状态在机器可读数据中体现：`app_inventory.json` / `.csv` 的 `user_protected`、`protection_reason`、
+  `exec_action` 字段，以及 `user_protected.json`、`summary_stats.json:user_protection`。
+
+### 4.1 Magisk 及其配套组件
+
+Magisk 作为**独立保护对象**处理。下表只列**能从当前镜像与只读设备查询确认**的内容，不推断其安装结构：
+
+| 类型 | 路径 | 在系统镜像内 | 证据 |
+|---|---|---|---|
+| apk | `app/magisk.apk` | 是 | 镜像内唯一与 Magisk 相关的文件；Manifest v25.2，设备实际加载 /data/app 版本 27.0 |
+| runtime-binary | `/sbin/magisk32` | 否 | 设备 /sbin 为 Magisk tmpfs 挂载（/proc/mounts: "magisk /sbin tmpfs ..."），该二进制不在 system 分区内，属 boot ramdisk 侧 |
+| runtime-binary | `/sbin/magiskinit` | 否 | 同上；/sbin 内 root:root，权限 750 |
+| runtime-binary | `/sbin/magiskpolicy` | 否 | 同上；SELinux 策略注入工具 |
+| symlink | `/sbin/magisk` | 否 | /sbin/magisk -> ./magisk32 |
+| runtime-dir | `/sbin/.magisk` | 否 | 设备存在但 shell 用户无权限（Permission denied）；内容未读取 |
+| data-dir | `/data/adb` | 否 | 设备存在，shell 用户 Permission denied；内容未读取（无 root shell，未做提权） |
+
+已核查但**未发现** Magisk 痕迹的位置（说明 Magisk 未以这些方式植入 system 分区）：
+
+| 检查项 | 结果 |
+|---|---|
+| system/bin/su | 未发现 |
+| system/xbin/su | 未发现 |
+| system/xbin/magisk* | 未发现 |
+| system/bin/magisk* | 未发现 |
+| system/etc/init/*.rc 中的 magisk 条目 | 未发现 |
+| build.prop 中的 magisk 属性 | 未发现 |
+
+因此保护范围与禁止动作：
+
+- 系统镜像内：`app/magisk.apk`（11,278,270 B，Manifest v25.2）**禁止删除/替换**；
+  设备实际加载的是 `/data/app` 版本 27.0（`UPDATED_SYSTEM_APP`），删除系统内 prebuilt 会让其退化，风险另见第 9 节。
+- 镜像外：`/sbin` 是 Magisk 的 tmpfs 挂载（`/proc/mounts` 可见 `magisk /sbin tmpfs`），内含
+  `magisk32`、`magiskinit`、`magiskpolicy`、`magisk -> magisk32` 与 `/sbin/.magisk`（shell 无权限，未读取内容）；
+  `/data/adb` 存在但 shell 无权限，内容未读取。以上均**禁止删除、禁止清理**。
+- **禁止修改 `boot.img` / boot ramdisk / init 配置**，禁止清理 Magisk 模块与 denylist。
+- 本轮未执行任何提权操作（设备 shell 身份为 `uid=2000(shell)`），未读取 root-only 内容。
+
+## 5. 结论摘要
 
 - 系统 App 总计 **55** 个（`app/` 目录 32 个 + `app/` 散装 APK 5 个 + `priv-app/` 18 个），
   分区占用 **526.72 MB**（APK + odex/vdex + 内置 native 库）。
-- 分类结果：**A 可删除 1 个（4.6 MB）**、
+- 分类结果：**A 类候选 1 个（4.6 MB）**、
   **B 建议禁用 13 个（28.15 MB）**、
   **C 暂时保留 20 个（241.07 MB）**、
   **D 禁止删除 21 个（252.9 MB）**。
-- 唯一进入 A 的是 ES 文件浏览器（4.60 MB），且仅为 **A 类候选**：静态分析通过（0 条 app 级入向引用、
-  无进程、无系统签名权限、无 native 库），**尚未做删后动态验证**，需经授权后用
-  `pm uninstall -k --user 0` 观察。除此之外没有第二个可无条件删除的包——该镜像里几乎每个预装 App 都通过
-  `sharedUserId=android.uid.system`、Provider、无障碍服务或 framework 字符串与本机其他组件耦合。
-- 收益最大的不是删 APK，而是**逐项试验三个常驻/高唤醒应用**（一次只动一个、各观察 24 h）：
-  当贝桌面（快照 PSS 96,912 kB、JPush 527 次唤醒 / 小米 COCKROACH 62 次）、
-  悬浮触控（`persistent=true`，快照 PSS 21,461 + 16,961 kB）、
-  OTA（`persistent=true`，`dumpsys cpuinfo` 单次区间快照 20% CPU——不是持续占用）。
+  其中**六个包受用户保护**（第 4 节），技术分类保留但不进入任何执行清单。
+- **当前可执行的删除项：0 个。** A 类只有 ES 文件浏览器一个候选，而它已被用户保护拦截；
+  其技术分类仍是 A（静态分析 0 条 app 级入向引用、无进程、无 native 库），但
+  “A 类候选”只表示**静态分析认为具备删除可能性**，不代表已验证可安全删除。
+- 收益最大的不是删 APK，而是**逐项试验常驻/高唤醒应用**（一次只动一个、各观察 24 h）。
+  原计划的三项中，当贝桌面与悬浮触控**现已受用户保护**，因此实际可试验项只剩 OTA
+  （`persistent=true`，`dumpsys cpuinfo` **单次 343 s 区间快照** 20% CPU——不是持续占用）。
+  当贝桌面（快照 PSS 96,912 kB、JPush 527 次唤醒）、悬浮触控（快照 PSS 21,461 + 16,961 kB）
+  的数字仍作为**观测事实**保留，但**不作为优化动作的依据**。
 - 原厂语音链路（`AliGenieService` + `com.alibaba.ailabs.genie.smartapp` + AVE/GenieMonitor + GenieIoT）
   **全部归 D**。其中**只有 smartapp 获取了运行时证据**：其 3 个进程 PSS 合计 216,324 kB（仅此 3 个进程，
   不是整条语音链路的 PSS）、`:core` 进程在单次 343 s 区间快照中占 72% CPU、持有
   `NativeService`/`ScreenWakeManager`/`AudioIn` 唤醒锁。`GenieMonitor`、`GenieIoT`、`AliGenieService`
   的运行时占用未单独测量，其 D 级判定依据是 Manifest 组件 + 跨包引用。
 
-## 5. 最终回答（任务书第十节）
+## 6. 最终回答（任务书第十节）
 
 1. **一共有多少个 App？** 系统分区内 55 个包（`app/` 32 目录 + 5 散装 APK + `priv-app/` 18）。
    设备 `pm list packages -s` 共 61 条 = 本表 55 个 App + 3 个资源包（`android`/framework-res、
    `com.yunos`/yunos-framework-res、`com.mediatek`/mediatek-res）+ `vendor/app` 2 个 + `vendor/overlay` 1 个。
-2. **哪些可以安全删除？** **没有无条件可删的包。** 唯一 A 类是 `app/ES.apk`（com.estrongs.android.pop，4.60 MB），
-   属 **A 类候选**：静态分析通过，**删后动态验证未完成**，须经用户授权并先 `pm uninstall -k --user 0` 观察。
+2. **哪些可以安全删除？** **当前没有可执行的删除项。** 唯一 A 类候选是 `app/ES.apk`
+   （com.estrongs.android.pop，4.60 MB），但它**受用户保护**，已从删除清单排除；
+   且即使不受保护，A 类也只代表“静态分析认为具备删除可能性，尚未完成真机动态验证”。
 3. **哪些适合禁用？** 13 个 B 类，合计 28.15 MB；
+   其中当贝桌面、EasyTouch、权限狗**受用户保护，不进入试验**；实际可试验 10 个，
+   顺序为 OTA → Guide → 8 个 AOSP 边缘组件，单包逐个、每项独立观察 ≥24 h。
+   `AMPE` 不在禁用清单（C 类，需产品决策）。
    试验顺序为单包逐个：`dangbei.apk` → `easytouch.apk` → `Osupdate`，然后再考虑 `qxg.apk`、`Guide`
    与 8 个 AOSP 边缘组件。`AMPE` **不在**禁用清单内（rev2 调整为 C）。
 4. **哪些必须保留？** 21 个 D 类，合计 252.9 MB，含语音链路、IoT 控制、Launcher、
@@ -92,20 +163,24 @@
    含 `AMPE`（小程序容器，7 个包引用）、`GenieRTC`、`Waft`、`AliVideoPlayer`、`GenieBrowser`、
    `AliSpKey`、`raShow`、`UUID`、`AliProvision`、`Emode` 等。
 6. **删除或禁用分别能释放多少 system 空间？**
-   * 删除 A（ES，且需先验证）：**4.60 MB**；
-   * 删除全部 B：**28.15 MB**（A+B 合计 **32.75 MB**）；
+   * 可执行的删除：**0 MB**（唯一 A 类候选 ES 受用户保护，已排除）；
+   * 若仅作容量核算：A 类候选 4.60 MB，B 类全部 28.15 MB，
+     但其中受保护的当贝 / EasyTouch / 权限狗不可执行，**这些数字不等于可释放空间**；
    * **仅禁用：0 MB**（APK 仍在 system，只改 `/data/system/packages.xml` 的 enabled 状态）。
 7. **哪些应用可能影响运行时 RAM？** 以快照 PSS 排序（单次 `dumpsys meminfo`，非节省量）：
-   smartapp 3 进程合计 216,324 kB、当贝桌面 96,912 kB、Waft 83,190 kB、Launcher 48,762 kB、
-   悬浮触控 38,422 kB（两进程）、IoT:service 22,416 kB、GenieRTC 22,329 kB、ags 21,599 kB、
+   smartapp 3 进程合计 216,324 kB、当贝桌面 96,912 kB（受保护）、Waft 83,190 kB、Launcher 48,762 kB、
+   悬浮触控 38,422 kB（两进程，受保护）、IoT:service 22,416 kB、GenieRTC 22,329 kB、ags 21,599 kB、
    SystemUI 20,828 kB、OTA 16,011 kB、SettingsProvider 11,825 kB。
-   未出现在列表中的包（含 `GenieMonitor`）在快照时刻**没有进程**，不能据此认为它们“不占内存”。
+   受保护项的 PSS 只作为观测事实，**不作为优化依据**；未出现在列表中的包（含 `GenieMonitor`）
+   在快照时刻**没有进程**，不能据此认为它们“不占内存”。
 8. **推荐按什么顺序精简？** 见 `optimization_plan.md`：P0 备份与基线 → P1 **单包逐项**禁用试验
-   （当贝 → 悬浮触控 → OTA，每项独立观察 ≥24 h）→ P2 对通过项先做用户态卸载验证再改镜像 → P3 不做 odex 清理。
+   （OTA → Guide → AOSP 边缘组件，每项独立观察 ≥24 h；当贝 / EasyTouch / 权限狗**不在其中**）
+   → P2 对通过项先做用户态卸载验证再改镜像 → P3 不做 odex 清理。
 9. **如何逐项恢复？** `pm enable`（禁用项）、`cmd package install-existing`（`pm uninstall -k --user 0` 项）、
    `adb push` + `chmod 644` + `restorecon`（手工删除项）、SP Flash Tool 回刷 `flash/ori/system.bin`（镜像级）。
+   受保护项从未被禁用/卸载，无需恢复路径。
 
-## 6. 关于 RAM 数字的声明（rev2 明确口径）
+## 7. 关于 RAM 数字的声明（rev2 明确口径）
 
 本报告**不给出“预计节省 XX MB RAM”的推算值**。原因：PSS 随进程重拉、ZRAM 换出、page cache 复用剧烈变化；
 “禁用”只是让进程不再由系统拉起，不等于释放同等 PSS。
@@ -127,34 +202,39 @@
 - 35 分钟内 `MemFree` 从 89,812 kB 变到 44,332 kB，说明**单点内存数值不可作为优化收益**；
   需要收益结论时按 `optimization_plan.md` 第 4 节做多采样中位数 + `batterystats` 对比。
 
-## 7. 目录
+## 8. 目录
 
 本目录 `system_debloat/`（与本文件同级）包含：
 
 | 文件 | 内容 |
 |---|---|
-| [README.md](README.md) | 任务说明、方法、证据等级、结论、9 问回答、RAM 口径声明 |
-| [revisions.md](revisions.md) | **rev2 修订记录**：审查意见、逐条改动、依据、仍未验证的事项 |
-| [app_inventory.md](app_inventory.md) | 55 个包的完整清单（包名 / 版本 / 体积 / 组件 / 常驻 / 设备路径 / 更新包差异） |
+| [README.md](README.md) | 任务说明、方法、证据等级、**用户保护清单**、结论、9 问回答、RAM 口径声明 |
+| [revisions.md](revisions.md) | **修订记录**（rev2 审查修订 / rev3 用户保护与 P2 修复）、依据、仍未验证的事项 |
+| [app_inventory.md](app_inventory.md) | 55 个包的完整清单（包名 / 版本 / 体积 / 组件 / 常驻 / **保护状态** / 设备路径 / 更新包差异） |
 | [app_dependency_analysis.md](app_dependency_analysis.md) | 依赖模型、跨包引用、framework 引用、Provider / uid / native 库依赖、运行时常驻链路 |
-| [app_removal_recommendations.md](app_removal_recommendations.md) | A/B/C/D 逐项建议与操作方式 |
-| [risk_assessment.md](risk_assessment.md) | 风险矩阵、误删后果、回退与恢复策略 |
-| [optimization_plan.md](optimization_plan.md) | P0–P3 分阶段方案、测量与验收、逐项恢复命令 |
-| [app_inventory.csv](app_inventory.csv) / [app_inventory.json](app_inventory.json) | 机器可读清单（55 行全字段） |
+| [app_removal_recommendations.md](app_removal_recommendations.md) | **用户保护总表** + A/B/C/D 逐项建议与操作方式 |
+| [risk_assessment.md](risk_assessment.md) | 风险矩阵、误删后果、**违反用户保护的风险**、回退与恢复策略 |
+| [optimization_plan.md](optimization_plan.md) | P0–P3 分阶段方案（已剔除受保护项）、测量与验收、逐项恢复命令 |
+| [app_inventory.csv](app_inventory.csv) / [app_inventory.json](app_inventory.json) | 机器可读清单（55 行全字段，含 `user_protected` / `exec_action`） |
+| [user_protected.json](user_protected.json) | **用户保护清单（机器可读）**：6 个 App + Magisk 相关组件 + 执行清单 |
 | [dependency_edges.csv](dependency_edges.csv) | 机器可读依赖边（含 `evidence_class`：app / sdk_noise / ambiguous / platform_provider） |
-| [summary_stats.json](summary_stats.json) | 分类汇总、内存指标口径、3 个 `/data/app` 更新包、运行时常驻证据 |
-| [tools/](tools/) | 解析与生成脚本 + **filters.py / test_filters.py**（证据过滤规则与单元测试） |
+| [summary_stats.json](summary_stats.json) | 分类汇总、内存指标口径、3 个 `/data/app` 更新包、保护块、可执行清单 |
+| [tools/](tools/) | 解析与生成脚本 + **filters.py / protection.py** 及对应单元测试 |
 
-## 8. 已知限制（含 rev2 未解决项）
+## 9. 已知限制（含 rev2 / rev3 未解决项）
 
 - `system/framework/*.jar` 在本工作区是 316 字节占位文件（真实代码在 `framework/arm/*.vdex` 与 `oat/`），
   因此 framework 侧结论基于 **vdex 字符串**而非可读 Java 源码；无法给出“SystemServer 在哪个方法里引用了某包”。
 - `vendor` 分区未解包（仅用 `pm path` 与 7-Zip 列表核对），`vendor/app` 2 个包的内部依赖未做静态分析。
 - 跨包引用基于字符串匹配，SDK 打包噪声已做过滤，但**字符串存在 ≠ 运行时必然调用**；因此除有 `dumpsys` 佐证的项外，
   引用结论最高只标到“较可信”。
-- 未在设备上执行任何禁用 / 卸载操作（避免影响 T5 现场），因此“禁用后是否真的无副作用”属于**未验证**，
+- 未在设备上执行任何禁用 / 卸载操作（避免影响现场），因此“禁用后是否真的无副作用”属于**未验证**，
   需按 `optimization_plan.md` 的观察清单逐项确认。
 - 3 个包（`GenieAicare`、`GenieRTC`、`magisk`）在设备上由 `/data/app` 版本覆盖。**删除系统内 prebuilt 会让
   该包退化为普通数据区应用**（失去 SYSTEM flag 与随之而来的默认权限授予），此后果**未验证**；详见
   `app_inventory.md` 第 5 节与 `risk_assessment.md` 第 2 节。
 - `PSS` 只对快照时刻有进程的包有效；`GenieMonitor` 等未出现在 `Total PSS by process` 中的包**没有动态证据**。
+- Magisk 的安装结构（boot ramdisk 补丁细节、模块列表）**未做推断**：`/sbin/.magisk` 与 `/data/adb` 对 shell
+  用户不可读，本轮未提权；`boot.img` 未分析、未修改。
+- 用户保护是**策略约束**而非技术结论：受保护包的静态分析结果（如 ES 的 A 类、当贝/权限狗的 B 类）依然成立，
+  只是不再转化为任何执行动作。

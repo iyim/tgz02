@@ -199,7 +199,7 @@ Provider 会在**任何进程查询它的瞬间**把宿主进程拉起，是“�
   属“故意保活”，禁用对应包即可一并消除。
 - `com.alipay.arome.app` 有 17 个 Provider（`configprovider`、`PermissionProvider`、`arome.provider` 等），
   任一调用方查询都会把宿主进程拉起。**rev2 修正**：这既说明它是“保活型”宿主，也说明它**被真实使用**；
-  因此不能因为“可以禁用”就把它当普通 B 类，现归类为 **C**（详见 `app_removal_recommendations.md` 第 5 节）。
+  因此不能因为“可以禁用”就把它当普通 B 类，现归类为 **C**（详见 `app_removal_recommendations.md` 第 4.1 节）。
 
 ## 7. native 库依赖
 
@@ -264,10 +264,14 @@ Provider 会在**任何进程查询它的瞬间**把宿主进程拉起，是“�
 
 ## 10. 修订说明
 
-本文件为 rev2（2026-11-20 修订）。修订项、依据与仍未验证的事项集中记录在
-[revisions.md](revisions.md)；本文件相关改动为：平台 Provider 过滤改用 `filters.is_platform_authority()`
-（修复 `split('.')[0]` 无法排除 `com.android.providers.*` 的缺陷）、AMPE 引用计数与归类修正、
-唤醒锁与 CPU 证据的归属限定。
+本文件为 rev3（2026-11-20）。修订项、依据与仍未验证的事项集中记录在 [revisions.md](revisions.md)。
+
+- **rev3**：新增用户保护说明——六个 App（当贝桌面、MT 管理器、ES、权限狗、EasyTouch、Magisk）受保护，
+  但这**不改变**本文件的依赖结论：依赖关系是事实，保护是可执行性约束。受保护包的技术分类照旧保留
+  （如 ES 仍是 A 类候选、当贝/权限狗仍是 B 类），只是不再转化为任何删除/禁用动作。
+  另外：`is_platform_authority()` 改为边界感知前缀匹配，`com.android.settingshelper.*` 不再被当作平台 Provider。
+- **rev2**：平台 Provider 过滤改用 `filters.is_platform_authority()`（修复 `split('.')[0]` 缺陷）、
+  AMPE 引用计数与归类修正、唤醒锁与 CPU 证据的归属限定。
 """
 open(os.path.join(DOC, 'app_dependency_analysis.md'), 'w', encoding='utf-8').write(dep)
 print('app_dependency_analysis.md written', len(dep))

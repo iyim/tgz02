@@ -13,6 +13,25 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import filters
+import protection
+
+# Class labels are intentionally verbose: rev3 / P2-2 requires that an A class never
+# reads as "already verified safe to delete".
+CLASS_LABEL = {
+    'A': 'A 类候选：静态分析认为具备删除可能性，尚未完成真机动态验证。',
+    'B': 'B 类：建议禁用（保留 APK），需单包试验且每项独立观察。',
+    'C': 'C 类：暂时保留（依赖不明确，需动态验证）。',
+    'D': 'D 类：禁止删除（系统/原厂核心或 AI 改造依赖）。',
+}
+
+# Action actually allowed to be executed today, before any further authorisation.
+EXEC_ACTION = {
+    'A': '仅静态候选：需真机动态验证 + 用户授权后才可进入删除评估',
+    'B': '可做单包禁用试验（保留 APK，可 pm enable 回退）',
+    'C': '保留观察，不做删除/禁用动作',
+    'D': '禁止删除/禁用',
+}
+PROTECTED_EXEC_ACTION = '受用户保护：禁止删除、禁用、清数据、限制自启/后台/权限（未经授权）'
 
 OUT = r'D:\tgz02\OS\_analysis\debloat\out'
 DEV = os.path.join(OUT, 'device')
@@ -249,8 +268,8 @@ CLASS = {
    cls='C', note='Magisk 安装包副本（实际运行版本为 /data/app 27.0），保留作 root 恢复手段',
    ev='已验证', how='暂留：删除不回收空间但失去离线恢复包', grade_note='pm path /data/app + pm path 系统副本'),
  'app/ES.apk': dict(
-   cls='A', note='ES 文件浏览器（com.estrongs.android.pop，4.60 MB）——A 类候选：第三方预装散装 APK，无 oat、无 native 库、无系统签名权限，降噪后 0 条 app 级入向引用，快照时刻无进程。静态分析通过，但尚未做删后动态验证；需先用 pm uninstall -k --user 0 观察，且须经用户授权。',
-   ev='较可信', how='A 类候选：静态通过，动态未验证；未获授权不执行卸载', grade_note='bundled 过滤后 0 入向；meminfo 无进程；未做删后开机验证'),
+   cls='A', note='ES 文件浏览器（com.estrongs.android.pop，4.60 MB）——A 类候选：第三方预装散装 APK，无 oat、无 native 库、无系统签名权限、快照无进程、0 条 app 级入向引用。**已列入用户保护名单**，因此不执行删除/禁用/卸载；技术分类与技术结论保留。',
+   ev='较可信', how='受用户保护：不删除、不禁用、不卸载；技术分类 A 仅为静态结论', grade_note='bundled 过滤后 0 入向；meminfo 无进程；未做删后开机验证'),
  'app/raShow': dict(
    cls='C', note='raShow（com.alira.info，含 DreamerReceiver/WRITE_SECURE_SETTINGS，0.79MB）',
    ev='未知', how='暂留：功能与依赖均不明', grade_note='仅 manifest'),
@@ -284,6 +303,11 @@ for e in apps:
                if p == pkg or p.startswith(pkg + ':') or p.startswith(pkg + '.')}
     rows.append({
         'dir': d, 'pkg': pkg, 'version': m['versionName'], 'cls': c['cls'],
+        'class_label': CLASS_LABEL[c['cls']],
+        'user_protected': protection.is_user_protected(pkg),
+        'protection_reason': protection.protection_reason(pkg),
+        'exec_action': (PROTECTED_EXEC_ACTION if protection.is_user_protected(pkg)
+                        else EXEC_ACTION[c['cls']]),
         'apk_mb': fmt_mb(e['breakdown']['apk']), 'lib_mb': fmt_mb(e['breakdown']['lib']),
         'oat_mb': fmt_mb(e['breakdown']['odex'] + e['breakdown']['vdex'] + e['breakdown']['oat_other']),
         'total_mb': fmt_mb(e['total_bytes']), 'comps': comps,
@@ -308,11 +332,14 @@ os.makedirs(DOC, exist_ok=True)
 
 with open(os.path.join(DOC, 'app_inventory.csv'), 'w', newline='', encoding='utf-8-sig') as f:
     w = csv.writer(f)
-    w.writerow(['dir', 'package', 'version', 'class', 'apk_MB', 'lib_MB', 'oat_MB', 'total_MB',
+    w.writerow(['dir', 'package', 'version', 'class', 'class_label', 'user_protected',
+                'protection_reason', 'exec_action', 'apk_MB', 'lib_MB', 'oat_MB', 'total_MB',
                 'components', 'persistent', 'sharedUserId', 'minSdk', 'targetSdk', 'device_path',
                 'pss_kb', 'cpu_pct', 'ref_strong', 'ref_action', 'ref_amb', 'evidence', 'note'])
     for r in rows:
-        w.writerow([r['dir'], r['pkg'], r['version'], r['cls'], r['apk_mb'], r['lib_mb'], r['oat_mb'],
+        w.writerow([r['dir'], r['pkg'], r['version'], r['cls'], r['class_label'],
+                    r['user_protected'], r['protection_reason'] or '', r['exec_action'],
+                    r['apk_mb'], r['lib_mb'], r['oat_mb'],
                     r['total_mb'], r['comps'], r['persistent'], r['uid'], r['min_sdk'], r['target'],
                     r['device_path'], r['pss_kb'], r['cpu'], r['ref_strong'], r['ref_action'],
                     r['ref_amb'], r['ev'], r['note']])
@@ -331,6 +358,20 @@ for r in rows:
     a['oat'] += float(r['oat_mb'])
     a['pss'] += r['pss_kb']
 
+# ---------------------------------------------------------------- executable lists
+# Protection is enforced here, not in the document generators: a protected package can
+# never appear in a delete/disable list even if static analysis liked it.
+exec_lists = {'A_delete': [], 'B_disable': [], 'C_observe': [], 'D_forbidden': [],
+              'protected_blocked': []}
+for r in rows:
+    if r['user_protected']:
+        exec_lists['protected_blocked'].append(r['pkg'])
+        continue
+    key = {'A': 'A_delete', 'B': 'B_disable', 'C': 'C_observe', 'D': 'D_forbidden'}[r['cls']]
+    exec_lists[key].append(r['pkg'])
+for k in ('A_delete', 'B_disable', 'C_observe', 'D_forbidden'):
+    protection.assert_no_protected(exec_lists[k], k)
+
 summary = {
     'packages': len(rows),
     'total_mb': round(sum(float(r['total_mb']) for r in rows), 2),
@@ -338,17 +379,33 @@ summary = {
                      'lib_mb': round(v['lib'], 2), 'oat_mb': round(v['oat'], 2),
                      'pss_sum_kb': v['pss']} for k, v in sorted(by_cls.items())},
     'revision': {
-        'current': 'rev2 (2026-11-20)',
-        'basis': 'independent review of my-doc/07_system_debloat (pre-move path)',
+        'current': 'rev3 (2026-11-20)',
+        'basis': 'operator instruction: six apps are protected; three rev2 P2 items',
         'changes': [
-            'AMPE com.alipay.arome.app: B -> C (real cross-package webapps.START/INIT + GwaReceiver references)',
-            'ES com.estrongs.android.pop: A worded as A-candidate (static pass, no post-removal dynamic validation)',
-            'report.py platform-provider filter replaced by filters.is_platform_authority() + unit tests',
-            '/data/app UPDATED_SYSTEM_APP count corrected from 2 to 3 (GenieAicare added)',
-            'disable batches split into single-package experiments; OTA CPU figure marked single-snapshot',
-            'runtime wording: 216,324 kB scoped to smartapp only; memory metrics labelled by source',
+            'user protection added for 6 apps (dangbei, MT Manager, ES, permissiondog, EasyTouch, Magisk)',
+            'Magisk related components enumerated from image + read-only device evidence',
+            'rev2 A wording replaced by "A 类候选：... 尚未完成真机动态验证"',
+            'filters.is_platform_authority(): boundary-aware prefix matching (com.android.settingshelper.* no longer platform)',
+            'legacy directory references removed from all reports',
         ],
+        'previous': 'rev2 (2026-11-20)',
     },
+    'user_protection': {
+        'reason': protection.PROTECTION_REASON,
+        'rule': '受保护的包保留技术分类，但不得进入删除/禁用/清数据清单；'
+                '不得因静态分析结论覆盖用户保护要求。',
+        'apps': [
+            {'package': p, 'label': v['label'], 'dir': v['dir'],
+             'in_system_image': v['in_system_image'], 'tech_class': v['tech_class'],
+             'user_protected': True, 'protection_reason': protection.PROTECTION_REASON,
+             'evidence': v['evidence'], 'exec_action': PROTECTED_EXEC_ACTION}
+            for p, v in sorted(protection.USER_PROTECTED.items())
+        ],
+        'magisk_related': protection.MAGISK_RELATED,
+        'magisk_absent_in_image': protection.MAGISK_ABSENT_IN_IMAGE,
+        'magisk_forbidden_actions': protection.MAGISK_FORBIDDEN_ACTIONS,
+    },
+    'executable_lists': exec_lists,
     'memory_snapshot': {
         'source': 'read-only: adb shell dumpsys meminfo + /proc/meminfo',
         'primary_snapshot': '2026-11-20T16:03:19+08:00 (dumpsys Uptime 236883195 ms)',
@@ -387,5 +444,17 @@ summary = {
 }
 json.dump(summary, open(os.path.join(DOC, 'summary_stats.json'), 'w', encoding='utf-8'),
           indent=1, ensure_ascii=False)
+
+# dedicated machine-readable protection list (rev3)
+json.dump({'reason': protection.PROTECTION_REASON,
+           'rule': summary['user_protection']['rule'],
+           'apps': summary['user_protection']['apps'],
+           'magisk_related': protection.MAGISK_RELATED,
+           'magisk_absent_in_image': protection.MAGISK_ABSENT_IN_IMAGE,
+           'magisk_forbidden_actions': protection.MAGISK_FORBIDDEN_ACTIONS,
+           'executable_lists': exec_lists},
+          open(os.path.join(DOC, 'user_protected.json'), 'w', encoding='utf-8'),
+          indent=1, ensure_ascii=False)
 print(json.dumps(summary['by_class'], indent=1, ensure_ascii=False))
 print('packages', summary['packages'], 'total MB', summary['total_mb'])
+print('protected', len(protection.USER_PROTECTED), 'executable B', len(exec_lists['B_disable']))

@@ -34,10 +34,12 @@ PLATFORM_AUTHORITIES_EXACT = frozenset({
     'com.android.providers.userdictionary', 'com.android.providers.contacts.calllog',
 })
 
-# Authorities that live under these prefixes are always platform providers, even when the
-# exact authority (e.g. a per-document sub-authority) is not listed above.
+# Authorities that live under these package prefixes are always platform providers.
+# Matching is boundary-aware: the authority must equal the prefix or continue with '.'
+# so that look-alikes such as `com.android.settingshelper.provider` are NOT swallowed.
+# (rev3: the rev2 implementation used bare str.startswith, which misclassified them.)
 PLATFORM_AUTHORITY_PREFIXES = (
-    'com.android.providers.',
+    'com.android.providers',
     'com.android.contacts',
     'com.android.calllogbackup',
     'com.android.calendar',
@@ -48,10 +50,16 @@ PLATFORM_AUTHORITY_PREFIXES = (
 def is_platform_authority(authority):
     """True when the authority belongs to an AOSP platform provider.
 
+    Rules:
+      * exact match against PLATFORM_AUTHORITIES_EXACT, or
+      * equal to a prefix in PLATFORM_AUTHORITY_PREFIXES, or starts with "<prefix>."
+
     >>> is_platform_authority('com.android.providers.media')
     True
     >>> is_platform_authority('media')
     True
+    >>> is_platform_authority('com.android.settingshelper.provider')
+    False
     >>> is_platform_authority('com.alibaba.ailabs.ave.controlProvider')
     False
     """
@@ -60,7 +68,10 @@ def is_platform_authority(authority):
     a = authority.strip().lower()
     if a in PLATFORM_AUTHORITIES_EXACT:
         return True
-    return any(a.startswith(p) for p in PLATFORM_AUTHORITY_PREFIXES)
+    for p in PLATFORM_AUTHORITY_PREFIXES:
+        if a == p or a.startswith(p + '.'):
+            return True
+    return False
 
 
 def is_sdk_noise(token):

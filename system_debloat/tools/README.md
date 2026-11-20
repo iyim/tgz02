@@ -12,24 +12,26 @@
 | 脚本 | 作用 |
 |---|---|
 | `axml.py` | 二进制 AndroidManifest（AXML）解析 + DEX 字符串表读取；自动判别 UTF-8 字符串池的单/双长度前缀 |
-| `filters.py` | **证据过滤规则（rev2 新增）**：`is_platform_authority()` 精确/前缀匹配 AOSP Provider authority、`is_sdk_noise()`、`classify_evidence()` |
-| `test_filters.py` | **过滤规则单元测试（rev2 新增）**，覆盖 `com.android.providers.media/settings/contacts`、`media`、`settings` 与第三方 authority |
+| `filters.py` | **证据过滤规则**：`is_platform_authority()` 精确 + 边界感知前缀匹配（rev3 修正）、`is_sdk_noise()`、`classify_evidence()` |
+| `protection.py` | **用户保护规则（rev3 新增）**：六个受保护 App、Magisk 相关组件清单、`assert_no_protected()` 强制拦截 |
+| `test_filters.py` | 过滤规则单元测试（12 条，含 rev3 的 `com.android.settingshelper.provider` 边界用例） |
+| `test_protection.py` | **保护与数据一致性测试（rev3 新增）**：保护清单、执行清单、Magisk 范围、统计一致性、旧目录引用检查 |
 | `scan.py` | 遍历 `app/`、`priv-app/`（含散装 APK）→ 体积、组件、权限、vdex 字符串 → `out/apps.json` |
 | `refs2.py` | 跨包引用（组件 / authority / 私有 action）、SDK 打包降噪、framework vdex 扫描 → `out/refs2.json` |
 | `digest.py` | 生成逐包可读摘要 `out/digest.txt`（人工复核用） |
 | `edges.py` | 生成 `dependency_edges.csv`（每条边带 `evidence_class`） |
-| `report.py` | 分类裁定 + `app_inventory.csv/json`、`summary_stats.json`（内存指标口径在此定义） |
+| `report.py` | 分类裁定 + 保护过滤 + `app_inventory.csv/json`、`summary_stats.json`、`user_protected.json` |
 | `mkdocs*.py` | 生成 `README.md` 与本目录其余报告 |
 | `collect_baseline.sh` | 设备只读基线采集（meminfo / cpuinfo / power / alarm / services / pm） |
 
 ## 运行顺序
 
 ```bash
-python -m unittest test_filters -v      # 0.0s，先跑过滤规则测试
+python -m unittest discover -v   # 先跑测试：filters + protection
 python scan.py      # ~5 min，含 vdex 字符串提取
 python refs2.py     # ~4 min，含 framework vdex 扫描
 python digest.py    # 可选，人工复核
-python report.py    # 生成清单与统计
+python report.py    # 生成清单、统计、保护清单
 python edges.py     # 生成依赖边 CSV
 python mkdocs.py && python mkdocs2.py && python mkdocs3.py && python mkdocs4.py
 ```

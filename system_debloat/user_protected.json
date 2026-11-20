@@ -1,0 +1,212 @@
+{
+ "reason": "用户明确指定保留，未经用户另行授权不得精简。",
+ "rule": "受保护的包保留技术分类，但不得进入删除/禁用/清数据清单；不得因静态分析结论覆盖用户保护要求。",
+ "apps": [
+  {
+   "package": "bin.mt.plus",
+   "label": "MT 管理器",
+   "dir": null,
+   "in_system_image": false,
+   "tech_class": null,
+   "user_protected": true,
+   "protection_reason": "用户明确指定保留，未经用户另行授权不得精简。",
+   "evidence": "系统镜像 app/ 与 priv-app/ 内无该 APK（55 个包清单不含 bin.mt.plus）；设备 pm path 显示 /data/app/bin.mt.plus-xXCsOzsoTVa2gpDlsM2gnw==/base.apk，属用户侧安装（pm list packages -3），不在 system 分区精简范围内",
+   "exec_action": "受用户保护：禁止删除、禁用、清数据、限制自启/后台/权限（未经授权）"
+  },
+  {
+   "package": "com.dangbei1.tvlauncher",
+   "label": "当贝桌面",
+   "dir": "app/dangbei.apk",
+   "in_system_image": true,
+   "tech_class": "B",
+   "user_protected": true,
+   "protection_reason": "用户明确指定保留，未经用户另行授权不得精简。",
+   "evidence": "system/app/dangbei.apk，Manifest package=com.dangbei1.tvlauncher v3.3.6；设备 pm path 指向 /system/app/dangbei.apk，非默认 HOME",
+   "exec_action": "受用户保护：禁止删除、禁用、清数据、限制自启/后台/权限（未经授权）"
+  },
+  {
+   "package": "com.estrongs.android.pop",
+   "label": "ES 文件管理器",
+   "dir": "app/ES.apk",
+   "in_system_image": true,
+   "tech_class": "A",
+   "user_protected": true,
+   "protection_reason": "用户明确指定保留，未经用户另行授权不得精简。",
+   "evidence": "system/app/ES.apk，Manifest package=com.estrongs.android.pop v3.2.5.5；静态分析为 A 类候选（0 条 app 级入向引用），但受用户保护，从删除清单移除",
+   "exec_action": "受用户保护：禁止删除、禁用、清数据、限制自启/后台/权限（未经授权）"
+  },
+  {
+   "package": "com.shere.assistivetouch",
+   "label": "EasyTouch",
+   "dir": "app/easytouch.apk",
+   "in_system_image": true,
+   "tech_class": "B",
+   "user_protected": true,
+   "protection_reason": "用户明确指定保留，未经用户另行授权不得精简。",
+   "evidence": "system/app/easytouch.apk，Manifest package=com.shere.assistivetouch v4.6.1；设备 flags 含 PERSISTENT，pm path 指向 /system/app/easytouch.apk",
+   "exec_action": "受用户保护：禁止删除、禁用、清数据、限制自启/后台/权限（未经授权）"
+  },
+  {
+   "package": "com.topjohnwu.magisk",
+   "label": "Magisk",
+   "dir": "app/magisk.apk",
+   "in_system_image": true,
+   "tech_class": "C",
+   "user_protected": true,
+   "protection_reason": "用户明确指定保留，未经用户另行授权不得精简。",
+   "evidence": "system/app/magisk.apk（Manifest v25.2）；设备加载版本 27.0，codePath=/data/app/com.topjohnwu.magisk-EuMSu4VItaK3widDq122zw==（UPDATED_SYSTEM_APP）",
+   "exec_action": "受用户保护：禁止删除、禁用、清数据、限制自启/后台/权限（未经授权）"
+  },
+  {
+   "package": "com.web1n.permissiondog",
+   "label": "权限狗",
+   "dir": "app/qxg.apk",
+   "in_system_image": true,
+   "tech_class": "B",
+   "user_protected": true,
+   "protection_reason": "用户明确指定保留，未经用户另行授权不得精简。",
+   "evidence": "system/app/qxg.apk，Manifest package=com.web1n.permissiondog v0.1.0.45；设备 pm path 指向 /system/app/qxg.apk",
+   "exec_action": "受用户保护：禁止删除、禁用、清数据、限制自启/后台/权限（未经授权）"
+  }
+ ],
+ "magisk_related": [
+  {
+   "kind": "apk",
+   "path": "app/magisk.apk",
+   "package": "com.topjohnwu.magisk",
+   "in_system_image": true,
+   "size_bytes": 11278270,
+   "evidence": "镜像内唯一与 Magisk 相关的文件；Manifest v25.2，设备实际加载 /data/app 版本 27.0"
+  },
+  {
+   "kind": "runtime-binary",
+   "path": "/sbin/magisk32",
+   "package": null,
+   "in_system_image": false,
+   "size_bytes": 195148,
+   "evidence": "设备 /sbin 为 Magisk tmpfs 挂载（/proc/mounts: \"magisk /sbin tmpfs ...\"），该二进制不在 system 分区内，属 boot ramdisk 侧"
+  },
+  {
+   "kind": "runtime-binary",
+   "path": "/sbin/magiskinit",
+   "package": null,
+   "in_system_image": false,
+   "size_bytes": 200736,
+   "evidence": "同上；/sbin 内 root:root，权限 750"
+  },
+  {
+   "kind": "runtime-binary",
+   "path": "/sbin/magiskpolicy",
+   "package": null,
+   "in_system_image": false,
+   "size_bytes": 222004,
+   "evidence": "同上；SELinux 策略注入工具"
+  },
+  {
+   "kind": "symlink",
+   "path": "/sbin/magisk",
+   "package": null,
+   "in_system_image": false,
+   "size_bytes": null,
+   "evidence": "/sbin/magisk -> ./magisk32"
+  },
+  {
+   "kind": "runtime-dir",
+   "path": "/sbin/.magisk",
+   "package": null,
+   "in_system_image": false,
+   "size_bytes": null,
+   "evidence": "设备存在但 shell 用户无权限（Permission denied）；内容未读取"
+  },
+  {
+   "kind": "data-dir",
+   "path": "/data/adb",
+   "package": null,
+   "in_system_image": false,
+   "size_bytes": null,
+   "evidence": "设备存在，shell 用户 Permission denied；内容未读取（无 root shell，未做提权）"
+  }
+ ],
+ "magisk_absent_in_image": [
+  "system/bin/su",
+  "system/xbin/su",
+  "system/xbin/magisk*",
+  "system/bin/magisk*",
+  "system/etc/init/*.rc 中的 magisk 条目",
+  "build.prop 中的 magisk 属性"
+ ],
+ "magisk_forbidden_actions": [
+  "删除或替换 app/magisk.apk",
+  "修改 boot.img / boot ramdisk（含 magiskinit 补丁、init 配置）",
+  "删除 /sbin/magisk*、/sbin/.magisk",
+  "清理 /data/adb",
+  "清理 Magisk 模块目录或 denylist 配置",
+  "把 Magisk 组件当作第三方残留处理"
+ ],
+ "executable_lists": {
+  "A_delete": [],
+  "B_disable": [
+   "com.android.bluetoothmidiservice",
+   "com.android.captiveportallogin",
+   "com.android.companiondevicemanager",
+   "com.alibaba.ailabs.genie.guide",
+   "com.alibaba.ailabs.genie.osupdate",
+   "com.android.pacprocessor",
+   "com.android.mtp",
+   "com.android.statementservice",
+   "com.android.storagemanager",
+   "com.android.vpndialogs"
+  ],
+  "C_observe": [
+   "com.alipay.arome.app",
+   "com.alibaba.spkey",
+   "com.ailabs.youku.iot",
+   "com.android.certinstaller",
+   "com.ailabs.emode",
+   "com.alibaba.ailabs.genie.aicare",
+   "com.alibaba.ailabs.genie.albums",
+   "com.alibaba.ailabs.genie.browser",
+   "com.alibaba.ailabs.genie.children",
+   "com.alibaba.ailabs.genie.rtc",
+   "com.alibaba.ailabs.genie.screensaver",
+   "com.android.keychain",
+   "com.aliyun.uuid",
+   "com.android.providers.userdictionary",
+   "com.alibaba.genie.waft",
+   "com.alira.info",
+   "com.yunos.tv.provision",
+   "com.android.location.fused",
+   "com.android.proxyhandler"
+  ],
+  "D_forbidden": [
+   "com.aligenie.ags",
+   "com.android.systemui",
+   "android.ext.shared",
+   "com.alibaba.ailabs.genie.iot",
+   "com.alibaba.ailabs.genie.launcher",
+   "com.alibaba.ailabs.ar.monitor",
+   "com.android.bluetooth",
+   "com.android.settings",
+   "com.alibaba.ailabs.genie.smartapp",
+   "com.android.webview",
+   "com.android.providers.calendar",
+   "com.android.providers.contacts",
+   "com.android.defcontainer",
+   "com.android.providers.downloads",
+   "android.ext.services",
+   "com.android.externalstorage",
+   "com.android.inputdevices",
+   "com.android.providers.media",
+   "com.android.packageinstaller",
+   "com.android.providers.settings",
+   "com.android.shell"
+  ],
+  "protected_blocked": [
+   "com.estrongs.android.pop",
+   "com.dangbei1.tvlauncher",
+   "com.shere.assistivetouch",
+   "com.web1n.permissiondog",
+   "com.topjohnwu.magisk"
+  ]
+ }
+}

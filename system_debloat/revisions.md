@@ -1,91 +1,110 @@
-# 修订记录（rev2）
+# 修订记录（rev3）
 
 - 修订时间：2026-11-20
-- 修订对象：本目录（`system_debloat/`）下全部报告与机器可读数据；不涉及 `system` 镜像、APK、T5 代码
-- 修订触发：对上一版报告的独立审查意见（8 条）
-- 本轮**未执行**任何 `pm disable-user` / `pm uninstall` / 镜像写操作；设备 `pm list packages -d` 仍为空
+- 修订对象：本目录（`system_debloat/`）下全部报告与机器可读数据；不涉及 `system` 镜像、APK、T5 代码或设备分区
+- 修订触发：① 操作者指定六个 App 必须保留；② rev2 遗留的三个 P2 问题
+- 本轮**未执行**任何 `pm disable-user` / `pm uninstall` / 镜像或 boot 写操作；设备 `pm list packages -d` 仍为空
 
-## 1. 逐条修订对照
+## 1. 本轮（rev3）改动对照
 
-| # | 审查意见 | 处理方式 | 落点 |
+| # | 任务项 | 处理方式 | 落点 |
 |---|---|---|---|
-| 1 | AMPE 应从 B 调整为 C | 已改。依据：降噪后 7 个包（smartapp、Guide、GenieAicare、GenieBrowser、GenieIoT、GenieLauncher、GenieRTC）对 `genie.webapps.START/INIT` 与 `GwaReceiver` 有 app 级引用。`optimization_plan.md` 中 AMPE 的禁用命令已删除，改为“明确不进 P1”并给出产品决策 + 动态验证步骤 | `app_inventory.*`、`app_removal_recommendations.md` §4.1、`optimization_plan.md` §2.5、`risk_assessment.md` §2.2 |
-| 2 | ES 不应再称“安全删除” | 已改。改为“**A 类候选：静态通过，删后动态验证未完成**”，保留 4.60 MB 空间事实，补充放行条件（用户授权 + `pm uninstall -k --user 0` 观察 ≥7 天）；明确本报告不执行卸载 | `README.md` §4/§5、`app_removal_recommendations.md` §2、`optimization_plan.md` §3 |
-| 3 | 平台 Provider 过滤有 bug | 已修。原 `x['token'].split('.')[0] in ('com.android','media','settings')` 对 `com.android.providers.*` 恒为 False。新增 `filters.py`（精确集合 + 前缀匹配）与 `test_filters.py`（8 个用例，含回归用例）；`report.py`/`mkdocs2.py`/`edges.py` 全部改为调用该模块；已重新生成 CSV/JSON/统计并核对总数 | `tools/filters.py`、`tools/test_filters.py`、`dependency_edges.csv`、`app_inventory.*` |
-| 4 | `/data/app` 更新包数量错误 | 已改。实测为 **3 个**：`GenieAicare`（系统 4.0.26 → 加载 4.0.62）、`GenieRTC`（4.0.16 → 5.2.78.53746723.dc）、`magisk`（25.2 → 27.0）。文档新增“系统内 prebuilt vs 设备加载版本”对照表，并说明删 prebuilt 的后果 | `app_inventory.md` §2/§5.1、`summary_stats.json:updated_system_apps`、`risk_assessment.md` §1/§4 |
-| 5 | 禁用批次改为单包逐项 | 已改。P1 拆为实验 1/2/3+，顺序固定 当贝 → 悬浮触控 → OTA，每项独立观察 ≥24 h，附观测项与结果记录模板；OTA 20% CPU 标注为**单次 343 s 区间快照** | `optimization_plan.md` §2、`app_removal_recommendations.md` §3.1 |
-| 6 | 运行时数据表述 | 已改。216,324 kB 明确限定为 **smartapp 3 个进程的 PSS 合计**，不等于整条语音链路；`GenieMonitor` 快照中无进程 → 明确写“未获动态验证”，D 级依据仅为 Manifest + 跨包引用；新增 `MemTotal`/`MemFree`/`MemAvailable`/dumpsys `Free RAM`/`used pss` 指标表并说明不可互换、不可相加（含 35 分钟内 `MemFree` 89,812→44,332 kB 的波动证据）；不推算 RAM 节省 | `README.md` §4/§5/§6、`app_dependency_analysis.md` §8.3/§9、`summary_stats.json:memory_snapshot` |
-| 7 | 保持核心保护 | 保持并强化：D 类 21 个不变，`AliGenieService`、`smartapp`、`GenieMonitor`、`GenieIoT`、ASR/VAD/Wakeup、音频 native 库、SystemUI、Launcher、Settings、WebView、PackageManager 相关组件，以及 `system/lib`、`lib/hw`、`vendor/lib` 全部列为禁止删除/修改 | `app_removal_recommendations.md` §5、`risk_assessment.md` §5 |
-| 8 | 交付要求 | 6 份报告 + REVISIONS + 机器可读数据全部更新；新增过滤函数单元测试；本文件记录依据与未验证事项；只提交报告与工具变更；未触碰 `my-doc/06_t5_bridge` | 本目录全部 |
+| 1 | 六个 App 永久保护 | 从 inventory 实测包名（非显示名）：`com.dangbei1.tvlauncher`、`bin.mt.plus`、`com.estrongs.android.pop`、`com.web1n.permissiondog`、`com.shere.assistivetouch`、`com.topjohnwu.magisk`。全部写入 `protection.py`，`report.py` 在生成阶段强制过滤：受保护包只进 `protected_blocked` 桶，不进 `A_delete`/`B_disable`/`C_observe`/`D_forbidden`；`exec_action` 统一为“受用户保护：禁止删除、禁用、清数据、限制自启/后台/权限” | `tools/protection.py`、`app_inventory.*`、`user_protected.json`、`summary_stats.json:executable_lists`、五份报告 |
+| 2 | Magisk 独立保护 | 单列 `MAGISK_RELATED`：镜像内仅 `app/magisk.apk`（11,278,270 B，v25.2）；镜像外 `/sbin/magisk32|magiskinit|magiskpolicy`、`/sbin/magisk` 符号链接、`/sbin/.magisk`、`/data/adb`（后两者 shell 无权限，内容未读）。同时记录“已核查未发现”的镜像位置（`bin/su`、`xbin/su`、init rc、build.prop）。禁止删除/清理/改 `boot.img` 与 init。**未推断安装结构** | `protection.py`、README §4.1、`app_removal_recommendations.md` §2.1 |
+| 3 | ES 从删除清单排除 | 保留 **A 类**技术分类与静态分析结论（0 条 app 级入向引用、无进程、无 native 库），仅加 `user_protected=true` 与拦截；`A_delete` 桶为空；文中明确“不为方便把 ES 伪装成 D 类” | `app_removal_recommendations.md` §3.1、`app_inventory.*`、`summary_stats.json` |
+| 4 | P2-1 旧目录路径引用 | 删除/改写全部旧目录路径引用（原 7 处：README 2 处、plan 2 处、risk 2 处、revisions 1 处），统一改为“T5 工程与本目录完全独立”这类不涉及旧目录的描述；`test_protection.TestLegacyPathsRemoved` 断言报告与数据中不再出现该旧路径 | 全部 `.md` / `.json` / `.csv` |
+| 5 | P2-2 A 类含义 | 统一为「**A 类候选：静态分析认为具备删除可能性，尚未完成真机动态验证。**」；新增 `class_label` 字段与“可执行/不可执行”列，并在总览中区分“静态候选 / 已验证 / 用户保护 / 当前可执行” | `report.py:CLASS_LABEL`、README §5/§6、`app_removal_recommendations.md` §1/§3、`app_inventory.md` §1 |
+| 6 | P2-3 authority 边界 | `is_platform_authority()` 由裸 `str.startswith` 改为「精确集合匹配 或 等于前缀 或 以 `<前缀>.` 开头」；`com.android.settingshelper.provider` 等相似串不再误判；新增 4 条边界测试（含审查指定的断言） | `tools/filters.py`、`tools/test_filters.py` |
 
-## 2. 分类变化
+## 2. 分类与保护状态（rev3）
 
-| 类 | rev1 | rev2 | 变化 |
-|---|---|---|---|
-| A | 1 个（4.60 MB） | 1 个（4.60 MB） | 数量不变，口径改为“候选、动态未验证” |
-| B | 14 个（115.33 MB） | **13 个（28.15 MB）** | AMPE 移出 |
-| C | 19 个（153.89 MB） | **20 个（241.07 MB）** | AMPE 移入 |
-| D | 21 个（252.90 MB） | 21 个（252.9 MB） | 不变 |
-| 合计 | 55 个 / 526.72 MB | **55 个 / 526.72 MB** | 一致 |
+| 类 | 数量 | 分区体积 MB | 其中受保护 | 可执行 |
+|---|---|---|---|---|
+| A 类候选 | 1 | 4.6 | 1（ES） | **0** |
+| B 建议禁用 | 13 | 28.15 | 3（当贝 / EasyTouch / 权限狗） | 10 |
+| C 暂时保留 | 20 | 241.07 | 1（Magisk） | 0 |
+| D 禁止删除 | 21 | 252.9 | 0 | 0 |
+| 合计 | 55 | **526.72** | **5（镜像内）+ 1（设备侧）** | 10 |
+
+> 分类数量与 rev2 相同（A1/B13/C20/D21，共 55 个 / 526.72 MB）；保护不改变技术分类，只改变可执行性。
 
 ## 3. 过滤修复的量化影响
 
-| 指标 | rev1 | rev2 |
-|---|---|---|
-| `dependency_edges.csv` 边总数 | 639 | 639 |
-| `app`（应用级证据） | 219 | **197** |
-| `platform_provider` | 110 | **132** |
-| `sdk_noise` | 203 | 203 |
-| `ambiguous` | 107 | 107 |
-| 被误判为 app 级的 `com.android.providers.*` | 有（漏过滤） | **0** |
+| 指标 | rev1 | rev2 | rev3 |
+|---|---|---|---|
+| `dependency_edges.csv` 边总数 | 639 | 639 | 639 |
+| `app`（应用级证据） | 219 | 197 | 197 |
+| `platform_provider` | 110 | 132 | 132 |
+| `sdk_noise` | 203 | 203 | 203 |
+| `ambiguous` | 107 | 107 | 107 |
+| 被误判为 app 级的 `com.android.providers.*` | 有 | 0 | 0 |
+| 相似串（如 `com.android.settingshelper.provider`）被误判为平台 | 可能 | **可能（裸前缀）** | **0（边界匹配）** |
 
-## 4. 测试结果
+> rev3 的边界修正在现有数据上没有改变上述计数（镜像中不存在此类相似 authority），
+> 但消除了“前缀相似即平台”的判定漏洞；测试用例锁定该行为。
+
+## 4. 测试结果（rev3 实跑）
 
 ```
-python -m unittest test_filters -v
-test_aosp_provider_authorities ... ok
-test_bare_authorities ... ok
-test_empty_and_case ... ok
-test_prefix_only_authority ... ok
-test_regression_split_bug ... ok
-test_third_party_authorities_are_not_platform ... ok
-test_app_level_only ... ok
-test_classify ... ok
-----------------------------------------------------------------------
-Ran 8 tests in 0.000s
-OK
+python -m unittest discover -v      # 在 system_debloat/tools/ 下执行
 ```
 
-覆盖率说明：这 8 个用例覆盖审查意见点名的 5 个 authority（`com.android.providers.media` /
-`com.android.providers.settings` / `com.android.providers.contacts` / `media` / `settings`）+ 5 个第三方
-authority 反例 + 前缀型子 authority + 大小写/空值 + 证据分桶函数。
+- `test_filters`：**12 条**，含 rev3 新增的 `com.android.settingshelper.provider` 边界用例、
+  前缀相似反例（`com.android.settingsproxy`、`com.android.providersx.foo` 等）、子命名空间正例。
+- `test_protection`：**20 条**，覆盖六个 App 的保护登记、执行清单隔离、ES「保留 A 类但被拦截」、
+  Magisk 组件范围、CSV/JSON 一致性、统计一致性、旧目录引用检查。
+
+真实输出见本文件所在提交的 commit message 与 `README.md` 对应章节；两套测试合计 **32 条**，全部通过。
 
 ## 5. 仍未验证的事项（不得当作已证结论使用）
 
-1. **ES 删除后的实际影响**：未做 `pm uninstall` 与重启验证；隐式调用只有在运行时才暴露。
-2. **B 类 13 个包禁用后的行为**：无一在真机上执行过禁用；本报告的“通过判据”是待执行方案，不是结果。
+1. **ES 删除后的实际影响**：未做 `pm uninstall` 与重启验证（且它现在受用户保护，不会执行）。
+2. **可执行 B 类（10 个）禁用后的行为**：无一在真机上执行过禁用；报告中“通过判据”是待执行方案，不是结果。
 3. **AMPE 禁用/删除后的技能影响**：7 个包的引用已确认，但“具体哪些语音技能会失效”未验证。
-4. **删除 `/data/app` 覆盖包的系统 prebuilt 的后果**（`GenieAicare`/`GenieRTC`/`magisk`）：
+4. **删除 `/data/app` 覆盖包的系统 prebuilt 的后果**（`GenieAicare`/`GenieRTC`）：
    推断为“退化为普通数据区应用、失去 SYSTEM flag 与默认权限授予”，**未实测**。
 5. **`GenieMonitor` / `AliGenieService` / `GenieIoT` 的运行时占用**：快照中没有它们的进程，PSS 未知。
 6. **framework 侧调用的具体方法**：`framework/*.jar` 是 316 字节占位，只有 vdex 字符串证据。
 7. **`vendor` 分区内部依赖**：未解包 `vendor.img`，`GooglePinyinIME`、`MTKThermalManager` 未做静态分析。
 8. **任何 RAM 节省量**：本报告不提供，也不应从 PSS 快照推算。
+9. **Magisk 安装结构**：`/sbin/.magisk`、`/data/adb` 对 shell 不可读，本轮未提权；`boot.img` 未分析。
+   只能确认 `/sbin` 为 Magisk tmpfs 挂载与三个二进制的存在，不推断补丁细节。
+10. **六个受保护 App 的“必要权限/自启”边界**：保护规则要求不限制其必要自启与权限，
+    但其具体依赖集合（例如当贝桌面拉起的推送服务是否必要）未做逐项验证。
 
 ## 6. 变更文件
 
 | 文件 | 变更类型 |
 |---|---|
-| `README.md` | 重写结论摘要、9 问回答、RAM 口径（§6）、目录（§7）、限制（§8） |
-| `revisions.md` | 新增（本文件） |
-| `app_inventory.md` | 更新分布表、新增 §5.1 `/data/app` 覆盖包对照表 |
-| `app_dependency_analysis.md` | 更新 AMPE 引用计数、唤醒锁归属限定、§9 链路表、§10 修订说明 |
-| `app_removal_recommendations.md` | 重写 A 类章节、B 类首批改单包实验、新增 §4.1 AMPE 专项、§8 修订说明 |
-| `risk_assessment.md` | 新增 2 类风险（prebuilt 退化、指标混用）、B 类表移除 AMPE、新增 §6 修订说明 |
-| `optimization_plan.md` | P1 改单包实验、AMPE 移出、P2 前置条件、§4 指标口径、§9 修订说明 |
-| `app_inventory.csv` / `.json` | 重新生成（AMPE→C、ES 说明、引用计数按修复后规则） |
-| `dependency_edges.csv` | 重新生成（过滤修复，`evidence_class` 重算） |
-| `summary_stats.json` | 新增 `revision`、`memory_snapshot`（含各指标含义）、`updated_system_apps`、`process_pss_kb` |
-| `tools/filters.py` | 新增（共享过滤规则） |
-| `tools/test_filters.py` | 新增（单元测试） |
-| `tools/report.py` 等 | 改为调用 `filters`，移除错误的内联判断 |
+| `README.md` | 新增 §4 用户保护清单（含 §4.1 Magisk）+ 章节重编号；结论与 9 问改为“保护优先”口径 |
+| `revisions.md` | 重写（rev2 归档 + rev3 记录，本文件） |
+| `app_inventory.md` | 清单新增「保护」列、新增 §2 用户保护表、章节重编号 |
+| `app_dependency_analysis.md` | §10 修订说明追加 rev3（保护不影响技术分类） |
+| `app_removal_recommendations.md` | 新增 §2 用户保护（含 §2.1 Magisk）、A 类改“候选”口径、B 类拆“受保护/可试验” |
+| `risk_assessment.md` | 新增“违反用户保护”“误处理 Magisk 组件”风险、新增 §2.3 受保护项 |
+| `optimization_plan.md` | P1 移除当贝/EasyTouch/权限狗、实验改为 OTA→引导→AOSP、P2 前置条件加保护项 |
+| `app_inventory.csv` / `.json` | 新增 `class_label` / `user_protected` / `protection_reason` / `exec_action` |
+| `dependency_edges.csv` | 重新生成（authority 边界修复后重算 `evidence_class`） |
+| `summary_stats.json` | 新增 `user_protection`（6 个 App + Magisk 组件 + 禁止动作）与 `executable_lists`（含 `protected_blocked`） |
+| `user_protected.json` | 新增（机器可读保护清单与执行清单） |
+| `tools/protection.py` | 新增（保护规则 + `assert_no_protected()`） |
+| `tools/test_protection.py` | 新增（20 条保护与一致性测试） |
+| `tools/filters.py` | 修正 `is_platform_authority()` 边界匹配 |
+| `tools/test_filters.py` | 新增 4 条边界用例（12 条） |
+| `tools/report.py` | 接入保护过滤、新增字段与 `user_protected.json` 输出 |
+| `tools/mkdocs*.py` | 生成保护章节、移除旧目录路径引用 |
+
+## 附录：rev2 修订记录（2026-11-20，历史归档）
+
+| # | 审查意见 | 处理方式 |
+|---|---|---|
+| 1 | AMPE 应从 B 调整为 C | 已改。依据：降噪后 7 个包对 `genie.webapps.START/INIT` 与 `GwaReceiver` 有 app 级引用 |
+| 2 | ES 不应再称“安全删除” | 已改为“A 类候选：静态通过，删后动态验证未完成” |
+| 3 | 平台 Provider 过滤有 bug | 新增 `filters.py` + `test_filters.py`，修复 `split('.')[0]` 判断 |
+| 4 | `/data/app` 更新包数量错误 | 由 2 个修正为 3 个（补 `GenieAicare`），新增版本对照表 |
+| 5 | 禁用批次改为单包逐项 | P1 拆为单包实验，每项观察 ≥24 h；OTA 20% CPU 标注为单次区间快照 |
+| 6 | 运行时数据表述 | 216,324 kB 限定为 smartapp 3 进程；指标口径分表；不推算 RAM 节省 |
+| 7 | 保持核心保护 | D 类 21 个不变 |
+| 8 | 交付要求 | 报告与机器可读数据全部更新，新增过滤测试 |
+
+量化影响：`app` 级边 219 → 197，`platform_provider` 110 → 132，`com.android.providers.*` 误判为 0。

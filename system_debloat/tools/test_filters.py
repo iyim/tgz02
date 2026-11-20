@@ -48,6 +48,40 @@ class TestPlatformAuthority(unittest.TestCase):
         self.assertTrue(filters.is_platform_authority('  MEDIA  '))
 
 
+class TestAuthorityBoundary(unittest.TestCase):
+    """rev3 / P2-3: prefix matching must respect a '.' boundary."""
+
+    def test_similar_third_party_authority_is_not_platform(self):
+        self.assertFalse(
+            filters.is_platform_authority(
+                "com.android.settingshelper.provider"
+            )
+        )
+
+    def test_prefix_lookalikes_are_not_platform(self):
+        for a in ('com.android.settingshelper.provider',
+                  'com.android.settingsproxy',
+                  'com.android.providersx.foo',
+                  'com.android.contactssync',
+                  'com.android.calendarsync',
+                  'com.android.calllogbackupx'):
+            self.assertFalse(filters.is_platform_authority(a), a)
+
+    def test_sub_namespace_still_matches(self):
+        for a in ('com.android.providers.downloads.documents',
+                  'com.android.providers.media.documents',
+                  'com.android.providers.settings',
+                  'com.android.providers',
+                  'com.android.settings'):
+            self.assertTrue(filters.is_platform_authority(a), a)
+
+    def test_required_platform_authorities_still_match(self):
+        # the exact list required by the review
+        for a in ('media', 'settings', 'com.android.providers.settings',
+                  'com.android.providers.media', 'com.android.providers.contacts'):
+            self.assertTrue(filters.is_platform_authority(a), a)
+
+
 class TestEvidenceClass(unittest.TestCase):
     def test_classify(self):
         self.assertEqual(filters.classify_evidence('authority', 'media'), 'platform_provider')
