@@ -16,25 +16,25 @@
    "case": "C01",
    "name": "收到 1 条 ACK",
    "ok": true,
-   "detail": "{\"acks\": [{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146097904, \"stored_at_ms\": 1795146097904}], \"summary\": {\"type\": \"CLIENT_SUMMARY\", \"scenario\": \"basic\", \"sent\": 1, \"acks\": 1, \"elapsed_ms\": 531, \"peer_closed\": false}, \"errors\": [], \"rc\": 0, \"stderr\": \"\"}"
+   "detail": "{\"acks\": [{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151357384, \"stored_at_ms\": 1795151357384}], \"summary\": {\"type\": \"CLIENT_SUMMARY\", \"scenario\": \"basic\", \"sent\": 1, \"acks\": 1, \"elapsed_ms\": 516, \"peer_closed\": false}, \"errors\": [], \"rc\": 0, \"stderr\": \"\"}"
   },
   {
    "case": "C01",
    "name": "ACK status=stored",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146097904, \"stored_at_ms\": 1795146097904}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151357384, \"stored_at_ms\": 1795151357384}"
   },
   {
    "case": "C01",
    "name": "ACK 回带同一 event_id",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146097904, \"stored_at_ms\": 1795146097904}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151357384, \"stored_at_ms\": 1795151357384}"
   },
   {
    "case": "C01",
    "name": "ACK events_stored=1",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146097904, \"stored_at_ms\": 1795146097904}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151357384, \"stored_at_ms\": 1795151357384}"
   },
   {
    "case": "C01",
@@ -46,13 +46,13 @@
    "case": "C01",
    "name": "记录 version=1 且 rec=asr_final",
    "ok": true,
-   "detail": "{\"version\": 1, \"rec\": \"asr_final\", \"event_id\": \"evt-basic-1\", \"event_type\": \"asr_final\", \"pid\": 16112, \"session_id\": \"1967001\", \"text\": \"天猫精灵现在几点了\", \"text_bytes\": 27, \"text_chars\": 9, \"is_final\": true, \"received_at_ms\": 1763000000000, \"recv_at_ms\": 1795146097904, \"stored_at_ms\": 1795146097904, \"seq\": 1}"
+   "detail": "{\"version\": 1, \"rec\": \"asr_final\", \"event_id\": \"evt-basic-1\", \"event_type\": \"asr_final\", \"pid\": 16112, \"session_id\": \"1967001\", \"text\": \"天猫精灵现在几点了\", \"text_bytes\": 27, \"text_chars\": 9, \"is_final\": true, \"received_at_ms\": 1763000000000, \"recv_at_ms\": 1795151357384, \"stored_at_ms\": 1795151357384, \"seq\": 1}"
   },
   {
    "case": "C01",
    "name": "记录字段齐全",
    "ok": true,
-   "detail": "{\"version\": 1, \"rec\": \"asr_final\", \"event_id\": \"evt-basic-1\", \"event_type\": \"asr_final\", \"pid\": 16112, \"session_id\": \"1967001\", \"text\": \"天猫精灵现在几点了\", \"text_bytes\": 27, \"text_chars\": 9, \"is_final\": true, \"received_at_ms\": 1763000000000, \"recv_at_ms\": 1795146097904, \"stored_at_ms\": 1795146097904, \"seq\": 1}"
+   "detail": "{\"version\": 1, \"rec\": \"asr_final\", \"event_id\": \"evt-basic-1\", \"event_type\": \"asr_final\", \"pid\": 16112, \"session_id\": \"1967001\", \"text\": \"天猫精灵现在几点了\", \"text_bytes\": 27, \"text_chars\": 9, \"is_final\": true, \"received_at_ms\": 1763000000000, \"recv_at_ms\": 1795151357384, \"stored_at_ms\": 1795151357384, \"seq\": 1}"
   },
   {
    "case": "C01",
@@ -95,8 +95,8 @@
    "name": "退出时打印 STATS",
    "ok": true,
    "detail": [
-    "{\"type\":\"CONFIG\",\"sock\":\"path:D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C01\\\\srv.sock\",\"work_dir\":\"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C01\\\\work\",\"max_clients\":8,\"dedup_cap\":8192,\"fault_after_writes\":-1,\"text_max_bytes\":511,\"body_max\":1024}",
-    "{\"type\":\"READY\",\"pid\":46484,\"events_stored\":0,\"replay_lines\":0,\"bad_lines\":0,\"truncated_bytes\":0,\"dedup_size\":0}",
+    "{\"type\":\"CONFIG\",\"sock\":\"path:D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C01\\\\srv.sock\",\"work_dir\":\"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C01\\\\work\",\"max_clients\":8,\"dedup_cap\":8192,\"fault_after_writes\":-1,\"text_max_bytes\":511,\"body_max\":1024}",
+    "{\"type\":\"READY\",\"pid\":33900,\"events_stored\":0,\"replay_lines\":0,\"bad_lines\":0,\"truncated_bytes\":0,\"dedup_size\":0}",
     "{\"type\":\"STATS\",\"tag\":\"final\",\"frames\":1,\"stored\":1,\"duplicate\":0,\"rejected\":0,\"frame_errors\":0,\"store_errors\":0,\"clients_accepted\":1,\"clients_closed\":1,\"client_aborts\":1,\"client_overflow\":0,\"replay_lines\":0,\"replay_bad\":0,\"truncated_bytes\":0,\"dedup_evicted\":0,\"store_failed\":false}"
    ]
   },
@@ -110,7 +110,7 @@
    "case": "C01",
    "name": "停止后状态文件为 stopped",
    "ok": true,
-   "detail": "{\"state\": \"stopped\", \"pid\": 46484, \"sock\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C01\\\\srv.sock\", \"work_dir\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C01\\\\work\", \"events_stored\": 1, \"duplicates\": 0, \"rejected\": 0, \"frames\": 1, \"clients\": 0, \"clients_accepted\": 1, \"clients_closed\": 1, \"client_aborts\": 1, \"client_overflow\": 0, \"frame_errors\": 0, \"store_errors\": 0, \"replay_lines\": 0, \"bad_lines\": 0, \"truncated_bytes\": 0, \"dedup_size\": 1, \"dedup_evicted\": 0, \"store_failed\": false, \"updated_at\": \"2026-11-20T11:41:38\"}"
+   "detail": "{\"state\": \"stopped\", \"pid\": 33900, \"sock\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C01\\\\srv.sock\", \"work_dir\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C01\\\\work\", \"events_stored\": 1, \"duplicates\": 0, \"rejected\": 0, \"frames\": 1, \"clients\": 0, \"clients_accepted\": 1, \"clients_closed\": 1, \"client_aborts\": 1, \"client_overflow\": 0, \"frame_errors\": 0, \"store_errors\": 0, \"replay_lines\": 0, \"bad_lines\": 0, \"truncated_bytes\": 0, \"dedup_size\": 1, \"dedup_evicted\": 0, \"store_failed\": false, \"updated_at\": \"2026-11-20T13:09:18\"}"
   },
   {
    "case": "C02",
@@ -128,7 +128,7 @@
    "case": "C02",
    "name": "两条 ACK 都成功",
    "ok": true,
-   "detail": "[{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146098707, \"stored_at_ms\": 1795146098707}, {\"version\": 1, \"ack\": \"evt-cjk-esc-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 2, \"recv_at_ms\": 1795146099238, \"stored_at_ms\": 1795146099238}]"
+   "detail": "[{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151358165, \"stored_at_ms\": 1795151358165}, {\"version\": 1, \"ack\": \"evt-cjk-esc-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 2, \"recv_at_ms\": 1795151358693, \"stored_at_ms\": 1795151358693}]"
   },
   {
    "case": "C02",
@@ -164,55 +164,55 @@
    "case": "C03",
    "name": "empty_text -> rejected/empty_text",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-empty-text\", \"status\": \"rejected\", \"code\": \"empty_text\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146100028, \"stored_at_ms\": 0, \"field\": \"text\"}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-empty-text\", \"status\": \"rejected\", \"code\": \"empty_text\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151359490, \"stored_at_ms\": 0, \"field\": \"text\"}"
   },
   {
    "case": "C03",
    "name": "empty_text ACK 指出字段 text",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-empty-text\", \"status\": \"rejected\", \"code\": \"empty_text\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146100028, \"stored_at_ms\": 0, \"field\": \"text\"}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-empty-text\", \"status\": \"rejected\", \"code\": \"empty_text\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151359490, \"stored_at_ms\": 0, \"field\": \"text\"}"
   },
   {
    "case": "C03",
    "name": "empty_text ACK 回带可信 event_id（发送端可对账）",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-empty-text\", \"status\": \"rejected\", \"code\": \"empty_text\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146100028, \"stored_at_ms\": 0, \"field\": \"text\"}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-empty-text\", \"status\": \"rejected\", \"code\": \"empty_text\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151359490, \"stored_at_ms\": 0, \"field\": \"text\"}"
   },
   {
    "case": "C03",
    "name": "empty_sid -> rejected/empty_session_id",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-empty-sid\", \"status\": \"rejected\", \"code\": \"empty_session_id\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146100550, \"stored_at_ms\": 0, \"field\": \"session_id\"}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-empty-sid\", \"status\": \"rejected\", \"code\": \"empty_session_id\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151360005, \"stored_at_ms\": 0, \"field\": \"session_id\"}"
   },
   {
    "case": "C03",
    "name": "empty_sid ACK 指出字段 session_id",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-empty-sid\", \"status\": \"rejected\", \"code\": \"empty_session_id\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146100550, \"stored_at_ms\": 0, \"field\": \"session_id\"}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-empty-sid\", \"status\": \"rejected\", \"code\": \"empty_session_id\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151360005, \"stored_at_ms\": 0, \"field\": \"session_id\"}"
   },
   {
    "case": "C03",
    "name": "empty_sid ACK 回带可信 event_id（发送端可对账）",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-empty-sid\", \"status\": \"rejected\", \"code\": \"empty_session_id\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146100550, \"stored_at_ms\": 0, \"field\": \"session_id\"}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-empty-sid\", \"status\": \"rejected\", \"code\": \"empty_session_id\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151360005, \"stored_at_ms\": 0, \"field\": \"session_id\"}"
   },
   {
    "case": "C03",
    "name": "empty_event_id -> rejected/empty_event_id",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"empty_event_id\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146101078, \"stored_at_ms\": 0, \"field\": \"event_id\"}"
+   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"empty_event_id\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151360533, \"stored_at_ms\": 0, \"field\": \"event_id\"}"
   },
   {
    "case": "C03",
    "name": "empty_event_id ACK 指出字段 event_id",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"empty_event_id\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146101078, \"stored_at_ms\": 0, \"field\": \"event_id\"}"
+   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"empty_event_id\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151360533, \"stored_at_ms\": 0, \"field\": \"event_id\"}"
   },
   {
    "case": "C03",
    "name": "empty_event_id ACK 的 ack 为 null（没有可信 event_id，不猜）",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"empty_event_id\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146101078, \"stored_at_ms\": 0, \"field\": \"event_id\"}"
+   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"empty_event_id\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151360533, \"stored_at_ms\": 0, \"field\": \"event_id\"}"
   },
   {
    "case": "C03",
@@ -242,37 +242,37 @@
    "case": "C04",
    "name": "bad_utf8 -> rejected/bad_utf8",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-bad-utf8\", \"status\": \"rejected\", \"code\": \"bad_utf8\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146101892, \"stored_at_ms\": 0, \"field\": \"text\"}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-bad-utf8\", \"status\": \"rejected\", \"code\": \"bad_utf8\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151361330, \"stored_at_ms\": 0, \"field\": \"text\"}"
   },
   {
    "case": "C04",
    "name": "bad_utf8 的 ACK 回带 event_id 便于对账",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-bad-utf8\", \"status\": \"rejected\", \"code\": \"bad_utf8\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146101892, \"stored_at_ms\": 0, \"field\": \"text\"}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-bad-utf8\", \"status\": \"rejected\", \"code\": \"bad_utf8\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151361330, \"stored_at_ms\": 0, \"field\": \"text\"}"
   },
   {
    "case": "C04",
    "name": "overlong_utf8 -> rejected/bad_utf8",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-overlong\", \"status\": \"rejected\", \"code\": \"bad_utf8\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146102414, \"stored_at_ms\": 0, \"field\": \"text\"}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-overlong\", \"status\": \"rejected\", \"code\": \"bad_utf8\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151361847, \"stored_at_ms\": 0, \"field\": \"text\"}"
   },
   {
    "case": "C04",
    "name": "overlong_utf8 的 ACK 回带 event_id 便于对账",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-overlong\", \"status\": \"rejected\", \"code\": \"bad_utf8\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146102414, \"stored_at_ms\": 0, \"field\": \"text\"}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-overlong\", \"status\": \"rejected\", \"code\": \"bad_utf8\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151361847, \"stored_at_ms\": 0, \"field\": \"text\"}"
   },
   {
    "case": "C04",
    "name": "lone_surrogate -> rejected/bad_utf8",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-surrogate\", \"status\": \"rejected\", \"code\": \"bad_utf8\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146102949, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-surrogate\", \"status\": \"rejected\", \"code\": \"bad_utf8\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151362363, \"stored_at_ms\": 0}"
   },
   {
    "case": "C04",
    "name": "lone_surrogate 的 ACK 回带 event_id 便于对账",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-surrogate\", \"status\": \"rejected\", \"code\": \"bad_utf8\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146102949, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-surrogate\", \"status\": \"rejected\", \"code\": \"bad_utf8\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151362363, \"stored_at_ms\": 0}"
   },
   {
    "case": "C04",
@@ -296,31 +296,31 @@
    "case": "C05",
    "name": "512 字节文本 -> rejected/text_too_long",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-too-long\", \"status\": \"rejected\", \"code\": \"text_too_long\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146103751, \"stored_at_ms\": 0, \"field\": \"text\"}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-too-long\", \"status\": \"rejected\", \"code\": \"text_too_long\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151363157, \"stored_at_ms\": 0, \"field\": \"text\"}"
   },
   {
    "case": "C05",
    "name": "511 字节文本 -> stored",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-max-ok\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146104277, \"stored_at_ms\": 1795146104277}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-max-ok\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151363683, \"stored_at_ms\": 1795151363683}"
   },
   {
    "case": "C05",
    "name": "CRC 不符 -> rejected/bad_crc",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"bad_crc\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146104818, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"bad_crc\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151364205, \"stored_at_ms\": 0}"
   },
   {
    "case": "C05",
    "name": "声明 5000 字节 body -> rejected/oversize_frame",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"oversize_frame\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146104831, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"oversize_frame\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151364220, \"stored_at_ms\": 0}"
   },
   {
    "case": "C05",
    "name": "声明超长后接收端主动断开（流已不可对齐）",
    "ok": true,
-   "detail": "{\"type\": \"CLIENT_SUMMARY\", \"scenario\": \"oversize_body\", \"sent\": 1, \"acks\": 1, \"elapsed_ms\": 0, \"peer_closed\": true}"
+   "detail": "{\"type\": \"CLIENT_SUMMARY\", \"scenario\": \"oversize_body\", \"sent\": 1, \"acks\": 1, \"elapsed_ms\": 16, \"peer_closed\": true}"
   },
   {
    "case": "C05",
@@ -350,25 +350,25 @@
    "case": "C06",
    "name": "消息 version=2 -> rejected/bad_protocol_version",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-badver\", \"status\": \"rejected\", \"code\": \"bad_protocol_version\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146105116, \"stored_at_ms\": 0, \"field\": \"version\"}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-badver\", \"status\": \"rejected\", \"code\": \"bad_protocol_version\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151364503, \"stored_at_ms\": 0, \"field\": \"version\"}"
   },
   {
    "case": "C06",
    "name": "帧头 ver=2 -> rejected/bad_frame_version",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"bad_frame_version\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146105640, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"bad_frame_version\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151365020, \"stored_at_ms\": 0}"
   },
   {
    "case": "C06",
    "name": "帧头版本错后断开连接",
    "ok": true,
-   "detail": "{\"type\": \"CLIENT_SUMMARY\", \"scenario\": \"bad_frame_version\", \"sent\": 1, \"acks\": 1, \"elapsed_ms\": 16, \"peer_closed\": true}"
+   "detail": "{\"type\": \"CLIENT_SUMMARY\", \"scenario\": \"bad_frame_version\", \"sent\": 1, \"acks\": 1, \"elapsed_ms\": 0, \"peer_closed\": true}"
   },
   {
    "case": "C06",
    "name": "magic 错 -> rejected/bad_magic",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"bad_magic\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795146105653, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": null, \"status\": \"rejected\", \"code\": \"bad_magic\", \"dup_count\": 0, \"events_stored\": 0, \"recv_at_ms\": 1795151365033, \"stored_at_ms\": 0}"
   },
   {
    "case": "C06",
@@ -392,7 +392,7 @@
    "case": "C07",
    "name": "重复 ACK 的 code=duplicate_event_id",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-dup-1\", \"status\": \"duplicate\", \"code\": \"duplicate_event_id\", \"dup_count\": 1, \"events_stored\": 1, \"recv_at_ms\": 1795146105936, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-dup-1\", \"status\": \"duplicate\", \"code\": \"duplicate_event_id\", \"dup_count\": 1, \"events_stored\": 1, \"recv_at_ms\": 1795151365317, \"stored_at_ms\": 0}"
   },
   {
    "case": "C07",
@@ -404,7 +404,7 @@
    "case": "C07",
    "name": "dup_count=1",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-dup-1\", \"status\": \"duplicate\", \"code\": \"duplicate_event_id\", \"dup_count\": 1, \"events_stored\": 1, \"recv_at_ms\": 1795146105936, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-dup-1\", \"status\": \"duplicate\", \"code\": \"duplicate_event_id\", \"dup_count\": 1, \"events_stored\": 1, \"recv_at_ms\": 1795151365317, \"stored_at_ms\": 0}"
   },
   {
    "case": "C07",
@@ -428,7 +428,7 @@
    "case": "C07",
    "name": "dup_count 累计到 2",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-resend-1\", \"status\": \"duplicate\", \"code\": \"duplicate_event_id\", \"dup_count\": 2, \"events_stored\": 2, \"recv_at_ms\": 1795146106980, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-resend-1\", \"status\": \"duplicate\", \"code\": \"duplicate_event_id\", \"dup_count\": 2, \"events_stored\": 2, \"recv_at_ms\": 1795151366382, \"stored_at_ms\": 0}"
   },
   {
    "case": "C07",
@@ -518,7 +518,7 @@
    "case": "C09",
    "name": "重启回放 5 条",
    "ok": true,
-   "detail": "{\"state\": \"running\", \"pid\": 39856, \"sock\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C09\\\\srv2.sock\", \"work_dir\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C09\\\\work\", \"events_stored\": 0, \"duplicates\": 0, \"rejected\": 0, \"frames\": 0, \"clients\": 0, \"clients_accepted\": 0, \"clients_closed\": 0, \"client_aborts\": 0, \"client_overflow\": 0, \"frame_errors\": 0, \"store_errors\": 0, \"replay_lines\": 5, \"bad_lines\": 0, \"truncated_bytes\": 0, \"dedup_size\": 5, \"dedup_evicted\": 0, \"store_failed\": false, \"updated_at\": \"2026-11-20T11:41:49\"}"
+   "detail": "{\"state\": \"running\", \"pid\": 25104, \"sock\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C09\\\\srv2.sock\", \"work_dir\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C09\\\\work\", \"events_stored\": 0, \"duplicates\": 0, \"rejected\": 0, \"frames\": 0, \"clients\": 0, \"clients_accepted\": 0, \"clients_closed\": 0, \"client_aborts\": 0, \"client_overflow\": 0, \"frame_errors\": 0, \"store_errors\": 0, \"replay_lines\": 5, \"bad_lines\": 0, \"truncated_bytes\": 0, \"dedup_size\": 5, \"dedup_evicted\": 0, \"store_failed\": false, \"updated_at\": \"2026-11-20T13:09:28\"}"
   },
   {
    "case": "C09",
@@ -554,25 +554,25 @@
    "case": "C10",
    "name": "第 1 条 stored",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-fault-0000\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146110601, \"stored_at_ms\": 1795146110601}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-fault-0000\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151369989, \"stored_at_ms\": 1795151369989}"
   },
   {
    "case": "C10",
    "name": "第 2 条为 error（不是 stored）",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-fault-0001\", \"status\": \"error\", \"code\": \"store_unavailable\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146110601, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-fault-0001\", \"status\": \"error\", \"code\": \"store_unavailable\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151369989, \"stored_at_ms\": 0}"
   },
   {
    "case": "C10",
    "name": "第 2 条 code=store_unavailable/store_failed",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-fault-0001\", \"status\": \"error\", \"code\": \"store_unavailable\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146110601, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-fault-0001\", \"status\": \"error\", \"code\": \"store_unavailable\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151369989, \"stored_at_ms\": 0}"
   },
   {
    "case": "C10",
    "name": "第 3 条同样 error（fail-stop 不再尝试写盘）",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-fault-0002\", \"status\": \"error\", \"code\": \"store_unavailable\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146110601, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-fault-0002\", \"status\": \"error\", \"code\": \"store_unavailable\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151369989, \"stored_at_ms\": 0}"
   },
   {
    "case": "C10",
@@ -584,7 +584,7 @@
    "case": "C10",
    "name": "文件没有被半条记录污染（每行都能解析）",
    "ok": true,
-   "detail": "[\"{\\\"version\\\":1,\\\"rec\\\":\\\"asr_final\\\",\\\"event_id\\\":\\\"evt-fault-0000\\\",\\\"event_type\\\":\\\"asr_final\\\",\\\"pid\\\":16112,\\\"session_id\\\":\\\"1967100\\\",\\\"text\\\":\\\"第几条测试文本\\\",\\\"text_bytes\\\":21,\\\"text_chars\\\":7,\\\"is_final\\\":true,\\\"received_at_ms\\\":1763000000000,\\\"recv_at_ms\\\":1795146110601,\\\"stored_at_ms\\\":179514"
+   "detail": "[\"{\\\"version\\\":1,\\\"rec\\\":\\\"asr_final\\\",\\\"event_id\\\":\\\"evt-fault-0000\\\",\\\"event_type\\\":\\\"asr_final\\\",\\\"pid\\\":16112,\\\"session_id\\\":\\\"1967100\\\",\\\"text\\\":\\\"第几条测试文本\\\",\\\"text_bytes\\\":21,\\\"text_chars\\\":7,\\\"is_final\\\":true,\\\"received_at_ms\\\":1763000000000,\\\"recv_at_ms\\\":1795151369989,\\\"stored_at_ms\\\":179515"
   },
   {
    "case": "C10",
@@ -602,7 +602,7 @@
    "case": "C10",
    "name": "重启回放 1 条",
    "ok": true,
-   "detail": "{\"state\": \"running\", \"pid\": 48280, \"sock\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C10\\\\srv2.sock\", \"work_dir\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C10\\\\work\", \"events_stored\": 0, \"duplicates\": 0, \"rejected\": 0, \"frames\": 0, \"clients\": 0, \"clients_accepted\": 0, \"clients_closed\": 0, \"client_aborts\": 0, \"client_overflow\": 0, \"frame_errors\": 0, \"store_errors\": 0, \"replay_lines\": 1, \"bad_lines\": 0, \"truncated_bytes\": 0, \"dedup_size\": 1, \"dedup_evicted\": 0, \"store_failed\": false, \"updated_at\": \"2026-11-20T11:41:52\"}"
+   "detail": "{\"state\": \"running\", \"pid\": 21160, \"sock\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C10\\\\srv2.sock\", \"work_dir\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C10\\\\work\", \"events_stored\": 0, \"duplicates\": 0, \"rejected\": 0, \"frames\": 0, \"clients\": 0, \"clients_accepted\": 0, \"clients_closed\": 0, \"client_aborts\": 0, \"client_overflow\": 0, \"frame_errors\": 0, \"store_errors\": 0, \"replay_lines\": 1, \"bad_lines\": 0, \"truncated_bytes\": 0, \"dedup_size\": 1, \"dedup_evicted\": 0, \"store_failed\": false, \"updated_at\": \"2026-11-20T13:09:31\"}"
   },
   {
    "case": "C10",
@@ -626,13 +626,13 @@
    "case": "C11",
    "name": "READY 报告截掉了字节",
    "ok": true,
-   "detail": "{\"state\": \"running\", \"pid\": 45584, \"sock\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C11\\\\srv.sock\", \"work_dir\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C11\\\\work\", \"events_stored\": 0, \"duplicates\": 0, \"rejected\": 0, \"frames\": 0, \"clients\": 0, \"clients_accepted\": 0, \"clients_closed\": 0, \"client_aborts\": 0, \"client_overflow\": 0, \"frame_errors\": 0, \"store_errors\": 0, \"replay_lines\": 2, \"bad_lines\": 0, \"truncated_bytes\": 63, \"dedup_size\": 2, \"dedup_evicted\": 0, \"store_failed\": false, \"updated_at\": \"2026-11-20T11:41:53\"}"
+   "detail": "{\"state\": \"running\", \"pid\": 36936, \"sock\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C11\\\\srv.sock\", \"work_dir\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C11\\\\work\", \"events_stored\": 0, \"duplicates\": 0, \"rejected\": 0, \"frames\": 0, \"clients\": 0, \"clients_accepted\": 0, \"clients_closed\": 0, \"client_aborts\": 0, \"client_overflow\": 0, \"frame_errors\": 0, \"store_errors\": 0, \"replay_lines\": 2, \"bad_lines\": 0, \"truncated_bytes\": 63, \"dedup_size\": 2, \"dedup_evicted\": 0, \"store_failed\": false, \"updated_at\": \"2026-11-20T13:09:32\"}"
   },
   {
    "case": "C11",
    "name": "回放 2 条有效记录",
    "ok": true,
-   "detail": "{\"state\": \"running\", \"pid\": 45584, \"sock\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C11\\\\srv.sock\", \"work_dir\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C11\\\\work\", \"events_stored\": 0, \"duplicates\": 0, \"rejected\": 0, \"frames\": 0, \"clients\": 0, \"clients_accepted\": 0, \"clients_closed\": 0, \"client_aborts\": 0, \"client_overflow\": 0, \"frame_errors\": 0, \"store_errors\": 0, \"replay_lines\": 2, \"bad_lines\": 0, \"truncated_bytes\": 63, \"dedup_size\": 2, \"dedup_evicted\": 0, \"store_failed\": false, \"updated_at\": \"2026-11-20T11:41:53\"}"
+   "detail": "{\"state\": \"running\", \"pid\": 36936, \"sock\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C11\\\\srv.sock\", \"work_dir\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C11\\\\work\", \"events_stored\": 0, \"duplicates\": 0, \"rejected\": 0, \"frames\": 0, \"clients\": 0, \"clients_accepted\": 0, \"clients_closed\": 0, \"client_aborts\": 0, \"client_overflow\": 0, \"frame_errors\": 0, \"store_errors\": 0, \"replay_lines\": 2, \"bad_lines\": 0, \"truncated_bytes\": 63, \"dedup_size\": 2, \"dedup_evicted\": 0, \"store_failed\": false, \"updated_at\": \"2026-11-20T13:09:32\"}"
   },
   {
    "case": "C11",
@@ -656,7 +656,7 @@
    "case": "C11",
    "name": "修复后可继续接收新事件",
    "ok": true,
-   "detail": "[{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146113212, \"stored_at_ms\": 1795146113212}]"
+   "detail": "[{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151372576, \"stored_at_ms\": 1795151372576}]"
   },
   {
    "case": "C11",
@@ -680,7 +680,7 @@
    "case": "C12",
    "name": "首次 stored",
    "ok": true,
-   "detail": "[{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146114002, \"stored_at_ms\": 1795146114002}]"
+   "detail": "[{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151373361, \"stored_at_ms\": 1795151373361}]"
   },
   {
    "case": "C12",
@@ -692,19 +692,19 @@
    "case": "C12",
    "name": "重启回放 1 条",
    "ok": true,
-   "detail": "{\"state\": \"running\", \"pid\": 41348, \"sock\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C12\\\\srv2.sock\", \"work_dir\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_114137\\\\C12\\\\work\", \"events_stored\": 0, \"duplicates\": 0, \"rejected\": 0, \"frames\": 0, \"clients\": 0, \"clients_accepted\": 0, \"clients_closed\": 0, \"client_aborts\": 0, \"client_overflow\": 0, \"frame_errors\": 0, \"store_errors\": 0, \"replay_lines\": 1, \"bad_lines\": 0, \"truncated_bytes\": 0, \"dedup_size\": 1, \"dedup_evicted\": 0, \"store_failed\": false, \"updated_at\": \"2026-11-20T11:41:54\"}"
+   "detail": "{\"state\": \"running\", \"pid\": 33600, \"sock\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C12\\\\srv2.sock\", \"work_dir\": \"D:\\\\tgz02\\\\OS\\\\system\\\\my-doc\\\\06_t5_bridge\\\\tests\\\\_run\\\\20261120_130917\\\\C12\\\\work\", \"events_stored\": 0, \"duplicates\": 0, \"rejected\": 0, \"frames\": 0, \"clients\": 0, \"clients_accepted\": 0, \"clients_closed\": 0, \"client_aborts\": 0, \"client_overflow\": 0, \"frame_errors\": 0, \"store_errors\": 0, \"replay_lines\": 1, \"bad_lines\": 0, \"truncated_bytes\": 0, \"dedup_size\": 1, \"dedup_evicted\": 0, \"store_failed\": false, \"updated_at\": \"2026-11-20T13:09:34\"}"
   },
   {
    "case": "C12",
    "name": "重启后同 event_id -> duplicate",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"duplicate\", \"code\": \"duplicate_event_id\", \"dup_count\": 1, \"events_stored\": 0, \"recv_at_ms\": 1795146114805, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"duplicate\", \"code\": \"duplicate_event_id\", \"dup_count\": 1, \"events_stored\": 0, \"recv_at_ms\": 1795151374158, \"stored_at_ms\": 0}"
   },
   {
    "case": "C12",
    "name": "dup_count=1",
    "ok": true,
-   "detail": "{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"duplicate\", \"code\": \"duplicate_event_id\", \"dup_count\": 1, \"events_stored\": 0, \"recv_at_ms\": 1795146114805, \"stored_at_ms\": 0}"
+   "detail": "{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"duplicate\", \"code\": \"duplicate_event_id\", \"dup_count\": 1, \"events_stored\": 0, \"recv_at_ms\": 1795151374158, \"stored_at_ms\": 0}"
   },
   {
    "case": "C12",
@@ -806,7 +806,7 @@
    "case": "C14",
    "name": "只发不读的客户端被接收端断开（ACK 缓冲有界）",
    "ok": true,
-   "detail": "{\"type\": \"CLIENT_SUMMARY\", \"scenario\": \"noread\", \"sent\": 530, \"acks\": 0, \"elapsed_ms\": 453, \"peer_closed\": true}"
+   "detail": "{\"type\": \"CLIENT_SUMMARY\", \"scenario\": \"noread\", \"sent\": 523, \"acks\": 0, \"elapsed_ms\": 312, \"peer_closed\": true}"
   },
   {
    "case": "C14",
@@ -830,7 +830,7 @@
    "case": "C14",
    "name": "过载断开后接收端仍可正常服务",
    "ok": true,
-   "detail": "[{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 173, \"recv_at_ms\": 1795146120477, \"stored_at_ms\": 1795146120477}]"
+   "detail": "[{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 173, \"recv_at_ms\": 1795151379560, \"stored_at_ms\": 1795151379560}]"
   },
   {
    "case": "C14",
@@ -902,7 +902,7 @@
    "case": "C15",
    "name": "异常断开之后仍能正常接收事件",
    "ok": true,
-   "detail": "[{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795146125665, \"stored_at_ms\": 1795146125665}]"
+   "detail": "[{\"version\": 1, \"ack\": \"evt-basic-1\", \"status\": \"stored\", \"code\": \"ok\", \"dup_count\": 0, \"events_stored\": 1, \"recv_at_ms\": 1795151384741, \"stored_at_ms\": 1795151384741}]"
   },
   {
    "case": "C15",
@@ -925,7 +925,7 @@
  ],
  "passed": 153,
  "failed": 0,
- "elapsed_s": 28.7,
+ "elapsed_s": 28.2,
  "bridge": "D:\\tgz02\\OS\\system\\my-doc\\06_t5_bridge\\android\\out\\tgb_bridge.exe",
  "client": "D:\\tgz02\\OS\\system\\my-doc\\06_t5_bridge\\tests\\out\\tgb_client.exe"
 }

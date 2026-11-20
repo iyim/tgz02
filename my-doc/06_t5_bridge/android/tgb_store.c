@@ -28,6 +28,62 @@
 
 #define TGB_TAIL_CHUNK 4096
 
+/*
+ * 同步工作目录项。
+ *
+ * 为什么需要：`events.jsonl` 第一次被创建时，"文件内容已 fsync" 只保证数据块落盘，
+ * 不保证**目录项**（文件名 -> inode）落盘。掉电后可能出现"数据在、名字不在"，
+ * 也就是事件看起来丢了。POSIX 的做法是对父目录 fsync 一次。
+ *
+ * Android/Linux：open(dir, O_RDONLY|O_DIRECTORY) + fsync + close，任何一步失败都返回 -1。
+ * Windows      ：没有等价且稳定的目录同步接口，主机测试跳过（不影响设备端语义）。
+ */
+static int tgb_sync_directory(const char *dir, char *err, size_t errlen)
+{
+#ifdef _WIN32
+    (void)dir;
+    (void)err;
+    (void)errlen;
+    return 0;
+#else
+    int fd;
+    int flags = O_RDONLY;
+    int saved;
+
+#ifdef O_DIRECTORY
+    flags |= O_DIRECTORY;
+#endif
+
+    fd = open(dir, flags);
+    if (fd < 0) {
+        saved = errno;
+        if (err && errlen)
+            snprintf(err, errlen, "open directory %s failed errno=%d", dir, saved);
+        errno = saved;
+        return -1;
+    }
+
+    if (fsync(fd) != 0) {
+        saved = errno;
+        close(fd);
+        if (err && errlen)
+            snprintf(err, errlen, "fsync directory %s failed errno=%d", dir, saved);
+        errno = saved;
+        return -1;
+    }
+
+    if (close(fd) != 0) {
+        saved = errno;
+        if (err && errlen)
+            snprintf(err, errlen, "close directory %s failed errno=%d", dir, saved);
+        errno = saved;
+        return -1;
+    }
+
+    return 0;
+#endif
+}
+
 int tgb_store_open(tgb_store *s, const char *dir, const char *file,
                    long long fault_after, char *err, size_t errlen)
 {
@@ -51,6 +107,14 @@ int tgb_store_open(tgb_store *s, const char *dir, const char *file,
     }
     s->offset = t5_file_size(s->path);
     if (s->offset < 0) s->offset = 0;
+
+    /* 目录项持久化：失败必须关掉刚打开的文件并返回错误，
+     * 不允许带着"文件名可能还没落盘"的状态继续启动并向发送端 ACK stored */
+    if (tgb_sync_directory(dir, err, errlen) != 0) {
+        TGB_CLOSE(s->fd);
+        s->fd = -1;
+        return -1;
+    }
     return 0;
 }
 
@@ -122,7 +186,10 @@ int tgb_store_repair(const char *dir, const char *file, long long *truncated,
     if (dir == NULL || file == NULL) return -1;
 
     n = snprintf(path, sizeof(path), "%s/%s", dir, file);
-    if (n < 0 || (size_t)n >= sizeof(path)) return -1;
+    if (n < 0 || (size_t)n >= sizeof(path)) {
+        if (err && errlen) snprintf(err, errlen, "repair path too long");
+        return -1;
+    }
 
     size = t5_file_size(path);
     if (size < 0) return 0;                    /* 不存在：首次运行 */
@@ -147,19 +214,40 @@ int tgb_store_repair(const char *dir, const char *file, long long *truncated,
 
         got = t5_read_at(path, base, buf, (size_t)chunk);
         if (got != (long)chunk) {
+            int saved = errno;
             TGB_CLOSE(fd);
-            if (err && errlen) snprintf(err, errlen, "repair read failed at %lld", base);
+            if (err && errlen)
+                snprintf(err, errlen, "repair read failed at %lld errno=%d", base, saved);
+            errno = saved;
             return -1;
         }
         for (i = chunk - 1; i >= 0; i--) {
             if (buf[i] == '\n') {
                 long long keep = base + i + 1;
+
                 if (TGB_TRUNC(fd, keep) != 0) {
+                    int saved = errno;
                     TGB_CLOSE(fd);
-                    if (err && errlen) snprintf(err, errlen, "repair truncate failed errno=%d", errno);
+                    if (err && errlen)
+                        snprintf(err, errlen, "repair truncate failed errno=%d", saved);
+                    errno = saved;
                     return -1;
                 }
-                (void)t5_sync(fd);
+
+                /*
+                 * truncate 只是改了内存里的元数据：必须 fsync 之后才算"修复完成"。
+                 * 忽略这里的失败就等于在"文件可能仍是半条"的情况下报告修复成功，
+                 * 下一次 append 会接在半行后面把一条好记录粘坏。
+                 */
+                if (t5_sync(fd) != 0) {
+                    int saved = errno;
+                    TGB_CLOSE(fd);
+                    if (err && errlen)
+                        snprintf(err, errlen, "repair fsync failed errno=%d", saved);
+                    errno = saved;
+                    return -1;
+                }
+
                 TGB_CLOSE(fd);
                 if (truncated != NULL) *truncated = size - keep;
                 return 0;
@@ -171,11 +259,22 @@ int tgb_store_repair(const char *dir, const char *file, long long *truncated,
 
     /* 整个文件都没有换行符：全是半条，清空 */
     if (TGB_TRUNC(fd, 0) != 0) {
+        int saved = errno;
         TGB_CLOSE(fd);
-        if (err && errlen) snprintf(err, errlen, "repair truncate(0) failed errno=%d", errno);
+        if (err && errlen) snprintf(err, errlen, "repair truncate(0) failed errno=%d", saved);
+        errno = saved;
         return -1;
     }
-    (void)t5_sync(fd);
+
+    if (t5_sync(fd) != 0) {
+        int saved = errno;
+        TGB_CLOSE(fd);
+        if (err && errlen)
+            snprintf(err, errlen, "repair fsync after truncate(0) failed errno=%d", saved);
+        errno = saved;
+        return -1;
+    }
+
     TGB_CLOSE(fd);
     if (truncated != NULL) *truncated = size;
     return 0;

@@ -26,7 +26,7 @@
 | event_id 幂等去重（状态可从落盘数据恢复） | 不接 GPT / DeepSeek / 通义，不做意图理解 |
 | JSONL 追加 + fsync，**落盘后才 ACK** | 不做 TTS、不播报、不写原厂数据目录 |
 | 重启恢复（尾部半条修复 + 回放 + 去重重建） | 不做自定义唤醒词 |
-| 主机自动化测试（15 用例 / 153 断言）+ 单元测试（131 断言） | 不改 T3/T4 生产代码、不改原厂 APK/SO/分区 |
+| 主机自动化测试（15 用例 / 153 断言）+ 单元测试（155 断言） | 不改 T3/T4 生产代码、不改原厂 APK/SO/分区 |
 | 设备端 start/status/stop/log/events 脚本 + 真机冒烟 | 不把 ASR final 伪装成 T5 WAV Job |
 
 与 T5 WAV Mock 管线的隔离：**目录独立**（`06_t5_bridge/` vs `06_t5/`）、
@@ -53,7 +53,7 @@
 │   ├── build.ps1          NDK 交叉编译（armv7a / API 26 / static）
 │   └── run_bridge.sh      设备端 start|status|stats|log|events|stop
 ├── tests/
-│   ├── tgb_unit_test.c    纯逻辑单元测试（131 断言）
+│   ├── tgb_unit_test.c    纯逻辑单元测试（155 断言）
 │   ├── tgb_client.c       集成测试客户端（也是"最小可用发送端"参考实现）
 │   ├── run_host_tests.py  15 个集成用例（153 断言），真起进程/真收发/真落盘
 │   └── build_and_run.ps1  主机全套：编译 + 单测 + 集成
@@ -267,7 +267,8 @@ recv 帧 → 校验 → 去重查询 → 序列化一行
 | 回滚也失败 | 进入 **fail-stop**：不再接受任何事件，ACK 报 `store_unavailable` |
 | `fsync` 失败 | 进入 **fail-stop**，但**不回滚**：完整一行的存在比"不确定"更好——重启后它若在，重发会得到 `duplicate`，语义仍然幂等 |
 | 进程被 kill -9 | 已 ACK 的事件全部在盘上（每条都 fsync 过）；未 ACK 的客户端会重发 |
-| 崩溃留下半行 | 下次启动 `tgb_store_repair()` 截断到最后一个 `\n` 之后（§5.4） |
+| 目录项未落盘（首次创建 `events.jsonl`） | `tgb_store_open()` 在打开文件后对工作目录做一次 `open(O_RDONLY\|O_DIRECTORY)` + `fsync` + `close`；失败则关闭 fd 并**拒绝启动**（不允许带着"文件名可能没落盘"的状态 ACK stored）。Windows 无等价接口，主机测试跳过 |
+| 崩溃留下半行 | 下次启动 `tgb_store_repair()` 截断到最后一个 `\n` 之后，且截断后必须 `fsync` 成功才算修复完成（§5.4） |
 
 fail-stop 是刻意的：文件是否可信已经不可知，继续"写成功就 ACK"等于撒谎。
 运维可见性：`bridge_status.json` 的 `store_failed` + 日志里 `[tgb] store append failed`。
@@ -366,14 +367,14 @@ sh run_bridge.sh stats            # 只打印状态文件
 
 ```
 $ sh run_bridge.sh start
-started: pid=13880 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work
-{"type":"READY","pid":13880,"events_stored":0,"replay_lines":0,...}
+started: pid=17813 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work
+{"type":"READY","pid":17813,"events_stored":0,"replay_lines":0,...}   （READY 出现 = 目录 fsync 成功）
 
 $ ./tgb_client --scenario basic
 ACK {"version":1,"ack":"evt-basic-1","status":"stored","code":"ok",...}
 
 $ sh run_bridge.sh stop
-stopped: pid=13880
+stopped: pid=17813
 {"type":"STATS","tag":"final","frames":17,"stored":13,"duplicate":1,"rejected":3,...}
 ```
 
@@ -419,18 +420,27 @@ powershell -ExecutionPolicy Bypass -File tests\build_and_run.ps1
 | 15 客户端异常断开（半帧 / 只发头 / 静默连接） | C15 | 9 |
 | **合计** | **15 用例** | **153 断言** |
 
-### 7.3 单元测试（131 断言）
+### 7.3 单元测试（155 断言）
 
 `U-FRAME`(16) 帧编解码与边界 · `U-CRC`(3) 与 `tgz2_fnv1a` 逐值对拍 ·
-`U-EVENT`(33) 解析/校验/转义/长度边界 · `U-UTF8`(12) 严格 UTF-8 ·
-`U-RECORD`(14) 记录序列化与反解 · `U-DEDUP`(16) 幂等与 FIFO 淘汰 ·
-`U-STORE`(37) 追加/回放/尾部修复/故障注入/只读 fd 写失败。
+`U-EVENT`(33) 解析/校验/转义/长度边界 · `U-INT`(16) 整数安全边界（2^53、超长、前导零、`-0`）·
+`U-UTF8`(12) 严格 UTF-8 · `U-RECORD`(14) 记录序列化与反解 · `U-DEDUP`(16) 幂等与 FIFO 淘汰 ·
+`U-STORE`(45) 追加/回放/尾部修复（含跨 4 KB 回扫）/目录同步/故障注入/只读 fd 写失败。
+
+另有 `-ftrapv` 有符号溢出探测（A 修复后 / B 修复前 / C 去掉每位检查的反面对照）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tests\run_ub_probe.ps1   # -> evidence/host_trapv_t505a.log
+```
+
+（TDM-GCC 没有 libubsan，`-ftrapv` 是等价手段：有符号溢出会直接 trap。）
+细节与"为什么 P1 描述的溢出在旧代码里不可复现"见 [P1/P2 修复记录 §2](t5_05a_p1p2_fix_record.md)。
 
 ### 7.4 实测结果
 
 ```
-unit: 131 passed, 0 failed
-integration: 153 通过 / 0 失败  （15 用例，28.2 s）
+unit:        155 passed, 0 failed
+integration: 153 通过 / 0 失败  （15 用例，27.9 s）
 ```
 
 （完整逐条见 `evidence/host_it_t505a.log`，机器可读见 `evidence/host_it_t505a_results.json`。）
@@ -439,7 +449,7 @@ integration: 153 通过 / 0 失败  （15 用例，28.2 s）
 
 `tgb_client` 也编了 ARM32 版，可在设备上直接跑（`--sock tgz2_asr_bridge`），
 本轮实测覆盖：basic / cjk_escaped / dup / empty_sid / bad_utf8 / text_too_long / batch10 / 重启恢复。
-日志：`evidence/device_smoke_t505a.log`。
+日志：`evidence/device_smoke_t505a_p1p2.log`（P1/P2 之后的复验）、`evidence/device_smoke_t505a.log`（首轮）。
 
 ---
 
@@ -470,6 +480,9 @@ integration: 153 通过 / 0 失败  （15 用例，28.2 s）
     只作参考字段，不参与任何判定。
 12. **Windows 上没有抽象命名空间**：主机侧用文件路径，同一份代码两种地址形态；
     abstract 语义只在设备上验证。
+13. **目录 fsync 在 Windows 上被跳过**（没有等价且稳定的目录同步接口），
+    所以"目录项落盘"这一条只在 Android（ext4，实测支持）上验证过；
+    主机测试覆盖的是相邻分支（工作目录不存在时 `open` 失败并报错，U-S33/U-S34）。
 
 ---
 

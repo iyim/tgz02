@@ -264,17 +264,33 @@ static int jint(jctx *c, long long *out)
 
     if (c->p >= c->end) return jfail(c, TGB_E_BAD_JSON);
     if (*c->p == '-') { neg = 1; c->p++; }
-    if (c->p >= c->end || *c->p < '0' || *c->p > '9') return jfail(c, TGB_E_BAD_TYPE);
-    if (*c->p == '0' && (c->p + 1 < c->end) && c->p[1] >= '0' && c->p[1] <= '9')
+    if (c->p >= c->end || *c->p < '0' || *c->p > '9')
+        return jfail(c, TGB_E_BAD_TYPE);
+
+    if (*c->p == '0' &&
+        (c->p + 1 < c->end) &&
+        c->p[1] >= '0' && c->p[1] <= '9')
         return jfail(c, TGB_E_BAD_JSON);                    /* 前导零 */
 
     while (c->p < c->end && *c->p >= '0' && *c->p <= '9') {
-        v = v * 10 + (long long)(*c->p - '0');
-        if (v > TGB_LL_MAX_SAFE) return jfail(c, TGB_E_BAD_JSON);   /* 超出安全整数范围 */
+        long long digit = (long long)(*c->p - '0');
+
+        /*
+         * 必须在乘加前检查，不能先计算再检查：
+         * v * 10 + digit 一旦越过 LLONG_MAX 就是有符号整数溢出（UB），
+         * 事后比较 v > TGB_LL_MAX_SAFE 已经太晚。
+         * 允许的绝对值上限是 2^53，下面的写法保证乘加本身不会溢出。
+         */
+        if (v > (TGB_LL_MAX_SAFE - digit) / 10LL)
+            return jfail(c, TGB_E_BAD_JSON);                /* 超出安全整数范围 */
+
+        v = v * 10LL + digit;
         digits++;
         c->p++;
     }
+
     if (digits == 0) return jfail(c, TGB_E_BAD_JSON);
+
     *out = neg ? -v : v;
     return 0;
 }

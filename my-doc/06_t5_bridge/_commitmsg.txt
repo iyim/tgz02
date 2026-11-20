@@ -1,0 +1,46 @@
+fix: harden bridge integer parsing and store durability
+
+三处修复 + 配套测试，不重设计 Bridge：协议字段、帧头、CRC、SOCK_STREAM、ACK 语义、
+去重键与 FIFO 容量、T3/T4 生产代码、原厂任何文件均未改动。
+
+P1-a tgb_event.c：jint() 改为"乘加前"检查边界
+  if (v > (TGB_LL_MAX_SAFE - digit) / 10) reject;
+  不再依赖"乘加之后立刻检查"这一隐式不变量；JSON 整数语法（负号/前导零/-0）
+  与 2^53 上限保持不变，未知字段走的同一个解析器一并受保护。
+
+P2 tgb_store.c：尾部修复必须确认 fsync 成功
+  tgb_store_repair() 在 ftruncate 之后调用 t5_sync()，失败返回 -1 且先关 fd、保留 errno；
+  错误信息区分 repair truncate failed / repair fsync failed /
+  repair fsync after truncate(0) failed。尾部 4 KB 块回扫与"整个文件无换行符则清空"
+  的逻辑不变。不允许在同步失败时报告修复成功。
+
+P1-b tgb_store.c：同步工作目录项
+  新增静态 tgb_sync_directory()：Android/Linux 用 open(dir,O_RDONLY|O_DIRECTORY)+fsync+close，
+  失败返回 -1 并带目录与 errno；Windows 无等价接口，主机分支跳过。
+  tgb_store_open() 在文件打开成功后、返回 0 之前调用它，失败则关闭刚打开的 fd 并返回 -1，
+  不允许带着"文件名可能未落盘"的状态启动并 ACK stored。
+
+测试：
+- tests/tgb_unit_test.c 新增 U-INT 组 16 条（正整数/负整数/2^53 收/2^53+1 拒/30 位正负整数拒/
+  未知字段内超长整数拒/前导零 01 与 -01 拒/-0 解析成 0 后被范围检查拒/单个 0）与
+  U-S33..U-S40 8 条（目录不存在时 open 失败并报错、新目录 open 成功、40 条 >4KB 后
+  尾部半条跨块回扫截断、修复后回放 40 条 0 坏行）；原有尾部修复用例全部保留。
+  单测 131 -> 155 断言，全通过。
+- 新增 tests/run_ub_probe.ps1 + tests/ub_variant.py：-ftrapv 有符号溢出探测（无 libubsan 的等价手段），
+  A 当前实现 / B 修复前实现 / C 去掉每位检查的反面对照（C 必 trap）。
+  实测 A、B 均无 trap，C 在 30 位整数处 abort —— 即修复前代码里的"溢出"不可复现
+  （每轮检查已把 v 钳制在 2^53，下一轮 v*10+digit <= 9.01e16 << LLONG_MAX），
+  如实记录在 t5_05a_p1p2_fix_record.md §2。修复后接受/拒绝集合与修复前完全一致。
+
+验证：
+- 主机单测 155 断言、集成 15 用例 / 153 断言（行为未变）
+- Android ARM32 NDK：-O2 -Wall -Wextra -static，0 警告 0 错误
+  tgb_bridge sha256=3d902529efb5594700ae209d7102b1af6605041df066fe55dbddb07ab78d048d
+- TG-Z02 真机（/data ext4）：全新工作目录启动成功 -> READY 出现即证明目录 fsync 返回 0；
+  17 帧 / 13 条落盘 / 1 重复 / 3 拒收 / store_errors=0；重启 replay_lines=13、dedup_size=13，
+  重复 event_id 得到 duplicate；文件 13 行、末行以换行结尾
+- T3/T4 目录与原厂进程未受影响（/data/local/tmp/t4|t5 时间戳未变）
+
+证据：evidence/host_unit_t505a.log、host_it_t505a.log(+results.json)、
+host_trapv_t505a.log、ndk_build_t505a.log、device_smoke_t505a_p1p2.log；
+说明：t5_05a_p1p2_fix_record.md

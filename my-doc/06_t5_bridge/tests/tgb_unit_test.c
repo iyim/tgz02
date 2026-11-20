@@ -316,6 +316,122 @@ static void test_event(void)
     }
 }
 
+/*
+ * U-INT：整数解析的安全边界（P1 修复点）
+ *
+ * 旧实现是"先乘加再检查上限"，`v * 10 + digit` 在超长输入下会先越过 LLONG_MAX，
+ * 属于有符号整数溢出（UB）。修复后必须在乘加**之前**用
+ *   v > (MAX_SAFE - digit) / 10
+ * 拒绝，因此下面的用例既验证"该拒的拒了"，也验证没有再走到溢出处。
+ *
+ * 注意：这里全部通过"值语义"断言（返回哪个错误码），不依赖进程是否崩溃。
+ */
+static void test_int_bounds(void)
+{
+    char body[1024];
+    tgb_event ev;
+    const char *field = NULL;
+    tgb_eval r;
+
+    printf("\n[U-INT] 整数解析安全边界（乘加前检查 / 2^53 上限 / 前导零 / -0）\n");
+
+    /* 1) 正常正整数 */
+    snprintf(body, sizeof(body),
+             "{\"version\":1,\"event_id\":\"e\",\"event_type\":\"asr_final\",\"pid\":16112,"
+             "\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,"
+             "\"received_at_ms\":1763000000000}");
+    r = tgb_event_parse(body, strlen(body), &ev, &field);
+    ok(r == TGB_E_OK, "U-I1 正常正整数仍能解析");
+    ok_ll(ev.pid, 16112, "U-I2 pid 值正确");
+    ok_ll(ev.received_at_ms, 1763000000000LL, "U-I3 received_at_ms 值正确");
+
+    /* 2) 正常负整数：用未知字段（未知字段的值也走 jint，必须一起受保护） */
+    snprintf(body, sizeof(body),
+             "{\"version\":1,\"event_id\":\"e\",\"event_type\":\"asr_final\",\"pid\":1,"
+             "\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,\"received_at_ms\":1,"
+             "\"future_neg\":-42}");
+    r = tgb_event_parse(body, strlen(body), &ev, &field);
+    ok(r == TGB_E_OK, "U-I4 正常负整数（未知字段）仍能解析");
+
+    /* 负数出现在已知字段：语法通过、语义被拒（证明负号被正確处理，不是 BAD_TYPE） */
+    snprintf(body, sizeof(body),
+             "{\"version\":1,\"event_id\":\"e\",\"event_type\":\"asr_final\",\"pid\":-5,"
+             "\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,\"received_at_ms\":1}");
+    r = tgb_event_parse(body, strlen(body), &ev, &field);
+    ok(r == TGB_E_BAD_PID, "U-I5 pid=-5 语法通过、语义被拒（bad_pid）");
+
+    /* 3) 恰好 2^53 = 9007199254740992：整数解析接受，字段校验也接受（等于上限） */
+    snprintf(body, sizeof(body),
+             "{\"version\":1,\"event_id\":\"e\",\"event_type\":\"asr_final\",\"pid\":1,"
+             "\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,"
+             "\"received_at_ms\":9007199254740992}");
+    r = tgb_event_parse(body, strlen(body), &ev, &field);
+    ok(r == TGB_E_OK, "U-I6 9007199254740992(2^53) 被接受");
+    ok_ll(ev.received_at_ms, 9007199254740992LL, "U-I7 2^53 的值正确");
+
+    /* 4) 2^53 + 1：必须被拒 */
+    snprintf(body, sizeof(body),
+             "{\"version\":1,\"event_id\":\"e\",\"event_type\":\"asr_final\",\"pid\":1,"
+             "\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,"
+             "\"received_at_ms\":9007199254740993}");
+    r = tgb_event_parse(body, strlen(body), &ev, &field);
+    ok(r == TGB_E_BAD_JSON, "U-I8 9007199254740993(2^53+1) 被拒");
+
+    /* 5) 超长正数字符串（30 位，远超 LLONG_MAX）：必须被拒且不能溢出 */
+    snprintf(body, sizeof(body),
+             "{\"version\":1,\"event_id\":\"e\",\"event_type\":\"asr_final\",\"pid\":1,"
+             "\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,"
+             "\"received_at_ms\":999999999999999999999999999999}");
+    r = tgb_event_parse(body, strlen(body), &ev, &field);
+    ok(r == TGB_E_BAD_JSON, "U-I9 30 位正整数被拒（不发生溢出）");
+
+    /* 6) 超长负数字符串 */
+    snprintf(body, sizeof(body),
+             "{\"version\":1,\"event_id\":\"e\",\"event_type\":\"asr_final\",\"pid\":1,"
+             "\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,"
+             "\"received_at_ms\":-999999999999999999999999999999}");
+    r = tgb_event_parse(body, strlen(body), &ev, &field);
+    ok(r == TGB_E_BAD_JSON, "U-I10 30 位负整数被拒（不发生溢出）");
+
+    /* 7) 未知字段里的超长整数同样被拒：证明 jskip_value 走的是同一个 jint */
+    snprintf(body, sizeof(body),
+             "{\"version\":1,\"event_id\":\"e\",\"event_type\":\"asr_final\",\"pid\":1,"
+             "\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,\"received_at_ms\":1,"
+             "\"future\":123456789012345678901234567890}");
+    r = tgb_event_parse(body, strlen(body), &ev, &field);
+    ok(r == TGB_E_BAD_JSON, "U-I11 未知字段中的超长整数被拒（共用同一解析器）");
+
+    /* 8) 前导零仍然拒绝 */
+    snprintf(body, sizeof(body),
+             "{\"version\":1,\"event_id\":\"e\",\"event_type\":\"asr_final\",\"pid\":01,"
+             "\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,\"received_at_ms\":1}");
+    r = tgb_event_parse(body, strlen(body), &ev, &field);
+    ok(r == TGB_E_BAD_JSON, "U-I12 前导零仍被拒（pid=01）");
+
+    snprintf(body, sizeof(body),
+             "{\"version\":1,\"event_id\":\"e\",\"event_type\":\"asr_final\",\"pid\":-01,"
+             "\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,\"received_at_ms\":1}");
+    r = tgb_event_parse(body, strlen(body), &ev, &field);
+    ok(r == TGB_E_BAD_JSON, "U-I13 负号后前导零仍被拒（pid=-01）");
+
+    /* 9) -0：语法合法（解析成 0），再被字段语义拒掉 —— 顺序不能反 */
+    snprintf(body, sizeof(body),
+             "{\"version\":1,\"event_id\":\"e\",\"event_type\":\"asr_final\",\"pid\":1,"
+             "\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,"
+             "\"received_at_ms\":-0}");
+    r = tgb_event_parse(body, strlen(body), &ev, &field);
+    ok(r == TGB_E_BAD_TIME, "U-I14 -0 解析成 0 后被范围检查拒绝（bad_received_at，不是 bad_json）");
+    ok_ll(ev.received_at_ms, 0, "U-I15 -0 的值是 0");
+
+    /* 单独一个 "0" 仍然合法 */
+    snprintf(body, sizeof(body),
+             "{\"version\":1,\"event_id\":\"e\",\"event_type\":\"asr_final\",\"pid\":1,"
+             "\"session_id\":\"s\",\"text\":\"x\",\"is_final\":true,"
+             "\"received_at_ms\":0,\"future_zero\":0}");
+    r = tgb_event_parse(body, strlen(body), &ev, &field);
+    ok(r == TGB_E_BAD_TIME, "U-I16 单个 0 语法合法（随后被范围检查拒绝）");
+}
+
 static void test_utf8(void)
 {
     printf("\n[U-UTF8] 严格 UTF-8 校验\n");
@@ -567,6 +683,56 @@ static void test_store(void)
         ok(tgb_store_repair(dir5, "events.jsonl", &truncated, err, sizeof(err)) == 0 && truncated == 0,
            "U-S32 首次运行修复为 no-op");
     }
+
+    /*
+     * U-S33..S38：目录项同步（P1 修复点）与"跨越 4 KB 的尾部回扫"
+     */
+    {
+        char dir_missing[TGB_PATH_MAX];
+        snprintf(dir_missing, sizeof(dir_missing), "%s/no_such_dir", g_root);
+        ok(tgb_store_open(&s, dir_missing, "events.jsonl", -1, err, sizeof(err)) == -1,
+           "U-S33 工作目录不存在时 open 失败（不会静默继续）");
+        ok(err[0] != '\0', "U-S34 失败时给出错误信息");
+    }
+    {
+        char dir6[TGB_PATH_MAX];
+        snprintf(dir6, sizeof(dir6), "%s/store6", g_root);
+        UT_MKDIR(dir6);
+        /* 全新目录：open 会走一次"目录 fsync"（Linux/Android 真做，Windows 跳过），
+         * 这里断言的是"这条路径不会把主机测试弄失败" */
+        ok(tgb_store_open(&s, dir6, "events.jsonl", -1, err, sizeof(err)) == 0,
+           "U-S35 新目录 open 成功（目录同步不破坏主机测试）");
+        tgb_store_close(&s);
+    }
+    {
+        char dir7[TGB_PATH_MAX];
+        char path7[TGB_PATH_MAX];
+        int k;
+
+        snprintf(dir7, sizeof(dir7), "%s/store7", g_root);
+        UT_MKDIR(dir7);
+        snprintf(path7, sizeof(path7), "%s/events.jsonl", dir7);
+
+        ok(tgb_store_open(&s, dir7, "events.jsonl", -1, err, sizeof(err)) == 0, "U-S36 打开大文件用例");
+        for (k = 0; k < 40; k++) {
+            char eid[32];
+            snprintf(eid, sizeof(eid), "evt-big-%02d", k);
+            mk_event(body, sizeof(body), eid, "sess", "跨 4 KB 的尾部回扫");
+            tgb_event_parse(body, strlen(body), &ev, &field);
+            {
+                int n = tgb_event_to_record(&ev, 1, 2, (unsigned long)k, rec, sizeof(rec));
+                if (tgb_store_append(&s, rec, (size_t)n, err, sizeof(err)) != 0) break;
+            }
+        }
+        tgb_store_close(&s);
+        ok_ll(count_lines(path7), 40, "U-S37 写入 40 条（> 4 KB）");
+        append_raw(path7, "{\"half\":\"line_without_newline", 29);
+        ok(tgb_store_repair(dir7, "events.jsonl", &truncated, err, sizeof(err)) == 0,
+           "U-S38 大文件尾部修复成功（跨多个 4 KB 块回扫）");
+        ok_ll(truncated, 29, "U-S39 正好截掉那 29 字节半条");
+        ok(tgb_store_replay(dir7, "events.jsonl", NULL, NULL, &lines, &bad, err, sizeof(err)) == 0 &&
+           lines == 40 && bad == 0, "U-S40 修复后仍是 40 条 0 坏行");
+    }
 }
 
 int main(int argc, char **argv)
@@ -579,6 +745,7 @@ int main(int argc, char **argv)
     test_frame();
     test_crc_crosscheck();
     test_event();
+    test_int_bounds();
     test_utf8();
     test_record();
     test_dedup();

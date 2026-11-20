@@ -16,7 +16,7 @@
 
 | 项目 | 结果 |
 |---|---|
-| 主机单元测试 | **131 断言全通过**（帧/CRC/解析/UTF-8/记录/去重/存储） |
+| 主机单元测试 | **155 断言全通过**（帧/CRC/解析/整数安全/UTF-8/记录/去重/存储） |
 | 主机集成测试 | **15 用例 / 153 断言全通过**（28.2 s，含并发、kill -9、故障注入） |
 | Android ARM32 编译 | `-O2 -Wall -Wextra -static`，**0 警告 0 错误**，两个产物均静态链接 |
 | 真机冒烟 | 13 条事件落盘、1 条重复、3 条拒收、2 次重启（`replay_lines=13`、`dedup_size=13`） |
@@ -116,18 +116,19 @@ socket 平台薄封装复用 `03_uds_test/tgz2_frame.h`（T3/T4 已在用）。
 | 15 客户端异常断开（半帧 / 只发头 / 静默连接） | C15 | 9 | PASS |
 | 合计 | 15 用例 | **153** | **0 失败** |
 
-单元测试 131 断言：`U-FRAME`16 / `U-CRC`3 / `U-EVENT`33 / `U-UTF8`12 / `U-RECORD`14 /
-`U-DEDUP`16 / `U-STORE`37，全部通过。
+单元测试 155 断言：`U-FRAME`16 / `U-CRC`3 / `U-EVENT`33 / `U-INT`16 / `U-UTF8`12 /
+`U-RECORD`14 / `U-DEDUP`16 / `U-STORE`45，全部通过。
+（P1/P2 修复后新增 `U-INT` 与 8 条存储用例，说明见 t5_05a_p1p2_fix_record.md）
 
-### 5.2 真机（`evidence/device_smoke_t505a.log`）
+### 5.2 真机（`evidence/device_smoke_t505a_p1p2.log`）
 
 ```
 $ sha256sum /data/local/tmp/t5_bridge/tgb_bridge
-e95ecbb067acee1602fd1c24af1b2b39b56c4e7760019791ac4948b3e94cd6aa   （= 本地 ARM 产物）
+3d902529efb5594700ae209d7102b1af6605041df066fe55dbddb07ab78d048d   （= 本地 ARM 产物，P1/P2 修复后）
 
 $ sh run_bridge.sh start
-started: pid=13880 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work
-{"type":"READY","pid":13880,"events_stored":0,"replay_lines":0,...}
+started: pid=17813 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work
+{"type":"READY","pid":17813,"events_stored":0,"replay_lines":0,...}   （READY 出现 = 目录 fsync 成功）
 
 $ ./tgb_client --scenario basic          → ACK ... "status":"stored"   （中文 27 B / 9 字）
 $ ./tgb_client --scenario cjk_escaped    → "status":"stored"           （\uXXXX 解出同一句）
@@ -144,7 +145,7 @@ $ sh run_bridge.sh stop
 
 --- 重启：去重状态从 events.jsonl 重建 ---
 $ sh run_bridge.sh start
-{"type":"READY","pid":13928,"events_stored":0,"replay_lines":13,"bad_lines":0,
+{"type":"READY","pid":17865,"events_stored":0,"replay_lines":13,"bad_lines":0,
  "truncated_bytes":0,"dedup_size":13}
 $ ./tgb_client --scenario basic → "status":"duplicate","dup_count":1
 $ wc -l work/events.jsonl → 13        （重复事件没有写第二条）
@@ -203,7 +204,7 @@ git checkout main
 # 1) Android ARM32 编译（产物在 android/out/，日志在 evidence/）
 powershell -ExecutionPolicy Bypass -File my-doc\06_t5_bridge\android\build.ps1
 
-# 2) 主机全套（单测 131 + 集成 153）
+# 2) 主机全套（单测 155 + 集成 153）
 powershell -ExecutionPolicy Bypass -File my-doc\06_t5_bridge\tests\build_and_run.ps1
 
 # 3) 真机（可选）

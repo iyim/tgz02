@@ -1,7 +1,7 @@
 T5-05A bridge host tests
   bridge : D:\tgz02\OS\system\my-doc\06_t5_bridge\android\out\tgb_bridge.exe
   client : D:\tgz02\OS\system\my-doc\06_t5_bridge\tests\out\tgb_client.exe
-  run dir: D:\tgz02\OS\system\my-doc\06_t5_bridge\tests\_run\20261120_114137
+  run dir: D:\tgz02\OS\system\my-doc\06_t5_bridge\tests\_run\20261120_130917
   python : 3.11.9
 
 [C01] 正常事件接收（AF_UNIX STREAM / 落盘 / ACK / 状态文件）
@@ -154,7 +154,7 @@ T5-05A bridge host tests
     PASS  C13    seq 连续 1..100
     PASS  C13    100 个 event_id 互不相同
     PASS  C13    文本无损
-          （100 条往返耗时 2078 ms，含客户端 1.5 s 收尾等待）
+          （100 条往返耗时 1985 ms，含客户端 1.5 s 收尾等待）
     PASS  C13    STATS stored=100 duplicate=0
 
 [C14] 并发发送与队列边界
@@ -189,7 +189,7 @@ T5-05A bridge host tests
     PASS  C15    STATS clients_closed>=4
 
 ==============================================================================
-断言：153 通过 / 0 失败   （用时 28.7 s）
+断言：153 通过 / 0 失败   （用时 28.2 s）
 
 按用例汇总：
   C01   18 通过 / 0 失败  OK

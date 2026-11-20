@@ -58,6 +58,24 @@ tgb_unit_test -- scratch dir: _tgb_unit
   ok   U-E32 511 字节文本被接受
   ok   U-E33 text_bytes = 511
 
+[U-INT] 整数解析安全边界（乘加前检查 / 2^53 上限 / 前导零 / -0）
+  ok   U-I1 正常正整数仍能解析
+  ok   U-I2 pid 值正确
+  ok   U-I3 received_at_ms 值正确
+  ok   U-I4 正常负整数（未知字段）仍能解析
+  ok   U-I5 pid=-5 语法通过、语义被拒（bad_pid）
+  ok   U-I6 9007199254740992(2^53) 被接受
+  ok   U-I7 2^53 的值正确
+  ok   U-I8 9007199254740993(2^53+1) 被拒
+  ok   U-I9 30 位正整数被拒（不发生溢出）
+  ok   U-I10 30 位负整数被拒（不发生溢出）
+  ok   U-I11 未知字段中的超长整数被拒（共用同一解析器）
+  ok   U-I12 前导零仍被拒（pid=01）
+  ok   U-I13 负号后前导零仍被拒（pid=-01）
+  ok   U-I14 -0 解析成 0 后被范围检查拒绝（bad_received_at，不是 bad_json）
+  ok   U-I15 -0 的值是 0
+  ok   U-I16 单个 0 语法合法（随后被范围检查拒绝）
+
 [U-UTF8] 严格 UTF-8 校验
   ok   U-U1 ASCII 通过
   ok   U-U2 中文通过
@@ -144,5 +162,13 @@ tgb_unit_test -- scratch dir: _tgb_unit
   ok   U-S30 清空后 0 行
   ok   U-S31 首次运行回放 0 条
   ok   U-S32 首次运行修复为 no-op
+  ok   U-S33 工作目录不存在时 open 失败（不会静默继续）
+  ok   U-S34 失败时给出错误信息
+  ok   U-S35 新目录 open 成功（目录同步不破坏主机测试）
+  ok   U-S36 打开大文件用例
+  ok   U-S37 写入 40 条（> 4 KB）
+  ok   U-S38 大文件尾部修复成功（跨多个 4 KB 块回扫）
+  ok   U-S39 正好截掉那 29 字节半条
+  ok   U-S40 修复后仍是 40 条 0 坏行
 
-=== unit: 131 passed, 0 failed ===
+=== unit: 155 passed, 0 failed ===
