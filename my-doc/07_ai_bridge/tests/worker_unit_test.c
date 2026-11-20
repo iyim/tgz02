@@ -20,6 +20,7 @@
  * 编译：见 run_host_tests.ps1（-O2 -Wall -Wextra -std=gnu99，不允许有警告）
  */
 #include "consumer_state.h"
+#include "deepseek_provider.h"
 #include "event_reader.h"
 #include "provider.h"
 #include "seq_gap.h"
@@ -31,6 +32,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _WIN32
+#  include <unistd.h>
+#endif
 
 static int g_pass;
 static int g_fail;
@@ -1440,6 +1444,594 @@ static void test_reader_prefix_atomic(void)
     t6b_reader_free(&r);
 }
 
+/* ================================================================================
+ * T5-06C：DeepSeek Provider（纯函数 + 可注入传输层）
+ *
+ * 这一组测试**不发任何网络请求**：
+ *   - URL / 请求体 / key 加载 / 响应解析 都是纯函数；
+ *   - HTTP 层用桩传输层（t6b_ds_xport）模拟 200/401/429/500/503/超时/DNS失败/响应超长。
+ * 真正的 HTTPS 只在真机日志（evidence/t5_06c_device_*.log）里出现。
+ * ================================================================================ */
+
+#define DS_TEST_KEY "sk-unit-test-NOT-A-REAL-KEY"
+
+static void ds_mk_keyfile(char *path, size_t cap, const char *content, const char *name)
+{
+    mk_path(path, cap, name);
+    remove_file(path);
+    write_bytes(path, content, strlen(content), 0);
+}
+
+static void test_ds_url(void)
+{
+    char url[T6B_DS_URL_MAX];
+    char err[96];
+
+    T("deepseek/url join");
+    EQ_LL(t6b_ds_build_url("https://api.deepseek.com", url, sizeof(url), err, sizeof(err)), 0);
+    EQ_STR(url, "https://api.deepseek.com/chat/completions");
+
+    EQ_LL(t6b_ds_build_url("https://api.deepseek.com/", url, sizeof(url), err, sizeof(err)), 0);
+    EQ_STR(url, "https://api.deepseek.com/chat/completions");
+
+    EQ_LL(t6b_ds_build_url("https://api.deepseek.com///", url, sizeof(url), err, sizeof(err)), 0);
+    EQ_STR(url, "https://api.deepseek.com/chat/completions");
+
+    /* 已经带后缀：绝不重复拼接 */
+    EQ_LL(t6b_ds_build_url("https://api.deepseek.com/chat/completions",
+                           url, sizeof(url), err, sizeof(err)), 0);
+    EQ_STR(url, "https://api.deepseek.com/chat/completions");
+
+    EQ_LL(t6b_ds_build_url("http://127.0.0.1:8080/api", url, sizeof(url), err, sizeof(err)), 0);
+    EQ_STR(url, "http://127.0.0.1:8080/api/chat/completions");
+
+    T("deepseek/url rejects bad input");
+    OK(t6b_ds_build_url("", url, sizeof(url), err, sizeof(err)) == -1);
+    OK(t6b_ds_build_url(NULL, url, sizeof(url), err, sizeof(err)) == -1);
+    OK(t6b_ds_build_url("api.deepseek.com", url, sizeof(url), err, sizeof(err)) == -1);
+    OK(t6b_ds_build_url("ftp://api.deepseek.com", url, sizeof(url), err, sizeof(err)) == -1);
+    OK(t6b_ds_build_url("https://api .deepseek.com", url, sizeof(url), err, sizeof(err)) == -1);
+    OK(t6b_ds_build_url("https://api.deepseek.com/\n", url, sizeof(url), err, sizeof(err)) == -1);
+}
+
+static void test_ds_body(void)
+{
+    char body[T6B_DS_BODY_MAX];
+    char expect[T6B_DS_BODY_MAX];
+    char err[96];
+    size_t len = 0;
+    char big[T6B_DS_INPUT_MAX + 8];
+    size_t i;
+
+    T("deepseek/request body escaping");
+    EQ_LL(t6b_ds_build_body("deepseek-chat", "他说:\"你好\"\n第二行\tTab\\结束",
+                            body, sizeof(body), &len, err, sizeof(err)), 0);
+    OK(len > 0 && len == strlen(body));
+    snprintf(expect, sizeof(expect),
+             "{\"model\":\"deepseek-chat\",\"messages\":["
+             "{\"role\":\"system\",\"content\":\"%s\"},"
+             "{\"role\":\"user\",\"content\":\"他说:\\\"你好\\\"\\n第二行\\tTab\\\\结束\"}],"
+             "\"stream\":false,\"max_tokens\":512}", T6B_DS_SYSTEM_PROMPT);
+    EQ_STR(body, expect);
+    OK(strstr(body, "\"stream\":false") != NULL);      /* 非流式 */
+    OK(strstr(body, "\"max_tokens\":512") != NULL);
+    OK(strstr(body, "\\u") == NULL);                   /* 中文按 UTF-8 原样发出，不做 \\u 转义 */
+
+    T("deepseek/request body keeps raw control bytes escaped");
+    EQ_LL(t6b_ds_build_body("deepseek-chat", "a\x01\x1f" "b", body, sizeof(body), &len,
+                            err, sizeof(err)), 0);
+    OK(strstr(body, "a\\u0001\\u001fb") != NULL);
+
+    T("deepseek/request body model override");
+    EQ_LL(t6b_ds_build_body("deepseek-reasoner", "hi", body, sizeof(body), &len,
+                            err, sizeof(err)), 0);
+    OK(strstr(body, "\"model\":\"deepseek-reasoner\"") != NULL);
+
+    T("deepseek/request body rejects bad input");
+    OK(t6b_ds_build_body("", "hi", body, sizeof(body), &len, err, sizeof(err)) == -1);
+    OK(t6b_ds_build_body("deepseek-chat", "", body, sizeof(body), &len, err, sizeof(err)) == -1);
+    OK(t6b_ds_build_body("deepseek-chat", NULL, body, sizeof(body), &len, err, sizeof(err)) == -1);
+    /* 非法 UTF-8（孤立续字节）必须拒收，不能把坏字节发给上游 */
+    OK(t6b_ds_build_body("deepseek-chat", "ok\xA4\xFF", body, sizeof(body), &len,
+                         err, sizeof(err)) == -1);
+    /* 超长输入：报错，绝不截断 */
+    for (i = 0; i < sizeof(big) - 1; i++) big[i] = 'a';
+    big[sizeof(big) - 1] = '\0';
+    OK(t6b_ds_build_body("deepseek-chat", big, body, sizeof(body), &len,
+                         err, sizeof(err)) == -1);
+    /* 输出缓冲不够：报错，绝不给一个被截断的 JSON */
+    OK(t6b_ds_build_body("deepseek-chat", "hello", body, 40, &len, err, sizeof(err)) == -1);
+}
+
+static void test_ds_parse(void)
+{
+    char out[T6B_REPLY_TEXT_MAX];
+    char cls[T6B_DS_CLASS_MAX];
+    char det[96];
+    size_t n = 0;
+
+    T("deepseek/parse plain content");
+    {
+        const char *doc =
+            "{\"id\":\"x\",\"choices\":[{\"index\":0,\"message\":"
+            "{\"role\":\"assistant\",\"content\":\"你好，我在。\"},\"finish_reason\":\"stop\"}],"
+            "\"usage\":{\"total_tokens\":12}}";
+        EQ_LL(t6b_ds_parse_content(doc, strlen(doc), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), 0);
+        EQ_STR(out, "你好，我在。");
+        EQ_LL(n, strlen("你好，我在。"));
+        EQ_STR(cls, "");
+    }
+
+    T("deepseek/parse escapes");
+    {
+        const char *doc =
+            "{\"choices\":[{\"message\":{\"content\":\"a\\nb\\\"c\\\\d\\te\\rf\\bg\\fh\\/i\"}}]}";
+        EQ_LL(t6b_ds_parse_content(doc, strlen(doc), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), 0);
+        EQ_STR(out, "a\nb\"c\\d\te\rf\bg\fh/i");
+    }
+
+    T("deepseek/parse unicode escapes");
+    {
+        const char *doc = "{\"choices\":[{\"message\":{\"content\":\"\\u4f60\\u597d\"}}]}";
+        EQ_LL(t6b_ds_parse_content(doc, strlen(doc), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), 0);
+        EQ_STR(out, "你好");
+        EQ_LL(n, 6);
+    }
+
+    T("deepseek/parse surrogate pair");
+    {
+        const char *doc = "{\"choices\":[{\"message\":{\"content\":\"\\uD83D\\uDE00 ok\"}}]}";
+        EQ_LL(t6b_ds_parse_content(doc, strlen(doc), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), 0);
+        OK(n == 7);                       /* F0 9F 98 80 + space + ok */
+        OK((unsigned char)out[0] == 0xF0 && (unsigned char)out[1] == 0x9F);
+    }
+
+    T("deepseek/parse unknown keys and nesting are skipped");
+    {
+        const char *doc =
+            "{\"a\":{\"b\":[1,2,{\"c\":null}]},\"choices\":[{\"message\":{\"x\":\"y\","
+            "\"content\":\"ok\"}}],\"z\":true}";
+        EQ_LL(t6b_ds_parse_content(doc, strlen(doc), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), 0);
+        EQ_STR(out, "ok");
+    }
+
+    T("deepseek/parse failures");
+    {
+        const char *d1 = "{\"choices\":[]}";
+        const char *d2 = "{\"id\":\"x\"}";
+        const char *d3 = "{\"choices\":[{\"index\":0}]}";
+        const char *d4 = "{\"choices\":[{\"message\":{\"content\":null}}]}";
+        const char *d5 = "{\"choices\":[{\"message\":{\"content\":123}}]}";
+        const char *d6 = "{\"choices\":[{\"message\":{\"content\":\"\"}}]}";
+        const char *d7 = "{\"choices\":[";
+        const char *d8 = "{\"choices\":[{\"message\":{\"content\":\"a\\q\"}}]}";
+        const char *d9 = "{\"choices\":[{\"message\":{\"content\":\"\\uDC00\"}}]}";
+        const char *d10 = "";
+
+        EQ_LL(t6b_ds_parse_content(d1, strlen(d1), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), -1);
+        EQ_STR(cls, "no_choices");
+        EQ_LL(t6b_ds_parse_content(d2, strlen(d2), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), -1);
+        EQ_STR(cls, "no_choices");
+        EQ_LL(t6b_ds_parse_content(d3, strlen(d3), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), -1);
+        EQ_STR(cls, "no_message");
+        EQ_LL(t6b_ds_parse_content(d4, strlen(d4), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), -1);
+        EQ_STR(cls, "content_null");
+        EQ_LL(t6b_ds_parse_content(d5, strlen(d5), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), -1);
+        EQ_STR(cls, "content_not_string");
+        EQ_LL(t6b_ds_parse_content(d6, strlen(d6), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), -1);
+        EQ_STR(cls, "empty_content");
+        EQ_LL(t6b_ds_parse_content(d7, strlen(d7), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), -1);
+        EQ_STR(cls, "bad_json");
+        EQ_LL(t6b_ds_parse_content(d8, strlen(d8), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), -1);
+        EQ_STR(cls, "bad_json");
+        EQ_LL(t6b_ds_parse_content(d9, strlen(d9), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), -1);
+        EQ_STR(cls, "bad_json");
+        EQ_LL(t6b_ds_parse_content(d10, 0, out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), -1);
+        EQ_STR(cls, "empty_response");
+    }
+
+    T("deepseek/parse reply longer than the buffer is an error, never truncated");
+    {
+        char doc[2200];
+        size_t i;
+        size_t o = 0;
+        const char *head = "{\"choices\":[{\"message\":{\"content\":\"";
+        const char *tail = "\"}}]}";
+
+        snprintf(doc, sizeof(doc), "%s", head);
+        o = strlen(doc);
+        for (i = 0; i < 1500; i++) doc[o++] = 'z';
+        snprintf(doc + o, sizeof(doc) - o, "%s", tail);
+        EQ_LL(t6b_ds_parse_content(doc, strlen(doc), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), -1);
+        EQ_STR(cls, "reply_too_long");
+        EQ_LL(n, 0);
+    }
+}
+
+static void test_ds_parse_error(void)
+{
+    char type[40];
+    char code[24];
+    const char *doc =
+        "{\"error\":{\"message\":\"Authentication Fails\",\"type\":\"authentication_error\","
+        "\"param\":null,\"code\":\"invalid_api_key\"}}";
+    const char *num = "{\"error\":{\"type\":\"invalid_request_error\",\"code\":40001}}";
+
+    T("deepseek/parse error body (type + code)");
+    EQ_LL(t6b_ds_parse_error(doc, strlen(doc), type, sizeof(type), code, sizeof(code)), 0);
+    EQ_STR(type, "authentication_error");
+    EQ_STR(code, "invalid_api_key");
+
+    EQ_LL(t6b_ds_parse_error(num, strlen(num), type, sizeof(type), code, sizeof(code)), 0);
+    EQ_STR(type, "invalid_request_error");
+    EQ_STR(code, "40001");
+
+    EQ_LL(t6b_ds_parse_error("{\"ok\":true}", 11, type, sizeof(type), code, sizeof(code)), -1);
+    EQ_STR(type, "");
+}
+
+static void test_ds_key(void)
+{
+    char path[600];
+    char key[T6B_DS_KEY_MAX];
+    char err[160];
+    int mode = -1;
+    char big[T6B_DS_KEY_MAX + 40];
+    size_t i;
+
+    T("deepseek/key file trailing CRLF is trimmed");
+    ds_mk_keyfile(path, sizeof(path), DS_TEST_KEY "\n", "ds_key1");
+    EQ_LL(t6b_ds_load_key(path, key, sizeof(key), &mode, err, sizeof(err)), 0);
+    EQ_STR(key, DS_TEST_KEY);
+
+    ds_mk_keyfile(path, sizeof(path), DS_TEST_KEY "\r\n\r\n", "ds_key2");
+    EQ_LL(t6b_ds_load_key(path, key, sizeof(key), &mode, err, sizeof(err)), 0);
+    EQ_STR(key, DS_TEST_KEY);
+
+    T("deepseek/key file rejects empty/bad content");
+    ds_mk_keyfile(path, sizeof(path), "", "ds_key3");
+    OK(t6b_ds_load_key(path, key, sizeof(key), &mode, err, sizeof(err)) == -1);
+    ds_mk_keyfile(path, sizeof(path), "\n\r\n", "ds_key4");
+    OK(t6b_ds_load_key(path, key, sizeof(key), &mode, err, sizeof(err)) == -1);
+    ds_mk_keyfile(path, sizeof(path), "sk-with space\n", "ds_key5");
+    OK(t6b_ds_load_key(path, key, sizeof(key), &mode, err, sizeof(err)) == -1);
+
+    T("deepseek/key file too long is rejected");
+    for (i = 0; i < sizeof(big) - 1; i++) big[i] = 'k';
+    big[sizeof(big) - 1] = '\0';
+    ds_mk_keyfile(path, sizeof(path), big, "ds_key6");
+    OK(t6b_ds_load_key(path, key, sizeof(key), &mode, err, sizeof(err)) == -1);
+
+    T("deepseek/key file missing is a clear error");
+    mk_path(path, sizeof(path), "ds_key_missing");
+    remove_file(path);
+    EQ_LL(t6b_ds_load_key(path, key, sizeof(key), &mode, err, sizeof(err)), -1);
+    OK(err[0] != '\0');
+    OK(strstr(err, "not found") != NULL || strstr(err, "not readable") != NULL);
+
+#ifndef _WIN32
+    T("deepseek/key file symlink is refused");
+    ds_mk_keyfile(path, sizeof(path), DS_TEST_KEY "\n", "ds_key_target");
+    {
+        char link[600];
+        mk_path(link, sizeof(link), "ds_key_link");
+        remove_file(link);
+        if (symlink(path, link) == 0) {
+            EQ_LL(t6b_ds_load_key(link, key, sizeof(key), &mode, err, sizeof(err)), -1);
+            OK(strstr(err, "symlink") != NULL);
+        }
+        remove_file(link);
+    }
+#endif
+}
+
+/* ---------------- 桩传输层 ---------------- */
+
+typedef struct {
+    int    http_status;
+    int    curl_code;
+    int    timed_out;
+    int    overflow;
+    const char *body;
+    size_t body_len;
+    int    calls;
+    char   got_url[T6B_DS_URL_MAX];
+    char   got_key[T6B_DS_KEY_MAX];
+    size_t got_body_len;
+    char   got_body[T6B_DS_BODY_MAX];
+} ds_stub;
+
+static int ds_stub_post(void *ctx, const t6b_ds_xreq *req, char *resp, size_t resp_cap,
+                        t6b_ds_xresult *xr)
+{
+    ds_stub *s = (ds_stub *)ctx;
+
+    s->calls++;
+    snprintf(s->got_url, sizeof(s->got_url), "%s", req->url);
+    snprintf(s->got_key, sizeof(s->got_key), "%s", req->api_key);
+    s->got_body_len = req->body_len;
+    if (req->body_len < sizeof(s->got_body)) {
+        memcpy(s->got_body, req->body, req->body_len);
+        s->got_body[req->body_len] = '\0';
+    }
+    memset(xr, 0, sizeof(*xr));
+    xr->http_status = s->http_status;
+    xr->curl_code = s->curl_code;
+    xr->timed_out = s->timed_out;
+    xr->latency_ms = 7;
+    if (s->overflow) {
+        xr->resp_overflow = 1;
+        xr->resp_len = resp_cap;
+        return 0;
+    }
+    {
+        size_t n = (s->body_len < resp_cap) ? s->body_len : resp_cap;
+        if (n > 0) memcpy(resp, s->body, n);
+        xr->resp_len = n;
+    }
+    return 0;
+}
+
+static const t6b_ds_xport STUB_XPORT = { "stub", ds_stub_post, NULL };
+
+static void test_ds_provider_stub(void)
+{
+    static ds_stub s;
+    t6b_provider p;
+    t6b_ds d;
+    t6b_ds_cfg cfg;
+    t6b_reply rep;
+    char keypath[600];
+    char err[192];
+    const char *okdoc =
+        "{\"choices\":[{\"message\":{\"content\":\"好的，我收到了。\"}}]}";
+    const char *errdoc =
+        "{\"error\":{\"message\":\"Authentication Fails\",\"type\":\"authentication_error\","
+        "\"code\":\"invalid_api_key\"}}";
+
+    t6b_ds_defaults(&cfg);
+    ds_mk_keyfile(keypath, sizeof(keypath), DS_TEST_KEY "\n", "ds_provider_key");
+    snprintf(cfg.api_key_file, sizeof(cfg.api_key_file), "%s", keypath);
+    cfg.connect_timeout_ms = 1234;
+    cfg.total_timeout_ms = 5678;
+
+    T("deepseek/provider init with stub transport (no network)");
+    EQ_LL(t6b_ds_open_with(&p, &d, &cfg, &STUB_XPORT, &s), 0);
+    EQ_LL(t6b_provider_init(&p, err, sizeof(err)), 0);
+    EQ_STR(p.ops->name, "deepseek");
+    EQ_STR(d.url, "https://api.deepseek.com/chat/completions");
+    EQ_STR(d.api_key, DS_TEST_KEY);          /* 只在内存里，用于本次断言 */
+    EQ_STR(cfg.model, "deepseek-chat");
+
+    T("deepseek/provider 200 ok");
+    memset(&s, 0, sizeof(s));
+    s.http_status = 200;
+    s.body = okdoc;
+    s.body_len = strlen(okdoc);
+    memset(&rep, 0, sizeof(rep));
+    EQ_LL(t6b_provider_complete(&p, "你好", &rep), 0);
+    EQ_LL(rep.status, T6B_P_OK);
+    EQ_STR(rep.text, "好的，我收到了。");
+    EQ_LL(rep.text_bytes, strlen("好的，我收到了。"));
+    EQ_LL(rep.mock, 0);                       /* 绝不是 mock 结果 */
+    EQ_LL(s.calls, 1);
+    EQ_STR(s.got_url, "https://api.deepseek.com/chat/completions");
+    EQ_STR(s.got_key, DS_TEST_KEY);
+    OK(strstr(s.got_body, "\"content\":\"你好\"") != NULL);
+    EQ_LL(d.last_http_status, 200);
+    EQ_LL(d.ok, 1UL);
+    EQ_STR(d.last_class, "ok");
+    OK(d.last_resp_bytes == strlen(okdoc));
+    OK(d.last_latency_ms > 0);
+
+    T("deepseek/provider http 401 / 429 / 500 / 503");
+    {
+        int codes[4] = { 401, 429, 500, 503 };
+        int k;
+        for (k = 0; k < 4; k++) {
+            char wantcls[24];
+            memset(&s, 0, sizeof(s));
+            s.http_status = codes[k];
+            s.body = errdoc;
+            s.body_len = strlen(errdoc);
+            memset(&rep, 0, sizeof(rep));
+            EQ_LL(t6b_provider_complete(&p, "hi", &rep), 0);
+            EQ_LL(rep.status, T6B_P_ERROR);
+            snprintf(wantcls, sizeof(wantcls), "http_%d", codes[k]);
+            EQ_STR(d.last_class, wantcls);
+            EQ_LL(d.last_http_status, codes[k]);
+            EQ_LL(rep.text_bytes, 0);
+            OK(strstr(rep.message, "authentication_error") != NULL);
+            OK(strstr(rep.message, DS_TEST_KEY) == NULL);       /* key 不进消息 */
+            OK(strstr(d.last_error, DS_TEST_KEY) == NULL);
+        }
+        OK(d.err >= 4UL);
+    }
+
+    T("deepseek/provider timeout");
+    memset(&s, 0, sizeof(s));
+    s.timed_out = 1;
+    s.curl_code = 28;
+    memset(&rep, 0, sizeof(rep));
+    EQ_LL(t6b_provider_complete(&p, "hi", &rep), 0);
+    EQ_LL(rep.status, T6B_P_TIMEOUT);
+    EQ_STR(d.last_class, "curl_timeout");
+    OK(d.timeouts >= 1UL);
+    OK(strstr(rep.message, DS_TEST_KEY) == NULL);
+
+    T("deepseek/provider curl failures (dns / tls)");
+    memset(&s, 0, sizeof(s));
+    s.curl_code = 6;                          /* CURLE_COULDNT_RESOLVE_HOST */
+    memset(&rep, 0, sizeof(rep));
+    EQ_LL(t6b_provider_complete(&p, "hi", &rep), 0);
+    EQ_LL(rep.status, T6B_P_ERROR);
+    EQ_STR(d.last_class, "curl_resolve");
+
+    memset(&s, 0, sizeof(s));
+    s.curl_code = 60;                         /* CURLE_SSL_CACERT */
+    memset(&rep, 0, sizeof(rep));
+    EQ_LL(t6b_provider_complete(&p, "hi", &rep), 0);
+    EQ_STR(d.last_class, "curl_tls");
+
+    memset(&s, 0, sizeof(s));
+    s.curl_code = 7;                          /* CURLE_COULDNT_CONNECT */
+    memset(&rep, 0, sizeof(rep));
+    EQ_LL(t6b_provider_complete(&p, "hi", &rep), 0);
+    EQ_STR(d.last_class, "curl_connect");
+
+    T("deepseek/provider response too long");
+    memset(&s, 0, sizeof(s));
+    s.http_status = 200;
+    s.overflow = 1;
+    memset(&rep, 0, sizeof(rep));
+    EQ_LL(t6b_provider_complete(&p, "hi", &rep), 0);
+    EQ_LL(rep.status, T6B_P_ERROR);
+    EQ_STR(d.last_class, "resp_too_long");
+    OK(strstr(rep.message, "too long") != NULL);
+
+    T("deepseek/provider empty / broken / null / no-choices bodies");
+    {
+        struct { const char *body; const char *cls; } cases[] = {
+            { "", "empty_response" },
+            { "not json at all", "bad_json" },
+            { "{\"choices\":[]}", "no_choices" },
+            { "{\"choices\":[{\"message\":{\"content\":null}}]}", "content_null" },
+            { "{\"choices\":[{\"message\":{\"content\":42}}]}", "content_not_string" }
+        };
+        size_t k;
+        for (k = 0; k < sizeof(cases) / sizeof(cases[0]); k++) {
+            memset(&s, 0, sizeof(s));
+            s.http_status = 200;
+            s.body = cases[k].body;
+            s.body_len = strlen(cases[k].body);
+            memset(&rep, 0, sizeof(rep));
+            EQ_LL(t6b_provider_complete(&p, "hi", &rep), 0);
+            EQ_LL(rep.status, T6B_P_ERROR);
+            EQ_STR(d.last_class, cases[k].cls);
+            EQ_LL(rep.text_bytes, 0);
+            OK(strstr(rep.message, DS_TEST_KEY) == NULL);
+        }
+    }
+
+    T("deepseek/provider rejects text that does not fit the request buffer");
+    memset(&s, 0, sizeof(s));
+    s.http_status = 200;
+    s.body = okdoc;
+    s.body_len = strlen(okdoc);
+    {
+        char big[T6B_DS_INPUT_MAX + 8];
+        size_t i;
+        for (i = 0; i < sizeof(big) - 1; i++) big[i] = 'a';
+        big[sizeof(big) - 1] = '\0';
+        memset(&rep, 0, sizeof(rep));
+        EQ_LL(t6b_provider_complete(&p, big, &rep), 0);
+        EQ_LL(rep.status, T6B_P_ERROR);
+        EQ_STR(d.last_class, "request_invalid");
+        EQ_LL(s.calls, 0);                    /* 根本没有发出请求 */
+    }
+
+    T("deepseek/provider fini wipes the key");
+    EQ_STR(d.api_key, DS_TEST_KEY);
+    t6b_provider_fini(&p);
+    EQ_LL(d.api_key[0], 0);
+    EQ_LL(d.inited, 0);
+    {
+        int all_zero = 1;
+        size_t i;
+        for (i = 0; i < sizeof(d.api_key); i++) if (d.api_key[i] != 0) all_zero = 0;
+        OK(all_zero);
+    }
+    t6b_ds_close(&p);
+    OK(p.ops == NULL);
+}
+
+static void test_ds_curl_unavailable(void)
+{
+    char err[160];
+
+    T("deepseek/libcurl transport reports its own unavailability");
+    OK(t6b_ds_libcurl_xport() != NULL);
+    OK(t6b_ds_libcurl_version() != NULL);
+#ifdef _WIN32
+    /* 主机 Windows 构建没有 POSIX dlopen：必须明确失败，而不是崩溃或假装可用 */
+    EQ_LL(t6b_ds_libcurl_init(err, sizeof(err)), -1);
+    OK(strstr(err, "not available") != NULL);
+#endif
+    t6b_ds_libcurl_fini();
+
+    T("deepseek/provider init fails cleanly when the key file is missing");
+    {
+        t6b_provider p;
+        t6b_ds d;
+        t6b_ds_cfg cfg;
+        char path[600];
+
+        t6b_ds_defaults(&cfg);
+        mk_path(path, sizeof(path), "ds_no_such_key");
+        remove_file(path);
+        snprintf(cfg.api_key_file, sizeof(cfg.api_key_file), "%s", path);
+        EQ_LL(t6b_ds_open_with(&p, &d, &cfg, &STUB_XPORT, NULL), 0);
+        EQ_LL(t6b_provider_init(&p, err, sizeof(err)), -1);
+        OK(err[0] != '\0');
+        EQ_LL(d.inited, 0);
+    }
+}
+
+static void test_ds_status_privacy(void)
+{
+    t6b_status st;
+    char path[600];
+    char buf[8192];
+    size_t len = 0;
+    char err[192];
+
+    T("deepseek/status carries provider facts but never the key");
+    t6b_status_init(&st);
+    snprintf(st.state, sizeof(st.state), "running");
+    snprintf(st.provider, sizeof(st.provider), "deepseek");
+    snprintf(st.model, sizeof(st.model), "deepseek-chat");
+    st.provider_mock = 0;
+    st.last_http_status = 200;
+    st.last_curl_code = 0;
+    st.last_provider_latency_ms = 1234;
+    st.last_resp_bytes = 456;
+    snprintf(st.last_error_class, sizeof(st.last_error_class), "ok");
+    st.provider_ok = 3;
+    st.provider_err = 1;
+    st.provider_timeout = 2;
+    mk_path(path, sizeof(path), "ds_status.json");
+    err[0] = '\0';
+    EQ_LL(t6b_status_write(&st, path, err, sizeof(err)), 0);
+    EQ_LL(wu_read_file(path, buf, sizeof(buf), &len), 0);
+    OK(strstr(buf, "\"provider\":\"deepseek\"") != NULL);
+    OK(strstr(buf, "\"provider_mock\":0") != NULL);
+    OK(strstr(buf, "\"model\":\"deepseek-chat\"") != NULL);
+    OK(strstr(buf, "\"last_http_status\":200") != NULL);
+    OK(strstr(buf, "\"last_curl_code\":0") != NULL);
+    OK(strstr(buf, "\"last_provider_latency_ms\":1234") != NULL);
+    OK(strstr(buf, "\"last_resp_bytes\":456") != NULL);
+    OK(strstr(buf, "\"last_error_class\":\"ok\"") != NULL);
+    OK(strstr(buf, "sk-") == NULL);          /* 状态里绝不出现 key 字样 */
+    OK(strstr(buf, "Bearer") == NULL);
+    OK(strstr(buf, "Authorization") == NULL);
+}
+
 static void test_provider_mock(void)
 {
     t6b_provider p;
@@ -1580,6 +2172,14 @@ int main(void)
     test_reader_prefix_incremental();
     test_reader_fault_prefix();
     test_reader_prefix_atomic();
+    test_ds_url();
+    test_ds_body();
+    test_ds_parse();
+    test_ds_parse_error();
+    test_ds_key();
+    test_ds_provider_stub();
+    test_ds_curl_unavailable();
+    test_ds_status_privacy();
     test_provider_mock();
     test_status_file();
 

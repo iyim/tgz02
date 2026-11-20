@@ -1,13 +1,20 @@
 #!/system/bin/sh
-# run_ai_worker.sh -- T5-06B 独立 AI Worker（ai_worker）的设备端控制脚本
+# run_ai_worker.sh -- 独立 AI Worker（ai_worker）的设备端控制脚本
 #
 #   sh run_ai_worker.sh start [extra args]   启动（默认 work=/data/local/tmp/t5_bridge/work）
+#   sh run_ai_worker.sh start-deepseek       用真实 DeepSeek Provider 启动（需要 key 文件）
 #   sh run_ai_worker.sh stop                 先 SIGINT，超时再 SIGTERM
 #   sh run_ai_worker.sh status               是否在跑 + 状态 JSON
 #   sh run_ai_worker.sh stats                打印 ai_worker_status.json
 #   sh run_ai_worker.sh state                打印 consumer_state.json（消费进度）
+#   sh run_ai_worker.sh key                  检查 key 文件是否存在/权限（**不打印内容**）
 #   sh run_ai_worker.sh log [N]              看进程日志（默认 20 行）
 #   sh run_ai_worker.sh events [N]           看最近 N 条 events.jsonl（只读）
+#
+# T5-06C 真实 Provider：
+#   - key 只从文件读（默认 $D/secret/deepseek_api_key），不进命令行、不进日志；
+#   - start-deepseek 只做"参数拼装"，key 缺失时由 worker 自己报错退出（退出码 4）；
+#   - 模型名可用 DEEPSEEK_MODEL=... 覆盖，base url 可用 DEEPSEEK_BASE_URL=... 覆盖。
 #
 # 与桥接端脚本（run_bridge.sh）互不影响：
 #   - 读 /data/local/tmp/t5_bridge/work/events.jsonl，只读打开，从不修改/截断/删除；
@@ -22,6 +29,9 @@ WORK=$D/work
 STATE=$D/ai_worker
 LOG=$STATE/ai_worker.log
 PID=$STATE/ai_worker.pid
+KEY=${DEEPSEEK_KEY_FILE:-$D/secret/deepseek_api_key}
+MODEL=${DEEPSEEK_MODEL:-deepseek-chat}
+BASE=${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
 
 cmd=${1:-start}
 [ $# -gt 0 ] && shift
@@ -125,6 +135,66 @@ case "$cmd" in
     fi
     ;;
 
+  start-deepseek)
+    # 真实 DeepSeek：key 只走文件；模型/base url 可用环境变量覆盖
+    cleanup_stale_pid
+
+    if read_pid && is_worker_process "$p"; then
+        echo "already running: pid=$p"
+        exit 1
+    fi
+
+    [ -x "$BIN" ] || {
+        echo "ai_worker not executable: $BIN"
+        exit 1
+    }
+
+    if [ ! -f "$KEY" ]; then
+        echo "api key file missing: $KEY"
+        echo "place your DeepSeek key in that file (chmod 600) and retry"
+        exit 1
+    fi
+
+    mkdir -p "$STATE" || exit 1
+    : > "$LOG"
+
+    nohup "$BIN" \
+        --work-dir "$WORK" \
+        --state-dir "$STATE" \
+        --provider deepseek \
+        --api-key-file "$KEY" \
+        --deepseek-model "$MODEL" \
+        --deepseek-base-url "$BASE" \
+        "$@" >> "$LOG" 2>&1 &
+
+    child=$!
+    echo "$child" > "$PID"
+
+    sleep 2
+
+    if is_worker_process "$child"; then
+        echo "started (deepseek): pid=$child model=$MODEL work=$WORK state=$STATE"
+        head -6 "$LOG"
+    else
+        rm -f "$PID"
+        echo "failed to start (worker exited); log:"
+        cat "$LOG"
+        exit 1
+    fi
+    ;;
+
+  key)
+    # 只报告存在性/权限，绝不打印内容
+    if [ -f "$KEY" ]; then
+        ls -l "$KEY"
+        bytes=$(wc -c < "$KEY" | tr -d ' ')
+        echo "key file present: $KEY (${bytes} bytes)"
+    else
+        echo "key file missing: $KEY"
+        exit 1
+    fi
+    ;;
+
   status)
     if read_pid && is_worker_process "$p"; then
         echo "running: pid=$p"
@@ -218,7 +288,7 @@ case "$cmd" in
     ;;
 
   *)
-    echo "usage: sh $0 {start|status|stats|state|log [N]|events [N]|stop}"
+    echo "usage: sh $0 {start|start-deepseek|status|stats|state|key|log [N]|events [N]|stop}"
     exit 2
     ;;
 esac

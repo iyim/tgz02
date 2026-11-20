@@ -1,0 +1,10 @@
+=== T5-06B integration subset (host, Mock provider only) ===
+exe    : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
+run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_214015
+filter : deepseek
+
+PASS i26_deepseek_missing_key           0.04s  rc=4, no request, offset untouched, status shows deepseek
+PASS i27_deepseek_libcurl_unavailable   0.04s  rc=4, transport error explicit, key absent from stdout/state/work
+
+cases: 2, failed: 0
+RESULT: PASS

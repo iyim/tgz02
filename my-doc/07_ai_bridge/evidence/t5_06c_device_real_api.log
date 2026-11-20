@@ -1,0 +1,17 @@
+﻿################ T5-06C device stage B: real DeepSeek API call ################
+host time : 2026-11-20 21:27:00
+device    : 192.168.1.9:5555
+model     : deepseek-chat
+
+===== 0. push the ARM32 worker and locate the api key (never printed) :: 2026-11-20 21:27:00 =====
+> adb shell mkdir -p /data/local/tmp/t5d_deepseek/bin /data/local/tmp/t5d_deepseek/work_b /data/local/tmp/t5d_deepseek/state_b /data/local/tmp/t5d_deepseek/key
+> adb shell chmod 755 /data/local/tmp/t5d_deepseek/bin/ai_worker; sha256sum /data/local/tmp/t5d_deepseek/bin/ai_worker
+  cd8983473301823215b2725512af1618604a71766d076fd2ad97dff3f4954277  /data/local/tmp/t5d_deepseek/bin/ai_worker
+ai_worker sha256 host/device: cd8983473301823215b2725512af1618604a71766d076fd2ad97dff3f4954277 / cd8983473301823215b2725512af1618604a71766d076fd2ad97dff3f4954277
+key source: NONE (no -KeyFile and /data/local/tmp/t5_bridge/secret/deepseek_api_key does not exist)
+
+SKIPPED: no api key available on the device.
+  place it at /data/local/tmp/t5_bridge/secret/deepseek_api_key (chmod 600)
+  and re-run this script; nothing below this line is a real model call.
+
+RESULT: SKIPPED (no key; see the stage A log for the 401 TLS proof)

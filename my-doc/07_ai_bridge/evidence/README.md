@@ -32,8 +32,8 @@ T5-06B 时间：2026-11-20 16:54–17:03。探针与测试脚本都是**一次�
 | `ndk_build.log` | `_analysis/t506b/n1_ndk_build.ps1`（NDK r21e，API 26） | 两个产物（本轮重建）：`ai_worker` 106796 B / sha256 `85d931ef…`，`worker_unit_test` 173040 B / sha256 `f74eccf4…`；均 `ELF32/ARM/DYN` + `NEEDED libc.so`；**0 warning、0 error** |
 | `device_numeric_fix.log` | `_analysis/t506b/n2_device.ps1` | 真机：**ARM32 单元测试 284/284 PASS**（`abi: 32-bit long, ULONG_MAX=4294967295`）；历史 111 行全消费（`invalid=0`、`offset=34119=size`、sha256 前后一致）；窄化拒收 4 行（`bad_seq`×2 / `bad_version` / `bad_type:text_bytes`）+ 1 行合法 |
 | `device_p2p2_inode_reuse.log` | 同上 + 基线 `f3c9f3bf` 的旧单元测试二进制 | 旁证：同目录删除重建后 `st_dev:st_ino` 完全相同（inode 复用）；基线 `f3c9f3bf` 在真机 **257/1 failed**，本轮 **284/0** → 该失败早于本轮存在 |
-| `host_unit_test.log` | `tests/run_host_tests.ps1` | **401 checks / 0 failed**（窄化/范围/一致性/前缀指纹/迁移/故障注入 + 本轮 `test_reader_prefix_atomic()`；Windows LLP64 的 `long` 也是 32 位，与 ARM32 同一分支） |
-| `host_integration_test.log` | 同上（真起进程） | **27/27 PASS**，Mock Provider，无网络 |
+| `host_unit_test.log` | `tests/run_host_tests.ps1` | **613 checks / 0 failed**（窄化/范围/一致性/前缀指纹/迁移/故障注入 + 含 `test_reader_prefix_atomic()` 与 DeepSeek 组；Windows LLP64 的 `long` 也是 32 位，与 ARM32 同一分支） |
+| `host_integration_test.log` | 同上（真起进程） | **32/32 PASS**，Mock Provider，无网络 |
 
 ### T5-06B P2-2 补充修复（events.jsonl 前缀指纹 / inode 复用）
 
@@ -52,6 +52,19 @@ T5-06B 时间：2026-11-20 16:54–17:03。探针与测试脚本都是**一次�
 |---|---|---|
 | `device_p22_atomic_fold.log` | `_analysis/t506b/n4_device_atomic.ps1`（真机 TG-Z02，Mock Provider） | 5 段：真机 ARM32 单元 **401/401 PASS**；先正常消费第 1 条得到 `offset=285 / prefix_hash=dcbe3ddf0f0b22f7`；追加 70297 B 超长行后注入 `T6B_FAULT_PREFIX=fold_partial` → `prefix fold failed mid-way (4381/70297)`、`rc=6`、落盘 `offset` 与 `prefix_hash` **与故障前逐字节相同**；重启 `resets=0`、超长行重试提交、第 3 条处理一次；再重启为 no-op；真实桥接文件 sha256 不变 |
 | `host_prefix_atomic.log` | `worker_integration_test.py --only i25` | 中途失败 → `rc=6`、状态文件 `offset=250` 与其 `prefix_hash` 仍成对（等于外部独立算出的 `[0,250)` 指纹）、`exit_reason=identity_hash_failed`、`processed_total=2` |
+
+### T5-06C 第一阶段（真实 DeepSeek Provider）
+
+| 文件 | 产生方式 | 关键内容 |
+|---|---|---|
+| `t5_06c_host_test.log` | `tests/run_t5_06c_host_tests.ps1` | 主机：构建（0 warning）+ 单元 **613/613**（含 DeepSeek 组 212 项，桩传输层模拟 200/401/429/500/503/超时/DNS/证书/超长）+ 集成 i25–i30 全 PASS；**零网络、零 key** |
+| `t5_06c_ndk_build.log` | `android/build.ps1 -LogName t5_06c_ndk_build.log` | ARM32：`ai_worker` 133328 B / `cd898347…`、`worker_unit_test` 231604 B / `4621dd6e…`；均 `ELF32/ARM/DYN`、`NEEDED libc.so + libdl.so`；**0 warning / 0 error** |
+| `t5_06c_device_curl_load.log` | `_analysis/t506b/n5_device_curl_load.ps1`（真机） | 真机 ARM32 单元 **613/613**；`dlopen("libcurl.so")` → `libcurl/7.52.0-DEV BoringSSL zlib/1.2.8`、选项自检通过；本地端口失败映射 `curl_connect`（offset 不动）；**真实端点 HTTP 401**（占位 key）、`resp_bytes=204`、`type=authentication_error`、offset 不动 |
+| `t5_06c_device_real_api.log` | `n6_device_real_api.ps1` | **SKIPPED：设备上无 API Key**（脚本对 200 路径的断言已写好，放 key 后可直接跑） |
+| `t5_06c_device_asr_e2e.log` | `n7_device_asr_e2e.ps1` | **PARTIAL**：frida `hooks=7 final=1 stored=1` → 真实 `events.jsonl` 第 113 行 → worker 真实 HTTPS **HTTP 401**（227 ms）→ offset 保持 seed 值、`provider_stuck=1` 不跳过；`core` PID 28413 不变、bridge running |
+| `host_deepseek_provider.log` | `--only deepseek` | i26 缺 key → rc=4；i27 有 key 无 libcurl → rc=4 且 key 不出现在任何文件 |
+| `host_provider_config.log` | `--only provider_config` | i28：非法 provider / ftp:// / 空模型 / 超时倒挂 / 空 key 路径 → 全部 rc=2 |
+| `host_provider_default.log` | `--only still_the_default` | i29：默认 provider 仍是 mock（`provider_mock=1`、无 HTTP） |
 
 ## T5-06A 探针证据
 

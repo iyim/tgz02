@@ -1,15 +1,19 @@
 /*
- * provider.h -- 模型调用的内部抽象（本阶段只有 Mock Provider，不发起任何网络请求）
+ * provider.h -- 模型调用的内部抽象
  *
- * 设计目标：T5-06C 增加 GPT / DeepSeek / 通义 / 豆包 适配器时，
- * 只新增一个 provider 实现，事件消费者（ai_worker.c / event_reader.c / consumer_state.c）
- * 一行都不用改。因此接口只暴露"文本进、文本出 + 三类状态"，不暴露 HTTP、SSE、JSON 细节。
+ * 当前实现：
+ *   - mock_provider.c     固定回复、零网络（默认，回归测试用）
+ *   - deepseek_provider.c T5-06C：真实 DeepSeek Chat Completions（dlopen 系统 libcurl）
+ *
+ * 设计目标：以后再增加 GPT / 通义 / 豆包 适配器时，只新增一个 provider 实现，
+ * 事件消费者（ai_worker.c / event_reader.c / consumer_state.c）一行都不用改。
+ * 因此接口只暴露"文本进、文本出 + 三类状态"，不暴露 HTTP、SSE、JSON 细节。
  *
  * 铁律（任务书 §4 与 §8）：
  *   - Provider 不许直接操作 Android 系统、不许执行 shell、不许调用原厂技能。
  *   - Provider 不许把 key、完整 prompt、模型原文写进日志；message 字段只放脱敏后的短描述。
  *   - Provider 的任何失败都必须收敛成返回码 + t6b_reply.status，
- *     绝不让消费者进程崩溃或退出（Mock 失败 = 计数 + 继续消费下一条）。
+ *     绝不让消费者进程崩溃或退出（失败 = 计数 + 重试同一条，不跳过）。
  */
 #ifndef T6B_PROVIDER_H
 #define T6B_PROVIDER_H
@@ -22,7 +26,7 @@
 
 typedef enum {
     T6B_P_OK = 0,          /* 正常返回 assistant 文本 */
-    T6B_P_TIMEOUT = 1,     /* 超时（本阶段由 Mock 模拟） */
+    T6B_P_TIMEOUT = 1,     /* 超时（Mock 模拟或真实 HTTP 超时） */
     T6B_P_ERROR = 2,       /* 上游错误 / 未初始化 / 参数非法 */
     T6B_P_STATUS_COUNT = 3
 } t6b_pstatus;

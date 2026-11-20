@@ -50,6 +50,9 @@ int wu_open_wo(const char *path);
 /* 独占创建（O_CREAT|O_EXCL，0600）：已存在返回 -1 且 errno == EEXIST */
 int wu_open_excl(const char *path);
 
+/* 追加打开（O_CREAT|O_APPEND，0600，不截断）：T5-06C 的 replies.jsonl 用 */
+int wu_open_append(const char *path);
+
 /* 本进程 pid */
 long long wu_self_pid(void);
 

@@ -42,6 +42,8 @@ typedef struct {
     t6b_status   st;
     t6b_provider prov;
     t6b_mock     mock;
+    t6b_ds       ds;
+    int          prov_deepseek;         /* 1 = 当前 provider 是 deepseek（真实网络） */
     t6b_gaptrack gaps;
     wu_lockfile  lock;
 
@@ -256,6 +258,24 @@ static void publish_status(t6b_worker *w, const char *state)
         w->st.pending_event_id[0] = '\0';
     w->st.file_size = (t6b_reader_stat(&w->rd, &size) == 0) ? size : -1;
 
+    /* Provider 观测：真实 Provider 才有 http/latency/resp_bytes；
+     * 这些字段只放数字与短枚举，绝不含 key / 用户文本 / 上游正文。 */
+    w->st.provider_mock = w->prov_deepseek ? 0 : 1;
+    if (w->prov_deepseek) {
+        w->st.last_http_status = w->ds.last_http_status;
+        w->st.last_curl_code = w->ds.last_curl_code;
+        w->st.last_provider_latency_ms = w->ds.last_latency_ms;
+        w->st.last_resp_bytes = w->ds.last_resp_bytes;
+        snprintf(w->st.last_error_class, sizeof(w->st.last_error_class), "%s",
+                 w->ds.last_class);
+    } else {
+        w->st.last_http_status = 0;
+        w->st.last_curl_code = 0;
+        w->st.last_provider_latency_ms = 0;
+        w->st.last_resp_bytes = 0;
+        w->st.last_error_class[0] = '\0';
+    }
+
     err[0] = '\0';
     if (t6b_status_write(&w->st, w->status_path, err, sizeof(err)) != 0) {
         w->st.state_errors++;
@@ -327,6 +347,60 @@ static int commit_event(t6b_worker *w)
     return 0;
 }
 
+/* ---------------- 可选：把模型回答落盘（--reply-log） ---------------- */
+
+/*
+ * 默认关闭。开启后每次"已成功提交偏移"的回答追加一行 JSON 到该文件：
+ *   {"event_id","seq","provider","model","http","latency_ms","reply_bytes","mock","text"}
+ * 顺序刻意是"先提交偏移（durable），再写这一行"：
+ *   - 崩溃可能丢掉最后一行回答，但绝不会把同一条事件处理两次；
+ *   - 反过来（先写回答再提交）会产生重复回答。
+ * 这一行只落在设备本地 0600 文件里；日志/状态文件一律不含回答正文。
+ */
+static void reply_log_append(t6b_worker *w, const t6b_reply *rep)
+{
+    static char line[2 * T6B_REPLY_TEXT_MAX + 512];
+    static char esc[2 * T6B_REPLY_TEXT_MAX];
+    int n;
+    int fd;
+    int text_ok;
+
+    if (w->cfg.reply_log[0] == '\0' || rep == NULL) return;
+
+    /* 回答必须是合法 UTF-8 才写正文（真实 Provider 已校验；Mock 的 argv 可能是任意字节）。
+     * 不合法就只留长度与 text_valid=0：文件永远是可解析的 JSON。 */
+    text_ok = (rep->text_bytes > 0 &&
+               wu_utf8_validate(rep->text, (size_t)rep->text_bytes) == 0) ? 1 : 0;
+    if (text_ok) wu_json_escape(esc, sizeof(esc), rep->text);
+    else esc[0] = '\0';
+
+    n = snprintf(line, sizeof(line),
+                 "{\"event_id\":\"%s\",\"seq\":%lu,\"provider\":\"%s\",\"model\":\"%s\","
+                 "\"http\":%d,\"latency_ms\":%lld,\"reply_bytes\":%d,\"mock\":%d,"
+                 "\"text_valid\":%d,\"text\":\"%s\"}\n",
+                 w->pend.event_id, w->pend.seq,
+                 (w->prov.ops != NULL) ? w->prov.ops->name : "none",
+                 w->prov_deepseek ? w->ds.cfg.model : "",
+                 w->prov_deepseek ? w->ds.last_http_status : 0,
+                 rep->latency_ms, rep->text_bytes, rep->mock, text_ok, esc);
+    if (n <= 0 || (size_t)n >= sizeof(line)) {
+        always("reply log line too long; reply for event %s not written", w->pend.event_id);
+        return;
+    }
+    fd = wu_open_append(w->cfg.reply_log);
+    if (fd < 0) {
+        always("reply log open failed (%s); reply for event %s not written",
+               w->cfg.reply_log, w->pend.event_id);
+        return;
+    }
+    if (wu_write_all(fd, line, (size_t)n) != 0)
+        always("reply log write failed (%s); reply for event %s may be incomplete",
+               w->cfg.reply_log, w->pend.event_id);
+    else
+        (void)wu_fsync(fd);
+    (void)wu_close(fd);
+}
+
 /* ---------------- Provider 调用与重试（P1-2） ---------------- */
 
 /*
@@ -354,12 +428,23 @@ static int provider_attempt(t6b_worker *w)
     }
 
     if (rep.status == T6B_P_OK) {
+        const char *pname = (w->prov.ops != NULL) ? w->prov.ops->name : "none";
+
         w->st.provider_ok++;
         logf_(&w->cfg,
               "event id=%s seq=%lu pid=%lld text_bytes=%d -> provider=%s status=ok "
               "latency=%lldms reply_bytes=%d (attempt %d)",
               w->pend.event_id, w->pend.seq, w->pend.pid, w->pend.text_bytes,
-              "mock", rep.latency_ms, rep.text_bytes, w->pend_attempts);
+              pname, rep.latency_ms, rep.text_bytes, w->pend_attempts);
+        if (w->prov_deepseek) {
+            /* 真实调用的可核对事实：模型、HTTP 状态、curl 结果、耗时、响应字节数。
+             * 不含 key、不含请求体、不含模型原文。 */
+            always("deepseek ok: model=%s http=%d curl=%d latency=%lldms resp_bytes=%llu "
+                   "reply_bytes=%d event=%s",
+                   w->ds.cfg.model, w->ds.last_http_status, w->ds.last_curl_code,
+                   w->ds.last_latency_ms, w->ds.last_resp_bytes, rep.text_bytes,
+                   w->pend.event_id);
+        }
         if (w->pend_stuck) {
             always("provider recovered for event id=%s after %d attempts; resuming normal pace",
                    w->pend.event_id, w->pend_attempts);
@@ -371,6 +456,7 @@ static int provider_attempt(t6b_worker *w)
             if (cr == -2) return -4;      /* 指纹推进失败：致命 */
             if (cr != 0) return -3;       /* 状态落盘失败 */
         }
+        reply_log_append(w, &rep);        /* 偏移已持久化，再记回答（宁可少一行，不重复） */
         return 0;
     }
 
@@ -388,6 +474,12 @@ static int provider_attempt(t6b_worker *w)
           "event id=%s seq=%lu attempt %d failed: %s %s (offset NOT advanced, retrying)",
           w->pend.event_id, w->pend.seq, w->pend_attempts,
           t6b_pstatus_name(rep.status), rep.message);
+    if (w->prov_deepseek) {
+        always("deepseek failed: model=%s http=%d curl=%d class=%s latency=%lldms "
+               "event=%s (offset NOT advanced)",
+               w->ds.cfg.model, w->ds.last_http_status, w->ds.last_curl_code,
+               w->ds.last_class, w->ds.last_latency_ms, w->pend.event_id);
+    }
 
     if (w->cfg.provider_retry_max > 0 && w->pend_attempts >= w->cfg.provider_retry_max) {
         if (!w->pend_stuck) {
@@ -593,6 +685,7 @@ void t6b_config_defaults(t6b_config *c)
     snprintf(c->work_dir, sizeof(c->work_dir), "%s", T6B_WORK_DIR_DEFAULT);
     snprintf(c->state_dir, sizeof(c->state_dir), "%s", T6B_STATE_DIR_DEFAULT);
     snprintf(c->events_name, sizeof(c->events_name), "%s", T6B_EVENTS_NAME_DEFAULT);
+    snprintf(c->provider_name, sizeof(c->provider_name), "%s", T6B_PROVIDER_MOCK);
     c->poll_ms = 200;
     c->status_interval_ms = 1000;
     c->max_record_bytes = T6B_REC_DEFAULT;
@@ -607,6 +700,7 @@ void t6b_config_defaults(t6b_config *c)
     c->state_fail_exit_ms = 3000;
     c->verbose = 0;
     t6b_mock_defaults(&c->mock);
+    t6b_ds_defaults(&c->deepseek);
 }
 
 int t6b_config_check(const t6b_config *c, char *err, size_t errlen)
@@ -655,6 +749,45 @@ int t6b_config_check(const t6b_config *c, char *err, size_t errlen)
         if (err) snprintf(err, errlen, "state-fail-exit-ms out of range [0,3600000]");
         return -1;
     }
+
+    /* ---- provider 选择（T5-06C） ---- */
+    if (strcmp(c->provider_name, T6B_PROVIDER_MOCK) == 0) return 0;
+    if (strcmp(c->provider_name, T6B_PROVIDER_DEEPSEEK) != 0) {
+        if (err) snprintf(err, errlen, "provider must be 'mock' or 'deepseek'");
+        return -1;
+    }
+    if (c->deepseek.api_key_file[0] == '\0') {
+        if (err) snprintf(err, errlen, "api-key-file must not be empty for provider=deepseek");
+        return -1;
+    }
+    if (c->deepseek.model[0] == '\0') {
+        if (err) snprintf(err, errlen, "deepseek-model must not be empty");
+        return -1;
+    }
+    if (strlen(c->deepseek.model) > T6B_DS_MODEL_MAX) {
+        if (err) snprintf(err, errlen, "deepseek-model too long (max %d)", T6B_DS_MODEL_MAX);
+        return -1;
+    }
+    {
+        char url[T6B_DS_URL_MAX];
+        char uerr[96];
+        if (t6b_ds_build_url(c->deepseek.base_url, url, sizeof(url), uerr, sizeof(uerr)) != 0) {
+            if (err) snprintf(err, errlen, "deepseek-base-url invalid: %s", uerr);
+            return -1;
+        }
+    }
+    if (c->deepseek.connect_timeout_ms < 100 || c->deepseek.connect_timeout_ms > 120000) {
+        if (err) snprintf(err, errlen, "deepseek-connect-timeout-ms out of range [100,120000]");
+        return -1;
+    }
+    if (c->deepseek.total_timeout_ms < 100 || c->deepseek.total_timeout_ms > 600000) {
+        if (err) snprintf(err, errlen, "deepseek-timeout-ms out of range [100,600000]");
+        return -1;
+    }
+    if (c->deepseek.total_timeout_ms < c->deepseek.connect_timeout_ms) {
+        if (err) snprintf(err, errlen, "deepseek-timeout-ms must be >= connect timeout");
+        return -1;
+    }
     return 0;
 }
 
@@ -673,7 +806,15 @@ static void status_init_failure(t6b_worker *w, const char *reason, const char *d
     snprintf(w->st.exit_reason, sizeof(w->st.exit_reason), "%s", reason);
     snprintf(w->st.events_file, sizeof(w->st.events_file), "%s", w->events_path);
     snprintf(w->st.state_file, sizeof(w->st.state_file), "%s", w->state_path);
-    snprintf(w->st.provider, sizeof(w->st.provider), "mock");
+    snprintf(w->st.provider, sizeof(w->st.provider), "%s",
+             w->cfg.provider_name[0] != '\0' ? w->cfg.provider_name : "none");
+    if (strcmp(w->cfg.provider_name, T6B_PROVIDER_DEEPSEEK) == 0) {
+        snprintf(w->st.model, sizeof(w->st.model), "%s", w->cfg.deepseek.model);
+        w->st.provider_mock = 0;
+    } else {
+        w->st.model[0] = '\0';
+        w->st.provider_mock = 1;
+    }
     /* 报告磁盘上**仍然有效**的进度（不是 0）：身份核对失败时进度没有被改动 */
     w->st.offset = w->state.offset;
     w->st.dev = w->state.dev;
@@ -785,17 +926,49 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
                t6b_open_reason_name(w.rd.last_reason));
     }
 
-    if (t6b_mock_open(&w.prov, &w.mock, &c->mock) != 0) {
-        always("provider setup failed");
-        t6b_reader_free(&w.rd);
-        lock_release(&w);
-        return 4;
-    }
-    if (t6b_provider_init(&w.prov, err, sizeof(err)) != 0) {
-        always("provider init failed: %s", err);
-        t6b_reader_free(&w.rd);
-        lock_release(&w);
-        return 4;
+    /* Provider 选择（T5-06C）：mock = 零网络；deepseek = 真实 HTTPS。
+     * 真实 Provider 初始化失败必须退出（退出码 4），绝不悄悄退回 mock。 */
+    if (strcmp(c->provider_name, T6B_PROVIDER_DEEPSEEK) == 0) {
+        if (t6b_ds_open(&w.prov, &w.ds, &c->deepseek) != 0) {
+            always("provider setup failed (deepseek)");
+            t6b_reader_free(&w.rd);
+            lock_release(&w);
+            return 4;
+        }
+        w.prov_deepseek = 1;
+        if (t6b_provider_init(&w.prov, err, sizeof(err)) != 0) {
+            always("provider init failed (deepseek): %s", err);
+            status_init_failure(&w, "provider_init_failed", err);
+            t6b_provider_fini(&w.prov);
+            t6b_ds_close(&w.prov);
+            t6b_reader_free(&w.rd);
+            lock_release(&w);
+            return 4;
+        }
+        always("provider ready: deepseek model=%s url=%s key_file=%s key_mode=%s",
+               w.ds.cfg.model, w.ds.url, w.ds.cfg.api_key_file,
+               w.ds.key_mode < 0 ? "unknown" : (w.ds.key_mode == 0600 ? "0600" : "NOT-0600"));
+        if (w.ds.key_mode >= 0 && (w.ds.key_mode & 077) != 0) {
+            always("WARNING: api key file mode is 0%o (group/other readable); "
+                   "chmod 600 %s is recommended", w.ds.key_mode, w.ds.cfg.api_key_file);
+        }
+        if (strncmp(w.ds.url, "http://", 7) == 0) {
+            always("WARNING: deepseek base url uses plain http (no TLS): %s", w.ds.url);
+        }
+        always("libcurl: dlopen ok, version=%s", t6b_ds_libcurl_version());
+    } else {
+        if (t6b_mock_open(&w.prov, &w.mock, &c->mock) != 0) {
+            always("provider setup failed (mock)");
+            t6b_reader_free(&w.rd);
+            lock_release(&w);
+            return 4;
+        }
+        if (t6b_provider_init(&w.prov, err, sizeof(err)) != 0) {
+            always("provider init failed (mock): %s", err);
+            t6b_reader_free(&w.rd);
+            lock_release(&w);
+            return 4;
+        }
     }
 
     snprintf(w.st.state, sizeof(w.st.state), "running");
@@ -808,10 +981,14 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
     snprintf(w.st.state_file, sizeof(w.st.state_file), "%s", w.state_path);
     snprintf(w.st.provider, sizeof(w.st.provider), "%s",
              w.prov.ops != NULL ? w.prov.ops->name : "none");
+    w.st.provider_mock = w.prov_deepseek ? 0 : 1;
+    if (w.prov_deepseek) snprintf(w.st.model, sizeof(w.st.model), "%s", w.ds.cfg.model);
+    else w.st.model[0] = '\0';
     snprintf(w.st.exit_reason, sizeof(w.st.exit_reason), "running");
 
-    always("start pid=%lld events=%s state=%s provider=%s offset=%lld (mock only, no network)",
-           w.st.pid, w.events_path, w.state_path, w.st.provider, w.state.offset);
+    always("start pid=%lld events=%s state=%s provider=%s offset=%lld (%s)",
+           w.st.pid, w.events_path, w.state_path, w.st.provider, w.state.offset,
+           w.prov_deepseek ? "network enabled" : "mock only, no network");
     publish_status(&w, "running");
 
     rc = worker_loop(&w, &exit_reason);
@@ -846,8 +1023,19 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         always("WARNING: event id=%s was still unprocessed at exit (%d attempts, offset kept at %lld)",
                w.pend.event_id, w.pend_attempts, w.rd.off);
 
+    if (w.prov_deepseek) {
+        always("provider summary: name=deepseek model=%s calls=%lu ok=%lu err=%lu timeout=%lu "
+               "last_http=%d last_curl=%d last_class=%s last_latency=%lldms last_resp_bytes=%llu",
+               w.ds.cfg.model, w.ds.calls, w.ds.ok, w.ds.err, w.ds.timeouts,
+               w.ds.last_http_status, w.ds.last_curl_code, w.ds.last_class,
+               w.ds.last_latency_ms, w.ds.last_resp_bytes);
+    } else {
+        always("provider summary: name=mock calls=%lu (no network)", w.mock.calls);
+    }
+
     t6b_provider_fini(&w.prov);
-    t6b_mock_close(&w.prov);
+    if (w.prov_deepseek) t6b_ds_close(&w.prov);
+    else t6b_mock_close(&w.prov);
     t6b_reader_free(&w.rd);
     lock_release(&w);
 
@@ -876,6 +1064,13 @@ static void usage(void)
         "  --provider-backoff-max-ms N retry backoff cap (default 2000)\n"
         "  --state-retry-ms N    state persist retry interval (default 100)\n"
         "  --state-fail-exit-ms N give up consuming after N ms of failed persists (default 3000)\n"
+        "  --provider mock|deepseek  provider implementation (default mock)\n"
+        "  --api-key-file PATH   API key file (default %s), only for provider=deepseek\n"
+        "  --deepseek-model M    model name (default %s)\n"
+        "  --deepseek-base-url U base url (default %s); %s is appended once\n"
+        "  --deepseek-connect-timeout-ms N  connect timeout (default %d)\n"
+        "  --deepseek-timeout-ms N          total timeout (default %d)\n"
+        "  --reply-log PATH      append each successful answer as one JSON line (default off)\n"
         "  --mock-reply TEXT     fixed mock reply text\n"
         "  --mock-delay-ms N     simulate provider latency\n"
         "  --mock-fail-from N    mock always fails from call N on\n"
@@ -885,7 +1080,9 @@ static void usage(void)
         "  --help                this help\n"
         "\nexit codes: 0 ok, 2 usage, 3 already running, 4 init failed, 5 state persist failed,\n"
         "            6 file identity failed (prefix fingerprint cannot be verified/updated)\n",
-        T6B_WORK_DIR_DEFAULT, T6B_STATE_DIR_DEFAULT, T6B_EVENTS_NAME_DEFAULT);
+        T6B_WORK_DIR_DEFAULT, T6B_STATE_DIR_DEFAULT, T6B_EVENTS_NAME_DEFAULT,
+        T6B_DS_KEY_FILE_DEFAULT, T6B_DS_MODEL_DEFAULT, T6B_DS_BASE_URL_DEFAULT,
+        T6B_DS_PATH_SUFFIX, T6B_DS_CONNECT_MS_DEFAULT, T6B_DS_TIMEOUT_MS_DEFAULT);
 }
 
 static int need_str(int argc, char **argv, int i, const char **out)
@@ -942,6 +1139,13 @@ int main(int argc, char **argv)
         else if (strcmp(a, "--mock-fail-from") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.mock.fail_from_call = atoi(v); i++; }
         else if (strcmp(a, "--mock-fail-times") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.mock.fail_first_calls = atoi(v); i++; }
         else if (strcmp(a, "--mock-timeout-from") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.mock.timeout_from_call = atoi(v); i++; }
+        else if (strcmp(a, "--provider") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.provider_name, sizeof(cfg.provider_name), "%s", v); i++; }
+        else if (strcmp(a, "--api-key-file") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.deepseek.api_key_file, sizeof(cfg.deepseek.api_key_file), "%s", v); i++; }
+        else if (strcmp(a, "--deepseek-model") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.deepseek.model, sizeof(cfg.deepseek.model), "%s", v); i++; }
+        else if (strcmp(a, "--deepseek-base-url") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.deepseek.base_url, sizeof(cfg.deepseek.base_url), "%s", v); i++; }
+        else if (strcmp(a, "--deepseek-connect-timeout-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.connect_timeout_ms = atoi(v); i++; }
+        else if (strcmp(a, "--deepseek-timeout-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.total_timeout_ms = atoi(v); i++; }
+        else if (strcmp(a, "--reply-log") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.reply_log, sizeof(cfg.reply_log), "%s", v); i++; }
         else {
             fprintf(stderr, "unknown option: %s\n", a);
             usage();

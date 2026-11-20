@@ -17,8 +17,9 @@ vendor release 串 `6.1.8-RS-20221104.1459`，kernel `4.4.95+`）。
 | [t5_06b_p1p2_fix_report.md](t5_06b_p1p2_fix_report.md) | **T5-06B P1/P2 修复报告**：内核锁、Provider 失败不消费、落盘失败即停、半行超长、删除重建身份检测 |
 | [t5_06b_numeric_validation_fix_report.md](t5_06b_numeric_validation_fix_report.md) | **T5-06B P2 补充修复**：`event_reader` 数字字段窄化与范围校验（version/pid/text_bytes/text_chars/时间/seq）、文本诊断字段一致性、ARM32 与 LLP64 的 `ULONG_MAX` 差异、真机 284 项全过 |
 | [t5_06b_p22_prefix_fingerprint_report.md](t5_06b_p22_prefix_fingerprint_report.md) | **T5-06B P2-2 补充修复**：events.jsonl 前缀指纹（`[0,offset)` 增量 FNV-1a）、状态版本 2、inode 复用下的换文件识别、指纹故障即停（退出码 6）、**指纹提交原子性**（中途失败不留半截指纹）、真机 inode 复用实证 |
-| [android/](android) | T5-06B Worker 源码 + `build.ps1`（NDK 动态链接）+ `run_ai_worker.sh` |
-| [tests/](tests) | T5-06B 主机单元测试 / 集成测试 / 一键运行脚本 |
+| [t5_06c_deepseek_real_provider_report.md](t5_06c_deepseek_real_provider_report.md) | **T5-06C 第一阶段**：真机接入真实 DeepSeek（dlopen 系统 libcurl、TLS 强制校验、受限 JSON、key 只走文件）；真机已打通到 HTTP 401，200 待 key |
+| [tests/](tests) | T5-06B 主机单元测试 / 集成测试 / 一键运行脚本（含 `run_t5_06c_host_tests.ps1`） |
+| [android/](android) | Worker 源码（`ai_worker.c` / `event_reader.c` / `provider.c` / `mock_provider.c` / `deepseek_provider.c` / …）+ `build.ps1`（NDK 动态链接）+ `run_ai_worker.sh` |
 | [evidence/](evidence) | 真机探针原始输出、设备事实快照、NDK 检查、主机与真机测试日志 |
 
 ## T5-06B 一句话结论
@@ -56,6 +57,14 @@ P2-2 复审 P1（同一报告 §3.6 / §5.9）：指纹推进改成**原子提�
 `offset` 与 `prefix_hash` 永远是一对自洽值。主机单元 **401 项**、集成 **27 项**（新增 i25）、
 真机 ARM32 单元 **401 项**全过；真机注入 `T6B_FAULT_PREFIX=fold_partial`（读完第一块 4096 B
 之后失败）→ 退出码 6，落盘指纹与故障前**逐字节相同**，重启核对 `resets=0`、未提交的超长行重试成功。
+
+T5-06C 第一阶段（`t5_06c_deepseek_real_provider_report.md`）：`provider=mock|deepseek` 可选，
+**deepseek 是真实调用**——运行时 `dlopen("libcurl.so")`（设备 7.52.0-DEV）+ 选项自检，
+`SSL_VERIFYPEER=1 / SSL_VERIFYHOST=2` 强制开启，`NOSIGNAL` + 连接/总超时，响应体 64 KB 固定上限，
+自写受限 JSON 解析器（`\uXXXX`/代理对全支持，不用 strstr 猜），key 只从 0600 文件读（拒符号链接、
+`fini` 清零、不进日志/状态/URL/命令行）。消费语义不变：成功才提交、失败不推进、落盘失败即停。
+真机已打通「真实 ASR final → 真实 HTTPS 端点」（HTTP 401，offset 不动）；**HTTP 200 需设备上的 key**，
+脚本 `n6_device_real_api.ps1` / `n7_device_asr_e2e.ps1` 已就绪（`-KeyFile`）。
 
 ## 结论标记约定
 

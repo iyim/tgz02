@@ -1135,6 +1135,182 @@ def i25_prefix_fold_partial_atomic(exe):
             "1 record retried" % head)
 
 
+# ---------------------------------------------------------------- T5-06C Provider
+
+def grep_tree(root, needle):
+    """在目录下所有文件里找 needle（用于证明 key 没有落进任何文件）"""
+    hits = []
+    for dirpath, _dirnames, filenames in os.walk(root):
+        for fn in filenames:
+            p = os.path.join(dirpath, fn)
+            try:
+                with open(p, "rb") as f:
+                    data = f.read()
+            except OSError:
+                continue
+            if needle.encode("utf-8") in data:
+                hits.append(p)
+    return hits
+
+
+@case
+def i26_deepseek_missing_key(exe):
+    """provider=deepseek 没有 key 文件：初始化失败退出（码 4），绝不退回 mock、绝不发请求"""
+    work = path_of("i26/work")
+    state = path_of("i26/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    write_events("i26/work/events.jsonl", [rec(1, 4242, "t5b-4242-ds01-g1", "你好")])
+    missing = path_of("i26/no_such_key")
+
+    rc, out, _ = run_once(exe, work, state,
+                          ["--provider", "deepseek", "--api-key-file", missing,
+                           "--idle-exit-ms", "500"])
+    assert_eq(rc, 4, "missing key must fail init (exit 4), never fall back to mock")
+    assert_in("provider init failed (deepseek)", out, "init failure logged with provider name")
+    assert_in("key file not found", out, "error names the key file problem")
+    assert_eq(durable_offset(state), 0, "offset must stay 0: nothing was consumed")
+    st = status_of(state)
+    assert_eq(st.get("provider"), "deepseek", "status records the real provider")
+    assert_eq(st.get("provider_mock"), 0, "provider_mock=0 for deepseek")
+    assert_eq(st.get("model"), "deepseek-chat", "default model recorded")
+    assert_eq(st.get("exit_reason"), "provider_init_failed", "exit reason recorded")
+    assert_eq(counters_of(state).get("events_processed"), 0, "no event was processed")
+    return "rc=4, no request, offset untouched, status shows deepseek"
+
+
+@case
+def i27_deepseek_libcurl_unavailable(exe):
+    """key 存在但主机没有 libcurl：明确报错（码 4），且 key 不落进任何文件"""
+    if os.name != "nt":
+        return "skipped: host has POSIX dlopen; libcurl availability depends on the distro"
+
+    work = path_of("i27/work")
+    state = path_of("i27/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    write_events("i27/work/events.jsonl", [rec(1, 4242, "t5b-4242-ds02-g1", "你好")])
+    keypath = path_of("i27/key/deepseek_api_key")
+    os.makedirs(os.path.dirname(keypath), exist_ok=True)
+    dummy_key = "sk-host-test-DUMMY-0123456789"
+    with open(keypath, "w", encoding="ascii", newline="\n") as f:
+        f.write(dummy_key + "\n")
+
+    rc, out, _ = run_once(exe, work, state,
+                          ["--provider", "deepseek", "--api-key-file", keypath,
+                           "--deepseek-base-url", "http://127.0.0.1:9/x",
+                           "--idle-exit-ms", "500"])
+    assert_eq(rc, 4, "no libcurl on the host build -> init fails with exit 4")
+    assert_in("curl unavailable", out, "the missing transport is reported explicitly")
+    assert_eq(durable_offset(state), 0, "offset untouched")
+
+    # key 只能待在它自己的文件里：状态目录、work 目录、stdout 都不许出现
+    assert_eq(grep_tree(state, dummy_key), [], "the api key must never reach the state dir")
+    assert_eq(grep_tree(work, dummy_key), [], "the api key must never reach the work dir")
+    assert_eq(dummy_key in out, False, "the api key must never appear on stdout")
+    return "rc=4, transport error explicit, key absent from stdout/state/work"
+
+
+@case
+def i28_provider_config_errors(exe):
+    """配置检查：非法 provider / URL / 空模型 / 超时倒挂 一律退出码 2"""
+    work = path_of("i28/work")
+    state = path_of("i28/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    write_events("i28/work/events.jsonl", [rec(1, 4242, "t5b-4242-ds03-g1", "hi")])
+    key = path_of("i28/key")
+    with open(key, "w", encoding="ascii") as f:
+        f.write("sk-config-check\n")
+
+    cases = [
+        (["--provider", "openai"], "provider must be"),
+        (["--provider", "deepseek", "--api-key-file", key,
+          "--deepseek-base-url", "ftp://api.deepseek.com"], "deepseek-base-url invalid"),
+        (["--provider", "deepseek", "--api-key-file", key,
+          "--deepseek-model", ""], "deepseek-model must not be empty"),
+        (["--provider", "deepseek", "--api-key-file", key,
+          "--deepseek-connect-timeout-ms", "5000",
+          "--deepseek-timeout-ms", "100"], "must be >="),
+        (["--provider", "deepseek", "--api-key-file", ""], "api-key-file must not be empty"),
+    ]
+    for extra, want in cases:
+        rc, out, _ = run_once(exe, work, state, extra + ["--idle-exit-ms", "300"])
+        assert_eq(rc, 2, "config error for %s" % extra)
+        assert_in("config error", out, "usage error reported")
+        assert_in(want, out, "message names the problem (%s)" % want)
+    return "%d config rejections all exit 2" % len(cases)
+
+
+@case
+def i29_mock_is_still_the_default(exe):
+    """provider 默认仍是 mock：状态里 provider_mock=1、model 为空、不发网络"""
+    work = path_of("i29/work")
+    state = path_of("i29/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    write_events("i29/work/events.jsonl",
+                 [rec(i + 1, 4242, "t5b-4242-ds04-g%d" % i, "mock-%d" % i) for i in range(2)])
+    rc, out, _ = run_once(exe, work, state, ["--idle-exit-ms", "500"])
+    assert_eq(rc, 0, "default provider still works")
+    st = status_of(state)
+    assert_eq(st.get("provider"), "mock", "default provider is mock")
+    assert_eq(st.get("provider_mock"), 1, "provider_mock=1 for mock")
+    assert_eq(st.get("model"), "", "mock has no model name")
+    assert_eq(st.get("last_http_status"), 0, "mock never talks HTTP")
+    assert_eq(counters_of(state).get("events_processed"), 2, "2 events via mock")
+
+    rc2, out2, _ = run_once(exe, work, state, ["--provider", "mock", "--idle-exit-ms", "300"])
+    assert_eq(rc2, 0, "explicit --provider mock works too")
+    return "mock default/explicit ok, 2 events, no HTTP"
+
+
+@case
+def i30_reply_log_optional(exe):
+    """--reply-log：成功的回答按行落盘；失败的事件不写；状态/日志仍不含回答正文"""
+    work = path_of("i30/work")
+    state = path_of("i30/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    rl = path_of("i30/replies.jsonl")
+    write_events("i30/work/events.jsonl",
+                 [rec(i + 1, 4242, "t5b-4242-rl%d-g1" % i, "rl-%d" % i) for i in range(2)])
+
+    rc, out, _ = run_once(exe, work, state,
+                          ["--idle-exit-ms", "600", "--reply-log", rl,
+                           "--mock-reply", "fixed-answer"])
+    assert_eq(rc, 0, "reply-log run exits cleanly")
+    assert_eq(os.path.exists(rl), True, "reply log created")
+    lines = [ln for ln in open(rl, encoding="utf-8").read().splitlines() if ln.strip()]
+    assert_eq(len(lines), 2, "one line per successful answer")
+    for ln, i in zip(lines, range(2)):
+        obj = json.loads(ln)
+        assert_eq(obj.get("event_id"), "t5b-4242-rl%d-g1" % i, "event id recorded")
+        assert_eq(obj.get("text"), "fixed-answer", "answer text stored in the reply log")
+        assert_eq(obj.get("text_valid"), 1, "answer text is valid UTF-8")
+        assert_eq(obj.get("mock"), 1, "mock flag recorded")
+        assert_eq(obj.get("provider"), "mock", "provider recorded")
+    st = state_of(state)
+    assert_eq("fixed-answer" in json.dumps(st, ensure_ascii=False), False,
+              "the answer must not be copied into consumer_state.json")
+
+    # 失败的事件不写回答：新 state/work，provider 永远失败
+    work2 = path_of("i30/work_fail")
+    state2 = path_of("i30/state_fail")
+    rl2 = path_of("i30/replies_fail.jsonl")
+    os.makedirs(work2, exist_ok=True)
+    os.makedirs(state2, exist_ok=True)
+    write_events("i30/work_fail/events.jsonl", [rec(1, 4242, "t5b-4242-rlf-g1", "f")])
+    rc2, _, _ = run_once(exe, work2, state2,
+                         ["--max-runtime-ms", "1200", "--reply-log", rl2,
+                          "--mock-fail-from", "1", "--provider-retry-max", "1",
+                          "--provider-backoff-ms", "300"])
+    assert_eq(rc2, 0, "stuck provider still exits 0 at max-runtime")
+    assert_eq(os.path.exists(rl2), False, "no reply line for a failed event")
+    assert_eq(durable_offset(state2), 0, "failed event keeps the offset")
+    return "2 answers logged, 0 lines for failures, state stays clean"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--exe", default=DEFAULT_EXE)

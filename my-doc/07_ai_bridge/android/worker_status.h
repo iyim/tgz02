@@ -39,6 +39,15 @@ typedef struct {
     char               provider[T6B_PROVIDER_NAME_MAX];
     unsigned long long mock_calls;
 
+    /* Provider 观测（T5-06C：真实 Provider 才有的字段；mock 时保持 0/空） */
+    int                provider_mock;          /* 1 = 当前 Provider 不联网（mock） */
+    char               model[64];              /* 真实模型名（mock 为空） */
+    int                last_http_status;       /* 最近一次 HTTP 状态码（0 = 没拿到） */
+    int                last_curl_code;         /* 最近一次 CURLcode（mock 时 0） */
+    long long          last_provider_latency_ms;  /* 最近一次调用耗时 */
+    unsigned long long last_resp_bytes;        /* 最近一次响应体字节数 */
+    char               last_error_class[40];   /* 最近错误类别（短枚举，脱敏） */
+
     /* 消费侧计数 */
     unsigned long long lines_read;         /* 从文件里读出的完整行（含非法） */
     unsigned long long events_accepted;    /* 解析校验通过 */

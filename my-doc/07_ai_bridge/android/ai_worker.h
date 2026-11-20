@@ -13,6 +13,7 @@
 #ifndef T6B_AI_WORKER_H
 #define T6B_AI_WORKER_H
 
+#include "deepseek_provider.h"
 #include "event_reader.h"
 #include "provider.h"
 #include "worker_status.h"
@@ -21,11 +22,14 @@
 #define T6B_STATE_DIR_DEFAULT   "/data/local/tmp/t5_bridge/ai_worker"
 #define T6B_EVENTS_NAME_DEFAULT "events.jsonl"
 #define T6B_LOCK_NAME_DEFAULT   "ai_worker.lock"
+#define T6B_PROVIDER_MOCK       "mock"
+#define T6B_PROVIDER_DEEPSEEK   "deepseek"
 
 typedef struct {
     char        work_dir[T6B_PATH_MAX];      /* events.jsonl 所在目录（只读） */
     char        state_dir[T6B_PATH_MAX];     /* 消费进度、状态、锁、日志所在目录 */
     char        events_name[64];             /* 事件文件名（不允许带路径分隔符） */
+    char        provider_name[16];           /* "mock"（默认）| "deepseek" */
     int         poll_ms;                     /* 无数据时的轮询间隔 */
     int         status_interval_ms;          /* 状态文件刷新间隔 */
     int         max_record_bytes;            /* 单行上限 */
@@ -39,7 +43,9 @@ typedef struct {
     int         state_retry_ms;              /* 进度落盘失败后的重试间隔 */
     long long   state_fail_exit_ms;          /* 持续失败多久后带错误退出（0 = 立即退出） */
     int         verbose;
+    char        reply_log[T6B_PATH_MAX];     /* 可选：成功回答的落盘文件（默认关闭） */
     t6b_mock_cfg mock;
+    t6b_ds_cfg   deepseek;                   /* 只有 provider=deepseek 时才使用 */
 } t6b_config;
 
 void t6b_config_defaults(t6b_config *c);

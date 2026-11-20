@@ -60,6 +60,17 @@ int wu_open_excl(const char *path)
 #endif
 }
 
+/* 追加打开（0600，不截断）：T5-06C 的 replies.jsonl 用。
+ * 追加语义保证多条进程/多次运行不会互相覆盖。 */
+int wu_open_append(const char *path)
+{
+#ifdef _WIN32
+    return _open(path, _O_WRONLY | _O_CREAT | _O_APPEND | _O_BINARY, _S_IREAD | _S_IWRITE);
+#else
+    return open(path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0600);
+#endif
+}
+
 long long wu_self_pid(void)
 {
 #ifdef _WIN32

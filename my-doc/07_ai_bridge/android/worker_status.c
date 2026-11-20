@@ -42,6 +42,8 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     char esc_invalid[T6B_PROVIDER_MSG_MAX * 2];
     char esc_error[sizeof(((t6b_status *)0)->last_error) * 2];
     char esc_pending[(T6B_ID_MAX + 1) * 2];
+    char esc_model[sizeof(((t6b_status *)0)->model) * 2];
+    char esc_class[sizeof(((t6b_status *)0)->last_error_class) * 2];
     char tmp[T6B_PATH_MAX + 8];
     char dir[T6B_PATH_MAX];
     int n;
@@ -56,6 +58,8 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     wu_json_escape(esc_invalid, sizeof(esc_invalid), st->last_invalid);
     wu_json_escape(esc_error, sizeof(esc_error), st->last_error);
     wu_json_escape(esc_pending, sizeof(esc_pending), st->pending_event_id);
+    wu_json_escape(esc_model, sizeof(esc_model), st->model);
+    wu_json_escape(esc_class, sizeof(esc_class), st->last_error_class);
 
     n = snprintf(buf, sizeof(buf),
         "{\"version\":%d,\"state\":\"%s\",\"pid\":%lld,"
@@ -64,6 +68,8 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"events_file\":\"%s\",\"state_file\":\"%s\",\"offset\":%lld,\"file_size\":%lld,"
         "\"dev\":%llu,\"ino\":%llu,\"prefix_hash\":\"%016llx\",\"prefix_hash_valid\":%d,"
         "\"provider\":\"%s\",\"mock_calls\":%llu,"
+        "\"provider_mock\":%d,\"model\":\"%s\",\"last_http_status\":%d,\"last_curl_code\":%d,"
+        "\"last_provider_latency_ms\":%lld,\"last_resp_bytes\":%llu,\"last_error_class\":\"%s\","
         "\"counters\":{\"lines_read\":%llu,\"events_accepted\":%llu,\"events_processed\":%llu,"
         "\"duplicates\":%llu,\"invalid_lines\":%llu,\"oversize_lines\":%llu,"
         "\"io_errors\":%llu,\"truncations\":%llu,\"replacements\":%llu,"
@@ -83,6 +89,8 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         esc_events, esc_state, st->offset, st->file_size,
         st->dev, st->ino, st->prefix_hash, st->prefix_hash_valid,
         st->provider, st->mock_calls,
+        st->provider_mock, esc_model, st->last_http_status, st->last_curl_code,
+        st->last_provider_latency_ms, st->last_resp_bytes, esc_class,
         st->lines_read, st->events_accepted, st->events_processed,
         st->duplicates, st->invalid_lines, st->oversize_lines,
         st->io_errors, st->truncations, st->replacements,

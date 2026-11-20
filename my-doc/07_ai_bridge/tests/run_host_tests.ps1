@@ -1,4 +1,4 @@
-﻿# run_host_tests.ps1 -- build + run the T5-06B host test suite (Windows + TDM-GCC + Python)
+# run_host_tests.ps1 -- build + run the T5-06B host test suite (Windows + TDM-GCC + Python)
 #
 #   powershell -ExecutionPolicy Bypass -File run_host_tests.ps1
 #
@@ -24,7 +24,7 @@ New-Item -ItemType Directory -Force $Ev  | Out-Null
 New-Item -ItemType Directory -Force (Join-Path $Android "out") | Out-Null
 
 $LibSrc = @(
-    "event_reader.c", "consumer_state.c", "provider.c",
+    "deepseek_provider.c", "event_reader.c", "consumer_state.c", "provider.c",
     "mock_provider.c", "worker_status.c", "worker_util.c", "seq_gap.c"
 ) | ForEach-Object { Join-Path $Android $_ }
 $WorkerSrc = @((Join-Path $Android "ai_worker.c")) + $LibSrc
@@ -95,6 +95,9 @@ $rcSub += Run-Subset "i22" "host_legacy_state.log"
 $rcSub += Run-Subset "i23" "host_prefix_fault.log"
 $rcSub += Run-Subset "i24" "host_append_no_reset.log"
 $rcSub += Run-Subset "i25" "host_prefix_atomic.log"
+$rcSub += Run-Subset "deepseek" "host_deepseek_provider.log"
+$rcSub += Run-Subset "provider_config" "host_provider_config.log"
+$rcSub += Run-Subset "still_the_default" "host_provider_default.log"
 
 Push-Location $Here
 $lockOut = & py -3 (Join-Path $Here "worker_lock_stress_test.py") --rounds 100 --procs 20 `
