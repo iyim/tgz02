@@ -35,7 +35,20 @@
 ## 探针输出的 result_type 语义
 
 - **H1**：读原厂 `isFinished`，`final` 为权威判定（每会话恰好 1 次）。
-- **H2/H3/H4**：没有可靠 final 标志，`partial` / `post_final` 只是**顺序标签**（相对本会话 final 之前/之后），**不代表重复识别**。
+- **H2**：带 `sessionId`，但第 4 参（isLast）在本 ARM32 ABI 下未落到可判定槽位，仅作旁证；
+  其 `partial` / `post_final` 只是相对本会话 final 的**顺序标签**，不代表重复识别。
+- **H3/H4（P1 修复后）**：参数里没有 `sessionId` 且运行在语音引擎线程，输出
+  `session_id = null`、`session_correlation = 'not_available_in_hook_arguments'`、
+  `result_type = 'unclassified'`；不再跨线程猜测会话。H4 仍保留 `asr_log_id`。
+
+## P1 修复（2026-11-20）
+
+| 文件 | 说明 |
+|---|---|
+| `t504_p1_fix_record.md` | 两项修复的做法、静态检查、真机冒烟结果，含 `readUtf8String(MAX_TEXT)` 在本机 frida 上抛异常的实测记录（需评审确认替代写法） |
+| `t504_p1_smoke_hits.jsonl` | 修复后的 2 会话冒烟原始命中（已脱敏） |
+| `t504_p1_logcat_extract.txt` | 冒烟期间的唤醒/final/TTS 行（已脱敏） |
+
 
 ## 复现
 

@@ -27,6 +27,16 @@
  *   H4 CloudASRManager::handleCloudASRResult(char const* asrLogId, std::string const& text)
  *        offset 0xd9e30    —— 服务器 asrLogId + 文本
  *
+ * result_type 语义（P1 修复后）：
+ *   只有 H1 读到了原厂自己的 isFinished 标志（实测 0=partial，1=final，每会话恰好 1 次 1），
+ *   因此 partial/final 只能以 H1 为准。
+ *   H2 同样带 sessionId，但第 4 参（isLast）在本 ARM32 ABI 下未落到可判定槽位，只作旁证。
+ *   H3/H4 的参数里**没有** sessionId，且运行在另一个线程（语音引擎线程）；
+ *   P1 修复前用全局 currentSession 猜测关联，会把不同会话的文本挂到错误 session 上，
+ *   现改为 session_id = null + session_correlation = 'not_available_in_hook_arguments'，
+ *   result_type 固定 'unclassified'（不伪装成 partial/final）。
+ *   需要跨 Hook 关联时，只能用 H4 自带的 asr_log_id 与 H1 会话侧日志对账，不能跨线程猜。
+ *
  * std::string 布局（本机实测；与 AGSpeechEngine::onListenResult 反汇编一致）：
  *   (byte0 & 1) == 0 : short, len = byte0>>1, data = p+1
  *   (byte0 & 1) == 1 : long , len = u32[p+4], data = u32[p+8]
@@ -39,7 +49,6 @@ var MAX_TEXT = 512;
 var seq = 0;
 var counters = { hits: 0, hook_errors: 0, read_errors: 0, final: 0, partial: 0 };
 var lastFinalBySession = {};
-var currentSession = 0;
 
 var HOOKS = [
   {
@@ -62,9 +71,24 @@ var HOOKS = [
 
 function nowIso() { return new Date().toISOString(); }
 
+/* 有界读取 NUL 结尾的 UTF-8 C 字符串。
+ *
+ * 为什么不是一行 readUtf8String(MAX_TEXT)：
+ *   本机 frida 16.7.19 的 NativePointer.readUtf8String(size) 在“显式给定长度”模式下
+ *   只要窗口内出现 0x00 就抛 `Error: can't decode byte 0x00 in position N`；
+ *   而 readCString(size) 不会在 NUL 处停止（实测返回 512 字节的越界垃圾）。
+ *   两者都会让每条识别文本变成读取失败（实测见 T5-04 P1 测试记录）。
+ *   因此这里把 MAX_TEXT 作为**底层读取长度上界**：先有界读取字节，定位 NUL，
+ *   再用已知长度解码。全程不存在"无界读取后再 slice"。
+ */
 function readCString(p) {
   if (p.isNull()) return '';
-  return p.readUtf8String().slice(0, MAX_TEXT);
+  var raw = p.readByteArray(MAX_TEXT);
+  if (raw === null) return '';
+  var u8 = new Uint8Array(raw), n = 0;
+  while (n < u8.length && u8[n] !== 0) n++;
+  if (n === 0) return '';
+  return p.readUtf8String(n);
 }
 
 function readStdString(addr) {
@@ -135,7 +159,6 @@ for (var i = 0; i < HOOKS.length; i++) {
             rec.text = readCString(args[2]);
             rec.text_length = rec.text.length;
             rec.is_finished = args[3].toInt32();
-            currentSession = sid;
             rec.result_type = classify(rec.text, rec.is_finished, sid, true);
             if (rec.result_type === 'final') lastFinalBySession[sid] = true;
           } else if (h.kind === 'settexttime') {
@@ -147,15 +170,21 @@ for (var i = 0; i < HOOKS.length; i++) {
             rec.result_type = classify(rec.text, 0, sid2, false);
           } else if (h.kind === 'stdstring') {
             var s = readStdString(args[1]);
-            rec.session_id = currentSession;
-            rec.text = s.text; rec.text_length = s.len;
-            rec.result_type = classify(rec.text, 0, currentSession, false);
+            rec.session_id = null;
+            rec.session_correlation = 'not_available_in_hook_arguments';
+            rec.text = s.text;
+            rec.text_length = s.text.length;
+            rec.text_byte_length = s.len;
+            rec.result_type = 'unclassified';
           } else if (h.kind === 'logid_stdstring') {
             rec.asr_log_id = readCString(args[1]);
             var s2 = readStdString(args[2]);
-            rec.session_id = currentSession;
-            rec.text = s2.text; rec.text_length = s2.len;
-            rec.result_type = classify(rec.text, 0, currentSession, false);
+            rec.session_id = null;
+            rec.session_correlation = 'not_available_in_hook_arguments';
+            rec.text = s2.text;
+            rec.text_length = s2.text.length;
+            rec.text_byte_length = s2.len;
+            rec.result_type = 'unclassified';
           }
         } catch (e) {
           counters.read_errors++;
