@@ -64,8 +64,9 @@ class TestProtectionTable(unittest.TestCase):
 
     def test_reason_text(self):
         for pkg in SIX:
-            self.assertEqual(protection.protection_reason(pkg),
-                             '用户明确指定保留，未经用户另行授权不得精简。')
+            self.assertEqual(
+                protection.protection_reason(pkg),
+                '在用户另行明确授权或调整保护要求之前，不得删除、禁用或精简。')
 
     def test_mt_manager_is_out_of_image_not_inventoried(self):
         rows = {r['pkg'] for r in load('app_inventory.json')}
@@ -98,6 +99,7 @@ class TestExecutableLists(unittest.TestCase):
         cls.csv_rows = {r['package']: r for r in load('app_inventory.csv')}
 
     def test_no_protected_package_on_any_executable_list(self):
+        # A_candidate is evidence (it must contain ES); the execution buckets must not.
         for bucket in ('A_delete', 'B_disable', 'C_observe', 'D_forbidden'):
             for pkg in self.lists[bucket]:
                 self.assertFalse(protection.is_user_protected(pkg),
@@ -109,6 +111,11 @@ class TestExecutableLists(unittest.TestCase):
 
     def test_delete_list_is_empty(self):
         self.assertEqual(self.lists['A_delete'], [])
+
+    def test_candidate_list_is_the_static_A_set(self):
+        expected = sorted(p for p, r in self.rows.items() if r['cls'] == 'A')
+        self.assertEqual(sorted(self.lists['A_candidate']), expected)
+        self.assertEqual(expected, ['com.estrongs.android.pop'])
 
     def test_dangbei_easytouch_permissiondog_not_disableable(self):
         for pkg in ('com.dangbei1.tvlauncher', 'com.shere.assistivetouch',
@@ -122,11 +129,14 @@ class TestExecutableLists(unittest.TestCase):
         self.assertEqual(es['cls'], 'A', 'rev3 keeps the technical classification')
         self.assertTrue(es['user_protected'])
         self.assertIn('受用户保护', es['exec_action'])
+        self.assertIn('com.estrongs.android.pop', self.lists['A_candidate'])
+        self.assertIn('com.estrongs.android.pop', self.lists['protected_blocked'])
         self.assertNotIn('com.estrongs.android.pop', self.lists['A_delete'])
 
     def test_magisk_not_on_any_list(self):
         self.assertNotIn('com.topjohnwu.magisk', self.lists['C_observe'])
         self.assertNotIn('com.topjohnwu.magisk', self.lists['B_disable'])
+        self.assertNotIn('com.topjohnwu.magisk', self.lists['A_delete'])
         self.assertIn('com.topjohnwu.magisk', self.lists['protected_blocked'])
 
     def test_csv_matches_json_protection_flags(self):
@@ -135,7 +145,7 @@ class TestExecutableLists(unittest.TestCase):
                 continue
             self.assertEqual(self.csv_rows[pkg]['user_protected'], 'True')
             self.assertEqual(self.csv_rows[pkg]['protection_reason'],
-                             '用户明确指定保留，未经用户另行授权不得精简。')
+                             '在用户另行明确授权或调整保护要求之前，不得删除、禁用或精简。')
             self.assertIn('受用户保护', self.csv_rows[pkg]['exec_action'])
 
     def test_field_present_on_every_row(self):
@@ -146,6 +156,41 @@ class TestExecutableLists(unittest.TestCase):
                 self.assertTrue(r['protection_reason'])
             else:
                 self.assertIsNone(r['protection_reason'])
+
+
+class TestCandidateDeletionGate(unittest.TestCase):
+    """rev3.1: static A candidate must not be treated as a deletion plan."""
+
+    def test_unprotected_A_goes_to_candidate(self):
+        self.assertEqual(protection.exec_bucket('A', 'com.example.unprotected'), 'A_candidate')
+
+    def test_unverified_A_cannot_enter_delete(self):
+        pkg = 'com.example.unprotected'
+        # dynamic validation only, no user authorisation
+        self.assertEqual(
+            protection.exec_bucket('A', pkg, frozenset({pkg}), frozenset()),
+            'A_candidate')
+        # user authorisation only, no dynamic validation
+        self.assertEqual(
+            protection.exec_bucket('A', pkg, frozenset(), frozenset({pkg})),
+            'A_candidate')
+
+    def test_both_conditions_reach_delete(self):
+        pkg = 'com.example.unprotected'
+        self.assertEqual(
+            protection.exec_bucket('A', pkg, frozenset({pkg}), frozenset({pkg})),
+            'A_delete')
+
+    def test_protected_A_never_enters_delete_even_when_authorised(self):
+        es = 'com.estrongs.android.pop'
+        self.assertEqual(
+            protection.exec_bucket('A', es, frozenset({es}), frozenset({es})),
+            'protected_blocked')
+
+    def test_gate_sets_are_empty_in_repository(self):
+        # No dynamic validation or authorisation has been recorded; do not fabricate any.
+        self.assertEqual(set(protection.DYNAMIC_VERIFIED_A), set())
+        self.assertEqual(set(protection.USER_AUTHORIZED_DELETE), set())
 
 
 class TestStatsConsistency(unittest.TestCase):
@@ -182,7 +227,7 @@ class TestStatsConsistency(unittest.TestCase):
         for a in apps:
             self.assertTrue(a['user_protected'])
             self.assertEqual(a['protection_reason'],
-                             '用户明确指定保留，未经用户另行授权不得精简。')
+                             '在用户另行明确授权或调整保护要求之前，不得删除、禁用或精简。')
 
     def test_class_labels_do_not_claim_verified_deletion(self):
         for r in self.rows:
@@ -209,6 +254,32 @@ class TestLegacyPathsRemoved(unittest.TestCase):
             if 'my-doc' in text:
                 bad.append(name)
         self.assertEqual(bad, [])
+
+
+class TestReadmeExperimentOrder(unittest.TestCase):
+    """rev3.1: the README must not re-list protected apps as disable experiments."""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(os.path.join(REV, 'README.md'), encoding='utf-8') as f:
+            cls.text = f.read()
+
+    def test_old_order_absent(self):
+        self.assertNotIn('dangbei.apk` → `easytouch.apk`', self.text)
+        self.assertNotIn('easytouch.apk` → `Osupdate`', self.text)
+
+    def test_protected_apps_not_in_experiment_sequence(self):
+        for pkg in ('com.dangbei1.tvlauncher', 'com.shere.assistivetouch',
+                    'com.web1n.permissiondog'):
+            self.assertNotIn('pm disable-user --user 0 ' + pkg, self.text)
+
+    def test_current_order_present(self):
+        self.assertIn('com.alibaba.ailabs.genie.osupdate', self.text)
+        self.assertIn('com.alibaba.ailabs.genie.guide', self.text)
+
+    def test_protection_period_wording(self):
+        self.assertIn('在用户另行明确授权或调整保护要求之前，不得删除、禁用或精简。', self.text)
+        self.assertNotIn('未经用户另行授权不得精简', self.text)
 
 
 if __name__ == '__main__':

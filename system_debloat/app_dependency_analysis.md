@@ -111,6 +111,7 @@ GenieLauncher、GenieRTC）以 `com.alibaba.ailabs.genie.webapps.START/INIT` 与
 这是**真实的应用级耦合**（不是 SDK 噪声），rev2 据此把它从 B 调整为 C。
 `ES.apk`、`qxg.apk`、`Guide` 在降噪后**没有任何**应用级入向引用；`dangbei.apk`、`Waft`、`easytouch.apk`
 的命中全部落在已知推送 / 统计 SDK 命名空间，已在降噪中剔除。
+（ES、权限狗、当贝、EasyTouch 已列入用户保护，上述结论只是技术事实，不构成任何执行建议。）
 
 ## 3.1 平台 Provider 的常规使用（不作为删除依据）
 

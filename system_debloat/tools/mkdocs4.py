@@ -361,14 +361,25 @@ rev1 的 `report.py` 用 `x['token'].split('.')[0] in ('com.android', 'media', '
 open(os.path.join(TOOLS, 'README.md'), 'w', encoding='utf-8').write(tools_readme)
 
 # ---------------------------------------------------------------- revisions.md
-rev = f"""# 修订记录（rev3）
+rev = f"""# 修订记录（rev3 / rev3.1）
 
 - 修订时间：2026-11-20
 - 修订对象：本目录（`system_debloat/`）下全部报告与机器可读数据；不涉及 `system` 镜像、APK、T5 代码或设备分区
-- 修订触发：① 操作者指定六个 App 必须保留；② rev2 遗留的三个 P2 问题
+- 修订触发：rev3 = ① 操作者指定六个 App 必须保留；② rev2 遗留的三个 P2 问题。
+  rev3.1 = rev3 审查提出的三项小范围修订（A 类映射、README 旧实验顺序、保护期限措辞）
 - 本轮**未执行**任何 `pm disable-user` / `pm uninstall` / 镜像或 boot 写操作；设备 `pm list packages -d` 仍为空
 
-## 1. 本轮（rev3）改动对照
+## 0. rev3.1 小范围修订（2026-11-20）
+
+| # | 问题 | 处理 | 验证 |
+|---|---|---|---|
+| 1 | A 类直接映射到 `A_delete`，静态候选被误当删除计划 | `protection.exec_bucket()` 拆分：`A_candidate` 收录**全部** A 类静态候选；`A_delete` 默认空，只有同时具备真机动态验证（`DYNAMIC_VERIFIED_A`，空集）与用户明确授权（`USER_AUTHORIZED_DELETE`，空集）才可进入；`report.py` 增加三条子集断言；受保护包无论状态如何不进 `A_delete` | `A_candidate = ['com.estrongs.android.pop']`，`A_delete = []`；4 条新增测试 |
+| 2 | README 仍出现旧实验顺序 `dangbei.apk → easytouch.apk → Osupdate` | 删除该行；改为当前有效顺序 OTA → 开机引导 → 8 个 AOSP 边缘组件，并注明当贝/EasyTouch/权限狗不再出现在任何实验顺序中 | `test_protection` 断言 README 不含该顺序与 `qxg.apk` 试验项 |
+| 3 | 保护期限表述不统一 | `PROTECTION_REASON` 统一为「在用户另行明确授权或调整保护要求之前，不得删除、禁用或精简。」；`exec_action` 同步改写 | 6 个 App 的 JSON/CSV/报告文本一致；测试断言逐字匹配 |
+
+> rev3.1 不重新分析系统、不重构工具、不扩大保护范围，也未研究 Magisk 安装结构。
+
+## 1. rev3 改动对照
 
 | # | 任务项 | 处理方式 | 落点 |
 |---|---|---|---|
@@ -406,18 +417,19 @@ rev = f"""# 修订记录（rev3）
 > rev3 的边界修正在现有数据上没有改变上述计数（镜像中不存在此类相似 authority），
 > 但消除了“前缀相似即平台”的判定漏洞；测试用例锁定该行为。
 
-## 4. 测试结果（rev3 实跑）
+## 4. 测试结果（rev3.1 实跑）
 
 ```
 python -m unittest discover -v      # 在 system_debloat/tools/ 下执行
 ```
 
-- `test_filters`：**12 条**，含 rev3 新增的 `com.android.settingshelper.provider` 边界用例、
+- `test_filters`：**12 条**，含 `com.android.settingshelper.provider` 边界用例、
   前缀相似反例（`com.android.settingsproxy`、`com.android.providersx.foo` 等）、子命名空间正例。
-- `test_protection`：**20 条**，覆盖六个 App 的保护登记、执行清单隔离、ES「保留 A 类但被拦截」、
-  Magisk 组件范围、CSV/JSON 一致性、统计一致性、旧目录引用检查。
+- `test_protection`：**30 条**，覆盖六个 App 的保护登记、执行清单隔离、ES「保留 A 类但被拦截」、
+  `A_candidate`/`A_delete` 映射与授权门（含 4 条合成用例）、Magisk 组件范围、CSV/JSON 一致性、
+  统计一致性、旧目录引用检查、README 旧实验顺序与保护期限措辞检查。
 
-真实输出见本文件所在提交的 commit message 与 `README.md` 对应章节；两套测试合计 **32 条**，全部通过。
+两套测试合计 **42 条**，全部通过（`Ran 42 tests ... OK`）。
 
 ## 5. 仍未验证的事项（不得当作已证结论使用）
 
@@ -437,10 +449,25 @@ python -m unittest discover -v      # 在 system_debloat/tools/ 下执行
 
 ## 6. 变更文件
 
+**rev3.1（本次）**
+
+| 文件 | 变更 |
+|---|---|
+| `tools/protection.py` | 新增 `exec_bucket()` 与授权门 `DYNAMIC_VERIFIED_A` / `USER_AUTHORIZED_DELETE`（均为空集）；保护期限措辞改为统一表述 |
+| `tools/report.py` | 拆分 `A_candidate` / `A_delete`；新增三条子集断言；`exec_action` 措辞同步 |
+| `tools/test_protection.py` | 30 条（新增 `TestCandidateDeletionGate` 5 条、`TestReadmeExperimentOrder` 4 条，修订既有断言） |
+| `README.md` | 删除旧实验顺序；新增 §4.2 A 类候选与删除清单映射；保护期限措辞统一 |
+| `app_removal_recommendations.md` | §3 增加 `A_candidate` / `A_delete` 映射说明 |
+| `app_dependency_analysis.md` | 受保护项的技术结论加“不构成执行建议”限定 |
+| `app_inventory.*` / `summary_stats.json` / `user_protected.json` | 重新生成（新增 `A_candidate` 桶、措辞统一） |
+| `revisions.md` | 新增 §0 rev3.1 记录 |
+
+**rev3（上一版，归档）**
+
 | 文件 | 变更类型 |
 |---|---|
 | `README.md` | 新增 §4 用户保护清单（含 §4.1 Magisk）+ 章节重编号；结论与 9 问改为“保护优先”口径 |
-| `revisions.md` | 重写（rev2 归档 + rev3 记录，本文件） |
+| `revisions.md` | 重写（rev2 归档 + rev3 记录） |
 | `app_inventory.md` | 清单新增「保护」列、新增 §2 用户保护表、章节重编号 |
 | `app_dependency_analysis.md` | §10 修订说明追加 rev3（保护不影响技术分类） |
 | `app_removal_recommendations.md` | 新增 §2 用户保护（含 §2.1 Magisk）、A 类改“候选”口径、B 类拆“受保护/可试验” |
@@ -448,10 +475,10 @@ python -m unittest discover -v      # 在 system_debloat/tools/ 下执行
 | `optimization_plan.md` | P1 移除当贝/EasyTouch/权限狗、实验改为 OTA→引导→AOSP、P2 前置条件加保护项 |
 | `app_inventory.csv` / `.json` | 新增 `class_label` / `user_protected` / `protection_reason` / `exec_action` |
 | `dependency_edges.csv` | 重新生成（authority 边界修复后重算 `evidence_class`） |
-| `summary_stats.json` | 新增 `user_protection`（6 个 App + Magisk 组件 + 禁止动作）与 `executable_lists`（含 `protected_blocked`） |
+| `summary_stats.json` | 新增 `user_protection` 与 `executable_lists`（含 `protected_blocked`） |
 | `user_protected.json` | 新增（机器可读保护清单与执行清单） |
 | `tools/protection.py` | 新增（保护规则 + `assert_no_protected()`） |
-| `tools/test_protection.py` | 新增（20 条保护与一致性测试） |
+| `tools/test_protection.py` | 新增 |
 | `tools/filters.py` | 修正 `is_platform_authority()` 边界匹配 |
 | `tools/test_filters.py` | 新增 4 条边界用例（12 条） |
 | `tools/report.py` | 接入保护过滤、新增字段与 `user_protected.json` 输出 |

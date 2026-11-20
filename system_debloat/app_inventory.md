@@ -37,7 +37,7 @@
 | 当贝桌面 | `com.dangbei1.tvlauncher` | `app/dangbei.apk` | B | user_protected = true | 禁止删除/禁用/清数据/限制自启 |
 | 权限狗 | `com.web1n.permissiondog` | `app/qxg.apk` | B | user_protected = true | 禁止删除/禁用/清数据/限制自启 |
 
-保护原因：`用户明确指定保留，未经用户另行授权不得精简。`
+保护原因：`在用户另行明确授权或调整保护要求之前，不得删除、禁用或精简。`
 
 > 表中只有 5 个包出现在下面的 55 行清单里（`bin.mt.plus` 是设备侧安装，不在 system 分区）。
 > 受保护包**保留原技术分类**，但 `exec_action` 一律为“受用户保护”，且不会出现在

@@ -71,7 +71,7 @@
 | 当贝桌面 | `com.dangbei1.tvlauncher` | B | 是 | **user_protected = true** |
 | 权限狗 | `com.web1n.permissiondog` | B | 是 | **user_protected = true** |
 
-保护原因统一记录为：`用户明确指定保留，未经用户另行授权不得精简。`
+保护原因统一记录为：`在用户另行明确授权或调整保护要求之前，不得删除、禁用或精简。`
 
 要点：
 
@@ -84,6 +84,23 @@
 - 当贝桌面、EasyTouch、权限狗仍是 B 类（技术上可禁用），但同样被保护规则拦截，**不进入 P1 试验清单**。
 - 保护状态在机器可读数据中体现：`app_inventory.json` / `.csv` 的 `user_protected`、`protection_reason`、
   `exec_action` 字段，以及 `user_protected.json`、`summary_stats.json:user_protection`。
+
+### 4.2 A 类候选与删除清单的映射（rev3.1）
+
+静态结论与执行清单**分开存放**，避免把“静态候选”误读成“删除计划”：
+
+| 清单 | 含义 | 当前内容 |
+|---|---|---|
+| `A_candidate` | 所有 A 类**静态**候选（证据，不是计划） | 1 个：`com.estrongs.android.pop` |
+| `A_delete` | **可执行**删除清单 | **0 个（空）** |
+
+进入 `A_delete` 需要**同时**满足两条，且两条都必须有真实记录，不得凭推断填写：
+
+1. 完成**真机动态验证**（`protection.DYNAMIC_VERIFIED_A`，当前为空集）；
+2. 取得**用户明确授权**（`protection.USER_AUTHORIZED_DELETE`，当前为空集）。
+
+用户保护名单中的包**无论**上述状态如何都不得进入 `A_delete`——ES 文件管理器即属此列：
+它出现在 `A_candidate`（静态证据），同时出现在 `protected_blocked`（执行拦截），但**不在** `A_delete`。
 
 ### 4.1 Magisk 及其配套组件
 
@@ -152,11 +169,13 @@ Magisk 作为**独立保护对象**处理。下表只列**能从当前镜像与�
    （com.estrongs.android.pop，4.60 MB），但它**受用户保护**，已从删除清单排除；
    且即使不受保护，A 类也只代表“静态分析认为具备删除可能性，尚未完成真机动态验证”。
 3. **哪些适合禁用？** 13 个 B 类，合计 28.15 MB；
-   其中当贝桌面、EasyTouch、权限狗**受用户保护，不进入试验**；实际可试验 10 个，
-   顺序为 OTA → Guide → 8 个 AOSP 边缘组件，单包逐个、每项独立观察 ≥24 h。
-   `AMPE` 不在禁用清单（C 类，需产品决策）。
-   试验顺序为单包逐个：`dangbei.apk` → `easytouch.apk` → `Osupdate`，然后再考虑 `qxg.apk`、`Guide`
-   与 8 个 AOSP 边缘组件。`AMPE` **不在**禁用清单内（rev2 调整为 C）。
+   其中当贝桌面、EasyTouch、权限狗**受用户保护，不进入试验**；实际可试验
+   10 个，顺序为
+   OTA（`com.alibaba.ailabs.genie.osupdate`）→ 开机引导（`com.alibaba.ailabs.genie.guide`）
+   → 8 个 AOSP 边缘组件（`mtp`、`statementservice`、`vpndialogs`、`bluetoothmidiservice`、
+   `captiveportallogin`、`companiondevicemanager`、`pacprocessor`、`storagemanager`），
+   单包逐个、每项独立观察 ≥24 h。`AMPE` 不在禁用清单（C 类，需产品决策）。
+   > 当贝桌面与 EasyTouch **不再出现在任何禁用实验顺序中**；`qxg.apk`（权限狗）同样受保护。
 4. **哪些必须保留？** 21 个 D 类，合计 252.9 MB，含语音链路、IoT 控制、Launcher、
    SystemUI、Settings、WebView、蓝牙栈与全部存储/Provider 基础组件。
 5. **哪些依赖尚不清楚？** 20 个 C 类（241.07 MB），

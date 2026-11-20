@@ -31,7 +31,8 @@ EXEC_ACTION = {
     'C': '保留观察，不做删除/禁用动作',
     'D': '禁止删除/禁用',
 }
-PROTECTED_EXEC_ACTION = '受用户保护：禁止删除、禁用、清数据、限制自启/后台/权限（未经授权）'
+PROTECTED_EXEC_ACTION = ('受用户保护：在另行明确授权或调整保护要求之前，'
+                         '不得删除、禁用、清数据、限制自启/后台/权限')
 
 OUT = r'D:\tgz02\OS\_analysis\debloat\out'
 DEV = os.path.join(OUT, 'device')
@@ -359,18 +360,31 @@ for r in rows:
     a['pss'] += r['pss_kb']
 
 # ---------------------------------------------------------------- executable lists
-# Protection is enforced here, not in the document generators: a protected package can
-# never appear in a delete/disable list even if static analysis liked it.
-exec_lists = {'A_delete': [], 'B_disable': [], 'C_observe': [], 'D_forbidden': [],
-              'protected_blocked': []}
+# Two dimensions are kept apart (rev3.1):
+#   * A_candidate records every A-class *static* candidate (ES included, even though it is
+#     user-protected) - it is evidence, not a plan;
+#   * A_delete is the execution list and stays empty until a package has both on-device
+#     dynamic validation and explicit user authorisation (see protection.DYNAMIC_VERIFIED_A
+#     / USER_AUTHORIZED_DELETE, both intentionally empty).
+# Protection is enforced here, not in the document generators.
+exec_lists = {k: [] for k in protection.EXEC_BUCKETS}
 for r in rows:
-    if r['user_protected']:
-        exec_lists['protected_blocked'].append(r['pkg'])
-        continue
-    key = {'A': 'A_delete', 'B': 'B_disable', 'C': 'C_observe', 'D': 'D_forbidden'}[r['cls']]
-    exec_lists[key].append(r['pkg'])
+    pkg, cls = r['pkg'], r['cls']
+    if cls == 'A':
+        exec_lists['A_candidate'].append(pkg)      # static candidate always recorded
+    bucket = protection.exec_bucket(cls, pkg)       # execution decision
+    if bucket == 'A_candidate':
+        continue                                    # already recorded above
+    exec_lists[bucket].append(pkg)
 for k in ('A_delete', 'B_disable', 'C_observe', 'D_forbidden'):
     protection.assert_no_protected(exec_lists[k], k)
+
+# A_delete must be a subset of A_candidate ∩ dynamic-verified ∩ user-authorised,
+# and A_candidate must equal exactly the set of A-class rows.
+assert set(exec_lists['A_delete']) <= set(exec_lists['A_candidate']), 'A_delete outside A_candidate'
+assert set(exec_lists['A_delete']) <= set(protection.DYNAMIC_VERIFIED_A), 'A_delete without dynamic validation'
+assert set(exec_lists['A_delete']) <= set(protection.USER_AUTHORIZED_DELETE), 'A_delete without user authorisation'
+assert set(exec_lists['A_candidate']) == {r['pkg'] for r in rows if r['cls'] == 'A'}, 'A_candidate != A rows'
 
 summary = {
     'packages': len(rows),

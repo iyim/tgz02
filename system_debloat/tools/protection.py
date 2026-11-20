@@ -8,7 +8,7 @@ All package names below were resolved from the actual inventory in
 `../app_inventory.json` (manifest package names), not from app display names.
 """
 
-PROTECTION_REASON = '用户明确指定保留，未经用户另行授权不得精简。'
+PROTECTION_REASON = '在用户另行明确授权或调整保护要求之前，不得删除、禁用或精简。'
 
 # ---------------------------------------------------------------- six protected apps
 # key = exact Android package name observed in the image / on the device
@@ -164,3 +164,38 @@ def assert_no_protected(targets, context=''):
     if bad:
         raise AssertionError('protected target(s) in executable list %s: %s' % (context, bad))
     return True
+
+
+# ---------------------------------------------------------------- execution gating
+# rev3.1: a static A-class conclusion is NOT a deletion plan. A package only reaches the
+# A_delete list when it has BOTH on-device dynamic validation and explicit user
+# authorisation. Both sets are empty on purpose: no such evidence exists in this
+# analysis, and inventing entries here would fabricate results.
+DYNAMIC_VERIFIED_A = frozenset()
+USER_AUTHORIZED_DELETE = frozenset()
+
+EXEC_BUCKETS = ('A_candidate', 'A_delete', 'B_disable', 'C_observe', 'D_forbidden',
+                'protected_blocked')
+
+
+def exec_bucket(cls, package, dynamic_verified=DYNAMIC_VERIFIED_A,
+                user_authorized=USER_AUTHORIZED_DELETE):
+    """Map one package to its execution bucket.
+
+    >>> exec_bucket('A', 'com.example.clean')
+    'A_candidate'
+    >>> exec_bucket('A', 'com.example.clean', frozenset({'com.example.clean'}),
+    ...             frozenset({'com.example.clean'}))
+    'A_delete'
+    >>> exec_bucket('A', 'com.estrongs.android.pop',
+    ...             frozenset({'com.estrongs.android.pop'}),
+    ...             frozenset({'com.estrongs.android.pop'}))
+    'protected_blocked'
+    """
+    if is_user_protected(package):
+        return 'protected_blocked'
+    if cls == 'A':
+        if package in dynamic_verified and package in user_authorized:
+            return 'A_delete'
+        return 'A_candidate'
+    return {'B': 'B_disable', 'C': 'C_observe', 'D': 'D_forbidden'}[cls]
