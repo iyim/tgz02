@@ -1,0 +1,35 @@
+== WAV structure ==
+seg_988c2771_0001_224.wav    size=85804   riff=85796   data=85760   sr=16000 ch=1 bits=16 dur= 2.68s OK  sha256=aac4463a7b8be3b0112d84cc9813eb4b
+seg_988c2771_0002_381.wav    size=194604  riff=194596  data=194560  sr=16000 ch=1 bits=16 dur= 6.08s OK  sha256=78d3b132692c44d2649d20ec36a49259
+seg_a6116340_0001_252.wav    size=41004   riff=40996   data=40960   sr=16000 ch=1 bits=16 dur= 1.28s OK  sha256=33e70627168fd1cb88f4e5dd0e308aeb
+seg_a6116340_0002_288.wav    size=53804   riff=53796   data=53760   sr=16000 ch=1 bits=16 dur= 1.68s OK  sha256=3e97ad1a8f047f09fd96b345c4e25c48
+seg_a6116340_0003_412.wav    size=111404  riff=111396  data=111360  sr=16000 ch=1 bits=16 dur= 3.48s OK  sha256=cfa560730a5a4b9e19276220861beca5
+seg_a6116340_0004_510.wav    size=66604   riff=66596   data=66560   sr=16000 ch=1 bits=16 dur= 2.08s OK  sha256=06ec7a2baa29b3c66448cf2e91220ecb
+seg_a6116340_0005_599.wav    size=65324   riff=65316   data=65280   sr=16000 ch=1 bits=16 dur= 2.04s OK  sha256=4a39a8f4d78738182e2899f3800a23e4
+
+== job / wav association ==
+seg_a6116340_0001_252.wav    job=5e5396574f3b9602 size=41004   SUCCEEDED run=a6116340 seg=1 seq=252   file=yes size_match=yes chain=DISCOVERED->VALIDATING->PENDING->PROCESSING->SUCCEEDED
+seg_a6116340_0002_288.wav    job=80377112807c19ad size=53804   SUCCEEDED run=a6116340 seg=2 seq=288   file=yes size_match=yes chain=DISCOVERED->VALIDATING->PENDING->PROCESSING->SUCCEEDED
+seg_a6116340_0003_412.wav    job=998bd0f2bccf7466 size=111404  SUCCEEDED run=a6116340 seg=3 seq=412   file=yes size_match=yes chain=DISCOVERED->VALIDATING->PENDING->PROCESSING->SUCCEEDED
+seg_a6116340_0004_510.wav    job=f9ed0ecd1f7a96c1 size=66604   SUCCEEDED run=a6116340 seg=4 seq=510   file=yes size_match=yes chain=DISCOVERED->VALIDATING->PENDING->PROCESSING->SUCCEEDED
+seg_a6116340_0005_599.wav    job=a5a6f993e75bd40b size=65324   SUCCEEDED run=a6116340 seg=5 seq=599   file=yes size_match=yes chain=DISCOVERED->VALIDATING->PENDING->PROCESSING->SUCCEEDED
+seg_988c2771_0001_224.wav    job=e71c44f7f30274e4 size=85804   SUCCEEDED run=988c2771 seg=1 seq=224   file=yes size_match=yes chain=DISCOVERED->VALIDATING->PENDING->PROCESSING->SUCCEEDED
+seg_988c2771_0002_381.wav    job=20f21777708abe22 size=194604  SUCCEEDED run=988c2771 seg=2 seq=381   file=yes size_match=yes chain=DISCOVERED->VALIDATING->PENDING->PROCESSING->SUCCEEDED
+
+== name/size identity check (job_id = fnv1a64(name:size)) ==
+seg_a6116340_0001_252.wav    expect=5e5396574f3b9602 got=5e5396574f3b9602 OK
+seg_a6116340_0002_288.wav    expect=80377112807c19ad got=80377112807c19ad OK
+seg_a6116340_0003_412.wav    expect=998bd0f2bccf7466 got=998bd0f2bccf7466 OK
+seg_a6116340_0004_510.wav    expect=f9ed0ecd1f7a96c1 got=f9ed0ecd1f7a96c1 OK
+seg_a6116340_0005_599.wav    expect=a5a6f993e75bd40b got=a5a6f993e75bd40b OK
+seg_988c2771_0001_224.wav    expect=e71c44f7f30274e4 got=e71c44f7f30274e4 OK
+seg_988c2771_0002_381.wav    expect=20f21777708abe22 got=20f21777708abe22 OK
+
+== totals ==
+wav_files   = 7
+job_records = 35 (jobs.jsonl lines)
+job_ids     = 7 (unique)
+results     = 7 (results.jsonl lines)
+states      = ["DISCOVERED", "PENDING", "PROCESSING", "SUCCEEDED", "VALIDATING"]
+
+VERDICT = PASS

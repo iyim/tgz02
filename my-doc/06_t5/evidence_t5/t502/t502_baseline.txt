@@ -1,0 +1,65 @@
+T5-02 测试前状态快照（T5-02-01）
+================================================================
+采集时刻：2026-11-20 09:07:17 CST（设备与 PC 同区，Asia/Hong_Kong）
+采集方式：adb -s 192.168.1.9:5555 shell（普通 shell 用户，非 root）
+
+设备
+----
+型号        : AILABS_S1L
+Android     : 8.1（SDK 27）
+Build       : 6.1.8-RS-20221104.1459（alps/full_ailabs_s1l/ailabs_s1l）
+SELinux     : Permissive
+原厂进程    : com.alibaba.ailabs.genie.smartapp:core  PID 16112（测试全程存活）
+root 可用    : /sbin/su（仅用于启动 frida-server 与 T4；T5 用 shell 用户运行）
+
+本轮目录（新建，与历史验收数据隔离）
+------------------------------------
+T4 WAV 输出 : /data/local/tmp/t4/segments_t502      （测试前为空）
+T5 工作目录 : /data/local/tmp/t5/work_t502          （测试前为空）
+
+T5 启动方式（设备侧，与 my-doc/06_t5/android/run_t5.sh 的 start 分支等价，
+只是把 --watch-dir/--work-dir 指向本轮独立目录；未修改 run_t5.sh）
+--------------------------------------------------------------------
+cd /data/local/tmp/t5
+nohup ./t5_agent \
+    --watch-dir /data/local/tmp/t4/segments_t502 \
+    --work-dir  /data/local/tmp/t5/work_t502 \
+    --verbose  > t502_agent.log 2>&1 < /dev/null &
+echo $! > t502_agent.pid
+
+默认参数（未显式指定，取自 t5_start 行）：
+  provider=mock  provider_type=mock
+  scan_interval_ms=1000  stable_ms=500
+  max_jobs=4096  max_retries=3  once=0
+  （incomplete_timeout_ms 默认 120000，见 t5_agent --help）
+
+T4 启动方式（沿用 my-doc/05_t4/android/run_t4.sh；--out 追加在脚本自带
+--out 之后，t4_receiver 顺序解析，后者生效）
+---------------------------------------------------------
+adb shell "sh /data/local/tmp/t4/run_t4.sh start --secs 90 --out /data/local/tmp/t4/segments_t502"
+
+T3 驱动（沿用 my-doc/04_device_t3/run_t3_uds.py，脚本未改）
+----------------------------------------------------------
+adb forward tcp:27042 tcp:27042
+adb shell "su -c 'nohup /data/local/tmp/fs32 >/data/local/tmp/fs32.log 2>&1 &'"
+python run_t3_uds.py 80 <log>
+  js_file   = my-doc/03_uds_test/pcm_bridge_draft.js
+  js_sha256 = 03fbcb58c33cd6b5a0d96e6893581926dc2fc0c255cef46629c13edd19aaa049
+  target    = com.alibaba.ailabs.genie.smartapp:core (PID 16112)
+
+二进制指纹
+----------
+/data/local/tmp/t5/t5_agent
+  sha256 c66925be5c4de6ab5ba66777b97031863e693d132d5571ec6f68e0db11282af8
+  （与 my-doc/06_t5/evidence_t5/ndk_build.log 记录的本次构建产物一致）
+/data/local/tmp/t4/t4_receiver
+  sha256 e0f09767dbff486ca29db2fdd1b9dc26f111938f7f37fc8bc2630b41a0263cc8
+  （T4 生产二进制，本轮未重建、未修改）
+
+测试前既有数据（本轮只读，不删除、不清空、不覆盖）
+--------------------------------------------------
+/data/local/tmp/t4/segments            20 个 WAV（2026-11-19 16:28–16:29）
+/data/local/tmp/t5/work_r4/jobs.jsonl   100 行（20 个任务 × 5 条状态迁移）
+/data/local/tmp/t5/work_r4/results.jsonl 20 行
+
+磁盘：/data 1809144K 总，1341176K 已用，386048K 可用（78%）

@@ -1,0 +1,17 @@
+{"t":"t5_start","watch":"/data/local/tmp/t4/segments_t502","work":"/data/local/tmp/t5/work_t502","provider":"mock","provider_type":"mock","scan_interval_ms":1000,"stable_ms":500,"max_jobs":4096,"max_retries":3,"once":0}
+[t5] scan: +1 job(s), processed 1
+{"t":"t5_stats","scans":30,"files_seen":5,"new_jobs":1,"dup_skips":0,"incomplete_skips":0,"invalid":0,"succeeded":1,"failed":0,"retried":0,"queue_full":0,"evicted":0,"recovered":0,"bad_lines":0,"provider_errors":0,"store_errors":0,"jobs_tracked":1,"replay_lines":0}
+[t5] scan: +1 job(s), processed 1
+{"t":"t5_stats","scans":31,"files_seen":7,"new_jobs":2,"dup_skips":1,"incomplete_skips":0,"invalid":0,"succeeded":2,"failed":0,"retried":0,"queue_full":0,"evicted":0,"recovered":0,"bad_lines":0,"provider_errors":0,"store_errors":0,"jobs_tracked":2,"replay_lines":0}
+[t5] scan: +1 job(s), processed 1
+{"t":"t5_stats","scans":38,"files_seen":27,"new_jobs":3,"dup_skips":15,"incomplete_skips":0,"invalid":0,"succeeded":3,"failed":0,"retried":0,"queue_full":0,"evicted":0,"recovered":0,"bad_lines":0,"provider_errors":0,"store_errors":0,"jobs_tracked":3,"replay_lines":0}
+[t5] scan: +1 job(s), processed 1
+{"t":"t5_stats","scans":41,"files_seen":40,"new_jobs":4,"dup_skips":24,"incomplete_skips":0,"invalid":0,"succeeded":4,"failed":0,"retried":0,"queue_full":0,"evicted":0,"recovered":0,"bad_lines":0,"provider_errors":0,"store_errors":0,"jobs_tracked":4,"replay_lines":0}
+[t5] scan: +1 job(s), processed 1
+{"t":"t5_stats","scans":44,"files_seen":55,"new_jobs":5,"dup_skips":36,"incomplete_skips":0,"invalid":0,"succeeded":5,"failed":0,"retried":0,"queue_full":0,"evicted":0,"recovered":0,"bad_lines":0,"provider_errors":0,"store_errors":0,"jobs_tracked":5,"replay_lines":0}
+[t5] scan: +1 job(s), processed 1
+{"t":"t5_stats","scans":152,"files_seen":599,"new_jobs":6,"dup_skips":576,"incomplete_skips":0,"invalid":0,"succeeded":6,"failed":0,"retried":0,"queue_full":0,"evicted":0,"recovered":0,"bad_lines":0,"provider_errors":0,"store_errors":0,"jobs_tracked":6,"replay_lines":0}
+[t5] scan: +1 job(s), processed 1
+{"t":"t5_stats","scans":162,"files_seen":667,"new_jobs":7,"dup_skips":636,"incomplete_skips":0,"invalid":0,"succeeded":7,"failed":0,"retried":0,"queue_full":0,"evicted":0,"recovered":0,"bad_lines":0,"provider_errors":0,"store_errors":0,"jobs_tracked":7,"replay_lines":0}
+[t5] stop requested; draining lightweight state
+{"t":"t5_stats","scans":204,"files_seen":961,"new_jobs":7,"dup_skips":930,"incomplete_skips":0,"invalid":0,"succeeded":7,"failed":0,"retried":0,"queue_full":0,"evicted":0,"recovered":0,"bad_lines":0,"provider_errors":0,"store_errors":0,"jobs_tracked":7,"replay_lines":0}
