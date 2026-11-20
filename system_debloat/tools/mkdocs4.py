@@ -70,9 +70,29 @@ plan = f"""# 分阶段精简方案
 记录观测数据、判定通过后才进入下一项。
 
 **rev3 修正**：六个受保护 App（当贝桌面、MT 管理器、ES、权限狗、EasyTouch、Magisk）**从本节全部实验中移除**，
-不设实验项、不提供命令；见 2.5 节。因此原本的“实验 1/2”已不存在，实际可试验项从 OTA 开始。
+不设实验项、不提供命令；见 2.5 节。
 
-### 2.1 实验 1：OTA（`com.alibaba.ailabs.genie.osupdate`）
+**rev4 修正**：实验顺序**不再按 APK 大小排**，改为按“可测量收益 × 功能风险”排（依据见
+[b_class_priority_analysis.md](b_class_priority_analysis.md)）：
+
+| 队列 | 对象 | 理由 |
+|---|---|---|
+| V0（只读，不禁用） | OTA | 10 个候选里唯一有实测 PSS（16,011 kB）与 CPU（343 s 窗口 20%）的；先量化再决定 |
+| V1（单包禁用） | OTA | 若 V0 证明为周期性负载才做；风险最高，需最严格观测 |
+| V2（可选） | 开机引导 | 5.42 MB 存储收益，但**只有删除才有**；无进程，禁用不产生 RAM 收益 |
+| V3（可选） | 存储管理 | 2.32 MB 存储收益，同上 |
+| 不进入队列 | 其余 7 个平台小组件 | 合计 0.42 MB、无进程、无长期 CPU 证据；仅供功能取舍 |
+
+### 2.0 V0：OTA 只读观测（本轮不执行，需另行授权）
+
+| 观测项 | 方法 | 判据 |
+|---|---|---|
+| 是否周期性 | 每 30 min 采样 `dumpsys cpuinfo`，连续 ≥6 h | 仅偶发高占比 → 不必禁用；每次都有 → 进入 V1 |
+| 触发源 | `logcat` 关键字 `osupdate` / `FOTA` / `UpdateService` | 与升级检查同现 → 属升级检查开销 |
+| 常驻成本 | 多次 `dumpsys meminfo` 取 PSS 中位数 | 替代单次 16,011 kB |
+| 调用路径 | `dumpsys activity broadcasts` 是否收到 `FOTA_UPDATE` | 从未收到 → 该路径本机未使用 |
+
+### 2.1 V1：OTA 单包禁用（仅在 V0 判定为周期性负载后）
 
 ```bash
 # 执行前：记录基线（uptime、alarm、meminfo、cpuinfo）
@@ -82,23 +102,25 @@ adb -s {SERIAL} shell pm disable-user --user 0 com.alibaba.ailabs.genie.osupdate
 
 | 观测项 | 方法 | 通过判据 |
 |---|---|---|
-| 进程消失 | `dumpsys meminfo \\| grep osupdate`（快照基线 16,011 kB） | 无该进程 |
-| CPU 变化 | 多次采样 `dumpsys cpuinfo`（**基线 20% 只是单次 343 s 区间快照，不能推断为持续占用**） | 多次采样中不再出现该进程 |
+| 进程消失 | `dumpsys meminfo \\| grep osupdate`（快照基线 16,011 kB，persistent 常驻） | 无该进程 |
+| CPU 变化 | 多次采样 `dumpsys cpuinfo`（**基线 20% 只是单次 343 s 区间快照，不能推断为持续占用**） | 多次采样中不再出现该进程，且与 V0 基线对比 |
 | 框架异常 | `logcat \\| grep -iE "osupdate|RebootUpdate"` | 无 `ClassNotFoundException` |
-| 功能影响 | 设置页“系统更新”不可用；升级前需临时 `pm enable` | 用户接受 |
-| 回滚 | `pm enable com.alibaba.ailabs.genie.osupdate` | 立即恢复 |
+| 功能影响 | 设置页“系统更新”不可用；`FOTA_UPDATE` 广播无人接收；升级前需临时 `pm enable` | 用户接受 |
+| 回退 | `pm enable com.alibaba.ailabs.genie.osupdate` + 重启一次（persistent 需重启才恢复常驻） | 进程重新常驻 |
 
-### 2.2 实验 2：开机引导（`com.alibaba.ailabs.genie.guide`）
+### 2.2 V2：开机引导（存储驱动，可选）
 
 ```bash
 adb -s {SERIAL} shell pm disable-user --user 0 com.alibaba.ailabs.genie.guide
 ```
 
-| 观测项 | 方法 | 通过判据 |
-|---|---|---|
-| 进程消失 | `dumpsys meminfo \\| grep guide` | 无该进程 |
+> 注意：该包**快照无进程**，禁用不会带来可测量的 RAM 收益；其 5.42 MB 只有在“删除 APK”时才会释放。
+> 禁用的唯一意义是验证“移除引导是否影响使用”，为后续是否删除提供依据。
 | 引导不再弹出 | 重启一次，观察是否进入正常桌面 | 无引导页阻塞 |
 | 回滚 | `pm enable com.alibaba.ailabs.genie.guide`（恢复出厂前必须启用） | 立即恢复 |
+
+> 注意：该包**快照无进程**，禁用不会带来可测量的 RAM 收益；其 5.42 MB 只有在“删除 APK”时才会释放。
+> 禁用的唯一意义是验证“移除引导是否影响使用”，为后续是否删除提供依据。
 
 ### 2.3 已取消的旧实验（rev3）
 
@@ -106,24 +128,25 @@ adb -s {SERIAL} shell pm disable-user --user 0 com.alibaba.ailabs.genie.guide
 |---|---|---|
 | 旧实验 1 | 当贝桌面 `com.dangbei1.tvlauncher` | **取消**：受用户保护，禁止禁用 |
 | 旧实验 2 | EasyTouch `com.shere.assistivetouch` | **取消**：受用户保护，禁止禁用 |
-| 旧实验 3 | OTA `com.alibaba.ailabs.genie.osupdate` | 保留（现为实验 1） |
+| 旧实验 3 | OTA `com.alibaba.ailabs.genie.osupdate` | 保留（现为 V0/V1） |
 
 > 其快照数据（当贝 PSS 96,912 kB、EasyTouch 21,461+16,961 kB、JPush 527 次唤醒）仍作为**观测事实**保留在
 > `app_dependency_analysis.md` 与 `app_removal_recommendations.md`，但**不产生任何执行动作**。
 
-### 2.4 实验 3+（AOSP 边缘组件）
+### 2.4 不入队：7 个平台小组件（rev4）
 
-逐项执行、逐项观察，顺序建议：
-`com.android.mtp` → `com.android.statementservice` → `com.android.vpndialogs` →
-`com.android.bluetoothmidiservice` → `com.android.captiveportallogin` →
-`com.android.companiondevicemanager` → `com.android.pacprocessor` → `com.android.storagemanager`。
+`com.android.mtp`、`com.android.statementservice`、`com.android.pacprocessor`、`com.android.vpndialogs`、
+`com.android.companiondevicemanager`、`com.android.bluetoothmidiservice`、`com.android.captiveportallogin`
 
-```bash
-# 单包形式（一次只跑一行，观察后再跑下一行）
-adb -s {SERIAL} shell pm disable-user --user 0 com.android.mtp
-```
+- 快照时刻**均无进程** → 禁用不产生可测量 RAM 收益；
+- 无长期 CPU 数据 → 无法声称 CPU 收益；
+- 空间合计仅 **0.42 MB**，且禁用不释放空间；
+- `pacprocessor` / `vpndialogs` / `bluetoothmidiservice` 被 framework **按类名**引用，
+  禁用后对应流程会直接报错。
 
-> 以上命令是**执行预案**，本轮修订未在任何设备上执行；设备 `pm list packages -d` 仍为空。
+因此本节**不提供禁用命令**。只有当你明确决定放弃某项功能（如不再用 USB 传文件、不用 VPN）时，
+才把它当作“功能裁剪”单独立项，而不是资源优化项。详见
+[b_class_priority_analysis.md](b_class_priority_analysis.md) 第 3.3 节。
 
 ### 2.5 明确不进 P1 的包
 
@@ -137,11 +160,12 @@ adb -s {SERIAL} shell pm disable-user --user 0 com.android.mtp
 
 ### 2.6 P1 结果记录模板
 
-| 实验 | 包 | 开始时间 | uptime | 24h 后 meminfo 变化 | alarm 变化 | logcat 异常 | 判定 | 回滚 |
+| 阶段/实验 | 包 | 开始时间 | uptime | 观测结果 | 与基线对比 | logcat 异常 | 判定 | 回滚 |
 |---|---|---|---|---|---|---|---|---|
-| 1 | `com.alibaba.ailabs.genie.osupdate` | | | | | | | `pm enable` |
-| 2 | `com.alibaba.ailabs.genie.guide` | | | | | | | `pm enable` |
-| 3 | `com.android.mtp` | | | | | | | `pm enable` |
+| V0（只读） | `com.alibaba.ailabs.genie.osupdate` | | | 6 h CPU 采样 | — | — | 偶发 / 周期性 | 无需 |
+| V1 | `com.alibaba.ailabs.genie.osupdate` | | | 24 h meminfo/cpuinfo/alarm | 与 V0 比 | | | `pm enable` + 重启 |
+| V2（可选） | `com.alibaba.ailabs.genie.guide` | | | 重启后引导行为 | — | | | `pm enable` |
+| V3（可选） | `com.android.storagemanager` | | | 低存储告警 | — | | | `pm enable` |
 
 ### 2.7 C 类试探（可选，逐项一次只动一个）
 
@@ -229,46 +253,56 @@ adb -s $S shell ps -A -o USER,PID,RSS,NAME > ps_$(date +%m%d_%H%M).txt
 | 阶段 | 内容 | 工期 | 风险 |
 |---|---|---|---|
 | P0 | 备份核对 + 基线采集 | 0.5 天 | 无 |
-| P1-1 | 单包实验 1：OTA（观察 24 h） | 0.5 天 + 24 h | 中（framework 引用） |
-| P1-2 | 单包实验 2：开机引导（观察 24 h） | 0.5 天 + 24 h | 低 |
-| P1-3 | 单包实验 3+：8 个 AOSP 边缘组件 | 每项 24 h，按需 | 低 |
-| P1-4 | C 类逐项试探（不含 AMPE；AMPE 需产品决策） | 按需，每项 24 h | 中 |
+| V0 | OTA **只读**观测（每 30 min 采样，连续 ≥6 h） | 0.5 天 | 无（不改设备） |
+| V1（条件触发） | 仅当 V0 判定为周期性负载：OTA 单包禁用 + 24 h 观测 | 0.5 天 + 24 h | 中高（framework 点名 + 升级链路） |
+| V2（可选） | 开机引导单包验证（存储驱动，禁用本身无 RAM 收益） | 0.5 天 + 24 h | 低-中 |
+| V3（可选） | 存储管理单包验证 | 0.5 天 + 24 h | 低 |
+| 不入队 | 7 个平台小组件（合计 0.42 MB，无进程、无 CPU 数据） | — | 仅在功能取舍时单独立项 |
+| P1-C | C 类逐项试探（不含 AMPE；AMPE 需产品决策） | 按需，每项 24 h | 中 |
 | P2 | 用户态卸载验证 → 镜像删除（仅限通过项 + 用户授权） | 1 周观察 + 1 天打包验证 | 中高（需回刷预案） |
 | P3 | 结构优化（不做 odex 清理；按产品需求裁剪技能包） | 另议 | 需产品决策 |
 
-> rev3：旧 P1-1（当贝）、P1-2（EasyTouch）已取消——两者受用户保护，禁止禁用；
-> 权限狗同样受保护，已从试验顺序中移除。当前可试验清单见第 2.1–2.4 节。
+> rev4：排期改为按“可测量收益 × 风险”组织（依据 `b_class_priority_analysis.md`），
+> 不再按 APK 体积排序。旧的“实验 3+ 依次禁用 8 个 AOSP 组件”已取消——它们没有可测量收益。
 
 ## 8. 结论性建议
 
 1. **六个受保护 App 不参与任何精简动作**（当贝桌面、MT 管理器、ES、权限狗、EasyTouch、Magisk）。
-   它们的技术分析结论仍记录在案，但不转化为执行项。
-2. 可试验项只剩 OTA、开机引导与 8 个 AOSP 边缘组件，且必须**一次一个、各观察 ≥24 h**；
-   OTA 的 20% CPU 只作单次快照参考，不能当作持续占用证据。
-3. 空间上唯一的 A 类候选是 `ES.apk`（4.60 MB），但**受用户保护**，**当前可执行删除为 0 项**；
-   即使将来解除保护，也需先做用户态卸载验证并取得授权。
-4. 语音链路（D 类，{cc['D']['total_mb']} MB）不要动。**运行时证据只覆盖 `smartapp`**（3 进程 PSS 合计
+   其技术分析结论仍记录在案，但不转化为执行项。
+2. 10 个 B 类候选里，**只有 OTA 有实测占用**（PSS 16,011 kB / 单窗口 20% CPU），
+   其余 9 个在快照中**都没有进程**、没有长期 CPU 数据——因此“禁用它们省 RAM”没有证据支撑。
+3. 先做 **V0 只读观测** 判断 OTA 的 20% 是否周期性；在拿到多次采样前，不把 OTA 列入“建议禁用”。
+4. 存储收益与 RAM 收益要分开算：`guide` 5.42 MB、`storagemanager` 2.32 MB 只有**删除**才释放；
+   在“只禁用”的场景下，本批 10 个候选的**可释放空间为 0**。
+5. 7 个平台小组件（合计 0.42 MB）不建议为资源收益禁用；其中 `pacprocessor`/`vpndialogs`/
+   `bluetoothmidiservice` 被 framework 按类名引用，禁用只会让对应流程报错。
+6. 语音链路（D 类，{cc['D']['total_mb']} MB）不要动。**运行时证据只覆盖 `smartapp`**（3 进程 PSS 合计
    216,324 kB、`:core` 单次区间 72% CPU、持有 4 个唤醒锁）；`AliGenieService`、`GenieMonitor`、`GenieIoT`
-   的运行时占用未测量，其 D 级依据是 Manifest + 跨包引用。想省资源应围绕它“减邻居”，不是“减自己”。
-5. C 类 {cc['C']['packages']} 个包（{cc['C']['total_mb']} MB），含 AMPE、`GenieRTC`、`Waft`、`AliVideoPlayer` 等，
-   必须在真机做逐项禁用观察后才能定级；本报告拒绝在无动态证据时把它们写成“可删”。
-6. 2 个包（`GenieAicare`、`GenieRTC`）在设备上由 `/data/app` 版本覆盖，
-   **不要**把它们的系统内 prebuilt 当作“多余文件”删除——后果是包退化为普通数据区应用（未验证但风险明确）；
-   `magisk.apk` 同理且另有用户保护。
+   的运行时占用未测量，其 D 级依据是 Manifest + 跨包引用。
+7. C 类 {cc['C']['packages']} 个包（{cc['C']['total_mb']} MB）必须在真机做逐项禁用观察后才能定级；
+   本报告拒绝在无动态证据时把它们写成“可删”。
 
-## 9. 修订说明（rev2 / rev3）
+## 9. 修订说明（rev2 / rev3 / rev4）
 
-**rev3（2026-11-20，当前版本）**
+**rev4（2026-11-20，当前版本）**
+
+- 新增 `b_class_priority_analysis.md`：10 个 B 类候选逐项收益/风险分析与 OTA 专项。
+- 第 2 节改为按“可测量收益 × 功能风险”排序：V0 只读观测 → V1 OTA 单包禁用（条件触发）
+  → V2/V3 存储驱动（可选）→ 7 个平台小组件**不入队**。
+- 取消旧的“依次禁用 8 个 AOSP 组件”预案（无可测量收益，且 3 个被 framework 按类名引用）。
+- 结果记录模板改为 V0/V1/V2/V3 结构；回退说明补充“persistent 需重启恢复常驻”。
+
+**rev3（2026-11-20）**
 
 - 六个受保护 App（当贝桌面、MT 管理器、ES、权限狗、EasyTouch、Magisk）从 P1/P2 全部清单移除；
   旧实验 1（当贝）与实验 2（EasyTouch）取消，权限狗从试验顺序移除；结果记录模板同步更新。
 - 新增 2.5 节“明确不进 P1 的包”，其中受保护 App 与 Magisk 镜像外组件列为禁止项。
 - P2 前置条件新增“目标包不在六个受保护 App 之列”；ES 明确不进入 P2 流程。
-- 移除全部旧目录路径引用（P0 第 5 条、验收表中的 T5 行、内存口径引用均改写）。
+- 移除全部旧目录路径引用。
 
 **rev2（2026-11-20）**
 
-- 禁用批次改为单包逐项实验，每项独立观察 ≥24 h，并提供结果记录模板（第 2.6 节）。
+- 禁用批次改为单包逐项实验，每项独立观察 ≥24 h，并提供结果记录模板。
 - 删除原第 2 批中的 `com.alipay.arome.app`（AMPE），改列“明确不进 P1 的包”。
 - OTA 的 20% CPU 统一标注为“单次 343 s 区间快照”。
 - 第 4 节新增内存指标口径与 CPU 区间的引用规则。
@@ -282,7 +316,8 @@ TOOLS = os.path.join(DOC, 'tools')
 os.makedirs(TOOLS, exist_ok=True)
 for fn in ('axml.py', 'scan.py', 'refs2.py', 'report.py', 'digest.py', 'edges.py',
            'filters.py', 'protection.py', 'test_filters.py', 'test_protection.py',
-           'mkdocs.py', 'mkdocs2.py', 'mkdocs3.py', 'mkdocs4.py'):
+           'test_b_class.py', 'mkdocs.py', 'mkdocs2.py', 'mkdocs3.py', 'mkdocs4.py',
+           'mkdocs5.py'):
     src = os.path.join(SRC, fn)
     if os.path.exists(src):
         shutil.copy2(src, os.path.join(TOOLS, fn))
@@ -361,15 +396,30 @@ rev1 的 `report.py` 用 `x['token'].split('.')[0] in ('com.android', 'media', '
 open(os.path.join(TOOLS, 'README.md'), 'w', encoding='utf-8').write(tools_readme)
 
 # ---------------------------------------------------------------- revisions.md
-rev = f"""# 修订记录（rev3 / rev3.1）
+rev = f"""# 修订记录（rev3 / rev3.1 / rev4）
 
 - 修订时间：2026-11-20
 - 修订对象：本目录（`system_debloat/`）下全部报告与机器可读数据；不涉及 `system` 镜像、APK、T5 代码或设备分区
 - 修订触发：rev3 = ① 操作者指定六个 App 必须保留；② rev2 遗留的三个 P2 问题。
-  rev3.1 = rev3 审查提出的三项小范围修订（A 类映射、README 旧实验顺序、保护期限措辞）
+  rev3.1 = rev3 审查的三项小范围修订（A 类映射、README 旧实验顺序、保护期限措辞）。
+  rev4 = 对剩余 10 个 B 类候选做收益/风险重估，形成下一阶段真机验证计划
 - 本轮**未执行**任何 `pm disable-user` / `pm uninstall` / 镜像或 boot 写操作；设备 `pm list packages -d` 仍为空
 
-## 0. rev3.1 小范围修订（2026-11-20）
+## 0. rev4：B 类候选收益与风险（2026-11-20）
+
+| 项 | 内容 |
+|---|---|
+| 新增文件 | `b_class_priority_analysis.md`（10 个候选逐项分析 + OTA 专项 + 排序 + 验证顺序 + 回退） |
+| 分析范围 | 仅 `executable_lists.B_disable` 的 10 个包，未扩大 |
+| 数据来源 | `app_inventory.json`（体积/persistent/组件/BOOT 接收器/快照 PSS）、`dependency_edges.csv`、framework vdex 扫描、设备只读快照 |
+| 关键结论 | 10 个候选里**只有 OTA 有实测占用**（PSS 16,011 kB；单窗口 343.337 s 内 20% CPU，无 alarm/wakelock）；其余 9 个快照无进程 → 禁用无可测量 RAM/CPU 收益 |
+| 顺序调整 | `optimization_plan.md` 第 2 节改为 V0（OTA 只读观测）→ V1（条件触发的单包禁用）→ V2/V3（存储驱动，可选）→ 7 个平台小组件**不入队**；取消旧的“依次禁用 8 个 AOSP 组件”预案 |
+| 空间口径 | 禁用恒为 0；`guide` 5.42 MB、`storagemanager` 2.32 MB、7 个小组件合计 0.42 MB 只有“删除”才释放 |
+| OTA 专项 | 结论：**优先验证、不直接禁用**；`UpdateService` 为 started service（`startRequested=true`、`createdFromFg=true`、`stopIfKilled=false`，创建于 1d19h30m 前），`pm enable` 后需重启一次才恢复常驻 |
+| 未验证 | OTA 的 20% 是否周期性、`FOTA_UPDATE` 是否有运行时调用、任何候选的 RAM/CPU 节省量、framework 绑定的运行时表现 |
+| 未做的事 | 未执行任何设备操作；未研究 Magisk 安装结构；未触碰受保护 App 与语音链路 |
+
+## 1. rev3.1 小范围修订（2026-11-20）
 
 | # | 问题 | 处理 | 验证 |
 |---|---|---|---|

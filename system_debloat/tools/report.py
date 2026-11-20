@@ -312,6 +312,8 @@ for e in apps:
         'apk_mb': fmt_mb(e['breakdown']['apk']), 'lib_mb': fmt_mb(e['breakdown']['lib']),
         'oat_mb': fmt_mb(e['breakdown']['odex'] + e['breakdown']['vdex'] + e['breakdown']['oat_other']),
         'total_mb': fmt_mb(e['total_bytes']), 'comps': comps,
+        'component_counts': {'services': len(m['services']), 'receivers': len(m['receivers']),
+                             'providers': len(m['providers']), 'activities': len(m['activities'])},
         'persistent': bool(m['persistent']) or 'PERSISTENT' in flags.get(pkg, {}).get('flags', ''),
         'uid': m['sharedUserId'] or '', 'min_sdk': m['minSdk'], 'target': m['targetSdk'],
         'device_path': pmpaths.get(pkg, '未安装/无路径'),

@@ -1,12 +1,27 @@
-# 修订记录（rev3 / rev3.1）
+# 修订记录（rev3 / rev3.1 / rev4）
 
 - 修订时间：2026-11-20
 - 修订对象：本目录（`system_debloat/`）下全部报告与机器可读数据；不涉及 `system` 镜像、APK、T5 代码或设备分区
 - 修订触发：rev3 = ① 操作者指定六个 App 必须保留；② rev2 遗留的三个 P2 问题。
-  rev3.1 = rev3 审查提出的三项小范围修订（A 类映射、README 旧实验顺序、保护期限措辞）
+  rev3.1 = rev3 审查的三项小范围修订（A 类映射、README 旧实验顺序、保护期限措辞）。
+  rev4 = 对剩余 10 个 B 类候选做收益/风险重估，形成下一阶段真机验证计划
 - 本轮**未执行**任何 `pm disable-user` / `pm uninstall` / 镜像或 boot 写操作；设备 `pm list packages -d` 仍为空
 
-## 0. rev3.1 小范围修订（2026-11-20）
+## 0. rev4：B 类候选收益与风险（2026-11-20）
+
+| 项 | 内容 |
+|---|---|
+| 新增文件 | `b_class_priority_analysis.md`（10 个候选逐项分析 + OTA 专项 + 排序 + 验证顺序 + 回退） |
+| 分析范围 | 仅 `executable_lists.B_disable` 的 10 个包，未扩大 |
+| 数据来源 | `app_inventory.json`（体积/persistent/组件/BOOT 接收器/快照 PSS）、`dependency_edges.csv`、framework vdex 扫描、设备只读快照 |
+| 关键结论 | 10 个候选里**只有 OTA 有实测占用**（PSS 16,011 kB；单窗口 343.337 s 内 20% CPU，无 alarm/wakelock）；其余 9 个快照无进程 → 禁用无可测量 RAM/CPU 收益 |
+| 顺序调整 | `optimization_plan.md` 第 2 节改为 V0（OTA 只读观测）→ V1（条件触发的单包禁用）→ V2/V3（存储驱动，可选）→ 7 个平台小组件**不入队**；取消旧的“依次禁用 8 个 AOSP 组件”预案 |
+| 空间口径 | 禁用恒为 0；`guide` 5.42 MB、`storagemanager` 2.32 MB、7 个小组件合计 0.42 MB 只有“删除”才释放 |
+| OTA 专项 | 结论：**优先验证、不直接禁用**；`UpdateService` 为 started service（`startRequested=true`、`createdFromFg=true`、`stopIfKilled=false`，创建于 1d19h30m 前），`pm enable` 后需重启一次才恢复常驻 |
+| 未验证 | OTA 的 20% 是否周期性、`FOTA_UPDATE` 是否有运行时调用、任何候选的 RAM/CPU 节省量、framework 绑定的运行时表现 |
+| 未做的事 | 未执行任何设备操作；未研究 Magisk 安装结构；未触碰受保护 App 与语音链路 |
+
+## 1. rev3.1 小范围修订（2026-11-20）
 
 | # | 问题 | 处理 | 验证 |
 |---|---|---|---|

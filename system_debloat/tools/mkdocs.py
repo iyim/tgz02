@@ -208,14 +208,17 @@ Magisk 作为**独立保护对象**处理。下表只列**能从当前镜像与�
 2. **哪些可以安全删除？** **当前没有可执行的删除项。** 唯一 A 类候选是 `app/ES.apk`
    （com.estrongs.android.pop，4.60 MB），但它**受用户保护**，已从删除清单排除；
    且即使不受保护，A 类也只代表“静态分析认为具备删除可能性，尚未完成真机动态验证”。
-3. **哪些适合禁用？** {cls_counts['B']['packages']} 个 B 类，合计 {cls_counts['B']['total_mb']} MB；
-   其中当贝桌面、EasyTouch、权限狗**受用户保护，不进入试验**；实际可试验
-   {len(stats['executable_lists']['B_disable'])} 个，顺序为
-   OTA（`com.alibaba.ailabs.genie.osupdate`）→ 开机引导（`com.alibaba.ailabs.genie.guide`）
-   → 8 个 AOSP 边缘组件（`mtp`、`statementservice`、`vpndialogs`、`bluetoothmidiservice`、
-   `captiveportallogin`、`companiondevicemanager`、`pacprocessor`、`storagemanager`），
-   单包逐个、每项独立观察 ≥24 h。`AMPE` 不在禁用清单（C 类，需产品决策）。
-   > 当贝桌面与 EasyTouch **不再出现在任何禁用实验顺序中**；`qxg.apk`（权限狗）同样受保护。
+3. **哪些适合禁用？** B 类 {cls_counts['B']['packages']} 个 / {cls_counts['B']['total_mb']} MB，
+   其中当贝桌面、EasyTouch、权限狗**受用户保护**；可执行候选 {len(stats['executable_lists']['B_disable'])} 个。
+   **rev4 起不再按 APK 大小排序**，而按“可测量收益 × 功能风险”（详见
+   [b_class_priority_analysis.md](b_class_priority_analysis.md)）：
+   * 只有 `com.alibaba.ailabs.genie.osupdate`（OTA）有实测占用（PSS 16,011 kB、单窗口 343 s 内 20% CPU），
+     先做**只读观测**判断该 CPU 是否周期性，再决定要不要做单包禁用试验；
+   * `com.alibaba.ailabs.genie.guide`（5.42 MB）与 `com.android.storagemanager`（2.32 MB）**无进程**，
+     只有“删除”才有空间收益，禁用本身不产生可测量 RAM 收益；
+   * 其余 7 个平台小组件（合计 0.42 MB）**不建议为资源收益禁用**，其中 3 个被 framework 按类名引用。
+   `AMPE` 不在禁用清单（C 类，需产品决策）。
+   > 当贝桌面与 EasyTouch 不出现在任何禁用顺序中；`qxg.apk`（权限狗）同样受保护。
 4. **哪些必须保留？** 21 个 D 类，合计 {cls_counts['D']['total_mb']} MB，含语音链路、IoT 控制、Launcher、
    SystemUI、Settings、WebView、蓝牙栈与全部存储/Provider 基础组件。
 5. **哪些依赖尚不清楚？** {cls_counts['C']['packages']} 个 C 类（{cls_counts['C']['total_mb']} MB），
@@ -272,6 +275,7 @@ Magisk 作为**独立保护对象**处理。下表只列**能从当前镜像与�
 | [app_inventory.md](app_inventory.md) | 55 个包的完整清单（包名 / 版本 / 体积 / 组件 / 常驻 / **保护状态** / 设备路径 / 更新包差异） |
 | [app_dependency_analysis.md](app_dependency_analysis.md) | 依赖模型、跨包引用、framework 引用、Provider / uid / native 库依赖、运行时常驻链路 |
 | [app_removal_recommendations.md](app_removal_recommendations.md) | **用户保护总表** + A/B/C/D 逐项建议与操作方式 |
+| [b_class_priority_analysis.md](b_class_priority_analysis.md) | **rev4：10 个 B 类候选的收益/风险排序 + OTA 专项 + 验证顺序与回退** |
 | [risk_assessment.md](risk_assessment.md) | 风险矩阵、误删后果、**违反用户保护的风险**、回退与恢复策略 |
 | [optimization_plan.md](optimization_plan.md) | P0–P3 分阶段方案（已剔除受保护项）、测量与验收、逐项恢复命令 |
 | [app_inventory.csv](app_inventory.csv) / [app_inventory.json](app_inventory.json) | 机器可读清单（55 行全字段，含 `user_protected` / `exec_action`） |

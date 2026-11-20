@@ -13,6 +13,12 @@
   "oat_mb": "0.00",
   "total_mb": "4.60",
   "comps": 76,
+  "component_counts": {
+   "services": 5,
+   "receivers": 6,
+   "providers": 1,
+   "activities": 64
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 5,
@@ -83,6 +89,12 @@
   "oat_mb": "0.03",
   "total_mb": "0.04",
   "comps": 1,
+  "component_counts": {
+   "services": 1,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -126,6 +138,12 @@
   "oat_mb": "0.04",
   "total_mb": "0.05",
   "comps": 1,
+  "component_counts": {
+   "services": 0,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 1
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -171,6 +189,12 @@
   "oat_mb": "0.04",
   "total_mb": "0.05",
   "comps": 2,
+  "component_counts": {
+   "services": 1,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 1
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -218,6 +242,12 @@
   "oat_mb": "0.00",
   "total_mb": "5.42",
   "comps": 10,
+  "component_counts": {
+   "services": 1,
+   "receivers": 0,
+   "providers": 1,
+   "activities": 8
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 26,
@@ -289,6 +319,12 @@
   "oat_mb": "3.49",
   "total_mb": "5.47",
   "comps": 6,
+  "component_counts": {
+   "services": 1,
+   "receivers": 1,
+   "providers": 1,
+   "activities": 3
+  },
   "persistent": true,
   "uid": "android.uid.system",
   "min_sdk": 19,
@@ -389,6 +425,12 @@
   "oat_mb": "0.02",
   "total_mb": "0.03",
   "comps": 1,
+  "component_counts": {
+   "services": 1,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -434,6 +476,12 @@
   "oat_mb": "0.00",
   "total_mb": "8.77",
   "comps": 78,
+  "component_counts": {
+   "services": 20,
+   "receivers": 17,
+   "providers": 3,
+   "activities": 38
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 17,
@@ -548,6 +596,12 @@
   "oat_mb": "0.00",
   "total_mb": "4.38",
   "comps": 57,
+  "component_counts": {
+   "services": 12,
+   "receivers": 10,
+   "providers": 7,
+   "activities": 28
+  },
   "persistent": true,
   "uid": "",
   "min_sdk": 15,
@@ -735,6 +789,12 @@
   "oat_mb": "0.00",
   "total_mb": "1.37",
   "comps": 15,
+  "component_counts": {
+   "services": 2,
+   "receivers": 2,
+   "providers": 3,
+   "activities": 8
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 24,
@@ -811,6 +871,12 @@
   "oat_mb": "0.08",
   "total_mb": "0.13",
   "comps": 4,
+  "component_counts": {
+   "services": 1,
+   "receivers": 1,
+   "providers": 1,
+   "activities": 1
+  },
   "persistent": false,
   "uid": "android.media",
   "min_sdk": 27,
@@ -860,6 +926,12 @@
   "oat_mb": "0.08",
   "total_mb": "0.08",
   "comps": 2,
+  "component_counts": {
+   "services": 1,
+   "receivers": 1,
+   "providers": 0,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -905,6 +977,12 @@
   "oat_mb": "1.66",
   "total_mb": "2.32",
   "comps": 5,
+  "component_counts": {
+   "services": 1,
+   "receivers": 2,
+   "providers": 0,
+   "activities": 2
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 24,
@@ -958,6 +1036,12 @@
   "oat_mb": "0.02",
   "total_mb": "0.04",
   "comps": 2,
+  "component_counts": {
+   "services": 0,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 2
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -1002,6 +1086,12 @@
   "oat_mb": "0.00",
   "total_mb": "87.18",
   "comps": 506,
+  "component_counts": {
+   "services": 80,
+   "receivers": 20,
+   "providers": 17,
+   "activities": 389
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 18,
@@ -1422,6 +1512,12 @@
   "oat_mb": "0.03",
   "total_mb": "0.13",
   "comps": 2,
+  "component_counts": {
+   "services": 1,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 1
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 27,
@@ -1465,6 +1561,12 @@
   "oat_mb": "12.80",
   "total_mb": "45.06",
   "comps": 21,
+  "component_counts": {
+   "services": 10,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 11
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 21,
@@ -1577,6 +1679,12 @@
   "oat_mb": "0.05",
   "total_mb": "0.08",
   "comps": 5,
+  "component_counts": {
+   "services": 0,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 5
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -1623,6 +1731,12 @@
   "oat_mb": "4.53",
   "total_mb": "10.64",
   "comps": 83,
+  "component_counts": {
+   "services": 7,
+   "receivers": 2,
+   "providers": 1,
+   "activities": 73
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 20,
@@ -1714,6 +1828,12 @@
   "oat_mb": "9.08",
   "total_mb": "18.50",
   "comps": 10,
+  "component_counts": {
+   "services": 2,
+   "receivers": 0,
+   "providers": 1,
+   "activities": 7
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 26,
@@ -1782,6 +1902,12 @@
   "oat_mb": "9.54",
   "total_mb": "10.56",
   "comps": 7,
+  "component_counts": {
+   "services": 2,
+   "receivers": 0,
+   "providers": 2,
+   "activities": 3
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 24,
@@ -1856,6 +1982,12 @@
   "oat_mb": "10.94",
   "total_mb": "12.96",
   "comps": 6,
+  "component_counts": {
+   "services": 4,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 2
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 19,
@@ -1924,6 +2056,12 @@
   "oat_mb": "7.40",
   "total_mb": "20.14",
   "comps": 29,
+  "component_counts": {
+   "services": 7,
+   "receivers": 1,
+   "providers": 1,
+   "activities": 20
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 19,
@@ -2045,6 +2183,12 @@
   "oat_mb": "0.00",
   "total_mb": "9.05",
   "comps": 29,
+  "component_counts": {
+   "services": 14,
+   "receivers": 3,
+   "providers": 3,
+   "activities": 9
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 24,
@@ -2194,6 +2338,12 @@
   "oat_mb": "0.00",
   "total_mb": "6.67",
   "comps": 16,
+  "component_counts": {
+   "services": 6,
+   "receivers": 0,
+   "providers": 1,
+   "activities": 9
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 26,
@@ -2291,6 +2441,12 @@
   "oat_mb": "0.10",
   "total_mb": "0.11",
   "comps": 2,
+  "component_counts": {
+   "services": 1,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 1
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 27,
@@ -2332,6 +2488,12 @@
   "oat_mb": "2.21",
   "total_mb": "2.73",
   "comps": 3,
+  "component_counts": {
+   "services": 1,
+   "receivers": 1,
+   "providers": 0,
+   "activities": 1
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 14,
@@ -2388,6 +2550,12 @@
   "oat_mb": "0.03",
   "total_mb": "0.04",
   "comps": 1,
+  "component_counts": {
+   "services": 0,
+   "receivers": 0,
+   "providers": 1,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "android.uid.shared",
   "min_sdk": 27,
@@ -2435,6 +2603,12 @@
   "oat_mb": "1.26",
   "total_mb": "5.56",
   "comps": 19,
+  "component_counts": {
+   "services": 6,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 13
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 19,
@@ -2492,6 +2666,12 @@
   "oat_mb": "0.00",
   "total_mb": "10.76",
   "comps": 6,
+  "component_counts": {
+   "services": 2,
+   "receivers": 1,
+   "providers": 1,
+   "activities": 2
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 21,
@@ -2552,6 +2732,12 @@
   "oat_mb": "0.78",
   "total_mb": "0.79",
   "comps": 2,
+  "component_counts": {
+   "services": 1,
+   "receivers": 1,
+   "providers": 0,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 8,
@@ -2601,6 +2787,12 @@
   "oat_mb": "0.03",
   "total_mb": "0.03",
   "comps": 2,
+  "component_counts": {
+   "services": 0,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 2
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 11,
@@ -2652,6 +2844,12 @@
   "oat_mb": "0.04",
   "total_mb": "0.05",
   "comps": 1,
+  "component_counts": {
+   "services": 1,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 27,
@@ -2700,6 +2898,12 @@
   "oat_mb": "0.03",
   "total_mb": "0.03",
   "comps": 1,
+  "component_counts": {
+   "services": 1,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -2743,6 +2947,12 @@
   "oat_mb": "0.00",
   "total_mb": "2.32",
   "comps": 11,
+  "component_counts": {
+   "services": 7,
+   "receivers": 2,
+   "providers": 1,
+   "activities": 1
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 27,
@@ -2861,6 +3071,12 @@
   "oat_mb": "4.26",
   "total_mb": "6.19",
   "comps": 4,
+  "component_counts": {
+   "services": 3,
+   "receivers": 0,
+   "providers": 1,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "android.uid.systemui",
   "min_sdk": 26,
@@ -3029,6 +3245,12 @@
   "oat_mb": "0.02",
   "total_mb": "0.02",
   "comps": 0,
+  "component_counts": {
+   "services": 0,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -3070,6 +3292,12 @@
   "oat_mb": "0.00",
   "total_mb": "16.88",
   "comps": 27,
+  "component_counts": {
+   "services": 6,
+   "receivers": 1,
+   "providers": 8,
+   "activities": 12
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 26,
@@ -3211,6 +3439,12 @@
   "oat_mb": "12.54",
   "total_mb": "20.48",
   "comps": 31,
+  "component_counts": {
+   "services": 4,
+   "receivers": 0,
+   "providers": 1,
+   "activities": 26
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 26,
@@ -3329,6 +3563,12 @@
   "oat_mb": "0.00",
   "total_mb": "47.86",
   "comps": 9,
+  "component_counts": {
+   "services": 6,
+   "receivers": 0,
+   "providers": 2,
+   "activities": 1
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 21,
@@ -3413,6 +3653,12 @@
   "oat_mb": "3.19",
   "total_mb": "3.29",
   "comps": 35,
+  "component_counts": {
+   "services": 21,
+   "receivers": 2,
+   "providers": 3,
+   "activities": 9
+  },
   "persistent": false,
   "uid": "android.uid.bluetooth",
   "min_sdk": 27,
@@ -3537,6 +3783,12 @@
   "oat_mb": "4.61",
   "total_mb": "10.08",
   "comps": 58,
+  "component_counts": {
+   "services": 3,
+   "receivers": 1,
+   "providers": 1,
+   "activities": 53
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 24,
@@ -3716,6 +3968,12 @@
   "oat_mb": "28.11",
   "total_mb": "87.89",
   "comps": 171,
+  "component_counts": {
+   "services": 41,
+   "receivers": 19,
+   "providers": 13,
+   "activities": 98
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 19,
@@ -4016,6 +4274,12 @@
   "oat_mb": "2.02",
   "total_mb": "52.00",
   "comps": 24,
+  "component_counts": {
+   "services": 22,
+   "receivers": 0,
+   "providers": 1,
+   "activities": 1
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 21,
@@ -4082,6 +4346,12 @@
   "oat_mb": "0.54",
   "total_mb": "0.55",
   "comps": 8,
+  "component_counts": {
+   "services": 0,
+   "receivers": 4,
+   "providers": 1,
+   "activities": 3
+  },
   "persistent": false,
   "uid": "android.uid.calendar",
   "min_sdk": 25,
@@ -4150,6 +4420,12 @@
   "oat_mb": "0.97",
   "total_mb": "0.98",
   "comps": 10,
+  "component_counts": {
+   "services": 0,
+   "receivers": 3,
+   "providers": 6,
+   "activities": 1
+  },
   "persistent": false,
   "uid": "android.uid.shared",
   "min_sdk": 27,
@@ -4251,6 +4527,12 @@
   "oat_mb": "0.03",
   "total_mb": "0.03",
   "comps": 1,
+  "component_counts": {
+   "services": 1,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -4304,6 +4586,12 @@
   "oat_mb": "0.43",
   "total_mb": "0.49",
   "comps": 5,
+  "component_counts": {
+   "services": 2,
+   "receivers": 1,
+   "providers": 2,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "android.media",
   "min_sdk": 27,
@@ -4372,6 +4660,12 @@
   "oat_mb": "0.03",
   "total_mb": "0.03",
   "comps": 2,
+  "component_counts": {
+   "services": 2,
+   "receivers": 0,
+   "providers": 0,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -4415,6 +4709,12 @@
   "oat_mb": "0.04",
   "total_mb": "0.05",
   "comps": 3,
+  "component_counts": {
+   "services": 0,
+   "receivers": 1,
+   "providers": 2,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -4472,6 +4772,12 @@
   "oat_mb": "0.02",
   "total_mb": "0.09",
   "comps": 1,
+  "component_counts": {
+   "services": 0,
+   "receivers": 1,
+   "providers": 0,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 27,
@@ -4513,6 +4819,12 @@
   "oat_mb": "0.18",
   "total_mb": "0.24",
   "comps": 9,
+  "component_counts": {
+   "services": 2,
+   "receivers": 4,
+   "providers": 2,
+   "activities": 1
+  },
   "persistent": false,
   "uid": "android.media",
   "min_sdk": 27,
@@ -4578,6 +4890,12 @@
   "oat_mb": "1.92",
   "total_mb": "2.63",
   "comps": 21,
+  "component_counts": {
+   "services": 2,
+   "receivers": 4,
+   "providers": 1,
+   "activities": 14
+  },
   "persistent": false,
   "uid": "",
   "min_sdk": 27,
@@ -4648,6 +4966,12 @@
   "oat_mb": "0.50",
   "total_mb": "0.59",
   "comps": 1,
+  "component_counts": {
+   "services": 0,
+   "receivers": 0,
+   "providers": 1,
+   "activities": 0
+  },
   "persistent": false,
   "uid": "android.uid.system",
   "min_sdk": 27,
@@ -4695,6 +5019,12 @@
   "oat_mb": "0.19",
   "total_mb": "0.21",
   "comps": 6,
+  "component_counts": {
+   "services": 1,
+   "receivers": 2,
+   "providers": 2,
+   "activities": 1
+  },
   "persistent": false,
   "uid": "android.uid.shell",
   "min_sdk": 27,
