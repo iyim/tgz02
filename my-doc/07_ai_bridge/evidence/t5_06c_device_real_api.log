@@ -1,17 +1,56 @@
 ﻿################ T5-06C device stage B: real DeepSeek API call ################
-host time : 2026-11-20 21:27:00
+host time : 2026-11-20 21:58:33
 device    : 192.168.1.9:5555
-model     : deepseek-chat
+model     : deepseek-flash
+base url  : http://192.168.1.13:8790/v1
 
-===== 0. push the ARM32 worker and locate the api key (never printed) :: 2026-11-20 21:27:00 =====
-> adb shell mkdir -p /data/local/tmp/t5d_deepseek/bin /data/local/tmp/t5d_deepseek/work_b /data/local/tmp/t5d_deepseek/state_b /data/local/tmp/t5d_deepseek/key
+===== 0. push the ARM32 worker and locate the api key (never printed) :: 2026-11-20 21:58:33 =====
+> adb shell mkdir -p /data/local/tmp/t5d_deepseek/bin /data/local/tmp/t5d_deepseek/key; rm -rf /data/local/tmp/t5d_deepseek/work_b /data/local/tmp/t5d_deepseek/state_b /data/local/tmp/t5d_deepseek/replies.jsonl; mkdir -p /data/local/tmp/t5d_deepseek/work_b /data/local/tmp/t5d_deepseek/state_b
 > adb shell chmod 755 /data/local/tmp/t5d_deepseek/bin/ai_worker; sha256sum /data/local/tmp/t5d_deepseek/bin/ai_worker
-  cd8983473301823215b2725512af1618604a71766d076fd2ad97dff3f4954277  /data/local/tmp/t5d_deepseek/bin/ai_worker
-ai_worker sha256 host/device: cd8983473301823215b2725512af1618604a71766d076fd2ad97dff3f4954277 / cd8983473301823215b2725512af1618604a71766d076fd2ad97dff3f4954277
-key source: NONE (no -KeyFile and /data/local/tmp/t5_bridge/secret/deepseek_api_key does not exist)
+  d87d7a18af0f3845db59b2cbc59ca45227848fa6fcc0649c5ce9fbaa0237da60  /data/local/tmp/t5d_deepseek/bin/ai_worker
+ai_worker sha256 host/device: d87d7a18af0f3845db59b2cbc59ca45227848fa6fcc0649c5ce9fbaa0237da60 / d87d7a18af0f3845db59b2cbc59ca45227848fa6fcc0649c5ce9fbaa0237da60
+> adb shell cp /data/local/tmp/t5_bridge/secret/deepseek_api_key /data/local/tmp/t5d_deepseek/key/deepseek_api_key; chmod 600 /data/local/tmp/t5d_deepseek/key/deepseek_api_key
+key source: device default path /data/local/tmp/t5_bridge/secret/deepseek_api_key
+> adb shell ls -l /data/local/tmp/t5d_deepseek/key/deepseek_api_key; wc -c < /data/local/tmp/t5d_deepseek/key/deepseek_api_key
+  -rw------- 1 shell shell 37 2026-11-20 21:58 /data/local/tmp/t5d_deepseek/key/deepseek_api_key
+  37
 
-SKIPPED: no api key available on the device.
-  place it at /data/local/tmp/t5_bridge/secret/deepseek_api_key (chmod 600)
-  and re-run this script; nothing below this line is a real model call.
+===== A. one synthetic ASR final -> real DeepSeek call :: 2026-11-20 21:58:36 =====
+> adb shell stat -c %s /data/local/tmp/t5d_deepseek/work_b/events.jsonl
+  308
+> adb shell /data/local/tmp/t5d_deepseek/bin/ai_worker --work-dir /data/local/tmp/t5d_deepseek/work_b --state-dir /data/local/tmp/t5d_deepseek/state_b --provider deepseek --api-key-file /data/local/tmp/t5d_deepseek/key/deepseek_api_key --deepseek-model deepseek-flash --deepseek-base-url http://192.168.1.13:8790/v1 --max-events 1 --max-runtime-ms 60000 --idle-exit-ms 8000 --poll-ms 100 --status-every-ms 300 --reply-log /data/local/tmp/t5d_deepseek/replies.jsonl; echo rc=$?
+  [aiw] 2026-11-20T21:58:36 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T21:58:37 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5d_deepseek/key/deepseek_api_key key_mode=0600
+  [aiw] 2026-11-20T21:58:37 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+  [aiw] 2026-11-20T21:58:37 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+  [aiw] 2026-11-20T21:58:37 start pid=14784 events=/data/local/tmp/t5d_deepseek/work_b/events.jsonl state=/data/local/tmp/t5d_deepseek/state_b/consumer_state.json provider=deepseek offset=0 (network enabled)
+  [aiw] 2026-11-20T21:58:39 deepseek ok: model=deepseek-flash http=200 curl=0 latency=2293ms resp_bytes=1068 reply_bytes=87 event=t5c-real-1
+  [aiw] 2026-11-20T21:58:39 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=308 state_saves=2 state_errors=0
+  [aiw] 2026-11-20T21:58:39 file identity: reason=first_open offset=308 prefix_hash=76cedd9e34f2d00a resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-20T21:58:39 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=2293ms last_resp_bytes=1068
+  rc=0
+summary: http=200 latency=2293ms resp_bytes=1068 reply_bytes=87
+status : {"version":1,"state":"stopped","pid":14784,"started_at":"2026-11-20T21:58:37","updated_at":"2026-11-20T21:58:39","started_at_ms":1795183117005,"updated_at_ms":1795183119341,"events_file":"/data/local/tmp/t5d_deepseek/work_b/events.jsonl","state_file":"/data/local/tmp/t5d_deepseek/state_b/consumer_state.json","offset":308,"file_size":308,"dev":45846,"ino":78440,"prefix_hash":"76cedd9e34f2d00a","prefix_hash_valid":1,"provider":"deepseek","mock_calls":0,"provider_mock":0,"model":"deepseek-flash","last_http_status":200,"last_curl_code":0,"last_provider_latency_ms":2293,"last_resp_bytes":1068,"last_error_class":"ok","counters":{"lines_read":1,"events_accepted":1,"events_processed":1,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":2,"state_errors":0,"provider_ok":1,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":1,"last_event_id":"t5c-real-1","last_event_at":"2026-11-20T21:58:39","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"","exit_reason":"max_events"}
+state  : {"version":2,"dev":45846,"ino":78440,"offset":308,"prefix_hash":"76cedd9e34f2d00a","seq_last":1,"last_event_id":"t5c-real-1","processed_total":1,"updated_at_ms":1795183119331,"recent_cap":128,"recent_n":1,"recent_ids":"t5c-real-1"}
+ACCEPT: HTTP 200, reply_bytes=87, offset committed (308), processed_total=1
 
-RESULT: SKIPPED (no key; see the stage A log for the 401 TLS proof)
+===== B. optional reply record (--reply-log): metrics only in the log, text stays on device :: 2026-11-20 21:58:40 =====
+replies.jsonl lines: 1
+reply record: reply_bytes=87
+answer text: chars=188 cjk=25 ascii=159 (content intentionally not committed)
+
+===== C. restart the worker: the committed event must not be sent to the model again :: 2026-11-20 21:58:40 =====
+> adb shell /data/local/tmp/t5d_deepseek/bin/ai_worker --work-dir /data/local/tmp/t5d_deepseek/work_b --state-dir /data/local/tmp/t5d_deepseek/state_b --provider deepseek --api-key-file /data/local/tmp/t5d_deepseek/key/deepseek_api_key --deepseek-model deepseek-flash --deepseek-base-url http://192.168.1.13:8790/v1 --max-events 1 --max-runtime-ms 15000 --idle-exit-ms 3000 --poll-ms 100 --status-every-ms 300 --reply-log /data/local/tmp/t5d_deepseek/replies.jsonl; echo rc=$?
+  [aiw] 2026-11-20T21:58:40 lock acquired; previous owner pid=14784 no longer holding it
+  [aiw] 2026-11-20T21:58:40 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5d_deepseek/key/deepseek_api_key key_mode=0600
+  [aiw] 2026-11-20T21:58:40 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+  [aiw] 2026-11-20T21:58:40 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+  [aiw] 2026-11-20T21:58:40 start pid=14803 events=/data/local/tmp/t5d_deepseek/work_b/events.jsonl state=/data/local/tmp/t5d_deepseek/state_b/consumer_state.json provider=deepseek offset=308 (network enabled)
+  [aiw] 2026-11-20T21:58:44 exit reason=idle_timeout processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=308 state_saves=1 state_errors=0
+  [aiw] 2026-11-20T21:58:44 file identity: reason=first_open offset=308 prefix_hash=76cedd9e34f2d00a resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-20T21:58:44 provider summary: name=deepseek model=deepseek-flash calls=0 ok=0 err=0 timeout=0 last_http=0 last_curl=0 last_class= last_latency=0ms last_resp_bytes=0
+  rc=0
+status : {"version":1,"state":"stopped","pid":14803,"started_at":"2026-11-20T21:58:40","updated_at":"2026-11-20T21:58:44","started_at_ms":1795183120998,"updated_at_ms":1795183124015,"events_file":"/data/local/tmp/t5d_deepseek/work_b/events.jsonl","state_file":"/data/local/tmp/t5d_deepseek/state_b/consumer_state.json","offset":308,"file_size":308,"dev":45846,"ino":78440,"prefix_hash":"76cedd9e34f2d00a","prefix_hash_valid":1,"provider":"deepseek","mock_calls":0,"provider_mock":0,"model":"deepseek-flash","last_http_status":0,"last_curl_code":0,"last_provider_latency_ms":0,"last_resp_bytes":0,"last_error_class":"","counters":{"lines_read":0,"events_accepted":0,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":1,"state_errors":0,"provider_ok":0,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"","exit_reason":"idle_timeout"}
+ACCEPT: restart processed=0 provider_ok=0 offset unchanged replies=1
+
+RESULT: PASS (real DeepSeek call: HTTP 200, offset committed, restart does not repeat)

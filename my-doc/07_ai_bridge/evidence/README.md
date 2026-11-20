@@ -57,11 +57,11 @@ T5-06B 时间：2026-11-20 16:54–17:03。探针与测试脚本都是**一次�
 
 | 文件 | 产生方式 | 关键内容 |
 |---|---|---|
-| `t5_06c_host_test.log` | `tests/run_t5_06c_host_tests.ps1` | 主机：构建（0 warning）+ 单元 **613/613**（含 DeepSeek 组 212 项，桩传输层模拟 200/401/429/500/503/超时/DNS/证书/超长）+ 集成 i25–i30 全 PASS；**零网络、零 key** |
-| `t5_06c_ndk_build.log` | `android/build.ps1 -LogName t5_06c_ndk_build.log` | ARM32：`ai_worker` 133328 B / `cd898347…`、`worker_unit_test` 231604 B / `4621dd6e…`；均 `ELF32/ARM/DYN`、`NEEDED libc.so + libdl.so`；**0 warning / 0 error** |
-| `t5_06c_device_curl_load.log` | `_analysis/t506b/n5_device_curl_load.ps1`（真机） | 真机 ARM32 单元 **613/613**；`dlopen("libcurl.so")` → `libcurl/7.52.0-DEV BoringSSL zlib/1.2.8`、选项自检通过；本地端口失败映射 `curl_connect`（offset 不动）；**真实端点 HTTP 401**（占位 key）、`resp_bytes=204`、`type=authentication_error`、offset 不动 |
-| `t5_06c_device_real_api.log` | `n6_device_real_api.ps1` | **SKIPPED：设备上无 API Key**（脚本对 200 路径的断言已写好，放 key 后可直接跑） |
-| `t5_06c_device_asr_e2e.log` | `n7_device_asr_e2e.ps1` | **PARTIAL**：frida `hooks=7 final=1 stored=1` → 真实 `events.jsonl` 第 113 行 → worker 真实 HTTPS **HTTP 401**（227 ms）→ offset 保持 seed 值、`provider_stuck=1` 不跳过；`core` PID 28413 不变、bridge running |
+| `t5_06c_host_test.log` | `tests/run_t5_06c_host_tests.ps1` | 主机：构建（0 warning）+ 单元 **621/621**（含 DeepSeek 组 220 项，桩传输层模拟 200/401/429/500/503/超时/DNS/证书/超长）+ 集成 i25–i30 全 PASS；**零网络、零 key** |
+| `t5_06c_ndk_build.log` | `android/build.ps1 -LogName t5_06c_ndk_build.log` | ARM32：`ai_worker` 133328 B / `d87d7a18…`、`worker_unit_test` 232020 B / `7dfd172b…`；均 `ELF32/ARM/DYN`、`NEEDED libc.so + libdl.so`；**0 warning / 0 error** |
+| `t5_06c_device_curl_load.log` | `_analysis/t506b/n5_device_curl_load.ps1`（真机） | 真机 ARM32 单元 **621/621**；`dlopen("libcurl.so")` → `libcurl/7.52.0-DEV BoringSSL zlib/1.2.8`、选项自检通过；本地端口失败映射 `curl_connect`（offset 不动）；**真实端点 HTTP 401**（占位 key）、`resp_bytes=204`、`type=authentication_error`、offset 不动 |
+| `t5_06c_device_real_api.log` | `n6_device_real_api.ps1 -BaseUrl http://192.168.1.13:8790/v1 -Model deepseek-flash` | 合成事件 → 真实模型 **HTTP 200**：`reply_bytes=114`、`resp_bytes=1056`、`latency=2005ms`、`offset` 308/308、`processed_total=1`；重启 `processed=0 provider_ok=0 calls=0`、`replies.jsonl` 不增长 |
+| `t5_06c_device_asr_e2e.log` | `n7_device_asr_e2e.ps1 -BaseUrl http://192.168.1.13:8790/v1 -Model deepseek-flash` | frida `hooks=6 final=1 stored=1`、`ack status=stored` → 真实 `events.jsonl` 第 115 行 → 真实模型 **HTTP 200**（`reply_bytes=78`/53 汉字、1744 ms）→ `offset` 35025 → 35330 = 文件末尾；`core` PID 28413 不变、bridge running |
 | `host_deepseek_provider.log` | `--only deepseek` | i26 缺 key → rc=4；i27 有 key 无 libcurl → rc=4 且 key 不出现在任何文件 |
 | `host_provider_config.log` | `--only provider_config` | i28：非法 provider / ftp:// / 空模型 / 超时倒挂 / 空 key 路径 → 全部 rc=2 |
 | `host_provider_default.log` | `--only still_the_default` | i29：默认 provider 仍是 mock（`provider_mock=1`、无 HTTP） |

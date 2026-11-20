@@ -1,7 +1,7 @@
 ﻿# T5-06C host test log (no network, no api key)
 # host : Windows Microsoft Windows NT 10.0.19045.0
 # cc   : C:\TDM-GCC-64\bin\gcc.exe
-# time : 2026-11-20 21:40:56
+# time : 2026-11-20 21:56:40
 
 ## 1. host build
 cc  : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c
@@ -13,7 +13,7 @@ cc  : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\syst
 === T5-06B worker unit test ===
 abi: 32-bit long, ULONG_MAX=4294967295 (seq upper bound depends on this)
 
-checks passed: 613, failed: 0
+checks passed: 621, failed: 0
 RESULT: PASS
 unit exit: 0
 
@@ -21,9 +21,9 @@ unit exit: 0
 --- --only i25 ---
 === T5-06B worker integration test (host, Mock provider only) ===
 exe : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_214105
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_215649
 
-PASS i25_prefix_fold_partial_atomic   0.94s  rc=6 with offset/hash pair kept at 250, restart completes, 1 record retried
+PASS i25_prefix_fold_partial_atomic   0.95s  rc=6 with offset/hash pair kept at 250, restart completes, 1 record retried
 
 cases: 1, failed: 0
 RESULT: PASS
@@ -32,10 +32,10 @@ exit: 0
 --- --only deepseek ---
 === T5-06B worker integration test (host, Mock provider only) ===
 exe : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_214107
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_215651
 
 PASS i26_deepseek_missing_key       0.03s  rc=4, no request, offset untouched, status shows deepseek
-PASS i27_deepseek_libcurl_unavailable   0.03s  rc=4, transport error explicit, key absent from stdout/state/work
+PASS i27_deepseek_libcurl_unavailable   0.04s  rc=4, transport error explicit, key absent from stdout/state/work
 
 cases: 2, failed: 0
 RESULT: PASS
@@ -44,7 +44,7 @@ exit: 0
 --- --only provider_config ---
 === T5-06B worker integration test (host, Mock provider only) ===
 exe : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_214107
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_215651
 
 PASS i28_provider_config_errors     0.06s  5 config rejections all exit 2
 
@@ -55,9 +55,9 @@ exit: 0
 --- --only still_the_default ---
 === T5-06B worker integration test (host, Mock provider only) ===
 exe : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_214107
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261120_215651
 
-PASS i29_mock_is_still_the_default   0.94s  mock default/explicit ok, 2 events, no HTTP
+PASS i29_mock_is_still_the_default   1.00s  mock default/explicit ok, 2 events, no HTTP
 
 cases: 1, failed: 0
 RESULT: PASS

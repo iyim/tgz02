@@ -6,7 +6,7 @@
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c
 (no compiler output: 0 warning, 0 error)
 exit: 0
-artifact: ai_worker  133328 B  sha256=cd8983473301823215b2725512af1618604a71766d076fd2ad97dff3f4954277
+artifact: ai_worker  133328 B  sha256=d87d7a18af0f3845db59b2cbc59ca45227848fa6fcc0649c5ce9fbaa0237da60
 # --- readelf -h (ELF header) ---
 ELF Header:
   Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
@@ -63,7 +63,7 @@ Dynamic section at offset 0x14db8 contains 28 entries:
 # --- readelf -l (INTERP) ---
   INTERP         0x000154 0x00000154 0x00000154 0x00013 0x00013 R   0x1
       [Requesting program interpreter: /system/bin/linker]
-  LOAD           0x000000 0x00000000 0x00000000 0x144f8 0x144f8 R E 0x1000
+  LOAD           0x000000 0x00000000 0x00000000 0x14580 0x14580 R E 0x1000
   LOAD           0x014c10 0x00015c10 0x00015c10 0x003f4 0x197f8 RW  0x1000
    01     .interp 
    02     .interp .note.android.ident .dynsym .dynstr .gnu.hash .gnu.version .gnu.version_r .rel.dyn .rel.plt .plt .text .ARM.exidx .rodata .ARM.extab 
@@ -71,7 +71,7 @@ Dynamic section at offset 0x14db8 contains 28 entries:
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\worker_unit_test D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\worker_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c
 (no compiler output: 0 warning, 0 error)
 exit: 0
-artifact: worker_unit_test  231604 B  sha256=4621dd6edfea36103c1f86f3a598f0d20a11fbb295aa484b284c7f3d8e69e5a2
+artifact: worker_unit_test  232020 B  sha256=7dfd172b4ac7bfbbbf643c26c7569e696e340e45f0d83e859e082ea38443e9e4
 # --- readelf -h (ELF header) ---
 ELF Header:
   Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
@@ -85,7 +85,7 @@ ELF Header:
   Version:                           0x1
   Entry point address:               0x1490
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          230124 (bytes into file)
+  Start of section headers:          230540 (bytes into file)
   Flags:                             0x5000200, Version5 EABI, soft-float ABI
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)
@@ -128,7 +128,7 @@ Dynamic section at offset 0x27dac contains 28 entries:
 # --- readelf -l (INTERP) ---
   INTERP         0x000154 0x00000154 0x00000154 0x00013 0x00013 R   0x1
       [Requesting program interpreter: /system/bin/linker]
-  LOAD           0x000000 0x00000000 0x00000000 0x26fc0 0x26fc0 R E 0x1000
+  LOAD           0x000000 0x00000000 0x00000000 0x276d0 0x276d0 R E 0x1000
   LOAD           0x027a5c 0x00028a5c 0x00028a5c 0x005ac 0x290c4 RW  0x1000
    01     .interp 
    02     .interp .note.android.ident .dynsym .dynstr .gnu.hash .gnu.version .gnu.version_r .rel.dyn .rel.plt .plt .text .ARM.exidx .rodata .ARM.extab 

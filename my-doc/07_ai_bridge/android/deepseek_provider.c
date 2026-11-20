@@ -276,7 +276,10 @@ static int jseek(jcur *c, const char *path, int depth)
             c->p++;
             hit = (trunc == 0 && klen == seglen && memcmp(key, path, seglen) == 0);
             if (hit) {
-                if (slash == NULL) return 1;
+                if (slash == NULL) {
+                    jws(c);              /* 游标必须停在值的第一个字符（网关会写 ": "） */
+                    return 1;
+                }
                 {
                     int sub = jseek(c, slash + 1, depth + 1);
                     if (sub == 1) return 1;
@@ -302,7 +305,10 @@ static int jseek(jcur *c, const char *path, int depth)
             jws(c);
             if (c->p < c->end && *c->p == ']') { c->p++; return 0; }
             if (idx == want) {
-                if (slash == NULL) return 1;
+                if (slash == NULL) {
+                    jws(c);              /* 同上：跳过 "[" 之后的空白 */
+                    return 1;
+                }
                 {
                     int sub = jseek(c, slash + 1, depth + 1);
                     if (sub == 1) return 1;

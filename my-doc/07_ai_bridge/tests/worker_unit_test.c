@@ -1590,6 +1590,29 @@ static void test_ds_parse(void)
         OK((unsigned char)out[0] == 0xF0 && (unsigned char)out[1] == 0x9F);
     }
 
+    T("deepseek/parse tolerates whitespace after ':' (real gateways emit \": \")");
+    {
+        const char *doc =
+            "{ \"id\": \"x\", \"choices\": [ { \"index\": 0,\n"
+            "  \"message\": { \"role\": \"assistant\", \"content\": \"  你好  \" } } ] }";
+        EQ_LL(t6b_ds_parse_content(doc, strlen(doc), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), 0);
+        EQ_STR(out, "  你好  ");           /* 答案里的空格原样保留 */
+        EQ_LL(n, strlen("  你好  "));
+    }
+    {
+        /* 逐字节复刻真机网关（192.168.1.13:8790）的响应形状：冒号后带空格 + reasoning_content */
+        const char *doc =
+            "{\"id\": \"9d9c260a\", \"object\": \"chat.completion\", \"created\": 1795182617, "
+            "\"model\": \"auto\", \"choices\": [{\"index\": 0, \"message\": "
+            "{\"role\": \"assistant\", \"content\": \"我是语音助手。\", "
+            "\"reasoning_content\": \"why\"}, \"finish_reason\": \"stop\"}], "
+            "\"usage\": {\"total_tokens\": 136}, \"first_chunk_at\": 1795182617.2621624}";
+        EQ_LL(t6b_ds_parse_content(doc, strlen(doc), out, sizeof(out), &n, cls, sizeof(cls),
+                                   det, sizeof(det)), 0);
+        EQ_STR(out, "我是语音助手。");
+    }
+
     T("deepseek/parse unknown keys and nesting are skipped");
     {
         const char *doc =
@@ -1677,6 +1700,17 @@ static void test_ds_parse_error(void)
     EQ_LL(t6b_ds_parse_error(doc, strlen(doc), type, sizeof(type), code, sizeof(code)), 0);
     EQ_STR(type, "authentication_error");
     EQ_STR(code, "invalid_api_key");
+
+    /* 网关会把冒号后写成 ": " —— 定位后必须跳过空白再判断类型 */
+    {
+        const char *spaced =
+            "{ \"error\" : { \"message\" : \"bad\" , \"type\" : \"auth_error\" , "
+            "\"code\" : \"key_invalid\" } }";
+        EQ_LL(t6b_ds_parse_error(spaced, strlen(spaced), type, sizeof(type),
+                                 code, sizeof(code)), 0);
+        EQ_STR(type, "auth_error");
+        EQ_STR(code, "key_invalid");
+    }
 
     EQ_LL(t6b_ds_parse_error(num, strlen(num), type, sizeof(type), code, sizeof(code)), 0);
     EQ_STR(type, "invalid_request_error");

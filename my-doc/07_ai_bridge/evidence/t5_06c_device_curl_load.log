@@ -1,14 +1,14 @@
 ﻿################ T5-06C device stage A: libcurl load + ARM32 unit test ################
-host time : 2026-11-20 21:38:36
+host time : 2026-11-20 21:56:56
 device    : 192.168.1.9:5555
 
-===== 0. push ARM32 binaries and inspect the device libcurl :: 2026-11-20 21:38:36 =====
+===== 0. push ARM32 binaries and inspect the device libcurl :: 2026-11-20 21:56:56 =====
 > adb shell rm -rf /data/local/tmp/t5d_deepseek; mkdir -p /data/local/tmp/t5d_deepseek/bin /data/local/tmp/t5d_deepseek/work_a /data/local/tmp/t5d_deepseek/state_a /data/local/tmp/t5d_deepseek/key
-  D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker: 1 file pushed, 0 skipped. 245.6 MB/s (133328 bytes in 0.001s)
-  D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\worker_unit_test: 1 file pushed, 0 skipped. 287.9 MB/s (231604 bytes in 0.001s)
+  D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker: 1 file pushed, 0 skipped. 188.0 MB/s (133328 bytes in 0.001s)
+  D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\worker_unit_test: 1 file pushed, 0 skipped. 347.8 MB/s (232020 bytes in 0.001s)
 > adb shell chmod 755 /data/local/tmp/t5d_deepseek/bin/ai_worker /data/local/tmp/t5d_deepseek/bin/worker_unit_test; sha256sum /data/local/tmp/t5d_deepseek/bin/ai_worker /data/local/tmp/t5d_deepseek/bin/worker_unit_test
-  cd8983473301823215b2725512af1618604a71766d076fd2ad97dff3f4954277  /data/local/tmp/t5d_deepseek/bin/ai_worker
-  4621dd6edfea36103c1f86f3a598f0d20a11fbb295aa484b284c7f3d8e69e5a2  /data/local/tmp/t5d_deepseek/bin/worker_unit_test
+  d87d7a18af0f3845db59b2cbc59ca45227848fa6fcc0649c5ce9fbaa0237da60  /data/local/tmp/t5d_deepseek/bin/ai_worker
+  7dfd172b4ac7bfbbbf643c26c7569e696e340e45f0d83e859e082ea38443e9e4  /data/local/tmp/t5d_deepseek/bin/worker_unit_test
 > adb shell uname -m; getprop ro.build.version.sdk; getprop ro.build.version.release
   armv7l
   27
@@ -20,69 +20,69 @@ device    : 192.168.1.9:5555
 > adb shell cat /proc/net/route | head -3
   Iface	Destination	Gateway 	Flags	RefCnt	Use	Metric	Mask		MTU	Window	IRTT                                                       
   wlan0	0001A8C0	00000000	0001	0	0	0	00FFFFFF	0	0	0                                                                              
-host ai_worker sha256 : cd8983473301823215b2725512af1618604a71766d076fd2ad97dff3f4954277
-device ai_worker sha256: cd8983473301823215b2725512af1618604a71766d076fd2ad97dff3f4954277
+host ai_worker sha256 : d87d7a18af0f3845db59b2cbc59ca45227848fa6fcc0649c5ce9fbaa0237da60
+device ai_worker sha256: d87d7a18af0f3845db59b2cbc59ca45227848fa6fcc0649c5ce9fbaa0237da60
 
-===== A. ARM32 unit test on the device (includes the whole DeepSeek group) :: 2026-11-20 21:38:38 =====
+===== A. ARM32 unit test on the device (includes the whole DeepSeek group) :: 2026-11-20 21:56:59 =====
 === T5-06B worker unit test ===
 abi: 32-bit long, ULONG_MAX=4294967295 (seq upper bound depends on this)
 
-checks passed: 613, failed: 0
+checks passed: 621, failed: 0
 RESULT: PASS
 > adb shell rm -rf /data/local/tmp/t5d_deepseek/_t6b_unit
 
-===== B. install a DUMMY key file (placeholder, not a real credential) with mode 600 :: 2026-11-20 21:38:38 =====
+===== B. install a DUMMY key file (placeholder, not a real credential) with mode 600 :: 2026-11-20 21:57:00 =====
 > adb shell chmod 600 /data/local/tmp/t5d_deepseek/key/dummy; ls -l /data/local/tmp/t5d_deepseek/key/dummy; wc -c < /data/local/tmp/t5d_deepseek/key/dummy
-  -rw------- 1 shell shell 36 2026-11-20 21:38 /data/local/tmp/t5d_deepseek/key/dummy
+  -rw------- 1 shell shell 36 2026-11-20 21:57 /data/local/tmp/t5d_deepseek/key/dummy
   36
 
-===== C. provider init on the device: dlopen(libcurl.so) + symbol/option self-check :: 2026-11-20 21:38:39 =====
+===== C. provider init on the device: dlopen(libcurl.so) + symbol/option self-check :: 2026-11-20 21:57:00 =====
 > adb shell /data/local/tmp/t5d_deepseek/bin/ai_worker --work-dir /data/local/tmp/t5d_deepseek/work_a --state-dir /data/local/tmp/t5d_deepseek/state_a --provider deepseek --api-key-file /data/local/tmp/t5d_deepseek/key/dummy --deepseek-base-url http://127.0.0.1:1/x --max-runtime-ms 5000 --provider-retry-max 2 --provider-backoff-ms 500 --poll-ms 100 --status-every-ms 200; echo rc=$?
-  [aiw] 2026-11-20T21:38:39 no consumer state yet (first run); scanning events from offset 0
-  [aiw] 2026-11-20T21:38:39 provider ready: deepseek model=deepseek-chat url=http://127.0.0.1:1/x/chat/completions key_file=/data/local/tmp/t5d_deepseek/key/dummy key_mode=0600
-  [aiw] 2026-11-20T21:38:39 WARNING: deepseek base url uses plain http (no TLS): http://127.0.0.1:1/x/chat/completions
-  [aiw] 2026-11-20T21:38:39 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
-  [aiw] 2026-11-20T21:38:39 start pid=9069 events=/data/local/tmp/t5d_deepseek/work_a/events.jsonl state=/data/local/tmp/t5d_deepseek/state_a/consumer_state.json provider=deepseek offset=0 (network enabled)
-  [aiw] 2026-11-20T21:38:39 deepseek failed: model=deepseek-chat http=0 curl=7 class=curl_connect latency=2ms event=t5c-curl-1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:39 deepseek failed: model=deepseek-chat http=0 curl=7 class=curl_connect latency=1ms event=t5c-curl-1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:39 event id=t5c-curl-1 stuck after 2 attempts (deepseek curl_connect (curl=7)): keeping it, waiting for a dead-letter policy; no event will be skipped
-  [aiw] 2026-11-20T21:38:41 deepseek failed: model=deepseek-chat http=0 curl=7 class=curl_connect latency=1ms event=t5c-curl-1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:43 deepseek failed: model=deepseek-chat http=0 curl=7 class=curl_connect latency=1ms event=t5c-curl-1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:44 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=4 offset=0 state_saves=1 state_errors=0
-  [aiw] 2026-11-20T21:38:44 file identity: reason=first_open offset=0 prefix_hash=14650fb0739d0383 resets=0 legacy_rescans=0 replacements=0 truncations=0
-  [aiw] 2026-11-20T21:38:44 WARNING: event id=t5c-curl-1 was still unprocessed at exit (4 attempts, offset kept at 0)
-  [aiw] 2026-11-20T21:38:44 provider summary: name=deepseek model=deepseek-chat calls=4 ok=0 err=4 timeout=0 last_http=0 last_curl=7 last_class=curl_connect last_latency=1ms last_resp_bytes=0
+  [aiw] 2026-11-20T21:57:00 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T21:57:00 provider ready: deepseek model=deepseek-chat url=http://127.0.0.1:1/x/chat/completions key_file=/data/local/tmp/t5d_deepseek/key/dummy key_mode=0600
+  [aiw] 2026-11-20T21:57:00 WARNING: deepseek base url uses plain http (no TLS): http://127.0.0.1:1/x/chat/completions
+  [aiw] 2026-11-20T21:57:00 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+  [aiw] 2026-11-20T21:57:00 start pid=14619 events=/data/local/tmp/t5d_deepseek/work_a/events.jsonl state=/data/local/tmp/t5d_deepseek/state_a/consumer_state.json provider=deepseek offset=0 (network enabled)
+  [aiw] 2026-11-20T21:57:00 deepseek failed: model=deepseek-chat http=0 curl=7 class=curl_connect latency=3ms event=t5c-curl-1 (offset NOT advanced)
+  [aiw] 2026-11-20T21:57:01 deepseek failed: model=deepseek-chat http=0 curl=7 class=curl_connect latency=1ms event=t5c-curl-1 (offset NOT advanced)
+  [aiw] 2026-11-20T21:57:01 event id=t5c-curl-1 stuck after 2 attempts (deepseek curl_connect (curl=7)): keeping it, waiting for a dead-letter policy; no event will be skipped
+  [aiw] 2026-11-20T21:57:03 deepseek failed: model=deepseek-chat http=0 curl=7 class=curl_connect latency=1ms event=t5c-curl-1 (offset NOT advanced)
+  [aiw] 2026-11-20T21:57:05 deepseek failed: model=deepseek-chat http=0 curl=7 class=curl_connect latency=1ms event=t5c-curl-1 (offset NOT advanced)
+  [aiw] 2026-11-20T21:57:05 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=4 offset=0 state_saves=1 state_errors=0
+  [aiw] 2026-11-20T21:57:05 file identity: reason=first_open offset=0 prefix_hash=14650fb0739d0383 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-20T21:57:05 WARNING: event id=t5c-curl-1 was still unprocessed at exit (4 attempts, offset kept at 0)
+  [aiw] 2026-11-20T21:57:05 provider summary: name=deepseek model=deepseek-chat calls=4 ok=0 err=4 timeout=0 last_http=0 last_curl=7 last_class=curl_connect last_latency=1ms last_resp_bytes=0
   rc=0
 libcurl version on device: libcurl/7.52.0-DEV
-status : {"version":1,"state":"stopped","pid":9069,"started_at":"2026-11-20T21:38:39","updated_at":"2026-11-20T21:38:44","started_at_ms":1795181919197,"updated_at_ms":1795181924224,"events_file":"/data/local/tmp/t5d_deepseek/work_a/events.jsonl","state_file":"/data/local/tmp/t5d_deepseek/state_a/consumer_state.json","offset":0,"file_size":296,"dev":45846,"ino":86205,"prefix_hash":"14650fb0739d0383","prefix_hash_valid":1,"provider":"deepseek","mock_calls":0,"provider_mock":0,"model":"deepseek-chat","last_http_status":0,"last_curl_code":7,"last_provider_latency_ms":1,"last_resp_bytes":0,"last_error_class":"curl_connect","counters":{"lines_read":1,"events_accepted":1,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":1,"state_errors":0,"provider_ok":0,"provider_err":4,"provider_timeout":0,"provider_retries":4,"stuck_attempts":4,"provider_stuck":1,"state_persist_failed":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"pending_event_id":"t5c-curl-1","last_invalid":"","last_error":"provider error: deepseek curl_connect (curl=7)","exit_reason":"max_runtime"}
-state  : {"version":2,"dev":45846,"ino":86205,"offset":0,"prefix_hash":"14650fb0739d0383","seq_last":0,"last_event_id":"","processed_total":0,"updated_at_ms":1795181924217,"recent_cap":128,"recent_n":0,"recent_ids":""}
+status : {"version":1,"state":"stopped","pid":14619,"started_at":"2026-11-20T21:57:00","updated_at":"2026-11-20T21:57:05","started_at_ms":1795183020532,"updated_at_ms":1795183025562,"events_file":"/data/local/tmp/t5d_deepseek/work_a/events.jsonl","state_file":"/data/local/tmp/t5d_deepseek/state_a/consumer_state.json","offset":0,"file_size":296,"dev":45846,"ino":78761,"prefix_hash":"14650fb0739d0383","prefix_hash_valid":1,"provider":"deepseek","mock_calls":0,"provider_mock":0,"model":"deepseek-chat","last_http_status":0,"last_curl_code":7,"last_provider_latency_ms":1,"last_resp_bytes":0,"last_error_class":"curl_connect","counters":{"lines_read":1,"events_accepted":1,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":1,"state_errors":0,"provider_ok":0,"provider_err":4,"provider_timeout":0,"provider_retries":4,"stuck_attempts":4,"provider_stuck":1,"state_persist_failed":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"pending_event_id":"t5c-curl-1","last_invalid":"","last_error":"provider error: deepseek curl_connect (curl=7)","exit_reason":"max_runtime"}
+state  : {"version":2,"dev":45846,"ino":78761,"offset":0,"prefix_hash":"14650fb0739d0383","seq_last":0,"last_event_id":"","processed_total":0,"updated_at_ms":1795183025555,"recent_cap":128,"recent_n":0,"recent_ids":""}
 ACCEPT: dlopen+dlsym+option self-check ok, failure mapped to curl_connect, offset stayed 0
 
-===== D. real HTTPS reachability + TLS verification against api.deepseek.com (dummy key -> 401 expected) :: 2026-11-20 21:38:44 =====
+===== D. real HTTPS reachability + TLS verification against api.deepseek.com (dummy key -> 401 expected) :: 2026-11-20 21:57:06 =====
 > adb shell rm -rf /data/local/tmp/t5d_deepseek/state_a; mkdir -p /data/local/tmp/t5d_deepseek/state_a
 > adb shell /data/local/tmp/t5d_deepseek/bin/ai_worker --work-dir /data/local/tmp/t5d_deepseek/work_a --state-dir /data/local/tmp/t5d_deepseek/state_a --provider deepseek --api-key-file /data/local/tmp/t5d_deepseek/key/dummy --deepseek-base-url https://api.deepseek.com --deepseek-model deepseek-chat --max-runtime-ms 12000 --provider-retry-max 1 --provider-backoff-ms 800 --poll-ms 100 --status-every-ms 300; echo rc=$?
-  [aiw] 2026-11-20T21:38:45 no consumer state yet (first run); scanning events from offset 0
-  [aiw] 2026-11-20T21:38:45 provider ready: deepseek model=deepseek-chat url=https://api.deepseek.com/chat/completions key_file=/data/local/tmp/t5d_deepseek/key/dummy key_mode=0600
-  [aiw] 2026-11-20T21:38:45 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
-  [aiw] 2026-11-20T21:38:45 start pid=9090 events=/data/local/tmp/t5d_deepseek/work_a/events.jsonl state=/data/local/tmp/t5d_deepseek/state_a/consumer_state.json provider=deepseek offset=0 (network enabled)
-  [aiw] 2026-11-20T21:38:45 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=210ms event=t5c-curl-1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:45 event id=t5c-curl-1 stuck after 1 attempts (deepseek http 401 type=authentication_error): keeping it, waiting for a dead-letter policy; no event will be skipped
-  [aiw] 2026-11-20T21:38:47 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=201ms event=t5c-curl-1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:49 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=225ms event=t5c-curl-1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:52 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=204ms event=t5c-curl-1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:54 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=286ms event=t5c-curl-1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:56 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=199ms event=t5c-curl-1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:57 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=6 offset=0 state_saves=1 state_errors=0
-  [aiw] 2026-11-20T21:38:57 file identity: reason=first_open offset=0 prefix_hash=14650fb0739d0383 resets=0 legacy_rescans=0 replacements=0 truncations=0
-  [aiw] 2026-11-20T21:38:57 WARNING: event id=t5c-curl-1 was still unprocessed at exit (6 attempts, offset kept at 0)
-  [aiw] 2026-11-20T21:38:57 provider summary: name=deepseek model=deepseek-chat calls=6 ok=0 err=6 timeout=0 last_http=401 last_curl=0 last_class=http_401 last_latency=199ms last_resp_bytes=204
+  [aiw] 2026-11-20T21:57:06 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T21:57:06 provider ready: deepseek model=deepseek-chat url=https://api.deepseek.com/chat/completions key_file=/data/local/tmp/t5d_deepseek/key/dummy key_mode=0600
+  [aiw] 2026-11-20T21:57:06 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+  [aiw] 2026-11-20T21:57:06 start pid=14633 events=/data/local/tmp/t5d_deepseek/work_a/events.jsonl state=/data/local/tmp/t5d_deepseek/state_a/consumer_state.json provider=deepseek offset=0 (network enabled)
+  [aiw] 2026-11-20T21:57:06 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=171ms event=t5c-curl-1 (offset NOT advanced)
+  [aiw] 2026-11-20T21:57:06 event id=t5c-curl-1 stuck after 1 attempts (deepseek http 401 type=authentication_error): keeping it, waiting for a dead-letter policy; no event will be skipped
+  [aiw] 2026-11-20T21:57:08 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=110ms event=t5c-curl-1 (offset NOT advanced)
+  [aiw] 2026-11-20T21:57:10 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=132ms event=t5c-curl-1 (offset NOT advanced)
+  [aiw] 2026-11-20T21:57:12 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=147ms event=t5c-curl-1 (offset NOT advanced)
+  [aiw] 2026-11-20T21:57:15 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=121ms event=t5c-curl-1 (offset NOT advanced)
+  [aiw] 2026-11-20T21:57:17 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=128ms event=t5c-curl-1 (offset NOT advanced)
+  [aiw] 2026-11-20T21:57:18 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=6 offset=0 state_saves=1 state_errors=0
+  [aiw] 2026-11-20T21:57:18 file identity: reason=first_open offset=0 prefix_hash=14650fb0739d0383 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-20T21:57:18 WARNING: event id=t5c-curl-1 was still unprocessed at exit (6 attempts, offset kept at 0)
+  [aiw] 2026-11-20T21:57:18 provider summary: name=deepseek model=deepseek-chat calls=6 ok=0 err=6 timeout=0 last_http=401 last_curl=0 last_class=http_401 last_latency=128ms last_resp_bytes=204
   rc=0
 real endpoint HTTP status with a dummy key: 401
-status : {"version":1,"state":"stopped","pid":9090,"started_at":"2026-11-20T21:38:45","updated_at":"2026-11-20T21:38:57","started_at_ms":1795181925241,"updated_at_ms":1795181937269,"events_file":"/data/local/tmp/t5d_deepseek/work_a/events.jsonl","state_file":"/data/local/tmp/t5d_deepseek/state_a/consumer_state.json","offset":0,"file_size":296,"dev":45846,"ino":86205,"prefix_hash":"14650fb0739d0383","prefix_hash_valid":1,"provider":"deepseek","mock_calls":0,"provider_mock":0,"model":"deepseek-chat","last_http_status":401,"last_curl_code":0,"last_provider_latency_ms":199,"last_resp_bytes":204,"last_error_class":"http_401","counters":{"lines_read":1,"events_accepted":1,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":1,"state_errors":0,"provider_ok":0,"provider_err":6,"provider_timeout":0,"provider_retries":6,"stuck_attempts":6,"provider_stuck":1,"state_persist_failed":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"pending_event_id":"t5c-curl-1","last_invalid":"","last_error":"provider error: deepseek http 401 type=authentication_error","exit_reason":"max_runtime"}
-state  : {"version":2,"dev":45846,"ino":86205,"offset":0,"prefix_hash":"14650fb0739d0383","seq_last":0,"last_event_id":"","processed_total":0,"updated_at_ms":1795181937261,"recent_cap":128,"recent_n":0,"recent_ids":""}
+status : {"version":1,"state":"stopped","pid":14633,"started_at":"2026-11-20T21:57:06","updated_at":"2026-11-20T21:57:18","started_at_ms":1795183026378,"updated_at_ms":1795183038409,"events_file":"/data/local/tmp/t5d_deepseek/work_a/events.jsonl","state_file":"/data/local/tmp/t5d_deepseek/state_a/consumer_state.json","offset":0,"file_size":296,"dev":45846,"ino":78761,"prefix_hash":"14650fb0739d0383","prefix_hash_valid":1,"provider":"deepseek","mock_calls":0,"provider_mock":0,"model":"deepseek-chat","last_http_status":401,"last_curl_code":0,"last_provider_latency_ms":128,"last_resp_bytes":204,"last_error_class":"http_401","counters":{"lines_read":1,"events_accepted":1,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":0,"state_saves":1,"state_errors":0,"provider_ok":0,"provider_err":6,"provider_timeout":0,"provider_retries":6,"stuck_attempts":6,"provider_stuck":1,"state_persist_failed":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"pending_event_id":"t5c-curl-1","last_invalid":"","last_error":"provider error: deepseek http 401 type=authentication_error","exit_reason":"max_runtime"}
+state  : {"version":2,"dev":45846,"ino":78761,"offset":0,"prefix_hash":"14650fb0739d0383","seq_last":0,"last_event_id":"","processed_total":0,"updated_at_ms":1795183038402,"recent_cap":128,"recent_n":0,"recent_ids":""}
 ACCEPT: real TLS request completed, HTTP 401, error body parsed, offset untouched
 
-===== E. cleanup :: 2026-11-20 21:38:57 =====
+===== E. cleanup :: 2026-11-20 21:57:18 =====
 > adb shell rm -rf /data/local/tmp/t5d_deepseek/work_a /data/local/tmp/t5d_deepseek/state_a
 > adb shell ls -d /data/local/tmp/t5d_deepseek 2>/dev/null; ps -A | grep ai_worker | grep -v grep; echo cleanup=done
   /data/local/tmp/t5d_deepseek

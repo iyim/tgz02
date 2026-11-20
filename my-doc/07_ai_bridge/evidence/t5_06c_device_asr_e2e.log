@@ -1,88 +1,81 @@
 ﻿################ T5-06C device stage C: real ASR final -> worker -> DeepSeek ################
-host time : 2026-11-20 21:37:25
-device    : 192.168.1.9:5555   model: deepseek-chat   stimulus: s01
+host time : 2026-11-20 21:54:18
+device    : 192.168.1.9:5555   model: deepseek-flash   base: http://192.168.1.13:8790/v1   stimulus: s01
 installed worker (bin/) and its state dir are NOT touched; a separate state dir is used.
 
-===== 0. preconditions: factory app, bridge, real events.jsonl, pushed worker :: 2026-11-20 21:37:25 =====
+===== 0. preconditions: factory app, bridge, real events.jsonl, pushed worker :: 2026-11-20 21:54:18 =====
 core pid before    : 28413
-bridge status      : running: pid=8206 | {"state":"running","pid":8206,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":1,"duplicates":0,"rejected":0,"frames":1,"clients":0,"clients_accepted":1,"clients_closed":1,"client_aborts":1,"client_overflow":0,"frame_errors":0,"store_errors":0,"replay_lines":111,"bad_lines":0,"truncated_bytes":0,"dedup_size":112,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-20T21:37:26"}
-events.jsonl       : lines=112 size=34415 sha256=2879a3c44cc97c1e99152f495118f9e70b53ecbe3f9c1960ec3db77eac539440
+bridge status      : running: pid=13926 | {"state":"running","pid":13926,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":1,"duplicates":0,"rejected":0,"frames":1,"clients":0,"clients_accepted":1,"clients_closed":1,"client_aborts":1,"client_overflow":0,"frame_errors":0,"store_errors":0,"replay_lines":113,"bad_lines":0,"truncated_bytes":0,"dedup_size":114,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-20T21:54:18"}
+events.jsonl       : lines=114 size=35025 sha256=a60792eefe8d6b246c7ed7e4dcb0575a082ad69343712bae3af76632c1d9fb19
 > adb shell mkdir -p /data/local/tmp/t5d_deepseek/bin /data/local/tmp/t5d_deepseek/key; rm -rf /data/local/tmp/t5d_deepseek/state_c; mkdir -p /data/local/tmp/t5d_deepseek/state_c
 > adb shell chmod 755 /data/local/tmp/t5d_deepseek/bin/ai_worker; sha256sum /data/local/tmp/t5d_deepseek/bin/ai_worker
-  cd8983473301823215b2725512af1618604a71766d076fd2ad97dff3f4954277  /data/local/tmp/t5d_deepseek/bin/ai_worker
-> adb shell chmod 600 /data/local/tmp/t5d_deepseek/key/deepseek_api_key
-api key: placeholder pushed (no real key); the call is expected to end at HTTP 401
+  d87d7a18af0f3845db59b2cbc59ca45227848fa6fcc0649c5ce9fbaa0237da60  /data/local/tmp/t5d_deepseek/bin/ai_worker
+> adb shell cp /data/local/tmp/t5_bridge/secret/deepseek_api_key /data/local/tmp/t5d_deepseek/key/deepseek_api_key; chmod 600 /data/local/tmp/t5d_deepseek/key/deepseek_api_key
+api key: real key present (content never printed)
 
-===== 1. seed the consumption offset with provider=mock so ONLY the new event can reach the model :: 2026-11-20 21:37:28 =====
+===== 1. seed the consumption offset with provider=mock so ONLY the new event can reach the model :: 2026-11-20 21:54:21 =====
 > adb shell /data/local/tmp/t5d_deepseek/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --events-file events.jsonl --state-dir /data/local/tmp/t5d_deepseek/state_c --provider mock --max-runtime-ms 30000 --idle-exit-ms 2000 --poll-ms 100 --status-every-ms 300; echo rc=$?
-  [aiw] 2026-11-20T21:37:28 no consumer state yet (first run); scanning events from offset 0
-  [aiw] 2026-11-20T21:37:28 start pid=8694 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d_deepseek/state_c/consumer_state.json provider=mock offset=0 (mock only, no network)
-  [aiw] 2026-11-20T21:37:29 seq gap pid=16112 missing=2 range=[3,4] (recorded, NOT fabricated)
-  [aiw] 2026-11-20T21:37:29 seq gap pid=29413 missing=1 range=[2,2] (recorded, NOT fabricated)
-  [aiw] 2026-11-20T21:37:31 exit reason=idle_timeout processed=112 duplicates=0 invalid=0 gaps=2 resets=14 provider_retries=0 offset=34415 state_saves=113 state_errors=0
-  [aiw] 2026-11-20T21:37:31 file identity: reason=first_open offset=34415 prefix_hash=e34f9a80fa8bdf33 resets=0 legacy_rescans=0 replacements=0 truncations=0
-  [aiw] 2026-11-20T21:37:31 provider summary: name=mock calls=112 (no network)
+  [aiw] 2026-11-20T21:54:21 no consumer state yet (first run); scanning events from offset 0
+  [aiw] 2026-11-20T21:54:21 start pid=14226 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d_deepseek/state_c/consumer_state.json provider=mock offset=0 (mock only, no network)
+  [aiw] 2026-11-20T21:54:22 seq gap pid=16112 missing=2 range=[3,4] (recorded, NOT fabricated)
+  [aiw] 2026-11-20T21:54:22 seq gap pid=29413 missing=1 range=[2,2] (recorded, NOT fabricated)
+  [aiw] 2026-11-20T21:54:24 exit reason=idle_timeout processed=114 duplicates=0 invalid=0 gaps=2 resets=15 provider_retries=0 offset=35025 state_saves=115 state_errors=0
+  [aiw] 2026-11-20T21:54:24 file identity: reason=first_open offset=35025 prefix_hash=dc28cf2b078aaa67 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-20T21:54:24 provider summary: name=mock calls=114 (no network)
   rc=0
-seed: offset=34415 processed=112 (history consumed with mock, no network)
+seed: offset=35025 processed=114 (history consumed with mock, no network)
 
-===== 1b. bring the factory assistant to the foreground (it must be listening) :: 2026-11-20 21:37:31 =====
+===== 1b. bring the factory assistant to the foreground (it must be listening) :: 2026-11-20 21:54:25 =====
 > adb shell input keyevent KEYCODE_WAKEUP
 > adb shell monkey -p com.alibaba.ailabs.genie.smartapp -c android.intent.category.LAUNCHER 1 2>&1 | tail -2
   Events injected: 1
-  ## Network stats: elapsed time=34ms (0ms mobile, 0ms wifi, 34ms not connected)
-focus :   mCurrentFocus=Window{1adf4d8 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.activity.ApplistActivity}
+  ## Network stats: elapsed time=50ms (0ms mobile, 0ms wifi, 50ms not connected)
+focus :   mCurrentFocus=Window{936be5f u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.activity.TransitionPageActivity}
 
-===== 2. trigger a real ASR final (frida H1 hook + host playback) :: 2026-11-20 21:37:39 =====
-frida sender pid  : 40512
+===== 2. trigger a real ASR final (frida H1 hook + host playback) :: 2026-11-20 21:54:32 =====
+frida sender pid  : 47620
 playback finished
 
-===== 3. wait for the new final (<= 120 s) :: 2026-11-20 21:37:55 =====
-events.jsonl lines: before=112 after=113
-events.jsonl sha256 after: 639737d28cc00c625a3540c3683e392d29533832e6748399c7e97e2fecff1b1d
+===== 3. wait for the new final (<= 120 s) :: 2026-11-20 21:54:47 =====
+events.jsonl lines: before=114 after=115
+events.jsonl sha256 after: 903725161a80a6472ee11f6a09aff5c5e5214c93e07f0af6ef067db90f0ebf83
 the bridge appended the new final; the worker never writes this file
 
-===== 3b. stop the frida sender (the final is already on disk; no need for the hook) :: 2026-11-20 21:38:04 =====
+===== 3b. stop the frida sender (the final is already on disk; no need for the hook) :: 2026-11-20 21:54:54 =====
 sender stopped (exit=); its stat line shows hook hits and stored frames
-  {"wall": "2026-11-20 21:38:04.056", "rel": 22.027, "t": "stat", "line": "hooks=7 final=1 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-", "stats": {"hook_hits": 7, "final_count": 1, "partial_count": 6, "empty_count": 0, "read_errors": 0, "queue_depth": 0, "pending_count": 0, "queue_overflow": 0, "connect_errors": 0, "send_errors": 0, "recv_errors": 0, "ack_stored": 1, "ack_duplicate": 0, "ack_rejected": 0, "retry_count": 0, "text_too_long": 0, "ack_mismatch": 0, "ack_timeouts": 0, "frame_rejects": 0, "dropped": 0, "protocol_errors": 0, "dup_session_final": 0, "reconnect_count": 0, "enqueued": 1, "requeued": 0, "sent_frames": 1, "rejected_codes": {}, "connected": true, "fd": 123, "last_error": "", "last_close_reason": "", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x957c0000", "addr": "0x958d353c"}, "sock_name": "tgz2_asr_bridge", "stopped": false}}
-  {"wall": "2026-11-20 21:38:06.119", "rel": 24.09, "t": "stat", "line": "hooks=7 final=1 partial=6 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-", "stats": {"hook_hits": 7, "final_count": 1, "partial_count": 6, "empty_count": 0, "read_errors": 0, "queue_depth": 0, "pending_count": 0, "queue_overflow": 0, "connect_errors": 0, "send_errors": 0, "recv_errors": 0, "ack_stored": 1, "ack_duplicate": 0, "ack_rejected": 0, "retry_count": 0, "text_too_long": 0, "ack_mismatch": 0, "ack_timeouts": 0, "frame_rejects": 0, "dropped": 0, "protocol_errors": 0, "dup_session_final": 0, "reconnect_count": 0, "enqueued": 1, "requeued": 0, "sent_frames": 1, "rejected_codes": {}, "connected": true, "fd": 123, "last_error": "", "last_close_reason": "", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x957c0000", "addr": "0x958d353c"}, "sock_name": "tgz2_asr_bridge", "stopped": false}}
+  {"wall": "2026-11-20 21:54:53.856", "rel": 18.884, "t": "ack", "event_id": "t5b-28413-1968921-g1", "status": "stored", "code": "ok", "dup_count": 0, "events_stored": 2}
+  {"wall": "2026-11-20 21:54:54.997", "rel": 20.025, "t": "stat", "line": "hooks=6 final=1 partial=5 empty=0 readErr=0 q=0 ovf=0 stored=1 dup=0 rej=0 retry=0 conn=true connErr=0 sendErr=0 recvErr=0 lastErr=-", "stats": {"hook_hits": 6, "final_count": 1, "partial_count": 5, "empty_count": 0, "read_errors": 0, "queue_depth": 0, "pending_count": 0, "queue_overflow": 0, "connect_errors": 0, "send_errors": 0, "recv_errors": 0, "ack_stored": 1, "ack_duplicate": 0, "ack_rejected": 0, "retry_count": 0, "text_too_long": 0, "ack_mismatch": 0, "ack_timeouts": 0, "frame_rejects": 0, "dropped": 0, "protocol_errors": 0, "dup_session_final": 0, "reconnect_count": 0, "enqueued": 1, "requeued": 0, "sent_frames": 1, "rejected_codes": {}, "connected": true, "fd": 123, "last_error": "", "last_close_reason": "", "hook": {"module_ok": true, "symbol_ok": true, "offset_ok": true, "attached": true, "why": "", "base": "0x957c0000", "addr": "0x958d353c"}, "sock_name": "tgz2_asr_bridge", "stopped": false}}
 
-===== 4. run the T5-06C worker on the real events.jsonl (separate state dir) :: 2026-11-20 21:38:06 =====
-> adb shell /data/local/tmp/t5d_deepseek/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --events-file events.jsonl --state-dir /data/local/tmp/t5d_deepseek/state_c --provider deepseek --api-key-file /data/local/tmp/t5d_deepseek/key/deepseek_api_key --deepseek-model deepseek-chat --deepseek-base-url https://api.deepseek.com --max-events 1 --max-runtime-ms 15000 --provider-retry-max 2 --provider-backoff-ms 800 --idle-exit-ms 8000 --poll-ms 100 --status-every-ms 300; echo rc=$?
-  [aiw] 2026-11-20T21:38:06 lock acquired; previous owner pid=8694 no longer holding it
-  [aiw] 2026-11-20T21:38:06 provider ready: deepseek model=deepseek-chat url=https://api.deepseek.com/chat/completions key_file=/data/local/tmp/t5d_deepseek/key/deepseek_api_key key_mode=0600
-  [aiw] 2026-11-20T21:38:06 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
-  [aiw] 2026-11-20T21:38:06 start pid=8929 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d_deepseek/state_c/consumer_state.json provider=deepseek offset=34415 (network enabled)
-  [aiw] 2026-11-20T21:38:07 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=227ms event=t5b-28413-1968845-g1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:08 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=238ms event=t5b-28413-1968845-g1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:08 event id=t5b-28413-1968845-g1 stuck after 2 attempts (deepseek http 401 type=authentication_error): keeping it, waiting for a dead-letter policy; no event will be skipped
-  [aiw] 2026-11-20T21:38:10 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=211ms event=t5b-28413-1968845-g1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:12 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=203ms event=t5b-28413-1968845-g1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:14 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=265ms event=t5b-28413-1968845-g1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:17 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=203ms event=t5b-28413-1968845-g1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:19 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=216ms event=t5b-28413-1968845-g1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:21 deepseek failed: model=deepseek-chat http=401 curl=0 class=http_401 latency=252ms event=t5b-28413-1968845-g1 (offset NOT advanced)
-  [aiw] 2026-11-20T21:38:21 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=8 offset=34415 state_saves=1 state_errors=0
-  [aiw] 2026-11-20T21:38:21 file identity: reason=first_open offset=34415 prefix_hash=e34f9a80fa8bdf33 resets=0 legacy_rescans=0 replacements=0 truncations=0
-  [aiw] 2026-11-20T21:38:21 WARNING: event id=t5b-28413-1968845-g1 was still unprocessed at exit (8 attempts, offset kept at 34415)
-  [aiw] 2026-11-20T21:38:21 provider summary: name=deepseek model=deepseek-chat calls=8 ok=0 err=8 timeout=0 last_http=401 last_curl=0 last_class=http_401 last_latency=252ms last_resp_bytes=204
+===== 4. run the T5-06C worker on the real events.jsonl (separate state dir) :: 2026-11-20 21:54:56 =====
+> adb shell /data/local/tmp/t5d_deepseek/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --events-file events.jsonl --state-dir /data/local/tmp/t5d_deepseek/state_c --provider deepseek --api-key-file /data/local/tmp/t5d_deepseek/key/deepseek_api_key --deepseek-model deepseek-flash --deepseek-base-url http://192.168.1.13:8790/v1 --max-events 1 --max-runtime-ms 60000 --provider-retry-max 2 --provider-backoff-ms 800 --idle-exit-ms 8000 --poll-ms 100 --status-every-ms 300 --reply-log /data/local/tmp/t5d_deepseek/replies_c.jsonl; echo rc=$?
+  [aiw] 2026-11-20T21:54:56 lock acquired; previous owner pid=14226 no longer holding it
+  [aiw] 2026-11-20T21:54:56 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5d_deepseek/key/deepseek_api_key key_mode=0600
+  [aiw] 2026-11-20T21:54:56 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+  [aiw] 2026-11-20T21:54:56 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+  [aiw] 2026-11-20T21:54:56 start pid=14385 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d_deepseek/state_c/consumer_state.json provider=deepseek offset=35025 (network enabled)
+  [aiw] 2026-11-20T21:54:58 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1744ms resp_bytes=1274 reply_bytes=78 event=t5b-28413-1968921-g1
+  [aiw] 2026-11-20T21:54:58 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=35330 state_saves=2 state_errors=0
+  [aiw] 2026-11-20T21:54:58 file identity: reason=first_open offset=35330 prefix_hash=b23e54afcf296052 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-20T21:54:58 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1744ms last_resp_bytes=1274
   rc=0
-status : {"version":1,"state":"stopped","pid":8929,"started_at":"2026-11-20T21:38:06","updated_at":"2026-11-20T21:38:21","started_at_ms":1795181886920,"updated_at_ms":1795181901948,"events_file":"/data/local/tmp/t5_bridge/work/events.jsonl","state_file":"/data/local/tmp/t5d_deepseek/state_c/consumer_state.json","offset":34415,"file_size":34720,"dev":45846,"ino":86131,"prefix_hash":"e34f9a80fa8bdf33","prefix_hash_valid":1,"provider":"deepseek","mock_calls":0,"provider_mock":0,"model":"deepseek-chat","last_http_status":401,"last_curl_code":0,"last_provider_latency_ms":252,"last_resp_bytes":204,"last_error_class":"http_401","counters":{"lines_read":1,"events_accepted":1,"events_processed":0,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":1,"state_saves":1,"state_errors":0,"provider_ok":0,"provider_err":8,"provider_timeout":0,"provider_retries":8,"stuck_attempts":8,"provider_stuck":1,"state_persist_failed":0},"last_seq":0,"last_event_id":"","last_event_at":"","last_gap_from":0,"last_gap_to":0,"pending_event_id":"t5b-28413-1968845-g1","last_invalid":"","last_error":"provider error: deepseek http 401 type=authentication_error","exit_reason":"max_runtime"}
-state  : {"version":2,"dev":45846,"ino":86131,"offset":34415,"prefix_hash":"e34f9a80fa8bdf33","seq_last":1,"last_event_id":"t5b-28413-1968841-g1","processed_total":112,"updated_at_ms":1795181901940,"recent_cap":128,"recent_n":112,"recent_ids":"t5b-16112-1967345-g1,t5b-16112-1967349-g1,t5b-16112-1967353-g1,t5b-16112-1967357-g1,t5b-16112-1967361-g1,t5b-16112-1967365-g1,t5b-16112-1967369-g1,t5b-16112-1967381-g1,t5b-16112-1967399-g1,t5b-16112-1967412-g1,t5b-16112-1967421-g1,t5b-16112-1967425-g1,t5b-16112-1967451-g1,t5b-16112-1967536-g1,t5b-16112-1967540-g1,t5b-16112-1967544-g1,t5b-16112-1967553-g1,t5b-16112-1967567-g1,t5b-16112-1967614-g1,t5b-16112-1967618-g1,t5b-16112-1967622-g1,t5b-16112-1967626-g1,t5b-16112-1967630-g1,t5b-16112-1967634-g1,t5b-16112-1967638-g1,t5b-16112-1967643-g1,t5b-16112-1967647-g1,t5b-16112-1967651-g1,t5b-16112-1967656-g1,t5b-16112-1967660-g1,t5b-16112-1967664-g1,t5b-16112-1967670-g1,t5b-16112-1967674-g1,t5b-16112-1967678-g1,t5b-16112-1967684-g1,t5b-16112-1967688-g1,t5b-16112-1967693-g1,t5b-16112-1967701-g1,t5b-16112-1967705-g1,t5b-16112-1967717-g1,t5b-16112-1967725-g1,t5b-16112-1967729-g1,t5b-16112-1967736-g1,t5b-16112-1967740-g1,t5b-16112-1967744-g1,t5b-16112-1967748-g1,t5b-16112-1967756-g1,t5b-16112-1967760-g1,t5b-16112-1967768-g1,t5b-16112-1967772-g1,t5b-16112-1967776-g1,t5b-16112-1967781-g1,t5b-16112-1967788-g1,t5b-16112-1967792-g1,t5b-16112-1967796-g1,t5b-16112-1967801-g1,t5b-16112-1967810-g1,t5b-16112-1967815-g1,t5b-16112-1967819-g1,t5b-16112-1967823-g1,t5b-16112-1967827-g1,t5b-16112-1967834-g1,t5b-16112-1967838-g1,t5b-16112-1967843-g1,t5b-16112-1967857-g1,t5b-16112-1967861-g1,t5b-29413-1969456-g1,t5b-29413-1969468-g1,t5b-29413-1969472-g1,t5b-29413-1969476-g1,t5b-29413-1969482-g1,t5b-29413-1969486-g1,t5b-29413-1969490-g1,evt-dup-1,evt-resend-1,t5b-29413-1969706-g1,t5b-29413-1969710-g1,t5b-29413-1969714-g1,t5b-29413-1969718-g1,t5b-29413-1969722-g1,t5b-29413-1969736-g1,t5b-29413-1969740-g1,t5b-29413-1969749-g1,t5b-29413-1969753-g1,t5b-29413-1969760-g1,t5b-29413-1969765-g1,t5b-29413-1969772-g1,t5b-29413-1969776-g1,t5b-29413-1969780-g1,t5b-29413-1969791-g1,t5b-29413-1969796-g1,t5b-29413-1969808-g1,t5b-29413-1969812-g1,t5b-29413-1969817-g1,t5b-29413-1969822-g1,t5b-29413-1969830-g1,t5b-29413-1969834-g1,t5b-29413-1969844-g1,t5b-29413-1969849-g1,t5b-29413-1969853-g1,t5b-29413-1969857-g1,t5b-29413-1969861-g1,t5b-29413-1969886-g1,t5b-29413-1969890-g1,t5b-29413-1969895-g1,t5b-29413-1969899-g1,t506b-r1-0000,t5b-29413-1969946-g1,t506b-185453-0000,t5b-29413-1969962-g1,t5b-29413-1969966-g1,t5b-28413-1968841-g1"}
-real call on the new ASR final: http=401 latency=227ms resp_bytes=204 key=False
-PARTIAL: the real ASR text reached api.deepseek.com over HTTPS and got 401 (no key).
-         The answer step needs a key; nothing here is faked as a model reply.
+status : {"version":1,"state":"stopped","pid":14385,"started_at":"2026-11-20T21:54:56","updated_at":"2026-11-20T21:54:58","started_at_ms":1795182896343,"updated_at_ms":1795182898116,"events_file":"/data/local/tmp/t5_bridge/work/events.jsonl","state_file":"/data/local/tmp/t5d_deepseek/state_c/consumer_state.json","offset":35330,"file_size":35330,"dev":45846,"ino":86131,"prefix_hash":"b23e54afcf296052","prefix_hash_valid":1,"provider":"deepseek","mock_calls":0,"provider_mock":0,"model":"deepseek-flash","last_http_status":200,"last_curl_code":0,"last_provider_latency_ms":1744,"last_resp_bytes":1274,"last_error_class":"ok","counters":{"lines_read":1,"events_accepted":1,"events_processed":1,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":1,"state_saves":2,"state_errors":0,"provider_ok":1,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0},"last_seq":2,"last_event_id":"t5b-28413-1968921-g1","last_event_at":"2026-11-20T21:54:58","last_gap_from":0,"last_gap_to":0,"pending_event_id":"","last_invalid":"","last_error":"","exit_reason":"max_events"}
+state  : {"version":2,"dev":45846,"ino":86131,"offset":35330,"prefix_hash":"b23e54afcf296052","seq_last":2,"last_event_id":"t5b-28413-1968921-g1","processed_total":115,"updated_at_ms":1795182898109,"recent_cap":128,"recent_n":115,"recent_ids":"t5b-16112-1967345-g1,t5b-16112-1967349-g1,t5b-16112-1967353-g1,t5b-16112-1967357-g1,t5b-16112-1967361-g1,t5b-16112-1967365-g1,t5b-16112-1967369-g1,t5b-16112-1967381-g1,t5b-16112-1967399-g1,t5b-16112-1967412-g1,t5b-16112-1967421-g1,t5b-16112-1967425-g1,t5b-16112-1967451-g1,t5b-16112-1967536-g1,t5b-16112-1967540-g1,t5b-16112-1967544-g1,t5b-16112-1967553-g1,t5b-16112-1967567-g1,t5b-16112-1967614-g1,t5b-16112-1967618-g1,t5b-16112-1967622-g1,t5b-16112-1967626-g1,t5b-16112-1967630-g1,t5b-16112-1967634-g1,t5b-16112-1967638-g1,t5b-16112-1967643-g1,t5b-16112-1967647-g1,t5b-16112-1967651-g1,t5b-16112-1967656-g1,t5b-16112-1967660-g1,t5b-16112-1967664-g1,t5b-16112-1967670-g1,t5b-16112-1967674-g1,t5b-16112-1967678-g1,t5b-16112-1967684-g1,t5b-16112-1967688-g1,t5b-16112-1967693-g1,t5b-16112-1967701-g1,t5b-16112-1967705-g1,t5b-16112-1967717-g1,t5b-16112-1967725-g1,t5b-16112-1967729-g1,t5b-16112-1967736-g1,t5b-16112-1967740-g1,t5b-16112-1967744-g1,t5b-16112-1967748-g1,t5b-16112-1967756-g1,t5b-16112-1967760-g1,t5b-16112-1967768-g1,t5b-16112-1967772-g1,t5b-16112-1967776-g1,t5b-16112-1967781-g1,t5b-16112-1967788-g1,t5b-16112-1967792-g1,t5b-16112-1967796-g1,t5b-16112-1967801-g1,t5b-16112-1967810-g1,t5b-16112-1967815-g1,t5b-16112-1967819-g1,t5b-16112-1967823-g1,t5b-16112-1967827-g1,t5b-16112-1967834-g1,t5b-16112-1967838-g1,t5b-16112-1967843-g1,t5b-16112-1967857-g1,t5b-16112-1967861-g1,t5b-29413-1969456-g1,t5b-29413-1969468-g1,t5b-29413-1969472-g1,t5b-29413-1969476-g1,t5b-29413-1969482-g1,t5b-29413-1969486-g1,t5b-29413-1969490-g1,evt-dup-1,evt-resend-1,t5b-29413-1969706-g1,t5b-29413-1969710-g1,t5b-29413-1969714-g1,t5b-29413-1969718-g1,t5b-29413-1969722-g1,t5b-29413-1969736-g1,t5b-29413-1969740-g1,t5b-29413-1969749-g1,t5b-29413-1969753-g1,t5b-29413-1969760-g1,t5b-29413-1969765-g1,t5b-29413-1969772-g1,t5b-29413-1969776-g1,t5b-29413-1969780-g1,t5b-29413-1969791-g1,t5b-29413-1969796-g1,t5b-29413-1969808-g1,t5b-29413-1969812-g1,t5b-29413-1969817-g1,t5b-29413-1969822-g1,t5b-29413-1969830-g1,t5b-29413-1969834-g1,t5b-29413-1969844-g1,t5b-29413-1969849-g1,t5b-29413-1969853-g1,t5b-29413-1969857-g1,t5b-29413-1969861-g1,t5b-29413-1969886-g1,t5b-29413-1969890-g1,t5b-29413-1969895-g1,t5b-29413-1969899-g1,t506b-r1-0000,t5b-29413-1969946-g1,t506b-185453-0000,t5b-29413-1969962-g1,t5b-29413-1969966-g1,t5b-28413-1968841-g1,t5b-28413-1968845-g1,t5b-28413-1968867-g1,t5b-28413-1968921-g1"}
+real call on the new ASR final: http=200 latency=1744ms resp_bytes=1274 key=True
+event handled: t5b-28413-1968921-g1
+answer: chars=397 cjk=53 (content not committed; device-side replies_c.jsonl)
+ACCEPT: real ASR final -> DeepSeek HTTP 200 -> answer recorded -> offset committed
 
-===== 5. factory chain is unaffected :: 2026-11-20 21:38:22 =====
+===== 5. factory chain is unaffected :: 2026-11-20 21:54:58 =====
 core pid after     : 28413 (before: 28413)
 > adb shell sh /data/local/tmp/t5_bridge/run_bridge.sh status 2>&1 | head -3
-  running: pid=8206
-  {"state":"running","pid":8206,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":2,"duplicates":0,"rejected":0,"frames":2,"clients":0,"clients_accepted":2,"clients_closed":2,"client_aborts":2,"client_overflow":0,"frame_errors":0,"store_errors":0,"replay_lines":111,"bad_lines":0,"truncated_bytes":0,"dedup_size":113,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-20T21:38:22"}
+  running: pid=13926
+  {"state":"running","pid":13926,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":2,"duplicates":0,"rejected":0,"frames":2,"clients":0,"clients_accepted":2,"clients_closed":2,"client_aborts":2,"client_overflow":0,"frame_errors":0,"store_errors":0,"replay_lines":113,"bad_lines":0,"truncated_bytes":0,"dedup_size":115,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-20T21:54:58"}
 > adb shell sh /data/local/tmp/t5_bridge/run_ai_worker.sh status 2>&1 | head -2
   not running
 
-===== 6. clean up (the sender was already stopped in step 3b) :: 2026-11-20 21:38:23 =====
+===== 6. clean up (the sender was already stopped in step 3b) :: 2026-11-20 21:54:59 =====
 > adb shell rm -rf /data/local/tmp/t5d_deepseek/state_c /data/local/tmp/t5d_deepseek/replies_c.jsonl
 > adb shell ps -A | grep -E 'ai_worker' | grep -v grep; echo cleanup=done
   cleanup=done
 
-RESULT: PARTIAL (real ASR -> real HTTPS 401 without a key; answer step pending a key)
+RESULT: PASS (real ASR -> DeepSeek 200 -> offset committed, factory untouched)

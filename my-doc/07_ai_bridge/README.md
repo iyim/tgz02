@@ -17,7 +17,7 @@ vendor release 串 `6.1.8-RS-20221104.1459`，kernel `4.4.95+`）。
 | [t5_06b_p1p2_fix_report.md](t5_06b_p1p2_fix_report.md) | **T5-06B P1/P2 修复报告**：内核锁、Provider 失败不消费、落盘失败即停、半行超长、删除重建身份检测 |
 | [t5_06b_numeric_validation_fix_report.md](t5_06b_numeric_validation_fix_report.md) | **T5-06B P2 补充修复**：`event_reader` 数字字段窄化与范围校验（version/pid/text_bytes/text_chars/时间/seq）、文本诊断字段一致性、ARM32 与 LLP64 的 `ULONG_MAX` 差异、真机 284 项全过 |
 | [t5_06b_p22_prefix_fingerprint_report.md](t5_06b_p22_prefix_fingerprint_report.md) | **T5-06B P2-2 补充修复**：events.jsonl 前缀指纹（`[0,offset)` 增量 FNV-1a）、状态版本 2、inode 复用下的换文件识别、指纹故障即停（退出码 6）、**指纹提交原子性**（中途失败不留半截指纹）、真机 inode 复用实证 |
-| [t5_06c_deepseek_real_provider_report.md](t5_06c_deepseek_real_provider_report.md) | **T5-06C 第一阶段**：真机接入真实 DeepSeek（dlopen 系统 libcurl、TLS 强制校验、受限 JSON、key 只走文件）；真机已打通到 HTTP 401，200 待 key |
+| [t5_06c_deepseek_real_provider_report.md](t5_06c_deepseek_real_provider_report.md) | **T5-06C 第一阶段**：真机接入真实 DeepSeek（dlopen 系统 libcurl、TLS 强制校验、受限 JSON、key 只走文件）；真机已完成真实模型回答（HTTP 200）+ 真实 ASR 联调 |
 | [tests/](tests) | T5-06B 主机单元测试 / 集成测试 / 一键运行脚本（含 `run_t5_06c_host_tests.ps1`） |
 | [android/](android) | Worker 源码（`ai_worker.c` / `event_reader.c` / `provider.c` / `mock_provider.c` / `deepseek_provider.c` / …）+ `build.ps1`（NDK 动态链接）+ `run_ai_worker.sh` |
 | [evidence/](evidence) | 真机探针原始输出、设备事实快照、NDK 检查、主机与真机测试日志 |
@@ -63,8 +63,8 @@ T5-06C 第一阶段（`t5_06c_deepseek_real_provider_report.md`）：`provider=m
 `SSL_VERIFYPEER=1 / SSL_VERIFYHOST=2` 强制开启，`NOSIGNAL` + 连接/总超时，响应体 64 KB 固定上限，
 自写受限 JSON 解析器（`\uXXXX`/代理对全支持，不用 strstr 猜），key 只从 0600 文件读（拒符号链接、
 `fini` 清零、不进日志/状态/URL/命令行）。消费语义不变：成功才提交、失败不推进、落盘失败即停。
-真机已打通「真实 ASR final → 真实 HTTPS 端点」（HTTP 401，offset 不动）；**HTTP 200 需设备上的 key**，
-脚本 `n6_device_real_api.ps1` / `n7_device_asr_e2e.ps1` 已就绪（`-KeyFile`）。
+真机已完成：真实 ASR final → 真实模型 **HTTP 200**（回答 78 B / 53 个汉字）→ offset 提交到文件末尾，重启不重复调用；
+云端 `api.deepseek.com` 路径已验证 **TLS 校验 + 401**（占位 key）。
 
 ## 结论标记约定
 
