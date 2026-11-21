@@ -195,6 +195,13 @@ Rec ("################ T6-03 init.rc supervisor device verification :: " + (Get-
 
 # ------------------------------------------------------------------ P0
 Step "P0 boot-environment audit and rc deployment"
+# 每个阶段开始前先确认 adb shell 真的可用：本机 adbd 会偶发 "error: closed"，
+# 一旦断了就明确中止，不把链路错误记成一堆断言失败。
+if (-not (WaitShell 90)) {
+    Rec "ABORT: adb shell is not usable; stopping before this phase"
+    Write-Host "ABORT: adb shell is not usable"
+    exit 2
+}
 $devs = (& $adb devices 2>&1) -join "`n"
 Rec ("adb devices:`n" + $devs)
 Assert ($devs -match ([regex]::Escape($Dev) + '\s+device')) "device is online"
@@ -283,6 +290,13 @@ Assert ($svcBefore -ne 'running') "service is not running before the reboot"
 
 # ------------------------------------------------------------------ P1
 Step "P1 reboot #1: init starts the supervisor and the hook is injected"
+# 每个阶段开始前先确认 adb shell 真的可用：本机 adbd 会偶发 "error: closed"，
+# 一旦断了就明确中止，不把链路错误记成一堆断言失败。
+if (-not (WaitShell 90)) {
+    Rec "ABORT: adb shell is not usable; stopping before this phase"
+    Write-Host "ABORT: adb shell is not usable"
+    exit 2
+}
 $logFrom = SupLines
 $booted = RebootAndWait 260
 Assert $booted "Android finished booting with the rc in place"
@@ -335,6 +349,13 @@ if ($after -gt $before) {
 
 # ------------------------------------------------------------------ P2
 Step "P2 restart the core process: the new pid is injected again"
+# 每个阶段开始前先确认 adb shell 真的可用：本机 adbd 会偶发 "error: closed"，
+# 一旦断了就明确中止，不把链路错误记成一堆断言失败。
+if (-not (WaitShell 90)) {
+    Rec "ABORT: adb shell is not usable; stopping before this phase"
+    Write-Host "ABORT: adb shell is not usable"
+    exit 2
+}
 $oldCore = CorePid
 $from = SupLines
 Adb @('shell', ('am force-stop ' + $pkg)) | Out-Null
@@ -356,6 +377,13 @@ $core = $newCore
 
 # ------------------------------------------------------------------ P3
 Step "P3 reboot #2: the supervisor starts again by itself"
+# 每个阶段开始前先确认 adb shell 真的可用：本机 adbd 会偶发 "error: closed"，
+# 一旦断了就明确中止，不把链路错误记成一堆断言失败。
+if (-not (WaitShell 90)) {
+    Rec "ABORT: adb shell is not usable; stopping before this phase"
+    Write-Host "ABORT: adb shell is not usable"
+    exit 2
+}
 $logFrom = SupLines
 $booted = RebootAndWait 260
 Assert $booted "Android finished booting on the second reboot"
@@ -374,6 +402,13 @@ Assert ((SupPid2) -ne $supPid) "the supervisor pid is a new process after the re
 
 # ------------------------------------------------------------------ P4
 Step "P4 failure drill: a service that cannot exec must not disturb the system"
+# 每个阶段开始前先确认 adb shell 真的可用：本机 adbd 会偶发 "error: closed"，
+# 一旦断了就明确中止，不把链路错误记成一堆断言失败。
+if (-not (WaitShell 90)) {
+    Rec "ABORT: adb shell is not usable; stopping before this phase"
+    Write-Host "ABORT: adb shell is not usable"
+    exit 2
+}
 # 这一步故意在"rc 已启用、服务已解析"的这次开机里做，不重启：
 # 把二进制临时改名 → 让 init 去启动一个找不到的可执行文件 → 观察后果 → 立刻恢复。
 # 之所以不在缺失状态下重启：本机 adbd 偶发不可用（历史故障），
@@ -421,6 +456,13 @@ Assert ($p -match '^\d+$') "supervisor is running again after the drill"
 
 # ------------------------------------------------------------------ P5
 Step "P5 disable the rc and reboot #3: no auto start, manual control still works"
+# 每个阶段开始前先确认 adb shell 真的可用：本机 adbd 会偶发 "error: closed"，
+# 一旦断了就明确中止，不把链路错误记成一堆断言失败。
+if (-not (WaitShell 90)) {
+    Rec "ABORT: adb shell is not usable; stopping before this phase"
+    Write-Host "ABORT: adb shell is not usable"
+    exit 2
+}
 $dis = Su ("$devDir/disable_rc.sh")
 Rec ("disable:`n" + $dis)
 Assert ($dis -match 'disabled: ') "rc file was renamed to .disabled"
@@ -451,6 +493,13 @@ Assert ((SupPid) -eq '') "manual instance is gone"
 
 # ------------------------------------------------------------------ P6
 Step "P6 restore the factory startup configuration"
+# 每个阶段开始前先确认 adb shell 真的可用：本机 adbd 会偶发 "error: closed"，
+# 一旦断了就明确中止，不把链路错误记成一堆断言失败。
+if (-not (WaitShell 90)) {
+    Rec "ABORT: adb shell is not usable; stopping before this phase"
+    Write-Host "ABORT: adb shell is not usable"
+    exit 2
+}
 $restore = Su ("$devDir/restore_rc.sh")
 Rec ("restore:`n" + $restore)
 $left = Su "ls /system/etc/init"
@@ -465,6 +514,13 @@ Assert ($countNow -eq ($snapCount - 1)) "/system/etc/init is back to the pre-dep
 
 # ------------------------------------------------------------------ P7
 Step "P7 re-deploy and reboot #4: reproducible enable, factory path intact"
+# 每个阶段开始前先确认 adb shell 真的可用：本机 adbd 会偶发 "error: closed"，
+# 一旦断了就明确中止，不把链路错误记成一堆断言失败。
+if (-not (WaitShell 90)) {
+    Rec "ABORT: adb shell is not usable; stopping before this phase"
+    Write-Host "ABORT: adb shell is not usable"
+    exit 2
+}
 $re = Su ("$devDir/deploy_rc.sh")
 Rec ("re-deploy:`n" + $re)
 Assert ($re -match 'deployed: ') "rc deployed again"
