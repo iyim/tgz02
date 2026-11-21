@@ -1,0 +1,40 @@
+# T7-02 追踪证据 A：屏蔽之前（2026-11-21 20:22:27-20:22:43，原厂 :core pid=1194）
+# 一次「现在几点了」的问答里，设备播了两段语音：原厂回答在前，我方回答在后。
+
+11-21 20:22:33.626  1194  1746 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsStart:141 [1746] sessionId = 1967633, isStreaming = 1, tts = 现在是晚上八点二十二分。
+11-21 20:22:33.639  1194  1544 D AudioManager: JNI_AILABS AudioManager.cpp:playTTS:1280 [1544] stream:1967633, needSuspend:1
+11-21 20:22:33.648  1194  1544 D AudioManager: JNI_AILABS AudioManager.cpp:processTtsStart:561 [1544] Tts start, id:1967633, text:现在是晚上八点二十二分。, pcExt:{ "forcePlay": false, "payloadExt": "{\"index\":1,\"messageId\":\"dd0df00f789d4acf82a65a722cf6c8d2\",\"hasNext\":false}" }, feedback:0, needSuspend:1, sessionFlag:1 wakeupType:(null)
+11-21 20:22:33.649  1194  1544 D PlaybackService: JNI_AILABS PlaybackService.cpp:playTts:502 [1544] playTTS, agmcId:1967633, type:'tts', ext:'{ "forcePlay": false, "payloadExt": "{\"index\":1,\"messageId\":\"dd0df00f789d4acf82a65a722cf6c8d2\",\"hasNext\":false}" }', volume:0, expectSpeech:0
+11-21 20:22:35.081  1194  2392 W TtsManager: JNI_AILABS TtsManager.cpp:playTts:388 [2392] tts = 我这边看不到实时时间，你看一下手机状态栏，或者问我“现在几点”时系统会显示。, asrLogId = NULL
+11-21 20:22:35.081  1194  2392 E GenieTable: play curSessionId = 5244437, ttsInfo= TtsInfo{sessionId=0, text='我这边看不到实时时间，你看一下手机状态栏，或者问我“现在几点”时系统会显示。', isOpenMic=false, wakeupType=1, needFeedback=false, isInterrupted=true, ignoreMute=false, fingerPrint='null', secretKey='', pkg='com.tgz02.aibridge.tts'}
+11-21 20:22:35.137  1194  1746 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsStart:141 [1746] sessionId = 5244437, isStreaming = 1, tts = 我这边看不到实时时间，你看一下手机状态栏，或者问我“现在几点”时系统会显示。
+11-21 20:22:35.139  1194  1544 D AudioManager: JNI_AILABS AudioManager.cpp:playTTS:1280 [1544] stream:5244437, needSuspend:1
+11-21 20:22:35.143  1194  1544 D AudioManager: JNI_AILABS AudioManager.cpp:processTtsStart:561 [1544] Tts start, id:5244437, text:我这边看不到实时时间，你看一下手机状态栏，或者问我“现在几点”时系统会显示。, pcExt:{ "forcePlay": false }, feedback:0, needSuspend:1, sessionFlag:5 wakeupType:(null)
+11-21 20:22:35.143  1194  1544 D PlaybackService: JNI_AILABS PlaybackService.cpp:playTts:502 [1544] playTTS, agmcId:5244437, type:'tts', ext:'{ "forcePlay": false }', volume:0, expectSpeech:0
+
+# PCM 采样：pcm0p=唤醒提示音(prompt)，pcm5p=TTS 播放（两段回答共用同一个播放设备）
+pcm 20:22:27.716 RUN: pcm0p
+pcm 20:22:28.761 RUN: pcm0p
+pcm 20:22:29.555 RUN: pcm0p
+pcm 20:22:30.454 RUN: pcm0p
+pcm 20:22:31.242 RUN: pcm0p
+pcm 20:22:33.737 RUN: pcm5p
+pcm 20:22:34.999 RUN: pcm5p
+pcm 20:22:35.694 RUN: pcm5p
+pcm 20:22:36.272 RUN: pcm5p
+pcm 20:22:36.828 RUN: pcm5p
+pcm 20:22:37.410 RUN: pcm5p
+pcm 20:22:38.015 RUN: pcm5p
+pcm 20:22:38.611 RUN: pcm5p
+pcm 20:22:39.202 RUN: pcm5p
+pcm 20:22:39.791 RUN: pcm5p
+pcm 20:22:40.377 RUN: pcm5p
+pcm 20:22:41.147 RUN: pcm5p
+pcm 20:22:41.715 RUN: pcm5p
+pcm 20:22:42.275 RUN: pcm5p
+pcm 20:22:42.835 RUN: pcm5p
+pcm 20:22:43.393 RUN: pcm5p
+pcm 20:22:43.947 RUN: pcm5p
+pcm 20:22:44.494 RUN: pcm5p
+pcm 20:22:45.038 RUN: pcm5p
+pcm 20:22:45.590 RUN: pcm5p

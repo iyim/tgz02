@@ -46,6 +46,9 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     char esc_class[sizeof(((t6b_status *)0)->last_error_class) * 2];
     char esc_ttsq[T6B_PATH_MAX * 2];
     char esc_ctxfile[T6B_PATH_MAX * 2];
+    char esc_echo_state[T6B_PATH_MAX * 2];
+    char esc_echo_reason[96];
+    char esc_echo_detail[224];
     char tmp[T6B_PATH_MAX + 8];
     char dir[T6B_PATH_MAX];
     int n;
@@ -64,6 +67,9 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     wu_json_escape(esc_class, sizeof(esc_class), st->last_error_class);
     wu_json_escape(esc_ttsq, sizeof(esc_ttsq), st->tts_queue);
     wu_json_escape(esc_ctxfile, sizeof(esc_ctxfile), st->context_file);
+    wu_json_escape(esc_echo_state, sizeof(esc_echo_state), st->echo_state_file);
+    wu_json_escape(esc_echo_reason, sizeof(esc_echo_reason), st->echo_last_reason);
+    wu_json_escape(esc_echo_detail, sizeof(esc_echo_detail), st->echo_last_detail);
 
     n = snprintf(buf, sizeof(buf),
         "{\"version\":%d,\"state\":\"%s\",\"pid\":%lld,"
@@ -88,6 +94,10 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"context\":{\"enabled\":%d,\"max_messages\":%d,\"messages\":%d,\"turns\":%d,"
         "\"load_state\":%d,\"saves\":%llu,\"save_errors\":%llu,\"evicted\":%llu,"
         "\"file\":\"%s\"},"
+        "\"echo\":{\"enabled\":%d,\"no_command\":%d,\"seen\":%llu,\"dropped_echo\":%llu,"
+        "\"dropped_nocmd\":%llu,\"kept\":%llu,\"kept_in_window\":%llu,\"window_hits\":%llu,"
+        "\"state_errors\":%llu,\"last_reason\":\"%s\",\"last_detail\":\"%s\","
+        "\"state_file\":\"%s\"},"
         "\"last_seq\":%lu,\"last_event_id\":\"%s\",\"last_event_at\":\"%s\","
         "\"last_gap_from\":%lu,\"last_gap_to\":%lu,"
         "\"pending_event_id\":\"%s\","
@@ -113,6 +123,10 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         st->context_enabled, st->context_max_messages, st->context_messages,
         st->context_turns, st->context_load_state, st->context_saves,
         st->context_save_errors, st->context_evicted, esc_ctxfile,
+        st->echo_enabled, st->echo_no_command, st->echo_seen,
+        st->echo_dropped_echo, st->echo_dropped_nocmd, st->echo_kept,
+        st->echo_kept_in_window, st->echo_window_hits, st->echo_state_errors,
+        esc_echo_reason, esc_echo_detail, esc_echo_state,
         st->last_seq, st->last_event_id, st->last_event_at,
         st->last_gap_from, st->last_gap_to,
         esc_pending,

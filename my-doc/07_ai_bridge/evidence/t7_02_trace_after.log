@@ -1,0 +1,10 @@
+# T7-02 追踪证据 B：屏蔽之后（同一台设备，守卫 hooked=1）
+# 原厂回答在 onTtsStart 被 DROP（音频链未建立）；我方回答按 session_id 放行并播完。
+
+11-21 22:03:54.938  9123  9428 I tgt     : playTts -> allow-listed id=5246285 comm=Binder:9123_D text_bytes=75
+11-21 22:03:54.994  9123  9305 I tgt     : onTtsStart ALLOW id=5246285 by=session_id streaming=1 text_bytes=75
+11-21 22:03:54.994  9123  9305 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsStart:141 [9305] sessionId = 5246285, isStreaming = 1, tts = 我不是天猫精灵～推荐周杰伦的《晴天》，轻松又耐听。
+11-21 22:03:54.999  9123  9180 D AudioManager: JNI_AILABS AudioManager.cpp:playTTS:1280 [9180] stream:5246285, needSuspend:1
+11-21 22:04:13.324  9123  9123 I tgt     : uninstalled: original prologues restored (playTts=96767afc onTtsStart=96767110)
+11-21 22:04:14.322  9123  9123 I tgt     : installed: onTtsStart patch=96767110 stub=b127c100 tramp=b127c180 ; playTts patch=96767afc stub=b127c000 tramp=b127c080
+11-21 22:04:15.154  9123  9305 I tgt     : onTtsStart DROP id=1969486 streaming=1 comm=AG-ws-receive text="主人你还在吗？我在听呢。" (factory NLU answer)

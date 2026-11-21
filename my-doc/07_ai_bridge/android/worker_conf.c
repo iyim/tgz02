@@ -132,6 +132,17 @@ static int wc_apply(t6b_config *cfg, const char *key, const char *val, char *err
         if (wc_copy(cfg->context_file, sizeof(cfg->context_file), val) != 0) goto bad;
         return 0;
     }
+    /* T7-02：播报回声过滤（默认开；写 off 只关这一层过滤，不影响任何音频链路） */
+    if (strcmp(key, "echo_filter") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->echo_filter = iv;
+        return 0;
+    }
+    if (strcmp(key, "echo_no_command") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->echo_no_command = iv;
+        return 0;
+    }
     /* 明确拒绝把凭据写进普通配置：只认 api_key_file */
     if (strcmp(key, "api_key") == 0) {
         if (err) snprintf(err, errlen, "api_key is not accepted in the config file; "
@@ -223,10 +234,13 @@ int wc_write(const t6b_config *cfg, const char *path, char *err, size_t errlen)
                  "temperature=%.2f\n"
                  "max_tokens=%d\n"
                  "context_enabled=%d\n"
-                 "context_max_messages=%d\n",
+                 "context_max_messages=%d\n"
+                 "echo_filter=%d\n"
+                 "echo_no_command=%d\n",
                  cfg->provider_name, cfg->deepseek.base_url, cfg->deepseek.model,
                  cfg->deepseek.api_key_file, cfg->deepseek.temperature,
-                 cfg->deepseek.max_tokens, cfg->context_enabled, cfg->context_max_messages);
+                 cfg->deepseek.max_tokens, cfg->context_enabled, cfg->context_max_messages,
+                 cfg->echo_filter, cfg->echo_no_command);
     if (n < 0 || (size_t)n >= sizeof(buf)) {
         if (err) snprintf(err, errlen, "config buffer too small");
         return -1;

@@ -20,6 +20,7 @@ vendor release 串 `6.1.8-RS-20221104.1459`，kernel `4.4.95+`）。
 | [t5_06c_deepseek_real_provider_report.md](t5_06c_deepseek_real_provider_report.md) | **T5-06C 第一阶段**：真机接入真实 DeepSeek（dlopen 系统 libcurl、TLS 强制校验、受限 JSON、key 只走文件）；真机已完成真实模型回答（HTTP 200）+ 真实 ASR 联调 |
 | [t6_01_native_injector_report.md](t6_01_native_injector_report.md) … [t6_03_init_rc_report.md](t6_03_init_rc_report.md) | T6 系列：Native Injector / 线程安全补丁 / 常驻 Supervisor / init.rc 托管 |
 | [t7_01_multi_turn_context_report.md](t7_01_multi_turn_context_report.md) | **T7-01：多轮对话与上下文管理**（独立 `conv_context` 模块、按轮次淘汰、原子落盘、损坏恢复、`worker.conf` 配置化、真机真实语音三连 + 重启恢复，主机 139 项 / 真机 103 项断言全过） |
+| [t7_02_answer_gating_and_echo_report.md](t7_02_answer_gating_and_echo_report.md) | **T7-02：原厂回答屏蔽与 AI 播报隔离**（`libtg_ttsguard.so` 在 `TtsManager::playTts` / `onTtsStart` 两个补丁点按"来源"区分：Binder 线程发起 + sessionId 允许集放行我方回答，直接丢弃云端 Speak 驱动的原厂回答；唤醒提示音走 prompt 链不受影响；TTS 执行器新增 0644 `play.public.json`，Worker `echo_filter` 据此丢弃播报回声、保留播报期间用户插话；主机 41 项 / 真机 56 项断言全过） |
 | [tests/](tests) | T5-06B 主机单元测试 / 集成测试 / 一键运行脚本（含 `run_t5_06c_host_tests.ps1`） |
 | [android/](android) | Worker 源码（`ai_worker.c` / `event_reader.c` / `provider.c` / `mock_provider.c` / `deepseek_provider.c` / …）+ `build.ps1`（NDK 动态链接）+ `run_ai_worker.sh` |
 | [evidence/](evidence) | 真机探针原始输出、设备事实快照、NDK 检查、主机与真机测试日志 |

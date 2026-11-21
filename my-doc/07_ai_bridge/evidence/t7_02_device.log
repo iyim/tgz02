@@ -1,0 +1,134 @@
+﻿
+[2026-11-21 22:00:56] 
+[2026-11-21 22:00:56] === P0 deploy (guard lib + worker + dex + watchdog) ===
+[2026-11-21 22:00:57] device=192.168.1.9:5555  host=MACTHON  time=2026-11-21 22:00:56
+[2026-11-21 22:00:57]   ASSERT OK   guard lib built on host
+[2026-11-21 22:00:57]   ASSERT OK   worker built on host
+[2026-11-21 22:00:57]   ASSERT OK   tts_exec.dex built on host
+[2026-11-21 22:00:57]   ASSERT OK   run_ttsguard.sh pushed
+[2026-11-21 22:00:58]   ASSERT OK   libtg_ttsguard.so pushed
+[2026-11-21 22:00:58]   ASSERT OK   guard lib sha256 matches host (a36acc7af2320989f8df0241ab197d3cc30d45ff48e28ea9027ece7482eb6dd3)
+[2026-11-21 22:01:00]   ASSERT OK   ai_worker pushed
+[2026-11-21 22:01:00]   ASSERT OK   ai_worker sha256 matches host (6108b079a4912ee1053d99cc58ea0a6ccd4071b5247a6132bb59d2ec7bcd69f4)
+[2026-11-21 22:01:00]   ASSERT OK   tts_exec.dex sha256 matches host (8d7e3c919bc2687e19e78e693c7f9288765f92a9a61337b7eebae7a0fd0193ea)
+[2026-11-21 22:01:01]   ASSERT OK   tts executor started (already running: supervisor=18154 exec=18158)
+[2026-11-21 22:01:03]   ASSERT OK   ai_worker started (deepseek)
+[2026-11-21 22:01:14]   watch: watch=running pid=31609
+[2026-11-21 22:01:21]   guard status:
+pid=9123 guard=mapped:yes
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 play=1 start=1 func_play=96767afc func_start=96767110 play_seen=0 ours=0 not_ours=0 start_seen=0 allowed=0 dropped=0 hit_id=0 hit_text=0 empty=0
+[inject] RESULT check pid=9123 hooked=1
+[2026-11-21 22:01:21]   ASSERT OK   guard mapped into the factory :core process
+[2026-11-21 22:01:21]   ASSERT OK   guard hooks installed (hooked=1)
+[2026-11-21 22:01:21]   ASSERT OK   worker echo filter enabled
+[2026-11-21 22:01:21]   ASSERT OK   echo filter bound to the public play state
+[2026-11-21 22:01:21]   ASSERT OK   play.public.json is readable by the shell user (0644 projection)
+[2026-11-21 22:01:21]   ASSERT OK   play.public.json has state/event_id/started_ms/finished_ms
+[2026-11-21 22:01:21] 
+[2026-11-21 22:01:21] === P1 原厂回答屏蔽（真实语音一轮） ===
+[2026-11-21 22:01:35]   ASSERT OK   real speech produced a new asr_final (factory ASR intact)
+[2026-11-21 22:01:52]   guard: [inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t7/libtg_ttsguard.so check_only=1
+[inject] so_size=18324 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9123 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t7/libtg_ttsguard.so)
+[inject] attached tid=9123 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xaa842000 stack=0xaa84a000 trap=0xaa851000 gadget=0xb1edfa6c
+[inject] dlopen=0xb30ef0ad (libdl.so)
+[inject] dlsym=0xb30ef0bf (libdl.so)
+[inject] dlerror=0xb30ef0b7 (libdl.so)
+[inject] path_written=0xaa842100 len=37
+[inject] dlopen ok handle=0x710eea55 flags=0x6
+[inject] dlsym ok install=0x915c48f0 prepare=0x915c4158 status=0x915c529c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x96767110,0x96767b04)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 play=1 start=1 func_play=96767afc func_start=96767110 play_seen=1 ours=1 not_ours=0 start_seen=2 allowed=1 dropped=1 hit_id=1 hit_text=0 empty=0
+[inject] RESULT check pid=9123 hooked=1
+[inject] detached (target thread resumed)
+[2026-11-21 22:01:52]   counters: play_seen=1 allowed=1 dropped=1
+[2026-11-21 22:01:52]   ASSERT OK   AI answer entered through TtsManager::playTts and was allow-listed
+[2026-11-21 22:01:52]   ASSERT OK   AI answer was allowed at the convergence point (allowed=1)
+[2026-11-21 22:01:52]   ASSERT OK   factory NLU answer was dropped at the convergence point (dropped=1)
+[2026-11-21 22:01:52]   ASSERT OK   drop log names the reason
+[2026-11-21 22:01:52]   ASSERT OK   dropped answer came from the factory websocket thread (source discriminator)
+[2026-11-21 22:01:52]   ASSERT OK   allowed answer came from the binder thread (our provider call)
+[2026-11-21 22:01:52]   last event: t6-9123-1969461-g1
+[2026-11-21 22:01:53]   journal entries for t6-9123-1969461-g1: 1
+[2026-11-21 22:01:53]   ASSERT OK   exactly one TTS playback for t6-9123-1969461-g1 (one answer, not two)
+[2026-11-21 22:01:53]   ASSERT OK   playback finished (state=idle)
+[2026-11-21 22:01:53]   ASSERT OK   playback outcome ok (ok)
+[2026-11-21 22:01:53]   ASSERT OK   finished_ms advances past started_ms
+[2026-11-21 22:01:53]   ASSERT OK   factory :core process still alive after the dropped answer
+[2026-11-21 22:01:53] 
+[2026-11-21 22:01:53] === P2 连续三轮（真实语音，上下文不丢） ===
+[2026-11-21 22:01:54]   guard before: dropped=0 allowed=0
+[2026-11-21 22:03:22]   ASSERT OK   at least 2 of 3 spoken turns produced an asr_final (3/3)
+[2026-11-21 22:03:22]   ASSERT OK   the guard was active before every spoken turn (3/3)
+[2026-11-21 22:03:22]   context: turns=3 messages=6 max=6 saves=4
+[2026-11-21 22:03:22]   ASSERT OK   context was persisted during the conversation (1 -> 4)
+[2026-11-21 22:03:22]   ASSERT OK   context holds whole turns only (2 messages per turn)
+[2026-11-21 22:03:22]   ASSERT OK   context stayed within context_max_messages
+[2026-11-21 22:03:22]   ASSERT OK   context persisted without errors
+[2026-11-21 22:03:23]   convergence log tail:
+11-21 22:03:05.227  9123  9305 I tgt     : onTtsStart DROP id=1969476 streaming=1 comm=AG-ws-receive text="主人的话有点难懂，换个方式再说一次好不好。" (factory NLU answer)
+11-21 22:03:06.665  9123  9305 I tgt     : onTtsStart ALLOW id=5246280 by=session_id streaming=1 text_bytes=120
+11-21 22:03:06.665  9123  9305 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsStart:141 [9305] sessionId = 5246280, isStreaming = 1, tts = 我不是天猫精灵～你想在哪个城市玩、喜欢自然还是人文？说一个我帮你挑个合适的景点。
+11-21 22:03:06.666  9123  9305 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsStart:152 [9305] TTS_TIME receive command with stream, report TtsStreamCmdReceived.
+[2026-11-21 22:03:24]   guard stats: [inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t7/libtg_ttsguard.so check_only=1
+[inject] so_size=18324 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9123 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t7/libtg_ttsguard.so)
+[inject] attached tid=9123 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa4cb0000 stack=0xa4cb8000 trap=0xa4cbf000 gadget=0xb1edfa6c
+[inject] dlopen=0xb30ef0ad (libdl.so)
+[inject] dlsym=0xb30ef0bf (libdl.so)
+[inject] dlerror=0xb30ef0b7 (libdl.so)
+[inject] path_written=0xa4cb0100 len=37
+[inject] dlopen ok handle=0x710eea55 flags=0x6
+[inject] dlsym ok install=0x915c48f0 prepare=0x915c4158 status=0x915c529c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x96767110,0x96767b04)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 play=1 start=1 func_play=96767afc func_start=96767110 play_seen=4 ours=4 not_ours=0 start_seen=8 allowed=4 dropped=4 hit_id=4 hit_text=0 empty=0
+[inject] RESULT check pid=9123 hooked=1
+[inject] detached (target thread resumed)
+[2026-11-21 22:03:25]   ASSERT OK   every turn produced exactly one TTS playback (no double answer)
+[2026-11-21 22:03:25] 
+[2026-11-21 22:03:25] === P3 播报回声过滤（合成 asr_final，确定性） ===
+[2026-11-21 22:03:25]   synthetic user event: t7-02-syn-103 (seq=103)
+[2026-11-21 22:03:28]   ASSERT OK   worker answered the synthetic user event
+[2026-11-21 22:03:28]   ASSERT OK   answer was queued to the factory TTS
+[2026-11-21 22:03:28]   ASSERT OK   playback started (state=playing, event=t7-02-syn-103)
+[2026-11-21 22:03:28]   ASSERT OK   the playing event is the answer we just queued
+[2026-11-21 22:03:28]   ASSERT OK   reply text recovered from the TTS queue item
+[2026-11-21 22:03:28]   reply text: 我不是天猫精灵～东京推荐浅草寺、明治神宫、涩谷十字路口；想看夜景就换晴空塔。
+[2026-11-21 22:03:32]   ASSERT OK   echo event was dropped as drop_echo
+[2026-11-21 22:03:33]   ASSERT OK   echo.dropped_echo counter advanced (1)
+[2026-11-21 22:03:36]   ASSERT OK   a real command spoken during playback was kept and answered
+[2026-11-21 22:03:36]   ASSERT OK   echo.kept_in_window >= 1 (1) : no real command was mis-dropped
+[2026-11-21 22:03:42] 
+[2026-11-21 22:03:42] === P4 Worker 重启后仍正常 ===
+[2026-11-21 22:03:52]   ASSERT OK   worker is running after restart
+[2026-11-21 22:03:52]   ASSERT OK   context turns restored from disk after restart
+[2026-11-21 22:03:52]   ASSERT OK   context messages restored from disk after restart
+[2026-11-21 22:03:52]   ASSERT OK   context load state = restored (2)
+[2026-11-21 22:03:52]   ASSERT OK   echo filter re-enabled after restart
+[2026-11-21 22:03:55]   ASSERT OK   worker still answers after restart
+[2026-11-21 22:03:59] 
+[2026-11-21 22:03:59] === P5 原厂能力保留 + 守卫可装卸 ===
+[2026-11-21 22:03:59]   ASSERT OK   asr_final events keep being produced (total 400)
+[2026-11-21 22:04:11]   ASSERT OK   factory wake prompt path still used (11-21 22:04:03.961  9123  9233 D ApolloPlayerAdapter: JNI_AILABS ApolloPlayerAdapter.cpp:reset:173 [9233] player:prompt, reset done)
+[2026-11-21 22:04:12]   uninstall: [inject] RESULT uninstalled pid=9123
+[inject] detached (target thread resumed)
+[2026-11-21 22:04:15]   ASSERT OK   guard state is queryable after uninstall
+[2026-11-21 22:04:15]   core pid: 9123
+[2026-11-21 22:04:15]   ASSERT OK   uninstall restored the original prologue ([inject] RESULT uninstalled pid=9123)
+[2026-11-21 22:04:19]   ASSERT OK   guard can be re-installed (hooked=1)
+[2026-11-21 22:04:19] 
+[2026-11-21 22:04:19] SUMMARY pass=56 fail=0 duration=203s
+[2026-11-21 22:04:19] RESULT: PASS

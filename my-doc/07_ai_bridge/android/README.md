@@ -136,3 +136,28 @@ sh run_ai_worker.sh clear-context      # 运行中写 context.clear 请 Worker �
 
 两个新模块都进主机测试：`tests/run_t7_host_tests.ps1`（139 断言），
 真机验收：`tests/t7_01_context_device.ps1`。详见 `../t7_01_multi_turn_context_report.md`。
+
+## 原厂回答屏蔽与回声隔离（T7-02）
+
+原厂回答与我们的回答在 native 层汇合于 `AliAiLabs::AGUI::TtsManager::onTtsStart(int, ITtsClient::TtsResponseInfo const*)`，
+但**只有我们的文本**会先经过 `TtsManager::playTts(ITtsClient::_TtsInfo_ const*)`（`GenieTable.query(method=4)` 那条路）。
+新增的 `hook_tts/libtg_ttsguard.c` 就装这两个点：
+
+```
+playTts（后置）  : 先跑原函数取返回值；调用线程 comm 是 "Binder:" -> 把 (id, text) 记入允许集
+onTtsStart（前置）: id/文本命中允许集 -> 原样放行；否则不调用原函数（音频链不建立）并记一行 DROP 日志
+```
+
+- 导出与 `libtg_hook.so` 同名同签名的 `tg_hook_*`，所以**不用改 Injector**：
+  `tg_injector --so /data/local/tmp/t7/libtg_ttsguard.so`
+- 装卸与守护用 `run_ttsguard.sh`（`:core` 会被系统回收、且可能同时存在两个同名进程，脚本枚举全部匹配项）。
+- 构建：`build_t7_02.ps1`（`out/libtg_ttsguard.so` + `out/ai_worker`，0 warning）。
+
+回声隔离：TTS 执行器新增 0644 的 `play.public.json`（只放 state/event_id/起止毫秒，不含正文），
+Worker 用 `echo_filter.c` 在播报窗口内比对"我播过的文本"，相似则丢弃（`drop_echo`），
+不相似则保留并回答（`kept_in_window`）；另有"去唤醒词/语气词后无内容"规则（`--echo-no-command 0` 可关）。
+
+```powershell
+powershell -File run_t7_02_host_tests.ps1    # 主机 41 断言
+powershell -File t7_02_device.ps1            # 真机 56 断言（P0-P5）
+```

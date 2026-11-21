@@ -60,6 +60,9 @@ typedef struct {
     int         context_enabled;             /* 1 = 多轮上下文（默认 0，配置文件里打开） */
     int         context_max_messages;        /* 最多保留的消息条数（成对淘汰） */
     int         clear_context;               /* 1 = 启动时清空上下文后退出（维护动作） */
+    /* T7-02：播报回声 / 无指令过滤 */
+    int         echo_filter;                 /* 1 = 播报窗口内丢弃回声事件（默认 1） */
+    int         echo_no_command;             /* 1 = 丢弃"只有唤醒词/语气词"的事件（默认 1） */
     t6b_mock_cfg mock;
     t6b_ds_cfg   deepseek;                   /* 只有 provider=deepseek 时才使用 */
 } t6b_config;

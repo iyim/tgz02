@@ -1,0 +1,13 @@
+﻿# T7-02 host unit test log
+# host time: 2026-11-21 21:14:29
+
+=== [1/2] build echo_filter host unit test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_02_echo_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_02_echo_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c
+(no compiler output: 0 warning, 0 error)
+build: OK
+
+=== [2/2] run ===
+T7-02 echo_filter unit: pass=41 fail=0
+
+SUMMARY pass=41 fail=0
+# result: OK (exit 0, 0 fail)

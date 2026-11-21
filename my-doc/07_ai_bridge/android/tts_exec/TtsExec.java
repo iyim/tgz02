@@ -126,6 +126,16 @@ public final class TtsExec {
     static String lastOutcome = "";
     static String lastEventId = "";
 
+    /* T7-02：公开播放状态（play.public.json，0644）——给 ai_worker 的回声过滤和测试看，
+     * 只有"现在是否在播 / 播的是哪个 event_id / 起止毫秒"，绝不含播报正文。
+     * journal.jsonl 与 state.json 仍是 0600 root-only，行为不变。 */
+    static volatile String pubState = "idle";
+    static volatile String pubEventId = "";
+    static volatile int pubTtsId = -1;
+    static volatile long pubStartedMs = 0;
+    static volatile long pubFinishedMs = 0;
+    static volatile String pubLastOutcome = "";
+
     /* ================================================================ helpers */
 
     static void out(String s) {
@@ -162,6 +172,48 @@ public final class TtsExec {
         f.setWritable(false, false);
         f.setReadable(true, true);
         f.setWritable(true, true);
+    }
+
+    /** 0644：owner 读写、其它人只读。只用于 play.public.json（不含任何正文）。 */
+    static void chmod644(File f) {
+        f.setReadable(false, false);
+        f.setWritable(false, false);
+        f.setExecutable(false, false);
+        f.setReadable(true, false);
+        f.setWritable(true, true);
+    }
+
+    /**
+     * T7-02：发布"当前播放状态"。ai_worker 靠它判断"这条 asr_final 是不是我自己播报的回声"，
+     * 也靠它做播报窗口计时。写到 tmp -> fsync -> rename，读到的一定是完整 JSON。
+     */
+    static void writePlayState() {
+        JSONObject o = new JSONObject();
+        try {
+            o.put("v", 1);
+            o.put("pid", android.os.Process.myPid());
+            o.put("updated_ms", nowMs());
+            o.put("state", pubState);
+            o.put("event_id", pubEventId == null ? "" : pubEventId);
+            o.put("tts_id", (long) pubTtsId);
+            o.put("started_ms", pubStartedMs);
+            o.put("finished_ms", pubFinishedMs);
+            o.put("last_outcome", pubLastOutcome == null ? "" : pubLastOutcome);
+            o.put("queue_depth", listItems(queueDir).size());
+            o.put("inflight_depth", listItems(inflightDir).size());
+            File tmp = new File(root, "play.public.json.tmp");
+            File dst = new File(root, "play.public.json");
+            FileOutputStream fos = new FileOutputStream(tmp, false);
+            fos.write(o.toString(2).getBytes(UTF8));
+            fos.flush();
+            fos.getFD().sync();
+            fos.close();
+            chmod644(tmp);
+            if (dst.exists() && !dst.delete()) out("play.public delete failed");
+            if (!tmp.renameTo(dst)) out("play.public rename failed");
+        } catch (Throwable t) {
+            out("play.public write failed: " + t);
+        }
     }
 
     static boolean validEventId(String id) {
@@ -678,6 +730,8 @@ public final class TtsExec {
         }
         registerAccepted(id);
         lastTtsId = id;
+        pubTtsId = id;
+        writePlayState();       /* T7-02：把 tts_id 补进公开播放状态 */
         out("play tts_id=" + id + " event=" + it.eventId + " bytes=" + it.textBytes);
 
         long deadline = t0 + playTimeoutMs;
@@ -782,7 +836,20 @@ public final class TtsExec {
                 continue;
             }
             it.attempts = it.attempts + 1;
+            /* T7-02：进入播报前先发布 playing，播完（成功/失败/超时）发布 idle。
+             * 中间不需要轮询：playItem 本身阻塞到结束。 */
+            pubState = "playing";
+            pubEventId = it.eventId;
+            pubTtsId = -1;
+            pubStartedMs = nowMs();
+            pubFinishedMs = 0;
+            pubLastOutcome = "";
+            writePlayState();
             String outcome = playItem(it, it.attempts);
+            pubState = "idle";
+            pubFinishedMs = nowMs();
+            pubLastOutcome = outcome;
+            writePlayState();
             nPlayed++;
             processed++;
 
@@ -862,6 +929,14 @@ public final class TtsExec {
         try {
             if (!parseArgs(args)) { usage(); System.exit(EXIT_USAGE); }
             setupDirs();
+            /* T7-02：启动即发布一次 idle，把上一次崩溃可能留下的 "playing" 覆盖掉 */
+            pubState = "idle";
+            pubEventId = "";
+            pubTtsId = -1;
+            pubStartedMs = 0;
+            pubFinishedMs = 0;
+            pubLastOutcome = "";
+            if (enqueueTextFile == null) writePlayState();
 
             /* 入队模式：写完就退出，不参与单实例锁，也不需要 provider / logcat */
             if (enqueueTextFile != null) {

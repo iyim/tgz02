@@ -100,6 +100,20 @@ typedef struct {
     unsigned long long context_evicted;        /* 因超上限被淘汰的消息数 */
     char               context_file[T6B_PATH_MAX];
 
+    /* T7-02：播报回声 / 无指令过滤（只放计数与短原因，绝不含正文） */
+    int                echo_enabled;           /* 1 = 过滤生效 */
+    int                echo_no_command;        /* 1 = 同时丢弃"无指令内容"的短事件 */
+    unsigned long long echo_seen;              /* 参与判定的 asr_final 条数 */
+    unsigned long long echo_dropped_echo;      /* 判定为播报回声而丢弃 */
+    unsigned long long echo_dropped_nocmd;     /* 判定为无指令内容而丢弃 */
+    unsigned long long echo_kept;              /* 判定为正常指令而保留 */
+    unsigned long long echo_kept_in_window;    /* 播报窗口内仍保留（未误杀用户插话） */
+    unsigned long long echo_window_hits;       /* 命中播报窗口的次数 */
+    unsigned long long echo_state_errors;      /* 播放状态读取失败次数 */
+    char               echo_last_reason[40];   /* keep / drop_echo / drop_no_command */
+    char               echo_last_detail[96];   /* 判定细节（相似度等） */
+    char               echo_state_file[T6B_PATH_MAX];
+
     unsigned long      last_seq;
     char               last_event_id[T6B_ID_MAX + 1];
     char               last_event_at[24];

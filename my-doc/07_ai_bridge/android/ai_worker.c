@@ -15,6 +15,7 @@
  */
 #include "ai_worker.h"
 #include "consumer_state.h"
+#include "echo_filter.h"
 #include "seq_gap.h"
 #include "worker_conf.h"
 #include "worker_util.h"
@@ -52,6 +53,7 @@ typedef struct {
     cv_ctx       cv;                     /* T7-01：多轮上下文（独立模块） */
     char         msg_json[CV_JSON_MAX];  /* 本轮要发的 messages 数组（历史 + 本轮 user） */
     char         clear_path[T6B_PATH_MAX]; /* context.clear 请求文件 */
+    ef_ctx       ef;                     /* T7-02：播报回声 / 无指令过滤 */
 
     /* 待 Provider 成功的事件（失败期间一直保留，不读下一条） */
     t6b_event    pend;
@@ -273,6 +275,22 @@ static void publish_status(t6b_worker *w, const char *state)
     w->st.context_save_errors = w->cv.save_errors;
     w->st.context_evicted = w->cv.evicted_messages;
     w->st.context_load_state = w->cv.last_load_state;
+
+    /* T7-02：回声过滤观测（只有计数与短枚举，绝不含事件正文） */
+    w->st.echo_enabled = w->ef.cfg.enabled;
+    w->st.echo_no_command = w->ef.cfg.drop_nocmd;
+    w->st.echo_seen = w->ef.seen;
+    w->st.echo_dropped_echo = w->ef.dropped_echo;
+    w->st.echo_dropped_nocmd = w->ef.dropped_nocmd;
+    w->st.echo_kept = w->ef.kept;
+    w->st.echo_kept_in_window = w->ef.kept_in_window;
+    w->st.echo_window_hits = w->ef.window_hits;
+    w->st.echo_state_errors = w->ef.state_errors;
+    snprintf(w->st.echo_last_reason, sizeof(w->st.echo_last_reason), "%s",
+             ef_reason_name(w->ef.last_reason));
+    snprintf(w->st.echo_last_detail, sizeof(w->st.echo_last_detail), "%s",
+             w->ef.last_reason_text);
+    snprintf(w->st.echo_state_file, sizeof(w->st.echo_state_file), "%s", w->ef.state_path);
 
     /* Provider 观测：真实 Provider 才有 http/latency/resp_bytes；
      * 这些字段只放数字与短枚举，绝不含 key / 用户文本 / 上游正文。 */
@@ -796,12 +814,16 @@ static int provider_attempt(t6b_worker *w)
                 w->st.tts_queued++;
                 always("tts queued: event=%s reply_bytes=%d queue=%s",
                        w->pend.event_id, rep.text_bytes, w->cfg.tts_queue);
+                /* T7-02：把"我刚让它播的文本"登记进回声过滤器的候选集 */
+                ef_note_enqueue(&w->ef, w->pend.event_id, rep.text, wu_wall_ms());
             } else if (q == 0) {
                 if (w->cfg.tts_queue[0] != '\0') {
                     w->st.tts_skipped++;
                     /* P1-2：幂等命中必须能在证据里看到（queue/inflight/done/failed 任一路径） */
                     always("tts skip (already queued/played): event=%s reply_bytes=%d queue=%s",
                            w->pend.event_id, rep.text_bytes, w->cfg.tts_queue);
+                    /* 幂等命中：这条回答本来就在队列/已播过，同样作为回声候选 */
+                    ef_note_enqueue(&w->ef, w->pend.event_id, rep.text, wu_wall_ms());
                 }
             } else {
                 w->st.tts_enqueue_failed++;
@@ -1012,6 +1034,29 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                 if (commit_skipped(w, exit_reason) != 0) return 6;
             } else {
                 w->st.events_accepted++;
+                /* T7-02：播报回声 / 无指令过滤必须在建 pend 之前判定——
+                 * 被丢弃的事件按"合法但不处理"提交偏移，绝不让它进入 Provider，
+                 * 也不让它把上下文、TTS 队列再推一遍（否则就是自问自答）。 */
+                {
+                    int verdict = ef_check(&w->ef, ev.text, wu_wall_ms());
+                    if (verdict != EF_KEEP) {
+                        if (verdict == EF_DROP_ECHO) w->st.echo_dropped_echo++;
+                        else w->st.echo_dropped_nocmd++;
+                        always("echo filter: drop event=%s seq=%lu reason=%s (%s) text_bytes=%d",
+                               ev.event_id, ev.seq, ef_reason_name(verdict),
+                               w->ef.last_reason_text, ev.text_bytes);
+                        if (commit_skipped(w, exit_reason) != 0) return 6;
+                        continue;
+                    }
+                    w->st.echo_kept = w->ef.kept;
+                    w->st.echo_seen = w->ef.seen;
+                    w->st.echo_window_hits = w->ef.window_hits;
+                    w->st.echo_kept_in_window = w->ef.kept_in_window;
+                    if (w->ef.last_reason_text[0] != '\0') {
+                        logf_(&w->cfg, "echo filter: keep event=%s seq=%lu (%s)",
+                              ev.event_id, ev.seq, w->ef.last_reason_text);
+                    }
+                }
                 gap_report(w, &ev);
                 w->pend = ev;
                 w->have_pend = 1;
@@ -1107,6 +1152,9 @@ void t6b_config_defaults(t6b_config *c)
     c->context_file[0] = '\0';
     c->conf_path[0] = '\0';
     c->clear_context = 0;
+    /* T7-02：播报回声过滤默认打开（原厂回答屏蔽后只剩我方播报，回声只会污染对话） */
+    c->echo_filter = 1;
+    c->echo_no_command = 1;
     t6b_mock_defaults(&c->mock);
     t6b_ds_defaults(&c->deepseek);
 }
@@ -1372,6 +1420,27 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         }
     }
 
+    /* T7-02：初始化播报回声过滤（只依赖 TTS 执行器发布的播放状态文件） */
+    {
+        ef_config ec;
+        char eerr[96];
+
+        (void)ef_defaults(&ec);
+        ec.enabled = c->echo_filter ? 1 : 0;
+        ec.drop_nocmd = c->echo_no_command ? 1 : 0;
+        eerr[0] = '\0';
+        if (ef_init(&w.ef, &ec, c->tts_queue, eerr, sizeof(eerr)) != 0) {
+            always("echo filter init failed (%s); running WITHOUT echo filtering", eerr);
+            ec.enabled = 0;
+            (void)ef_init(&w.ef, &ec, c->tts_queue, eerr, sizeof(eerr));
+        }
+        snprintf(w.st.echo_state_file, sizeof(w.st.echo_state_file), "%s", w.ef.state_path);
+        always("echo filter: enabled=%d no_command=%d window=+%d/-%dms sim=%d%% state_file=%s",
+               w.ef.cfg.enabled, w.ef.cfg.drop_nocmd, w.ef.cfg.before_ms, w.ef.cfg.after_ms,
+               w.ef.cfg.sim_percent,
+               w.ef.state_path[0] != '\0' ? w.ef.state_path : "(no tts queue)");
+    }
+
     /* 读消费进度；损坏时留档并从头开始（绝不静默跳过未处理事件） */
     state_rc = t6b_state_load(&w.state, w.state_path, err, sizeof(err));
     if (state_rc == -2) {
@@ -1589,6 +1658,9 @@ static void usage(void)
         "  --context-max-messages N  keep at most N messages, whole turns only (default %d)\n"
         "  --context-file PATH   context json (default <state-dir>/context.json)\n"
         "  --clear-context       delete the stored context and exit\n"
+        "  --echo-filter 0|1     drop ASR events that echo our own TTS playback (default 1)\n"
+        "  --echo-no-command 0|1 also drop events with no command left after wake/filler strip\n"
+        "                        (default 1; e.g. a bare wake word or a trailing '嗯')\n"
         "  --mock-reply TEXT     fixed mock reply text\n"
         "  --mock-delay-ms N     simulate provider latency\n"
         "  --mock-fail-from N    mock always fails from call N on\n"
@@ -1694,6 +1766,8 @@ int main(int argc, char **argv)
         else if (strcmp(a, "--context-max-messages") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.context_max_messages = atoi(v); i++; }
         else if (strcmp(a, "--context-file") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.context_file, sizeof(cfg.context_file), "%s", v); i++; }
         else if (strcmp(a, "--clear-context") == 0) { cfg.clear_context = 1; continue; }
+        else if (strcmp(a, "--echo-filter") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.echo_filter = (atoi(v) != 0); i++; }
+        else if (strcmp(a, "--echo-no-command") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.echo_no_command = (atoi(v) != 0); i++; }
         else {
             fprintf(stderr, "unknown option: %s\n", a);
             usage();
