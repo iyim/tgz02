@@ -324,9 +324,9 @@ os.makedirs(TOOLS, exist_ok=True)
 for fn in ('axml.py', 'scan.py', 'refs2.py', 'report.py', 'digest.py', 'edges.py',
            'filters.py', 'protection.py', 'screening.py', 'test_filters.py', 'test_protection.py',
            'test_b_class.py', 'ota_observe.py', 'ota_analyze.py', 'ota_observe.ps1',
-           'test_ota_observation.py', 'test_screening.py',
+           'test_ota_observation.py', 'test_screening.py', 'test_desktop_audit.py',
            'mkdocs.py', 'mkdocs2.py', 'mkdocs3.py', 'mkdocs4.py',
-           'mkdocs5.py', 'mkdocs6.py', 'mkdocs7.py'):
+           'mkdocs5.py', 'mkdocs6.py', 'mkdocs7.py', 'mkdocs8.py'):
     src = os.path.join(SRC, fn)
     if os.path.exists(src):
         shutil.copy2(src, os.path.join(TOOLS, fn))
@@ -415,9 +415,23 @@ rev = f"""# 修订记录（rev3 / rev3.1 / rev4 / rev4.1 / rev5）
 - 修订对象：本目录（`system_debloat/`）下全部报告与机器可读数据；不涉及 `system` 镜像、APK、T5 代码或设备分区
 - 修订触发：rev3 = ① 操作者指定六个 App 必须保留；② rev2 遗留的三个 P2 问题。
   rev3.1 = rev3 审查的三项小范围修订。rev4 = 10 个 B 类候选收益/风险重估。
-  rev4.1 = OTA 六小时只读观测与证据表述修正。rev5 = B 类筛选七问 + A 类静态候选扩展 + 批次划分
+  rev4.1 = OTA 六小时只读观测与证据表述修正。rev5 = B 类筛选七问 + A 类静态候选扩展 + 批次划分。
+  rev5.1 = 桌面 18 个入口专项排查 + system 删除候选扩展
 - 本轮**未执行**任何 `pm disable-user` / `pm enable` / `pm uninstall` / 镜像或 boot 写操作；
   设备 `pm list packages -d` 仍为空
+
+## 000. rev5.1：桌面预装应用专项（2026-11-21）
+
+| 项 | 内容 |
+|---|---|
+| 新增文件 | `desktop_app_audit.md`（18 个桌面入口映射 + 专项评估 + system 删除候选 + 第一批建议 + 收益汇总）、`tools/mkdocs8.py`（生成器）、`tools/test_desktop_audit.py`（14 条测试） |
+| 设备只读取证 | `pm list packages -f`（67 个已安装包及 APK 路径）、`dumpsys package <pkg>` 的 `LAUNCHER` 命中、`ls -l` 系统 APK 体积；未禁用/未卸载/未清数据 |
+| 识别结果 | 18 个入口：**确定 8 个**（aicare=爱家看护、albums=相册、children=儿童、iot=智能家居、settings=设置、camera、cook=菜谱、cmvideo=CCTV.新视听）、**较可信 2 个**（youku.iot=优酷、GenieMonitor=手势）、**未知 8 个**（旭慧生活、通话、人教数字课堂、购物、音乐、闹钟、蚂蚁森林、哔哩哔哩——67 包中无对应 APK，判定为 launcher/webapp 入口） |
+| 分区结论 | 5 个入口是 `/data/app` 安装（camera、cook、cmvideo，以及 aicare/rtc/magisk 的覆盖版本）：删除它们**不释放 system 空间**，只能卸载（本轮不做） |
+| 第一批删除 | **空**：system 内的桌面应用全部与语音/视频/手势/设备控制耦合；唯一低耦合的 `userdictionary` 仅 0.04 MB |
+| 第一批禁用 | 沿用 rev5 的 6 个平台小组件（无进程、无引用、功能独立；**空间收益 0**） |
+| 条件删除场景 | 手势 47.86 MB、优酷 45.06 MB、儿童 20.14 MB、相册 10.56 MB，合计 **123.62 MB**（整目录），均需先禁用验证 + 你确认放弃对应功能 |
+| 未确认项 | 8 个入口的归属、`/data/app` 三个 APK 的大小（目录不可读）、label 字符串（未解析 resources.arsc） |
 
 ## 00. rev5：筛选与批次（2026-11-21）
 
