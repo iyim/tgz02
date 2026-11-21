@@ -26,6 +26,7 @@ worker_integration_test.py -- AI Worker 主机集成测试（真起进程、真�
 """
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -1516,8 +1517,8 @@ def i35_tts_enqueue_file_fsync_fault(exe):
     assert_ge(ctr.get("tts_enqueue_failed", 0), 1, "failure counted")
     assert_eq(ctr.get("events_processed"), 0, "event not committed")
     assert_eq(durable_offset(state), 0, "offset not advanced")
-    assert_eq("injected fault: fsync tmp failed" in out, True, "fault is visible in the log")
-    assert_eq("tts enqueue failed: injected fault: fsync tmp failed"
+    assert_eq("fsync tmp failed" in out, True, "fault is visible in the log")
+    assert_eq("tts enqueue failed: fsync tmp failed"
               in json.dumps(status_of(state), ensure_ascii=False), True,
               "status last_error explains the failure")
 
@@ -1536,7 +1537,7 @@ def i35_tts_enqueue_file_fsync_fault(exe):
 
 @case
 def i36_tts_enqueue_dirfsync_fault_idempotent(exe):
-    """P1-3：目录 fsync 失败时 queue 文件可能已存在——不删它，按 event_id 幂等识别后再提交"""
+    """P1-2：新建入队的目录 fsync 失败（文件已 rename 可见）→ 幂等分支也必须重新 fsync 成功才提交"""
     work = path_of("i36/work")
     state = path_of("i36/state")
     tts = path_of("i36/tts")
@@ -1544,6 +1545,7 @@ def i36_tts_enqueue_dirfsync_fault_idempotent(exe):
     os.makedirs(state, exist_ok=True)
     write_events("i36/work/events.jsonl", [rec(1, 4242, "t5b-4242-dirsync-g1", "d")])
 
+    # 第 1 次：新建路径 rename 成功但目录 fsync 失败 → 不提交
     rc, out, _ = run_once(exe, work, state,
                           ["--max-runtime-ms", "1500", "--provider-retry-max", "3",
                            "--tts-queue-dir", tts, "--mock-reply", "answer-dirsync"],
@@ -1554,33 +1556,133 @@ def i36_tts_enqueue_dirfsync_fault_idempotent(exe):
               "item file exists when only the dir fsync failed (rename already happened)")
     body1 = open(item, encoding="utf-8").read()
     assert_eq(json.loads(body1).get("text"), "answer-dirsync", "answer text lives in the item")
+    sha1 = hashlib.sha256(body1.encode("utf-8")).hexdigest()
     ctr = counters_of(state)
     assert_ge(ctr.get("tts_enqueue_failed", 0), 1, "the dirfsync failure is counted")
     assert_eq(ctr.get("tts_queued"), 0, "not counted as a successful enqueue")
-    assert_eq(ctr.get("tts_skipped"), 1,
-              "the retry recognises the existing item by event_id instead of writing again")
-    assert_eq(ctr.get("events_processed"), 1,
-              "committed on the idempotent retry (the item is on disk)")
-    assert_eq(durable_offset(state) > 0, True, "offset advanced only after the item existed")
-    assert_eq("queue dir fsync failed" in out, True, "fault reason is explicit in the log")
+    assert_eq(ctr.get("tts_skipped"), 0,
+              "the idempotent retry also failed its directory fsync, so it is not a skip")
+    assert_eq(ctr.get("events_processed"), 0, "event not committed while the dir fsync fails")
+    assert_eq(durable_offset(state), 0, "offset not advanced")
+    assert_eq("queue directory fsync failed after rename" in out, True,
+              "the new-item failure reason is explicit")
+    assert_eq("injected dirfsync failure for queue" in out, True,
+              "the idempotent retry also hit the injected dir fsync failure")
     assert_eq(len([n for n in os.listdir(os.path.join(tts, "queue")) if n.endswith(".json")]), 1,
               "exactly one queue item for the event id")
     assert_eq(os.listdir(os.path.join(tts, "tmp")), [], "no tmp file left behind")
 
-    # 再跑一次（无故障、无新事件）：不会重复入队，正文也不被覆盖
+    # 第 2 次：故障仍在 → 命中幂等分支但目录 fsync 再失败 → 依然不提交
     rc2, out2, _ = run_once(exe, work, state,
-                            ["--idle-exit-ms", "600", "--tts-queue-dir", tts,
-                             "--mock-reply", "answer-dirsync-2"])
-    assert_eq(rc2, 0, "subsequent run exits cleanly")
+                            ["--max-runtime-ms", "1200", "--provider-retry-max", "2",
+                             "--tts-queue-dir", tts, "--mock-reply", "answer-dirsync"],
+                            env={"T6B_FAULT_TTSQ": "dirfsync"}, timeout=60)
+    assert_eq(rc2, 0, "second faulty run exits cleanly")
     ctr2 = counters_of(state)
-    assert_eq(ctr2.get("tts_queued"), 0, "still no second enqueue")
-    assert_eq(ctr2.get("events_processed"), 0, "no new event to consume")
-    assert_eq(open(item, encoding="utf-8").read(), body1,
-              "the existing queue item is never overwritten")
+    assert_eq(ctr2.get("tts_skipped"), 0, "idempotent hit without a durable dir fsync is not a skip")
+    assert_ge(ctr2.get("tts_enqueue_failed", 0), 1, "still counted as a failure")
+    assert_eq(ctr2.get("events_processed"), 0, "still not committed")
+    assert_eq(durable_offset(state), 0, "offset still 0")
+    assert_eq("injected dirfsync failure for queue" in out2, True,
+              "idempotent path is where it failed this time")
+
+    # 第 3 次：故障解除 → 幂等命中 + 目录 fsync 成功 → 只提交一次
+    rc3, out3, _ = run_once(exe, work, state,
+                            ["--idle-exit-ms", "600", "--tts-queue-dir", tts,
+                             "--mock-reply", "answer-dirsync"])
+    assert_eq(rc3, 0, "clean run exits cleanly")
+    ctr3 = counters_of(state)
+    assert_eq(ctr3.get("tts_skipped"), 1, "idempotent hit recognised after the dir fsync works")
+    assert_eq(ctr3.get("tts_queued"), 0, "no second item is created")
+    assert_eq(ctr3.get("events_processed"), 1, "committed exactly once")
+    assert_eq(durable_offset(state) > 0, True, "offset advanced once")
+    body3 = open(item, encoding="utf-8").read()
+    assert_eq(hashlib.sha256(body3.encode("utf-8")).hexdigest(), sha1,
+              "queue item sha256 unchanged across failure, retry and recovery")
     assert_eq(len([n for n in os.listdir(os.path.join(tts, "queue")) if n.endswith(".json")]), 1,
               "queue still holds exactly one item")
-    return ("dirfsync fault: item present, enqueue not counted, retry skips by event_id and "
-            "commits once; bytes unchanged")
+    return ("new-item dirfsync fault: item visible but not committed; idempotent retry with the "
+            "fault still fails; after recovery the hit re-fsyncs and commits once (sha256 stable)")
+
+
+@case
+def i39_tts_idempotent_stage_dirsync(exe):
+    """P1-2：inflight / done / failed 三个幂等命中也必须重新 fsync 目录，失败不得提交"""
+    notes = []
+    for stage in ("inflight", "done", "failed"):
+        work = path_of("i39/%s/work" % stage)
+        state = path_of("i39/%s/state" % stage)
+        tts = path_of("i39/%s/tts" % stage)
+        os.makedirs(work, exist_ok=True)
+        os.makedirs(state, exist_ok=True)
+        eid = "t5b-4242-%s-hit" % stage
+        write_events("i39/%s/work/events.jsonl" % stage, [rec(1, 4242, eid, "s")])
+        stage_dir = os.path.join(tts, stage)
+        os.makedirs(stage_dir, exist_ok=True)
+        if stage == "done":
+            open(os.path.join(stage_dir, eid + ".ok"), "w").write("2026-01-01T00:00:00.000+0800\n")
+        else:
+            with open(os.path.join(stage_dir, eid + ".json"), "w", encoding="utf-8") as f:
+                f.write(json.dumps({"v": 1, "event_id": eid, "attempts": 1,
+                                    "reply_bytes": 1, "text": "x"}))
+        # 故障下：命中该阶段但目录 fsync 失败 → 不提交
+        rc, out, _ = run_once(exe, work, state,
+                              ["--max-runtime-ms", "900", "--provider-retry-max", "2",
+                               "--tts-queue-dir", tts, "--mock-reply", "answer-stage"],
+                              env={"T6B_FAULT_TTSQ": "dirfsync"}, timeout=60)
+        assert_eq(rc, 0, "%s hit with dirfsync fault keeps the worker alive" % stage)
+        assert_eq("injected dirfsync failure for %s" % stage in out, True,
+                  "%s idempotent path runs its own dir fsync" % stage)
+        assert_eq(counters_of(state).get("tts_skipped"), 0, "%s hit is not a skip" % stage)
+        assert_eq(counters_of(state).get("events_processed"), 0, "%s hit not committed" % stage)
+        assert_eq(durable_offset(state), 0, "%s hit did not move the offset" % stage)
+        # 故障解除：命中成功 → 安全提交一次，不产生新条目
+        rc2, out2, _ = run_once(exe, work, state,
+                                ["--idle-exit-ms", "600", "--tts-queue-dir", tts,
+                                 "--mock-reply", "answer-stage"])
+        assert_eq(rc2, 0, "%s clean run exits cleanly" % stage)
+        assert_eq(counters_of(state).get("tts_skipped"), 1, "%s hit recognised" % stage)
+        assert_eq(counters_of(state).get("tts_queued"), 0, "%s creates no new item" % stage)
+        assert_eq(counters_of(state).get("events_processed"), 1, "%s committed once" % stage)
+        assert_eq(durable_offset(state) > 0, True, "%s offset advanced" % stage)
+        assert_eq(os.path.exists(os.path.join(tts, "queue", eid + ".json")), False,
+                  "%s hit must not create a queue copy" % stage)
+        notes.append(stage)
+    return "inflight/done/failed hits re-fsync their own dir and only then commit (%s)" % ",".join(notes)
+
+
+@case
+def i39b_tts_multi_stage_conflict_rejected(exe):
+    """P1-2：同一 event_id 同时存在于多个阶段 → 拒绝静默成功，不提交偏移"""
+    work = path_of("i40/work")
+    state = path_of("i40/state")
+    tts = path_of("i40/tts")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    eid = "t5b-4242-multi-g1"
+    write_events("i40/work/events.jsonl", [rec(1, 4242, eid, "m")])
+    os.makedirs(os.path.join(tts, "queue"), exist_ok=True)
+    os.makedirs(os.path.join(tts, "done"), exist_ok=True)
+    with open(os.path.join(tts, "queue", eid + ".json"), "w", encoding="utf-8") as f:
+        f.write(json.dumps({"v": 1, "event_id": eid, "attempts": 0,
+                            "reply_bytes": 1, "text": "q"}))
+    open(os.path.join(tts, "done", eid + ".ok"), "w").write("2026-01-01T00:00:00.000+0800\n")
+
+    rc, out, _ = run_once(exe, work, state,
+                          ["--max-runtime-ms", "900", "--provider-retry-max", "2",
+                           "--tts-queue-dir", tts, "--mock-reply", "answer-multi"], timeout=60)
+    assert_eq(rc, 0, "conflicting state keeps the worker alive (no crash)")
+    ctr = counters_of(state)
+    assert_ge(ctr.get("tts_enqueue_failed", 0), 1, "conflict is counted as a failure")
+    assert_eq(ctr.get("tts_skipped"), 0, "conflict is never treated as an idempotent skip")
+    assert_eq(ctr.get("events_processed"), 0, "conflict must not commit")
+    assert_eq(durable_offset(state), 0, "conflict must not move the offset")
+    assert_eq("multiple TTS queue stages" in out, True, "conflict reason is explicit")
+    assert_eq(len([n for n in os.listdir(os.path.join(tts, "queue")) if n.endswith(".json")]), 1,
+              "conflicting queue item is left untouched")
+    assert_eq(os.path.exists(os.path.join(tts, "done", eid + ".ok")), True,
+              "conflicting done marker is left untouched")
+    return "queue+done for one event id is refused (no skip, no commit, nothing deleted)"
 
 
 @case
@@ -1607,7 +1709,10 @@ def i37_tts_enqueue_create_write_rename_faults(exe):
         assert_eq(ctr.get("tts_enqueue_failed") >= 1, True, "%s fault counted" % fault)
         assert_eq(ctr.get("events_processed"), 0, "%s fault must not commit" % fault)
         assert_eq(durable_offset(state), 0, "%s fault must not move the offset" % fault)
-        assert_eq("injected fault" in out, True, "%s fault is visible in the log" % fault)
+        expect = {"create": "open tmp failed",
+                  "write": "write tmp failed",
+                  "rename": "rename into queue failed"}[fault]
+        assert_eq(expect in out, True, "%s fault is visible in the log" % fault)
         assert_eq("answer-" + fault in out, False, "%s fault never logs the answer" % fault)
         notes.append(fault)
     return "create/write/rename faults: no item, no commit, no offset move (%s)" % ",".join(notes)

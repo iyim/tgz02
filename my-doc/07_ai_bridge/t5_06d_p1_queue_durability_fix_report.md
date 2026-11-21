@@ -6,6 +6,11 @@
 - API Key：仍只从 `/data/local/tmp/t5_bridge/secret/deepseek_api_key`（0600）读取；本报告、日志、状态、证据里均无 key、无请求体、无回答正文
 - 状态：**实现 + 主机测试 + ARM32 构建 + 真机故障注入全部通过**，提交 main 等待 ChatGPT 复审；**未自行宣布 P1 关闭**
 
+> 后续（P1-2）：本报告中"`dirfsync` 失败时，同一次运行内按 event_id 幂等识别后提交"的行为，
+> 已被 ChatGPT 复审替换为"幂等命中必须重新 fsync 所在目录成功才允许提交"，
+> 见 `t5_06d_p1_2_idempotent_dirsync_fix_report.md`。其余结论（先持久化后删源、至少一次投递、
+> done 标记失败保留原件）不变。
+
 ---
 
 ## 一、结论摘要

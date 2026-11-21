@@ -63,6 +63,11 @@ function Md5([string]$p) {
     if ($v.Length -ge 32) { return $v.Substring(0, 32) }
     return ''
 }
+function Sha256([string]$p) {
+    $v = Su ("sha256sum " + $p + " 2>/dev/null")
+    if ($v.Length -ge 64) { return $v.Substring(0, 64) }
+    return ''
+}
 function CatJson([string]$p) {
     $t = Su ("cat " + $p + " 2>/dev/null")
     if ($t -eq '') { return $null }
@@ -327,7 +332,7 @@ function RealPhase() {
     $log1 = RunWorker $rwork $rstate $blocked '0' '0' 'r1a_fault.log' '' '--max-runtime-ms 9000 --provider-retry-max 3'
     Assert ($log1 -match 'deepseek ok: model=deepseek-flash http=200') "R1a real model answered (http 200 via 192.168.1.13:8790)"
     Assert ($log1 -match 'tts enqueue FAILED') "R1a queue failure is loud in the worker log"
-    Assert ($log1 -match 'cannot create queue dirs') "R1a failure reason = the queue dir cannot be created"
+    Assert ($log1 -match 'cannot create TTS queue directories') "R1a failure reason = the queue dir cannot be created"
     $st1 = WorkerStatus $rstate
     Assert ([int]$st1.counters.events_processed -eq 0) "R1a event NOT committed while the answer is not durable"
     Assert ([int]$st1.counters.tts_enqueue_failed -ge 1) "R1a enqueue failure counted"
@@ -347,21 +352,35 @@ function RealPhase() {
     Assert ([int]$st2.counters.events_processed -eq 1) "R1b event committed exactly once after the queue write"
     Assert ((Offset $rstate) -gt 0) "R1b offset advanced only after the item existed"
 
-    # ---- R1c：dirfsync 注入（真实模型）→ 条目已存在 → 按 event_id 幂等识别后提交 ----
+    # ---- R1c：目录 fsync 注入（真实模型）→ 文件已 rename 可见但不得提交 ----
     $eid1c = 'p1r1c-' + (Get-Date -Format 'HHmmss')
     MakeEvents $rwork $eid1c '请用一句话回答：第二次测试正常吗' 2 | Out-Null
-    $log3 = RunWorker $rwork $rstate $rtts '0' '0' 'r1c_dirsync.log' 'dirfsync' '--max-runtime-ms 12000 --provider-retry-max 3'
+    $offBefore = Offset $rstate
+    $log3 = RunWorker $rwork $rstate $rtts '0' '0' 'r1c_dirsync.log' 'dirfsync' '--max-runtime-ms 14000 --provider-retry-max 3'
     Assert ($log3 -match 'tts enqueue FAILED') "R1c dirfsync fault is reported"
-    Assert ($log3 -match 'queue dir fsync failed') "R1c failure reason = queue dir fsync"
-    Assert ($log3 -match 'tts skip \(already queued/played\)') "R1c retry recognises the existing item by event_id"
+    Assert ($log3 -match 'queue directory fsync failed after rename') "R1c new-item failure reason = dir fsync after rename"
+    Assert ($log3 -match 'injected dirfsync failure for queue') "R1c idempotent retry also hits its own dir fsync"
     $st3 = WorkerStatus $rstate
     Assert ([int]$st3.counters.tts_enqueue_failed -ge 1) "R1c enqueue failure counted"
-    Assert ([int]$st3.counters.tts_skipped -ge 1) "R1c idempotent skip counted"
-    Assert ([int]$st3.counters.events_processed -ge 1) "R1c committed only via the existings item"
+    Assert ([int]$st3.counters.tts_skipped -eq 0) "R1c a hit without a durable dir fsync is NOT counted as a skip"
+    Assert ([int]$st3.counters.events_processed -eq 0) "R1c nothing committed while the dir fsync fails"
+    Assert ((Offset $rstate) -eq $offBefore) ("R1c offset unchanged (" + $offBefore + " -> " + (Offset $rstate) + ")")
     $item1c = CatJson ("$rtts/queue/" + $eid1c + ".json")
     Assert ($null -ne $item1c) "R1c the item written before the dirfsync failure is still there"
     Assert ($item1c.text.Length -gt 0) "R1c item text is intact"
-    Assert ((N "$rtts/queue") -eq 2) "R1c no duplicate item for the same event id"
+    $sha1c = Sha256 ("$rtts/queue/" + $eid1c + ".json")
+    Assert ($sha1c.Length -eq 64) "R1c queue item sha256 captured"
+
+    # ---- R1c2：故障解除后重启 → 幂等命中重新 fsync 成功 → 只提交一次 ----
+    $log3b = RunWorker $rwork $rstate $rtts '1' '2500' 'r1c_retry.log' '' ''
+    Assert ($log3b -match ('tts skip \(already queued/played\): event=' + $eid1c)) "R1c2 the hit is recognised by event_id"
+    $st3b = WorkerStatus $rstate
+    Assert ([int]$st3b.counters.tts_skipped -ge 1) "R1c2 idempotent hit counted"
+    Assert ([int]$st3b.counters.tts_queued -eq 0) "R1c2 no new item is written"
+    Assert ([int]$st3b.counters.events_processed -eq 1) "R1c2 committed exactly once after the dir fsync works"
+    Assert ((Offset $rstate) -gt $offBefore) "R1c2 offset advanced only after the durable hit"
+    Assert ((Sha256 ("$rtts/queue/" + $eid1c + ".json")) -eq $sha1c) "R1c2 queue item sha256 unchanged across failure and retry"
+    Assert ((N "$rtts/queue") -eq 2) "R1c2 no duplicate item for the same event id"
 
     # ---- R1d：执行器真实播报 + done 标记 + worker 重启不重复入队 ----
     $out1 = RunExec $rtts "--once --timeout-ms 60000"

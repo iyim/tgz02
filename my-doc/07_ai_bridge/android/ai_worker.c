@@ -437,79 +437,158 @@ static int t6b_fault_ttsq(void)
     return cached;
 }
 
-/* ---------------- T5-06D：把回答交给原厂 TTS 执行器（本地持久化队列） ----------------
+/*
+ * 检查一个幂等记录是否存在且其目录项已重新同步。
  *
- * 语义（与 tts_exec 一起定义，报告第 5 节有完整说明）：
- *   - 每个 event_id 最多入队一次：queue/<id>.json、inflight/<id>.json、done/<id>.ok、
- *     failed/<id>.json 任一存在就跳过（重启重放同一事件不会重复播报）。
- *   - 原子可见：先写 tmp/<id>.json.tmp（0600 + fsync），再 rename 到 queue/<id>.json，
- *     最后 fsync 目录。执行器只会看到完整条目。
- *   - 入队发生在 **提交消费偏移之前**：崩溃在两者之间 → 事件重放 → 模型重新回答，
- *     但 TTS 入队按 event_id 去重，不会重复播报。
- *   - 入队失败不改偏移语义（事件已由 Provider 成功回答），但必须显式记日志 + 计数，
- *     绝不静默丢弃。
- *   - 回答正文只进这个 0600 队列文件；日志/状态/证据只记 event_id 与字节数。
+ * 返回：
+ *   1  文件存在，所在目录 fsync 成功；
+ *   0  文件不存在；
+ *  -1  文件状态异常或目录 fsync 失败。
  *
- * 返回：1 = 已入队；0 = 重复（跳过）；-1 = 失败（err 里写原因，不含正文）
+ * 注意：文件存在不代表目录项已经持久化。每次幂等命中都必须重新 fsync。
+ */
+static int tts_existing_item_durable(const char *path, const char *dir,
+                                     const char *stage, char *err, size_t errlen)
+{
+    unsigned long long dev, ino;
+    long long size;
+
+    if (wu_file_identity(path, &dev, &ino, &size) != 0) {
+        /* 不存在时返回 0；若路径实际是目录或其他异常对象，保守拒绝。 */
+        if (wu_file_size(path) < 0 && !wu_is_dir(path)) return 0;
+        if (err && errlen)
+            snprintf(err, errlen, "cannot inspect existing %s item", stage);
+        return -1;
+    }
+
+    if (wu_is_dir(path) || size < 0) {
+        if (err && errlen)
+            snprintf(err, errlen, "existing %s item is not a regular file", stage);
+        return -1;
+    }
+
+    /* 故障注入覆盖幂等命中路径，确保测试不会绕过目录 fsync。 */
+    if (t6b_fault_ttsq() == T6B_TTSQ_DIRFSYNC) {
+        if (err && errlen)
+            snprintf(err, errlen, "injected dirfsync failure for %s", stage);
+        return -1;
+    }
+
+    if (wu_fsync_dir(dir) != 0) {
+        if (err && errlen)
+            snprintf(err, errlen, "directory fsync failed for %s", stage);
+        return -1;
+    }
+
+    return 1;
+}
+
+/*
+ * 把模型回答写入原厂 TTS 持久化队列。
+ *
+ * 返回：
+ *   1 = 新条目已持久化入队；
+ *   0 = 同 event_id 的条目已存在，且所在目录重新 fsync 成功；
+ *  -1 = 失败，调用方不得提交消费偏移。
  */
 static int tts_enqueue(t6b_worker *w, const t6b_reply *rep, char *err, size_t errlen)
 {
     static char esc[2 * T6B_REPLY_TEXT_MAX + 64];
     static char body[2 * T6B_REPLY_TEXT_MAX + 256];
+
     char dir_queue[T6B_PATH_MAX], dir_inflight[T6B_PATH_MAX];
     char dir_done[T6B_PATH_MAX], dir_failed[T6B_PATH_MAX], dir_tmp[T6B_PATH_MAX];
     char path_item[T6B_PATH_MAX], path_tmp[T6B_PATH_MAX], path_done[T6B_PATH_MAX];
     char path_inflight[T6B_PATH_MAX], path_failed[T6B_PATH_MAX];
+
     const char *eid;
-    int n, fd;
+    const char *found_stage = NULL;
+    int n, fd, found = 0, rc;
     long long t0 = wu_wall_ms();
 
-    if (w->cfg.tts_queue[0] == '\0' || rep == NULL) return 0;
     if (err && errlen) err[0] = '\0';
+    if (w->cfg.tts_queue[0] == '\0' || rep == NULL) return 0;
 
     eid = w->pend.event_id;
     if (eid[0] == '\0' || strlen(eid) > T6B_TTS_ID_MAX) {
-        if (err) snprintf(err, errlen, "event_id invalid");
+        if (err && errlen) snprintf(err, errlen, "event_id invalid");
         return -1;
     }
+
     for (n = 0; eid[n] != '\0'; n++) {
         char c = eid[n];
         int ok = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
                  (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.';
-        if (!ok) { if (err) snprintf(err, errlen, "event_id has unsafe chars"); return -1; }
+        if (!ok) {
+            if (err && errlen) snprintf(err, errlen, "event_id has unsafe chars");
+            return -1;
+        }
     }
-    /* 正文必须是合法 UTF-8 才有意义（原厂 TTS 收 UTF-8 字符串） */
+
     if (rep->text_bytes <= 0 || rep->text_bytes > T6B_REPLY_TEXT_MAX) {
-        if (err) snprintf(err, errlen, "reply size out of range (%d)", rep->text_bytes);
+        if (err && errlen)
+            snprintf(err, errlen, "reply size out of range (%d)", rep->text_bytes);
         return -1;
     }
+
     if (wu_utf8_validate(rep->text, (size_t)rep->text_bytes) != 0) {
-        if (err) snprintf(err, errlen, "reply is not valid UTF-8");
+        if (err && errlen) snprintf(err, errlen, "reply is not valid UTF-8");
         return -1;
     }
 
-    snprintf(dir_queue,    sizeof(dir_queue),    "%s/queue",    w->cfg.tts_queue);
+    snprintf(dir_queue, sizeof(dir_queue), "%s/queue", w->cfg.tts_queue);
     snprintf(dir_inflight, sizeof(dir_inflight), "%s/inflight", w->cfg.tts_queue);
-    snprintf(dir_done,     sizeof(dir_done),     "%s/done",     w->cfg.tts_queue);
-    snprintf(dir_failed,   sizeof(dir_failed),   "%s/failed",   w->cfg.tts_queue);
-    snprintf(dir_tmp,      sizeof(dir_tmp),      "%s/tmp",      w->cfg.tts_queue);
+    snprintf(dir_done, sizeof(dir_done), "%s/done", w->cfg.tts_queue);
+    snprintf(dir_failed, sizeof(dir_failed), "%s/failed", w->cfg.tts_queue);
+    snprintf(dir_tmp, sizeof(dir_tmp), "%s/tmp", w->cfg.tts_queue);
 
-    if (wu_mkdir_p(w->cfg.tts_queue) != 0 || wu_mkdir_p(dir_queue) != 0 ||
-        wu_mkdir_p(dir_inflight) != 0 || wu_mkdir_p(dir_done) != 0 ||
-        wu_mkdir_p(dir_failed) != 0 || wu_mkdir_p(dir_tmp) != 0) {
-        if (err) snprintf(err, errlen, "cannot create queue dirs under %s", w->cfg.tts_queue);
+    if (wu_mkdir_p(w->cfg.tts_queue) != 0 ||
+        wu_mkdir_p(dir_queue) != 0 ||
+        wu_mkdir_p(dir_inflight) != 0 ||
+        wu_mkdir_p(dir_done) != 0 ||
+        wu_mkdir_p(dir_failed) != 0 ||
+        wu_mkdir_p(dir_tmp) != 0) {
+        if (err && errlen)
+            snprintf(err, errlen, "cannot create TTS queue directories");
         return -1;
     }
 
-    snprintf(path_item,     sizeof(path_item),     "%s/%s.json", dir_queue, eid);
-    snprintf(path_tmp,      sizeof(path_tmp),      "%s/%s.json.tmp", dir_tmp, eid);
-    snprintf(path_done,     sizeof(path_done),     "%s/%s.ok", dir_done, eid);
+    snprintf(path_item, sizeof(path_item), "%s/%s.json", dir_queue, eid);
+    snprintf(path_tmp, sizeof(path_tmp), "%s/%s.json.tmp", dir_tmp, eid);
+    snprintf(path_done, sizeof(path_done), "%s/%s.ok", dir_done, eid);
     snprintf(path_inflight, sizeof(path_inflight), "%s/%s.json", dir_inflight, eid);
-    snprintf(path_failed,   sizeof(path_failed),   "%s/%s.json", dir_failed, eid);
+    snprintf(path_failed, sizeof(path_failed), "%s/%s.json", dir_failed, eid);
 
-    /* 幂等：同一个 event_id 已经在任何一个阶段存在就跳过 */
-    if (wu_file_size(path_item) >= 0 || wu_file_size(path_inflight) >= 0 ||
-        wu_file_size(path_done) >= 0 || wu_file_size(path_failed) >= 0) {
+    /*
+     * 幂等检查：四个阶段逐一检查。
+     * 任何一个阶段存在，都必须同步它自己的目录。
+     * 多阶段同时存在属于状态异常，拒绝静默成功。
+     */
+    rc = tts_existing_item_durable(path_item, dir_queue, "queue", err, errlen);
+    if (rc < 0) return -1;
+    if (rc > 0) { found++; found_stage = "queue"; }
+
+    rc = tts_existing_item_durable(path_inflight, dir_inflight, "inflight", err, errlen);
+    if (rc < 0) return -1;
+    if (rc > 0) { found++; found_stage = "inflight"; }
+
+    rc = tts_existing_item_durable(path_done, dir_done, "done", err, errlen);
+    if (rc < 0) return -1;
+    if (rc > 0) { found++; found_stage = "done"; }
+
+    rc = tts_existing_item_durable(path_failed, dir_failed, "failed", err, errlen);
+    if (rc < 0) return -1;
+    if (rc > 0) { found++; found_stage = "failed"; }
+
+    if (found > 1) {
+        if (err && errlen)
+            snprintf(err, errlen, "event_id exists in multiple TTS queue stages");
+        return -1;
+    }
+
+    if (found == 1) {
+        logf_(&w->cfg, "TTS idempotent hit event=%s stage=%s dirfsync=ok",
+              eid, found_stage);
         return 0;
     }
 
@@ -518,51 +597,68 @@ static int tts_enqueue(t6b_worker *w, const t6b_reply *rep, char *err, size_t er
                  "{\"v\":1,\"event_id\":\"%s\",\"created_ms\":%lld,\"attempts\":0,"
                  "\"reply_bytes\":%d,\"text\":\"%s\"}\n",
                  eid, t0, rep->text_bytes, esc);
+
     if (n <= 0 || (size_t)n >= sizeof(body)) {
-        if (err) snprintf(err, errlen, "queue item too long");
+        if (err && errlen) snprintf(err, errlen, "queue item too long");
         return -1;
     }
 
     (void)wu_unlink(path_tmp);
+
     fd = (t6b_fault_ttsq() == T6B_TTSQ_CREATE) ? -1 : wu_open_excl(path_tmp);
     if (fd < 0) {
-        if (err) snprintf(err, errlen, "%sopen tmp failed (errno=%d)",
-                          t6b_fault_ttsq() == T6B_TTSQ_CREATE ? "injected fault: " : "", errno);
+        if (err && errlen)
+            snprintf(err, errlen, "open tmp failed (errno=%d)", errno);
         return -1;
     }
-    if (t6b_fault_ttsq() == T6B_TTSQ_WRITE || wu_write_all(fd, body, (size_t)n) != 0) {
+
+    if (t6b_fault_ttsq() == T6B_TTSQ_WRITE ||
+        wu_write_all(fd, body, (size_t)n) != 0) {
+        int saved_errno = errno;
         (void)wu_close(fd);
         (void)wu_unlink(path_tmp);
-        if (err) snprintf(err, errlen, "%swrite tmp failed (errno=%d)",
-                          t6b_fault_ttsq() == T6B_TTSQ_WRITE ? "injected fault: " : "", errno);
+        if (err && errlen)
+            snprintf(err, errlen, "write tmp failed (errno=%d)", saved_errno);
         return -1;
     }
+
     if (t6b_fault_ttsq() == T6B_TTSQ_FSYNC || wu_fsync(fd) != 0) {
+        int saved_errno = errno;
         (void)wu_close(fd);
         (void)wu_unlink(path_tmp);
-        if (err) snprintf(err, errlen, "%sfsync tmp failed",
-                          t6b_fault_ttsq() == T6B_TTSQ_FSYNC ? "injected fault: " : "");
+        if (err && errlen)
+            snprintf(err, errlen, "fsync tmp failed (errno=%d)", saved_errno);
         return -1;
     }
-    (void)wu_close(fd);
 
-    if (t6b_fault_ttsq() == T6B_TTSQ_RENAME || wu_rename_replace(path_tmp, path_item) != 0) {
+    if (wu_close(fd) != 0) {
+        int saved_errno = errno;
         (void)wu_unlink(path_tmp);
-        if (err) snprintf(err, errlen, "%srename into queue failed (errno=%d)",
-                          t6b_fault_ttsq() == T6B_TTSQ_RENAME ? "injected fault: " : "", errno);
+        if (err && errlen)
+            snprintf(err, errlen, "close tmp failed (errno=%d)", saved_errno);
         return -1;
     }
 
-    /* P1-3：目录 fsync 也必须成功才算入队。
-     * 失败时 queue/<id>.json 可能已经存在 → **不删它**：下一次重试按 event_id
-     * 幂等识别这一份（返回 0 = 已入队），然后才允许提交偏移。 */
-    if (t6b_fault_ttsq() == T6B_TTSQ_DIRFSYNC || wu_fsync_dir(dir_queue) != 0) {
-        if (err) snprintf(err, errlen, "%squeue dir fsync failed (item maybe present)",
-                          t6b_fault_ttsq() == T6B_TTSQ_DIRFSYNC ? "injected fault: " : "");
+    if (t6b_fault_ttsq() == T6B_TTSQ_RENAME ||
+        wu_rename_replace(path_tmp, path_item) != 0) {
+        int saved_errno = errno;
+        (void)wu_unlink(path_tmp);
+        if (err && errlen)
+            snprintf(err, errlen, "rename into queue failed (errno=%d)", saved_errno);
         return -1;
     }
 
-    w->st.tts_queued++;
+    /*
+     * rename 已成功但目录 fsync 失败时，文件可能可见。
+     * 返回失败，保留文件；下一次重试会走上面的幂等分支并重新 fsync。
+     */
+    if (t6b_fault_ttsq() == T6B_TTSQ_DIRFSYNC ||
+        wu_fsync_dir(dir_queue) != 0) {
+        if (err && errlen)
+            snprintf(err, errlen, "queue directory fsync failed after rename");
+        return -1;
+    }
+
     return 1;
 }
 
@@ -625,6 +721,8 @@ static int provider_attempt(t6b_worker *w)
             char terr[96];
             int q = tts_enqueue(w, &rep, terr, sizeof(terr));
             if (q > 0) {
+                /* P1-2：tts_enqueue() 只负责持久化，成功计数由调用方记（1 = 新条目已落盘） */
+                w->st.tts_queued++;
                 always("tts queued: event=%s reply_bytes=%d queue=%s",
                        w->pend.event_id, rep.text_bytes, w->cfg.tts_queue);
             } else if (q == 0) {

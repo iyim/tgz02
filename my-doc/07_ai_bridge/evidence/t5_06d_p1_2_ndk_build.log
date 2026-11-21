@@ -1,0 +1,136 @@
+﻿# T5-06B/T5-06C NDK build log (ai_worker + worker_unit_test, deepseek_provider included)
+# ndk : D:\tgz02\OS\_analysis\tools\android-ndk-r21e
+# cc  : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd
+
+# --- readelf of the shipped libs (for the record) ---
+# cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c
+(no compiler output: 0 warning, 0 error)
+exit: 0
+artifact: ai_worker  142692 B  sha256=a82183c95c9b787f5832f9d1c73e3b7e2606c9d9f7472fbaa1ff1cdd1519c41f
+# --- readelf -h (ELF header) ---
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              DYN (Shared object file)
+  Machine:                           ARM
+  Version:                           0x1
+  Entry point address:               0x1200
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          141212 (bytes into file)
+  Flags:                             0x5000200, Version5 EABI, soft-float ABI
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         9
+  Size of section headers:           40 (bytes)
+  Number of section headers:         37
+  Section header string table index: 36
+# --- readelf -d (dynamic section) ---
+
+Dynamic section at offset 0x16db4 contains 28 entries:
+  Tag        Type                         Name/Value
+ 0x00000003 (PLTGOT)                     0x17ef0
+ 0x00000002 (PLTRELSZ)                   520 (bytes)
+ 0x00000017 (JMPREL)                     0xcd4
+ 0x00000014 (PLTREL)                     REL
+ 0x00000011 (REL)                        0x9d4
+ 0x00000012 (RELSZ)                      768 (bytes)
+ 0x00000013 (RELENT)                     8 (bytes)
+ 0x6ffffffa (RELCOUNT)                   92
+ 0x00000015 (DEBUG)                      0x0
+ 0x00000006 (SYMTAB)                     0x200
+ 0x0000000b (SYMENT)                     16 (bytes)
+ 0x00000005 (STRTAB)                     0x650
+ 0x0000000a (STRSZ)                      656 (bytes)
+ 0x6ffffef5 (GNU_HASH)                   0x8e0
+ 0x00000001 (NEEDED)                     Shared library: [libdl.so]
+ 0x00000001 (NEEDED)                     Shared library: [libc.so]
+ 0x00000020 (PREINIT_ARRAY)              0x17c0c
+ 0x00000021 (PREINIT_ARRAYSZ)            0x8
+ 0x00000019 (INIT_ARRAY)                 0x17c14
+ 0x0000001b (INIT_ARRAYSZ)               8 (bytes)
+ 0x0000001a (FINI_ARRAY)                 0x17c1c
+ 0x0000001c (FINI_ARRAYSZ)               8 (bytes)
+ 0x0000001e (FLAGS)                      BIND_NOW
+ 0x6ffffffb (FLAGS_1)                    Flags: NOW
+ 0x6ffffff0 (VERSYM)                     0x8f8
+ 0x6ffffffe (VERNEED)                    0x984
+ 0x6fffffff (VERNEEDNUM)                 2
+ 0x00000000 (NULL)                       0x0
+# --- readelf -l (INTERP) ---
+  INTERP         0x000154 0x00000154 0x00000154 0x00013 0x00013 R   0x1
+      [Requesting program interpreter: /system/bin/linker]
+  LOAD           0x000000 0x00000000 0x00000000 0x15cd0 0x15cd0 R E 0x1000
+  LOAD           0x016c0c 0x00017c0c 0x00017c0c 0x003fc 0x1ad54 RW  0x1000
+   01     .interp 
+   02     .interp .note.android.ident .dynsym .dynstr .gnu.hash .gnu.version .gnu.version_r .rel.dyn .rel.plt .plt .text .ARM.exidx .rodata .ARM.extab 
+
+# cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\worker_unit_test D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\worker_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c
+(no compiler output: 0 warning, 0 error)
+exit: 0
+artifact: worker_unit_test  232020 B  sha256=fd530e012d42dd26552d6ec3627d4ffc79e70e141a1703a549eaf43e8ce6802b
+# --- readelf -h (ELF header) ---
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              DYN (Shared object file)
+  Machine:                           ARM
+  Version:                           0x1
+  Entry point address:               0x1490
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          230540 (bytes into file)
+  Flags:                             0x5000200, Version5 EABI, soft-float ABI
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         9
+  Size of section headers:           40 (bytes)
+  Number of section headers:         37
+  Section header string table index: 36
+# --- readelf -d (dynamic section) ---
+
+Dynamic section at offset 0x27dac contains 28 entries:
+  Tag        Type                         Name/Value
+ 0x00000003 (PLTGOT)                     0x28ee0
+ 0x00000002 (PLTRELSZ)                   552 (bytes)
+ 0x00000017 (JMPREL)                     0xf0c
+ 0x00000014 (PLTREL)                     REL
+ 0x00000011 (REL)                        0xa0c
+ 0x00000012 (RELSZ)                      1280 (bytes)
+ 0x00000013 (RELENT)                     8 (bytes)
+ 0x6ffffffa (RELCOUNT)                   158
+ 0x00000015 (DEBUG)                      0x0
+ 0x00000006 (SYMTAB)                     0x200
+ 0x0000000b (SYMENT)                     16 (bytes)
+ 0x00000005 (STRTAB)                     0x670
+ 0x0000000a (STRSZ)                      675 (bytes)
+ 0x6ffffef5 (GNU_HASH)                   0x914
+ 0x00000001 (NEEDED)                     Shared library: [libdl.so]
+ 0x00000001 (NEEDED)                     Shared library: [libc.so]
+ 0x00000020 (PREINIT_ARRAY)              0x28a5c
+ 0x00000021 (PREINIT_ARRAYSZ)            0x8
+ 0x00000019 (INIT_ARRAY)                 0x28a64
+ 0x0000001b (INIT_ARRAYSZ)               8 (bytes)
+ 0x0000001a (FINI_ARRAY)                 0x28a6c
+ 0x0000001c (FINI_ARRAYSZ)               8 (bytes)
+ 0x0000001e (FLAGS)                      BIND_NOW
+ 0x6ffffffb (FLAGS_1)                    Flags: NOW
+ 0x6ffffff0 (VERSYM)                     0x92c
+ 0x6ffffffe (VERNEED)                    0x9bc
+ 0x6fffffff (VERNEEDNUM)                 2
+ 0x00000000 (NULL)                       0x0
+# --- readelf -l (INTERP) ---
+  INTERP         0x000154 0x00000154 0x00000154 0x00013 0x00013 R   0x1
+      [Requesting program interpreter: /system/bin/linker]
+  LOAD           0x000000 0x00000000 0x00000000 0x277b0 0x277b0 R E 0x1000
+  LOAD           0x027a5c 0x00028a5c 0x00028a5c 0x005ac 0x290c4 RW  0x1000
+   01     .interp 
+   02     .interp .note.android.ident .dynsym .dynstr .gnu.hash .gnu.version .gnu.version_r .rel.dyn .rel.plt .plt .text .ARM.exidx .rodata .ARM.extab 
+
+# result: OK (0 warning, 0 error, both binaries dynamically linked, NEEDED libc.so)
