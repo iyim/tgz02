@@ -1,0 +1,881 @@
+﻿################ T6-01 device verification :: 2026-11-21 14:06:28 ################
+
+===== P0 preflight :: 2026-11-21 14:06:28 =====
+adb devices:
+List of devices attached
+192.168.1.9:5555	device
+
+  ASSERT OK   : device 192.168.1.9:5555 is online
+  id: uid=2000(shell) gid=2000(shell) groups=2000(shell),1004(input),1007(log),1011(adb),1015(sdcard_rw),1028(sdcard_r),3001(net_bt_admin),3002(net_bt),3003(inet),3006(net_bw_stats),3009(readproc),3011(uhid) context=u:r:shell:s0
+  ASSERT FAIL : su gives uid=0 (expected via Magisk)
+  core pid: 994
+  ASSERT OK   : factory com.alibaba.ailabs.genie.smartapp:core is running
+  model: AILABS_S1L
+  ASSERT OK   : device model is AILABS_S1L (TG-Z02)
+  bridge pid: 26591
+  ASSERT OK   : T5-05A bridge (tgb_bridge) is running
+  ASSERT OK   : events.jsonl exists and is non-empty
+  sdk: 27
+
+===== P1 push artifacts :: 2026-11-21 14:06:30 =====
+  ASSERT OK   : local artifact exists: tg_injector
+  tg_injector size on device: /system/bin/sh: awk: not found
+  ASSERT OK   : local artifact exists: libtg_hook.so
+  libtg_hook.so size on device: /system/bin/sh: awk: not found
+ls: total 128
+-rw-r--r-- 1 root  root  23028 2026-11-21 14:05 libtg_hook.so
+-rw-r--r-- 1 root  root  23028 2026-11-21 13:59 libtg_hook_v2.so
+-rwxr-xr-x 1 shell shell 62736 2026-11-21 14:05 tg_injector
+-rw-r--r-- 1 root  root    987 2026-11-21 14:04 w1.out
+-rw-r--r-- 1 root  root    671 2026-11-21 14:04 w2.out
+-rw-r--r-- 1 root  root    987 2026-11-21 14:04 worker.out
+drwxr-xr-x 2 root  root   4096 2026-11-21 14:04 ws
+  ASSERT OK   : injector is 0755
+  ASSERT OK   : hook agent is 0644 (target process can read it)
+
+===== P2 inject via standalone injector (no frida, no magisk module) :: 2026-11-21 14:06:33 =====
+  core pid=994 threads=82 uptime=3341.01 5096.96
+  ASSERT OK   : no frida process on the device
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 994 --verbose
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=994 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] attached tid=994 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa7352000 stack=0xa735a000 trap=0xa7361000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa7352100 len=33
+[inject] dlopen ok handle=0x1d4e977b flags=0x2
+[inject] dlsym ok install=0x86122530 status=0x86123acc stats=0x86123b1c
+[inject] tg_hook_install() = 0
+[inject] querying status/stats
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=994 already_mapped=0 check_only=0
+[inject] detached (target thread resumed)
+  ASSERT OK   : injector confirmed target ABI ELF32/ARM
+  ASSERT OK   : library was not mapped before injection
+  ASSERT OK   : injector attached a thread
+  ASSERT OK   : scratch page allocated in the target
+  ASSERT OK   : dlopen succeeded inside the target
+  ASSERT OK   : tg_hook_install() returned 0
+  ASSERT OK   : hook agent reports status=0 hooked=1
+  ASSERT OK   : injector reported RESULT ok
+  ASSERT OK   : injector detached the thread
+
+===== P3 target integrity after injection :: 2026-11-21 14:06:35 =====
+  core pid after: 994
+  ASSERT OK   : factory core pid unchanged (no crash/restart)
+  TracerPid:	0
+  ASSERT OK   : no thread left in ptrace-stop (TracerPid=0)
+  threads after: 83
+  ASSERT OK   : thread count did not collapse
+  libtg_hook mappings: 3
+  ASSERT OK   : libtg_hook.so is mapped inside the target process
+logcat tgl:
+--------- beginning of main
+  ASSERT FAIL : hook agent logged 'hook installed'
+  ASSERT FAIL : hook agent sender thread started
+  resumed: mResumedActivity: ActivityRecord{9c691a2 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.activity.ApplistActivity t15}
+
+===== P4 repeated injection is refused :: 2026-11-21 14:06:37 =====
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 994
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=994 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=994 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa720e000 stack=0xa7216000 trap=0xa721d000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa720e100 len=33
+[inject] dlopen ok handle=0x1d4e977b flags=0x6
+[inject] dlsym ok install=0x86122530 status=0x86123acc stats=0x86123b1c
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=994 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+  ASSERT OK   : second run detects the library is already mapped
+  ASSERT OK   : re-opened with RTLD_NOLOAD (no second load)
+  ASSERT OK   : hook state still healthy
+
+===== P5 real voice -> factory ASR -> hook agent -> bridge -> events.jsonl :: 2026-11-21 14:06:37 =====
+  events lines before: 204
+  played: D:\tgz02\OS\_analysis\t506d\stim2\s01_wake.wav:3000 , D:\tgz02\OS\_analysis\t506d\stim2\s01_cmd.wav:3000
+  events lines after: 205
+  ASSERT OK   : bridge stored at least one new ASR final event
+new events:
+{"version":1,"rec":"asr_final","event_id":"t6-994-1968273-g1","event_type":"asr_final","pid":994,"session_id":"1968273","text":"天猫精灵您现在几点了","text_bytes":30,"text_chars":10,"is_final":true,"received_at_ms":1795241213054,"recv_at_ms":1795241213055,"stored_at_ms":1795241213055,"seq":5}
+  ASSERT OK   : new event_id carries the t6- prefix (hook agent, not frida)
+  ASSERT OK   : event_type is asr_final
+  ASSERT OK   : is_final is true
+  ASSERT OK   : no secret-looking blob in the stored line
+stats after speech:
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=994 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=994 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa18e8000 stack=0xa18f0000 trap=0xa18f7000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa18e8100 len=33
+[inject] dlopen ok handle=0x1d4e977b flags=0x6
+[inject] dlsym ok install=0x86122530 status=0x86123acc stats=0x86123b1c
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 seen=6 final=1 queued=1 sent=1 acked=1 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=1 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=994 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+  ASSERT OK   : hook callback saw the factory onStream call
+  ASSERT OK   : hook captured at least one isFinished=1 result
+  ASSERT OK   : hook agent got an ACK from the bridge
+
+===== P6 existing AI worker consumes the new event :: 2026-11-21 14:06:59 =====
+  worker state offset before: 14584686131341194529413196996611111795172400353128111516112196734515161121967349151611219673531516112196735715161121967361151611219673651516112196736915161121967381151611219673991516112196741215161121967421151611219674251516112196745115161121967536151611219675401516112196754415161121967553151611219675671516112196761415161121967618151611219676221516112196762615161121967630151611219676341516112196763815161121967643151611219676471516112196765115161121967656151611219676601516112196766415161121967670151611219676741516112196767815161121967684151611219676881516112196769315161121967701151611219677051516112196771715161121967725151611219677291516112196773615161121967740151611219677441516112196774815161121967756151611219677601516112196776815161121967772151611219677761516112196778115161121967788151611219677921516112196779615161121967801151611219678101516112196781515161121967819151611219678231516112196782715161121967834151611219678381516112196784315161121967857151611219678611529413196945615294131969468152941319694721529413196947615294131969482152941319694861529413196949011152941319697061529413196971015294131969714152941319697181529413196972215294131969736152941319697401529413196974915294131969753152941319697601529413196976515294131969772152941319697761529413196978015294131969791152941319697961529413196980815294131969812152941319698171529413196982215294131969830152941319698341529413196984415294131969849152941319698531529413196985715294131969861152941319698861529413196989015294131969895152941319698991506100005294131969946150618545300005294131969962152941319699661
+worker:
+[aiw] 2026-11-21T14:07:01 lock acquired; previous owner pid=25507 no longer holding it
+[aiw] 2026-11-21T14:07:01 state v1 has no prefix fingerprint (offset=34119): cannot prove the file is the same one; rescanning from offset 0 and relying on recent_ids (111 ids) for bounded duplicates
+[aiw] 2026-11-21T14:07:01 legacy state migrated: rescanning from offset 0 with prefix tracking enabled
+[aiw] 2026-11-21T14:07:01 start pid=2652 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t6/worker_state/consumer_state.json provider=mock offset=34119 (mock only, no network)
+[aiw] 2026-11-21T14:07:06 exit reason=idle_timeout processed=94 duplicates=111 invalid=0 gaps=0 resets=2 provider_retries=0 offset=62952 state_saves=206 state_errors=0
+[aiw] 2026-11-21T14:07:06 file identity: reason=legacy_state_rescan offset=62952 prefix_hash=e9a319444bc05a21 resets=0 legacy_rescans=1 replacements=0 truncations=0
+[aiw] 2026-11-21T14:07:06 provider summary: name=mock calls=94 (no network)
+  ASSERT OK   : worker processed the new ASR event(s)
+  worker state offset after: 24584686131629529319444052156994196827312051795241226962128128529413196971415294131969718152941319697221529413196973615294131969740152941319697491529413196975315294131969760152941319697651529413196977215294131969776152941319697801529413196979115294131969796152941319698081529413196981215294131969817152941319698221529413196983015294131969834152941319698441529413196984915294131969853152941319698571529413196986115294131969886152941319698901529413196989515294131969899150610000529413196994615061854530000529413196996215294131969966152841319688411528413196884515284131968867152841319689211528413196895315284131968997152841319690011528413196900515284131969014152841319690201528413196902415284131969028152841319690331528413196904015284131969046152841319690511528413196905615284131969061152841319690661528413196907415282361968226152823619682311528236196823615282361968240152823619682441528236196824915282361968254152823619682591528236196826415282361968269152823619682741528236196828115282361968289152823619682931528236196829915282361968304152823619683091528236196831415282361968320152823619683311528236196833915282361968344152823619683491528236196835415282361968363152823619683721528236196838115282361968385152823619683901528236196839515282361968400152823619684091528236196841815282361968426152823619684301528236196843515282361968447152823619684521528236196845715282361968466152823619684771528236196848115282361968494152823619725941528236196850215282361972602152823619685121528236196852615282361968531152823619685381528236196854715282361968555152823619685591528236196856415282361968569152823619685741528236196858015282361968589152823619685961528236196860015282361968607152823619686121528236196861715282361968622152823619686291528236196863815282361968647152823619727471528858196938116113119673612629392196798816293921967992262939219720923699419682731
+
+===== P7 uninstall restores the factory prologue :: 2026-11-21 14:07:07 =====
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 994 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=994 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=994 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa17c4000 stack=0xa17cc000 trap=0xa17d3000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa17c4100 len=33
+[inject] dlopen ok handle=0x1d4e977b flags=0x6
+[inject] dlsym ok install=0x86122530 status=0x86123acc stats=0x86123b1c
+[inject] tg_hook_uninstall() = 0
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=994
+[inject] detached (target thread resumed)
+  ASSERT OK   : tg_hook_uninstall() returned 0
+  ASSERT OK   : hook patch removed (hooked=0)
+  ASSERT OK   : factory core still alive after uninstall
+  ASSERT OK   : after uninstall the factory path is unchanged for the hook (no t6 events)
+
+SUMMARY: passes=39 fails=3
+################ T6-01 device verification :: 2026-11-21 14:08:28 ################
+
+===== P0 preflight :: 2026-11-21 14:08:28 =====
+adb devices:
+List of devices attached
+192.168.1.9:5555	device
+
+  ASSERT OK   : device 192.168.1.9:5555 is online
+  id: uid=2000(shell) gid=2000(shell) groups=2000(shell),1004(input),1007(log),1011(adb),1015(sdcard_rw),1028(sdcard_r),3001(net_bt_admin),3002(net_bt),3003(inet),3006(net_bw_stats),3009(readproc),3011(uhid) context=u:r:shell:s0
+  ASSERT FAIL : su gives uid=0 (expected via Magisk)
+  core pid: 994
+  ASSERT OK   : factory com.alibaba.ailabs.genie.smartapp:core is running
+  model: AILABS_S1L
+  ASSERT OK   : device model is AILABS_S1L (TG-Z02)
+  bridge pid: 26591
+  ASSERT OK   : T5-05A bridge (tgb_bridge) is running
+  ASSERT OK   : events.jsonl exists and is non-empty
+  sdk: 27
+
+===== P1 push artifacts :: 2026-11-21 14:08:30 =====
+  ASSERT OK   : local artifact exists: tg_injector
+  tg_injector size on device: /system/bin/sh: awk: not found
+  ASSERT OK   : local artifact exists: libtg_hook.so
+  libtg_hook.so size on device: /system/bin/sh: awk: not found
+ls: total 128
+-rw-r--r-- 1 root  root  23028 2026-11-21 14:05 libtg_hook.so
+-rw-r--r-- 1 root  root  23028 2026-11-21 13:59 libtg_hook_v2.so
+-rwxr-xr-x 1 shell shell 62736 2026-11-21 14:05 tg_injector
+-rw-r--r-- 1 root  root    987 2026-11-21 14:04 w1.out
+-rw-r--r-- 1 root  root    671 2026-11-21 14:04 w2.out
+-rw-r--r-- 1 root  root    987 2026-11-21 14:04 worker.out
+drwxr-xr-x 2 root  root   4096 2026-11-21 14:04 ws
+  ASSERT OK   : injector is 0755
+  ASSERT OK   : hook agent is 0644 (target process can read it)
+
+===== P2 inject via standalone injector (no frida, no magisk module) :: 2026-11-21 14:08:32 =====
+  core pid=994 threads=83 uptime=3460.45 5234.88
+  ASSERT OK   : no frida process on the device
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 994 --verbose
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=994 (manual)
+[inject] abi=unknown (open /proc/994/exe failed errno=13)
+  ASSERT FAIL : injector confirmed target ABI ELF32/ARM
+  ASSERT FAIL : library was not mapped before injection
+  ASSERT FAIL : injector attached a thread
+  ASSERT FAIL : scratch page allocated in the target
+  ASSERT FAIL : dlopen succeeded inside the target
+  ASSERT FAIL : tg_hook_install() returned 0
+  ASSERT FAIL : hook agent reports status=0 hooked=1
+  ASSERT FAIL : injector reported RESULT ok
+  ASSERT FAIL : injector detached the thread
+
+===== P3 target integrity after injection :: 2026-11-21 14:08:34 =====
+  core pid after: 994
+  ASSERT OK   : factory core pid unchanged (no crash/restart)
+  TracerPid:	0
+  ASSERT OK   : no thread left in ptrace-stop (TracerPid=0)
+  threads after: 83
+  ASSERT OK   : thread count did not collapse
+  libtg_hook mappings: grep: /proc/994/maps: Permission denied
+logcat tgl:
+--------- beginning of system
+--------- beginning of main
+  ASSERT FAIL : hook agent logged 'hook installed'
+  ASSERT FAIL : hook agent sender thread started
+  resumed: mResumedActivity: ActivityRecord{25096a8 u0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity t18}
+Failed to write while dumping service activity: Broken pipe
+
+===== P4 repeated injection is refused :: 2026-11-21 14:08:35 =====
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 994
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=994 (manual)
+[inject] abi=unknown (open /proc/994/exe failed errno=13)
+  ASSERT FAIL : second run detects the library is already mapped
+  ASSERT FAIL : re-opened with RTLD_NOLOAD (no second load)
+  ASSERT FAIL : hook state still healthy
+
+===== P5 real voice -> factory ASR -> hook agent -> bridge -> events.jsonl :: 2026-11-21 14:08:36 =====
+  events lines before: 205
+  played: D:\tgz02\OS\_analysis\t506d\stim2\s01_wake.wav:3000 , D:\tgz02\OS\_analysis\t506d\stim2\s01_cmd.wav:3000
+  events lines after: 205
+  ASSERT FAIL : bridge stored at least one new ASR final event
+stats after speech:
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=994 (manual)
+[inject] abi=unknown (open /proc/994/exe failed errno=13)
+  ASSERT FAIL : hook callback saw the factory onStream call
+  ASSERT FAIL : hook captured at least one isFinished=1 result
+  ASSERT FAIL : hook agent got an ACK from the bridge
+
+===== P6 existing AI worker consumes the new event :: 2026-11-21 14:09:43 =====
+  worker state offset before: 0
+worker:
+[aiw] 2026-11-21T14:09:45 cannot create state dir: /data/local/tmp/t6/worker_state
+worker init failed
+  ASSERT FAIL : worker processed the new ASR event(s)
+  worker state offset after: 0
+  ASSERT FAIL : worker advanced its offset (event consumed)
+
+===== P7 uninstall restores the factory prologue :: 2026-11-21 14:09:45 =====
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 994 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=994 (manual)
+[inject] abi=unknown (open /proc/994/exe failed errno=13)
+  ASSERT FAIL : tg_hook_uninstall() returned 0
+  ASSERT FAIL : hook patch removed (hooked=0)
+  ASSERT OK   : factory core still alive after uninstall
+  ASSERT OK   : after uninstall the factory path is unchanged for the hook (no t6 events)
+
+SUMMARY: passes=15 fails=23
+################ T6-01 device verification :: 2026-11-21 14:11:24 ################
+
+===== P0 preflight :: 2026-11-21 14:11:24 =====
+adb devices:
+List of devices attached
+192.168.1.9:5555	device
+
+  ASSERT OK   : device 192.168.1.9:5555 is online
+  id: uid=2000(shell) gid=2000(shell) groups=2000(shell),1004(input),1007(log),1011(adb),1015(sdcard_rw),1028(sdcard_r),3001(net_bt_admin),3002(net_bt),3003(inet),3006(net_bw_stats),3009(readproc),3011(uhid) context=u:r:shell:s0
+  ASSERT FAIL : su gives uid=0 (expected via Magisk)
+  core pid: 9764
+  ASSERT OK   : factory com.alibaba.ailabs.genie.smartapp:core is running
+  model: AILABS_S1L
+  ASSERT OK   : device model is AILABS_S1L (TG-Z02)
+  bridge pid: 26591
+  ASSERT OK   : T5-05A bridge (tgb_bridge) is running
+  ASSERT OK   : events.jsonl exists and is non-empty
+  sdk: 27
+
+===== P1 push artifacts :: 2026-11-21 14:11:26 =====
+  ASSERT OK   : local artifact exists: tg_injector
+  tg_injector size on device: /system/bin/sh: awk: not found
+  ASSERT OK   : local artifact exists: libtg_hook.so
+  libtg_hook.so size on device: /system/bin/sh: awk: not found
+ls: total 128
+-rw-r--r-- 1 root  root  23028 2026-11-21 14:05 libtg_hook.so
+-rw-r--r-- 1 root  root  23028 2026-11-21 13:59 libtg_hook_v2.so
+-rwxr-xr-x 1 shell shell 62736 2026-11-21 14:05 tg_injector
+-rw-r--r-- 1 root  root    987 2026-11-21 14:04 w1.out
+-rw-r--r-- 1 root  root    671 2026-11-21 14:04 w2.out
+-rw-r--r-- 1 root  root    987 2026-11-21 14:04 worker.out
+drwxr-xr-x 2 root  root   4096 2026-11-21 14:04 ws
+  ASSERT OK   : injector is 0755
+  ASSERT OK   : hook agent is 0644 (target process can read it)
+
+===== P2 inject via standalone injector (no frida, no magisk module) :: 2026-11-21 14:11:28 =====
+  core pid=9764 threads=79 uptime=3635.97 5408.06
+  ASSERT OK   : no frida process on the device
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 9764 --verbose
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9764 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] attached tid=9764 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa18e8000 stack=0xa18f0000 trap=0xa18f7000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa18e8100 len=33
+[inject] dlopen ok handle=0x0498424d flags=0x2
+[inject] dlsym ok install=0x8651a530 status=0x8651bacc stats=0x8651bb1c
+[inject] tg_hook_install() = 0
+[inject] querying status/stats
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9764 already_mapped=0 check_only=0
+[inject] detached (target thread resumed)
+  ASSERT OK   : injector confirmed target ABI ELF32/ARM
+  ASSERT OK   : library was not mapped before injection
+  ASSERT OK   : injector attached a thread
+  ASSERT OK   : scratch page allocated in the target
+  ASSERT OK   : dlopen succeeded inside the target
+  ASSERT OK   : tg_hook_install() returned 0
+  ASSERT OK   : hook agent reports status=0 hooked=1
+  ASSERT OK   : injector reported RESULT ok
+  ASSERT OK   : injector detached the thread
+
+===== P3 target integrity after injection :: 2026-11-21 14:11:30 =====
+  core pid after: 9764
+  ASSERT OK   : factory core pid unchanged (no crash/restart)
+  TracerPid:	0
+  ASSERT OK   : no thread left in ptrace-stop (TracerPid=0)
+  threads after: 80
+  ASSERT OK   : thread count did not collapse
+  libtg_hook mappings: 3
+  ASSERT OK   : libtg_hook.so is mapped inside the target process
+logcat tgl:
+--------- beginning of system
+--------- beginning of main
+11-21 14:11:31.073  9764  9764 I tgl     : libtg_hook.so loaded (pid=9764); waiting for tg_hook_install()
+11-21 14:11:31.102  9764  9764 I tgl     : hook installed: func=0x8ca1a53c symbol_offset=0x11353c stub=0xa8707000 tramp=0xa8707080
+11-21 14:11:31.105  9764 10581 I tgl     : hook agent sender thread up: sock=abstract:tgz2_asr_bridge pid=9764
+  ASSERT OK   : hook agent logged 'hook installed'
+  ASSERT OK   : hook agent sender thread started
+  resumed: mResumedActivity: ActivityRecord{a1a216e u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}
+Failed to write while dumping service activity: Broken pipe
+
+===== P4 repeated injection is refused :: 2026-11-21 14:11:32 =====
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 9764
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9764 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9764 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa17ea000 stack=0xa17f2000 trap=0xa17f9000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa17ea100 len=33
+[inject] dlopen ok handle=0x0498424d flags=0x6
+[inject] dlsym ok install=0x8651a530 status=0x8651bacc stats=0x8651bb1c
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9764 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+  ASSERT OK   : second run detects the library is already mapped
+  ASSERT OK   : re-opened with RTLD_NOLOAD (no second load)
+  ASSERT OK   : hook state still healthy
+
+===== P5 real voice -> factory ASR -> hook agent -> bridge -> events.jsonl :: 2026-11-21 14:11:33 =====
+  events lines before: 205
+  played: D:\tgz02\OS\_analysis\t506d\stim2\s01_wake.wav:3000 , D:\tgz02\OS\_analysis\t506d\stim2\s01_cmd.wav:3000
+  events lines after: 205
+  ASSERT FAIL : bridge stored at least one new ASR final event
+stats after speech:
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9764 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9764 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa720e000 stack=0xa7216000 trap=0xa721d000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa720e100 len=33
+[inject] dlopen ok handle=0x0498424d flags=0x6
+[inject] dlsym ok install=0x8651a530 status=0x8651bacc stats=0x8651bb1c
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9764 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+  ASSERT FAIL : hook callback saw the factory onStream call
+  ASSERT FAIL : hook captured at least one isFinished=1 result
+  ASSERT FAIL : hook agent got an ACK from the bridge
+
+===== P6 existing AI worker consumes the new event :: 2026-11-21 14:12:36 =====
+  worker state offset before: 0
+worker:
+[aiw] 2026-11-21T14:12:37 no consumer state yet (first run); scanning events from offset 0
+[aiw] 2026-11-21T14:12:37 start pid=11492 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t6/worker_state/consumer_state.json provider=mock offset=0 (mock only, no network)
+[aiw] 2026-11-21T14:12:39 seq gap pid=16112 missing=2 range=[3,4] (recorded, NOT fabricated)
+[aiw] 2026-11-21T14:12:39 seq gap pid=29413 missing=1 range=[2,2] (recorded, NOT fabricated)
+[aiw] 2026-11-21T14:12:46 exit reason=idle_timeout processed=205 duplicates=0 invalid=0 gaps=2 resets=16 provider_retries=0 offset=62952 state_saves=206 state_errors=0
+[aiw] 2026-11-21T14:12:46 file identity: reason=first_open offset=62952 prefix_hash=e9a319444bc05a21 resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-21T14:12:46 provider summary: name=mock calls=205 (no network)
+  ASSERT OK   : worker processed the new ASR event(s)
+  worker state offset after: 62952
+  ASSERT OK   : worker advanced its offset (event consumed)
+
+===== P7 uninstall restores the factory prologue :: 2026-11-21 14:12:46 =====
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 9764 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9764 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9764 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa15f2000 stack=0xa15fa000 trap=0xa1601000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa15f2100 len=33
+[inject] dlopen ok handle=0x0498424d flags=0x6
+[inject] dlsym ok install=0x8651a530 status=0x8651bacc stats=0x8651bb1c
+[inject] tg_hook_uninstall() = 0
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9764
+[inject] detached (target thread resumed)
+  ASSERT OK   : tg_hook_uninstall() returned 0
+  ASSERT OK   : hook patch removed (hooked=0)
+  ASSERT OK   : factory core still alive after uninstall
+  ASSERT OK   : after uninstall the factory path is unchanged for the hook (no t6 events)
+
+SUMMARY: passes=34 fails=5
+################ T6-01 device verification :: 2026-11-21 14:14:10 ################
+
+===== P0 preflight :: 2026-11-21 14:14:10 =====
+adb devices:
+List of devices attached
+192.168.1.9:5555	device
+
+  ASSERT OK   : device 192.168.1.9:5555 is online
+  id: uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0
+  ASSERT OK   : su gives uid=0 (expected via Magisk)
+  core pid: 9764
+  ASSERT OK   : factory com.alibaba.ailabs.genie.smartapp:core is running
+  model: AILABS_S1L
+  ASSERT OK   : device model is AILABS_S1L (TG-Z02)
+  bridge pid: 26591
+  ASSERT OK   : T5-05A bridge (tgb_bridge) is running
+  ASSERT OK   : events.jsonl exists and is non-empty
+  sdk: 27
+
+===== P1 push artifacts :: 2026-11-21 14:14:13 =====
+  ASSERT OK   : local artifact exists: tg_injector
+  tg_injector size on device: /system/bin/sh: awk: not found
+  ASSERT OK   : local artifact exists: libtg_hook.so
+  libtg_hook.so size on device: /system/bin/sh: awk: not found
+ls: total 128
+-rw-r--r-- 1 root  root  23028 2026-11-21 14:05 libtg_hook.so
+-rw-r--r-- 1 root  root  23028 2026-11-21 13:59 libtg_hook_v2.so
+-rwxr-xr-x 1 shell shell 62736 2026-11-21 14:05 tg_injector
+-rw-r--r-- 1 root  root    987 2026-11-21 14:04 w1.out
+-rw-r--r-- 1 root  root    671 2026-11-21 14:04 w2.out
+-rw-r--r-- 1 root  root    987 2026-11-21 14:04 worker.out
+drwxr-xr-x 2 root  root   4096 2026-11-21 14:04 ws
+  ASSERT OK   : injector is 0755
+  ASSERT OK   : hook agent is 0644 (target process can read it)
+
+===== P2 inject via standalone injector (no frida, no magisk module) :: 2026-11-21 14:14:19 =====
+  core pid=9764 threads=85 uptime=3807.36 5507.21
+  ASSERT OK   : no frida process on the device
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 9764 --verbose
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9764 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9764 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1431000 stack=0xa1439000 trap=0xa1440000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1431100 len=33
+[inject] dlopen ok handle=0x0498424d flags=0x6
+[inject] dlsym ok install=0x8651a530 status=0x8651bacc stats=0x8651bb1c
+[inject] querying status/stats
+[inject] hook_status=-1 hooked=0
+[inject] stats=state=-1 hooked=0 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] ERROR stage=status status=-1
+[inject] detached after error (target thread resumed) exit=20
+  ASSERT OK   : injector confirmed target ABI ELF32/ARM
+  ASSERT FAIL : library was not mapped before injection
+  ASSERT OK   : injector attached a thread
+  ASSERT OK   : scratch page allocated in the target
+  ASSERT OK   : dlopen succeeded inside the target
+  ASSERT FAIL : tg_hook_install() returned 0
+  ASSERT FAIL : hook agent reports status=0 hooked=1
+  ASSERT FAIL : injector reported RESULT ok
+  ASSERT FAIL : injector detached the thread
+
+===== P3 target integrity after injection :: 2026-11-21 14:14:22 =====
+  core pid after: 9764
+  ASSERT OK   : factory core pid unchanged (no crash/restart)
+  TracerPid:	0
+  ASSERT OK   : no thread left in ptrace-stop (TracerPid=0)
+  threads after: 85
+  ASSERT OK   : thread count did not collapse
+  libtg_hook mappings: 3
+  ASSERT OK   : libtg_hook.so is mapped inside the target process
+logcat tgl:
+--------- beginning of system
+--------- beginning of main
+  ASSERT FAIL : hook agent logged 'hook installed'
+  ASSERT FAIL : hook agent sender thread started
+  resumed: mResumedActivity: ActivityRecord{4b617bf u0 com.youku.iot/com.youku.tv.home.activity.HomeActivity t29}
+
+===== P4 repeated injection is refused :: 2026-11-21 14:14:26 =====
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 9764
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9764 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9764 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa13be000 stack=0xa13c6000 trap=0xa13cd000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa13be100 len=33
+[inject] dlopen ok handle=0x0498424d flags=0x6
+[inject] dlsym ok install=0x8651a530 status=0x8651bacc stats=0x8651bb1c
+[inject] hook_status=-1 hooked=0
+[inject] stats=state=-1 hooked=0 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] ERROR stage=status status=-1
+[inject] detached after error (target thread resumed) exit=20
+  ASSERT OK   : second run detects the library is already mapped
+  ASSERT OK   : re-opened with RTLD_NOLOAD (no second load)
+  ASSERT FAIL : hook state still healthy
+
+===== P5 real voice -> factory ASR -> hook agent -> bridge -> events.jsonl :: 2026-11-21 14:14:27 =====
+  events lines before: 205
+  attempt 1 played: D:\tgz02\OS\_analysis\t506d\stim2\s01_wake.wav:3000 , D:\tgz02\OS\_analysis\t506d\stim2\s01_cmd.wav:3000
+  attempt 1 produced no ASR final; retrying
+  attempt 2 played: D:\tgz02\OS\_analysis\t506d\stim2\s02_wake.wav:3000 , D:\tgz02\OS\_analysis\t506d\stim2\s02_cmd.wav:3000
+  attempt 2 produced no ASR final; retrying
+  events lines after: 205
+  ASSERT FAIL : bridge stored at least one new ASR final event
+stats after speech:
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9764 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9764 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1381000 stack=0xa1389000 trap=0xa1390000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1381100 len=33
+[inject] dlopen ok handle=0x0498424d flags=0x6
+[inject] dlsym ok install=0x8651a530 status=0x8651bacc stats=0x8651bb1c
+[inject] hook_status=-1 hooked=0
+[inject] stats=state=-1 hooked=0 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] ERROR stage=status status=-1
+[inject] detached after error (target thread resumed) exit=20
+  ASSERT FAIL : hook callback saw the factory onStream call
+  ASSERT FAIL : hook captured at least one isFinished=1 result
+  ASSERT FAIL : hook agent got an ACK from the bridge
+
+===== P6 existing AI worker consumes the new event :: 2026-11-21 14:16:51 =====
+  worker state offset before: 0
+worker:
+[aiw] 2026-11-21T14:16:52 no consumer state yet (first run); scanning events from offset 0
+[aiw] 2026-11-21T14:16:52 start pid=19777 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t6/worker_state/consumer_state.json provider=mock offset=0 (mock only, no network)
+[aiw] 2026-11-21T14:16:54 seq gap pid=16112 missing=2 range=[3,4] (recorded, NOT fabricated)
+[aiw] 2026-11-21T14:16:54 seq gap pid=29413 missing=1 range=[2,2] (recorded, NOT fabricated)
+[aiw] 2026-11-21T14:16:58 exit reason=idle_timeout processed=205 duplicates=0 invalid=0 gaps=2 resets=16 provider_retries=0 offset=62952 state_saves=206 state_errors=0
+[aiw] 2026-11-21T14:16:58 file identity: reason=first_open offset=62952 prefix_hash=e9a319444bc05a21 resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-21T14:16:58 provider summary: name=mock calls=205 (no network)
+  ASSERT OK   : worker processed the new ASR event(s)
+  worker state offset after: 62952
+  ASSERT OK   : worker advanced its offset (event consumed)
+
+===== P7 uninstall restores the factory prologue :: 2026-11-21 14:16:58 =====
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 9764 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9764 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9764 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1371000 stack=0xa1379000 trap=0xa1380000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1371100 len=33
+[inject] dlopen ok handle=0x0498424d flags=0x6
+[inject] dlsym ok install=0x8651a530 status=0x8651bacc stats=0x8651bb1c
+[inject] tg_hook_uninstall() = 0
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9764
+[inject] detached (target thread resumed)
+  ASSERT OK   : tg_hook_uninstall() returned 0
+  ASSERT OK   : hook patch removed (hooked=0)
+  ASSERT OK   : factory core still alive after uninstall
+  ASSERT OK   : after uninstall the factory path is unchanged for the hook (no t6 events)
+
+SUMMARY: passes=27 fails=12
+################ T6-01 device verification :: 2026-11-21 14:18:36 ################
+
+===== P0 preflight :: 2026-11-21 14:18:36 =====
+adb devices:
+List of devices attached
+192.168.1.9:5555	device
+
+  ASSERT OK   : device 192.168.1.9:5555 is online
+  id: uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0
+  ASSERT OK   : su gives uid=0 (expected via Magisk)
+  core pid: 9764
+  ASSERT OK   : factory com.alibaba.ailabs.genie.smartapp:core is running
+  model: AILABS_S1L
+  ASSERT OK   : device model is AILABS_S1L (TG-Z02)
+  bridge pid: 26591
+  ASSERT OK   : T5-05A bridge (tgb_bridge) is running
+  ASSERT OK   : events.jsonl exists and is non-empty
+  sdk: 27
+  libtg_hook.so already mapped in pid 9764; restarting the assistant for a clean process
+  core pid after restart: 22718
+  ASSERT OK   : factory core is running after the preflight restart
+
+===== P1 push artifacts :: 2026-11-21 14:18:51 =====
+  ASSERT OK   : local artifact exists: tg_injector
+  tg_injector size on device: /system/bin/sh: awk: not found
+  ASSERT OK   : local artifact exists: libtg_hook.so
+  libtg_hook.so size on device: /system/bin/sh: awk: not found
+ls: total 128
+-rw-r--r-- 1 root  root  23028 2026-11-21 14:05 libtg_hook.so
+-rw-r--r-- 1 root  root  23028 2026-11-21 13:59 libtg_hook_v2.so
+-rwxr-xr-x 1 shell shell 62736 2026-11-21 14:05 tg_injector
+-rw-r--r-- 1 root  root    987 2026-11-21 14:04 w1.out
+-rw-r--r-- 1 root  root    671 2026-11-21 14:04 w2.out
+-rw-r--r-- 1 root  root    987 2026-11-21 14:04 worker.out
+drwxr-xr-x 2 root  root   4096 2026-11-21 14:04 ws
+  ASSERT OK   : injector is 0755
+  ASSERT OK   : hook agent is 0644 (target process can read it)
+
+===== P2 inject via standalone injector (no frida, no magisk module) :: 2026-11-21 14:18:55 =====
+  core pid=22718 threads=80 uptime=4083.06 5733.01
+  ASSERT OK   : no frida process on the device
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 22718 --verbose
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=22718 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] attached tid=22718 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1e6f000 stack=0xa1e77000 trap=0xa1e7e000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1e6f100 len=33
+[inject] dlopen ok handle=0xac4277a3 flags=0x2
+[inject] dlsym ok install=0x8659e530 status=0x8659facc stats=0x8659fb1c
+[inject] tg_hook_install() = 0
+[inject] querying status/stats
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=22718 already_mapped=0 check_only=0
+[inject] detached (target thread resumed)
+  ASSERT OK   : injector confirmed target ABI ELF32/ARM
+  ASSERT OK   : library was not mapped before injection
+  ASSERT OK   : injector attached a thread
+  ASSERT OK   : scratch page allocated in the target
+  ASSERT OK   : dlopen succeeded inside the target
+  ASSERT OK   : tg_hook_install() returned 0
+  ASSERT OK   : hook agent reports status=0 hooked=1
+  ASSERT OK   : injector reported RESULT ok
+  ASSERT OK   : injector detached the thread
+
+===== P3 target integrity after injection :: 2026-11-21 14:18:57 =====
+  core pid after: 22718
+  ASSERT OK   : factory core pid unchanged (no crash/restart)
+  TracerPid:	0
+  ASSERT OK   : no thread left in ptrace-stop (TracerPid=0)
+  threads after: 81
+  ASSERT OK   : thread count did not collapse
+  libtg_hook mappings: 3
+  ASSERT OK   : libtg_hook.so is mapped inside the target process
+logcat tgl:
+--------- beginning of system
+--------- beginning of main
+11-21 14:18:58.474 22718 22718 I tgl     : libtg_hook.so loaded (pid=22718); waiting for tg_hook_install()
+11-21 14:18:58.503 22718 22718 I tgl     : hook installed: func=0x8d4d453c symbol_offset=0x11353c stub=0xa88a8000 tramp=0xa88a8080
+11-21 14:18:58.510 22718 23386 I tgl     : hook agent sender thread up: sock=abstract:tgz2_asr_bridge pid=22718
+  ASSERT OK   : hook agent logged 'hook installed'
+  ASSERT OK   : hook agent sender thread started
+  resumed: mResumedActivity: ActivityRecord{78b6f81 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.activity.ApplistActivity t38}
+
+===== P4 repeated injection is refused :: 2026-11-21 14:19:00 =====
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 22718
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=22718 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=22718 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1d26000 stack=0xa1d2e000 trap=0xa1d35000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1d26100 len=33
+[inject] dlopen ok handle=0xac4277a3 flags=0x6
+[inject] dlsym ok install=0x8659e530 status=0x8659facc stats=0x8659fb1c
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=22718 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+  ASSERT OK   : second run detects the library is already mapped
+  ASSERT OK   : re-opened with RTLD_NOLOAD (no second load)
+  ASSERT OK   : hook state still healthy
+
+===== P5 real voice -> factory ASR -> hook agent -> bridge -> events.jsonl :: 2026-11-21 14:19:01 =====
+  events lines before: 205
+  attempt 1 played: D:\tgz02\OS\_analysis\t506d\stim2\s01_wake.wav:3000 , D:\tgz02\OS\_analysis\t506d\stim2\s01_cmd.wav:3000
+  events lines after: 206
+  ASSERT OK   : bridge stored at least one new ASR final event
+new events:
+{"version":1,"rec":"asr_final","event_id":"t6-22718-1966782-g1","event_type":"asr_final","pid":22718,"session_id":"1966782","text":"天猫精灵您现在几点了","text_bytes":30,"text_chars":10,"is_final":true,"received_at_ms":1795241962018,"recv_at_ms":1795241962021,"stored_at_ms":1795241962022,"seq":6}
+  ASSERT OK   : new event_id carries the t6- prefix (hook agent, not frida)
+  ASSERT OK   : event_type is asr_final
+  ASSERT OK   : is_final is true
+  ASSERT OK   : no secret-looking blob in the stored line
+stats after speech:
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=22718 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=22718 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa18e8000 stack=0xa18f0000 trap=0xa18f7000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa18e8100 len=33
+[inject] dlopen ok handle=0xac4277a3 flags=0x6
+[inject] dlsym ok install=0x8659e530 status=0x8659facc stats=0x8659fb1c
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 seen=7 final=1 queued=1 sent=1 acked=1 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=1 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=22718 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+  ASSERT OK   : hook callback saw the factory onStream call
+  ASSERT OK   : hook captured at least one isFinished=1 result
+  ASSERT OK   : hook agent got an ACK from the bridge
+
+===== P6 existing AI worker consumes the new event :: 2026-11-21 14:19:28 =====
+  worker state offset before: 0
+worker:
+[aiw] 2026-11-21T14:19:30 no consumer state yet (first run); scanning events from offset 0
+[aiw] 2026-11-21T14:19:30 start pid=23812 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t6/worker_state/consumer_state.json provider=mock offset=0 (mock only, no network)
+[aiw] 2026-11-21T14:19:31 seq gap pid=16112 missing=2 range=[3,4] (recorded, NOT fabricated)
+[aiw] 2026-11-21T14:19:31 seq gap pid=29413 missing=1 range=[2,2] (recorded, NOT fabricated)
+[aiw] 2026-11-21T14:19:35 exit reason=idle_timeout processed=206 duplicates=0 invalid=0 gaps=2 resets=16 provider_retries=0 offset=63260 state_saves=207 state_errors=0
+[aiw] 2026-11-21T14:19:35 file identity: reason=first_open offset=63260 prefix_hash=55e2975ee25adf4b resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-21T14:19:35 provider summary: name=mock calls=206 (no network)
+  ASSERT OK   : worker processed the new ASR event(s)
+  worker state offset after: 63260
+  ASSERT OK   : worker advanced its offset (event consumed)
+
+===== P7 uninstall restores the factory prologue :: 2026-11-21 14:19:35 =====
+> /data/local/tmp/t6/tg_injector --so /data/local/tmp/t6/libtg_hook.so --pid 22718 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=23028 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=22718 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=22718 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa183a000 stack=0xa1842000 trap=0xa1849000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa183a100 len=33
+[inject] dlopen ok handle=0xac4277a3 flags=0x6
+[inject] dlsym ok install=0x8659e530 status=0x8659facc stats=0x8659fb1c
+[inject] tg_hook_uninstall() = 0
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=22718
+[inject] detached (target thread resumed)
+  ASSERT OK   : tg_hook_uninstall() returned 0
+  ASSERT OK   : hook patch removed (hooked=0)
+  ASSERT OK   : factory core still alive after uninstall
+  ASSERT OK   : after uninstall the factory path is unchanged for the hook (no t6 events)
+
+SUMMARY: passes=44 fails=0
+################ T6-01 device verification :: 2026-11-21 14:20:51 ################
+
+===== P6 existing AI worker consumes the new event :: 2026-11-21 14:20:52 =====
+  worker state offset before: 0
+worker:
+[aiw] 2026-11-21T14:20:54 no consumer state yet (first run); scanning events from offset 0
+[aiw] 2026-11-21T14:20:54 start pid=24606 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t6/worker_state/consumer_state.json provider=mock offset=0 (mock only, no network)
+[aiw] 2026-11-21T14:20:56 seq gap pid=16112 missing=2 range=[3,4] (recorded, NOT fabricated)
+[aiw] 2026-11-21T14:20:56 seq gap pid=29413 missing=1 range=[2,2] (recorded, NOT fabricated)
+[aiw] 2026-11-21T14:20:59 exit reason=idle_timeout processed=206 duplicates=0 invalid=0 gaps=2 resets=16 provider_retries=0 offset=63260 state_saves=207 state_errors=0
+[aiw] 2026-11-21T14:20:59 file identity: reason=first_open offset=63260 prefix_hash=55e2975ee25adf4b resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-21T14:20:59 provider summary: name=mock calls=206 (no network)
+  ASSERT OK   : worker processed the new ASR event(s)
+  worker state offset after: 63260
+  ASSERT OK   : worker advanced its offset (event consumed)
+
+SUMMARY: passes=2 fails=0
+################ T6-01 device verification :: 2026-11-21 14:21:27 ################
+
+===== P6 existing AI worker consumes the new event :: 2026-11-21 14:21:28 =====
+  worker state offset before: 34119
+worker:
+[aiw] 2026-11-21T14:21:30 state v1 has no prefix fingerprint (offset=34119): cannot prove the file is the same one; rescanning from offset 0 and relying on recent_ids (111 ids) for bounded duplicates
+[aiw] 2026-11-21T14:21:30 legacy state migrated: rescanning from offset 0 with prefix tracking enabled
+[aiw] 2026-11-21T14:21:30 start pid=24881 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t6/worker_state/consumer_state.json provider=mock offset=34119 (mock only, no network)
+[aiw] 2026-11-21T14:21:36 exit reason=idle_timeout processed=95 duplicates=111 invalid=0 gaps=0 resets=2 provider_retries=0 offset=63260 state_saves=207 state_errors=0
+[aiw] 2026-11-21T14:21:36 file identity: reason=legacy_state_rescan offset=63260 prefix_hash=55e2975ee25adf4b resets=0 legacy_rescans=1 replacements=0 truncations=0
+[aiw] 2026-11-21T14:21:36 provider summary: name=mock calls=95 (no network)
+  ASSERT OK   : worker processed the new ASR event(s)
+  worker state offset after: 63260
+  ASSERT OK   : worker advanced its offset (event consumed)
+
+SUMMARY: passes=2 fails=0

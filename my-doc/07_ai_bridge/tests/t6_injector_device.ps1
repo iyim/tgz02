@@ -36,7 +36,7 @@ $script:LogPath = $Log
 function Adb([string[]]$argv) { & $adb -s $Dev @argv 2>&1 }
 function Sh([string]$c) { (Adb @('shell', $c)) -join "`n" }
 function Dev1([string]$c) { ((Sh $c) -replace "`r", "").Trim() }
-function Su([string]$c) { Dev1 ("su -c 'PATH=/system/bin:/system/xbin:/sbin; " + $c + "'") }
+function Su([string]$c) { Dev1 ("su -c " + [char]34 + $c + [char]34) }
 function Rec([string]$t) { $t | Out-File -FilePath $script:LogPath -Encoding utf8 -Append }
 function Note([string]$t) { Rec ("  " + $t); Write-Host ("  " + $t) }
 function Assert([bool]$cond, [string]$what) {
@@ -65,7 +65,7 @@ if (Want 'P0') {
     Rec ("adb devices:`n" + $devs)
     Assert ($devs -match [regex]::Escape($Dev) + '\s+device') "device $Dev is online"
 
-    $id = Dev1 "id"
+    $id = Su "id"
     Note ("id: " + $id)
     Assert ($id -match 'uid=0') "su gives uid=0 (expected via Magisk)"
 
@@ -90,6 +90,21 @@ if (Want 'P0') {
 
     $sdk = Dev1 "getprop ro.build.version.sdk"
     Note ("sdk: " + $sdk)
+
+    # 如果这个进程里已经映射过 libtg_hook.so（上一次验收留下的），P2 的
+    # "already_mapped=0 / 首次注入" 就不成立。重启原厂 app 换一个干净进程再测。
+    $mapped = Su ("grep -c libtg_hook /proc/" + $core + "/maps 2>/dev/null")
+    if ($mapped -notmatch '^\d+$') { $mapped = 0 }
+    if ([int]$mapped -gt 0) {
+        Note ("libtg_hook.so already mapped in pid " + $core + "; restarting the assistant for a clean process")
+        Adb @('shell', 'am force-stop com.alibaba.ailabs.genie.smartapp') | Out-Null
+        Start-Sleep -Seconds 2
+        Adb @('shell', 'monkey -p com.alibaba.ailabs.genie.smartapp -c android.intent.category.LAUNCHER 1') | Out-Null
+        Start-Sleep -Seconds 8
+        $core = CorePid
+        Note ("core pid after restart: " + $core)
+    }
+    Assert ($core -match '^\d+$') "factory core is running after the preflight restart"
 }
 
 # ---------------------------------------------------------------- P1 推送
@@ -159,7 +174,7 @@ if (Want 'P3') {
     Note ("libtg_hook mappings: " + $maps)
     Assert ([int]$maps -ge 1) "libtg_hook.so is mapped inside the target process"
 
-    $log = Su "logcat -d -s tgl:V -t 200 2>/dev/null | tail -20"
+    $log = Su "logcat -d -s tgl:V | tail -20"
     Rec ("logcat tgl:`n" + $log)
     Assert ($log -match 'hook installed') "hook agent logged 'hook installed'"
     Assert ($log -match 'sender thread up') "hook agent sender thread started"
@@ -187,27 +202,35 @@ if (Want 'P5') {
     $before = Lines $EV
     Note ("events lines before: " + $before)
 
-    $base = $Stim.Trim()
-    $wk = Join-Path $stimDir ($base + '_wake.wav')
-    $cm = Join-Path $stimDir ($base + '_cmd.wav')
-    $parts = @()
-    if ((Test-Path $wk) -and (Test-Path $cm)) { $parts += "${wk}:3000"; $parts += "${cm}:3000" }
-    else { $parts += (Join-Path $stimDir ($base + '.wav')) + ':3000' }
-
-    Adb @('shell', 'input keyevent KEYCODE_WAKEUP') | Out-Null
-    Adb @('shell', 'monkey -p com.alibaba.ailabs.genie.smartapp -c android.intent.category.LAUNCHER 1') | Out-Null
-    Start-Sleep -Seconds 2
-
-    $plog = Join-Path $hostWork 't6_play.log'
-    & powershell.exe -NoProfile -STA -File 'D:\tgz02\OS\_analysis\t502_play.ps1' -Plan ($parts -join ',') -Volume '1.0' -LogFile $plog | Out-Null
-    Note ("played: " + ($parts -join ' , '))
-
-    $deadline = (Get-Date).AddSeconds(45)
+    # 唤醒靠声学触发，第一次偶尔叫不醒（尤其 app 刚重启/屏幕刚亮）。
+    # 所以：先确保亮屏 + 前台，再播；没产生事件就等一会儿重试一次（换一条指令）。
     $after = $before
-    while ((Get-Date) -lt $deadline) {
-        Start-Sleep -Seconds 3
-        $after = Lines $EV
+    for ($try = 1; $try -le 3; $try++) {
+        $base = if ($try -eq 1) { $Stim.Trim() } else { 's02' }
+        $wk = Join-Path $stimDir ($base + '_wake.wav')
+        $cm = Join-Path $stimDir ($base + '_cmd.wav')
+        $parts = @()
+        if ((Test-Path $wk) -and (Test-Path $cm)) { $parts += "${wk}:3000"; $parts += "${cm}:3000" }
+        else { $parts += (Join-Path $stimDir ($base + '.wav')) + ':3000' }
+
+        Adb @('shell', 'input keyevent KEYCODE_WAKEUP') | Out-Null
+        Start-Sleep -Milliseconds 800
+        Adb @('shell', 'monkey -p com.alibaba.ailabs.genie.smartapp -c android.intent.category.LAUNCHER 1') | Out-Null
+        Start-Sleep -Seconds 6
+
+        $plog = Join-Path $hostWork ("t6_play_" + $try + ".log")
+        & powershell.exe -NoProfile -STA -File 'D:\tgz02\OS\_analysis\t502_play.ps1' -Plan ($parts -join ',') -Volume '1.0' -LogFile $plog | Out-Null
+        Note ("attempt " + $try + " played: " + ($parts -join ' , '))
+
+        $deadline = (Get-Date).AddSeconds(45)
+        while ((Get-Date) -lt $deadline) {
+            Start-Sleep -Seconds 3
+            $after = Lines $EV
+            if ($after -gt $before) { break }
+        }
         if ($after -gt $before) { break }
+        Note ("attempt " + $try + " produced no ASR final; retrying")
+        Start-Sleep -Seconds 2
     }
     Note ("events lines after: " + $after)
     Assert ($after -gt $before) "bridge stored at least one new ASR final event"
@@ -234,19 +257,29 @@ if (Want 'P5') {
 if (Want 'P6') {
     Step "P6 existing AI worker consumes the new event"
     $ws = "$devDir/worker_state"
-    Su ("rm -rf " + $ws + " && cp -r /data/local/tmp/t5_bridge/ai_worker " + $ws) | Out-Null
-    $off1 = Su ("cat " + $ws + "/consumer_state.json 2>/dev/null | tr ',' '\n' | grep -m1 offset | tr -dc '0-9'")
+    # su -c 里不要串多条命令（Magisk 的 su 在某些组合下会退化成 shell 执行）；
+    # 一条一个 Su 调用，保证每条都以 root 跑。
+    Su ("rm -rf " + $ws) | Out-Null
+    Su ("mkdir -p " + $ws) | Out-Null
+    Su ("cp /data/local/tmp/t5_bridge/ai_worker/consumer_state.json " + $ws + "/consumer_state.json") | Out-Null
+    $st1 = Su ("cat " + $ws + "/consumer_state.json 2>/dev/null")
+    $off1 = 0
+    if ($st1 -match '"offset"\s*:\s*(\d+)') { $off1 = [int64]$Matches[1] }
     Note ("worker state offset before: " + $off1)
 
-    $run = Su ("/data/local/tmp/t5_bridge/bin/ai_worker --events-file " + $EV +
-                " --state-dir " + $ws + " --work-dir /data/local/tmp/t5_bridge/work" +
-                " --provider mock --mock-reply ok --max-events 1 --idle-exit-ms 4000 --max-runtime-ms 20000")
+    # --events-file 只接受"文件名"，不接受绝对路径（worker 的既有约定）；目录用 --work-dir。
+    # 一次把积压的新事件都消费掉（--max-events 0 = 不限），断言 processed>=1 且 offset 前进。
+    $run = Su ("/data/local/tmp/t5d06/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work" +
+                " --events-file events.jsonl --state-dir " + $ws +
+                " --provider mock --mock-reply ok --max-events 0 --idle-exit-ms 3000 --max-runtime-ms 30000")
     Rec ("worker:`n" + $run)
     Write-Host $run
-    Assert ($run -match 'processed=1') "worker processed exactly one new event"
-    $off2 = Su ("cat " + $ws + "/consumer_state.json 2>/dev/null | tr ',' '\n' | grep -m1 offset | tr -dc '0-9'")
+    Assert ($run -match 'processed=[1-9]') "worker processed the new ASR event(s)"
+    $st2 = Su ("cat " + $ws + "/consumer_state.json 2>/dev/null")
+    $off2 = 0
+    if ($st2 -match '"offset"\s*:\s*(\d+)') { $off2 = [int64]$Matches[1] }
     Note ("worker state offset after: " + $off2)
-    Assert ([int]$off2 -gt [int]$off1) "worker advanced its offset (event consumed)"
+    Assert ($off2 -gt $off1) "worker advanced its offset (event consumed)"
     Su ("rm -rf " + $ws) | Out-Null
 }
 

@@ -40,6 +40,7 @@ typedef struct {
     uint32_t scratch;          /* 目标进程里的一块 RW 页（字符串/栈/沙袋） */
     uint32_t stack_top;        /* 远程调用用的 sp */
     uint32_t trap;             /* UDF 沙袋地址 */
+    uint32_t gadget;           /* libc 里的 "pop {pc}" 返程垫片（用于 dlopen/dlsym 的命名空间判定） */
     char     thread_map[160];  /* 选中的线程当时所在的映射（排障用） */
     int      attach_score;
 } rc_ctx;
@@ -56,9 +57,18 @@ int rc_read(rc_ctx *c, uint32_t addr, void *buf, size_t len, char *err, size_t e
 int rc_read_str(rc_ctx *c, uint32_t addr, char *out, size_t cap, char *err, size_t errlen);
 int rc_write(rc_ctx *c, uint32_t addr, const void *buf, size_t len, char *err, size_t errlen);
 
-/* 在目标进程里调用 fn(args...)，返回 r0 */
+/* 在目标进程里调用 fn(args...)，返回 r0（返程回到沙袋） */
 int rc_call(rc_ctx *c, uint32_t fn, const uint32_t *args, int nargs, uint32_t *ret,
             char *err, size_t errlen);
+
+/*
+ * 同上，但"返回地址"落在 libc 的 pop{pc} 垫片上，再由它跳到沙袋。
+ * 用途：bionic 的 dlopen/dlsym 会用 __builtin_return_address(0) 判断调用者命名空间，
+ * 返回地址是匿名映射时会得到 "(anonymous)" 命名空间并拒绝 /data/local/tmp 下的绝对路径。
+ * 让返回地址落在 libc（默认命名空间，非 isolated）里，判定即可放行。
+ */
+int rc_call_ns(rc_ctx *c, uint32_t fn, const uint32_t *args, int nargs, uint32_t *ret,
+               char *err, size_t errlen);
 
 /* 目标进程 mmap（返回 0 成功，*addr 为远端地址） */
 int rc_remote_mmap(rc_ctx *c, uint32_t len, int prot, uint32_t *addr,

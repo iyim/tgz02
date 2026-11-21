@@ -392,6 +392,9 @@ int tg_hook_uninstall(void)
     __builtin___clear_cache((char *)p, (char *)p + 8);
     (void)mprotect((void *)page, 4096, old ? old : (PROT_READ | PROT_EXEC));
     g_patched = 0;
+    /* 允许同一进程里再次 install：把状态退回"未安装"，
+     * 否则第二次 tg_hook_install() 会因为 g_state==TG_OK 直接返回、什么都不做。 */
+    g_state = TG_E_NOT_INSTALLED;
     slog("hook uninstalled, original prologue restored");
     return TG_OK;
 }
@@ -520,7 +523,7 @@ static int sock_open(void)
     int rc;
 
     fd = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (fd < 0) { INC(g_conn_fail); return -1; }
+    if (fd < 0) { INC(g_conn_fail); slog("socket(AF_UNIX) failed errno=%d", errno); return -1; }
 
     memset(&sa, 0, sizeof(sa));
     sa.sun_family = AF_UNIX;
@@ -528,9 +531,16 @@ static int sock_open(void)
     strncpy(sa.sun_path + 1, TG_SOCK_NAME, sizeof(sa.sun_path) - 2);
     sl = (socklen_t)(offsetof(struct sockaddr_un, sun_path) + 1 + strlen(TG_SOCK_NAME));
 
-    if (nonblock(fd) != 0) { close(fd); INC(g_conn_fail); return -1; }
+    if (nonblock(fd) != 0) {
+        slog("fcntl(O_NONBLOCK) failed errno=%d", errno);
+        close(fd);
+        INC(g_conn_fail);
+        return -1;
+    }
 
     rc = connect(fd, (struct sockaddr *)&sa, sl);
+    if (rc != 0) slog("connect(abstract:%s, len=%d) rc=%d errno=%d",
+                      TG_SOCK_NAME, (int)sl, rc, errno);
     if (rc != 0 && errno == EINPROGRESS) {
         struct pollfd pf;
         pf.fd = fd; pf.events = POLLOUT; pf.revents = 0;
@@ -538,8 +548,9 @@ static int sock_open(void)
             int soerr = 0;
             socklen_t l = sizeof(soerr);
             if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &soerr, &l) == 0 && soerr == 0) rc = 0;
-            else rc = -1;
+            else { slog("connect poll done, so_error=%d", soerr); rc = -1; }
         } else {
+            slog("connect poll timed out after %d ms", TG_CONN_TMO_MS);
             rc = -1;
         }
     }
@@ -786,6 +797,13 @@ int tg_hook_install(void)
     }
 
     g_stop = 0;
+    if (g_thread_started) {
+        /* 卸载后再安装：发送线程还活着，复用即可，不再起第二个 */
+        g_state = TG_OK;
+        g_err[0] = '\0';
+        slog("hook re-installed: func=0x%08x (sender thread reused)", g_func);
+        return TG_OK;
+    }
     if (pthread_attr_init(&attr) != 0) {
         g_state = TG_E_THREAD;
         set_err("pthread_attr_init failed");

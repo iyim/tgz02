@@ -247,6 +247,10 @@ static int elf_sym(const char *path, uint32_t base, const char *want, uint32_t *
     off_t symoff = 0, stroff = 0, hashoff = 0, gnuoff = 0;
     uint32_t found_val = 0;
     int found = 0;
+    /* 找不到符号时把查找轨迹带进错误信息（现场排障用，不含敏感内容） */
+    uint32_t dbg_nbucket = 0, dbg_nchain = 0, dbg_bucket = 0;
+    int dbg_walk = 0;
+    char dbg_last[80] = "";
 
     fd = open(path, O_RDONLY | O_CLOEXEC);
     if (fd < 0) {
@@ -317,7 +321,6 @@ static int elf_sym(const char *path, uint32_t base, const char *want, uint32_t *
         uint32_t hdr[2];
         uint32_t nbucket, nchain;
         uint32_t h = elf_hash_name(want);
-        uint32_t idx;
         int walk = 0;
 
         if (vaddr_to_off(ph, eh.e_phnum, hash, &hashoff) != 0 ||
@@ -327,39 +330,43 @@ static int elf_sym(const char *path, uint32_t base, const char *want, uint32_t *
         }
         nbucket = hdr[0];
         nchain = hdr[1];
-        idx = (nbucket != 0) ? (h % nbucket) : 0;
+        dbg_nbucket = nbucket;
+        dbg_nchain = nchain;
+        dbg_bucket = (nbucket != 0) ? (h % nbucket) : 0;
         if (nbucket == 0 || nchain == 0 || nchain > 200000u) {
             rc_err(err, errlen, "implausible DT_HASH (nbucket=%u nchain=%u) in %s",
                    nbucket, nchain, path);
             goto done;
         }
 
-        /* bucket 里是符号索引；链在 buckets 之后 */
-        for (;;) {
-            uint32_t symidx;
-            off_t boff = hashoff + 8 + (off_t)idx * 4;
+        /* DT_HASH 的结构：nbucket 个桶（桶里存"符号索引"），后面是 nchain 条链。
+         * 第一跳读桶，之后一律走链——不能再拿链里的值当桶下标，否则会绕圈。 */
+        {
+            uint32_t symidx = 0;
 
-            if (pread_full(fd, &symidx, 4, boff) != 0) break;
-            if (symidx == 0) break;
-            if (symidx >= nchain) break;
-            if (++walk > MAX_SYM_WALK) break;
-
-            {
-                Elf32_Sym s;
-                char nm[256];
-                if (pread_full(fd, &s, sizeof(s), symoff + (off_t)symidx * sizeof(Elf32_Sym)) != 0) break;
-                if (s.st_name < strsz && s.st_shndx != SHN_UNDEF) {
-                    size_t cap = sizeof(nm);
-                    if (strsz - s.st_name < cap) cap = strsz - s.st_name;
-                    if (pread_full(fd, nm, cap, stroff + (off_t)s.st_name) == 0) {
-                        nm[cap - 1] = '\0';
-                        if (strcmp(nm, want) == 0) { found_val = s.st_value; found = 1; break; }
+            if (pread_full(fd, &symidx, 4, hashoff + 8 + (off_t)dbg_bucket * 4) != 0) symidx = 0;
+            while (symidx != 0) {
+                if (symidx >= nchain) break;
+                if (++walk > MAX_SYM_WALK) break;
+                {
+                    Elf32_Sym s;
+                    char nm[256];
+                    if (pread_full(fd, &s, sizeof(s),
+                                   symoff + (off_t)symidx * sizeof(Elf32_Sym)) != 0) break;
+                    if (s.st_name < strsz && s.st_shndx != SHN_UNDEF) {
+                        size_t cap = sizeof(nm);
+                        if (strsz - s.st_name < cap) cap = strsz - s.st_name;
+                        if (pread_full(fd, nm, cap, stroff + (off_t)s.st_name) == 0) {
+                            nm[cap - 1] = '\0';
+                            dbg_walk = walk;
+                            snprintf(dbg_last, sizeof(dbg_last), "%s", nm);
+                            if (strcmp(nm, want) == 0) { found_val = s.st_value; found = 1; break; }
+                        }
                     }
                 }
+                if (pread_full(fd, &symidx, 4,
+                               hashoff + 8 + (off_t)nbucket * 4 + (off_t)symidx * 4) != 0) break;
             }
-            /* 链表的下一项：chains[symidx] */
-            if (pread_full(fd, &idx, 4,
-                           hashoff + 8 + (off_t)nbucket * 4 + (off_t)symidx * 4) != 0) break;
         }
     } else if (gnuhash != 0) {
         uint32_t gh[4];
@@ -418,7 +425,9 @@ static int elf_sym(const char *path, uint32_t base, const char *want, uint32_t *
     }
 
     if (!found) {
-        rc_err(err, errlen, "symbol %s not found in %s dynsym", want, path);
+        rc_err(err, errlen, "symbol %s not found in %s dynsym "
+               "(nbucket=%u nchain=%u bucket=%u walk=%d last='%s')",
+               want, path, dbg_nbucket, dbg_nchain, dbg_bucket, dbg_walk, dbg_last);
         goto done;
     }
     *out = base + found_val;
@@ -642,7 +651,7 @@ void rc_detach(rc_ctx *c)
 /* ------------------------------------------------------------- 远程调用 */
 
 static int rc_call_on_sp(rc_ctx *c, uint32_t fn, const uint32_t *args, int nargs,
-                         uint32_t sp, uint32_t *ret, char *err, size_t errlen)
+                         uint32_t sp, uint32_t lr, uint32_t *ret, char *err, size_t errlen)
 {
     struct user_regs saved, regs;
     int i;
@@ -657,7 +666,7 @@ static int rc_call_on_sp(rc_ctx *c, uint32_t fn, const uint32_t *args, int nargs
     if (fn & 1u) regs.ARM_cpsr |= 0x20u;
     else regs.ARM_cpsr &= ~0x20u;
     regs.ARM_sp = sp;
-    regs.ARM_lr = c->trap;
+    regs.ARM_lr = lr;
     regs.ARM_r0 = (nargs > 0) ? args[0] : 0;
     regs.ARM_r1 = (nargs > 1) ? args[1] : 0;
     regs.ARM_r2 = (nargs > 2) ? args[2] : 0;
@@ -740,9 +749,100 @@ int rc_call(rc_ctx *c, uint32_t fn, const uint32_t *args, int nargs, uint32_t *r
         rc_err(err, errlen, "scratch page is not prepared");
         return RC_E_CALL;
     }
-    return rc_call_on_sp(c, fn, args, nargs, c->stack_top, ret, err, errlen);
+    return rc_call_on_sp(c, fn, args, nargs, c->stack_top, c->trap, ret, err, errlen);
 }
 
+int rc_call_ns(rc_ctx *c, uint32_t fn, const uint32_t *args, int nargs, uint32_t *ret,
+               char *err, size_t errlen)
+{
+    uint32_t sp;
+    int rc;
+
+    if (c->stack_top == 0 || c->trap == 0 || c->gadget == 0) {
+        rc_err(err, errlen, "namespace-aware call needs scratch+trap+gadget");
+        return RC_E_CALL;
+    }
+    /* 栈顶留一个字给 pop{pc}：callee 入口 sp 仍 8 字节对齐，返回后跳回沙袋 */
+    sp = (uint32_t)((c->stack_top - 8u) & ~7u);
+    rc = rc_write(c, sp, &c->trap, 4, err, errlen);
+    if (rc != RC_OK) return rc;
+    return rc_call_on_sp(c, fn, args, nargs, sp, c->gadget, ret, err, errlen);
+}
+
+/*
+ * 在 libc 的代码段里找一条 `pop {pc}`（= ldmia sp!, {pc}，0xE8BD8000）当返程垫片。
+ * 为什么要它：bionic 的 dlopen/dlsym 用 __builtin_return_address(0) 判断"调用者是谁"，
+ * 返回地址落在匿名映射里就会得到 "(anonymous)" 命名空间，然后拒绝 /data/local/tmp 下的
+ * 绝对路径。把返回地址放进 libc（默认命名空间、非 isolated），判定即放行；
+ * 而 libc 这条 pop{pc} 会把控制流交给我们在栈上放的沙袋地址，捕获方式不变。
+ */
+static int find_gadget(rc_ctx *c, char *err, size_t errlen)
+{
+    uint32_t base = 0;
+    char path[256];
+    int fd = -1;
+    Elf32_Ehdr eh;
+    Elf32_Phdr ph[64];
+    int i;
+    int rc;
+    int found = 0;
+
+    rc = rc_maps_base(c, "libc.so", &base, path, sizeof(path), err, errlen);
+    if (rc != RC_OK) return rc;
+
+    fd = open(path, O_RDONLY | O_CLOEXEC);
+    if (fd < 0) {
+        rc_err(err, errlen, "open %s failed errno=%d", path, errno);
+        return RC_E_ELF;
+    }
+    if (pread_full(fd, &eh, sizeof(eh), 0) != 0 ||
+        eh.e_phnum == 0 || eh.e_phnum > 64) {
+        rc_err(err, errlen, "cannot read ELF header of %s", path);
+        close(fd);
+        return RC_E_ELF;
+    }
+    if (pread_full(fd, ph, (size_t)eh.e_phnum * sizeof(Elf32_Phdr),
+                   (off_t)eh.e_phoff) != 0) {
+        rc_err(err, errlen, "cannot read program headers of %s", path);
+        close(fd);
+        return RC_E_ELF;
+    }
+
+    for (i = 0; i < eh.e_phnum && !found; i++) {
+        uint32_t *buf;
+        size_t n, k;
+
+        if (ph[i].p_type != PT_LOAD) continue;
+        if ((ph[i].p_flags & PF_X) == 0) continue;
+        n = ph[i].p_filesz;
+        if (n < 4 || n > (4u << 20)) continue;
+        buf = (uint32_t *)malloc(n);
+        if (buf == NULL) continue;
+        if (pread_full(fd, buf, n, (off_t)ph[i].p_offset) != 0) {
+            free(buf);
+            continue;
+        }
+        for (k = 0; k + 4 <= n; k += 4) {
+            if (buf[k / 4] == 0xE8BD8000u) break;
+        }
+        if (k + 4 <= n) {
+            uint32_t addr = base + ph[i].p_vaddr + (uint32_t)k;
+            uint32_t w = 0;
+            if (rc_read(c, addr, &w, 4, err, errlen) == RC_OK && w == 0xE8BD8000u) {
+                c->gadget = addr;
+                found = 1;
+            }
+        }
+        free(buf);
+    }
+    close(fd);
+
+    if (!found) {
+        rc_err(err, errlen, "no pop{pc} gadget found in %s", path);
+        return RC_E_SYM;
+    }
+    return RC_OK;
+}
 int rc_remote_mmap(rc_ctx *c, uint32_t len, int prot, uint32_t *addr,
                    char *err, size_t errlen)
 {
@@ -770,7 +870,7 @@ int rc_remote_mmap(rc_ctx *c, uint32_t len, int prot, uint32_t *addr,
     args[4] = 0xFFFFFFFFu;      /* fd = -1 */
     args[5] = 0;                /* offset */
 
-    rc = rc_call_on_sp(c, fn, args, 6, sp, &ret, err, errlen);
+    rc = rc_call_on_sp(c, fn, args, 6, sp, c->trap, &ret, err, errlen);
     if (rc != RC_OK) return rc;
     if (ret == 0 || ret == 0xFFFFFFFFu || ret < 0x1000u) {
         rc_err(err, errlen, "remote mmap returned 0x%08x", ret);
@@ -810,5 +910,8 @@ int rc_prepare(rc_ctx *c, char *err, size_t errlen)
             return RC_E_READ;
         }
     }
+
+    rc = find_gadget(c, err, errlen);
+    if (rc != RC_OK) return rc;
     return RC_OK;
 }

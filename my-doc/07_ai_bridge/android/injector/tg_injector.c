@@ -200,6 +200,7 @@ int main(int argc, char **argv)
     uint32_t ret = 0;
     char already = 0;
     char hit[256];
+    const char *so_base = SO_TARGET;
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--pid") == 0 && i + 1 < argc) {
@@ -253,10 +254,15 @@ int main(int argc, char **argv)
     rc = check_abi(pid);
     if (rc != 0) return rc;
 
-    /* 3) 已注入？ */
+    /* 3) 已注入？按"本次要加载的那个文件名"判断（而不是写死 libtg_hook.so），
+     *    这样同名/改名并存时行为一致，也不会因为别的库已映射就跳过加载。 */
     memset(&g_ctx, 0, sizeof(g_ctx));
     g_ctx.pid = pid;
-    if (rc_maps_has(&g_ctx, SO_TARGET, hit, sizeof(hit))) {
+    {
+        const char *b = strrchr(so, '/');
+        so_base = (b != NULL) ? b + 1 : so;
+    }
+    if (rc_maps_has(&g_ctx, so_base, hit, sizeof(hit))) {
         already = 1;
         out("[inject] already_mapped=1 (%s)", hit);
         hit[0] = '\0';
@@ -289,8 +295,8 @@ int main(int argc, char **argv)
         exit_code = 14;
         goto detach;
     }
-    out("[inject] scratch=0x%08x stack=0x%08x trap=0x%08x",
-        g_ctx.scratch, g_ctx.stack_top, g_ctx.trap);
+    out("[inject] scratch=0x%08x stack=0x%08x trap=0x%08x gadget=0x%08x",
+        g_ctx.scratch, g_ctx.stack_top, g_ctx.trap, g_ctx.gadget);
 
     /* 5) 目标进程里的 dlopen/dlsym/dlerror */
     {
@@ -352,7 +358,7 @@ int main(int argc, char **argv)
 
             args[0] = at;
             args[1] = flags;
-            rc = rc_call(&g_ctx, dlopen_fn, args, 2, &handle, err, sizeof(err));
+            rc = rc_call_ns(&g_ctx, dlopen_fn, args, 2, &handle, err, sizeof(err));
             if (rc != RC_OK) {
                 out("[inject] ERROR stage=dlopen_call rc=%d err=%s", rc, err);
                 exit_code = 17;
@@ -395,7 +401,7 @@ int main(int argc, char **argv)
             }
             args[0] = handle;
             args[1] = name_at;
-            rc = rc_call(&g_ctx, dlsym_fn, args, 2, syms[k].slot, err, sizeof(err));
+            rc = rc_call_ns(&g_ctx, dlsym_fn, args, 2, syms[k].slot, err, sizeof(err));
             if (rc != RC_OK || *syms[k].slot == 0) {
                 out("[inject] ERROR stage=dlsym symbol=%s rc=%d err=%s", syms[k].name, rc,
                     rc == RC_OK ? "symbol not found" : err);
