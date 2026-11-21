@@ -313,6 +313,8 @@ static int build_stub_page(uint32_t func, int *err_out)
     uint32_t *c;
     uint32_t *t;
 
+    if (g_stub_page != NULL) return 0;      /* prepare/install 可能被多次调用，只分配一次 */
+
     g_stub_page = mmap(NULL, TG_STUB_PAGE, PROT_READ | PROT_WRITE,
                        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (g_stub_page == MAP_FAILED) {
@@ -738,38 +740,29 @@ static void *sender_main(void *arg)
 
 /* ------------------------------------------------------------- 对外接口 */
 
-int tg_hook_install(void)
+/* 解析模块/符号/序言：只读，不写任何指令。成功后补丁范围即可查询。 */
+static int tg_resolve(void)
 {
     mod_info m;
     uint32_t addr = 0, value = 0;
-    int err = TG_OK;
-    pthread_attr_t attr;
-
-    if (g_patched) {
-        g_state = TG_OK;
-        return TG_OK;
-    }
-    if (g_state == TG_OK) return TG_OK;
+    int err;
 
     memset(&m, 0, sizeof(m));
     if (dl_iterate_phdr(mod_cb, &m) == 0 || !m.found) {
-        g_state = TG_E_MODULE;
         set_err("module %s is not loaded in this process", TG_MODULE);
-        return g_state;
+        return TG_E_MODULE;
     }
 
     err = mem_find_sym(m.base, TG_SYM, &addr, &value, g_err, sizeof(g_err));
     if (err != TG_OK) {
-        g_state = err;
-        slog("hook install failed: %s", g_err);
-        return g_state;
+        slog("hook prepare failed: %s", g_err);
+        return err;
     }
 
     if (value != TG_SYM_OFF) {
-        g_state = TG_E_OFFSET;
         set_err("symbol %s offset 0x%x != expected 0x%x (module base %p)",
                 TG_SYM, value, TG_SYM_OFF, (void *)m.base);
-        return g_state;
+        return TG_E_OFFSET;
     }
 
     g_func = addr;
@@ -779,21 +772,72 @@ int tg_hook_install(void)
         g_orig[1] = p[1];
     }
     if (g_orig[0] != TG_PRO_W0 || g_orig[1] != TG_PRO_W1) {
-        g_state = TG_E_PROLOGUE;
         set_err("prologue mismatch at %p: %08x %08x (want %08x %08x)",
                 (void *)g_func, g_orig[0], g_orig[1], TG_PRO_W0, TG_PRO_W1);
-        return g_state;
+        g_func = 0;
+        return TG_E_PROLOGUE;
     }
+    return TG_OK;
+}
+
+/*
+ * 只解析目标（不写指令、不起线程）。
+ * Injector 需要先拿到补丁范围 [lo,hi)，暂停其它线程并确认没有线程停在范围里，
+ * 才允许真正写补丁——所以准备与安装必须分成两步。
+ */
+int tg_hook_prepare(void)
+{
+    int rc;
+
+    if (g_func != 0) {
+        g_state = TG_OK;
+        return TG_OK;
+    }
+    rc = tg_resolve();
+    if (rc != TG_OK) {
+        g_state = rc;
+        return rc;
+    }
+    g_state = TG_OK;
+    g_err[0] = '\0';
+    slog("hook prepared: func=0x%08x patch=[0x%08x,0x%08x)",
+         g_func, g_func, g_func + 8u);
+    return TG_OK;
+}
+
+/* 补丁覆盖区间：[lo, hi)；未准备时返回 0 */
+unsigned int tg_hook_patch_lo(void)
+{
+    return g_func;
+}
+
+unsigned int tg_hook_patch_hi(void)
+{
+    return (g_func != 0) ? (g_func + 8u) : 0u;
+}
+
+int tg_hook_install(void)
+{
+    int err;
+    pthread_attr_t attr;
+
+    if (g_patched) {
+        g_state = TG_OK;
+        return TG_OK;
+    }
+
+    err = tg_hook_prepare();
+    if (err != TG_OK) return err;
 
     if (build_stub_page(g_func, &err) != 0) {
         g_state = err;
-        return g_state;
+        return err;
     }
 
     err = patch_entry();
     if (err != TG_OK) {
         g_state = err;
-        return g_state;
+        return err;
     }
 
     g_stop = 0;
@@ -823,7 +867,8 @@ int tg_hook_install(void)
     g_state = TG_OK;
     g_err[0] = '\0';
     slog("hook installed: func=0x%08x symbol_offset=0x%x stub=%p tramp=%p",
-         g_func, value, g_stub_page, (void *)((char *)g_stub_page + TG_TRAMP_OFF));
+         g_func, TG_SYM_OFF, g_stub_page,
+         (void *)((char *)g_stub_page + TG_TRAMP_OFF));
     return TG_OK;
 }
 

@@ -43,9 +43,13 @@
 
 static rc_ctx g_ctx;
 static volatile int g_attached;
+static rc_thread_set g_paused;
+static volatile int g_paused_active;
 
 static void on_fatal_signal(int sig)
 {
+    /* 被信号打断时同样要把暂停的线程放回去，再 detach 执行线程 */
+    if (g_paused_active) rc_resume_all(&g_paused);
     if (g_attached) rc_detach(&g_ctx);
     _exit(128 + sig);
 }
@@ -180,6 +184,53 @@ static int remote_symbol_string(rc_ctx *c, uint32_t fn, char *buf, size_t cap,
     return rc_read_str(c, p, buf, cap, err, errlen);
 }
 
+/* ---------------------------------------------------- 线程保护（补丁窗口） */
+
+/*
+ * 暂停执行线程以外的全部线程，并确认没有任何线程的 PC 落在补丁区间 [lo,hi) 里。
+ * 有线程正好停在区间内时：先把大家放回去，等 20 ms 再重来（最多 12 次）。
+ * 这么做是因为目标函数入口只有 8 字节：如果某个线程已经取指到 func+4，
+ * 我们把 func+0 改成跳转、或把 func+4 改成字面量，都会让它执行到半条指令。
+ * 返回 0 = 所有线程已暂停且区间干净（调用方负责 rc_resume_all）。
+ */
+static int pause_and_check(uint32_t lo, uint32_t hi, char *err, size_t errlen)
+{
+    const int max_attempts = 12;
+    int attempt;
+
+    for (attempt = 1; attempt <= max_attempts; attempt++) {
+        pid_t offender = 0;
+        int rc = rc_pause_all(&g_ctx, &g_paused, err, errlen);
+
+        if (rc != RC_OK) {
+            out("[inject] ERROR stage=pause rc=%d err=%s", rc, err);
+            return rc;
+        }
+        g_paused_active = 1;
+
+        rc = rc_pc_in_range(&g_ctx, &g_paused, lo, hi, &offender, err, errlen);
+        if (rc < 0) {
+            out("[inject] ERROR stage=pc_check rc=%d err=%s", rc, err);
+            rc_resume_all(&g_paused);
+            g_paused_active = 0;
+            return rc;
+        }
+        if (rc == 0) {
+            out("[inject] paused %d other threads (exec tid=%d); [0x%08x,0x%08x) is clear",
+                g_paused.n, (int)g_ctx.tid, lo, hi);
+            return RC_OK;
+        }
+
+        out("[inject] attempt %d: tid=%d sits inside [0x%08x,0x%08x); resuming all, retrying",
+            attempt, (int)offender, lo, hi);
+        rc_resume_all(&g_paused);
+        g_paused_active = 0;
+        usleep(20000);
+    }
+
+    out("[inject] ERROR stage=pc_check: no safe window after %d attempts", max_attempts);
+    return RC_E_UNSAFE;
+}
 int main(int argc, char **argv)
 {
     pid_t pid = -1;
@@ -187,6 +238,9 @@ int main(int argc, char **argv)
     const char *so = NULL;
     int check_only = 0;
     int uninstall = 0;
+    const char *fault = "";
+    int pause_fail_after = 0;
+    int pc_busy_claims = 0;
     int verbose = 0;
     int i;
     int rc;
@@ -196,6 +250,7 @@ int main(int argc, char **argv)
     uint32_t dlopen_fn = 0, dlsym_fn = 0, dlerror_fn = 0;
     uint32_t handle = 0;
     uint32_t install_fn = 0, status_fn = 0, last_error_fn = 0, stats_fn = 0, hooked_fn = 0;
+    uint32_t prepare_fn = 0, lo_fn = 0, hi_fn = 0, patch_lo = 0, patch_hi = 0;
     uint32_t uninstall_fn = 0;
     uint32_t ret = 0;
     char already = 0;
@@ -213,18 +268,30 @@ int main(int argc, char **argv)
             check_only = 1;
         } else if (strcmp(argv[i], "--uninstall") == 0) {
             uninstall = 1;
+        } else if (strcmp(argv[i], "--fault") == 0 && i + 1 < argc) {
+            fault = argv[++i];
         } else if (strcmp(argv[i], "--verbose") == 0) {
             verbose = 1;
         } else {
-            out("usage: %s [--pid N | --name PROC] --so /path/libtg_hook.so [--check|--uninstall] [--verbose]",
+            out("usage: %s [--pid N | --name PROC] --so /path/libtg_hook.so [--check|--uninstall] [--fault NAME] [--verbose]",
                 argv[0]);
             return 10;
         }
     }
     if (so == NULL) {
-        out("usage: %s [--pid N | --name PROC] --so /path/libtg_hook.so [--check|--uninstall] [--verbose]",
+        out("usage: %s [--pid N | --name PROC] --so /path/libtg_hook.so [--check|--uninstall] [--fault NAME] [--verbose]",
             argv[0]);
         return 10;
+    }
+
+    if (strncmp(fault, "pause-fail:", 11) == 0) {
+        pause_fail_after = atoi(fault + 11);
+        out("[inject] fault=pause_fail_after=%d", pause_fail_after);
+    } else if (strcmp(fault, "abort-after-pause") == 0) {
+        out("[inject] fault=abort_after_pause");
+    } else if (strncmp(fault, "pc-busy:", 8) == 0) {
+        pc_busy_claims = atoi(fault + 8);
+        out("[inject] fault=pc_busy_claims=%d", pc_busy_claims);
     }
 
     out("[inject] tg_injector t6-01 begin");
@@ -258,6 +325,8 @@ int main(int argc, char **argv)
      *    这样同名/改名并存时行为一致，也不会因为别的库已映射就跳过加载。 */
     memset(&g_ctx, 0, sizeof(g_ctx));
     g_ctx.pid = pid;
+    g_ctx.pause_fail_after = pause_fail_after;   /* memset 之后再放，避免被清零 */
+    g_ctx.pc_busy_claims = pc_busy_claims;
     {
         const char *b = strrchr(so, '/');
         so_base = (b != NULL) ? b + 1 : so;
@@ -379,6 +448,9 @@ int main(int argc, char **argv)
     {
         struct { const char *name; uint32_t *slot; } syms[] = {
             { "tg_hook_install",    &install_fn },
+            { "tg_hook_prepare",    &prepare_fn },
+            { "tg_hook_patch_lo",   &lo_fn },
+            { "tg_hook_patch_hi",   &hi_fn },
             { "tg_hook_status",     &status_fn },
             { "tg_hook_last_error", &last_error_fn },
             { "tg_hook_stats",      &stats_fn },
@@ -409,47 +481,123 @@ int main(int argc, char **argv)
                 goto detach;
             }
         }
-        out("[inject] dlsym ok install=0x%08x status=0x%08x stats=0x%08x",
-            install_fn, status_fn, stats_fn);
+        out("[inject] dlsym ok install=0x%08x prepare=0x%08x status=0x%08x",
+            install_fn, prepare_fn, status_fn);
     }
 
-    /* 8b) --uninstall：把原厂两条指令写回去，Hook 立即失效（用于验收后恢复原厂纯态） */
+    /* 8b) 解析目标并取补丁范围（tg_hook_prepare 只读：定位模块/符号/校验序言） */
+    {
+        rc = rc_call(&g_ctx, prepare_fn, NULL, 0, &ret, err, sizeof(err));
+        if (rc != RC_OK) {
+            out("[inject] ERROR stage=prepare_call rc=%d err=%s", rc, err);
+            exit_code = 19;
+            goto detach;
+        }
+        out("[inject] tg_hook_prepare() = %d", (int)ret);
+        if ((int)ret != 0) {
+            char txt[200] = "";
+            (void)remote_symbol_string(&g_ctx, last_error_fn, txt, sizeof(txt), err, sizeof(err));
+            out("[inject] ERROR stage=prepare rc=%d last_error=%s", (int)ret, txt);
+            exit_code = 19;
+            goto detach;
+        }
+        rc = rc_call(&g_ctx, lo_fn, NULL, 0, &patch_lo, err, sizeof(err));
+        if (rc == RC_OK) rc = rc_call(&g_ctx, hi_fn, NULL, 0, &patch_hi, err, sizeof(err));
+        if (rc != RC_OK || patch_lo == 0 || patch_hi <= patch_lo) {
+            out("[inject] ERROR stage=patch_range rc=%d lo=0x%08x hi=0x%08x err=%s",
+                rc, patch_lo, patch_hi, err);
+            exit_code = 19;
+            goto detach;
+        }
+        out("[inject] patch_range=[0x%08x,0x%08x)", patch_lo, patch_hi);
+    }
+
+    /* 8c) --uninstall：与安装相同的线程保护，再写回原厂两条指令 */
     if (uninstall) {
         if (!already) {
             out("[inject] ERROR stage=uninstall %s is not mapped in pid %d", SO_TARGET, (int)pid);
             exit_code = 19;
             goto detach;
         }
+        rc = pause_and_check(patch_lo, patch_hi, err, sizeof(err));
+        if (rc != RC_OK) {
+            out("[inject] ERROR stage=uninstall_pause rc=%d err=%s", rc, err);
+            exit_code = 19;
+            goto detach;
+        }
         rc = rc_call(&g_ctx, uninstall_fn, NULL, 0, &ret, err, sizeof(err));
+        rc_resume_all(&g_paused);
+        g_paused_active = 0;
         if (rc != RC_OK) {
             out("[inject] ERROR stage=uninstall_call rc=%d err=%s", rc, err);
             exit_code = 19;
             goto detach;
         }
-        out("[inject] tg_hook_uninstall() = %d", (int)ret);
+        out("[inject] tg_hook_uninstall() = %d (threads resumed)", (int)ret);
         rc = rc_call(&g_ctx, hooked_fn, NULL, 0, &ret, err, sizeof(err));
         if (rc == RC_OK) out("[inject] hooked=%d after uninstall", (int)ret);
         out("[inject] RESULT uninstalled pid=%d", (int)pid);
         exit_code = 0;
         goto detach;
     }
-    /* 9) 安装 Hook（--check 时跳过；已映射时也跳过，避免重复安装） */
-    if (!check_only && !already) {
-        rc = rc_call(&g_ctx, install_fn, NULL, 0, &ret, err, sizeof(err));
+
+    /* 8d) 故障注入：只走"暂停 → 检查 → 恢复"这一段，用来验证清理路径
+     *     （abort-after-pause：暂停成功后故意不打补丁；pause-fail:N：暂停中途失败） */
+    if (!check_only && (strcmp(fault, "abort-after-pause") == 0 ||
+                        strncmp(fault, "pause-fail:", 11) == 0)) {
+        rc = pause_and_check(patch_lo, patch_hi, err, sizeof(err));
         if (rc != RC_OK) {
-            out("[inject] ERROR stage=install_call rc=%d err=%s", rc, err);
+            out("[inject] ERROR stage=install_pause rc=%d err=%s", rc, err);
             exit_code = 19;
             goto detach;
         }
-        out("[inject] tg_hook_install() = %d", (int)ret);
-        if ((int)ret != 0) {
-            char txt[200] = "";
-            if (last_error_fn != 0) {
-                (void)remote_symbol_string(&g_ctx, last_error_fn, txt, sizeof(txt), err, sizeof(err));
-            }
-            out("[inject] ERROR stage=install rc=%d last_error=%s", (int)ret, txt);
+        rc_resume_all(&g_paused);
+        g_paused_active = 0;
+        out("[inject] ERROR stage=install_aborted (fault injection): threads resumed, no patch written");
+        exit_code = 21;
+        goto detach;
+    }
+
+    /* 9) 安装 Hook：先暂停全部其它线程并确认补丁窗口干净，再落补丁。
+     *    already_mapped 只表示"库已加载"，不代表"补丁在"——--uninstall 之后同一个实例
+     *    需要能重新安装，所以这里以 hooked 状态为准（hooked=1 才是幂等跳过）。 */
+    if (!check_only) {
+        uint32_t hooked_now = 0;
+
+        rc = rc_call(&g_ctx, hooked_fn, NULL, 0, &hooked_now, err, sizeof(err));
+        if (rc != RC_OK) {
+            out("[inject] ERROR stage=hooked_query rc=%d err=%s", rc, err);
             exit_code = 19;
             goto detach;
+        }
+        if (hooked_now != 0) {
+            out("[inject] patch already installed (hooked=1); nothing to do");
+        } else {
+            rc = pause_and_check(patch_lo, patch_hi, err, sizeof(err));
+            if (rc != RC_OK) {
+                out("[inject] ERROR stage=install_pause rc=%d err=%s", rc, err);
+                exit_code = 19;
+                goto detach;
+            }
+
+            rc = rc_call(&g_ctx, install_fn, NULL, 0, &ret, err, sizeof(err));
+            rc_resume_all(&g_paused);
+            g_paused_active = 0;
+            if (rc != RC_OK) {
+                out("[inject] ERROR stage=install_call rc=%d err=%s", rc, err);
+                exit_code = 19;
+                goto detach;
+            }
+            out("[inject] tg_hook_install() = %d (threads resumed)", (int)ret);
+            if ((int)ret != 0) {
+                char txt[200] = "";
+                if (last_error_fn != 0) {
+                    (void)remote_symbol_string(&g_ctx, last_error_fn, txt, sizeof(txt), err, sizeof(err));
+                }
+                out("[inject] ERROR stage=install rc=%d last_error=%s", (int)ret, txt);
+                exit_code = 19;
+                goto detach;
+            }
         }
     }
 
@@ -496,6 +644,10 @@ int main(int argc, char **argv)
     exit_code = 0;
 
 detach:
+    if (g_paused_active) {
+        rc_resume_all(&g_paused);
+        g_paused_active = 0;
+    }
     rc_detach(&g_ctx);
     g_attached = 0;
     if (exit_code == 0) out("[inject] detached (target thread resumed)");

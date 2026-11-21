@@ -32,6 +32,8 @@
 #define RC_E_SYM      (-8)
 #define RC_E_ELF      (-9)
 #define RC_E_MAP      (-10)
+#define RC_E_PAUSE    (-11)
+#define RC_E_UNSAFE   (-12)
 
 typedef struct {
     pid_t    pid;              /* 目标进程 */
@@ -43,6 +45,8 @@ typedef struct {
     uint32_t gadget;           /* libc 里的 "pop {pc}" 返程垫片（用于 dlopen/dlsym 的命名空间判定） */
     char     thread_map[160];  /* 选中的线程当时所在的映射（排障用） */
     int      attach_score;
+    int      pause_fail_after; /* 故障注入：暂停到第 N 个线程时故意失败（0=关闭） */
+    int      pc_busy_claims;   /* 故障注入：前 N 次 PC 检查都假装"有线程在补丁窗口里" */
 } rc_ctx;
 
 /* 附加到目标进程的一个"安全"线程（不在动态链接器/被 Hook 模块里） */
@@ -82,5 +86,29 @@ int rc_sym(rc_ctx *c, const char *soname, const char *sym, uint32_t *addr,
 
 /* maps 里是否已经有某路径片段（用于"是否已注入"判断） */
 int rc_maps_has(rc_ctx *c, const char *needle, char *hit, size_t hitcap);
+
+/* ---------------------------------------------------------------- 线程保护 */
+
+/*
+ * 补丁安装/卸载期间必须"全世界停住"：只暂停执行线程时，其它线程可能正停在
+ * 被改写的 8 字节里，写入瞬间它们会执行到半条新指令 / 半条旧指令。
+ *
+ * 做法：枚举 /proc/<pid>/task，对执行线程以外的每个 TID 做 PTRACE_ATTACH 并
+ * waitpid 确认进入 stop；然后重新枚举，直到线程集合稳定（没有新 TID 出现），
+ * 最多 8 轮；任何一步失败都先把已暂停的线程全部 detach 再报错。
+ */
+typedef struct {
+    pid_t *tids;
+    int    n;
+    int    cap;
+} rc_thread_set;
+
+int  rc_pause_all(rc_ctx *c, rc_thread_set *set, char *err, size_t errlen);
+void rc_resume_all(rc_thread_set *set);
+
+/* 检查所有已暂停线程（含执行线程）的 PC 是否落在 [lo,hi)；
+ * 返回 1 = 有线程在范围内（*offender 给出 TID），0 = 安全，<0 = 读寄存器失败 */
+int  rc_pc_in_range(rc_ctx *c, const rc_thread_set *set, uint32_t lo, uint32_t hi,
+                    pid_t *offender, char *err, size_t errlen);
 
 #endif /* TG_REMOTE_CALL_H */

@@ -567,7 +567,14 @@ int rc_attach(rc_ctx *c, pid_t pid, char *err, size_t errlen)
     int best_score = -1;
     char best_map[160];
 
-    memset(c, 0, sizeof(*c));
+    {
+        /* 保留调用方在 attach 之前设置的故障注入开关（memset 会清掉它） */
+        int keep_fault = c->pause_fail_after;
+        int keep_busy = c->pc_busy_claims;
+        memset(c, 0, sizeof(*c));
+        c->pause_fail_after = keep_fault;
+        c->pc_busy_claims = keep_busy;
+    }
     c->pid = pid;
     c->tid = pid;
     best_map[0] = '\0';
@@ -639,6 +646,193 @@ int rc_attach(rc_ctx *c, pid_t pid, char *err, size_t errlen)
     c->attach_score = best_score;
     snprintf(c->thread_map, sizeof(c->thread_map), "%s", best_map);
     return RC_OK;
+}
+
+/* ------------------------------------------------------------ 线程保护 */
+
+static int list_tids(pid_t pid, pid_t **out, int *count, char *err, size_t errlen)
+{
+    char dir[64];
+    DIR *d;
+    struct dirent *de;
+    pid_t *arr = NULL;
+    int n = 0, cap = 0;
+
+    snprintf(dir, sizeof(dir), "/proc/%d/task", (int)pid);
+    d = opendir(dir);
+    if (d == NULL) {
+        rc_err(err, errlen, "open %s failed errno=%d", dir, errno);
+        return RC_E_PAUSE;
+    }
+    while ((de = readdir(d)) != NULL) {
+        long tid;
+        char *endp = NULL;
+
+        if (de->d_name[0] < '0' || de->d_name[0] > '9') continue;
+        tid = strtol(de->d_name, &endp, 10);
+        if (endp == NULL || *endp != '\0' || tid <= 1) continue;
+        if (n == cap) {
+            int ncap = (cap == 0) ? 64 : cap * 2;
+            pid_t *narr = (pid_t *)realloc(arr, (size_t)ncap * sizeof(pid_t));
+            if (narr == NULL) { free(arr); closedir(d); return RC_E_PAUSE; }
+            arr = narr;
+            cap = ncap;
+        }
+        arr[n++] = (pid_t)tid;
+    }
+    closedir(d);
+
+    *out = arr;
+    *count = n;
+    return RC_OK;
+}
+
+static int set_has(const rc_thread_set *set, pid_t tid)
+{
+    int i;
+
+    for (i = 0; i < set->n; i++) if (set->tids[i] == tid) return 1;
+    return 0;
+}
+
+static int set_add(rc_thread_set *set, pid_t tid)
+{
+    if (set->n == set->cap) {
+        int ncap = (set->cap == 0) ? 64 : set->cap * 2;
+        pid_t *narr = (pid_t *)realloc(set->tids, (size_t)ncap * sizeof(pid_t));
+        if (narr == NULL) return -1;
+        set->tids = narr;
+        set->cap = ncap;
+    }
+    set->tids[set->n++] = tid;
+    return 0;
+}
+
+void rc_resume_all(rc_thread_set *set)
+{
+    int i;
+
+    if (set == NULL) return;
+    for (i = 0; i < set->n; i++) {
+        /* 线程可能已经退出：detach 失败无所谓，绝不能因此中断清理 */
+        (void)ptrace(PTRACE_DETACH, set->tids[i], NULL, NULL);
+    }
+    free(set->tids);
+    set->tids = NULL;
+    set->n = 0;
+    set->cap = 0;
+}
+
+int rc_pause_all(rc_ctx *c, rc_thread_set *set, char *err, size_t errlen)
+{
+    int round;
+
+    memset(set, 0, sizeof(*set));
+
+    for (round = 0; round < 8; round++) {
+        pid_t *tids = NULL;
+        int n = 0, i, added = 0;
+
+        if (list_tids(c->pid, &tids, &n, err, errlen) != RC_OK) {
+            rc_resume_all(set);
+            return RC_E_PAUSE;
+        }
+
+        for (i = 0; i < n; i++) {
+            pid_t t = tids[i];
+            int st = 0;
+
+            if (t == c->tid) continue;          /* 执行线程已经 attached */
+            if (set_has(set, t)) continue;
+
+            if (ptrace(PTRACE_ATTACH, t, NULL, NULL) != 0) {
+                if (errno == ESRCH) continue;   /* 刚退出，忽略 */
+                rc_err(err, errlen, "PTRACE_ATTACH tid=%d failed errno=%d", (int)t, errno);
+                free(tids);
+                rc_resume_all(set);
+                return RC_E_PAUSE;
+            }
+            if (waitpid(t, &st, __WALL) < 0 || !WIFSTOPPED(st)) {
+                rc_err(err, errlen, "tid=%d did not stop (waitpid status=%d)", (int)t, st);
+                (void)ptrace(PTRACE_DETACH, t, NULL, NULL);
+                free(tids);
+                rc_resume_all(set);
+                return RC_E_PAUSE;
+            }
+            if (c->pause_fail_after > 0 && set->n >= c->pause_fail_after) {
+                rc_err(err, errlen, "injected pause failure after %d thread(s) (tid=%d)",
+                       set->n, (int)t);
+                (void)ptrace(PTRACE_DETACH, t, NULL, NULL);
+                free(tids);
+                rc_resume_all(set);
+                return RC_E_PAUSE;
+            }
+            if (set_add(set, t) != 0) {
+                rc_err(err, errlen, "out of memory while recording paused threads");
+                (void)ptrace(PTRACE_DETACH, t, NULL, NULL);
+                free(tids);
+                rc_resume_all(set);
+                return RC_E_PAUSE;
+            }
+            added++;
+        }
+        free(tids);
+
+        if (added != 0) continue;               /* 这一轮有新线程，下一轮再确认一次 */
+
+        /* 本轮没有新线程：再枚举一次确认任务目录里没有未暂停的 TID */
+        {
+            pid_t *again = NULL;
+            int n2 = 0, j, unknown = 0;
+
+            if (list_tids(c->pid, &again, &n2, err, errlen) != RC_OK) {
+                rc_resume_all(set);
+                return RC_E_PAUSE;
+            }
+            for (j = 0; j < n2; j++) {
+                if (again[j] == c->tid) continue;
+                if (!set_has(set, again[j])) unknown++;
+            }
+            free(again);
+            if (unknown == 0) return RC_OK;
+        }
+    }
+
+    rc_err(err, errlen, "thread set did not stabilise after 8 rounds (%d paused)", set->n);
+    rc_resume_all(set);
+    return RC_E_PAUSE;
+}
+
+int rc_pc_in_range(rc_ctx *c, const rc_thread_set *set, uint32_t lo, uint32_t hi,
+                   pid_t *offender, char *err, size_t errlen)
+{
+    int i;
+
+    if (lo == 0 || hi <= lo) {
+        rc_err(err, errlen, "invalid patch range [0x%08x,0x%08x)", lo, hi);
+        return RC_E_UNSAFE;
+    }
+    if (offender != NULL) *offender = 0;
+
+    /* 故障注入：假装有线程停在补丁窗口里，用来验证"恢复→重试"这条路径 */
+    if (c->pc_busy_claims > 0) {
+        c->pc_busy_claims--;
+        if (offender != NULL) *offender = c->tid;
+        return 1;
+    }
+
+    for (i = -1; i < set->n; i++) {
+        pid_t t = (i < 0) ? c->tid : set->tids[i];
+        struct user_regs regs;
+
+        memset(&regs, 0, sizeof(regs));
+        if (ptrace(PTRACE_GETREGS, t, NULL, &regs) != 0) continue;   /* 刚退出 */
+        if ((uint32_t)regs.ARM_pc >= lo && (uint32_t)regs.ARM_pc < hi) {
+            if (offender != NULL) *offender = t;
+            return 1;
+        }
+    }
+    return 0;
 }
 
 void rc_detach(rc_ctx *c)

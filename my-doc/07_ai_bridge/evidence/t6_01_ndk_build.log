@@ -1,10 +1,10 @@
 ﻿# T6-01 build :: NDK r21e :: armv7a-linux-androideabi26-clang
-# host time: 2026-11-21 14:05:52
+# host time: 2026-11-21 14:58:02
 
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\injector -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\tg_injector D:\tgz02\OS\system\my-doc\07_ai_bridge\android\injector\tg_injector.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\injector\remote_call.c
 (no compiler output: 0 warning, 0 error)
 exit: 0
-artifact: tg_injector  62736 B  sha256=7b2ce4aa60a1f059c2361515cb30df42d4e118dadc5207347ff2d15664a81086
+artifact: tg_injector  71688 B  sha256=b1ebf8e8ce3322bb9e4d5988b9c989668a63036ced1c8df4784e6d7b42ec4db6
 # --- readelf -h ---
 ELF Header:
   Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
@@ -16,9 +16,9 @@ ELF Header:
   Type:                              DYN (Shared object file)
   Machine:                           ARM
   Version:                           0x1
-  Entry point address:               0xbbc
+  Entry point address:               0xc44
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          61256 (bytes into file)
+  Start of section headers:          70208 (bytes into file)
   Flags:                             0x5000200, Version5 EABI, soft-float ABI
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)
@@ -28,41 +28,41 @@ ELF Header:
   Section header string table index: 36
 # --- readelf -d ---
 
-Dynamic section at offset 0x6e04 contains 28 entries:
+Dynamic section at offset 0x8df8 contains 28 entries:
   Tag        Type                         Name/Value
- 0x00000003 (PLTGOT)                     0x7f3c
- 0x00000002 (PLTRELSZ)                   368 (bytes)
- 0x00000017 (JMPREL)                     0x810
+ 0x00000003 (PLTGOT)                     0x9f30
+ 0x00000002 (PLTRELSZ)                   392 (bytes)
+ 0x00000017 (JMPREL)                     0x85c
  0x00000014 (PLTREL)                     REL
- 0x00000011 (REL)                        0x7a0
+ 0x00000011 (REL)                        0x7ec
  0x00000012 (RELSZ)                      112 (bytes)
  0x00000013 (RELENT)                     8 (bytes)
  0x6ffffffa (RELCOUNT)                   11
  0x00000015 (DEBUG)                      0x0
  0x00000006 (SYMTAB)                     0x200
  0x0000000b (SYMENT)                     16 (bytes)
- 0x00000005 (STRTAB)                     0x510
- 0x0000000a (STRSZ)                      483 (bytes)
- 0x6ffffef5 (GNU_HASH)                   0x6f4
+ 0x00000005 (STRTAB)                     0x540
+ 0x0000000a (STRSZ)                      506 (bytes)
+ 0x6ffffef5 (GNU_HASH)                   0x73c
  0x00000001 (NEEDED)                     Shared library: [libdl.so]
  0x00000001 (NEEDED)                     Shared library: [libc.so]
- 0x00000020 (PREINIT_ARRAY)              0x7de4
+ 0x00000020 (PREINIT_ARRAY)              0x9dd8
  0x00000021 (PREINIT_ARRAYSZ)            0x8
- 0x00000019 (INIT_ARRAY)                 0x7dec
+ 0x00000019 (INIT_ARRAY)                 0x9de0
  0x0000001b (INIT_ARRAYSZ)               8 (bytes)
- 0x0000001a (FINI_ARRAY)                 0x7df4
+ 0x0000001a (FINI_ARRAY)                 0x9de8
  0x0000001c (FINI_ARRAYSZ)               8 (bytes)
  0x0000001e (FLAGS)                      BIND_NOW
  0x6ffffffb (FLAGS_1)                    Flags: NOW
- 0x6ffffff0 (VERSYM)                     0x70c
- 0x6ffffffe (VERNEED)                    0x770
+ 0x6ffffff0 (VERSYM)                     0x754
+ 0x6ffffffe (VERNEED)                    0x7bc
  0x6fffffff (VERNEEDNUM)                 1
  0x00000000 (NULL)                       0x0
 
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIC -shared -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_agent -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\libtg_hook.so D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_agent\libtg_hook.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_agent\tg_wire.c -llog
 (no compiler output: 0 warning, 0 error)
 exit: 0
-artifact: libtg_hook.so  23028 B  sha256=bb3af7ff2c8d6fceafade3ace866348d1542d7d25c8d2a373d5835904a062a45
+artifact: libtg_hook.so  27352 B  sha256=ca7c0a7200f4d130c70e6681990a6e261dd64e98cbdaebacb1c7f508ef305cf2
 # --- readelf -h ---
 ELF Header:
   Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
@@ -76,7 +76,7 @@ ELF Header:
   Version:                           0x1
   Entry point address:               0x0
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          21788 (bytes into file)
+  Start of section headers:          26112 (bytes into file)
   Flags:                             0x5000200, Version5 EABI, soft-float ABI
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)
@@ -86,34 +86,34 @@ ELF Header:
   Section header string table index: 30
 # --- readelf -d ---
 
-Dynamic section at offset 0x3e28 contains 28 entries:
+Dynamic section at offset 0x4e24 contains 28 entries:
   Tag        Type                         Name/Value
- 0x00000003 (PLTGOT)                     0x4f30
- 0x00000002 (PLTRELSZ)                   392 (bytes)
- 0x00000017 (JMPREL)                     0xa88
+ 0x00000003 (PLTGOT)                     0x5f2c
+ 0x00000002 (PLTRELSZ)                   400 (bytes)
+ 0x00000017 (JMPREL)                     0xafc
  0x00000014 (PLTREL)                     REL
- 0x00000011 (REL)                        0xa68
+ 0x00000011 (REL)                        0xadc
  0x00000012 (RELSZ)                      32 (bytes)
  0x00000013 (RELENT)                     8 (bytes)
  0x6ffffffa (RELCOUNT)                   4
  0x00000006 (SYMTAB)                     0x1cc
  0x0000000b (SYMENT)                     16 (bytes)
- 0x00000005 (STRTAB)                     0x58c
- 0x0000000a (STRSZ)                      846 (bytes)
- 0x6ffffef5 (GNU_HASH)                   0x8dc
+ 0x00000005 (STRTAB)                     0x5bc
+ 0x0000000a (STRSZ)                      896 (bytes)
+ 0x6ffffef5 (GNU_HASH)                   0x93c
  0x00000001 (NEEDED)                     Shared library: [liblog.so]
  0x00000001 (NEEDED)                     Shared library: [libdl.so]
  0x00000001 (NEEDED)                     Shared library: [libc.so]
- 0x0000001a (FINI_ARRAY)                 0x4e1c
+ 0x0000001a (FINI_ARRAY)                 0x5e18
  0x0000001c (FINI_ARRAYSZ)               8 (bytes)
- 0x00000019 (INIT_ARRAY)                 0x4e24
+ 0x00000019 (INIT_ARRAY)                 0x5e20
  0x0000001b (INIT_ARRAYSZ)               4 (bytes)
  0x0000001e (FLAGS)                      BIND_NOW
  0x6ffffffb (FLAGS_1)                    Flags: NOW
- 0x6ffffff0 (VERSYM)                     0x984
- 0x6ffffffc (VERDEF)                     0x9fc
+ 0x6ffffff0 (VERSYM)                     0x9f0
+ 0x6ffffffc (VERDEF)                     0xa70
  0x6ffffffd (VERDEFNUM)                  1
- 0x6ffffffe (VERNEED)                    0xa18
+ 0x6ffffffe (VERNEED)                    0xa8c
  0x6fffffff (VERNEEDNUM)                 2
  0x00000000 (NULL)                       0x0
 
