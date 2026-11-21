@@ -111,12 +111,14 @@ waft、albums、screensaver、browser），要么是工厂/开通类（emode、p
 | `com.alibaba.ailabs.genie.aicare` / `app/GenieAicare` | 18.50 | /data/app 覆盖，删 prebuilt 会退化 |
 | `com.alipay.arome.app` / `app/AMPE` | 87.18 | 12 处 app 级引用，禁用＝关闭小程序/H5 |
 
-- **ar.monitor（GenieMonitor，47.86 MB）——rev5.2 统一为“必须保留整包”**：
-  同包内含 `VisionWakeUpService`（`android.intent.action.genieWakeUpService`，**唤醒链路**）、
+- **ar.monitor（GenieMonitor，47.86 MB）——rev5.3：不可删除，但可整包禁用验证**：
+  同包内含 `VisionWakeUpService`（`android.intent.action.genieWakeUpService`，**视觉/摄像头唤醒**，属 AVE 引擎）、
   `AVEControlProvider`（`com.alibaba.ailabs.ave.controlProvider`，被 smartapp 引用，**设备控制**）、
   `GenieGestureService`（手势）、`CMCCMediaService`/`AwesomeService`（媒体/聚合）。
-  四种能力同包同进程，**未证明可分离** → 不得整包删除，也不得整包禁用；
-  唯一理论上的精简点是 `GenieGestureService` 的组件级禁用（需实测且不省空间）。
+  四种能力同包同进程，**未证明可分离** → 只能整包处理：**不可删除**
+  （smartapp 引用 `genieWakeUpService`/`geniegesture`/`ave.controlProvider`/`genieallinone` 四个入口，
+  S1Settings 引用手势 action）；但操作者已确认不需要设备控制/监控/手势 → **可整包 `pm disable-user` 验证**，
+  禁用后需回归语音唤醒与看护。
   详见 [big4_component_review.md](big4_component_review.md)。
 - **GenieAicare（18.50 MB）**：设备上由 `/data/app` 覆盖（4.0.26 → 4.0.62），删系统内 prebuilt 会让包退化为
   普通数据区应用（失去 SYSTEM flag 与默认权限授予）→ 不删。

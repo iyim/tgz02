@@ -52,7 +52,7 @@ D = [
      '原厂视频播放（点播/新闻/短视频/屏保）', '**必须保留**（视频链路）', '禁止', '确定',
      'rev5.2 撤销“可删除”：它是原厂视频实现，详见 big4_component_review.md'),
     ('手势', 'com.alibaba.ailabs.ar.monitor', '包内 `GenieGestureService`（`android.intent.action.geniegesture`），无 launcher 组件',
-     '手势/体感识别 + CMCC 媒体 + **视觉唤醒** + AVE 设备控制 Provider', '**必须保留整包**', '禁止（整包）', '确定',
+     '手势/体感识别 + CMCC 媒体 + **视觉唤醒** + AVE 设备控制 Provider', '**不可删除，整包禁用验证**', '可验证（整包）', '确定',
      'rev5.2 统一结论：同包含唤醒与控制组件，解耦未证明；组件级只可评估 `GenieGestureService`'),
     ('菜谱', 'com.alibaba.ailabs.genie.cook', '/data/app 安装（launcher 组件 1 个）',
      '菜谱内容', '不涉及 system 空间', '需卸载（本轮不做）', '确定', 'APK 大小未知：/data/app 对 shell 不可读'),
@@ -125,7 +125,7 @@ for n, p, card, impact, dele, dis, grade, note in D:
 
 # system-side candidates (space only from real APKs)
 SYS = [
-    ('com.alibaba.ailabs.ar.monitor', '手势/CMCC/唤醒（必须保留整包）', '必须保留', 0.0),
+    ('com.alibaba.ailabs.ar.monitor', '手势/视觉唤醒/Ave 控制（用户确认不需要，可整包禁用）', '不可删除，可禁用', 47.86),
     ('com.ailabs.youku.iot', '原厂视频播放实现（必须保留）', '必须保留', 0.0),
     ('com.alibaba.ailabs.genie.children', '儿童模式（功能确认后可整包禁用）', '待功能确认', 20.14),
     ('com.alibaba.ailabs.genie.albums', '相册/屏保取图（功能确认后可整包禁用）', '待功能确认', 10.56),

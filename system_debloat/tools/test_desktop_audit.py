@@ -86,9 +86,10 @@ class TestIndependentApkLogic(unittest.TestCase):
 
 
 class TestMonitorConsistency(unittest.TestCase):
-    def test_all_documents_say_keep(self):
+    def test_all_documents_agree_no_delete(self):
         for name, doc in (('desktop', DOC), ('a_class', ACLASS), ('pruning', PRIO), ('big4', BIG4)):
-            self.assertIn('必须保留整包', doc, name)
+            self.assertIn('禁用验证', doc, name)
+            self.assertTrue(('不可删除' in doc) or ('不可整包删除' in doc), name)
 
     def test_no_document_offers_delete(self):
         for name, doc in (('desktop', DOC), ('a_class', ACLASS), ('pruning', PRIO)):
@@ -98,7 +99,8 @@ class TestMonitorConsistency(unittest.TestCase):
         self.assertIn('com.alibaba.ailabs.ar.monitor', STATS['executable_lists']['D_forbidden'])
         self.assertNotIn('com.alibaba.ailabs.ar.monitor', STATS['executable_lists']['A_candidate'])
         note = STATS['screening']['forbidden_notes']['com.alibaba.ailabs.ar.monitor']
-        self.assertIn('必须保留整包', note)
+        self.assertIn('不可删除', note)
+        self.assertIn('可整包禁用验证', note)
 
     def test_component_breakdown_present(self):
         for comp in ('GenieGestureService', 'VisionWakeUpService', 'CMCCMediaService',
@@ -112,11 +114,10 @@ class TestSpaceAccounting(unittest.TestCase):
                              ('com.alibaba.ailabs.genie.children', 'com.alibaba.ailabs.genie.albums')), 2)
         self.assertTrue(('%.2f' % expected) in DOC or ('%g' % expected) in DOC)
 
-    def test_monitor_and_youku_reclaim_zero(self):
-        self.assertIn('33.19 | 14.67 | 0.00 | 47.86 | **必须保留整包**', BIG4)
-        sec = DOC.split('## 7.', 1)[1]
-        row = [l for l in sec.splitlines() if 'ar.monitor' in l][0]
-        self.assertIn('0 MB', row)
+    def test_monitor_reclaim_is_conditional(self):
+        self.assertIn('33.19 | 14.67 | 0.00 | 47.86 | **可整包禁用验证', BIG4)
+        row = [l for l in BIG4.splitlines() if 'ar.monitor' in l and '47.86' in l][0]
+        self.assertIn('47.86', row)
 
     def test_disable_frees_no_space(self):
         line = [l for l in DOC.splitlines() if '第一批禁用释放 system 空间' in l][0]

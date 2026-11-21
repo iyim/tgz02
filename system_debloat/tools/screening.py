@@ -214,9 +214,9 @@ VERIFY_FIRST = [  # 先禁用观察，确认无影响后才谈删除
 
 FORBIDDEN_NOTE = {
     'com.alibaba.ailabs.ar.monitor':
-        '47.86 MB（`app/GenieMonitor`）：同包内含 `VisionWakeUpService`（唤醒链路）、`AVEControlProvider`'
-        '（设备控制，smartapp 引用）、`GenieGestureService`（手势）、`CMCCMediaService`/`AwesomeService`，'
-        '**未证明可分离 → 必须保留整包**，不得删除/禁用；仅可评估 `GenieGestureService` 组件级禁用（不省空间）。'
+        '47.86 MB（`app/GenieMonitor`）：**不可删除**（smartapp 引用 `genieWakeUpService`/`geniegesture`/'
+        '`ave.controlProvider`/`genieallinone` 四个入口，S1Settings 引用手势 action）；'
+        '**rev5.3：可整包禁用验证**（操作者已确认不需要设备控制/监控/手势），禁用后需回归语音唤醒与看护。'
         '详见 big4_component_review.md',
     'com.alibaba.ailabs.genie.aicare':
         '18.50 MB：`/data/app` 覆盖的系统 prebuilt（4.0.26→4.0.62），删除会让包退化为普通应用 → 不删',
@@ -244,14 +244,16 @@ PROTECTED_SIX = [
 MONITOR_COMPONENTS = [
     dict(name='GenieGestureService', kind='service', exported=True,
          action='android.intent.action.geniegesture',
-         role='手势/体感识别服务（桌面“手势”入口相关）',
-         coupling='独立 action，但同包内与 AVE/Awesome 共用进程与数据目录',
-         verdict='若确认手势不用，可评估**组件级禁用**；不能整包删除'),
+         role='手势/体感识别服务（AVE aceengine）',
+         coupling='被 smartapp（`GenieGestureVEngine`/`GenieGestureAnimation`）与 S1Settings（手势开关）引用',
+         verdict='用户不需要手势 → 随整包禁用即可；组件级禁用不省空间'),
     dict(name='VisionWakeUpService', kind='service', exported=True,
          action='android.intent.action.genieWakeUpService',
-         role='视觉唤醒服务（唤醒链路）',
-         coupling='属原厂唤醒/语音链路，受保护',
-         verdict='**必须保留**'),
+         role='**视觉**（摄像头）唤醒服务，属 AVE 视觉引擎，配合看护/摄像头场景',
+         coupling='smartapp 含 `genieWakeUpService` 字符串；与“语音唤醒词”链路是两套实现'
+                  '（语音在 ags/AliGenieService + 音频库，本包不含音频唤醒组件）',
+         verdict='**rev5.3 更正**：此前把它当作语音唤醒链路是过度推断；它属视觉引擎，'
+                 '用户不需要监控时可随整包禁用，但禁用后需回归语音唤醒与看护'),
     dict(name='CMCCMediaService', kind='service', exported=True,
          action='android.intent.action.CMCCMediaService',
          role='CMCC 媒体服务（运营商内容）',
@@ -276,11 +278,15 @@ MONITOR_COMPONENTS = [
 
 BIG4_VERDICT = {
     'com.alibaba.ailabs.ar.monitor': dict(
-        verdict='**必须保留整包**（不得整包删除/禁用）',
-        reason='同包内含 VisionWakeUpService（唤醒链路，受保护）+ AVEControlProvider（设备控制，smartapp 引用）'
-               '+ CMCCMediaService/AwesomeService（解耦未证明）；组件不可分离即整包保留',
-        reclaimable_mb=0.0,
-        component_option='仅 `GenieGestureService` 存在组件级禁用的理论可能，需先证明手势不用且不影响 AVE/Awesome；本机未验证',
+        verdict='**可整包禁用验证（rev5.3）**；**不可整包删除**',
+        reason='用户已明确不需要设备控制 / 监控 / 手势。包内四种能力（视觉唤醒 VisionWakeUpService、'
+               '手势 GenieGestureService、AVE 控制 Provider、CMCC 媒体）同包不可分离，因此只能整包禁用；'
+               '删除则不可行：smartapp 引用 `genieWakeUpService` / `geniegesture` / '
+               '`content://com.alibaba.ailabs.ave.controlProvider` / `genieallinone` 四个入口，'
+               'S1Settings 引用手势 action，Waft 引用 `genieallinone`',
+        reclaimable_mb=47.86,
+        component_option='组件级禁用无空间收益；整包 `pm disable-user` 是可逆路径，禁用后需回归语音唤醒与看护',
+        evidence='无进程（快照 PSS 0）；framework 仅包名 1 处；4 个 app 级 action/Provider 引用',
     ),
     'com.ailabs.youku.iot': dict(
         verdict='**必须保留**（原厂视频播放实现）',
@@ -315,6 +321,19 @@ COMPONENT_LEVEL = [
 ]
 
 DESKTOP_STILL_UNKNOWN = ['旭慧生活']
+
+# rev5.3: 操作者明确“不需要设备控制 / 监控 / 相册”——这些包从“保护”降为“用户确认可关”，
+# 但仍是**禁用验证**对象，不是删除对象（删除不可逆且会牵动 voice 技能）。
+USER_OPTIONAL = [
+    dict(pkg='com.alibaba.ailabs.genie.iot', size_mb=16.88, measured='快照 PSS **22,416 kB**（有进程）',
+         what='智能家居（设备控制）', note='唯一有实测常驻占用的桌面相关包；禁用预计能减少常驻进程'),
+    dict(pkg='com.alibaba.ailabs.ar.monitor', size_mb=47.86, measured='快照无进程（PSS 0）',
+         what='手势 / 视觉唤醒 / AVE 控制 / CMCC 媒体', note='存储收益最大；禁用后需回归语音唤醒与看护'),
+    dict(pkg='com.alibaba.ailabs.genie.albums', size_mb=10.56, measured='快照无进程（PSS 0）',
+         what='相册 / 屏保取图', note='APK 仅 1.01 MB，oat 9.54 MB，删目录才有空间收益'),
+    dict(pkg='com.alibaba.ailabs.genie.aicare', size_mb=18.50, measured='快照无进程（PSS 0）',
+         what='爱家看护（/data 覆盖版本）', note='禁用会同时停用系统 prebuilt 与 /data 版本'),
+]
 
 
 def answer(pkg):

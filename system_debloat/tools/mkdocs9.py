@@ -147,7 +147,7 @@ doc = f"""# 四个大体积候选的组件级复核（rev5.2）
 
 {md(['包', 'APK MB', 'lib MB', 'oat MB', '整目录 MB', '最终结论', '可回收 MB'], four_rows)}
 
-- 四个里有 **2 个必须整包保留**（`ar.monitor` 含唤醒+设备控制；`youku.iot` 是原厂视频实现），
+- 四个里 **1 个必须整包保留**（`ar.monitor` 含唤醒+设备控制；`youku.iot` 是原厂视频实现），
   **可回收 0 MB**；另外 **2 个**（`children` 20.14 MB、`albums` 10.56 MB）只有在“确认放弃功能 + 完成禁用验证”后才可回收。
 - rev5.1 中把 `ar.monitor` 写成“验证禁用后删除”是**错误**，本版已撤销，并同步到
   `a_class_candidates.md`、`desktop_app_audit.md`、`pruning_priority.md`、`summary_stats.json`。

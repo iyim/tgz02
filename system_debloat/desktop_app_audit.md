@@ -58,7 +58,7 @@ data 4：camera/cook/cmvideo；共 10 项计入“是”），**非 APK 入口 8
 | 闹钟 | 语音闹钟技能界面（smartapp 内置 domain） | 语音闹钟技能界面（smartapp 内置 domain） | 未知（非 APK） | 未知 |
 | 相册 | 相册浏览、屏保取图、语音“看照片” | 相册浏览、屏保取图、语音“看照片” | 需产品确认 | 可验证（整包） |
 | 优酷 | 原厂视频播放（点播/新闻/短视频/屏保） | 原厂视频播放（点播/新闻/短视频/屏保） | **必须保留**（视频链路） | 禁止 |
-| 手势 | 手势/体感识别 + CMCC 媒体 + **视觉唤醒** + AVE 设备控制 Provider | 手势/体感识别 + CMCC 媒体 + **视觉唤醒** + AVE 设备控制 Provider | **必须保留整包** | 禁止（整包） |
+| 手势 | 手势/体感识别 + CMCC 媒体 + **视觉唤醒** + AVE 设备控制 Provider | 手势/体感识别 + CMCC 媒体 + **视觉唤醒** + AVE 设备控制 Provider | **不可删除，整包禁用验证** | 可验证（整包） |
 | 菜谱 | 菜谱内容 | 菜谱内容 | 不涉及 system 空间 | 需卸载（本轮不做） |
 | CCTV.新视听 | 第三方视频客户端 | 第三方视频客户端 | 不涉及 system 空间 | 需卸载（本轮不做） |
 | 儿童 | 儿童模式（界面 + 禁播时段 + 管控其他应用） | 儿童模式（界面 + 禁播时段 + 管控其他应用） | 需产品确认（不得直接删） | 可验证（整包） |
@@ -227,8 +227,8 @@ data 4：camera/cook/cmvideo；共 10 项计入“是”），**非 APK 入口 8
 | 静态证据（卡片/组件） | 包内 `GenieGestureService`（`android.intent.action.geniegesture`），无 launcher 组件 |
 | 涉及语音/音乐/视频/设备控制/硬件 | 手势/体感识别 + CMCC 媒体 + **视觉唤醒** + AVE 设备控制 Provider |
 | 删除后可能影响 | 手势/体感识别 + CMCC 媒体 + **视觉唤醒** + AVE 设备控制 Provider |
-| A 类静态删除 | ****必须保留整包**** |
-| B 类禁用验证 | **禁止（整包）** |
+| A 类静态删除 | ****不可删除，整包禁用验证**** |
+| B 类禁用验证 | **可验证（整包）** |
 | 证据等级 | 确定 —— rev5.2 统一结论：同包含唤醒与控制组件，解耦未证明；组件级只可评估 `GenieGestureService` |
 ### 菜谱
 
@@ -363,7 +363,7 @@ data 4：camera/cook/cmvideo；共 10 项计入“是”），**非 APK 入口 8
 
 | 包 | 目录 | APK MB | lib MB | oat MB | 整目录 MB | 结论 | 可回收 MB |
 |---|---|---|---|---|---|---|---|
-| `com.alibaba.ailabs.ar.monitor` | `app/GenieMonitor` | 33.19 | 14.67 | 0.00 | 47.86 | 必须保留 | 0.0 |
+| `com.alibaba.ailabs.ar.monitor` | `app/GenieMonitor` | 33.19 | 14.67 | 0.00 | 47.86 | 不可删除，可禁用 | 47.86 |
 | `com.ailabs.youku.iot` | `app/AliVideoPlayer` | 10.98 | 21.28 | 12.80 | 45.06 | 必须保留 | 0.0 |
 | `com.alibaba.ailabs.genie.children` | `app/GenieChildren` | 9.97 | 2.76 | 7.40 | 20.14 | 待功能确认 | 20.14 |
 | `com.alibaba.ailabs.genie.albums` | `app/GenieAlbums` | 1.01 | 0.00 | 9.54 | 10.56 | 待功能确认 | 10.56 |
