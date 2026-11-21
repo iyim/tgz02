@@ -1,0 +1,3046 @@
+{
+ "generated_from": "dependency_edges.csv (evidence_class app/ambiguous)",
+ "edge_count": 304,
+ "edges": [
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.task.action.SCHEDULE_JOB",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.genie.waft",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.iot",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "语音设备控制技能失败（用户已声明不需要）"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.iot",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "语音设备控制技能失败（用户已声明不需要）"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.iot",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "语音设备控制技能失败（用户已声明不需要）"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.iot",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "语音设备控制技能失败（用户已声明不需要）"
+  },
+  {
+   "source_package": "com.alibaba.genie.waft",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.iot",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "语音设备控制技能失败（用户已声明不需要）"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.iot",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "语音设备控制技能失败（用户已声明不需要）"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.iot",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "语音设备控制技能失败（用户已声明不需要）"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.genie.waft",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.screensaver",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.screensaver",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.screensaver",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.screensaver",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.genie.waft",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.screensaver",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.screensaver",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.screensaver",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.ar.monitor",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.ar.monitor",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.aicare",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.aicare",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.task.action.SCHEDULE_JOB",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.genie.waft",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.genie.waft",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.genie.waft",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.genie.waft",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.genie.waft",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.genie.waft",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.alibaba.genie.waft",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.genie.waft",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.genie.waft",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.ar.monitor",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.ar.monitor",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.aicare",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.aicare",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.genie.waft",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.logger.LogService.action",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.BINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.alibaba.ailabs.genie.assistant.UNBINDUSER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.shere.assistivetouch",
+   "source_component": null,
+   "target_package": "com.estrongs.android.pop",
+   "target_component": "com.android.vending.INSTALL_REFERRER",
+   "dependency_type": "action_amb/ambiguous",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "low",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.ailabs.emode",
+   "target_component": "com.ailabs.emode.test1",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.yunos.tv.provision",
+   "source_component": null,
+   "target_package": "com.ailabs.emode",
+   "target_component": "com.ailabs.emode.test1",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.ailabs.youku.iot",
+   "target_component": "com.aliott.m3u8Proxy.IPlayerProxy.action",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "点播/新闻/短视频播放失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.ailabs.youku.iot",
+   "target_component": "com.aliott.m3u8Proxy.PlayerProxyService",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "点播/新闻/短视频播放失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.ailabs.youku.iot",
+   "target_component": "com.youku.news.player.NewsPlayerActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "点播/新闻/短视频播放失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.ailabs.youku.iot",
+   "target_component": "com.youku.iot.player.CommonPlayerActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "点播/新闻/短视频播放失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.ailabs.youku.iot",
+   "target_component": "com.youku.shortvideo.player.ShortVideoPlayerActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "点播/新闻/短视频播放失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.ar.monitor",
+   "target_component": "com.alibaba.ailabs.ave.controlProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "手势/视觉唤醒/AVE 控制失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.albums",
+   "target_component": "com.tld.albumprovider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "相册与屏保取图失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.childrenmodel.home.view.ChildrenHomeActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.ForbiddenTimeAddActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.childrenmodel.home.view.ChildrenHomeActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.children.activity.HomeActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.ChildModeSettingActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.AppSettingActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.GenieTimePickerActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.ForbiddenTimeAddActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterReceiver",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.GenieTimePickerActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.children.activity.HomeActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.EyeyieldSettingActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.ChildModeSettingActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.childrenmodel.home.view.ChildrenHomeActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.children.activity.HomeActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.children",
+   "target_component": "com.alibaba.ailabs.genie.childrenmodel.setting.ui.ChildInfoInputActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "儿童模式界面与技能失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.iot",
+   "target_component": "com.alibaba.ailabs.genie.iot.palette.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "语音设备控制技能失败（用户已声明不需要）"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.iot",
+   "target_component": "com.alibaba.ailabs.genie.iot.ipc.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "语音设备控制技能失败（用户已声明不需要）"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.iot",
+   "target_component": "com.alibaba.ailabs.genie.iot.house.HouseService",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "语音设备控制技能失败（用户已声明不需要）"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.iot",
+   "target_component": "com.alibaba.ailabs.genie.iot.tmp.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "语音设备控制技能失败（用户已声明不需要）"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.iot",
+   "target_component": "com.alibaba.ailabs.genie.iot.local_execute.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "语音设备控制技能失败（用户已声明不需要）"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.launcher.activity.AdultHomeActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.launcher.activity.ChannelActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.launcher.videofind.SearchResultActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.launcher.video.search.VideoSearchActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.launcher.activity.AdultHomeActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.launcher",
+   "target_component": "com.alibaba.ailabs.genie.launcher.activity.AdultHomeActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.osupdate",
+   "target_component": "com.aliyun.cloudapp.FOTA_UPDATE",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.osupdate",
+   "target_component": "com.aliyun.cloudapp.FOTA_UPDATE",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.osupdate",
+   "target_component": "com.alibaba.ailabs.genie.osupdate.front.UpdateActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.rtc",
+   "target_component": "genie://com.alibaba.ailabs.genie.rtc/page/call_voip",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.rtc",
+   "target_component": "genie://com.alibaba.ailabs.genie.rtc/page/leave_message",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.rtc",
+   "target_component": "genie://com.alibaba.ailabs.genie.rtc/page/call_voip",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.rtc",
+   "target_component": "genie://com.alibaba.ailabs.genie.rtc/page/call_pstn",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.rtc",
+   "target_component": "com.tld.rtcProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.rtc",
+   "target_component": "com.alibaba.ailabs.genie.rtc.voip.callin.VoipCallInActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.rtc",
+   "target_component": "com.alibaba.ailabs.genie.rtc.voip.callout.VoipCallOutActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.genie.waft",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.rtc",
+   "target_component": "genie://com.alibaba.ailabs.genie.rtc/page/call_voip",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.rtc",
+   "target_component": "com.alibaba.ailabs.genie.rtc.voip.callin.VoipCallInActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.rtc",
+   "target_component": "com.alibaba.ailabs.genie.rtc.voip.callout.VoipCallOutActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.aicare",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.screensaver",
+   "target_component": "com.alibaba.ailabs.genie.screensaver.ContentProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.screensaver",
+   "target_component": "com.alibaba.ailabs.genie.screensaver.FlipperDream",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.ailabs.youku.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.ailabs.youku.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.ailabs.youku.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.ar.monitor",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.ar.monitor",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.ar.monitor",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.contacts",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.ar.monitor",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.ar.monitor",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.aicare",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.smartapp.ipc.second.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.aicare",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.aicare",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.aicare",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.contacts",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.aicare",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.aicare",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.albums",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.yunos.tv.alitvasr.service",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.albums",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.smartapp.ipc.second.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.contacts",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.router.ipc.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.ONLINE",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.smartapp.ipc.second.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.router.ipc.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.ValidateLockActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.children",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.ApiActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.contacts",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.router.ipc.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.ApiActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.ONLINE",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.contacts",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.router.ipc.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.ONLINE",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.message.ACTION_STATUS_NOTIFY",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.smartapp.ipc.second.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.contacts",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.router.ipc.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.musicplayer.service.MusicService",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.android.deskclock.ALARM_DISMISS",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.contacts",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.musicplayer.activity.MainActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.action.AlarmQuery",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.smartapp.ipc.second.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.router.ipc.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.basedomain.ui.alarm.AlarmQueryReceiver",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.genie.waft",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.genie.waft",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.genie.waft",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.router.ipc.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.genie.waft",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.ONLINE",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.globalsearch.MainActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.router.ipc.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.bluetooth",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.nodisturb.TimeDisturbActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.genie.shopping.voiceprint.open.activity.VoiceSetUpActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.ValidateLockActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintNickCreateActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.ShotcutSettingActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterReceiver",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintGetOneActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.nodisturb.NotDisturbActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintListActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.ui.UserInfoActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.cleaner.activity.CleanerMainActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.assistant.server",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.router.ipc.service",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.provider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.datacenter.DataCenterProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.genie.task.aicare.ui.MsgShowActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.alibaba.ailabs.genie.smartapp",
+   "target_component": "com.alibaba.ailabs.childmode.ui.page.ValidateLockActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.ailabs.youku.iot",
+   "source_component": null,
+   "target_package": "com.aligenie.ags",
+   "target_component": "ACTION_SCREEN_SAVER",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.screensaver",
+   "source_component": null,
+   "target_package": "com.aligenie.ags",
+   "target_component": "ACTION_SCREEN_SAVER",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.aligenie.ags",
+   "target_component": "ACTION_SCREEN_SAVER",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.aligenie.ags",
+   "target_component": "com.aligenie.ic.icProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.settings",
+   "source_component": null,
+   "target_package": "com.aligenie.ags",
+   "target_component": "ACTION_SCREEN_SAVER",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.aligenie.ags",
+   "target_component": "ACTION_SCREEN_SAVER",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.aligenie.ags",
+   "target_component": "com.aligenie.ic.icProvider",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.aicare",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.webapps.INIT",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.webapps.INIT",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.webapps.START",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.webapps.INIT",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.guide",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.webapps.app.GwaReceiver",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.iot",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.webapps.INIT",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.launcher",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.webapps.INIT",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.rtc",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.webapps.game.H5GameActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.ampe.LOGOUT",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.webapps.START",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.webapps.INIT",
+   "dependency_type": "action/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.alipay.arome.app",
+   "target_component": "com.alibaba.ailabs.genie.webapps.app.GwaReceiver",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "小程序/H5 能力失效"
+  },
+  {
+   "source_package": "com.android.packageinstaller",
+   "source_component": null,
+   "target_package": "com.android.providers.contacts",
+   "target_component": "com.android.voicemail",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.dangbei1.tvlauncher",
+   "source_component": null,
+   "target_package": "com.android.providers.contacts",
+   "target_component": "com.android.voicemail",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.web1n.permissiondog",
+   "source_component": null,
+   "target_package": "com.android.providers.contacts",
+   "target_component": "com.android.voicemail",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.ailabs.emode",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.android.settings.network.wifi.WifiSettingActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.ar.monitor",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.android.settings.Settings",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.osupdate",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.android.settings.network.wifi.WifiSettingActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.android.settings.Settings",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.android.settings.network.wifi.WifiSettingActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.aligenie.ags",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.android.settings.Settings",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.android.packageinstaller",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.android.settings.Settings",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.yunos.tv.settings.GenieLabClassifyActivity",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.android.systemui",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.android.settings.Settings",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.dangbei1.tvlauncher",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.android.settings.Settings",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.shere.assistivetouch",
+   "source_component": null,
+   "target_package": "com.android.settings",
+   "target_component": "com.android.settings.Settings",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "设置页功能缺失"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.android.shell",
+   "target_component": "com.android.shell",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.android.providers.settings",
+   "source_component": null,
+   "target_package": "com.android.shell",
+   "target_component": "com.android.shell",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.topjohnwu.magisk",
+   "source_component": null,
+   "target_package": "com.android.shell",
+   "target_component": "com.android.shell",
+   "dependency_type": "authority/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.browser",
+   "source_component": null,
+   "target_package": "com.android.webview",
+   "target_component": "org.chromium.content.app.SandboxedProcessService0",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alibaba.ailabs.genie.smartapp",
+   "source_component": null,
+   "target_package": "com.android.webview",
+   "target_component": "org.chromium.content.app.SandboxedProcessService0",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  },
+  {
+   "source_package": "com.alipay.arome.app",
+   "source_component": null,
+   "target_package": "com.android.webview",
+   "target_component": "org.chromium.content.app.SandboxedProcessService0",
+   "dependency_type": "component/app",
+   "evidence": "string hit in target-owner APK (denoised)",
+   "confidence": "high",
+   "impact_if_disabled": "未评估"
+  }
+ ]
+}

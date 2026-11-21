@@ -436,6 +436,7 @@ summary = {
         'component_level_candidates': screening.COMPONENT_LEVEL,
         'monitor_components': screening.MONITOR_COMPONENTS,
         'desktop_unknown_remaining': screening.DESKTOP_STILL_UNKNOWN,
+        'user_optional_disable': screening.USER_OPTIONAL,
         'batch1_low_risk_disable': screening.BATCH1,
         'batch2_verify_disable': screening.BATCH2,
         'static_delete_candidates': screening.STATIC_DELETE,

@@ -240,6 +240,18 @@ Magisk 作为**独立保护对象**处理。下表只列**能从当前镜像与�
 | [pruning_priority.md](pruning_priority.md) | **rev5：统一优先级表 + 第一批/第二批/静态删除/禁止清单 + 下一阶段验证顺序** |
 | [a_class_candidates.md](a_class_candidates.md) | **rev5：扩展的 A 类静态删除候选逐项分析（5 个候选 + 3 个明令不删）** |
 | [desktop_app_audit.md](desktop_app_audit.md) | **rev5.1：18 个桌面入口逐个识别 + 桌面专项评估 + system 删除候选与第一批建议** |
+## rev5.3 设备基线（只读阶段）
+
+| 文件 | 内容 |
+|---|---|
+| [device_baseline/package_inventory.md](device_baseline/package_inventory.md) | 68 个已安装包的真实包名/路径/版本/uid/enabled/大小（label 标 unknown） |
+| [device_baseline/launcher_and_boot.md](device_baseline/launcher_and_boot.md) | 默认 HOME、5 个 HOME 组件、22 个开机接收器、ADB 启动与桌面恢复顺序 |
+| [device_baseline/core_components.md](device_baseline/core_components.md) | 语音/桌面/设置/视频/设备控制等 18 项功能→包名与 native 库归属 |
+| [device_baseline/component_inventory.md](device_baseline/component_inventory.md) | 18 个候选包 / 163 个组件的清单 |
+| [device_baseline/dependency_graph.md](device_baseline/dependency_graph.md) | 304 条依赖边 + 证据等级口径 |
+| [device_baseline/rescue_capability.md](device_baseline/rescue_capability.md) | ADB / 无线 5555 / root / Recovery（未验证）/ fastboot 状态 |
+| [device_baseline/recovery_plan.md](device_baseline/recovery_plan.md) | 23 个分区备份对照 + A/B/C/D 恢复方案 |
+| [device_baseline/candidate_operation_cards.md](device_baseline/candidate_operation_cards.md) | 18 张候选操作卡（禁用/恢复/判据） |
 | [risk_assessment.md](risk_assessment.md) | 风险矩阵、误删后果、**违反用户保护的风险**、回退与恢复策略 |
 | [optimization_plan.md](optimization_plan.md) | P0–P3 分阶段方案（已剔除受保护项）、测量与验收、逐项恢复命令 |
 | [app_inventory.csv](app_inventory.csv) / [app_inventory.json](app_inventory.json) | 机器可读清单（55 行全字段，含 `user_protected` / `exec_action`） |

@@ -1,0 +1,2630 @@
+{
+ "captured_from": "adb shell pm list packages -f -i -U / -s / -3 / -d, pm list users, dumpsys package <pkg>, ls -l, du -sk",
+ "device": "TG-Z02 (CCH/AILABS_S1L, MT8167S, Android 8.1, SDK 27)",
+ "counts": {
+  "total": 68,
+  "system": 61,
+  "privileged": 18,
+  "third_party": 7,
+  "disabled": 0,
+  "in_system_image_inventory": 55
+ },
+ "users": "Users:\n\tUserInfo{0:机主:13} running",
+ "packages": [
+  {
+   "package_name": "android",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/framework/framework-res.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 8932834,
+   "directory_size": 98844672,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "PERSISTENT",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "android.auto_generated_rro__",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/vendor/overlay/framework-res__auto_generated_rro.apk",
+   "version_name": "1.0",
+   "version_code": 1,
+   "uid": 10000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 1444141,
+   "directory_size": 1449984,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "android.ext.services",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/ExtServices/ExtServices.apk",
+   "version_name": "1",
+   "version_code": 1,
+   "uid": 10005,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 6010,
+   "directory_size": 57344,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.03",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "android.ext.shared",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/ExtShared/ExtShared.apk",
+   "version_name": "1",
+   "version_code": 1,
+   "uid": 10018,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 5620,
+   "directory_size": 45056,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.02",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "bin.mt.plus",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/data/app/bin.mt.plus-xXCsOzsoTVa2gpDlsM2gnw==/base.apk",
+   "version_name": "2.10.1",
+   "version_code": 22011900,
+   "uid": 10029,
+   "installer": "com.android.packageinstaller",
+   "is_system": false,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 17235430,
+   "directory_size": 20791296,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 17,
+   "target_sdk": 26,
+   "flags": [
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP",
+    "LARGE_HEAP"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": "MT 管理器",
+   "disabled_listed": false
+  },
+  {
+   "package_name": "cn.cmvideo.car.play",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/data/app/cn.cmvideo.car.play-ykAZIDU3kgd3zxegEua-EQ==/base.apk",
+   "version_name": "v3.1.9.7",
+   "version_code": 3197,
+   "uid": 10051,
+   "installer": "cn.cmvideo.car.play",
+   "is_system": false,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 26580255,
+   "directory_size": 40284160,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 19,
+   "target_sdk": 26,
+   "flags": [
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.ailabs.emode",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/Emode/Emode.apk",
+   "version_name": "1.0.30",
+   "version_code": 2100100030,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 6401724,
+   "directory_size": 11169792,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 20,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "10.64",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.ailabs.youku.iot",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/AliVideoPlayer/AliVideoPlayer.apk",
+   "version_name": "2.0.2.165",
+   "version_code": 2120202165,
+   "uid": 10014,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 11512344,
+   "directory_size": 47329280,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 21,
+   "target_sdk": 25,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "LARGE_HEAP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "45.06",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.ar.monitor",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/GenieMonitor/GenieMonitor.apk",
+   "version_name": "2.0.16.5",
+   "version_code": 210036005,
+   "uid": 10023,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 34798196,
+   "directory_size": 50225152,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 21,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "DEBUGGABLE",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "47.86",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.aicare",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/data/app/com.alibaba.ailabs.genie.aicare-zsBAkMuEJlOe5ygOiDbDbw==/base.apk",
+   "version_name": "4.0.62",
+   "version_code": 2100146200,
+   "uid": 10021,
+   "installer": "com.alibaba.ailabs.genie.aicare",
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 1,
+   "enabled_state_name": "ENABLED",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 11369192,
+   "directory_size": 19726336,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 26,
+   "target_sdk": 30,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "UPDATED_SYSTEM_APP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "18.50",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.albums",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/GenieAlbums/GenieAlbums.apk",
+   "version_name": "1.4.14",
+   "version_code": 2100104014,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 1060076,
+   "directory_size": 11087872,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 24,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "DEBUGGABLE",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "10.56",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.browser",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/GenieBrowser/GenieBrowser.apk",
+   "version_name": "1.0.0.19",
+   "version_code": 210101019,
+   "uid": 10022,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 1081775,
+   "directory_size": 13623296,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 19,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "DEBUGGABLE",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "LARGE_HEAP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "12.96",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.camera",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/data/app/com.alibaba.ailabs.genie.camera-UeTOZTBElqLiL9Nv3eKTVg==/base.apk",
+   "version_name": "1.0.93",
+   "version_code": 2100103093,
+   "uid": 1000,
+   "installer": "what is use for ?",
+   "is_system": false,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 5752373,
+   "directory_size": 7282688,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 26,
+   "target_sdk": 30,
+   "flags": [
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.children",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/GenieChildren/GenieChildren.apk",
+   "version_name": "5.11.0.19",
+   "version_code": 2101511019,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 10457738,
+   "directory_size": 21155840,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 19,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "LARGE_HEAP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "20.14",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.cook",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/data/app/com.alibaba.ailabs.genie.cook-Y0W26Dha2xaf2E1WkY6NpA==/base.apk",
+   "version_name": "3.0.6",
+   "version_code": 2100300006,
+   "uid": 10048,
+   "installer": "what is use for ?",
+   "is_system": false,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 7530385,
+   "directory_size": 15712256,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 24,
+   "target_sdk": 27,
+   "flags": [
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.guide",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/Guide/Guide.apk",
+   "version_name": "1.1.0.118",
+   "version_code": 118,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 4899082,
+   "directory_size": 5713920,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 26,
+   "target_sdk": 26,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "5.42",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.intermediary",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/data/app/com.alibaba.ailabs.genie.intermediary-8l6RlrQNzUbivvclgDAAMg==/base.apk",
+   "version_name": "0.0.35",
+   "version_code": 35,
+   "uid": 10031,
+   "installer": "com.alibaba.ailabs.genie.intermediary",
+   "is_system": false,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 1685756,
+   "directory_size": 1695744,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 24,
+   "target_sdk": 29,
+   "flags": [
+    "DEBUGGABLE",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.iot",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/GenieIoT/GenieIoT.apk",
+   "version_name": "2.1.2.0",
+   "version_code": 2100402120,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 12826963,
+   "directory_size": 17743872,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 26,
+   "target_sdk": 26,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "16.88",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.launcher",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/GenieLauncher/GenieLauncher.apk",
+   "version_name": "4.3.6.10",
+   "version_code": 2101430610,
+   "uid": 10024,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 6968427,
+   "directory_size": 21512192,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 26,
+   "target_sdk": 28,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "20.48",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.osupdate",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/Osupdate/Osupdate.apk",
+   "version_name": "9.0.1.0",
+   "version_code": 2100900010,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 2071892,
+   "directory_size": 5750784,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 19,
+   "target_sdk": 20,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "PERSISTENT",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "5.47",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.rtc",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/data/app/com.alibaba.ailabs.genie.rtc-iD7ciUfp9lpYBtIqAEiqeA==/base.apk",
+   "version_name": "5.2.78.53746723.dc",
+   "version_code": 2110502078,
+   "uid": 1000,
+   "installer": "com.alibaba.ailabs.genie.rtc",
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 1,
+   "enabled_state_name": "ENABLED",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 36346057,
+   "directory_size": 95100928,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 24,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "UPDATED_SYSTEM_APP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "9.05",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.screensaver",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/GenieScreensaver/GenieScreensaver.apk",
+   "version_name": "2.6.18",
+   "version_code": 2101020618,
+   "uid": 10025,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 6313867,
+   "directory_size": 7016448,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 26,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "6.67",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.ailabs.genie.smartapp",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/smartapp/smartapp.apk",
+   "version_name": "8.7.1.18",
+   "version_code": 2102087118,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 25336386,
+   "directory_size": 92381184,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 19,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "LARGE_HEAP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "87.89",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.genie.waft",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/Waft/Waft.apk",
+   "version_name": "1.3.231.15321244",
+   "version_code": 231,
+   "uid": 10027,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 186489,
+   "directory_size": 5873664,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 19,
+   "target_sdk": 29,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "5.56",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alibaba.spkey",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/AliSpKey/AliSpKey.apk",
+   "version_name": "1.0.01",
+   "version_code": 2100100001,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 104320,
+   "directory_size": 151552,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.13",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.aligenie.ags",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/AliGenieService/AliGenieService.apk",
+   "version_name": "2.5.3",
+   "version_code": 253,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 1899511,
+   "directory_size": 2453504,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 30,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "2.32",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alipay.arome.app",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/AMPE/AMPE.apk",
+   "version_name": "10.2.3.1775",
+   "version_code": 517,
+   "uid": 10019,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 27435939,
+   "directory_size": 91709440,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 18,
+   "target_sdk": 29,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "LARGE_HEAP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "87.18",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.alira.info",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/raShow/raShow.apk",
+   "version_name": "1.10",
+   "version_code": 10,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 9425,
+   "directory_size": 847872,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 8,
+   "target_sdk": 17,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.79",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.aliyun.uuid",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/UUID/UUID.apk",
+   "version_name": "3.3.2",
+   "version_code": 2100300302,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 552259,
+   "directory_size": 2883584,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 14,
+   "target_sdk": 26,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "2.73",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.bluetooth",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/MtkBluetooth/MtkBluetooth.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 1002,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 106569,
+   "directory_size": 3485696,
+   "shared_uid": "android.uid.bluetooth",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "3.29",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.bluetoothmidiservice",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/BluetoothMidiService/BluetoothMidiService.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10013,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 5792,
+   "directory_size": 61440,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.04",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.captiveportallogin",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/CaptivePortalLogin/CaptivePortalLogin.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10015,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 11540,
+   "directory_size": 69632,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.05",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.certinstaller",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/CertInstaller/CertInstaller.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10016,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 26330,
+   "directory_size": 102400,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.08",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.companiondevicemanager",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/CompanionDeviceManager/CompanionDeviceManager.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10017,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 10700,
+   "directory_size": 69632,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.05",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.defcontainer",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/DefaultContainerService/DefaultContainerService.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10001,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 6437,
+   "directory_size": 61440,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.03",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.externalstorage",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/ExternalStorageProvider/ExternalStorageProvider.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10006,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 6952,
+   "directory_size": 69632,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.05",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.inputdevices",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/InputDevices/InputDevices.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 76163,
+   "directory_size": 118784,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.09",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.keychain",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/KeyChain/KeyChain.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 13179,
+   "directory_size": 139264,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.11",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.location.fused",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/FusedLocation/FusedLocation.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 6471,
+   "directory_size": 69632,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.05",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.mtp",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/MtpDocumentsProvider/MtpDocumentsProvider.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10004,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 47556,
+   "directory_size": 155648,
+   "shared_uid": "android.media",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.13",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.packageinstaller",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/PackageInstaller/PackageInstaller.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10009,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 746857,
+   "directory_size": 2781184,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "2.63",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.pacprocessor",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/PacProcessor/PacProcessor.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10026,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 5568,
+   "directory_size": 61440,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.03",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.providers.calendar",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/CalendarProvider/CalendarProvider.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10002,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 17549,
+   "directory_size": 602112,
+   "shared_uid": "android.uid.calendar",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 25,
+   "target_sdk": 25,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.55",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.providers.contacts",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/ContactsProvider/ContactsProvider.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10003,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 16258,
+   "directory_size": 1048576,
+   "shared_uid": "android.uid.shared",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.98",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.providers.downloads",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/DownloadProvider/DownloadProvider.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10004,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 59498,
+   "directory_size": 528384,
+   "shared_uid": "android.media",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.49",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.providers.media",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/MtkMediaProvider/MtkMediaProvider.apk",
+   "version_name": "8.1.0",
+   "version_code": 803,
+   "uid": 10004,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 53963,
+   "directory_size": 270336,
+   "shared_uid": "android.media",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 25,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.24",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.providers.settings",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/SettingsProvider/SettingsProvider.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 85834,
+   "directory_size": 630784,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.59",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.providers.userdictionary",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/UserDictionaryProvider/UserDictionaryProvider.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10003,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 6122,
+   "directory_size": 57344,
+   "shared_uid": "android.uid.shared",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.04",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.proxyhandler",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/ProxyHandler/ProxyHandler.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10007,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 5716,
+   "directory_size": 53248,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.03",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.settings",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/S1Settings/S1Settings.apk",
+   "version_name": "4.22.16",
+   "version_code": 2100422016,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 4696482,
+   "directory_size": 10604544,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 24,
+   "target_sdk": 28,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "10.08",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.shell",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/Shell/Shell.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 2000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 19603,
+   "directory_size": 233472,
+   "shared_uid": "android.uid.shell",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.21",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.statementservice",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/StatementService/StatementService.apk",
+   "version_name": "1.0",
+   "version_code": 1,
+   "uid": 10008,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 6080,
+   "directory_size": 106496,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.08",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.storagemanager",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/StorageManager/StorageManager.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10011,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 688312,
+   "directory_size": 2449408,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 24,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "2.32",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.systemui",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/AliSystemUI/AliSystemUI.apk",
+   "version_name": "9.0.04.01",
+   "version_code": 900401,
+   "uid": 10012,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 1616805,
+   "directory_size": 6520832,
+   "shared_uid": "android.uid.systemui",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 26,
+   "target_sdk": 28,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "6.19",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.vpndialogs",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/VpnDialogs/VpnDialogs.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 10010,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 11715,
+   "directory_size": 57344,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.04",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.android.webview",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/webview/webview.apk",
+   "version_name": "61.0.3163.98",
+   "version_code": 316409800,
+   "uid": 10028,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 52401124,
+   "directory_size": 54542336,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 21,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "52.00",
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.anthouse.ayland",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/data/app/com.anthouse.ayland-mmfjTZvgvnogpqrtY4Avrg==/base.apk",
+   "version_name": "1.0.39",
+   "version_code": 39,
+   "uid": 10052,
+   "installer": "what is use for ?",
+   "is_system": false,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 81562933,
+   "directory_size": 156565504,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 19,
+   "target_sdk": 29,
+   "flags": [
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.dangbei1.tvlauncher",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/dangbei.apk",
+   "version_name": "3.3.6",
+   "version_code": 83,
+   "uid": 10039,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 9201063,
+   "directory_size": 9201063,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 17,
+   "target_sdk": 26,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP",
+    "LARGE_HEAP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "8.77",
+   "protected_app": "当贝桌面",
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.estrongs.android.pop",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/ES.apk",
+   "version_name": "3.2.5.5",
+   "version_code": 999999999,
+   "uid": 10038,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 4826567,
+   "directory_size": 4826567,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 5,
+   "target_sdk": 19,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "4.60",
+   "protected_app": "ES 文件管理器",
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.google.android.inputmethod.pinyin",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/vendor/app/GooglePinyinIME/GooglePinyinIME.apk",
+   "version_name": "4.5.1.164561151-armeabi-v7a",
+   "version_code": 4511412,
+   "uid": 10030,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 26000958,
+   "directory_size": 26005504,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 17,
+   "target_sdk": 26,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP",
+    "RESTORE_ANY_VERSION"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.ktcp.aiagent",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/data/app/com.ktcp.aiagent-AACVSOzu0sDnDeil4pnfZA==/base.apk",
+   "version_name": "2.6.0.100",
+   "version_code": 2605,
+   "uid": 10035,
+   "installer": "com.ktcp.aiagent",
+   "is_system": false,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 4201511,
+   "directory_size": 5632000,
+   "shared_uid": "com.ktcp.aiagent",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 14,
+   "target_sdk": 23,
+   "flags": [
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.mediatek",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/framework/mediatek-res/mediatek-res.apk",
+   "version_name": "8.1.0",
+   "version_code": 27,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 829262,
+   "directory_size": 835584,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.mediatek.thermalmanager",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/vendor/app/MTKThermalManager/MTKThermalManager.apk",
+   "version_name": "1.0",
+   "version_code": 1,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 26707,
+   "directory_size": 32768,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 15,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.shere.assistivetouch",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/easytouch.apk",
+   "version_name": "4.6.1",
+   "version_code": 4060100,
+   "uid": 10040,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 4595133,
+   "directory_size": 4595133,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 15,
+   "target_sdk": 25,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "PERSISTENT",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "4.38",
+   "protected_app": "EasyTouch",
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.topjohnwu.magisk",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/data/app/com.topjohnwu.magisk-EuMSu4VItaK3widDq122zw==/base.apk",
+   "version_name": "27.0",
+   "version_code": 27000,
+   "uid": 10041,
+   "installer": "com.android.packageinstaller",
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 12498796,
+   "directory_size": 15253504,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 23,
+   "target_sdk": 34,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "UPDATED_SYSTEM_APP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "10.76",
+   "protected_app": "Magisk",
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.web1n.permissiondog",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/app/qxg.apk",
+   "version_name": "0.1.0.45",
+   "version_code": 71,
+   "uid": 10042,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 1438313,
+   "directory_size": 1438313,
+   "shared_uid": null,
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 24,
+   "target_sdk": 29,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "1.37",
+   "protected_app": "权限狗",
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.yunos",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/framework/yunos-framework-res.apk",
+   "version_name": "1.0",
+   "version_code": 1,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": false,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": false
+    }
+   },
+   "apk_size": 607606,
+   "directory_size": 98844672,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 27,
+   "target_sdk": 27,
+   "flags": [
+    "SYSTEM"
+   ],
+   "in_system_image": false,
+   "image_total_mb": null,
+   "protected_app": null,
+   "disabled_listed": false
+  },
+  {
+   "package_name": "com.yunos.tv.provision",
+   "label": null,
+   "label_note": "unknown: dumpsys/PM 不返回 label，未解析 resources.arsc；桌面名称映射见 desktop_app_audit.md",
+   "code_path": "/system/priv-app/AliProvision/AliProvision.apk",
+   "version_name": "1.2.3",
+   "version_code": 2100100203,
+   "uid": 1000,
+   "installer": null,
+   "is_system": true,
+   "is_privileged": true,
+   "enabled_state": 0,
+   "enabled_state_name": "DEFAULT",
+   "user_state": {
+    "0": {
+     "installed": true,
+     "suspended": false,
+     "stopped": true
+    }
+   },
+   "apk_size": 8570,
+   "directory_size": 57344,
+   "shared_uid": "android.uid.system",
+   "split_apks": [
+    "base"
+   ],
+   "min_sdk": 11,
+   "target_sdk": 11,
+   "flags": [
+    "SYSTEM",
+    "HAS_CODE",
+    "ALLOW_CLEAR_USER_DATA",
+    "ALLOW_BACKUP"
+   ],
+   "in_system_image": true,
+   "image_total_mb": "0.03",
+   "protected_app": null,
+   "disabled_listed": false
+  }
+ ]
+}

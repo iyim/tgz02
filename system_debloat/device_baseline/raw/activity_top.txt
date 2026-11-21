@@ -1,0 +1,37 @@
+ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)
+Display #0 (activities from top to bottom):
+  Stack #1:
+  mFullscreen=true
+  isSleeping=true
+  mBounds=null
+    Task id #334
+    mFullscreen=true
+    mBounds=null
+    mMinWidth=-1
+    mMinHeight=-1
+    mLastNonFullscreenBounds=null
+    * TaskRecord{b8f8148 #334 A=bin.mt.plus U=0 StackId=1 sz=1}
+      userId=0 effectiveUid=u0a29 mCallingUid=u0a39 mUserSetupComplete=true mCallingPackage=com.dangbei1.tvlauncher
+      affinity=bin.mt.plus
+      intent={act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 pkg=bin.mt.plus cmp=bin.mt.plus/.Main}
+      realActivity=bin.mt.plus/.Main
+      autoRemoveRecents=false isPersistable=true numFullscreen=1 taskType=0 mTaskToReturnTo=0
+      rootWasReset=false mNeverRelinquishIdentity=true mReuseTask=false mLockTaskAuth=LOCK_TASK_AUTH_PINNABLE
+      Activities=[ActivityRecord{7af43ae u0 bin.mt.plus/.Main t334}]
+      askedCompatMode=false inRecents=true isAvailable=true
+      lastThumbnail=null lastThumbnailFile=/data/system_ce/0/recent_images/334_task_thumbnail.png
+      stackId=1
+      hasBeenVisible=true mResizeMode=RESIZE_MODE_RESIZEABLE mSupportsPictureInPicture=false isResizeable=true firstActiveTime=1795228009523 lastActiveTime=1795228736490 (inactive for 354s)
+      * Hist #0: ActivityRecord{7af43ae u0 bin.mt.plus/.Main t334}
+          packageName=bin.mt.plus processName=bin.mt.plus
+          launchedFromUid=10039 launchedFromPackage=com.dangbei1.tvlauncher userId=0
+          app=ProcessRecord{b2e2be1 5342:bin.mt.plus/u0a29}
+          Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 pkg=bin.mt.plus cmp=bin.mt.plus/.Main }
+          frontOfTask=true task=TaskRecord{b8f8148 #334 A=bin.mt.plus U=0 StackId=1 sz=1}
+adb : Failed to write while dumping service activity: Broken pipe
+所在位置 行:1 字符: 361
++ ... .txt" 2>&1; adb -s $s shell "dumpsys activity activities | head -30"  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Failed to write...ty: Broken pipe:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

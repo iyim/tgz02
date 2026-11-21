@@ -1,0 +1,5 @@
+﻿com.alibaba.ailabs.genie.children/.activity.HomeActivity
+com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity
+com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieboot.activity.BootHomeActivity
+com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity
+com.android.settings/.FallbackHome

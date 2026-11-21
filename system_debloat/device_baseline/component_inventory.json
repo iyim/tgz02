@@ -1,0 +1,2172 @@
+{
+ "targets": [
+  "com.alibaba.ailabs.genie.children",
+  "com.alibaba.ailabs.genie.albums",
+  "com.android.providers.userdictionary",
+  "com.alibaba.spkey",
+  "com.alira.info",
+  "com.aliyun.uuid",
+  "com.yunos.tv.provision",
+  "com.ailabs.emode",
+  "com.android.statementservice",
+  "com.android.bluetoothmidiservice",
+  "com.android.pacprocessor",
+  "com.android.vpndialogs",
+  "com.android.captiveportallogin",
+  "com.android.companiondevicemanager",
+  "com.android.storagemanager",
+  "com.android.mtp",
+  "com.alibaba.ailabs.genie.osupdate",
+  "com.alibaba.ailabs.genie.guide"
+ ],
+ "packages": [
+  {
+   "package": "com.alibaba.ailabs.genie.children",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": "android.uid.system",
+   "device_enabled_state": 0,
+   "component_total": 29,
+   "components": [
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.childmode.ui.page.ChildModeSettingActivity",
+     "exported": null,
+     "permission": null,
+     "process": "com.alibaba.ailabs.genie.children",
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.childmode.ui.page.AppSettingActivity",
+     "exported": null,
+     "permission": null,
+     "process": "com.alibaba.ailabs.genie.children",
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.childmode.ui.page.ForbiddenTimeAddActivity",
+     "exported": null,
+     "permission": null,
+     "process": "com.alibaba.ailabs.genie.children",
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.childmode.ui.page.EyeyieldSettingActivity",
+     "exported": null,
+     "permission": null,
+     "process": "com.alibaba.ailabs.genie.children",
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.childmode.ui.page.AddTimeActivity",
+     "exported": null,
+     "permission": null,
+     "process": "com.alibaba.ailabs.genie.children",
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.childmode.ui.page.GenieTimePickerActivity",
+     "exported": null,
+     "permission": null,
+     "process": "com.alibaba.ailabs.genie.children",
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.childmode.ui.page.WarningActivity",
+     "exported": null,
+     "permission": null,
+     "process": "com.alibaba.ailabs.genie.children",
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.logger.activity.PermissionActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.children.activity.FreedomSecondPageActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.VIEW",
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.childrenmodel.pictruebook.activity.BuyMirrorActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.childrenmodel.applist.view.ChildrenAppListActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": true,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.childrenmodel.home.view.ChildrenHomeActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN"
+     ],
+     "authorities": null,
+     "direct_boot_aware": true,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.childrenmodel.pictruebook.activity.VideoActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.childrenmodel.setting.ui.ChildInfoInputActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.childrenmodel.home.subpage.ChildModeCollectionAcitivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.childrenmodel.home.view.FeedBackActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.childrenmodel.incentive.activity.StatementActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.children.activity.HomeActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN",
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": true,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.children.activity.ChildGeneralSecondPageActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.VIEW",
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.childrenmodel.home.subpage.MediaListActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.alibaba.ailabs.genie.smartapp.service.JobWakeUpService",
+     "exported": true,
+     "permission": "android.permission.BIND_JOB_SERVICE",
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.alibaba.ailabs.genie.smartapp.task.core.ScheduleJobService",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.alibaba.ailabs.genie.task.action.SCHEDULE_JOB"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.alibaba.ailabs.genie.datacenter.DataCenterService",
+     "exported": true,
+     "permission": null,
+     "process": "com.alibaba.ailabs.genie.children",
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.alibaba.ailabs.genie.logger.service.LogService",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.alibaba.ailabs.genie.logger.LogService.action",
+      "com.alibaba.ailabs.genie.logger.LogService.upload"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.alibaba.analytics.AnalyticsService",
+     "exported": false,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.alibaba.ailabs.genie.childrenmodel.incentive.upload.TimerService",
+     "exported": true,
+     "permission": "android.permission.BIND_JOB_SERVICE",
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "androidx.room.MultiInstanceInvalidationService",
+     "exported": false,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": true,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "receiver",
+     "name": "com.alibaba.ailabs.genie.datacenter.DataCenterReceiver",
+     "exported": null,
+     "permission": "com.alibaba.ailabs.genie.datacenter.permission",
+     "process": "com.alibaba.ailabs.genie.children",
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "provider",
+     "name": "android.arch.lifecycle.ProcessLifecycleOwnerInitializer",
+     "exported": false,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": "com.alibaba.ailabs.genie.children.lifecycle-trojan",
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.albums",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": "android.uid.system",
+   "device_enabled_state": 0,
+   "component_total": 7,
+   "components": [
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.albums.MainActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN",
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.mango.ImageBrowseActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.banner.BannerAnimationActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.alibaba.ailabs.genie.albums.cmd.CmdDispatchService",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.VIEW",
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.alibaba.analytics.AnalyticsService",
+     "exported": false,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "provider",
+     "name": "com.alibaba.ailabs.genie.albums.provider.AlbumContentProvider",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": "com.tld.albumprovider",
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "provider",
+     "name": "android.arch.lifecycle.ProcessLifecycleOwnerInitializer",
+     "exported": false,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": "com.alibaba.ailabs.genie.albums.lifecycle-trojan",
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.android.providers.userdictionary",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": "android.uid.shared",
+   "device_enabled_state": 0,
+   "component_total": 1,
+   "components": [
+    {
+     "kind": "provider",
+     "name": "UserDictionaryProvider",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": "user_dictionary",
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.alibaba.spkey",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": "android.uid.system",
+   "device_enabled_state": 0,
+   "component_total": 2,
+   "components": [
+    {
+     "kind": "activity",
+     "name": ".MainActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.alibaba.spkey.SpService",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.alibaba.spkey.SpService"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.alira.info",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": "android.uid.system",
+   "device_enabled_state": 0,
+   "component_total": 2,
+   "components": [
+    {
+     "kind": "service",
+     "name": "com.alira.info.raService",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.alira.info.raService"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "receiver",
+     "name": "com.alira.info.DreamerReceiver",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.alira.info.raService.dream"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.aliyun.uuid",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": "android.uid.system",
+   "device_enabled_state": 0,
+   "component_total": 3,
+   "components": [
+    {
+     "kind": "activity",
+     "name": "com.aliyun.uuid.UUIDActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.aliyun.uuid.RegistUUIDService",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.aliyun.uuid.REGIST_UUID_SERVICE"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "receiver",
+     "name": "com.aliyun.uuid.RegistUUIDReceiver",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.BOOT_COMPLETED",
+      "com.aliyun.uuid.TEST_BOOT_COMPLETED"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.yunos.tv.provision",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": "android.uid.system",
+   "device_enabled_state": 0,
+   "component_total": 2,
+   "components": [
+    {
+     "kind": "activity",
+     "name": "com.yunos.tv.provision.DefaultActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN"
+     ],
+     "authorities": null,
+     "direct_boot_aware": true,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.yunos.tv.provision.DevicePassport",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN",
+      "com.yunos.intent.clearance"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.ailabs.emode",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": "android.uid.system",
+   "device_enabled_state": 0,
+   "component_total": 83,
+   "components": [
+    {
+     "kind": "activity",
+     "name": "BaseActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "EmodeSubmenu",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "BoardMMI",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "AutoDetect",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.VibratorBacklightTest",
+     "exported": null,
+     "permission": "android.permission.CALL_PRIVILEGED",
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.VibratorTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.BacklightTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.BTTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.LCDTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.VersionInfo",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.GPSTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.TouchScreenTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.IMEI",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.GSensorCalibration",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.ailabs.factoryautotest.action.SENSOR_CALI"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.QrCodeProduct",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.WriteProductCode",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.MonkeyTestConfig",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.IMSI",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.KeyTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.MemoryTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.LedTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.WifiTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.TpFactoryTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.ailabs.emode.TpActivity1",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.ailabs.emode.TpActivity2",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.ailabs.emode.TpActivityX",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.Root",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "MainActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.ailabs.emode.test1",
+      "android.intent.action.MAIN"
+     ],
+     "authorities": null,
+     "direct_boot_aware": true,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.DtvModuleTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".camera.BackMainCameraActivity",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".camera.BackSubCameraActivity",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".camera.FrontCameraActivity",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.MSensorTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.SensorAllTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.GSensorTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.FlashTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.ProximitySensorTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.HeadsetAndAudioLoopTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.HeadsetHookKeyTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.CustomVersionInfos",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.SDRingTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.LightSensorTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.OtgTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.RingTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.HardwareVersion",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.HardwareInfo",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.KeepScreenOn",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.UAProfile",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.PhaseCheck",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.GyroscopeSensorTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.HallSensorTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.ReceiverRingTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.ProximitySensorSwitch",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.ProximitySensorStressTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.BackTouchPanelTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.MicRecStressTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.BatteryCheck",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.VibratorStressTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".MasterClean",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.VideoTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.BatteryTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.FrontCameraTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.BackMainCameraTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.BackSubCameraTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.SalesCountStatus",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.FingerPrintTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.ailabs.factoryautotest.action.FINGER_TEST"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.BackCameraTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.FrontCameraTest2",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.AutoTpTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.ailabs.factoryautotest.action.TP_TEST"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.SarSensorTest",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".testcase.LightLeak",
+     "exported": null,
+     "permission": null,
+     "process": "com.android.phone",
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".burnin.TesterLcd",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".burnin.TesterCamera",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.ailabs.emode.EmodeIntentService",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.ailabs.intent.action.EMODE_RESTORE_WIFI",
+      "com.ailabs.intent.action.EMODE_RESTORE_BT",
+      "com.ailabs.intent.action.EMODE_RESTORE_GPS",
+      "com.ailabs.intent.action.EMODE_OPEN_WIFI_BT_GPS",
+      "com.ailabs.intent.action.EMODE_CLOSE_WIFI_BT_GPS",
+      "com.ailabs.intent.action.EMODE_INIT_RESULT_FILE",
+      "com.ailabs.intent.action.EMODE_UPDATE_RESULT_FILE",
+      "com.ailabs.intent.action.EMODE_WRITE_HW_SW_INFO",
+      "com.ailabs.intent.action.EMODE_WRITE_PHASE_CHECK",
+      "com.ailabs.intent.action.EMODE_WRITE_CODE",
+      "com.ailabs.intent.action.EMODE_WRITE_SYSTEM_SETTING",
+      "com.ailabs.intent.action.EMODE_WRITE_WIDEVINE_KEYBOX",
+      "com.ailabs.intent.action.EMODE_WRITE_KEYMASTER_KEYBOX"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.ailabs.emode.EmptyForegroundService",
+     "exported": false,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.ailabs.emode.EmodeService",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.ailabs.emode.IEmodeService"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.ailabs.emode.OtherItemTestService",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.ailabs.emode.Helper",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.ailabs.emode.AudioTestSerivce",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": ".burnin.BurninService",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.ailabs.emode.burnin.start",
+      "com.ailabs.emode.burnin.resume",
+      "com.ailabs.emode.burnin.stop"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "receiver",
+     "name": "MatchingReceiver",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.ailabs.emode.action.FACTORY_FUNC",
+      "com.ailabs.intent.action.EMODE",
+      "com.ailabs.intent.action.EMODE_MENU",
+      "com.ailabs.intent.action.EMODE_STOP",
+      "android.provider.Telephony.SECRET_CODE"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "receiver",
+     "name": "com.ailabs.emode.AudioTestReciver",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.ailabs.emode.audiotest"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "provider",
+     "name": "android.support.v4.content.FileProvider",
+     "exported": false,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": "com.ailabs.emode.files",
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.android.statementservice",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": null,
+   "device_enabled_state": 0,
+   "component_total": 2,
+   "components": [
+    {
+     "kind": "service",
+     "name": ".DirectStatementService",
+     "exported": false,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.android.statementservice.aosp.service.CHECK_ACTION"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "receiver",
+     "name": ".IntentFilterVerificationReceiver",
+     "exported": null,
+     "permission": "android.permission.BIND_INTENT_FILTER_VERIFIER",
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.INTENT_FILTER_NEEDS_VERIFICATION"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.android.bluetoothmidiservice",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": null,
+   "device_enabled_state": 0,
+   "component_total": 1,
+   "components": [
+    {
+     "kind": "service",
+     "name": ".BluetoothMidiService",
+     "exported": null,
+     "permission": "android.permission.BIND_MIDI_DEVICE_SERVICE",
+     "process": null,
+     "intent_actions": [
+      "android.media.midi.BluetoothMidiService"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.android.pacprocessor",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": null,
+   "device_enabled_state": 0,
+   "component_total": 1,
+   "components": [
+    {
+     "kind": "service",
+     "name": ".PacService",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.android.vpndialogs",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": null,
+   "device_enabled_state": 0,
+   "component_total": 2,
+   "components": [
+    {
+     "kind": "activity",
+     "name": ".ConfirmDialog",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".ManageDialog",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.android.captiveportallogin",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": null,
+   "device_enabled_state": 0,
+   "component_total": 1,
+   "components": [
+    {
+     "kind": "activity",
+     "name": "com.android.captiveportallogin.CaptivePortalLoginActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.net.conn.CAPTIVE_PORTAL"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.android.companiondevicemanager",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": null,
+   "device_enabled_state": 0,
+   "component_total": 2,
+   "components": [
+    {
+     "kind": "activity",
+     "name": ".DeviceChooserActivity",
+     "exported": null,
+     "permission": "android.permission.BIND_COMPANION_DEVICE_MANAGER_SERVICE",
+     "process": null,
+     "intent_actions": [
+      "android.companiondevice.START_DISCOVERY"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": ".DeviceDiscoveryService",
+     "exported": true,
+     "permission": "android.permission.BIND_COMPANION_DEVICE_MANAGER_SERVICE",
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.android.storagemanager",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": null,
+   "device_enabled_state": 0,
+   "component_total": 5,
+   "components": [
+    {
+     "kind": "activity",
+     "name": ".deletionhelper.DeletionHelperActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.os.storage.action.MANAGE_STORAGE"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": ".automatic.WarningDialogActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": ".automatic.AutomaticStorageManagementJobService",
+     "exported": false,
+     "permission": "android.permission.BIND_JOB_SERVICE",
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "receiver",
+     "name": ".automatic.AutomaticStorageBroadcastReceiver",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.BOOT_COMPLETED"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "receiver",
+     "name": ".automatic.NotificationController",
+     "exported": false,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.android.storagemanager.automatic.DISMISS",
+      "com.android.storagemanager.automatic.ACTIVATE",
+      "com.android.storagemanager.automatic.NO_THANKS",
+      "com.android.storagemanager.automatic.SHOW_NOTIFICATION",
+      "com.android.storagemanager.automatic.DEBUG_SHOW_NOTIFICATION",
+      "com.android.storagemanager.automatic.SHOW_SETTINGS"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.android.mtp",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": "android.media",
+   "device_enabled_state": 0,
+   "component_total": 4,
+   "components": [
+    {
+     "kind": "activity",
+     "name": ".ReceiverActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.hardware.usb.action.USB_DEVICE_ATTACHED"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": ".MtpDocumentsService",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "receiver",
+     "name": ".UsbIntentReceiver",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.hardware.usb.action.USB_DEVICE_ATTACHED",
+      "android.hardware.usb.action.USB_DEVICE_DETACHED"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "provider",
+     "name": ".MtpDocumentsProvider",
+     "exported": true,
+     "permission": "android.permission.MANAGE_DOCUMENTS",
+     "process": null,
+     "intent_actions": [
+      "android.content.action.DOCUMENTS_PROVIDER"
+     ],
+     "authorities": "com.android.mtp.documents",
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.osupdate",
+   "in_image": true,
+   "persistent": true,
+   "shared_uid": "android.uid.system",
+   "device_enabled_state": 0,
+   "component_total": 6,
+   "components": [
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.osupdate.front.UpdateActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.VIEW",
+      "android.intent.action.MAIN"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.osupdate.front.RebootUpdateActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN"
+     ],
+     "authorities": null,
+     "direct_boot_aware": true,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.osupdate.test.TestActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.alibaba.ailabs.genie.osupdate.UpdateService",
+     "exported": true,
+     "permission": "com.alibaba.ailabs.genie.osupdate.UPDATE_SERVICE",
+     "process": null,
+     "intent_actions": [
+      "com.alibaba.ailabs.genie.osupdate.IUpdateService"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "receiver",
+     "name": "com.alibaba.ailabs.genie.osupdate.UpdateBroadcastReceiver",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.BOOT_COMPLETED",
+      "com.aliyun.cloudapp.FOTA_UPDATE"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "provider",
+     "name": "com.alibaba.ailabs.genie.osupdate.AppConfigInfoProvider",
+     "exported": true,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": "com.alibaba.ailabs.genie.osupdate.AppConfigInfoProvider",
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.guide",
+   "in_image": true,
+   "persistent": false,
+   "shared_uid": "android.uid.system",
+   "device_enabled_state": 0,
+   "component_total": 10,
+   "components": [
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.guide.WelcomeActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.MAIN"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.guide.ContractActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "com.ailabs.guide.loacal.WEB_VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.guide.BindAccountActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.guide.VideoActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.guide.WifiListActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.guide.InputPasswordActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.guide.AddNetWorkActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "activity",
+     "name": "com.alibaba.ailabs.genie.guide.WVWebViewActivity",
+     "exported": null,
+     "permission": null,
+     "process": null,
+     "intent_actions": [
+      "android.intent.action.VIEW"
+     ],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "service",
+     "name": "com.alibaba.analytics.AnalyticsService",
+     "exported": false,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": null,
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    },
+    {
+     "kind": "provider",
+     "name": "com.alibaba.ailabs.genie.second.gcs.service.SecondInstaller",
+     "exported": false,
+     "permission": null,
+     "process": null,
+     "intent_actions": [],
+     "authorities": "com.alibaba.ailabs.genie.guide.ipc.second.server",
+     "direct_boot_aware": null,
+     "source": "image manifest (AXML)"
+    }
+   ],
+   "note": null
+  }
+ ]
+}

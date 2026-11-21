@@ -1,0 +1,424 @@
+{
+ "functions": [
+  {
+   "function": "原厂语音助手（入口）",
+   "package": "com.aligenie.ags",
+   "apk_dir": "app/AliGenieService",
+   "core_activity": "com.aligenie.ags.access.MainActivity",
+   "core_services": [
+    "com.aligenie.ags.analytics.AliicxService",
+    "com.aligenie.ags.analytics.service.ICJobService",
+    "com.aligenie.ags.analytics.service.AccService",
+    "com.aligenie.ags.analytics.service.ICService"
+   ],
+   "core_receivers": [
+    "com.aligenie.ags.analytics.ICBroadcastReceiver",
+    "com.aligenie.ags.access.AccessBroadcastReceiver"
+   ],
+   "core_providers": [
+    "com.aligenie.ags.analytics.AliICProvider"
+   ],
+   "native_libs": [
+    "lib/arm/libaligenie_ic.so"
+   ],
+   "protected": false,
+   "forbidden": "受保护，禁止精简",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "原厂语音技能运行时",
+   "package": "com.alibaba.ailabs.genie.smartapp",
+   "apk_dir": "app/smartapp",
+   "core_activity": "com.alibaba.ailabs.genie.task.aicare.ui.MsgShowActivity",
+   "core_services": [
+    "com.alibaba.analytics.AnalyticsService",
+    "com.alibaba.ailabs.genie.smartapp.service.GenieManageServerService",
+    "com.alibaba.ailabs.genie.smartapp.service.JobWakeUpService",
+    "anetwork.channel.aidl.NetworkService"
+   ],
+   "core_receivers": [
+    "com.alibaba.ailabs.genie.rtc.comon.register.RegisterReceiver",
+    "com.alibaba.ailabs.appbox.broadcast.MemoryBroadcastReceiver",
+    "com.alibaba.ailabs.appbox.common.installafter9.InstallAfter9$InstallResultReceiver"
+   ],
+   "core_providers": [
+    "com.alibaba.genie.waft.gcs.rpc.GenieServicePublisher",
+    "com.alibaba.genie.waft.gcs.registry.GenieRegistryInstaller",
+    "android.support.v4.content.FileProvider"
+   ],
+   "native_libs": [
+    "libsmartbox.so",
+    "libaceAsr.so",
+    "libvad_api.so",
+    "libvad_bin.so",
+    "libwakeup_bin_S1.so",
+    "libwakeup_bin_S1L_S3.so",
+    "libwakeup_sync_api_S1.so",
+    "libwakeup_sync_api_S1L_S3.so",
+    "libGenieCommon.so",
+    "libGenieJson.so"
+   ],
+   "protected": false,
+   "forbidden": "受保护，禁止精简",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "TTS（小程序容器内骨架）",
+   "package": "com.alipay.arome.app",
+   "apk_dir": "app/AMPE",
+   "core_activity": "com.eg.android.AlipayGphone.AlipayLogin",
+   "core_services": [
+    "com.alipay.mobile.rome.voicebroadcast.a11y.A11yService",
+    "com.alipay.mobile.beehive.audio.service.MusicService",
+    "com.alipay.android.tablauncher.HuaWeiQuickActionService",
+    "com.amap.api.location.APSService"
+   ],
+   "core_receivers": [
+    "com.huawei.hms.support.api.push.PushEventReceiver",
+    "com.alipay.mobile.logmonitor.TraceStubReceiver",
+    "com.alipay.mobile.logmonitor.ClientMonitorExtReceiver"
+   ],
+   "core_providers": [
+    "com.alipay.mobile.healthcommon.accountsync.SyncProvider",
+    "com.alipay.mobile.base.config.impl.ConfigContentProviderNew",
+    "com.huawei.hms.update.provider.UpdateProvider"
+   ],
+   "native_libs": [
+    "libtts_skeleton.so",
+    "libandroid-stream-apmtts.so"
+   ],
+   "protected": false,
+   "forbidden": "容器本身高风险；TTS 库随包",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "默认桌面（HOME）",
+   "package": "com.alibaba.ailabs.genie.launcher",
+   "apk_dir": "app/GenieLauncher",
+   "core_activity": "com.alibaba.ailabs.genie.launcher.activity.AdultHomeActivity",
+   "core_services": [
+    "com.alibaba.ailabs.genie.launcher.video.search.SearchService",
+    "com.alibaba.analytics.AnalyticsService",
+    "com.alibaba.ailabs.genie.logger.service.LogService",
+    "androidx.room.MultiInstanceInvalidationService"
+   ],
+   "core_receivers": [],
+   "core_providers": [
+    "com.alibaba.ailabs.genie.launcher.activity.AdultProvider"
+   ],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "启动关键组件，禁止精简",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "保护：当贝桌面",
+   "package": "com.dangbei1.tvlauncher",
+   "apk_dir": "app/dangbei.apk",
+   "core_activity": "com.dangbei.launcher.ui.welcome.WelcomeActivity",
+   "core_services": [
+    "com.dangbei.launcher.service.HomeKeyEventCatchService",
+    "com.dangbei.downloader.core.DownloadService",
+    "com.talkingdata.sdk.TDAntiCheatingService",
+    "com.dangbei.launcher.ui.screensaver.ScreensaverService"
+   ],
+   "core_receivers": [
+    "com.dangbei.euthenia.receiver.NetworkChangeReceiver",
+    "com.dangbei1.tvlauncher.receiver.BootReceiver",
+    "com.dangbei.launcher.receiver.SystemEventReceiver"
+   ],
+   "core_providers": [
+    "com.dangbei.launcher.impl.DbFileProvider",
+    "com.dangbei.library.utils.Utils$FileProvider4UtilCode",
+    "cn.jpush.android.service.DataProvider"
+   ],
+   "native_libs": [],
+   "protected": true,
+   "forbidden": "受用户保护",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "设置",
+   "package": "com.android.settings",
+   "apk_dir": "app/S1Settings",
+   "core_activity": "com.android.settings.Settings",
+   "core_services": [
+    "com.yunos.tv.settings.service.dynamic.DynamicSettingsService",
+    "com.yunos.tv.settings.service.start.StartService",
+    "com.alibaba.ailabs.genie.logger.service.LogService"
+   ],
+   "core_receivers": [
+    "com.android.settings.SettingBootReceiver"
+   ],
+   "core_providers": [
+    "com.android.settings.SettingsProvider"
+   ],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "禁止精简",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "SystemUI",
+   "package": "com.android.systemui",
+   "apk_dir": "app/AliSystemUI",
+   "core_activity": null,
+   "core_services": [
+    "com.android.systemui.SystemUIService",
+    "com.android.systemui.gesture.AccessibilityServiceGesture",
+    "com.alibaba.analytics.AnalyticsService"
+   ],
+   "core_receivers": [],
+   "core_providers": [
+    "com.alibaba.ailabs.genie.second.gcs.service.SecondInstaller"
+   ],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "禁止精简",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "包管理/安装器",
+   "package": "com.android.packageinstaller",
+   "apk_dir": "priv-app/PackageInstaller",
+   "core_activity": ".InstallStart",
+   "core_services": [
+    ".wear.WearPackageInstallerService",
+    ".permission.service.RuntimePermissionPresenterServiceImpl"
+   ],
+   "core_receivers": [
+    ".TemporaryFileManager",
+    ".InstallEventReceiver",
+    ".UninstallEventReceiver"
+   ],
+   "core_providers": [
+    ".wear.WearPackageIconProvider"
+   ],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "禁止精简",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "安装容器服务",
+   "package": "com.android.defcontainer",
+   "apk_dir": "priv-app/DefaultContainerService",
+   "core_activity": null,
+   "core_services": [
+    ".DefaultContainerService"
+   ],
+   "core_receivers": [],
+   "core_providers": [],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "禁止精简",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "存储/媒体 Provider",
+   "package": "com.android.providers.media",
+   "apk_dir": "priv-app/MtkMediaProvider",
+   "core_activity": "RingtonePickerActivity",
+   "core_services": [
+    "MediaScannerService",
+    "MtpService"
+   ],
+   "core_receivers": [
+    "MediaUpgradeReceiver",
+    "MediaScannerReceiver",
+    ".MtpReceiver"
+   ],
+   "core_providers": [
+    "MediaProvider",
+    "MediaDocumentsProvider"
+   ],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "禁止精简",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "外部存储 Provider",
+   "package": "com.android.externalstorage",
+   "apk_dir": "priv-app/ExternalStorageProvider",
+   "core_activity": null,
+   "core_services": [],
+   "core_receivers": [
+    ".MountReceiver"
+   ],
+   "core_providers": [
+    ".ExternalStorageProvider",
+    ".TestDocumentsProvider"
+   ],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "禁止精简",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "原厂视频播放",
+   "package": "com.ailabs.youku.iot",
+   "apk_dir": "app/AliVideoPlayer",
+   "core_activity": "com.youku.passport.activity.PassportActivity",
+   "core_services": [
+    "anetwork.channel.aidl.NetworkService",
+    "mtopsdk.xstate.XStateService",
+    "com.alibaba.analytics.AnalyticsService",
+    "com.youku.news.player.ai.CmdDispatchService"
+   ],
+   "core_receivers": [],
+   "core_providers": [],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "视频链路，禁止删除",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "设备控制（IoT）",
+   "package": "com.alibaba.ailabs.genie.iot",
+   "apk_dir": "app/GenieIoT",
+   "core_activity": "com.alibaba.ailabs.genie.iot_v20.virtaul.VirtualDeviceActivity",
+   "core_services": [
+    "com.alibaba.analytics.AnalyticsService",
+    "com.alibaba.ailabs.genie.iot.house.HouseService",
+    "com.alibaba.ailabs.iot.convert.IoTDataConversionService",
+    "com.alibaba.ailabs.genie.iot.house.view.window.MainWindowService"
+   ],
+   "core_receivers": [
+    "com.alibaba.ailabs.iot.iotservicesdk.receiver.AlarmReceiver"
+   ],
+   "core_providers": [
+    "com.alibaba.ailabs.genie.iot.IOTProvider",
+    "com.alibaba.ailabs.iot.smartapp_genie_platform_implement.service.IoTConnectionLayerProvider",
+    "com.alibaba.ailabs.iot.iotservicesdk.IoTLocalExecuteProvider"
+   ],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "设备控制面",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "手势/视觉唤醒/AVE",
+   "package": "com.alibaba.ailabs.ar.monitor",
+   "apk_dir": "app/GenieMonitor",
+   "core_activity": "com.alibaba.ailabs.acamera.sample.CameraSampleActivity",
+   "core_services": [
+    "com.alibaba.ailabs.ar.monitor.business.CMCCMediaService",
+    "com.alibaba.ailabs.ave.avemodule.AwesomeService",
+    "com.alibaba.ailabs.ave.aceengine.Services.GenieGestureService",
+    "com.alibaba.ailabs.ave.aceengine.Services.VisionWakeUpService"
+   ],
+   "core_receivers": [],
+   "core_providers": [
+    "com.alibaba.ailabs.ave.aceengine.AVEControlProvider",
+    "com.alibaba.ailabs.genie.second.gcs.service.SecondInstaller"
+   ],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "含视觉唤醒与控制 Provider",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "蓝牙栈",
+   "package": "com.android.bluetooth",
+   "apk_dir": "app/MtkBluetooth",
+   "core_activity": ".opp.BluetoothOppLauncherActivity",
+   "core_services": [
+    ".btservice.AdapterService",
+    ".opp.BluetoothOppService",
+    ".pbap.BluetoothPbapService",
+    ".map.BluetoothMapService"
+   ],
+   "core_receivers": [
+    ".opp.BluetoothOppReceiver",
+    ".opp.BluetoothOppHandoverReceiver"
+   ],
+   "core_providers": [
+    ".opp.BluetoothOppProvider",
+    ".opp.BluetoothOppFileProvider",
+    ".map.MmsFileProvider"
+   ],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "框架件",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "Wi-Fi/连接",
+   "package": "com.android.settings",
+   "apk_dir": "app/S1Settings",
+   "core_activity": "com.android.settings.Settings",
+   "core_services": [
+    "com.yunos.tv.settings.service.dynamic.DynamicSettingsService",
+    "com.yunos.tv.settings.service.start.StartService",
+    "com.alibaba.ailabs.genie.logger.service.LogService"
+   ],
+   "core_receivers": [
+    "com.android.settings.SettingBootReceiver"
+   ],
+   "core_providers": [
+    "com.android.settings.SettingsProvider"
+   ],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "框架件",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "音量控制",
+   "package": "com.android.systemui",
+   "apk_dir": "app/AliSystemUI",
+   "core_activity": null,
+   "core_services": [
+    "com.android.systemui.SystemUIService",
+    "com.android.systemui.gesture.AccessibilityServiceGesture",
+    "com.alibaba.analytics.AnalyticsService"
+   ],
+   "core_receivers": [],
+   "core_providers": [
+    "com.alibaba.ailabs.genie.second.gcs.service.SecondInstaller"
+   ],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "框架件",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  },
+  {
+   "function": "日志/错误上报",
+   "package": "com.alibaba.ailabs.genie.osupdate",
+   "apk_dir": "app/Osupdate",
+   "core_activity": "com.alibaba.ailabs.genie.osupdate.front.UpdateActivity",
+   "core_services": [
+    "com.alibaba.ailabs.genie.osupdate.UpdateService"
+   ],
+   "core_receivers": [
+    "com.alibaba.ailabs.genie.osupdate.UpdateBroadcastReceiver"
+   ],
+   "core_providers": [
+    "com.alibaba.ailabs.genie.osupdate.AppConfigInfoProvider"
+   ],
+   "native_libs": [],
+   "protected": false,
+   "forbidden": "见 OTA 报告",
+   "evidence": "image manifest (AXML) + device dumpsys package + 文件系统扫描",
+   "confidence": "high"
+  }
+ ]
+}

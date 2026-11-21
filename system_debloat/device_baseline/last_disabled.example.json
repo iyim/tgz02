@@ -1,0 +1,8 @@
+﻿{
+  "package": "<最近一次被禁用的包名>",
+  "captured_at": "<ISO8601 时间>",
+  "method": "package-restrictions-xml | pm-disable-user | other",
+  "restrictions_backup": "/data/local/tmp/pr_orig_<pkg>.xml",
+  "restrictions_backup_sha256": "<sha256>",
+  "note": "restore_last_disabled.ps1 读取本文件仅用于比对/提示；真正恢复仍需 -ConfirmPackage 完全匹配。"
+}

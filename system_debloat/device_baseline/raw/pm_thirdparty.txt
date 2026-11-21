@@ -1,0 +1,7 @@
+package:/data/app/com.alibaba.ailabs.genie.intermediary-8l6RlrQNzUbivvclgDAAMg==/base.apk=com.alibaba.ailabs.genie.intermediary
+package:/data/app/com.ktcp.aiagent-AACVSOzu0sDnDeil4pnfZA==/base.apk=com.ktcp.aiagent
+package:/data/app/bin.mt.plus-xXCsOzsoTVa2gpDlsM2gnw==/base.apk=bin.mt.plus
+package:/data/app/com.anthouse.ayland-mmfjTZvgvnogpqrtY4Avrg==/base.apk=com.anthouse.ayland
+package:/data/app/com.alibaba.ailabs.genie.camera-UeTOZTBElqLiL9Nv3eKTVg==/base.apk=com.alibaba.ailabs.genie.camera
+package:/data/app/com.alibaba.ailabs.genie.cook-Y0W26Dha2xaf2E1WkY6NpA==/base.apk=com.alibaba.ailabs.genie.cook
+package:/data/app/cn.cmvideo.car.play-ykAZIDU3kgd3zxegEua-EQ==/base.apk=cn.cmvideo.car.play

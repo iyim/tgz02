@@ -326,7 +326,9 @@ for fn in ('axml.py', 'scan.py', 'refs2.py', 'report.py', 'digest.py', 'edges.py
            'test_b_class.py', 'ota_observe.py', 'ota_analyze.py', 'ota_observe.ps1',
            'test_ota_observation.py', 'test_screening.py', 'test_desktop_audit.py',
            'mkdocs.py', 'mkdocs2.py', 'mkdocs3.py', 'mkdocs4.py',
-           'mkdocs5.py', 'mkdocs6.py', 'mkdocs7.py', 'mkdocs8.py', 'mkdocs9.py'):
+           'mkdocs5.py', 'mkdocs6.py', 'mkdocs7.py', 'mkdocs8.py', 'mkdocs9.py',
+           'build_device_baseline.py', 'build_device_baseline_md.py', 'build_candidate_cards.py',
+           'check_device_state.ps1', 'restore_last_disabled.ps1', 'verify_launcher.ps1'):
     src = os.path.join(SRC, fn)
     if os.path.exists(src):
         shutil.copy2(src, os.path.join(TOOLS, fn))
@@ -419,6 +421,22 @@ rev = f"""# 修订记录（rev3 / rev3.1 / rev4 / rev4.1 / rev5）
   rev5.1 = 桌面 18 个入口专项排查。rev5.2 = 候选冲突修正 + 四个大体积组件级复核
 - 本轮**未执行**任何 `pm disable-user` / `pm enable` / `pm uninstall` / 镜像或 boot 写操作；
   设备 `pm list packages -d` 仍为空
+
+## 00000. rev5.3：设备基线与救援准备（2026-11-21）
+
+**只读阶段**：本轮没有任何禁用/卸载/删除/清数据/刷写，设备状态未变。
+
+| 交付 | 内容 |
+|---|---|
+| `device_baseline/package_inventory.{json,md}` | **68 个包**（system 61 / priv-app 18 / 三方 7 / 禁用 0），逐包给出 code_path、version、uid、installer、enabled、apk_size、目录大小、sharedUid、splits；label 全部标 unknown（8.1 dumpsys 不返回 label） |
+| `device_baseline/launcher_and_boot.md` | 默认 HOME = `com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity`；另有 4 个 HOME（儿童 `children/.activity.HomeActivity`、smartapp 的 `BootHomeActivity`、当贝 `dangbei…MainActivity`、`settings/.FallbackHome`）；22 个 BOOT_COMPLETED 接收器 |
+| `device_baseline/core_components.{json,md}` | 18 项功能→包名映射；语音链路的关键证据：`libsmartbox.so`/`libaceAsr.so`/`libvad_*.so`/`libwakeup_*.so` 全部属于 **smartapp**，`libaligenie_ic.so` 属 ags，TTL 骨架库在 AMPE |
+| `device_baseline/component_inventory.{json,md}` | 18 个候选包 / **163 个组件**（activity/service/receiver/provider + exported/permission/actions/authorities） |
+| `device_baseline/dependency_graph.{json,md}` | **304 条** `app`/`ambiguous` 级依赖边，附证据类型与置信度；明确“字符串命中 ≠ 运行时依赖” |
+| `device_baseline/rescue_capability.md` | ADB：USB 在线、`ro.adb.secure=1`、**无线 5555 已监听**、root 可 `su`；Recovery：分区存在且有备份，但**ADB/读 /data 全部未验证**；fastboot 未知；**没有 scatter 文件** |
+| `device_baseline/recovery_plan.md` | 23 个分区备份与设备分区**逐一比对大小一致** + SHA256；A/B/C/D 四条恢复路径（C 段标注未验证、D 段不列可直接执行的刷写命令） |
+| `device_baseline/candidate_operation_cards.md` | **18 张操作卡**（15 字段齐全），覆盖儿童/相册/userdictionary/spkey/alira/uuid/provision/emode + B 类两批 |
+| `tools/check_device_state.ps1` 等 3 个脚本 | 只读检查 / 恢复（必填 `-ConfirmPackage`、保护名单硬拦截）/ 桌面校验；**6 个模拟场景全部按预期退出码**（0/2/0/4/6/0） |
 
 ## 0000. rev5.2：冲突修正与大体积复核（2026-11-21）
 
