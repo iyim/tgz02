@@ -1,0 +1,213 @@
+﻿
+################ T6-03 init.rc supervisor device verification :: 2026-11-21 16:50:54 ################
+
+===== P0 boot-environment audit and rc deployment :: 2026-11-21 16:50:54 =====
+adb devices:
+List of devices attached
+192.168.1.9:5555	device
+
+  ASSERT OK   : device is online
+  id: uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0
+  ASSERT OK   : su gives uid=0
+/init.rc imports:
+import /init.environ.rc
+import /init.usb.rc
+import /init.${ro.hardware}.rc
+import /vendor/etc/init/hw/init.${ro.hardware}.rc
+import /init.usb.configfs.rc
+import /init.${ro.zygote}.rc
+import /init.common.rc
+  ASSERT OK   : init.rc import chain is readable and unchanged
+init import dirs in the binary:
+/system/etc/init
+/vendor/etc/init
+/odm/etc/init
+  ASSERT OK   : init auto-imports the /system/etc/init directory
+  ro.boot.init_rc=[]
+  ASSERT OK   : no ro.boot.init_rc override (directory imports are used)
+/dev/block/mmcblk0p19 on /system type ext4 (ro,seclabel,relatime,data=ordered)
+/dev/block/mmcblk0p11 on /vendor type ext4 (ro,seclabel,relatime,data=ordered)
+/dev/block/mmcblk0p22 on /data type ext4 (rw,seclabel,nosuid,nodev,noatime,discard,noauto_da_alloc,resuid=10010,resgid=1065,data=ordered)
+  ASSERT OK   : /system is mounted read-only
+  ASSERT OK   : /data is mounted read-write
+  ro.crypto.state=unencrypted
+  ASSERT OK   : /data needs no decryption wait (post-fs-data is enough)
+  ro.boot.veritymode=enforcing ro.boot.verifiedbootstate=orange
+  ASSERT OK   : no dm-verity device is active at runtime
+  getenforce=Permissive /sys/fs/selinux/enforce=0 ro.boot.selinux=disable
+  ASSERT OK   : runtime SELinux mode confirmed Permissive from the kernel, not from the boot prop
+  ASSERT FAIL : no AVC denial in the current boot log
+-rwxr-xr-x 1 root root 27384 2026-11-21 16:22 /data/local/tmp/t6/libtg_hook.so
+-rwxr-xr-x 1 root root 71884 2026-11-21 16:22 /data/local/tmp/t6/tg_injector
+-rwxr-xr-x 1 root root 60904 2026-11-21 16:22 /data/local/tmp/t6/tg_supervisor
+  ASSERT FAIL : supervisor binary is root:root 0755
+drwxr-xr-x 3 root root 4096 2026-11-21 16:48 /data/local/tmp/t6
+  ASSERT OK   : /data/local/tmp/t6 exists for boot-time use
+  local rc sha256 : cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34
+  local supervisor: 17dec6e079d7d2efd74cd6d2c49e04436d1b6d56a648024ca0f1986c646c2fa0
+  ASSERT OK   : device supervisor is byte-identical to the build
+  ASSERT OK   : device rc copy matches the repo
+deploy:
+already deployed (identical content): /system/etc/init/tg_supervisor.rc
+EXIT=0
+  ASSERT FAIL : rc file installed into /system/etc/init
+  ASSERT FAIL : deployed rc content matches the repo copy
+-rw-r--r-- 1 root root 2114 2026-11-21 16:48 /system/etc/init/tg_supervisor.rc
+  ASSERT OK   : rc file is root:root 0644
+  ASSERT OK   : /system was remounted read-only after the deploy
+  /system/etc/init entry count after deploy: 48
+  init.svc.tg_supervisor before the reboot: [stopped]
+  ASSERT OK   : service is not running before the reboot
+
+===== P1 reboot #1: init starts the supervisor and the hook is injected :: 2026-11-21 16:51:17 =====
+  ASSERT OK   : Android finished booting with the rc in place
+  ASSERT OK   : sys.boot_completed=1
+  init.svc.tg_supervisor=running
+  ASSERT OK   : init started tg_supervisor at boot
+  supervisor pid=278
+  ASSERT OK   : supervisor process is alive
+2026-11-21 16:48:44.973 sup: inject end: pid=1159 exit=0 hooked=1 elapsed=321ms ok
+2026-11-21 16:51:38.557 sup: start pid=278 target=com.alibaba.ailabs.genie.smartapp:core injector=/data/local/tmp/t6/tg_injector agent=/data/local/tmp/t6/libtg_hook.so interval=500ms retry=2000ms max=60000ms
+2026-11-21 16:51:38.629 sup: pidfile=/data/local/tmp/t6/tg_supervisor.pid acquired (single instance)
+2026-11-21 16:51:50.029 sup: target found: pid=1159 starttime=1582 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 16:51:50.085 sup: waiting: pid=1159 has not loaded libsmartbox.so yet
+2026-11-21 16:51:50.616 sup: target ready: pid=1159 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=1159 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 16:51:50.673 sup: check done: pid=1159 exit=0 hooked=-1 state=unknown
+2026-11-21 16:51:50.673 sup: inject begin: pid=1159 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=1159 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=1159 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xa576b000 stack=0xa5773000 trap=0xa577a000 gadget=0xa4ff0a6c
+inj| [inject] dlopen=0xa6fd50ad (libdl.so)
+inj| [inject] dlsym=0xa6fd50bf (libdl.so)
+inj| [inject] dlerror=0xa6fd50b7 (libdl.so)
+inj| [inject] path_written=0xa576b100 len=33
+inj| [inject] dlopen ok handle=0x56283107 flags=0x2
+inj| [inject] dlsym ok install=0x8a45bbb0 prepare=0x8a45b5e4 status=0x8a45cc4c
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x8ae1b53c,0x8ae1b544)
+inj| [inject] paused 17 other threads (exec tid=1159); [0x8ae1b53c,0x8ae1b544) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+inj| [inject] RESULT ok pid=1159 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 16:51:50.908 sup: inject end: pid=1159 exit=0 hooked=1 elapsed=235ms ok
+  ASSERT OK   : supervisor logged its startup after the init start
+  ASSERT OK   : supervisor injected the core process automatically
+  core pid=1159
+  ASSERT OK   : factory core process is running
+  ASSERT OK   : independent --check confirms hooked=1
+  ASSERT OK   : no ptrace-stop is left on the target
+running: pid=4885
+{"state":"running","pid":4885,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":0,"duplicates":0,"rejected":0,"frames":0,"clients":0,"clients_accepted":0,"clients_closed":0,"client_aborts":0,"client_overflow":0,"frame_errors":0,"store_errors":0,"replay_lines":263,"bad_lines":0,"truncated_bytes":0,"dedup_size":263,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-21T16:52:54"}
+  ASSERT OK   : AI bridge is up (T5 infrastructure)
+  events before the speech: 263
+  played s01
+  events after the speech: 264
+  ASSERT OK   : ASR text reached the AI bridge through the init-started supervisor
+new events:
+{"version":1,"rec":"asr_final","event_id":"t6-1159-1968746-g1","event_type":"asr_final","pid":1159,"session_id":"1968746","text":"天猫精灵你现在几点了","text_bytes":30,"text_chars":10,"is_final":true,"received_at_ms":1795251188890,"recv_at_ms":1795251188894,"stored_at_ms":1795251188895,"seq":1}
+  ASSERT OK   : event_id carries the t6- prefix
+  ASSERT OK   : event_type is asr_final
+
+===== P2 restart the core process: the new pid is injected again :: 2026-11-21 16:53:14 =====
+  core pid 1159 -> 5247
+  ASSERT OK   : core process is back
+  ASSERT OK   : core pid changed
+2026-11-21 16:51:50.908 sup: inject end: pid=1159 exit=0 hooked=1 elapsed=235ms ok
+2026-11-21 16:53:16.235 sup: target gone: pid=1159 starttime=1582
+2026-11-21 16:53:16.757 sup: target found: pid=5247 starttime=10211 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 16:53:16.796 sup: waiting: pid=5247 has not loaded libsmartbox.so yet
+2026-11-21 16:53:17.322 sup: target ready: pid=5247 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=5247 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 16:53:17.498 sup: check done: pid=5247 exit=0 hooked=-1 state=unknown
+2026-11-21 16:53:17.499 sup: inject begin: pid=5247 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=5247 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=5252 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xa567b000 stack=0xa5683000 trap=0xa568a000 gadget=0xa4ff0a6c
+inj| [inject] dlopen=0xa6fd50ad (libdl.so)
+inj| [inject] dlsym=0xa6fd50bf (libdl.so)
+inj| [inject] dlerror=0xa6fd50b7 (libdl.so)
+inj| [inject] path_written=0xa567b100 len=33
+inj| [inject] dlopen ok handle=0x958ec08b flags=0x2
+inj| [inject] dlsym ok install=0x89be1bb0 prepare=0x89be15e4 status=0x89be2c4c
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x8a05453c,0x8a054544)
+inj| [inject] paused 19 other threads (exec tid=5252); [0x8a05453c,0x8a054544) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+inj| [inject] RESULT ok pid=5247 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 16:53:18.171 sup: inject end: pid=5247 exit=0 hooked=1 elapsed=672ms ok
+  ASSERT OK   : the new pid was injected automatically
+  ASSERT OK   : the old pid was retired
+  ASSERT OK   : independent --check confirms hooked=1 on the new pid
+  ASSERT OK   : the same supervisor process survived the app restart
+
+===== P3 reboot #2: the supervisor starts again by itself :: 2026-11-21 16:53:30 =====
+  ASSERT OK   : Android finished booting on the second reboot
+  init.svc.tg_supervisor=adb.exe: device offline
+  ASSERT FAIL : init started tg_supervisor again after the reboot
+  supervisor pid after reboot: 
+  ASSERT FAIL : supervisor process is alive after the reboot
+  ASSERT OK   : the freshly booted supervisor injected the core process
+  ASSERT OK   : independent --check confirms hooked=1 after the reboot
+
+===== P4 disable the rc and reboot #3: no auto start, manual control still works :: 2026-11-21 16:54:53 =====
+disable:
+disabled: /system/etc/init/tg_supervisor.rc -> /system/etc/init/tg_supervisor.rc.disabled
+supervisor running: no
+EXIT=0
+  ASSERT OK   : rc file was renamed to .disabled
+  ASSERT OK   : running service was stopped
+  ASSERT OK   : no supervisor process is left
+  ASSERT FAIL : Android finished booting with the rc disabled
+  init.svc.tg_supervisor after disabling: [error: closed]
+  ASSERT OK   : init no longer starts the supervisor
+  ASSERT OK   : no supervisor process after boot
+  ASSERT OK   : the supervisor never started during this boot
+manual start:
+error: closed
+  ASSERT FAIL : T6-02 manual start still works and injects
+  ASSERT FAIL : manually started supervisor is running
+  ASSERT OK   : the manual instance is not managed by init (as expected)
+manual stop:
+error: closed
+  ASSERT FAIL : T6-02 manual stop still works
+  ASSERT OK   : manual instance is gone
+
+===== P5 failure drill: missing binary must not block the boot :: 2026-11-21 17:00:38 =====
+re-deploy for the failure drill:
+error: closed
+  ASSERT FAIL : rc is enabled again for the drill
+hide the binary: error: closed
+  ASSERT FAIL : binary is hidden for the drill
+
+# 说明：这是 2026-11-21 16:52-17:02 那次运行的原样日志（未删改）。
+# 从 "P3 reboot #2" 之后开始，本机 adbd 反复返回 "error: closed / device offline"，
+# 所有记为 FAIL 的项都是链路错误造成的读数失败（见每行后面 echo 出来的 adb 错误原文），
+# 不是 Supervisor / init 集成失败。后半段（故障演练、停用、恢复、再启用）因此没有跑完。
