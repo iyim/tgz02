@@ -1,0 +1,15 @@
+11-21 23:16:14.180 D/WakeupEngineWrapper(10414): [2026-11-21 23:16:14.339][FullLink]onWakeupCallback 
+11-21 23:16:14.180 D/AGSpeechEngine(10414): onSpeechWakeup,530:tian mao jing ling,澶╃尗绮剧伒
+11-21 23:16:14.199 D/SessionManager(10414): JNI_AILABS SessionManager.cpp:onStartTalk:255 [10490] sessionId = 1969024, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-21 23:16:14.199 D/WakeupEngineWrapper(10414): setSystemInfo,272: volumeLevel=37, audioType=0, isFullDuplexMode=0, isAsrMode=1
+11-21 23:16:14.515 D/WakeupEngineWrapper(10414): useWakeupWords,225:begin ...
+11-21 23:16:14.515 D/WakeupEngineWrapper(10414): useWakeupWords,228:end ...
+11-21 23:16:19.392 D/SessionManager(10414): JNI_AILABS SessionManager.cpp:onStopTalk:697 [10490] onStopTalk, mStopTalkReason = 0, reason = normal
+11-21 23:16:19.392 D/SessionManager(10414): JNI_AILABS SessionManager.cpp:onStopTalk:749 [10490] on stop talk, session=1969024
+11-21 23:16:19.392 D/SessionManager(10414): JNI_AILABS SessionManager.cpp:onStopTalk:786 [10490] on stop talk, send end frame, sessionId = 1969024
+11-21 23:16:19.398 D/SessionManager(10414): JNI_AILABS SessionManager.cpp:onStopTalk:842 [10490] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "f8a763e6cbfd11212316141800001380", "wakeupWord": "tian mao jing ling", "doa": "{\"param_arr\":[52.500000,0.977977,57.500000,0.018232,62.500000,0.003791],\"score_a ...[truncated]
+11-21 23:16:19.411 D/WakeupEngineWrapper(10414): setSystemInfo,272: volumeLevel=37, audioType=0, isFullDuplexMode=0, isAsrMode=0
+11-21 23:16:19.805 D/AGSpeechEngine(10414): abortListen,395,wakeup type is active
+11-21 23:16:19.807 D/WakeupEngineWrapper(10414): setSystemInfo,272: volumeLevel=37, audioType=3, isFullDuplexMode=0, isAsrMode=0
+11-21 23:16:21.227 D/WakeupEngineWrapper(10414): useWakeupWords,225:begin ...
+11-21 23:16:21.227 D/WakeupEngineWrapper(10414): useWakeupWords,228:end ...
