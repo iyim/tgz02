@@ -164,7 +164,7 @@ tramp(+0x0C) <func+8>
 - **不是主机 adb server**：kill-server/start-server、独立 server、全新 connect 均无效；自写原始客户端直连 adbd 同样失败；
 - **不是权限/鉴权**：`adb devices -l` 正常显示 `device`，banner 正常，`forward` 等进程内服务可用；
 - **不是 USB 通道问题**：`adb devices` 只有 TCP 记录（与 rev5.6 记录一致）；
-- **不是一次偶发**：跨三次重启仍然复现，且**首次失败发生在我对设备做任何写入之前**（此前只有只读 recon 与一次 `adb pull`）。
+- **不是一次偶发**：跨三次重启仍然复现，且**首次失败发生在任何注入类写入之前**（此前只向 `/data/local/tmp` 推送了一个只读 recon 脚本、读取了 `/proc` 与 `/system/app/smartapp/lib/arm/libsmartbox.so`，没有执行注入、禁用、清数据或刷写）。
 
 ### 6.3 由此明确未验证的项（逐条）
 
