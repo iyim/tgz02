@@ -143,7 +143,16 @@ function WaitShell([int]$timeoutSec) {
     return $false
 }
 
+function BootId() {
+    $v = ((& $adb -s $Dev shell "cat /proc/sys/kernel/random/boot_id" 2>&1) -join '').Trim()
+    if ($v -match '^[0-9a-f][0-9a-f-]{7,}$') { return $v }
+    return ''
+}
+
+# 一次真实重启：adb reboot 会立刻返回，设备还会短暂保持"device + boot_completed=1"，
+# 所以必须等 boot_id 变化，否则后面的读数全落在重启前的那一刻（这是本轮第一个真实 bug）。
 function RebootAndWait([int]$timeoutSec) {
+    $before = BootId
     $null = Adb @('reboot')
     Start-Sleep -Seconds 10
     $deadline = (Get-Date).AddSeconds($timeoutSec)
@@ -152,10 +161,13 @@ function RebootAndWait([int]$timeoutSec) {
         if ($state -eq 'device') {
             $bc = ((& $adb -s $Dev shell "getprop sys.boot_completed" 2>&1) -join '').Trim()
             if ($bc -eq '1') {
-                # 系统起来了还不够：adbd 也可能还在抽风，等一条 shell 命令真的能跑通
-                if (WaitShell 60) {
-                    Start-Sleep -Seconds 3
-                    return $true
+                $now = BootId
+                if ($now -ne '' -and $now -ne $before) {
+                    # 系统起来了还不够：adbd 也可能还在抽风，等一条 shell 命令真的能跑通
+                    if (WaitShell 60) {
+                        Start-Sleep -Seconds 3
+                        return $true
+                    }
                 }
             }
         }
@@ -243,12 +255,20 @@ Note ("getenforce=" + $enforce + " /sys/fs/selinux/enforce=" + $enforceFile + " 
 $selinuxPermissive = ($enforce -eq 'Permissive') -and ($enforceFile -eq '0')
 Assert $selinuxPermissive "runtime SELinux mode confirmed Permissive from the kernel, not from the boot prop"
 $avc = Su "dmesg"
-Assert ((($avc -split "`n") | Where-Object { $_ -match 'avc: *denied' }).Count -eq 0) "no AVC denial in the current boot log"
+$avcLines = (($avc -split "`n") | Where-Object { $_ -match 'avc:\s*denied' })
+Note ("AVC denials in the current boot log (Permissive still audits): " + $avcLines.Count)
+$oursAvc = ($avcLines | Where-Object { $_ -match 'tg_supervisor|tg_injector|libtg_hook' })
+Note ("AVC denials mentioning the T6 binaries: " + $oursAvc.Count + " (all must be permissive=1)")
+if ($oursAvc.Count -gt 0) { Rec (($oursAvc | Select-Object -First 3) -join "`n") }
+$enforced = ($oursAvc | Where-Object { $_ -notmatch 'permissive=1' }).Count
+Assert ($enforced -eq 0) "every T6-related AVC denial is permissive-only (sys_ptrace on init domain)"
 
 # 4) 文件属主/权限
 $files = Su ("ls -l " + $devDir + "/tg_supervisor " + $devDir + "/tg_injector " + $devDir + "/libtg_hook.so")
 Rec ($files)
-Assert ($files -match '^-rwxr-xr-x 1 root +root .* tg_supervisor') "supervisor binary is root:root 0755"
+$supLine = (($files -split "`n") | Where-Object { $_ -match 'tg_supervisor$' }) -join ''
+Note ("supervisor stat: " + $supLine)
+Assert ($supLine -match '^-rwxr-xr-x\s+1\s+root\s+root') "supervisor binary is root:root 0755"
 $tmpDir = Su ("ls -ld " + $devDir)
 Rec ($tmpDir)
 Assert ($tmpDir -match 'drwx') "/data/local/tmp/t6 exists for boot-time use"
@@ -465,7 +485,11 @@ if (-not (WaitShell 90)) {
 }
 $dis = Su ("$devDir/disable_rc.sh")
 Rec ("disable:`n" + $dis)
-Assert ($dis -match 'disabled: ') "rc file was renamed to .disabled"
+Assert ($dis -match 'removed from init import dir') "rc file was moved out of the init import dir"
+$afterDisable = Su "ls /system/etc/init"
+$leftInDir = (($afterDisable -split "`n") | Where-Object { $_ -match 'tg_supervisor' })
+Note ("tg_supervisor entries left in /system/etc/init: [" + ($leftInDir -join ',') + "]")
+Assert ($leftInDir.Count -eq 0) "no tg_supervisor file remains in the import directory"
 Assert ((Svc) -ne 'running') "running service was stopped"
 Assert ((SupPid) -eq '') "no supervisor process is left"
 $logFrom = SupLines
@@ -502,7 +526,7 @@ if (-not (WaitShell 90)) {
 }
 $restore = Su ("$devDir/restore_rc.sh")
 Rec ("restore:`n" + $restore)
-$left = Su "ls /system/etc/init"
+$left = Su "ls -l /system/etc/init"
 $leftNames = ($left -split "`n") | Where-Object { $_ -match 'tg_supervisor' }
 Note ("tg_supervisor files left in /system/etc/init: [" + ($leftNames -join ',') + "]")
 Assert ($leftNames.Count -eq 0) "no tg_supervisor rc remains in /system/etc/init"

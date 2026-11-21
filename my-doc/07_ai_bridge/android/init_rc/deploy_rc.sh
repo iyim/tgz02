@@ -3,11 +3,13 @@
 #
 #   su -c "/data/local/tmp/t6/deploy_rc.sh"
 #
-# 只做一件事：在 /system/etc/init/ 里"新增"一个 tg_supervisor.rc。
-#   - 不动 /init.rc、不动任何原厂 rc、不覆盖同名文件（同名时先比对内容）
-#   - 部署前把该目录的原始清单存到 /data/local/tmp/t6/system_etc_init.before
-#   - 写完立刻把 /system 重新挂回只读，并回读校验
-#   - 完全可撤销：restore_rc.sh 删掉这一个文件即可
+# 本机 init 的行为（实测）：/system/etc/init 下的**每个普通文件**都会被解析，
+# 不看 .rc 后缀（把文件改名成 tg_supervisor.rc.disabled 后，服务照样被拉起）。
+# 所以这里：
+#   - 部署前先清掉目录里所有 tg_supervisor* 残留，避免半成品文件被解析；
+#   - 目录里不写临时文件，直接覆盖目标文件；
+#   - 写完立刻把 /system 挂回只读并回读校验。
+# 只新增/覆盖 tg_supervisor.rc 这一个文件，不动任何原厂文件。
 set -u
 SRC=/data/local/tmp/t6/tg_supervisor.rc
 DIR=/system/etc/init
@@ -25,21 +27,23 @@ if [ ! -f "$SNAP" ]; then
     echo "snapshot of $DIR before deploy -> $SNAP"
 fi
 
-if [ -f "$DST" ]; then
-    if cmp -s "$SRC" "$DST"; then
-        echo "already deployed (identical content): $DST"
-        echo "EXIT=0"
-        exit 0
-    fi
-    echo "WARNING: $DST exists with different content; it will be replaced"
+if [ -f "$DST" ] && cmp -s "$SRC" "$DST"; then
+    echo "content unchanged, re-asserting the file in place"
 fi
 
 mount -o remount,rw /system || { echo "ERROR: remount rw /system failed"; echo "EXIT=4"; exit 4; }
 
-cp -f "$SRC" "$DST.tmp" || { mount -o remount,ro /system; echo "ERROR: copy failed"; echo "EXIT=5"; exit 5; }
-chown 0:0 "$DST.tmp" || true
-chmod 0644 "$DST.tmp" || true
-mv -f "$DST.tmp" "$DST" || { mount -o remount,ro /system; echo "ERROR: rename failed"; echo "EXIT=6"; exit 6; }
+# 清掉目录里的所有 tg_supervisor* 残留（含 .tmp / .disabled 之类）
+for f in "$DIR"/tg_supervisor*; do
+    [ -e "$f" ] || continue
+    if [ "$f" != "$DST" ]; then
+        rm -f "$f" && echo "removed stale entry: $f"
+    fi
+done
+
+cp -f "$SRC" "$DST" || { mount -o remount,ro /system; echo "ERROR: copy failed"; echo "EXIT=5"; exit 5; }
+chown 0:0 "$DST" || true
+chmod 0644 "$DST" || true
 sync
 mount -o remount,ro /system || echo "WARNING: remount ro /system failed (recheck manually)"
 

@@ -4,78 +4,97 @@
 - 目标链：开机 → init 读 `/system/etc/init/tg_supervisor.rc` → 拉起 `tg_supervisor` →
   发现 `com.alibaba.ailabs.genie.smartapp:core` → 调 T6-01 Injector 注入 `libtg_hook.so` →
   ASR 文本进入 T5 AI Bridge
-- 复用的二进制：T6-02 的 `tg_supervisor`（sha256 `17dec6e0…`），**没有重新实现 Supervisor**，
-  也没有改动 T6-01 的 Injector / Hook Agent
+- 复用 T6-02 的 `tg_supervisor`（sha256 `17dec6e0…`）与 T6-01 的 Injector / Hook Agent，
+  **没有重新实现、也没有改动**这三个二进制
+- 真机证据：`evidence/t6_03_init_rc_device.log`（**80 ASSERT OK / 0 ASSERT FAIL**，4 次真实重启）
 
-## 0. 当前状态（先说结论）
+## 1. 结论
 
-| 项目 | 状态 |
+一轮完整跑通（`tests/t6_03_init_rc_device.ps1`，18:29–18:35）：
+
+| 验收项 | 结果 |
 |---|---|
-| 启动环境核查（init 导入链、分区、SELinux、/data 时机、文件属主） | **完成**，证据见 §1 |
-| 独立 rc 文件 + 部署/停用/恢复脚本 | **完成**，见 `android/init_rc/` |
-| 真机：init 在开机时拉起 Supervisor | **已验证**（`init.svc.tg_supervisor=running`，pid 280） |
-| 真机：核心进程自动注入 + ASR 进桥接端 | **已验证**（`inject end … hooked=1 elapsed=321ms`，事件入库） |
-| 真机：核心进程重启后自动重新注入 | **已验证**（1159 → 5247） |
-| 真机：第二次重启后仍然自动启动 | **已验证**（重启后新日志段里 `inject end … hooked=1` + 独立 `--check` = 1） |
-| 真机：停用 rc 后不再自启 / 故障演练 / 恢复验证 / 再启用 | **未完成**：设备 adbd 进入 `error: closed`（详见 §5） |
+| 1 rc 语法与导入关系 | init 自动导入 `/system/etc/init`；`ro.boot.init_rc` 为空；部署后 `init.svc.tg_supervisor=running` |
+| 2 Android 正常开机 | 4 次重启全部 `sys.boot_completed=1`（用 `boot_id` 变化确认是真实重启） |
+| 3 init 成功启动 Supervisor | `init.svc.tg_supervisor=running`、`pidof tg_supervisor=280`、日志 `start pid=…` |
+| 4 核心进程出现后自动注入 | `target ready` → `inject end … exit=0 hooked=1`（317 ms 级），独立 `--check` = `hooked=1` |
+| 5 重启核心进程后自动重新注入 | 强杀 App → 新 PID 自动注入（`elapsed=672ms`），同一 Supervisor 进程 |
+| 6 重启设备后仍自动启动 | 第 2 次、第 4 次重启后都再次 `init.svc=running` + 自动注入 |
+| 7 停用 rc 后不再自动启动 | 把 rc 移出导入目录 + 重启：`init.svc.tg_supervisor` 为空、无进程、本次开机日志里没有 `start pid=` |
+| 8 原厂 ASR/NLU/TTS | 启用态播放语音：原厂 `SessionManager/WakeupEngine/GenieAssistantUIManager` 19 行，事件 270 → 271 |
+| 9 启动失败不阻断开机 | 二进制缺失演练：`init.svc=stopped`、`init.svc.logd=running`、`boot_id` 未变、核心进程存活 |
 
-设备当前处于一个**中间态**（`tg_supervisor.rc` 已启用，二进制被改名成 `.off`），
-恢复命令只有两行，已放进 `_analysis/t6/recover_t6_03.ps1`，adbd 一恢复就会自动执行：
+另外两条：Supervisor 被 init 托管时，T6-02 的手动 `run_supervisor.sh start/stop` 仍然可用
+（停用 rc 后手动起停一次，注入照常、`stopped pid=1867` 正常退出）；删掉 rc 后
+`/system/etc/init` 条目数回到部署前的 47。
 
-```sh
-mv /data/local/tmp/t6/tg_supervisor.off /data/local/tmp/t6/tg_supervisor
-su -c /data/local/tmp/t6/restore_rc.sh
-```
-
-## 1. 启动环境核查（只查本任务需要的）
+## 2. 启动环境核查
 
 | 项 | 实测结果 | 依据 |
 |---|---|---|
-| init 的 rc 导入关系 | `/init.rc` 显式 import `/init.environ.rc`、`/init.usb.rc`、`/init.${ro.hardware}.rc`、`/vendor/etc/init/hw/init.${ro.hardware}.rc`、`/init.usb.configfs.rc`、`/init.${ro.zygote}.rc`、`/init.common.rc` | `grep import /init.rc` |
-| 是否支持独立 rc 文件导入 | **支持**：init 二进制里有 `/system/etc/init`、`/vendor/etc/init`、`/odm/etc/init` 三个目录导入路径；`ro.boot.init_rc` 为空，所以走目录导入 | `strings /init`、`getprop ro.boot.init_rc` |
-| 目录导入确实生效 | 目录里定义的 `logd / servicemanager / netd / surfaceflinger / installd / keystore / zygote / adbd` 全部 `init.svc.*=running` | `getprop init.svc.*` |
-| `/data` 挂载与加密 | `/data` = ext4 `rw`，`ro.crypto.state=unencrypted` → 不存在解锁等待，`post-fs-data` 时 `ufs` 已可用 | `mount`、`getprop` |
-| `/data/local/tmp/t6/` 启动时可用 | 目录 `root:root 0755`，二进制 `root:root 0755`，日志 `0644`；`/data` 挂载后即可见 | `ls -ld/-l` |
-| 分区可写性 | `/system`、`/vendor` 都是 `by-name` ext4 **ro**；`/` rootfs ro；`/data`、`/cache` rw | `mount` |
-| 启动校验 | `ro.boot.veritymode=enforcing`、`ro.boot.verifiedbootstate=orange`（已解锁）、**运行时没有 dm-verity 设备**（dmesg 无 verity 记录、`/system` 直接挂在 `mmcblk0p19`） | `getprop`、`dmesg`、`mount` |
-| SELinux 实际模式 | `getenforce` = **Permissive**、`/sys/fs/selinux/enforce` = **0**、`ro.boot.selinux=disable`；当前 dmesg 无 `avc: denied` | 三项独立读取，不只信 prop |
-| init service 可用配置 | 只用 8.1 支持的 `class / user / group / seclabel / disabled`；实测 `seclabel` 是**必需**的（见 §2） | 见 §2 |
+| init 导入关系 | `/init.rc` import `/init.environ.rc`、`/init.usb.rc`、`/init.${ro.hardware}.rc`、`/vendor/etc/init/hw/init.${ro.hardware}.rc`、`/init.usb.configfs.rc`、`/init.${ro.zygote}.rc`、`/init.common.rc` | `grep import /init.rc` |
+| 独立 rc 能否被导入 | 能：init 二进制含 `/system/etc/init`、`/vendor/etc/init`、`/odm/etc/init` 三个目录导入路径；`ro.boot.init_rc` 为空 → 走目录导入 | `strings /init`、`getprop` |
+| 目录导入生效 | 该目录定义的 `logd/servicemanager/netd/surfaceflinger/installd/keystore/zygote/adbd` 全部 running | `getprop init.svc.*` |
+| `/data` 与加密 | `/data` ext4 rw；`ro.crypto.state=unencrypted` → `post-fs-data` 即可用，无解锁等待 | `mount`、`getprop` |
+| `/data/local/tmp/t6/` | 目录与二进制 `root:root 0755`，日志 `0644`；启动时可见 | `ls -l` |
+| 分区 | `/` rootfs ro、`/system` `/vendor` by-name ext4 ro、`/data` `/cache` rw；`/odm/etc/init` 不存在 | `mount` |
+| 启动校验 | `ro.boot.veritymode=enforcing`、`ro.boot.verifiedbootstate=orange`（已解锁）、运行时无 dm-verity 设备、`/system` 直挂 `mmcblk0p19` | `getprop`、`dmesg`、`mount` |
+| SELinux | `getenforce=Permissive`、`/sys/fs/selinux/enforce=0`、`ro.boot.selinux=disable`；boot log 里 90 条 `avc: denied`（Permissive 仍审计），其中 8 条涉及本任务的二进制，**全部 `permissive=1`** | 三项独立读取 |
+| init service 可用项 | 只用 8.1 支持的 `class/user/group/seclabel/disabled`；`seclabel` 是硬要求（§3） | 实测 |
 
-## 2. 集成过程中发现并修掉的 P0
+## 3. 集成中发现并修掉的两个真问题
 
-**现象**：rc 部署后重启，`getprop init.svc.tg_supervisor` 为空，`pidof` 为空，服务根本没起来。
-`setprop ctl.start tg_supervisor` 之后 dmesg 给出原因：
+### 3.1 没有 `seclabel` 时 init 拒绝启动（P0）
 
 ```
 init: [PropSet]: pid:5625 uid:0 gid:0 ctl.start, tg_supervisor
 init: service tg_supervisor does not have a SELinux domain defined
 ```
 
-**原因**：init 在启动 service 前必须先确定它的 SELinux 域；rc 里没有 `seclabel`、
-系统 `service_contexts` 里也没有这个服务名 → init 直接拒绝启动。这个检查与 SELinux
-是否 enforcing **无关**（本机是 Permissive 也照样拒绝）。
+init 启动 service 前必须先确定域，rc 没写 `seclabel`、系统也没有该服务名的
+`service_contexts` 条目 → 直接拒绝（与是否 enforcing 无关）。修复：
+`seclabel u:r:init:s0`（每个 Android 都有，不依赖 Magisk 的 `su`/`magisk` 域）。
 
-**修复**：在 service 里加 `seclabel u:r:init:s0`（每个 Android 都存在的域，不依赖 Magisk 的
-`su`/`magisk` 域）。加上之后同一个 rc 立刻能被 init 拉起（§3）。
+附带证据价值：这一次重启 Android 完全正常、其它服务全在跑，只是我们的服务没起来 ——
+也就是"服务起不来不影响开机"的真实样本。
 
-这个 P0 也顺带提供了"服务起不来不影响开机"的真实样本：那一次重启 Android 完全正常、
-其它 init 服务全在跑，只是我们的服务没起来。
+### 3.2 这台 init 解析目录里的**每个普通文件**，不看 `.rc` 后缀（P1）
 
-## 3. 交付内容
+第一版"停用"是把 `tg_supervisor.rc` 改名成 `tg_supervisor.rc.disabled`。重启后
+`init.svc.tg_supervisor` 仍然是 `running`，Supervisor 日志里也确实出现了一条新的
+`start pid=279`（新的一次开机）——说明改名根本没停用。`strings /init` 里也没有
+`.rc` 后缀过滤的痕迹。修复：
+
+- **停用 = 把 rc 移出 `/system/etc/init`**（留档到 `/data/local/tmp/t6/tg_supervisor.rc.disabled`）；
+- 部署时先清掉目录里所有 `tg_supervisor*` 残留，并且**不在目录里写临时文件**；
+- 恢复时删掉目录里的 `tg_supervisor*` 和 `/data` 里的留档。
+
+修完复测：停用后重启 `init.svc.tg_supervisor` 为空、没有进程、该次开机日志里没有
+`start pid=`；恢复后目录条目数回到 47。
+
+### 3.3 附带发现（记录，不阻断）
+
+boot log 里有 `avc: denied { sys_ptrace } … scontext=u:r:init:s0 … permissive=1`：
+以 init 域运行、靠 Permissive 放行才拿到 ptrace 能力（`capability=19`）。
+本机是 Permissive，所以注入正常；**换到 enforcing 的设备需要在策略里补
+`allow init self:capability sys_ptrace;`**（或用专门的域）。
+
+## 4. 交付内容
 
 | 文件 | 说明 |
 |---|---|
-| `android/init_rc/tg_supervisor.rc` | 独立 rc：`service tg_supervisor …` + `on post-fs-data` / `on property:sys.boot_completed=1` 触发 |
-| `android/init_rc/deploy_rc.sh` | 部署：remount rw → 写 tmp → chown/chmod → mv → sync → remount ro → 回读 sha256 |
-| `android/init_rc/disable_rc.sh` | 停用：改名成 `*.disabled`（init 只认 `*.rc`）+ `ctl.stop` + 兜底 kill |
-| `android/init_rc/restore_rc.sh` | 恢复：删掉 rc（含 `.disabled` 残留）+ 停服务，回到原厂启动行为 |
-| `android/init_rc/status_rc.sh` | 一次性打印 rc / 服务 / 进程 / 日志尾部 |
+| `android/init_rc/tg_supervisor.rc` | 独立 rc：`service tg_supervisor …` + `on post-fs-data` / `on property:sys.boot_completed=1` |
+| `android/init_rc/deploy_rc.sh` | 部署：清理残留 → remount rw → 覆盖写 → chown/chmod → sync → remount ro → 回读 sha256 |
+| `android/init_rc/disable_rc.sh` | 停用：把 rc 移出导入目录（留档到 /data）+ `ctl.stop` + 兜底 kill |
+| `android/init_rc/restore_rc.sh` | 恢复：删除目录里的 `tg_supervisor*` 与 /data 留档，回到出厂启动行为 |
+| `android/init_rc/status_rc.sh` | 打印 rc / 服务 / 进程 / 日志尾部 |
 | `android/init_rc/README.md` | 部署位置、导入机制、权限属主、启用/停用/恢复、故障恢复、已知限制 |
-| `tests/t6_03_init_rc_device.ps1` | 真机增量验收（P0–P7，含 4 次重启） |
-| `evidence/t6_03_init_boot_evidence.md` | 本次真机观察到的原始输出摘录 |
-| `evidence/t6_03_init_rc_partial_adb_outage.log` | 那次运行的原样日志（后半段是 adbd 故障，逐条注明） |
+| `tests/t6_03_init_rc_device.ps1` | 真机验收 P0–P7（4 次真实重启，靠 `boot_id` 判定） |
+| `evidence/t6_03_init_rc_device.log` | 本次 80/0 的完整日志 |
+| `evidence/t6_03_init_boot_evidence.md` | 首次打通时的原始输出摘录（含 16:45 那次失败样本） |
+| `evidence/t6_03_init_rc_partial_adb_outage.log` | 17:02 adbd 故障期间的日志（逐条注明是链路错误） |
 
-rc 全文（关键部分）：
+rc 关键内容：
 
 ```
 service tg_supervisor /data/local/tmp/t6/tg_supervisor --pidfile /data/local/tmp/t6/tg_supervisor.pid --log /data/local/tmp/t6/supervisor.log
@@ -93,72 +112,30 @@ on property:sys.boot_completed=1
 ```
 
 部署结果：`/system/etc/init/tg_supervisor.rc`，`0644 root:root`，sha256 `cdd94750…`，
-`/system` 部署完立刻挂回 `ro`；部署前该目录清单存到 `/data/local/tmp/t6/system_etc_init.before`。
+部署完 `/system` 立刻挂回 `ro`；部署前目录清单存到 `/data/local/tmp/t6/system_etc_init.before`。
 
-## 4. 真机已验证的部分
+## 5. 故障演练与恢复（本次实测）
 
-| 验收项 | 结果 |
+| 场景 | 实测 |
 |---|---|
-| 2 Android 正常开机 | 两次重启都 `sys.boot_completed=1`，app/zygote/其它服务正常 |
-| 3 init 成功启动 Supervisor | `init.svc.tg_supervisor=running`，`pidof tg_supervisor=280`，日志 `start pid=280` |
-| 4 核心进程出现后自动注入 | `target found pid=1159` → `target ready` → `inject end … exit=0 hooked=1 elapsed=321ms`；独立 `--check` = `hooked=1` |
-| 5 重启核心进程后自动重新注入 | 1159 → 5247，`inject end: pid=5247 … hooked=1 elapsed=672ms`，同一 Supervisor 进程 |
-| 6 重启设备后仍自动启动 | 第二次重启后的新日志段里 `inject end … hooked=1`，独立 `--check` = 1 |
-| 原厂 ASR/NLU/TTS + 桥接 | 播放 `s01` 后 `events.jsonl` 增加带 `t6-` 前缀的 `asr_final`，`is_final:true` |
-| 9 服务起不来不阻断开机 | 见 §2 那次（没有 seclabel 的 rc）——Android 正常开机，只有我们的服务没起来 |
+| 二进制缺失（演练） | 临时改名 + `ctl.start`：`init.svc.tg_supervisor=stopped`；`init.svc.logd=running`；`boot_id` 未变（没有被拉着重启）；核心进程存活；5 s 内 init 日志里提到 `tg_supervisor` 的只有 17 行（不是风暴）；改回二进制后 `ctl.start` 立即恢复 running |
+| 停用 rc | 重启后 `init.svc` 为空、无进程、日志无 `start pid=`；T6-02 手动 `start/stop` 仍然可用 |
+| 恢复出厂行为 | 目录条目 48 → 47，`/system` 回到 ro，`ls /system/etc/init` 里没有 `tg_supervisor*` |
+| 重新启用 | `deploy_rc.sh` + 重启：`init.svc=running`、自动注入、`--check`=`hooked=1` |
 
-## 5. 未完成项与原因（P1：设备 adbd）
+## 6. 已知限制
 
-从 16:53 起，这台设备的 adbd 反复返回 `error: closed`（`get-state` 仍是 `device`，
-但 `shell` / `sync` / `exec-out` / `root` 全部失败）：
-
-```
-shell: error: closed
-adb.exe : file_sync_client.cpp:477 protocol fault: failed to read stat response
-```
-
-已尝试且无效：`adb kill-server/start-server`、`adb connect`、`adb reconnect`、
-`adb tcpip 5555`、`adb reboot`（共 3 次）。本机 2026-11-21 12:38–13:53 也出现过同样现象，
-约 75 分钟后自行恢复。
-
-因此以下四项**没有完成**，我不会把它们标成通过：
-
-| 验收项 | 状态 |
-|---|---|
-| 7 停用 rc 后不再自动启动 | 停用动作本身成功（文件已改名、服务已停），"重启后不自启"的读数被 adbd 故障吞掉 |
-| 故障演练（init 启动失败不影响系统） | 已在脚本里改成**不重启**的版本（临时改名二进制 → `ctl.start` → 观察 → 立刻恢复），但设备 shell 断开，没能执行 |
-| 恢复 rc 并核对 `/system/etc/init` 回到部署前清单 | 脚本已就绪，未执行 |
-| 重新部署后再重启验证 | 未执行 |
-| 10 原厂 ASR/NLU/TTS（启用状态下） | 注入期间已经跑通一次（§4），启用态的最终复核未做 |
-
-设备当前中间态与恢复命令见 §0；`_analysis/t6/recover_t6_03.ps1` 会在 adbd 恢复后
-自动执行"改回二进制 + 删 rc"，避免设备停在"服务一直起不来"的状态。
-
-## 6. 风险与后续
-
-1. **写 `/system` 这条路**：这是"通过现有 init 导入机制加载独立 rc"的唯一入口
-   （`/`、`/system`、`/vendor` 全 ro，`/odm/etc/init` 不存在）。
-   本机 `verifiedbootstate=orange`（已解锁）、运行时无 dm-verity，所以写入不影响启动校验；
-   换到 verity 强校验设备就只能改 boot.img ramdisk 或用 Magisk overlay（本任务都排除）。
-   新增的只有一个 rc 文件，`restore_rc.sh` 删掉即回到原厂行为。
-2. **8.1 没有 `restart_period`**：服务异常退出后的重启节奏由 init 决定，无法在 rc 里限速。
-   本次最后一次设备写入恰好把二进制改名后重启过，因此"缺二进制时 init 的重试频率"
-   这一点只有部分观察（见 §5），需要在 adbd 恢复后补测。
-3. **二进制在 `/data/local/tmp/t6/`**：该目录被清理后服务起不来（不影响开机），
+1. **要往 `/system` 写一个文件**：这是"通过现有 init 导入机制加载独立 rc"的唯一入口
+   （`/`、`/system`、`/vendor` 全 ro，`/odm/etc/init` 不存在）。本机
+   `verifiedbootstate=orange`（已解锁）、运行时无 dm-verity，写入不影响启动校验；
+   verity 强校验的设备上这条路走不通，只能改 boot.img ramdisk 或用 Magisk overlay（本任务都排除）。
+   新增的只有这一个 rc，`restore_rc.sh` 删掉即回到出厂行为。
+2. **enforcing 设备需要补策略**（§3.3 的 `sys_ptrace`）；本机 Permissive 才能直接跑。
+3. **Android 8.1 没有 `restart_period`**：服务异常退出后的重启节奏由 init 决定，
+   rc 里无法限速；实测"缺二进制"时 5 s 内 17 条日志，未构成风暴。
+4. **依赖 `/data/local/tmp/t6/`**：该目录被清掉后服务起不来（不影响开机），
    需要重新部署二进制或先 `restore_rc.sh`。
-4. **adbd 稳定性**是本机既有的环境问题（两次故障：12:38 与本次），
-   建议后续给设备的测试流程加"adb 抖动重试 + 断链不误判"的保护（本轮已把
-   测试脚本的读取全部包进重试，并在重启后等待 `shell` 真正可用）。
-5. **是否把 rc 留在设备上**由操作者决定：现在（§0）恢复成原厂状态更安全，
-   需要启用时执行 `deploy_rc.sh` 后重启。
-## 7. 测试脚本的防链路过硬保护（第二个提交）
-
-因为本机 adbd 会偶发 error: closed，	ests/t6_03_init_rc_device.ps1 现在：
-
-- 每个阶段开头先 WaitShell 90，拿不到可用 shell 就写 ABORT: adb shell is not usable 并 exit 2，
-  不再把链路错误记成一串断言失败；
-- 所有设备读取（Dev1）都识别 adb 层错误并重试，必要时 db reconnect / db connect；
-- 重启后会等到"一条 shell 命令真的能跑通"才继续，而不只看 sys.boot_completed；
-- 故障演练改成**不重启**的版本：临时改名二进制 → ctl.start → 断言系统不受影响 → 立刻改名回来。
-
-提交记录：77ad2e68（rc + 脚本 + 报告 + 证据）、 21fc60d（测试脚本加固）。
+5. **本机 adbd 偶发不可用**：17:02–18:07 期间 `shell/sync` 全部 `error: closed`（12:38 也发生过一次）。
+   测试脚本已加固：每阶段前 `WaitShell 90`、读取带重试、重启用 `boot_id` 判定、
+   断链时写 `ABORT` 而不是记一堆假失败。
+6. `/data/local/tmp/t6/supervisor.log` 只追加不轮转。

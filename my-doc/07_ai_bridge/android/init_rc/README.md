@@ -36,20 +36,25 @@ root + init 域足以让 Injector 去 ptrace 目标进程。
 
 ```sh
 su -c "/data/local/tmp/t6/deploy_rc.sh"    # 部署（可重复执行；内容相同则不动）
-su -c "/data/local/tmp/t6/disable_rc.sh"   # 停用：改名成 tg_supervisor.rc.disabled
+su -c "/data/local/tmp/t6/disable_rc.sh"   # 停用：把 rc 移出 /system/etc/init
 su -c "/data/local/tmp/t6/restore_rc.sh"   # 恢复：删掉 rc，回到出厂启动行为
 su -c "/data/local/tmp/t6/status_rc.sh"    # 看 rc/服务/进程/日志
 ```
 
-- **启用** = `deploy_rc.sh`（或在 `disable_rc.sh` 之后把 `.disabled` 改回 `.rc`），**下次开机会生效**（init 只在启动时解析 rc）。
-- **停用** = `disable_rc.sh`：把文件改名成 `*.disabled`（init 只认 `*.rc`），同时 `ctl.stop` 掉当前实例。
-- **恢复** = `restore_rc.sh`：删除这两个文件，`/system` 重新挂回只读。
+- **启用** = `deploy_rc.sh`，**下次开机会生效**（init 只在启动时解析 rc）。
+- **停用** = `disable_rc.sh`：把 rc **移出** `/system/etc/init`（留档到 `/data/local/tmp/t6/tg_supervisor.rc.disabled`），
+  同时 `ctl.stop` 掉当前实例。
+  为什么不是改名：**本机 init 会解析该目录下的每个普通文件，不看 `.rc` 后缀**
+  （实测把文件改名成 `tg_supervisor.rc.disabled` 后，重启仍然把服务拉起来了；
+  `strings /init` 里也没有 `.rc` 后缀过滤的痕迹）。所以"禁用"必须让文件离开这个目录。
+- **恢复** = `restore_rc.sh`：删掉目录里的 `tg_supervisor*` 和 `/data` 里的留档，`/system` 重新挂回只读。
   部署前脚本会把 `/system/etc/init` 的原始清单存到 `/data/local/tmp/t6/system_etc_init.before`，
   恢复后可以用它逐条比对（测试脚本就断言"条目数回到部署前"）。
 
-`deploy_rc.sh` 的写流程：`mount -o remount,rw /system` → 写 `tg_supervisor.rc.tmp` →
-`chown 0:0` / `chmod 0644` → `mv` 到目标名 → `sync` → `mount -o remount,ro /system` →
-回读 `sha256sum` 与 `mount` 状态。中途任何一步失败都会先把 `/system` 挂回只读再退出。
+`deploy_rc.sh` 的写流程：先清掉目录里所有 `tg_supervisor*` 残留（避免半成品被解析）→
+`mount -o remount,rw /system` → 直接覆盖写 `tg_supervisor.rc`（**目录里不留临时文件**）→
+`chown 0:0` / `chmod 0644` → `sync` → `mount -o remount,ro /system` → 回读 `sha256sum` 与 `mount` 状态。
+中途任何一步失败都会先把 `/system` 挂回只读再退出。
 
 ## 3. 手动启停（T6-02 方式，保留）
 
