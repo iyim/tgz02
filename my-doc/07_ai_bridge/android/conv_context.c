@@ -671,7 +671,7 @@ static int cv_append_item(char *out, size_t cap, size_t *o, int *first,
     return 0;
 }
 
-int cv_build_messages(cv_ctx *ctx, const char *current_user,
+int cv_build_messages(cv_ctx *ctx, const char *system_prompt, const char *current_user,
                       char *out, size_t cap, char *err, size_t errlen)
 {
     int start = 0;
@@ -711,6 +711,16 @@ int cv_build_messages(cv_ctx *ctx, const char *current_user,
         if (o + 2 > cap) break;
         out[o++] = '[';
         out[o] = '\0';
+
+        /* T7-03：system 永远是第一条；它不进 ctx->msgs，所以不会被轮次淘汰影响。
+         * 放不下就报错（宁可本轮失败，也不能让模型看不到角色约束）。 */
+        if (system_prompt != NULL && system_prompt[0] != '\0') {
+            if (cv_append_item(out, cap, &o, &first, "system", system_prompt) != 0) {
+                if (err) snprintf(err, errlen, "system prompt does not fit in %d bytes", (int)cap);
+                out[0] = '\0';
+                return -1;
+            }
+        }
 
         for (i = start; i < count_hist; i++) {
             if (cv_append_item(out, cap, &o, &first,

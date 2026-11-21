@@ -96,11 +96,14 @@ int  cv_clear(cv_ctx *ctx);
 /* 原子落盘。0 = 成功；-1 = 失败（err 说明，不含正文）。 */
 int  cv_save(cv_ctx *ctx, char *err, size_t errlen);
 
-/* 拼 OpenAI 兼容的 messages 数组（历史 + 本轮 user，不含 system）。
- *   返回写入的消息条数（>=1）；0 = 没有任何消息（current 为空且历史为空）；
- *  -1 = 参数/缓冲区不可用（err 说明）。
+/* 拼 OpenAI 兼容的 messages 数组（T7-03：system 永远第一，然后历史，最后本轮 user）。
+ *   - system_prompt 非空 -> 作为 messages[0]；为空 -> 不插 system（老行为）；
+ *   - system 不计入上下文淘汰：它不在 ctx->msgs 里，永远不会被 cv_evict 丢掉；
+ *   - system 放不下时**报错**，绝不静默丢 system 或截断正文。
+ *   返回写入的历史 user/assistant + 本轮 user 的条数（>=1，不含 system）；
+ *   0 = 没有任何消息（current 为空且历史为空）；-1 = 参数/缓冲区不可用（err 说明）。
  * 历史放不下时从最早轮次起少发（size_dropped++），绝不截断单条消息正文。 */
-int  cv_build_messages(cv_ctx *ctx, const char *current_user,
+int  cv_build_messages(cv_ctx *ctx, const char *system_prompt, const char *current_user,
                        char *out, size_t cap, char *err, size_t errlen);
 
 /* 诊断/测试用：当前轮次数（完整 user+assistant 对的数量） */

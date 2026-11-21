@@ -1,0 +1,8 @@
+/data/local/tmp/t5_bridge/ai_worker/ai_worker.log:[aiw] 2026-11-21T23:05:26 system prompt: 603 bytes, placed at messages[0] (role=system, outside context eviction)
+/data/local/tmp/t5_bridge/ai_worker/ai_worker.log:[aiw] 2026-11-21T23:05:35 request shape: event=t703-syn-7 system=1(role=system,bytes=603) history_msgs=0 user_msgs=1 req_msgs=1
+/data/local/tmp/t5_bridge/ai_worker/ai_worker.log:[aiw] 2026-11-21T23:05:43 request shape: event=t703-syn-8 system=1(role=system,bytes=603) history_msgs=2 user_msgs=1 req_msgs=3
+/data/local/tmp/t5_bridge/ai_worker/ai_worker.log:[aiw] 2026-11-21T23:05:51 request shape: event=t703-syn-9 system=1(role=system,bytes=603) history_msgs=4 user_msgs=1 req_msgs=5
+/data/local/tmp/t5_bridge/ai_worker/ai_worker.log:[aiw] 2026-11-21T23:05:59 request shape: event=t703-syn-10 system=1(role=system,bytes=603) history_msgs=6 user_msgs=1 req_msgs=7
+/data/local/tmp/t5_bridge/ai_worker/ai_worker.log:[aiw] 2026-11-21T23:06:05 request shape: event=t703-syn-11 system=1(role=system,bytes=603) history_msgs=6 user_msgs=1 req_msgs=7
+grep: prompt|request: No such file or directory
+grep: shape: No such file or directory

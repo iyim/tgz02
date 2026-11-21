@@ -161,3 +161,56 @@ Worker 用 `echo_filter.c` 在播报窗口内比对"我播过的文本"，相似
 powershell -File run_t7_02_host_tests.ps1    # 主机 41 断言
 powershell -File t7_02_device.ps1            # 真机 56 断言（P0-P5）
 ```
+## 语音交互体验修复（T7-02-R1 / T7-03）
+
+三件事：统一 system prompt、连续对话（免唤醒续听）调研与入口、ASR 提前结束的判停参数。
+
+**① system prompt（已完成）**
+
+- 默认值在 deepseek_provider.h 的 T6B_DS_SYSTEM_PROMPT_DEFAULT（音箱 AI 角色）；
+- 运行时三种覆盖方式：CLI --system-prompt TEXT / --system-prompt-file PATH /
+  worker.conf 的 system_prompt=（支持 `\n` 转义）或 system_prompt_file=；
+- **固定放在 messages[0]**（conv_context.c 负责），system 不进 ctx->msgs，
+  因此不参与按轮次淘汰；放不下时整轮报错，不静默丢弃；
+- Provider 侧只在数组里还没有 system 时才补一条（mock / deepseek / 以后的 GPT、通义、自定义兼容接口一致）；
+- 每轮日志：equest shape: event=... system=1(role=system,bytes=N) history_msgs=X user_msgs=1 req_msgs=Y（不含正文）。
+
+**② 连续对话（原厂能力受限，已定位入口）**
+
+hook_dialog/libtg_dialog.so 提供只读观测 + 受控调用，un_dialog.sh 是它的控制脚本：
+
+`sh
+sh run_dialog.sh install            # 注入（也可交给 run_aux_supervisors.sh 跟随 :core 注入）
+sh run_dialog.sh status             # hooked=1 / stats
+sh run_dialog.sh snap               # 最近一次唤醒 _WakeUpInfo_ 快照
+sh run_dialog.sh talk 7             # GenieApi::startTalk(7, NULL)   —— 实测不建立会话
+sh run_dialog.sh talk-saved 7       # 用快照重放                    —— 实测不建立会话
+sh run_dialog.sh promptfin          # InputDeviceManager::wakeupPromptFinish()
+sh run_dialog.sh cdmnotify 1102     # ContinuousDialogManager::onNotify(0x44e)
+sh run_dialog.sh probe              # 依次试输入设备类型 0..8
+`
+
+实测结论写在 ../t7_03_voice_ux_report.md §3：startTalk 返回成功但不产生会话
+（isTalk=0、无 onListenStarted、无 onStream），CDM 在屏蔽原厂回答后从未被填充；
+真正的续听入口是唤醒事件 + 栈上 _WakeUpInfo_，不能安全伪造。
+
+**③ ASR 判停参数（已可配置）**
+
+/data/local/tmp/t6/dialog.cfg：
+
+`
+input_type=7
+min_vad_pause_ms=900     # setVADPauseTime 的最低值（0 = 只观测）
+min_silence_ms=900       # setSilenceTimeout 的最低值
+debug=0
+`
+
+hook 只在原厂值低于下限时改那一个参数，实测日志：
+setVADPauseTime: 700 ms -> 900 ms (config floor)、setSilenceTimeout: 5000 ms (unchanged)；
+计数器 ad_clamp / sil_clamp 可在 status 里核对。
+
+**④ T7-02 遗留空窗（已解决）**
+
+un_aux_supervisors.sh start 用 T6-02 Supervisor 已有的 --so 参数，为
+libtg_ttsguard.so 与 libtg_dialog.so 各起一个实例；:core 一出现就注入
+（实测 elapsed=1573ms，hooked=1），不再依赖 5 s 一次的 watch。

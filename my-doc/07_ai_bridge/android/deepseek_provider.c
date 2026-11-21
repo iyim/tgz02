@@ -361,6 +361,8 @@ void t6b_ds_defaults(t6b_ds_cfg *c)
     c->max_tokens = T6B_DS_MAX_TOKENS_DEFAULT;
     c->temperature = T6B_DS_TEMP_DEFAULT;
     c->insecure_http = 0;
+    /* T7-03：默认 system prompt 落进配置，之后可被 worker.conf / CLI 覆盖 */
+    snprintf(c->system_prompt, sizeof(c->system_prompt), "%s", T6B_DS_SYSTEM_PROMPT_DEFAULT);
 }
 
 static int has_space(const char *s)
@@ -583,7 +585,7 @@ int t6b_ds_build_body_msgs(const char *model, const char *system_prompt,
                            char *err, size_t errlen)
 {
     char esc_model[T6B_DS_MODEL_MAX * 6 + 1];
-    char esc_sys[2048];
+    char esc_sys[T6B_DS_SYS_PROMPT_MAX * 6 + 1];
     const char *body;
     size_t alen, syslen = 0, o = 0;
     int n;
@@ -613,15 +615,21 @@ int t6b_ds_build_body_msgs(const char *model, const char *system_prompt,
         if (err) snprintf(err, errlen, "messages too large (%d bytes)", (int)alen);
         return -1;
     }
-    if (system_prompt != NULL && system_prompt[0] != '\0') {
-        if (strlen(system_prompt) >= sizeof(esc_sys) / 6) {
-            if (err) snprintf(err, errlen, "system prompt too long");
-            return -1;
+    /* T7-03：messages 数组已经以 system 开头时不再插入第二条（Worker 负责把它放在首位）。
+     * 这样"单条 system、永远在最前面"由一处保证，mock/真实 Provider 行为一致。 */
+    {
+        int has_sys = (strncmp(messages_json, "[{\"role\":\"system\"", 16) == 0);
+        if (!has_sys && system_prompt != NULL && system_prompt[0] != '\0') {
+            if (strlen(system_prompt) >= sizeof(esc_sys) / 6) {
+                if (err) snprintf(err, errlen, "system prompt too long");
+                return -1;
+            }
+            wu_json_escape(esc_sys, sizeof(esc_sys), system_prompt);
+            syslen = strlen(esc_sys);
+        } else {
+            esc_sys[0] = '\0';
+            syslen = 0;
         }
-        wu_json_escape(esc_sys, sizeof(esc_sys), system_prompt);
-        syslen = strlen(esc_sys);
-    } else {
-        esc_sys[0] = '\0';
     }
 
     if (temperature < 0.0) temperature = 0.0;
@@ -1361,7 +1369,10 @@ static int ds_complete_msgs(t6b_provider *p, const char *messages_json, t6b_repl
 
     d->calls++;
     why[0] = '\0';
-    if (t6b_ds_build_body_msgs(d->cfg.model, T6B_DS_SYSTEM_PROMPT, messages_json,
+    if (t6b_ds_build_body_msgs(d->cfg.model,
+                               (d->cfg.system_prompt[0] != '\0') ? d->cfg.system_prompt
+                                                                 : T6B_DS_SYSTEM_PROMPT_DEFAULT,
+                               messages_json,
                                d->cfg.temperature, d->cfg.max_tokens,
                                body, sizeof(body), &blen, why, sizeof(why)) != 0) {
         d->err++;

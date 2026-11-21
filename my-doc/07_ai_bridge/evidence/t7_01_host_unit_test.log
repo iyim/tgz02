@@ -1,5 +1,5 @@
 ﻿=== T7-01 conversation context unit test (host, no network) ===
-tmp: C:\Users\mac\AppData\Local\Temp\t7_ctx_41320
+tmp: C:\Users\mac\AppData\Local\Temp\t7_ctx_52300
 
 [1] single turn, context disabled
   PASS  cv_init ok
@@ -77,7 +77,7 @@ tmp: C:\Users\mac\AppData\Local\Temp\t7_ctx_41320
   PASS  turn 1 = 1 message
   PASS  turn 2 = 1 message
   PASS  turn 2 does not contain turn 1
-  PASS  turn 1 json is exactly one user
+  PASS  turn 1 json = system first, then exactly one user
 [9] clear() drops the history and the file
   PASS  cv_init ok
   PASS  commit one turn
@@ -140,6 +140,27 @@ tmp: C:\Users\mac\AppData\Local\Temp\t7_ctx_41320
   PASS  still non-streaming
   PASS  non-array messages rejected
   PASS  unterminated array rejected
+[13b] system prompt sits at messages[0] and is not counted in eviction
+  PASS  cv_init ok
+  PASS  commit turn
+  PASS  commit turn
+  PASS  commit turn
+  PASS  commit turn
+  PASS  eviction kept 4 messages (2 turns)
+  PASS  5 non-system messages (4 history + current)
+  PASS  first message is the system prompt
+  PASS  exactly one system message
+  PASS  system comes before every user message
+  PASS  system text intact
+  PASS  current user turn still last
+  PASS  same message count without a system prompt
+  PASS  no system entry when prompt is empty
+  PASS  system that does not fit fails the request instead of being dropped
+  PASS  reload
+  PASS  no system message persisted in context.json
+  PASS  no system message persisted in context.json
+  PASS  no system message persisted in context.json
+  PASS  no system message persisted in context.json
 [14] save/load round-trip keeps quotes, newlines and CJK intact
   PASS  cv_init ok
   PASS  commit with escapes
@@ -156,6 +177,6 @@ tmp: C:\Users\mac\AppData\Local\Temp\t7_ctx_41320
   PASS  the two oldest turns were dropped
   PASS  still starts with a user message
 
-SUMMARY: pass=139 fail=0
+SUMMARY: pass=159 fail=0
 RESULT: PASS
 

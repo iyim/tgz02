@@ -1,0 +1,5 @@
+{"event_id":"t703-syn-7","seq":7,"provider":"deepseek","model":"deepseek-flash","http":200,"latency_ms":1268,"reply_bytes":127,"mock":0,"text_valid":1,"text":"我是你音箱里的 AI 语音助手，可以陪你聊天、回答问题、讲点小知识。想聊什么，跟我说就行。"}
+{"event_id":"t703-syn-8","seq":8,"provider":"deepseek","model":"deepseek-flash","http":200,"latency_ms":1389,"reply_bytes":123,"mock":0,"text_valid":1,"text":"你想怎么叫都行，叫“小助手”最顺口。要是想给我起个专属名字，也可以告诉我，我记着。"}
+{"event_id":"t703-syn-9","seq":9,"provider":"deepseek","model":"deepseek-flash","http":200,"latency_ms":1785,"reply_bytes":76,"mock":0,"text_valid":1,"text":"不是，我是你这台音箱里的 AI 语音助手，不是天猫精灵。"}
+{"event_id":"t703-syn-10","seq":10,"provider":"deepseek","model":"deepseek-flash","http":200,"latency_ms":2736,"reply_bytes":261,"mock":0,"text_valid":1,"text":"我能陪你聊天、回答各种问题、解释不懂的概念，也能讲笑话、说小故事、帮你出主意、整理思路。设备控制方面我目前不能随便承诺，比如调音量、开家电这些得看实际支持情况。你想试试哪样？"}
+{"event_id":"t703-syn-11","seq":11,"provider":"deepseek","model":"deepseek-flash","http":200,"latency_ms":1335,"reply_bytes":65,"mock":0,"text_valid":1,"text":"有一天，0 对 8 说：胖就胖呗，还系什么腰带呀。"}

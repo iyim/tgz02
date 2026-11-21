@@ -85,6 +85,58 @@ static int wc_copy(char *dst, size_t cap, const char *src)
 
 /* ---------------- 加载 ---------------- */
 
+/* T7-03：把一行配置里的 "\n" 还原成真正的换行（提示词常用多行写法），
+ * 其余字符原样复制；"\\n"（两个反斜杠 + n）按字面量保留一个反斜杠。 */
+static int wc_copy_multiline(char *dst, size_t cap, const char *src)
+{
+    size_t o = 0;
+
+    if (dst == NULL || cap == 0 || src == NULL) return -1;
+    while (*src != '\0') {
+        if (src[0] == '\\' && src[1] == '\\') {
+            if (o + 1 >= cap) return -1;
+            dst[o++] = '\\';
+            src += 2;
+        } else if (src[0] == '\\' && src[1] == 'n') {
+            if (o + 1 >= cap) return -1;
+            dst[o++] = '\n';
+            src += 2;
+        } else {
+            if (o + 1 >= cap) return -1;
+            dst[o++] = *src++;
+        }
+    }
+    dst[o] = '\0';
+    return 0;
+}
+
+/* T7-03：从文件读取 system prompt（最多 cap-1 字节；不允许把 key 之类凭据串进来，
+ * 这里只做"读文本 + 去尾部空白"，不做任何解释）。 */
+static int wc_sys_prompt_from_file(char *dst, size_t cap, const char *path,
+                                   char *err, size_t errlen)
+{
+    FILE *f;
+    size_t n;
+
+    if (dst == NULL || cap == 0 || path == NULL) return -1;
+    f = fopen(path, "rb");
+    if (f == NULL) {
+        if (err) snprintf(err, errlen, "system_prompt_file: cannot open %s", path);
+        return -1;
+    }
+    n = fread(dst, 1, cap - 1, f);
+    fclose(f);
+    if (n == 0) {
+        if (err) snprintf(err, errlen, "system_prompt_file: %s is empty", path);
+        return -1;
+    }
+    dst[n] = '\0';
+    while (n > 0 && (dst[n - 1] == '\n' || dst[n - 1] == '\r' || dst[n - 1] == ' ')) {
+        dst[--n] = '\0';
+    }
+    return 0;
+}
+
 static int wc_apply(t6b_config *cfg, const char *key, const char *val, char *err, size_t errlen)
 {
     int iv;
@@ -141,6 +193,21 @@ static int wc_apply(t6b_config *cfg, const char *key, const char *val, char *err
     if (strcmp(key, "echo_no_command") == 0) {
         if (wc_bool(val, &iv) != 0) goto bad;
         cfg->echo_no_command = iv;
+        return 0;
+    }
+    /* T7-03：统一 system prompt。
+     *   system_prompt=<一行文本>             （\n 写成字面量 "\\n"，这里还原成换行）
+     *   system_prompt_file=<文件路径>        （多行提示词放文件，key 文件之外唯一允许的外部输入）
+     * 两者都写时以 system_prompt 为准（文件只是方便写多行）。 */
+    if (strcmp(key, "system_prompt") == 0) {
+        if (wc_copy_multiline(cfg->deepseek.system_prompt,
+                              sizeof(cfg->deepseek.system_prompt), val) != 0) goto bad;
+        return 0;
+    }
+    if (strcmp(key, "system_prompt_file") == 0) {
+        if (wc_sys_prompt_from_file(cfg->deepseek.system_prompt,
+                                    sizeof(cfg->deepseek.system_prompt), val,
+                                    err, errlen) != 0) return -2;
         return 0;
     }
     /* 明确拒绝把凭据写进普通配置：只认 api_key_file */

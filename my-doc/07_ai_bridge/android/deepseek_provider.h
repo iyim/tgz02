@@ -35,9 +35,25 @@
 #define T6B_DS_TIMEOUT_MS_DEFAULT 30000
 #define T6B_DS_MAX_TOKENS_DEFAULT 512
 
-/* 固定 system 指令：第一版只做"简短中文助手"，不做历史上下文 */
-#define T6B_DS_SYSTEM_PROMPT \
-    "你是一个运行在手机上的中文语音助手。回答要简短、直接、口语化，通常不超过两句话。"
+/* 默认 system 指令（T7-03）：角色 = "TG-Z02 智能音箱上的 AI 语音助手"。
+ * 关键点（任务书 §2.2/§2.3）：
+ *   - 不主动声明自己是不是天猫精灵、不解释品牌/模型/技术实现；
+ *   - 只有用户主动问身份才提及；
+ *   - 回答要适合语音播报（不排版、不长篇）；
+ *   - 不谎称有未实现的设备控制能力。
+ * 运行时可用 worker.conf 的 system_prompt / system_prompt_file 覆盖，
+ * 也可以由 --system-prompt 覆盖（优先级：命令行 > 配置文件 > 本默认值）。 */
+#define T6B_DS_SYSTEM_PROMPT_DEFAULT \
+    "你是运行在 TG-Z02 智能音箱上的 AI 语音助手。\n" \
+    "你使用自然、亲切、简洁的中文与用户交流，具备连续对话和上下文理解能力。\n" \
+    "你是用户当前使用的音箱 AI 助手。不要主动介绍自己是不是天猫精灵，" \
+    "不要反复声明自己不是天猫精灵，也不要主动解释设备品牌、模型供应商或技术实现。\n" \
+    "除非用户主动询问身份，否则直接回答用户的问题。\n" \
+    "回答应适合语音播报，避免不必要的长篇解释、Markdown 格式和复杂排版。\n" \
+    "不得谎称自己具有尚未实现的设备控制能力。"
+
+/* 兼容旧名字：第一版代码里叫 T6B_DS_SYSTEM_PROMPT */
+#define T6B_DS_SYSTEM_PROMPT T6B_DS_SYSTEM_PROMPT_DEFAULT
 
 /* 容量上限（全部固定，不随输入增长） */
 #define T6B_DS_KEY_MAX     256
@@ -49,6 +65,7 @@
 #define T6B_DS_XERR_MAX    96
 #define T6B_DS_INPUT_MAX   511       /* 与 T6B_TEXT_MAX 一致：ASR 文本上限（字节） */
 #define T6B_DS_TEMP_DEFAULT 0.7      /* T7-01：temperature 现在可配置 */
+#define T6B_DS_SYS_PROMPT_MAX 1536   /* T7-03：system prompt 上限（字节，含 NUL 前） */
 
 /* ---------------- 配置 ---------------- */
 
@@ -61,6 +78,9 @@ typedef struct {
     int  max_tokens;
     double temperature;      /* T7-01：0.0 - 2.0，默认 0.7 */
     int  insecure_http;      /* 1 = base_url 是明文 http（启动时已告警） */
+    /* T7-03：统一 system prompt（空 = 用 T6B_DS_SYSTEM_PROMPT_DEFAULT）。
+     * Worker 优先生成 messages[0]；这里保留一份，用于"单轮老路径"和兜底。 */
+    char system_prompt[T6B_DS_SYS_PROMPT_MAX];
 } t6b_ds_cfg;
 
 void t6b_ds_defaults(t6b_ds_cfg *c);

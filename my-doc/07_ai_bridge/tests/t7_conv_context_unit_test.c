@@ -78,6 +78,9 @@ static void tmp_setup(void)
     (void)wu_unlink(gone);
 }
 
+/* T7-03：system prompt 的测试用文本（ASCII，避免和其它断言里的中文混淆） */
+static const char g_sys[] = "SYSROLE speaker assistant";
+
 static int count_role(const char *json, const char *role)
 {
     char pat[32];
@@ -116,7 +119,7 @@ static void test_single_turn_disabled(void)
     ok(cv_commit_turn(&c, "to", "yo") == 0, "commit is a no-op when disabled");
     ok(c.count == 0, "no history stored when disabled");
 
-    ok(cv_build_messages(&c, "give me a short intro", js, sizeof(js), err, sizeof(err)) == 1,
+    ok(cv_build_messages(&c, NULL, "give me a short intro", js, sizeof(js), err, sizeof(err)) == 1,
        "messages = exactly one entry");
     ok(strncmp(js, "[{\"role\":\"user\"", 15) == 0, "entry is role=user");
     ok(count_role(js, "assistant") == 0, "no assistant in a disabled context");
@@ -143,7 +146,7 @@ static void test_two_three_turns(void)
     ok(cv_init(&c, &cfg) == 0, "cv_init ok");
     ok(cv_commit_turn(&c, "TURN1Q Tokyo", "TURN1A capital") == 0, "turn 1 committed");
 
-    n = cv_build_messages(&c, "TURN2Q food", js, sizeof(js), err, sizeof(err));
+    n = cv_build_messages(&c, g_sys, "TURN2Q food", js, sizeof(js), err, sizeof(err));
     ok(n == 3, "messages = history(2) + current(1)");
     ok(count_role(js, "user") == 2 && count_role(js, "assistant") == 1, "2 user + 1 assistant");
     ok(strstr(js, "TURN1Q") != NULL && strstr(js, "TURN1A") != NULL,
@@ -153,7 +156,7 @@ static void test_two_three_turns(void)
     printf("[3] three turns keep the order user,assistant,...\n");
     ok(cv_commit_turn(&c, "TURN2Q food", "TURN2A sushi") == 0, "turn 2 committed");
     ok(cv_commit_turn(&c, "TURN3Q hotel", "TURN3A shinjuku") == 0, "turn 3 committed");
-    n = cv_build_messages(&c, "TURN4Q", js, sizeof(js), err, sizeof(err));
+    n = cv_build_messages(&c, g_sys, "TURN4Q", js, sizeof(js), err, sizeof(err));
     ok(n == 7, "messages = 6 history + 1 current");
     ok(cv_turn_count(&c) == 3, "three complete turns stored");
     {
@@ -184,7 +187,7 @@ static void test_restart_restore(void)
     ok(c.last_load_state == CV_LOAD_OK, "load state = OK (restored)");
     ok(cv_turn_count(&c) == 3, "three turns restored");
     ok(c.loads == 1, "loads counter = 1");
-    ok(cv_build_messages(&c, "AFTER_RESTART", js, sizeof(js), err, sizeof(err)) == 7,
+    ok(cv_build_messages(&c, g_sys, "AFTER_RESTART", js, sizeof(js), err, sizeof(err)) == 7,
        "restored history is used for the next request");
     ok(strstr(js, "TURN3A") != NULL, "the last stored turn is back");
 }
@@ -222,7 +225,7 @@ static void test_eviction(void)
     ok(strcmp(c.msgs[3].text, "A5") == 0, "turn 5 is the newest one");
     ok(c.evicted_messages == 6, "6 messages were evicted (3 whole turns)");
 
-    ok(cv_build_messages(&c, "Q6", js, sizeof(js), err, sizeof(err)) == 5, "4 history + current");
+    ok(cv_build_messages(&c, g_sys, "Q6", js, sizeof(js), err, sizeof(err)) == 5, "4 history + current");
     ok(strstr(js, "Q1") == NULL, "the oldest turn is gone");
     ok(strstr(js, "Q4") != NULL && strstr(js, "A5") != NULL, "the two newest turns survive");
 
@@ -299,7 +302,7 @@ static void test_corrupt_recovery(void)
     ok(wu_file_size(backup) > 0, "the broken file was kept as .corrupt");
     ok(wu_file_size(ctx_path()) < 0, "the live file is gone (next save starts clean)");
 
-    ok(cv_build_messages(&c, "AFTER_CORRUPT", js, sizeof(js), err, sizeof(err)) == 1,
+    ok(cv_build_messages(&c, g_sys, "AFTER_CORRUPT", js, sizeof(js), err, sizeof(err)) == 1,
        "still able to build a request");
     ok(cv_commit_turn(&c, "AFTER_CORRUPT", "fine") == 0, "still able to commit a new turn");
     ok(wu_file_size(ctx_path()) > 0, "a fresh file was written");
@@ -333,14 +336,15 @@ static void test_clear_and_disabled_isolation(void)
     cfg.enabled = 0;
     snprintf(cfg.file, sizeof(cfg.file), "%s", ctx_path());
     ok(cv_init(&c, &cfg) == 0, "cv_init ok");
-    ok(cv_build_messages(&c, "FIRST", js1, sizeof(js1), err, sizeof(err)) == 1,
+    ok(cv_build_messages(&c, g_sys, "FIRST", js1, sizeof(js1), err, sizeof(err)) == 1,
        "turn 1 = 1 message");
     (void)cv_commit_turn(&c, "FIRST", "ANSWER1");
-    ok(cv_build_messages(&c, "SECOND", js2, sizeof(js2), err, sizeof(err)) == 1,
+    ok(cv_build_messages(&c, g_sys, "SECOND", js2, sizeof(js2), err, sizeof(err)) == 1,
        "turn 2 = 1 message");
     ok(strstr(js2, "FIRST") == NULL, "turn 2 does not contain turn 1");
-    ok(strcmp(js1, "[{\"role\":\"user\",\"content\":\"FIRST\"}]") == 0,
-       "turn 1 json is exactly one user");
+    ok(strcmp(js1, "[{\"role\":\"system\",\"content\":\"SYSROLE speaker assistant\"},"
+                     "{\"role\":\"user\",\"content\":\"FIRST\"}]") == 0,
+       "turn 1 json = system first, then exactly one user");
 
     printf("[9] clear() drops the history and the file\n");
     cv_defaults(&cfg);
@@ -382,7 +386,7 @@ static void test_size_downgrade(void)
         snprintf(a, sizeof(a), "LONG_ANSWER_%03d", i);
         ok(cv_commit_turn(&c, u, a) == 0, "commit turn");
     }
-    ok(cv_build_messages(&c, "LAST", js, sizeof(js), err, sizeof(err)) >= 1,
+    ok(cv_build_messages(&c, g_sys, "LAST", js, sizeof(js), err, sizeof(err)) >= 1,
        "still returns a usable request");
     ok(strstr(js, "LAST") != NULL, "the current user text is always kept");
     ok(strstr(js, "000") == NULL || strstr(js, "LONG_QUESTION_001") == NULL,
@@ -543,6 +547,59 @@ static void test_provider_messages_entry(void)
 /* ==========================================================================
  * 13) DeepSeek request body
  * ======================================================================== */
+/* ==========================================================================
+ * 13b) T7-03: system prompt is messages[0], survives eviction, never duplicated
+ * ======================================================================== */
+static void test_system_prompt_first(void)
+{
+    cv_ctx c;
+    cv_cfg cfg;
+    char js[CV_JSON_MAX];
+    char err[CV_ERR_MAX];
+    int n;
+    int i;
+
+    printf("[13b] system prompt sits at messages[0] and is not counted in eviction\n");
+    cv_defaults(&cfg);
+    cfg.enabled = 1;
+    cfg.max_messages = 4;
+    snprintf(cfg.file, sizeof(cfg.file), "%s", ctx_path());
+    (void)wu_unlink(ctx_path());
+    ok(cv_init(&c, &cfg) == 0, "cv_init ok");
+    for (i = 0; i < 4; i++) {
+        char u[32], a[32];
+        snprintf(u, sizeof(u), "U%d", i);
+        snprintf(a, sizeof(a), "A%d", i);
+        ok(cv_commit_turn(&c, u, a) == 0, "commit turn");
+    }
+    ok(c.count == 4, "eviction kept 4 messages (2 turns)");
+
+    n = cv_build_messages(&c, g_sys, "NOW", js, sizeof(js), err, sizeof(err));
+    ok(n == 5, "5 non-system messages (4 history + current)");
+    ok(strncmp(js, "[{\"role\":\"system\"", 16) == 0,
+       "first message is the system prompt");
+    ok(count_role(js, "system") == 1, "exactly one system message");
+    ok(strstr(js, "\"role\":\"system\"") < strstr(js, "\"role\":\"user\""),
+       "system comes before every user message");
+    ok(strstr(js, "SYSROLE speaker assistant") != NULL, "system text intact");
+    ok(strstr(js, "NOW") != NULL, "current user turn still last");
+
+    /* 空 system -> 老行为：完全没有 system 条目 */
+    n = cv_build_messages(&c, NULL, "NOW2", js, sizeof(js), err, sizeof(err));
+    ok(n == 5, "same message count without a system prompt");
+    ok(count_role(js, "system") == 0, "no system entry when prompt is empty");
+
+    /* 极小的缓冲区：system 放不下时必须报错，而不是静默丢掉 system */
+    n = cv_build_messages(&c, g_sys, "NOW3", js, 40, err, sizeof(err));
+    ok(n == -1, "system that does not fit fails the request instead of being dropped");
+
+    /* system 也不写进上下文文件（重启后仍然只有 user/assistant） */
+    ok(cv_init(&c, &cfg) == 0, "reload");
+    for (i = 0; i < c.count; i++) {
+        ok(strcmp(c.msgs[i].role, "system") != 0, "no system message persisted in context.json");
+    }
+}
+
 static void test_build_body_msgs(void)
 {
     char body[T6B_DS_BODY_MAX];
@@ -650,6 +707,7 @@ int main(void)
     test_conf_file();
     test_provider_messages_entry();
     test_build_body_msgs();
+    test_system_prompt_first();
     test_roundtrip_escape();
     test_shrink_on_load();
 

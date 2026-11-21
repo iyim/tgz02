@@ -1,6 +1,6 @@
 ﻿# T7-02 NDK build log (libtg_ttsguard + ai_worker with echo_filter)
 # ndk : D:\tgz02\OS\_analysis\tools\android-ndk-r21e
-# host time: 2026-11-21 21:14:34
+# host time: 2026-11-21 23:03:45
 
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -fPIC -shared -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\libtg_ttsguard.so D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts\libtg_ttsguard.c -llog -ldl
 (no compiler output: 0 warning, 0 error)
@@ -94,7 +94,7 @@ Dynamic section at offset 0x2e7c contains 28 entries:
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c -llog -ldl
 (no compiler output: 0 warning, 0 error)
 exit: 0
-artifact: ai_worker  170108 B  sha256=6108b079a4912ee1053d99cc58ea0a6ccd4071b5247a6132bb59d2ec7bcd69f4
+artifact: ai_worker  174432 B  sha256=4bed85171643e4ab039d36f815ab0584104c2759aa613b70b7d0f4475f1f3c37
 # --- readelf -h ---
 ELF Header:
   Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
@@ -108,7 +108,7 @@ ELF Header:
   Version:                           0x1
   Entry point address:               0x14d0
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          168628 (bytes into file)
+  Start of section headers:          172952 (bytes into file)
   Flags:                             0x5000200, Version5 EABI, soft-float ABI
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)
@@ -118,9 +118,9 @@ ELF Header:
   Section header string table index: 36
 # --- readelf -d ---
 
-Dynamic section at offset 0x1cd88 contains 29 entries:
+Dynamic section at offset 0x1dd88 contains 29 entries:
   Tag        Type                         Name/Value
- 0x00000003 (PLTGOT)                     0x1decc
+ 0x00000003 (PLTGOT)                     0x1eecc
  0x00000002 (PLTRELSZ)                   592 (bytes)
  0x00000017 (JMPREL)                     0xef4
  0x00000014 (PLTREL)                     REL
@@ -137,11 +137,11 @@ Dynamic section at offset 0x1cd88 contains 29 entries:
  0x00000001 (NEEDED)                     Shared library: [liblog.so]
  0x00000001 (NEEDED)                     Shared library: [libdl.so]
  0x00000001 (NEEDED)                     Shared library: [libc.so]
- 0x00000020 (PREINIT_ARRAY)              0x1db48
+ 0x00000020 (PREINIT_ARRAY)              0x1eb48
  0x00000021 (PREINIT_ARRAYSZ)            0x8
- 0x00000019 (INIT_ARRAY)                 0x1db50
+ 0x00000019 (INIT_ARRAY)                 0x1eb50
  0x0000001b (INIT_ARRAYSZ)               8 (bytes)
- 0x0000001a (FINI_ARRAY)                 0x1db58
+ 0x0000001a (FINI_ARRAY)                 0x1eb58
  0x0000001c (FINI_ARRAYSZ)               8 (bytes)
  0x0000001e (FLAGS)                      BIND_NOW
  0x6ffffffb (FLAGS_1)                    Flags: NOW

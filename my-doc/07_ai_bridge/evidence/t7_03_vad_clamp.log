@@ -1,0 +1,20 @@
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=1
+[inject] so_size=71132 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9010 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t7/libtg_dialog.so)
+[inject] attached tid=9010 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xaa23e000 stack=0xaa246000 trap=0xaa24d000 gadget=0xb1574a6c
+[inject] dlopen=0xafde00ad (libdl.so)
+[inject] dlsym=0xafde00bf (libdl.so)
+[inject] dlerror=0xafde00b7 (libdl.so)
+[inject] path_written=0xaa23e100 len=35
+[inject] dlopen ok handle=0x6a0a6c05 flags=0x6
+[inject] dlsym ok install=0x9385e130 prepare=0x9385d9e0 status=0x9385f8cc
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x9518be14,0x95195364)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=4 vad_set=4 sil_set=4 vad_clamp=1 sil_clamp=0 genie_ok=0 genie_fail=0 snap=2 cmds=0 min_vad=900 min_sil=900 type=7
+[inject] RESULT check pid=9010 hooked=1
+[inject] detached (target thread resumed)

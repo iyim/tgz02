@@ -752,9 +752,14 @@ static int provider_attempt(t6b_worker *w)
     w->pend_attempts++;
 
     /* T7-01：先把"历史 + 本轮 user"拼成完整 messages 数组，再交给 Provider。
-     * 上下文关闭时 nmsg==1（只有本轮），行为与 T5-06C 完全一致。 */
+     * T7-03：system prompt 固定放在 messages[0]（不在历史里，因此不会被淘汰）；
+     *        上下文关闭时 nmsg==1（只有本轮），行为与 T5-06C 完全一致。 */
     merr[0] = '\0';
-    nmsg = cv_build_messages(&w->cv, w->pend.text, w->msg_json, sizeof(w->msg_json),
+    nmsg = cv_build_messages(&w->cv,
+                             (w->cfg.deepseek.system_prompt[0] != '\0')
+                                 ? w->cfg.deepseek.system_prompt
+                                 : T6B_DS_SYSTEM_PROMPT_DEFAULT,
+                             w->pend.text, w->msg_json, sizeof(w->msg_json),
                              merr, sizeof(merr));
     if (nmsg <= 0) {
         w->st.provider_err++;
@@ -791,6 +796,14 @@ static int provider_attempt(t6b_worker *w)
                    w->ds.last_latency_ms, w->ds.last_resp_bytes, rep.text_bytes,
                    w->pend.event_id);
         }
+        /* T7-03：每轮可核对的请求结构（不含正文）：system 是否在首位、各角色条数 */
+        always("request shape: event=%s system=1(role=system,bytes=%d) history_msgs=%d "
+               "user_msgs=1 req_msgs=%d",
+               w->pend.event_id,
+               (int)strlen((w->cfg.deepseek.system_prompt[0] != '\0')
+                               ? w->cfg.deepseek.system_prompt
+                               : T6B_DS_SYSTEM_PROMPT_DEFAULT),
+               (nmsg > 0) ? nmsg - 1 : 0, nmsg);
         if (w->pend_stuck) {
             always("pending event cleared: id=%s after %d attempts; resuming normal pace",
                    w->pend.event_id, w->pend_attempts);
@@ -1420,6 +1433,12 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         }
     }
 
+    /* T7-03：统一 system prompt —— 固定放 messages[0]，不进历史、不参与淘汰 */
+    always("system prompt: %d bytes, placed at messages[0] (role=system, outside context eviction)",
+           (int)strlen((c->deepseek.system_prompt[0] != '\0')
+                           ? c->deepseek.system_prompt
+                           : T6B_DS_SYSTEM_PROMPT_DEFAULT));
+
     /* T7-02：初始化播报回声过滤（只依赖 TTS 执行器发布的播放状态文件） */
     {
         ef_config ec;
@@ -1660,6 +1679,8 @@ static void usage(void)
         "  --clear-context       delete the stored context and exit\n"
         "  --echo-filter 0|1     drop ASR events that echo our own TTS playback (default 1)\n"
         "  --echo-no-command 0|1 also drop events with no command left after wake/filler strip\n"
+        "  --system-prompt TEXT  system message put at messages[0] (empty = built-in default)\n"
+        "  --system-prompt-file PATH  read the system message from a UTF-8 file\n"
         "                        (default 1; e.g. a bare wake word or a trailing '嗯')\n"
         "  --mock-reply TEXT     fixed mock reply text\n"
         "  --mock-delay-ms N     simulate provider latency\n"
@@ -1768,6 +1789,30 @@ int main(int argc, char **argv)
         else if (strcmp(a, "--clear-context") == 0) { cfg.clear_context = 1; continue; }
         else if (strcmp(a, "--echo-filter") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.echo_filter = (atoi(v) != 0); i++; }
         else if (strcmp(a, "--echo-no-command") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.echo_no_command = (atoi(v) != 0); i++; }
+        else if (strcmp(a, "--system-prompt") == 0) {
+            if (need_str(argc, argv, i, &v)) goto bad;
+            snprintf(cfg.deepseek.system_prompt, sizeof(cfg.deepseek.system_prompt), "%s", v);
+            i++;
+        }
+        else if (strcmp(a, "--system-prompt-file") == 0) {
+            FILE *sf;
+            size_t rn;
+            if (need_str(argc, argv, i, &v)) goto bad;
+            sf = fopen(v, "rb");
+            if (sf == NULL) {
+                fprintf(stderr, "cannot open --system-prompt-file %s\n", v);
+                return 2;
+            }
+            rn = fread(cfg.deepseek.system_prompt, 1,
+                       sizeof(cfg.deepseek.system_prompt) - 1, sf);
+            fclose(sf);
+            cfg.deepseek.system_prompt[rn] = '\0';
+            while (rn > 0 && (cfg.deepseek.system_prompt[rn - 1] == '\n' ||
+                              cfg.deepseek.system_prompt[rn - 1] == '\r')) {
+                cfg.deepseek.system_prompt[--rn] = '\0';
+            }
+            i++;
+        }
         else {
             fprintf(stderr, "unknown option: %s\n", a);
             usage();
