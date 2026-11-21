@@ -1,75 +1,72 @@
-# 桌面预装应用专项排查（rev5.1）
+# 桌面预装应用专项排查（rev5.2 修正版）
 
-对象：用户提供的“我的应用”截图中的 18 个桌面入口 + 整个 system 分区 APK 清单。
+对象：用户截图中的 18 个桌面入口 + 整个 system 分区 APK 清单。
 
-**一句话结论**：18 个桌面入口里，只有 **8 个能确定对应到已安装包**、2 个较可信、**8 个在 67 个已安装包里找不到对应 APK**
-（属 launcher/webapp 入口）；而能在 system 分区腾出空间的候选**全部**与语音/视频/手势链路耦合，
-因此本轮**没有“第一批可直接删除”的系统应用**，能进第一批的只有禁用验证项。
+**rev5.2 的三处修正**
 
-## 0. 方法与证据
+1. `ar.monitor`（GenieMonitor）**不再是删除候选**：包内 `VisionWakeUpService`（唤醒）+ `AVEControlProvider`
+   （设备控制，smartapp 引用）使其不可整包精简，已与 `summary_stats.json:D_forbidden`、`a_class_candidates.md` 统一。
+2. 8 个“未知入口”里 **7 个已用 launcher 卡片证据坐实**（bilibili/淘宝/天猫/waft 小程序/应用市场/联系人），
+   只剩 **旭慧生活** 未知。
+3. “是否存在独立 APK”改为按**是否已安装**判定：launcher 内置频道、小程序、死链卡片一律记“否”。
 
-| 证据 | 来源 |
+## 0. 证据与判定规则
+
+| 项 | 来源 / 规则 |
 |---|---|
-| 已安装包与 APK 路径 | 设备 `pm list packages -f`（67 个包，只读） |
-| 是否有桌面图标 | 设备 `dumpsys package <pkg> \| grep -c android.intent.category.LAUNCHER` |
-| system 分区体积/组件 | `app_inventory.json`（55 个系统包） |
-| app 级引用 | `dependency_edges.csv`（`evidence_class=app`） |
-| framework 侧引用 | framework vdex 字符串扫描 |
-| launcher 频道/手势域 | `GenieLauncher.vdex`、`smartapp.vdex` 字符串 |
-
-口径：**桌面出现 ≠ 可删；厂商预装 ≠ 必须保留；APK 大小 ≠ RAM/CPU**。
-`/data/app` 对 shell 不可读，因此数据区应用的 APK 大小标为**未知**（未提权）。
+| 已安装包与分区 | `desktop_package_index.json`（只读 `pm list packages -f` 快照：67 个包 = system 55 + data 9 + vendor 3） |
+| 桌面图标能力 | `dumpsys package <pkg>` 的 `LAUNCHER` 命中（只读） |
+| 卡片/小程序入口 | `GenieLauncher.apk` 内 `assets/page_apk_cache.json`、`page_apk_s4_cache.json`、`desktop.json`、`shopping.json` |
+| 闹钟等技能入口 | `smartapp.apk` 内的 `res/layout/alarm_domain_*` 等资源 |
+| 独立 APK 判定 | **包名必须在已安装集合中**；否则一律“否”，并给出卡片 targetUrl 作为反证 |
+| 体积口径 | system 包取 `app_inventory.json`；`/data/app` 对 shell 不可读 → **未知** |
 
 ## 1. 桌面应用与包名映射表（18/18）
 
-| 桌面名称 | 实际包名 | 分区 | APK 路径 | APK 大小 | LAUNCHER | 证据等级 |
-| 旭慧生活 | **未知** | — | — | 未知 | — | 未知 |
-| 通话 | **未知** | — | — | 未知 | — | 未知 |
-| 人教数字课堂 | **未知** | — | — | 未知 | — | 未知 |
-| 爱家看护 | `com.alibaba.ailabs.genie.aicare` | system + /data 覆盖 | `system/app/GenieAicare/GenieAicare.apk` | 2.52 MB | 1 | 较可信 |
-| 购物 | `未知（launcher 内置频道）` | — | — | 未知 | — | 较可信 |
-| 音乐 | **未知** | — | — | 未知 | — | 较可信 |
-| 闹钟 | **未知** | — | — | 未知 | — | 未知 |
-| 相册 | `com.alibaba.ailabs.genie.albums` | system | `system/app/GenieAlbums/GenieAlbums.apk` | 1.01 MB | 1 | 较可信 |
-| 优酷 | `com.ailabs.youku.iot` | system | `system/app/AliVideoPlayer/AliVideoPlayer.apk` | 10.98 MB | 0 | 较可信 |
-| 手势 | `com.alibaba.ailabs.ar.monitor（GenieMonitor）` | system | `system/app/GenieMonitor/GenieMonitor.apk` | 33.19 MB | 0 | 较可信 |
-| 菜谱 | `com.alibaba.ailabs.genie.cook` | /data/app | `/data/app/com.alibaba.ailabs.genie.cook-*/base.apk` | 未知 | 1 | 较可信 |
-| CCTV.新视听 | `cn.cmvideo.car.play` | /data/app | `/data/app/cn.cmvideo.car.play-*/base.apk` | 未知 | 1 | 较可信 |
-| 儿童 | `com.alibaba.ailabs.genie.children` | system | `system/app/GenieChildren/GenieChildren.apk` | 9.97 MB | 1 | 较可信 |
-| 智能家居 | `com.alibaba.ailabs.genie.iot` | system | `system/app/GenieIoT/GenieIoT.apk` | 12.23 MB | 1 | 较可信 |
-| 蚂蚁森林 | **未知** | — | — | 未知 | — | 未知 |
-| 设置 | `com.android.settings（S1Settings）` | system | `system/app/S1Settings/S1Settings.apk` | 4.48 MB | 1 | 较可信 |
-| 相机 | `com.alibaba.ailabs.genie.camera` | /data/app | `/data/app/com.alibaba.ailabs.genie.camera-*/base.apk` | 未知 | 1 | 较可信 |
-| 哔哩哔哩 | **未知** | — | — | 未知 | — | 未知 |
+| 桌面名称 | 实际包名 | 分区 | APK 路径 | APK 大小 | 存在独立 APK | 证据等级 |
+| 旭慧生活 | **未知（非独立 APK）** | —（非 APK） | — | — | 否 | 未知 |
+| 通话 | **未知（非独立 APK）** | —（非 APK） | — | — | 否 | 较可信 |
+| 人教数字课堂 | **未知（非独立 APK）** | —（非 APK） | — | — | 否 | 较可信 |
+| 爱家看护 | `com.alibaba.ailabs.genie.aicare` | data | /data/app/com.alibaba.ailabs.genie.aicare-zsBAkMuEJlOe5ygOiDbDbw==/base.apk | 2.52 MB | 是 | 确定 |
+| 购物 | **未知（非独立 APK）** | —（非 APK） | — | — | 否 | 较可信 |
+| 音乐 | **未知（非独立 APK）** | —（非 APK） | — | — | 否 | 较可信 |
+| 闹钟 | **未知（非独立 APK）** | —（非 APK） | — | — | 否 | 较可信 |
+| 相册 | `com.alibaba.ailabs.genie.albums` | system | /system/app/GenieAlbums/GenieAlbums.apk | 1.01 MB | 是 | 确定 |
+| 优酷 | `com.ailabs.youku.iot` | system | /system/app/AliVideoPlayer/AliVideoPlayer.apk | 10.98 MB | 是 | 确定 |
+| 手势 | `com.alibaba.ailabs.ar.monitor` | system | /system/app/GenieMonitor/GenieMonitor.apk | 33.19 MB | 是 | 确定 |
+| 菜谱 | `com.alibaba.ailabs.genie.cook` | data | /data/app/com.alibaba.ailabs.genie.cook-Y0W26Dha2xaf2E1WkY6NpA==/base.apk | 未知（/data/app 不可读） | 是 | 确定 |
+| CCTV.新视听 | `cn.cmvideo.car.play` | data | /data/app/cn.cmvideo.car.play-ykAZIDU3kgd3zxegEua-EQ==/base.apk | 未知（/data/app 不可读） | 是 | 较可信 |
+| 儿童 | `com.alibaba.ailabs.genie.children` | system | /system/app/GenieChildren/GenieChildren.apk | 9.97 MB | 是 | 确定 |
+| 智能家居 | `com.alibaba.ailabs.genie.iot` | system | /system/app/GenieIoT/GenieIoT.apk | 12.23 MB | 是 | 确定 |
+| 蚂蚁森林 | **未知（非独立 APK）** | —（非 APK） | — | — | 否 | 较可信 |
+| 设置 | `com.android.settings` | system | /system/app/S1Settings/S1Settings.apk | 4.48 MB | 是 | 确定 |
+| 相机 | `com.alibaba.ailabs.genie.camera` | data | /data/app/com.alibaba.ailabs.genie.camera-UeTOZTBElqLiL9Nv3eKTVg==/base.apk | 未知（/data/app 不可读） | 是 | 确定 |
+| 哔哩哔哩 | **未知（非独立 APK）** | —（非 APK） | — | — | 否 | 较可信 |
 
-统计：确定 8 个（`aicare`/`albums`/`children`/`iot`/`settings`/`camera`/`cook`/`cmvideo`）、
-较可信 2 个（`youku.iot`、`ar.monitor`）、**未知 8 个**（旭慧生活、通话、人教数字课堂、购物、音乐、闹钟、蚂蚁森林、哔哩哔哩）。
+统计：**已安装包 10 个**（其中 system 6：aicare/albums/children/iot/settings + youku.iot、ar.monitor；
+data 4：camera/cook/cmvideo；共 10 项计入“是”），**非 APK 入口 8 个**（卡片/小程序/技能 UI，其中 1 个仍未知）。
 
-## 2. 桌面应用专项精简评估表
+## 2. 桌面应用专项评估表
 
-| 桌面名称 | 包名 | 是否涉及原厂语音/音乐/视频/设备控制 | 删除后可能影响 | A 类删除候选? | B 类禁用候选? |
-| 旭慧生活 | 未知 | 未知 | — | 未知 | 未知 |
-| 通话 | 未知 | 拨号/通话（本机未安装 dialer/incall 包） | — | 未知 | 未知 |
-| 人教数字课堂 | 未知 | 教育内容（第三方） | — | 未知 | 未知 |
-| 爱家看护 | `com.alibaba.ailabs.genie.aicare` | 看护/摄像头联动入口 | 0 app 级入向引用；设备加载 /data/app 版本 4.0.62（系统内 4.0.26） | 不建议（prebuilt 删除会退化） | 可评估 |
-| 购物 | `未知（launcher 内置频道）` | 购物频道（跳转淘宝 H5/应用） | GenieLauncher.vdex 内含 `/shopping_channel`、`/shopping_search`、`/sdcard/com.taobao.taobao/home` | 未知（非独立 APK） | 未知 |
-| 音乐 | 未知 | 原厂音乐播放 | 原厂音乐链路（smartapp 技能 + AliVideoPlayer 音频能力） | **禁止** | 禁止 |
-| 闹钟 | 未知 | 闹钟（本机无 deskclock 包） | — | 未知 | 未知 |
-| 相册 | `com.alibaba.ailabs.genie.albums` | 照片浏览/屏保取图；语音“看照片”类技能 | 被 `com.alibaba.ailabs.genie.screensaver` 以组件引用；framework 0 命中 | 需产品确认 | 可验证 |
-| 优酷 | `com.ailabs.youku.iot` | 视频播放能力（点播/新闻播放），属原厂视频链路的外包实现 | 被 smartapp（`CommonPlayerActivity`/`NewsPlayerActivity`）与 screensaver 引用；framework 0 | 需产品确认 | 可验证 |
-| 手势 | `com.alibaba.ailabs.ar.monitor（GenieMonitor）` | 手势/体感识别、CMCC 媒体服务 | 被 smartapp 以 `controlProvider` 引用；framework 包名命中 1 处；服务含 `geniegesture`/`genieallinone`/CMCC | **不建议直接删** | 可验证 |
-| 菜谱 | `com.alibaba.ailabs.genie.cook` | 菜谱内容（第三方/预置数据区应用） | 未在 system 分区；无 system 侧引用 | 不涉及 system 空间 | 需卸载（本轮不做） |
-| CCTV.新视听 | `cn.cmvideo.car.play` | 第三方视频客户端 | 未在 system 分区 | 不涉及 system 空间 | 需卸载（本轮不做） |
-| 儿童 | `com.alibaba.ailabs.genie.children` | 儿童模式（语音技能 + 独立界面） | 被 smartapp（16 处：`ChildrenHomeActivity`、`ForbiddenTimeAddActivity` 等）与 guide 引用 | 需产品确认 | 可验证 |
-| 智能家居 | `com.alibaba.ailabs.genie.iot` | 设备控制（IoT 配网/控制） | 被 smartapp（`HouseService`）、rtc、arome 引用；快照 PSS 22,416 kB | **禁止** | **禁止** |
-| 蚂蚁森林 | 未知 | 第三方内容（支付宝小程序） | — | 未知 | 未知 |
-| 设置 | `com.android.settings（S1Settings）` | 系统设置 | framework 强依赖（SystemUI/设置页/升级入口） | **禁止** | **禁止** |
-| 相机 | `com.alibaba.ailabs.genie.camera` | 相机（拍照/看护联动） | 未在 system 分区 | 不涉及 system 空间 | 需卸载（本轮不做） |
-| 哔哩哔哩 | 未知 | 第三方视频（未安装） | — | 未知 | 未知 |
-
-- **禁止**：`设置`（Framework 关键件）、`智能家居`（设备控制）、`音乐`（原厂音乐链路）。
-- **不涉及 system 空间**：`菜谱`、`CCTV.新视听`、`相机`（均为 /data/app 安装）。
-- **可验证但需功能确认**：`相册`、`儿童`、`优酷`、`手势`。
+| 桌面名称 | 涉及语音/音乐/视频/设备控制 | 删除影响 | A 类删除候选? | B 类禁用候选? |
+| 旭慧生活 | 未知 | 未知 | 未知 | 未知 |
+| 通话 | 通话/联系人（目标包 `com.alibaba.ailabs.genie.contacts` **未安装** → 卡片为死链） | 通话/联系人（目标包 `com.alibaba.ailabs.genie.contacts` **未安装** → 卡片为死链） | 未知（非 APK） | 未知 |
+| 人教数字课堂 | 教育内容推广位（跳应用市场，目标包未安装） | 教育内容推广位（跳应用市场，目标包未安装） | 未知（非 APK） | 未知 |
+| 爱家看护 | 看护/摄像头联动 | 看护/摄像头联动 | 不建议（prebuilt 删除会退化） | 可评估 |
+| 购物 | 购物频道（H5 webview，跳淘宝/天猫） | 购物频道（H5 webview，跳淘宝/天猫） | 未知（非 APK） | 未知 |
+| 音乐 | 原厂音乐链路（播放由 smartapp/AliVideoPlayer 承担） | 原厂音乐链路（播放由 smartapp/AliVideoPlayer 承担） | **禁止** | 禁止 |
+| 闹钟 | 语音闹钟技能界面（smartapp 内置 domain） | 语音闹钟技能界面（smartapp 内置 domain） | 未知（非 APK） | 未知 |
+| 相册 | 相册浏览、屏保取图、语音“看照片” | 相册浏览、屏保取图、语音“看照片” | 需产品确认 | 可验证（整包） |
+| 优酷 | 原厂视频播放（点播/新闻/短视频/屏保） | 原厂视频播放（点播/新闻/短视频/屏保） | **必须保留**（视频链路） | 禁止 |
+| 手势 | 手势/体感识别 + CMCC 媒体 + **视觉唤醒** + AVE 设备控制 Provider | 手势/体感识别 + CMCC 媒体 + **视觉唤醒** + AVE 设备控制 Provider | **必须保留整包** | 禁止（整包） |
+| 菜谱 | 菜谱内容 | 菜谱内容 | 不涉及 system 空间 | 需卸载（本轮不做） |
+| CCTV.新视听 | 第三方视频客户端 | 第三方视频客户端 | 不涉及 system 空间 | 需卸载（本轮不做） |
+| 儿童 | 儿童模式（界面 + 禁播时段 + 管控其他应用） | 儿童模式（界面 + 禁播时段 + 管控其他应用） | 需产品确认（不得直接删） | 可验证（整包） |
+| 智能家居 | 设备控制（IoT） | 设备控制（IoT） | **禁止** | **禁止** |
+| 蚂蚁森林 | 支付宝小程序（Waft 容器） | 支付宝小程序（Waft 容器） | 未知（非 APK） | 未知 |
+| 设置 | 系统设置 | 系统设置 | **禁止** | **禁止** |
+| 相机 | 拍照/看护联动 | 拍照/看护联动 | 不涉及 system 空间 | 需卸载（本轮不做） |
+| 哔哩哔哩 | 第三方视频（当前为死链卡片） | 第三方视频（当前为死链卡片） | 未知（非 APK） | 未知 |
 
 ## 3. 逐个详情
 
@@ -78,336 +75,313 @@
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 旭慧生活 |
-| 实际包名 | **未知** |
-| 是否 system/priv-app 预装 | — |
+| 实际包名 | **未知（非独立 APK）** |
+| 分区 | —（非 APK） |
 | APK 路径 | — |
-| APK 文件大小 | 未知 |
-| 是否存在独立 APK | 否（判定为 webapp/launcher 入口） |
-| 其他系统组件调用/依赖 | — |
+| APK 文件大小 | — |
+| 是否存在独立 APK | 否 |
+| 静态证据（卡片/组件） | launcher assets 与全部 APK 的 assets/res 中均无该名称命中 |
 | 涉及语音/音乐/视频/设备控制/硬件 | 未知 |
-| 删除后可能影响的功能 | 未知 |
-| 是否适合 A 类静态删除 | **未知** |
-| 是否适合 B 类可逆禁用验证 | **未知** |
-| 证据等级与说明 | 未知 —— 67 个已安装包中没有可对应到该名称的包；`com.alibaba.ailabs.genie.intermediary` 虽在 /data/app，但其 `dumpsys package` 无 LAUNCHER 组件，不能作为桌面图标来源。判定为 launcher/webapp 入口，**待真机点按确认** |
+| 删除后可能影响 | 未知 |
+| A 类静态删除 | **未知** |
+| B 类禁用验证 | **未知** |
+| 证据等级 | 未知 —— 仅剩此一项未确认：本地无任何静态证据。缺的证据是 launcher 云端卡片配置（运行时拉取）或运行时 dumpsys 记录 |
 ### 通话
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 通话 |
-| 实际包名 | **未知** |
-| 是否 system/priv-app 预装 | — |
+| 实际包名 | **未知（非独立 APK）** |
+| 分区 | —（非 APK） |
 | APK 路径 | — |
-| APK 文件大小 | 未知 |
-| 是否存在独立 APK | 否（判定为 webapp/launcher 入口） |
-| 其他系统组件调用/依赖 | — |
-| 涉及语音/音乐/视频/设备控制/硬件 | 拨号/通话（本机未安装 dialer/incall 包） |
-| 删除后可能影响的功能 | 拨号/通话（本机未安装 dialer/incall 包） |
-| 是否适合 A 类静态删除 | **未知** |
-| 是否适合 B 类可逆禁用验证 | **未知** |
-| 证据等级与说明 | 未知 —— 67 个包中无 `com.android.dialer`/`incallui`；该入口可能由 SystemUI 或 H5 提供，未取证 |
+| APK 文件大小 | — |
+| 是否存在独立 APK | 否 |
+| 静态证据（卡片/组件） | launcher 卡片：`targetUrl=genie://com.alibaba.ailabs.genie.contacts/page/home?...&pkg=com.alibaba.ailabs.genie.contacts` |
+| 涉及语音/音乐/视频/设备控制/硬件 | 通话/联系人（目标包 `com.alibaba.ailabs.genie.contacts` **未安装** → 卡片为死链） |
+| 删除后可能影响 | 通话/联系人（目标包 `com.alibaba.ailabs.genie.contacts` **未安装** → 卡片为死链） |
+| A 类静态删除 | **未知（非 APK）** |
+| B 类禁用验证 | **未知** |
+| 证据等级 | 较可信 —— 卡片证据明确；但目标应用不在 67 个已安装包内，点击当前不可用 |
 ### 人教数字课堂
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 人教数字课堂 |
-| 实际包名 | **未知** |
-| 是否 system/priv-app 预装 | — |
+| 实际包名 | **未知（非独立 APK）** |
+| 分区 | —（非 APK） |
 | APK 路径 | — |
-| APK 文件大小 | 未知 |
-| 是否存在独立 APK | 否（判定为 webapp/launcher 入口） |
-| 其他系统组件调用/依赖 | — |
-| 涉及语音/音乐/视频/设备控制/硬件 | 教育内容（第三方） |
-| 删除后可能影响的功能 | 教育内容（第三方） |
-| 是否适合 A 类静态删除 | **未知** |
-| 是否适合 B 类可逆禁用验证 | **未知** |
-| 证据等级与说明 | 未知 —— 无对应安装包；判定为 webapp/H5 入口，未取证 |
+| APK 文件大小 | — |
+| 是否存在独立 APK | 否 |
+| 静态证据（卡片/组件） | launcher 卡片：`bizType=MINIAPP`，`targetUrl=market://com.alibaba.ailabs.geniemarket/main` |
+| 涉及语音/音乐/视频/设备控制/硬件 | 教育内容推广位（跳应用市场，目标包未安装） |
+| 删除后可能影响 | 教育内容推广位（跳应用市场，目标包未安装） |
+| A 类静态删除 | **未知（非 APK）** |
+| B 类禁用验证 | **未知** |
+| 证据等级 | 较可信 —— 属 launcher 推荐/推广卡，不是应用 |
 ### 爱家看护
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 爱家看护 |
 | 实际包名 | `com.alibaba.ailabs.genie.aicare` |
-| 是否 system/priv-app 预装 | system + /data 覆盖 |
-| APK 路径 | `system/app/GenieAicare/GenieAicare.apk` |
+| 分区 | data |
+| APK 路径 | `/data/app/com.alibaba.ailabs.genie.aicare-zsBAkMuEJlOe5ygOiDbDbw==/base.apk` |
 | APK 文件大小 | 2.52 MB |
 | 是否存在独立 APK | 是 |
-| 其他系统组件调用/依赖 | 0 app 级入向引用；设备加载 /data/app 版本 4.0.62（系统内 4.0.26） |
-| 涉及语音/音乐/视频/设备控制/硬件 | 看护/摄像头联动入口 |
-| 删除后可能影响的功能 | 看护/摄像头联动入口 |
-| 是否适合 A 类静态删除 | **不建议（prebuilt 删除会退化）** |
-| 是否适合 B 类可逆禁用验证 | **可评估** |
-| 证据等级与说明 | 较可信 —— 包名与路径均有证据；label 字符串未直接读取，按语义与 launcher 组件判定 |
+| 静态证据（卡片/组件） | system prebuilt + /data 覆盖（4.0.26 → 4.0.62），launcher 组件 1 个 |
+| 涉及语音/音乐/视频/设备控制/硬件 | 看护/摄像头联动 |
+| 删除后可能影响 | 看护/摄像头联动 |
+| A 类静态删除 | **不建议（prebuilt 删除会退化）** |
+| B 类禁用验证 | **可评估** |
+| 证据等级 | 确定 —— 包名、路径、分区、launcher 组件均有证据 |
 ### 购物
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 购物 |
-| 实际包名 | `未知（launcher 内置频道）` |
-| 是否 system/priv-app 预装 | — |
+| 实际包名 | **未知（非独立 APK）** |
+| 分区 | —（非 APK） |
 | APK 路径 | — |
-| APK 文件大小 | 未知 |
-| 是否存在独立 APK | 是 |
-| 其他系统组件调用/依赖 | GenieLauncher.vdex 内含 `/shopping_channel`、`/shopping_search`、`/sdcard/com.taobao.taobao/home` |
-| 涉及语音/音乐/视频/设备控制/硬件 | 购物频道（跳转淘宝 H5/应用） |
-| 删除后可能影响的功能 | 购物频道（跳转淘宝 H5/应用） |
-| 是否适合 A 类静态删除 | **未知（非独立 APK）** |
-| 是否适合 B 类可逆禁用验证 | **未知** |
-| 证据等级与说明 | 较可信 —— 本机未安装淘宝 APK；该入口属 launcher 频道能力，删除 launcher 才有影响 |
+| APK 文件大小 | — |
+| 是否存在独立 APK | 否 |
+| 静态证据（卡片/组件） | launcher 卡片：`genie://…/webviewPage?h5_url=https://shop258155498.m.taobao.com`、`pages.tmall.com/…` |
+| 涉及语音/音乐/视频/设备控制/硬件 | 购物频道（H5 webview，跳淘宝/天猫） |
+| 删除后可能影响 | 购物频道（H5 webview，跳淘宝/天猫） |
+| A 类静态删除 | **未知（非 APK）** |
+| B 类禁用验证 | **未知** |
+| 证据等级 | 较可信 —— rev5.2 修正：launcher 内置频道**不再**被当作独立 APK |
 ### 音乐
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 音乐 |
-| 实际包名 | **未知** |
-| 是否 system/priv-app 预装 | — |
+| 实际包名 | **未知（非独立 APK）** |
+| 分区 | —（非 APK） |
 | APK 路径 | — |
-| APK 文件大小 | 未知 |
-| 是否存在独立 APK | 否（判定为 webapp/launcher 入口） |
-| 其他系统组件调用/依赖 | 原厂音乐链路（smartapp 技能 + AliVideoPlayer 音频能力） |
-| 涉及语音/音乐/视频/设备控制/硬件 | 原厂音乐播放 |
-| 删除后可能影响的功能 | 原厂音乐播放 |
-| 是否适合 A 类静态删除 | ****禁止**** |
-| 是否适合 B 类可逆禁用验证 | **禁止** |
-| 证据等级与说明 | 较可信 —— 无独立音乐 APK；原厂音乐链路受保护，不得据桌面图标处置 |
+| APK 文件大小 | — |
+| 是否存在独立 APK | 否 |
+| 静态证据（卡片/组件） | launcher 音乐频道资源（`assets/audio_history.json`、`favourite_tabs.json`、`tabs.json`） |
+| 涉及语音/音乐/视频/设备控制/硬件 | 原厂音乐链路（播放由 smartapp/AliVideoPlayer 承担） |
+| 删除后可能影响 | 原厂音乐链路（播放由 smartapp/AliVideoPlayer 承担） |
+| A 类静态删除 | ****禁止**** |
+| B 类禁用验证 | **禁止** |
+| 证据等级 | 较可信 —— 音乐是频道 + 原厂播放链路，不是独立 APK；§六 保护 |
 ### 闹钟
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 闹钟 |
-| 实际包名 | **未知** |
-| 是否 system/priv-app 预装 | — |
+| 实际包名 | **未知（非独立 APK）** |
+| 分区 | —（非 APK） |
 | APK 路径 | — |
-| APK 文件大小 | 未知 |
-| 是否存在独立 APK | 否（判定为 webapp/launcher 入口） |
-| 其他系统组件调用/依赖 | — |
-| 涉及语音/音乐/视频/设备控制/硬件 | 闹钟（本机无 deskclock 包） |
-| 删除后可能影响的功能 | 闹钟（本机无 deskclock 包） |
-| 是否适合 A 类静态删除 | **未知** |
-| 是否适合 B 类可逆禁用验证 | **未知** |
-| 证据等级与说明 | 未知 —— 无对应安装包；可能由 launcher 或 H5 提供 |
+| APK 文件大小 | — |
+| 是否存在独立 APK | 否 |
+| 静态证据（卡片/组件） | smartapp 资源含 `activity_alarm_list.xml`、`alarm_domain_alarm_ring_*` 等闹钟域布局 |
+| 涉及语音/音乐/视频/设备控制/硬件 | 语音闹钟技能界面（smartapp 内置 domain） |
+| 删除后可能影响 | 语音闹钟技能界面（smartapp 内置 domain） |
+| A 类静态删除 | **未知（非 APK）** |
+| B 类禁用验证 | **未知** |
+| 证据等级 | 较可信 —— 属 smartapp 技能 UI，不是独立应用；动它等于动语音链路 |
 ### 相册
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 相册 |
 | 实际包名 | `com.alibaba.ailabs.genie.albums` |
-| 是否 system/priv-app 预装 | system |
-| APK 路径 | `system/app/GenieAlbums/GenieAlbums.apk` |
+| 分区 | system |
+| APK 路径 | `/system/app/GenieAlbums/GenieAlbums.apk` |
 | APK 文件大小 | 1.01 MB |
 | 是否存在独立 APK | 是 |
-| 其他系统组件调用/依赖 | 被 `com.alibaba.ailabs.genie.screensaver` 以组件引用；framework 0 命中 |
-| 涉及语音/音乐/视频/设备控制/硬件 | 照片浏览/屏保取图；语音“看照片”类技能 |
-| 删除后可能影响的功能 | 照片浏览/屏保取图；语音“看照片”类技能 |
-| 是否适合 A 类静态删除 | **需产品确认** |
-| 是否适合 B 类可逆禁用验证 | **可验证** |
-| 证据等级与说明 | 较可信 —— APK 仅 1.01 MB，但同目录 oat 9.54 MB，删目录合计 10.56 MB |
+| 静态证据（卡片/组件） | system/app，launcher MainActivity，screensaver 组件引用 |
+| 涉及语音/音乐/视频/设备控制/硬件 | 相册浏览、屏保取图、语音“看照片” |
+| 删除后可能影响 | 相册浏览、屏保取图、语音“看照片” |
+| A 类静态删除 | **需产品确认** |
+| B 类禁用验证 | **可验证（整包）** |
+| 证据等级 | 确定 —— APK 1.01 MB，但 oat 9.54 MB，整目录 10.56 MB |
 ### 优酷
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 优酷 |
 | 实际包名 | `com.ailabs.youku.iot` |
-| 是否 system/priv-app 预装 | system |
-| APK 路径 | `system/app/AliVideoPlayer/AliVideoPlayer.apk` |
+| 分区 | system |
+| APK 路径 | `/system/app/AliVideoPlayer/AliVideoPlayer.apk` |
 | APK 文件大小 | 10.98 MB |
 | 是否存在独立 APK | 是 |
-| 其他系统组件调用/依赖 | 被 smartapp（`CommonPlayerActivity`/`NewsPlayerActivity`）与 screensaver 引用；framework 0 |
-| 涉及语音/音乐/视频/设备控制/硬件 | 视频播放能力（点播/新闻播放），属原厂视频链路的外包实现 |
-| 删除后可能影响的功能 | 视频播放能力（点播/新闻播放），属原厂视频链路的外包实现 |
-| 是否适合 A 类静态删除 | **需产品确认** |
-| 是否适合 B 类可逆禁用验证 | **可验证** |
-| 证据等级与说明 | 较可信 —— 无 LAUNCHER 组件 → 桌面“优酷”入口可能由 launcher/smartapp 拉起；APK+lib+oat 合计 45.06 MB |
+| 静态证据（卡片/组件） | launcher 内容卡 `source=youku_news`；播放组件被 smartapp 引用 |
+| 涉及语音/音乐/视频/设备控制/硬件 | 原厂视频播放（点播/新闻/短视频/屏保） |
+| 删除后可能影响 | 原厂视频播放（点播/新闻/短视频/屏保） |
+| A 类静态删除 | ****必须保留**（视频链路）** |
+| B 类禁用验证 | **禁止** |
+| 证据等级 | 确定 —— rev5.2 撤销“可删除”：它是原厂视频实现，详见 big4_component_review.md |
 ### 手势
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 手势 |
-| 实际包名 | `com.alibaba.ailabs.ar.monitor（GenieMonitor）` |
-| 是否 system/priv-app 预装 | system |
-| APK 路径 | `system/app/GenieMonitor/GenieMonitor.apk` |
+| 实际包名 | `com.alibaba.ailabs.ar.monitor` |
+| 分区 | system |
+| APK 路径 | `/system/app/GenieMonitor/GenieMonitor.apk` |
 | APK 文件大小 | 33.19 MB |
 | 是否存在独立 APK | 是 |
-| 其他系统组件调用/依赖 | 被 smartapp 以 `controlProvider` 引用；framework 包名命中 1 处；服务含 `geniegesture`/`genieallinone`/CMCC |
-| 涉及语音/音乐/视频/设备控制/硬件 | 手势/体感识别、CMCC 媒体服务 |
-| 删除后可能影响的功能 | 手势/体感识别、CMCC 媒体服务 |
-| 是否适合 A 类静态删除 | ****不建议直接删**** |
-| 是否适合 B 类可逆禁用验证 | **可验证** |
-| 证据等级与说明 | 较可信 —— APK 33.19 MB、目录合计 47.86 MB；无 LAUNCHER 组件，入口由设置/语音提供 |
+| 静态证据（卡片/组件） | 包内 `GenieGestureService`（`android.intent.action.geniegesture`），无 launcher 组件 |
+| 涉及语音/音乐/视频/设备控制/硬件 | 手势/体感识别 + CMCC 媒体 + **视觉唤醒** + AVE 设备控制 Provider |
+| 删除后可能影响 | 手势/体感识别 + CMCC 媒体 + **视觉唤醒** + AVE 设备控制 Provider |
+| A 类静态删除 | ****必须保留整包**** |
+| B 类禁用验证 | **禁止（整包）** |
+| 证据等级 | 确定 —— rev5.2 统一结论：同包含唤醒与控制组件，解耦未证明；组件级只可评估 `GenieGestureService` |
 ### 菜谱
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 菜谱 |
 | 实际包名 | `com.alibaba.ailabs.genie.cook` |
-| 是否 system/priv-app 预装 | /data/app |
-| APK 路径 | `/data/app/com.alibaba.ailabs.genie.cook-*/base.apk` |
-| APK 文件大小 | 未知 |
+| 分区 | data |
+| APK 路径 | `/data/app/com.alibaba.ailabs.genie.cook-Y0W26Dha2xaf2E1WkY6NpA==/base.apk` |
+| APK 文件大小 | 未知（/data/app 不可读） |
 | 是否存在独立 APK | 是 |
-| 其他系统组件调用/依赖 | 未在 system 分区；无 system 侧引用 |
-| 涉及语音/音乐/视频/设备控制/硬件 | 菜谱内容（第三方/预置数据区应用） |
-| 删除后可能影响的功能 | 菜谱内容（第三方/预置数据区应用） |
-| 是否适合 A 类静态删除 | **不涉及 system 空间** |
-| 是否适合 B 类可逆禁用验证 | **需卸载（本轮不做）** |
-| 证据等级与说明 | 较可信 —— APK 大小未知：/data/app 对 shell 不可读（Permission denied），未提权 |
+| 静态证据（卡片/组件） | /data/app 安装（launcher 组件 1 个） |
+| 涉及语音/音乐/视频/设备控制/硬件 | 菜谱内容 |
+| 删除后可能影响 | 菜谱内容 |
+| A 类静态删除 | **不涉及 system 空间** |
+| B 类禁用验证 | **需卸载（本轮不做）** |
+| 证据等级 | 确定 —— APK 大小未知：/data/app 对 shell 不可读 |
 ### CCTV.新视听
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | CCTV.新视听 |
 | 实际包名 | `cn.cmvideo.car.play` |
-| 是否 system/priv-app 预装 | /data/app |
-| APK 路径 | `/data/app/cn.cmvideo.car.play-*/base.apk` |
-| APK 文件大小 | 未知 |
+| 分区 | data |
+| APK 路径 | `/data/app/cn.cmvideo.car.play-ykAZIDU3kgd3zxegEua-EQ==/base.apk` |
+| APK 文件大小 | 未知（/data/app 不可读） |
 | 是否存在独立 APK | 是 |
-| 其他系统组件调用/依赖 | 未在 system 分区 |
+| 静态证据（卡片/组件） | /data/app；launcher 卡片 `miguvideo4pad://miguvideo4pad?pkg=cn.cmvideo.car.play` |
 | 涉及语音/音乐/视频/设备控制/硬件 | 第三方视频客户端 |
-| 删除后可能影响的功能 | 第三方视频客户端 |
-| 是否适合 A 类静态删除 | **不涉及 system 空间** |
-| 是否适合 B 类可逆禁用验证 | **需卸载（本轮不做）** |
-| 证据等级与说明 | 较可信 —— 包名语义（cmvideo=视频客户端）+ launcher 组件；label 未直接读取；大小未知（/data/app 不可读） |
+| 删除后可能影响 | 第三方视频客户端 |
+| A 类静态删除 | **不涉及 system 空间** |
+| B 类禁用验证 | **需卸载（本轮不做）** |
+| 证据等级 | 较可信 —— 包名 + 卡片双向印证；APK 大小未知 |
 ### 儿童
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 儿童 |
 | 实际包名 | `com.alibaba.ailabs.genie.children` |
-| 是否 system/priv-app 预装 | system |
-| APK 路径 | `system/app/GenieChildren/GenieChildren.apk` |
+| 分区 | system |
+| APK 路径 | `/system/app/GenieChildren/GenieChildren.apk` |
 | APK 文件大小 | 9.97 MB |
 | 是否存在独立 APK | 是 |
-| 其他系统组件调用/依赖 | 被 smartapp（16 处：`ChildrenHomeActivity`、`ForbiddenTimeAddActivity` 等）与 guide 引用 |
-| 涉及语音/音乐/视频/设备控制/硬件 | 儿童模式（语音技能 + 独立界面） |
-| 删除后可能影响的功能 | 儿童模式（语音技能 + 独立界面） |
-| 是否适合 A 类静态删除 | **需产品确认** |
-| 是否适合 B 类可逆禁用验证 | **可验证** |
-| 证据等级与说明 | 较可信 —— APK 9.97 MB、目录合计 20.14 MB；若“儿童模式”确定不用，是最大的可回收项之一 |
+| 静态证据（卡片/组件） | system/app，launcher HomeActivity，smartapp 16 处引用 |
+| 涉及语音/音乐/视频/设备控制/硬件 | 儿童模式（界面 + 禁播时段 + 管控其他应用） |
+| 删除后可能影响 | 儿童模式（界面 + 禁播时段 + 管控其他应用） |
+| A 类静态删除 | **需产品确认（不得直接删）** |
+| B 类禁用验证 | **可验证（整包）** |
+| 证据等级 | 确定 —— 可回收 20.14 MB，见 big4_component_review.md |
 ### 智能家居
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 智能家居 |
 | 实际包名 | `com.alibaba.ailabs.genie.iot` |
-| 是否 system/priv-app 预装 | system |
-| APK 路径 | `system/app/GenieIoT/GenieIoT.apk` |
+| 分区 | system |
+| APK 路径 | `/system/app/GenieIoT/GenieIoT.apk` |
 | APK 文件大小 | 12.23 MB |
 | 是否存在独立 APK | 是 |
-| 其他系统组件调用/依赖 | 被 smartapp（`HouseService`）、rtc、arome 引用；快照 PSS 22,416 kB |
-| 涉及语音/音乐/视频/设备控制/硬件 | 设备控制（IoT 配网/控制） |
-| 删除后可能影响的功能 | 设备控制（IoT 配网/控制） |
-| 是否适合 A 类静态删除 | ****禁止**** |
-| 是否适合 B 类可逆禁用验证 | ****禁止**** |
-| 证据等级与说明 | 较可信 —— 属设备控制链路，§六 明令保护；仅作说明，不列为候选 |
+| 静态证据（卡片/组件） | system/app，launcher，smartapp `HouseService` 引用，快照 PSS 22,416 kB |
+| 涉及语音/音乐/视频/设备控制/硬件 | 设备控制（IoT） |
+| 删除后可能影响 | 设备控制（IoT） |
+| A 类静态删除 | ****禁止**** |
+| B 类禁用验证 | ****禁止**** |
+| 证据等级 | 确定 —— 属设备控制链路，§六 保护 |
 ### 蚂蚁森林
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 蚂蚁森林 |
-| 实际包名 | **未知** |
-| 是否 system/priv-app 预装 | — |
+| 实际包名 | **未知（非独立 APK）** |
+| 分区 | —（非 APK） |
 | APK 路径 | — |
-| APK 文件大小 | 未知 |
-| 是否存在独立 APK | 否（判定为 webapp/launcher 入口） |
-| 其他系统组件调用/依赖 | — |
-| 涉及语音/音乐/视频/设备控制/硬件 | 第三方内容（支付宝小程序） |
-| 删除后可能影响的功能 | 第三方内容（支付宝小程序） |
-| 是否适合 A 类静态删除 | **未知** |
-| 是否适合 B 类可逆禁用验证 | **未知** |
-| 证据等级与说明 | 未知 —— 无对应安装包；判定为 webapp/H5 入口，未取证 |
+| APK 文件大小 | — |
+| 是否存在独立 APK | 否 |
+| 静态证据（卡片/组件） | launcher 卡片：`bizType=MINIAPP`，`targetUrl=waft://open?genieAppId=…&code=ant_forest&path=pages/index/index` |
+| 涉及语音/音乐/视频/设备控制/硬件 | 支付宝小程序（Waft 容器） |
+| 删除后可能影响 | 支付宝小程序（Waft 容器） |
+| A 类静态删除 | **未知（非 APK）** |
+| B 类禁用验证 | **未知** |
+| 证据等级 | 较可信 —— 明确是小程序，不是安装包 |
 ### 设置
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 设置 |
-| 实际包名 | `com.android.settings（S1Settings）` |
-| 是否 system/priv-app 预装 | system |
-| APK 路径 | `system/app/S1Settings/S1Settings.apk` |
+| 实际包名 | `com.android.settings` |
+| 分区 | system |
+| APK 路径 | `/system/app/S1Settings/S1Settings.apk` |
 | APK 文件大小 | 4.48 MB |
 | 是否存在独立 APK | 是 |
-| 其他系统组件调用/依赖 | framework 强依赖（SystemUI/设置页/升级入口） |
+| 静态证据（卡片/组件） | system/app/S1Settings，launcher 组件，framework 强依赖 |
 | 涉及语音/音乐/视频/设备控制/硬件 | 系统设置 |
-| 删除后可能影响的功能 | 系统设置 |
-| 是否适合 A 类静态删除 | ****禁止**** |
-| 是否适合 B 类可逆禁用验证 | ****禁止**** |
-| 证据等级与说明 | 较可信 —— 属 Framework 关键件，§六 明令保护 |
+| 删除后可能影响 | 系统设置 |
+| A 类静态删除 | ****禁止**** |
+| B 类禁用验证 | ****禁止**** |
+| 证据等级 | 确定 —— §六 保护 |
 ### 相机
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 相机 |
 | 实际包名 | `com.alibaba.ailabs.genie.camera` |
-| 是否 system/priv-app 预装 | /data/app |
-| APK 路径 | `/data/app/com.alibaba.ailabs.genie.camera-*/base.apk` |
-| APK 文件大小 | 未知 |
+| 分区 | data |
+| APK 路径 | `/data/app/com.alibaba.ailabs.genie.camera-UeTOZTBElqLiL9Nv3eKTVg==/base.apk` |
+| APK 文件大小 | 未知（/data/app 不可读） |
 | 是否存在独立 APK | 是 |
-| 其他系统组件调用/依赖 | 未在 system 分区 |
-| 涉及语音/音乐/视频/设备控制/硬件 | 相机（拍照/看护联动） |
-| 删除后可能影响的功能 | 相机（拍照/看护联动） |
-| 是否适合 A 类静态删除 | **不涉及 system 空间** |
-| 是否适合 B 类可逆禁用验证 | **需卸载（本轮不做）** |
-| 证据等级与说明 | 较可信 —— 大小未知（/data/app 不可读） |
+| 静态证据（卡片/组件） | /data/app 安装（launcher 组件 1 个） |
+| 涉及语音/音乐/视频/设备控制/硬件 | 拍照/看护联动 |
+| 删除后可能影响 | 拍照/看护联动 |
+| A 类静态删除 | **不涉及 system 空间** |
+| B 类禁用验证 | **需卸载（本轮不做）** |
+| 证据等级 | 确定 —— APK 大小未知 |
 ### 哔哩哔哩
 
 | 项目 | 内容 |
 |---|---|
 | 桌面显示名称 | 哔哩哔哩 |
-| 实际包名 | **未知** |
-| 是否 system/priv-app 预装 | — |
+| 实际包名 | **未知（非独立 APK）** |
+| 分区 | —（非 APK） |
 | APK 路径 | — |
-| APK 文件大小 | 未知 |
-| 是否存在独立 APK | 否（判定为 webapp/launcher 入口） |
-| 其他系统组件调用/依赖 | — |
-| 涉及语音/音乐/视频/设备控制/硬件 | 第三方视频（未安装） |
-| 删除后可能影响的功能 | 第三方视频（未安装） |
-| 是否适合 A 类静态删除 | **未知** |
-| 是否适合 B 类可逆禁用验证 | **未知** |
-| 证据等级与说明 | 未知 —— 无对应安装包；判定为 webapp/H5 入口，未取证 |
+| APK 文件大小 | — |
+| 是否存在独立 APK | 否 |
+| 静态证据（卡片/组件） | launcher 卡片：`bizType=NATIVE`，`targetUrl=bilibili://tv.danmaku.bili`（`tv.danmaku.bili` **未安装**） |
+| 涉及语音/音乐/视频/设备控制/硬件 | 第三方视频（当前为死链卡片） |
+| 删除后可能影响 | 第三方视频（当前为死链卡片） |
+| A 类静态删除 | **未知（非 APK）** |
+| B 类禁用验证 | **未知** |
+| 证据等级 | 较可信 —— 卡片指向未安装的第三方包，点击不可用 |
 
-## 4. 完整 system APK 删除候选清单（有实际 APK 与体积证据）
+## 4. system 分区删除候选（有真实 APK/目录体积）
 
-| 包名 | 目录 | APK MB | 整目录 MB | 角色 | 依赖/证据 | 删除后影响 | 风险 | 建议 |
-|---|---|---|---|---|---|---|---|---|
-| `com.alibaba.ailabs.ar.monitor` | `app/GenieMonitor` | 33.19 | 47.86 | 手势/体感 + CMCC 媒体（桌面“手势”入口相关） | smartapp `controlProvider` 引用、framework 包名 1 处；无 LAUNCHER、快照无进程 | 手势/体感能力、CMCC 媒体服务 | 高：触碰语音域交互 | 验证禁用后删除 |
-| `com.ailabs.youku.iot` | `app/AliVideoPlayer` | 10.98 | 45.06 | 视频播放实现（桌面“优酷”入口相关） | smartapp 播放组件、screensaver；无 LAUNCHER | 点播/新闻播放、屏保视频 | 高：原厂视频链路 | 验证禁用后删除 |
-| `com.alibaba.ailabs.genie.children` | `app/GenieChildren` | 9.97 | 20.14 | 儿童模式（桌面“儿童”） | smartapp 16 处组件引用、guide | 儿童模式界面与语音技能 | 中高：语音技能 | 验证禁用后删除 |
-| `com.alibaba.ailabs.genie.albums` | `app/GenieAlbums` | 1.01 | 10.56 | 相册/屏保取图（桌面“相册”） | screensaver 组件引用；无 LAUNCHER 之外引用 | 照片浏览、屏保图片 | 中：屏保/语音看照片 | 验证禁用后删除 |
-| `com.ailabs.emode` | `app/Emode` | 6.11 | 10.64 | 工厂 MMI/老化测试（桌面不可见） | settings、provision 引用；83 个组件；无 LAUNCHER | 产线测试与返修能力 | 中：影响售后流程 | 不建议删除 |
-| `com.aliyun.uuid` | `app/UUID` | 0.53 | 2.73 | 设备 UUID 注册（桌面不可见） | 无 app 级引用；framework 包名 1；BOOT 接收器 | 厂商云注册/统计 | 中 | 先禁用观察 |
-| `com.alira.info` | `app/raShow` | 0.01 | 0.79 | raService + dream 接收（桌面不可见） | 无引用、framework 0；SYSTEM_ALERT_WINDOW 权限 | 未知 | 中（用途不明） | 先禁用观察 |
-| `com.alibaba.spkey` | `app/AliSpKey` | 0.10 | 0.13 | SpKey 安全服务（桌面不可见） | 无引用、framework 0；有 LAUNCHER 组件 | 未知 | 中（用途不明） | 先禁用观察 |
-| `com.yunos.tv.provision` | `priv-app/AliProvision` | 0.01 | 0.03 | 开通/清关（桌面不可见） | 无 app 级引用；framework 包名 1 | 开通流程 | 低-中 | 先禁用观察 |
-| `com.android.providers.userdictionary` | `app/UserDictionaryProvider` | 0.01 | 0.04 | AOSP 词典 Provider（桌面不可见） | 无引用、framework 0 | 输入法词库 | 低 | 可静态删除 |
+| 包 | 目录 | APK MB | lib MB | oat MB | 整目录 MB | 结论 | 可回收 MB |
+|---|---|---|---|---|---|---|---|
+| `com.alibaba.ailabs.ar.monitor` | `app/GenieMonitor` | 33.19 | 14.67 | 0.00 | 47.86 | 必须保留 | 0.0 |
+| `com.ailabs.youku.iot` | `app/AliVideoPlayer` | 10.98 | 21.28 | 12.80 | 45.06 | 必须保留 | 0.0 |
+| `com.alibaba.ailabs.genie.children` | `app/GenieChildren` | 9.97 | 2.76 | 7.40 | 20.14 | 待功能确认 | 20.14 |
+| `com.alibaba.ailabs.genie.albums` | `app/GenieAlbums` | 1.01 | 0.00 | 9.54 | 10.56 | 待功能确认 | 10.56 |
+| `com.ailabs.emode` | `app/Emode` | 6.11 | 0.00 | 4.53 | 10.64 | 不建议删除 | 10.64 |
+| `com.aliyun.uuid` | `app/UUID` | 0.53 | 0.00 | 2.21 | 2.73 | 先禁用 | 2.73 |
+| `com.alira.info` | `app/raShow` | 0.01 | 0.00 | 0.78 | 0.79 | 先禁用 | 0.79 |
+| `com.alibaba.spkey` | `app/AliSpKey` | 0.10 | 0.00 | 0.03 | 0.13 | 先禁用 | 0.13 |
+| `com.yunos.tv.provision` | `priv-app/AliProvision` | 0.01 | 0.00 | 0.03 | 0.03 | 先禁用 | 0.03 |
+| `com.android.providers.userdictionary` | `app/UserDictionaryProvider` | 0.01 | 0.00 | 0.03 | 0.04 | 可静态删除 | 0.04 |
 
-- 以上 10 项的**APK 体积合计 61.92 MB**，**整目录（含 lib/oat）合计 137.98 MB**。
-- 这是**上限**：只有把整个目录删掉才能拿到 `total` 那一列；只删 APK 只能拿到 `apk` 列，且会留下 oat 残留导致校验问题。
+## 5. 第一批建议
 
-## 5. B 类禁用候选优先级（沿用 rev5，结合桌面证据）
+### 5.1 第一批建议删除（system 分区）
 
-| 顺序 | 包 | 桌面相关性 | 风险 | 建议 |
-|---|---|---|---|---|
-| 1 | `com.android.statementservice` | 无 | 低 | 第一批禁用 |
-| 2 | `com.android.bluetoothmidiservice` | 无 | 低 | 第一批禁用 |
-| 3 | `com.android.pacprocessor` | 无 | 低 | 第一批禁用 |
-| 4 | `com.android.vpndialogs` | 无 | 低 | 第一批禁用 |
-| 5 | `com.android.captiveportallogin` | 无 | 低 | 第一批禁用 |
-| 6 | `com.android.companiondevicemanager` | 无 | 低 | 第一批禁用 |
-| 7 | `com.alibaba.ailabs.genie.osupdate` | 无 | 高（升级链路） | 第二批，需你接受取舍 |
-| 8 | `com.alibaba.ailabs.genie.guide` | 无 | 中 | 第二批（存储驱动） |
-| 9 | `com.android.storagemanager` | 无 | 低 | 第二批（存储驱动） |
-| 10 | `com.android.mtp` | 无 | 低-中（USB 传文件） | 第二批 |
+**空。** 桌面可见的 system 应用全部与语音/视频/手势/设备控制耦合，本轮复核后连
+`ar.monitor` 也退出候选；唯一低耦合的 `userdictionary` 只有 0.04 MB，且需先做用户态卸载验证。
 
-> 桌面上的“相册/儿童/优酷/手势”对应的是 **C 类/D 类**包，不在这 10 个 B 类里；它们要走
-> “先禁用观察 → 再评估删除”的路径，见第 7 节。
-
-## 6. 第一批建议
-
-### 6.1 第一批建议删除（system 分区）
-
-**空。** 理由：18 个桌面入口中，凡是 system 分区内的（相册/儿童/优酷/手势/智能家居/设置/爱家看护）
-全部与语音、视频、手势或设备控制链路存在引用关系；唯一低耦合的
-`com.android.providers.userdictionary` 只有 **0.04 MB**，且需先做用户态卸载验证。
-**本轮不给出“直接删”的系统应用清单，是因为证据不支持，而不是没找。**
-
-### 6.2 第一批建议禁用验证（可逆、不影响核心功能）
+### 5.2 第一批建议禁用验证（可逆）
 
 - `com.android.statementservice`（0.08 MB）
 - `com.android.bluetoothmidiservice`（0.04 MB）
@@ -416,45 +390,54 @@
 - `com.android.captiveportallogin`（0.05 MB）
 - `com.android.companiondevicemanager`（0.05 MB）
 
-### 6.3 条件场景（功能确认后才可考虑删除，按可回收空间排序）
+### 5.3 条件删除场景（功能确认 + 禁用验证后）
 
-| 场景 | 需要你确认放弃的功能 | 可回收（整目录） | 依据 |
-|---|---|---|---|
-| 删除 `com.alibaba.ailabs.ar.monitor` | 手势/体感 + CMCC 媒体 | **47.86 MB** | smartapp `controlProvider` + framework 命中；无进程 |
-| 删除 `com.ailabs.youku.iot` | 优酷点播/新闻播放 | **45.06 MB** | smartapp 播放组件引用；属原厂视频链路 |
-| 删除 `com.alibaba.ailabs.genie.children` | 儿童模式 | **20.14 MB** | smartapp 16 处引用 |
-| 删除 `com.alibaba.ailabs.genie.albums` | 相册/屏保取图 | **10.56 MB** | screensaver 引用 |
-| 合计 | — | **123.62 MB** | 均为 system 分区真实体积 |
+| 候选 | 需放弃的功能 | 整目录可回收 |
+|---|---|---|
+| `com.alibaba.ailabs.genie.children` | 儿童模式 | 20.14 MB |
+| `com.alibaba.ailabs.genie.albums` | 相册 / 屏保取图 | 10.56 MB |
+| 合计 | — | **30.7 MB** |
 
-> 这四项都**不能**直接删：先 `pm disable-user` 观察（语音技能是否需要、界面是否报错），
-> 确认无影响后再改镜像；且删除后需一并处理 `oat/arm/*.vdex|odex`。
+> rev5.1 曾把 `ar.monitor`（47.86 MB）与 `youku.iot`（45.06 MB）列入此表，rev5.2 已撤销：
+> 前者含唤醒与设备控制组件，后者是原厂视频实现。
 
-## 7. 明确禁止删除的组件
+## 6. 明确禁止删除
 
-| 类别 | 组件 |
-|---|---|
-| 六个受保护 App | `com.dangbei1.tvlauncher`, `bin.mt.plus`, `com.estrongs.android.pop`, `com.web1n.permissiondog`, `com.shere.assistivetouch`, `com.topjohnwu.magisk` |
-| 原厂语音/媒体/UI 核心 | `com.alibaba.ailabs.genie.smartapp`, `com.aligenie.ags`, `com.alibaba.ailabs.genie.iot`, `com.alibaba.ailabs.genie.launcher`, `com.android.systemui`, `com.android.settings`, `com.android.webview`, `com.alibaba.ailabs.genie.rtc`, `com.ailabs.youku.iot`, `com.alibaba.ailabs.genie.children`, `com.alibaba.genie.waft`, `com.alibaba.ailabs.genie.browser`, `com.alibaba.ailabs.genie.albums`, `com.alibaba.ailabs.genie.screensaver` |
-| 桌面入口背后的设备控制 | `com.alibaba.ailabs.genie.iot`（智能家居） |
-| 桌面入口背后的设置 | `com.android.settings`（S1Settings） |
-| 数据区预装（非本轮范围） | `com.alibaba.ailabs.genie.camera`、`com.alibaba.ailabs.genie.cook`、`cn.cmvideo.car.play`（卸载属设备操作） |
+- `com.alibaba.ailabs.genie.smartapp`（87.89 MB，D 类）
+- `com.aligenie.ags`（2.32 MB，D 类）
+- `com.alibaba.ailabs.genie.iot`（16.88 MB，D 类）
+- `com.alibaba.ailabs.genie.launcher`（20.48 MB，D 类）
+- `com.android.systemui`（6.19 MB，D 类）
+- `com.android.settings`（10.08 MB，D 类）
+- `com.android.webview`（52.00 MB，D 类）
+- `com.alibaba.ailabs.genie.rtc`（9.05 MB，C 类）
+- `com.ailabs.youku.iot`（45.06 MB，C 类）
+- `com.alibaba.ailabs.genie.children`（20.14 MB，C 类）
+- `com.alibaba.genie.waft`（5.56 MB，C 类）
+- `com.alibaba.ailabs.genie.browser`（12.96 MB，C 类）
+- `com.alibaba.ailabs.genie.albums`（10.56 MB，C 类）
+- `com.alibaba.ailabs.genie.screensaver`（6.67 MB，C 类）
+- `com.dangbei1.tvlauncher`（8.77）
+- `bin.mt.plus`（设备侧）
+- `com.estrongs.android.pop`（4.60）
+- `com.web1n.permissiondog`（1.37）
+- `com.shere.assistivetouch`（4.38）
+- `com.topjohnwu.magisk`（10.76）
 
-## 8. 精简收益汇总（只统计有实际 APK 体积依据的项）
+## 7. 收益汇总
 
 | 口径 | 数值 | 说明 |
 |---|---|---|
-| 第一批禁用可释放 system 空间 | **0 MB** | 禁用不改分区 |
-| 第一批禁用可减少的后台进程 | 无证据（6 项快照均无进程） | 不能说“省 RAM” |
-| 唯一低风险静态删除 | **0.04 MB**（`userdictionary`） | 需先卸载验证 |
-| 条件场景删除上限 | **123.62 MB**（4 项整目录） | 需功能确认 + 禁用验证 |
-| OTA 禁用（若授权） | 空间 **0 MB**，CPU **无实测节省值** | 现有 21.53% 是**占用**，不是可节省量 |
+| 第一批禁用释放 system 空间 | **0 MB** | 禁用不改分区 |
+| 唯一低风险静态删除 | **0.04 MB** | `userdictionary`，需卸载验证 |
+| 条件删除上限 | **30.7 MB** | 儿童 20.14 + 相册 10.56 |
+| `ar.monitor` / `youku.iot` | **0 MB** | 必须保留整包 |
+| RAM / CPU 收益 | **无证据** | 桌面相关包快照均无进程；唯一实测项是 OTA（非桌面） |
 
-## 9. 未解决 / 未确认
+## 8. 未解决
 
-1. **8 个桌面名称无对应安装包**：旭慧生活、通话、人教数字课堂、购物、音乐、闹钟、蚂蚁森林、哔哩哔哩。
-   已确认它们不是 APK（67 包中无匹配），但具体是 launcher 频道还是 smartapp 的 H5 webapp，**未取证**。
-   要坐实需读取 launcher 的频道配置（本机 `/data` 不可读）或逐个点按“应用信息”。
-2. **`/data/app` 三个预装应用的 APK 大小未知**（camera、cook、cmvideo），因为该目录对 shell 不可读。
-3. **桌面名称与包名的 label 字符串未直接读取**（未解析 resources.arsc），当前映射依据是包名语义 + launcher 组件 + 路径。
-4. **“手势”入口究竟由 GenieMonitor 还是设置页提供**：包内确有 `geniegesture` 服务，但入口归属未取证。
-5. **删除后的运行时后果**：全部未实测（本轮不做设备操作）。
+1. **旭慧生活**仍未知：launcher 云端卡片（运行时拉取）或运行时 `dumpsys` 才能确认；本地无静态命中。
+2. `com.alibaba.ailabs.genie.contacts`、`tv.danmaku.bili`、`com.alibaba.ailabs.geniemarket` 三个卡片目标**均未安装**
+   → “通话”“哔哩哔哩”“人教数字课堂”当前是死链/推广位，点击行为未实测。
+3. `/data/app` 三个 APK 的大小未知（目录不可读）。
+4. label 字符串仍未从 `resources.arsc` 直接读取；映射依据是包名 + launcher 组件 + 卡片 targetUrl。

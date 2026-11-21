@@ -1,0 +1,343 @@
+{
+ "source": "adb shell pm list packages -f (read-only)",
+ "captured_at": "2026-11-21T10:04:44+08:00",
+ "device": "192.168.1.9:5555",
+ "count": 67,
+ "packages": [
+  {
+   "package": "com.dangbei1.tvlauncher",
+   "apk_path": "/system/app/dangbei.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.providers.calendar",
+   "apk_path": "/system/priv-app/CalendarProvider/CalendarProvider.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.providers.media",
+   "apk_path": "/system/priv-app/MtkMediaProvider/MtkMediaProvider.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.iot",
+   "apk_path": "/system/app/GenieIoT/GenieIoT.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.rtc",
+   "apk_path": "/data/app/com.alibaba.ailabs.genie.rtc-iD7ciUfp9lpYBtIqAEiqeA==/base.apk",
+   "partition": "data"
+  },
+  {
+   "package": "com.alipay.arome.app",
+   "apk_path": "/system/app/AMPE/AMPE.apk",
+   "partition": "system"
+  },
+  {
+   "package": "android.auto_generated_rro__",
+   "apk_path": "/vendor/overlay/framework-res__auto_generated_rro.apk",
+   "partition": "vendor"
+  },
+  {
+   "package": "com.android.externalstorage",
+   "apk_path": "/system/priv-app/ExternalStorageProvider/ExternalStorageProvider.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.browser",
+   "apk_path": "/system/app/GenieBrowser/GenieBrowser.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.companiondevicemanager",
+   "apk_path": "/system/app/CompanionDeviceManager/CompanionDeviceManager.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.intermediary",
+   "apk_path": "/data/app/com.alibaba.ailabs.genie.intermediary-8l6RlrQNzUbivvclgDAAMg==/base.apk",
+   "partition": "data"
+  },
+  {
+   "package": "com.android.providers.downloads",
+   "apk_path": "/system/priv-app/DownloadProvider/DownloadProvider.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.smartapp",
+   "apk_path": "/system/app/smartapp/smartapp.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.ktcp.aiagent",
+   "apk_path": "/data/app/com.ktcp.aiagent-AACVSOzu0sDnDeil4pnfZA==/base.apk",
+   "partition": "data"
+  },
+  {
+   "package": "com.ailabs.youku.iot",
+   "apk_path": "/system/app/AliVideoPlayer/AliVideoPlayer.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alira.info",
+   "apk_path": "/system/app/raShow/raShow.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.defcontainer",
+   "apk_path": "/system/priv-app/DefaultContainerService/DefaultContainerService.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.pacprocessor",
+   "apk_path": "/system/app/PacProcessor/PacProcessor.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.certinstaller",
+   "apk_path": "/system/app/CertInstaller/CertInstaller.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.ar.monitor",
+   "apk_path": "/system/app/GenieMonitor/GenieMonitor.apk",
+   "partition": "system"
+  },
+  {
+   "package": "android",
+   "apk_path": "/system/framework/framework-res.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.mtp",
+   "apk_path": "/system/priv-app/MtpDocumentsProvider/MtpDocumentsProvider.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.genie.waft",
+   "apk_path": "/system/app/Waft/Waft.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.statementservice",
+   "apk_path": "/system/priv-app/StatementService/StatementService.apk",
+   "partition": "system"
+  },
+  {
+   "package": "bin.mt.plus",
+   "apk_path": "/data/app/bin.mt.plus-xXCsOzsoTVa2gpDlsM2gnw==/base.apk",
+   "partition": "data"
+  },
+  {
+   "package": "com.android.providers.settings",
+   "apk_path": "/system/priv-app/SettingsProvider/SettingsProvider.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.aliyun.uuid",
+   "apk_path": "/system/app/UUID/UUID.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.yunos.tv.provision",
+   "apk_path": "/system/priv-app/AliProvision/AliProvision.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.webview",
+   "apk_path": "/system/app/webview/webview.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.inputdevices",
+   "apk_path": "/system/priv-app/InputDevices/InputDevices.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.estrongs.android.pop",
+   "apk_path": "/system/app/ES.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.mediatek",
+   "apk_path": "/system/framework/mediatek-res/mediatek-res.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.aicare",
+   "apk_path": "/data/app/com.alibaba.ailabs.genie.aicare-zsBAkMuEJlOe5ygOiDbDbw==/base.apk",
+   "partition": "data"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.albums",
+   "apk_path": "/system/app/GenieAlbums/GenieAlbums.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.camera",
+   "apk_path": "/data/app/com.alibaba.ailabs.genie.camera-UeTOZTBElqLiL9Nv3eKTVg==/base.apk",
+   "partition": "data"
+  },
+  {
+   "package": "android.ext.shared",
+   "apk_path": "/system/app/ExtShared/ExtShared.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.cook",
+   "apk_path": "/data/app/com.alibaba.ailabs.genie.cook-Y0W26Dha2xaf2E1WkY6NpA==/base.apk",
+   "partition": "data"
+  },
+  {
+   "package": "com.android.keychain",
+   "apk_path": "/system/app/KeyChain/KeyChain.apk",
+   "partition": "system"
+  },
+  {
+   "package": "android.ext.services",
+   "apk_path": "/system/priv-app/ExtServices/ExtServices.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.web1n.permissiondog",
+   "apk_path": "/system/app/qxg.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.packageinstaller",
+   "apk_path": "/system/priv-app/PackageInstaller/PackageInstaller.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.proxyhandler",
+   "apk_path": "/system/priv-app/ProxyHandler/ProxyHandler.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.topjohnwu.magisk",
+   "apk_path": "/data/app/com.topjohnwu.magisk-EuMSu4VItaK3widDq122zw==/base.apk",
+   "partition": "data"
+  },
+  {
+   "package": "com.mediatek.thermalmanager",
+   "apk_path": "/vendor/app/MTKThermalManager/MTKThermalManager.apk",
+   "partition": "vendor"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.children",
+   "apk_path": "/system/app/GenieChildren/GenieChildren.apk",
+   "partition": "system"
+  },
+  {
+   "package": "cn.cmvideo.car.play",
+   "apk_path": "/data/app/cn.cmvideo.car.play-ykAZIDU3kgd3zxegEua-EQ==/base.apk",
+   "partition": "data"
+  },
+  {
+   "package": "com.yunos",
+   "apk_path": "/system/framework/yunos-framework-res.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.aligenie.ags",
+   "apk_path": "/system/app/AliGenieService/AliGenieService.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.shere.assistivetouch",
+   "apk_path": "/system/app/easytouch.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.storagemanager",
+   "apk_path": "/system/priv-app/StorageManager/StorageManager.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.settings",
+   "apk_path": "/system/app/S1Settings/S1Settings.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.google.android.inputmethod.pinyin",
+   "apk_path": "/vendor/app/GooglePinyinIME/GooglePinyinIME.apk",
+   "partition": "vendor"
+  },
+  {
+   "package": "com.ailabs.emode",
+   "apk_path": "/system/app/Emode/Emode.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.guide",
+   "apk_path": "/system/app/Guide/Guide.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.vpndialogs",
+   "apk_path": "/system/priv-app/VpnDialogs/VpnDialogs.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.screensaver",
+   "apk_path": "/system/app/GenieScreensaver/GenieScreensaver.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.shell",
+   "apk_path": "/system/priv-app/Shell/Shell.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.providers.userdictionary",
+   "apk_path": "/system/app/UserDictionaryProvider/UserDictionaryProvider.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.spkey",
+   "apk_path": "/system/app/AliSpKey/AliSpKey.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.location.fused",
+   "apk_path": "/system/priv-app/FusedLocation/FusedLocation.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.systemui",
+   "apk_path": "/system/app/AliSystemUI/AliSystemUI.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.bluetoothmidiservice",
+   "apk_path": "/system/app/BluetoothMidiService/BluetoothMidiService.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.osupdate",
+   "apk_path": "/system/app/Osupdate/Osupdate.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.bluetooth",
+   "apk_path": "/system/app/MtkBluetooth/MtkBluetooth.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.providers.contacts",
+   "apk_path": "/system/priv-app/ContactsProvider/ContactsProvider.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.android.captiveportallogin",
+   "apk_path": "/system/app/CaptivePortalLogin/CaptivePortalLogin.apk",
+   "partition": "system"
+  },
+  {
+   "package": "com.alibaba.ailabs.genie.launcher",
+   "apk_path": "/system/app/GenieLauncher/GenieLauncher.apk",
+   "partition": "system"
+  }
+ ]
+}

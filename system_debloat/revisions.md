@@ -5,9 +5,21 @@
 - 修订触发：rev3 = ① 操作者指定六个 App 必须保留；② rev2 遗留的三个 P2 问题。
   rev3.1 = rev3 审查的三项小范围修订。rev4 = 10 个 B 类候选收益/风险重估。
   rev4.1 = OTA 六小时只读观测与证据表述修正。rev5 = B 类筛选七问 + A 类静态候选扩展 + 批次划分。
-  rev5.1 = 桌面 18 个入口专项排查 + system 删除候选扩展
+  rev5.1 = 桌面 18 个入口专项排查。rev5.2 = 候选冲突修正 + 四个大体积组件级复核
 - 本轮**未执行**任何 `pm disable-user` / `pm enable` / `pm uninstall` / 镜像或 boot 写操作；
   设备 `pm list packages -d` 仍为空
+
+## 0000. rev5.2：冲突修正与大体积复核（2026-11-21）
+
+| 项 | 内容 |
+|---|---|
+| 新增文件 | `big4_component_review.md`（四个大体积候选的组件级复核、全 inventory 空间 Top15）、`desktop_package_index.json`（只读 `pm list packages -f` 快照：67 包 = system 55 + data 9 + vendor 3）、`tools/mkdocs9.py` |
+| 修正 1：GenieMonitor 结论统一 | `com.alibaba.ailabs.ar.monitor` 同包含 `VisionWakeUpService`（唤醒）、`AVEControlProvider`（设备控制，smartapp 引用）、`GenieGestureService`、`CMCCMediaService`/`AwesomeService` → **必须保留整包**；已同步到 `summary_stats.json:D_forbidden`、`a_class_candidates.md`、`pruning_priority.md`、`desktop_app_audit.md`，并从“验证禁用后删除”名单撤销 |
+| 修正 2：桌面未知入口 | 8 个里 **7 个坐实**：哔哩哔哩=`bilibili://tv.danmaku.bili`（未安装）、购物=webview→淘宝/天猫 H5、人教=MINIAPP→应用市场、蚂蚁森林=`waft://open?code=ant_forest`、通话=`genie://…genie.contacts`（未安装）、音乐=launcher 音乐频道、闹钟=smartapp 闹钟域；**仅旭慧生活仍未知**（本地无任何静态命中） |
+| 修正 3：独立 APK 判定 | 改为按“包名是否在已安装集合”判定：launcher 频道/小程序/死链卡片一律记“否”，不再出现“未知＝有 APK”的逻辑错误 |
+| 修正 4：版本元数据 | `summary_stats.json:revision.current` 更新为 `rev5.2 (2026-11-21)`，`screening.rev` = `rev5.2`，并新增 `big4_final_verdict` / `component_level_candidates` / `monitor_components` / `desktop_unknown_remaining` |
+| 空间口径 | 四个大体积候选整目录 123.62 MB，其中 **93 MB 必须保留**，实际可讨论 **30.70 MB**（儿童 20.14 + 相册 10.56） |
+| 测试 | `test_desktop_audit` 重写为 19 条（跨文档一致性、卡片证据、独立 APK 逻辑、空间口径、版本元数据） |
 
 ## 000. rev5.1：桌面预装应用专项（2026-11-21）
 

@@ -214,8 +214,10 @@ VERIFY_FIRST = [  # 先禁用观察，确认无影响后才谈删除
 
 FORBIDDEN_NOTE = {
     'com.alibaba.ailabs.ar.monitor':
-        '47.86 MB（`app/GenieMonitor`）：服务含 `geniegesture` / `genieallinone` / CMCC 媒体，'
-        '被 smartapp 引用且 framework 命中；**手势/体感是否在用未验证** → 只能作为“待验证禁用”候选，不得静态删除',
+        '47.86 MB（`app/GenieMonitor`）：同包内含 `VisionWakeUpService`（唤醒链路）、`AVEControlProvider`'
+        '（设备控制，smartapp 引用）、`GenieGestureService`（手势）、`CMCCMediaService`/`AwesomeService`，'
+        '**未证明可分离 → 必须保留整包**，不得删除/禁用；仅可评估 `GenieGestureService` 组件级禁用（不省空间）。'
+        '详见 big4_component_review.md',
     'com.alibaba.ailabs.genie.aicare':
         '18.50 MB：`/data/app` 覆盖的系统 prebuilt（4.0.26→4.0.62），删除会让包退化为普通应用 → 不删',
     'com.alipay.arome.app':
@@ -237,6 +239,84 @@ PROTECTED_SIX = [
 ]
 
 
+# ---------------------------------------------------------------- rev5.2: GenieMonitor components
+# Every entry comes from the APK manifest (read-only static parse) plus dependency_edges.csv.
+MONITOR_COMPONENTS = [
+    dict(name='GenieGestureService', kind='service', exported=True,
+         action='android.intent.action.geniegesture',
+         role='手势/体感识别服务（桌面“手势”入口相关）',
+         coupling='独立 action，但同包内与 AVE/Awesome 共用进程与数据目录',
+         verdict='若确认手势不用，可评估**组件级禁用**；不能整包删除'),
+    dict(name='VisionWakeUpService', kind='service', exported=True,
+         action='android.intent.action.genieWakeUpService',
+         role='视觉唤醒服务（唤醒链路）',
+         coupling='属原厂唤醒/语音链路，受保护',
+         verdict='**必须保留**'),
+    dict(name='CMCCMediaService', kind='service', exported=True,
+         action='android.intent.action.CMCCMediaService',
+         role='CMCC 媒体服务（运营商内容）',
+         coupling='独立 action，但与 AVE 控制 Provider 同包；是否与语音技能联动未验证',
+         verdict='证据不足，保留'),
+    dict(name='AwesomeService', kind='service', exported=True,
+         action='android.intent.action.genieallinone',
+         role='“all in one”聚合服务（历史兼容入口）',
+         coupling='被 smartapp 以 controlProvider 关联的同一包',
+         verdict='证据不足，保留'),
+    dict(name='AVEControlProvider', kind='provider', exported=True,
+         action='com.alibaba.ailabs.ave.controlProvider',
+         role='AVE 控制 Provider（设备控制面）',
+         coupling='smartapp 通过 controlProvider 访问；framework 有包名引用',
+         verdict='**必须保留**（设备控制/语音联动）'),
+    dict(name='AiCareBizService / AnalyticsService / CameraSampleActivity / SecondInstaller',
+         kind='service/activity/provider', exported='mixed', action='—',
+         role='看护业务、统计、相机示例页、IPC 安装器',
+         coupling='同包附属能力',
+         verdict='随整包保留'),
+]
+
+BIG4_VERDICT = {
+    'com.alibaba.ailabs.ar.monitor': dict(
+        verdict='**必须保留整包**（不得整包删除/禁用）',
+        reason='同包内含 VisionWakeUpService（唤醒链路，受保护）+ AVEControlProvider（设备控制，smartapp 引用）'
+               '+ CMCCMediaService/AwesomeService（解耦未证明）；组件不可分离即整包保留',
+        reclaimable_mb=0.0,
+        component_option='仅 `GenieGestureService` 存在组件级禁用的理论可能，需先证明手势不用且不影响 AVE/Awesome；本机未验证',
+    ),
+    'com.ailabs.youku.iot': dict(
+        verdict='**必须保留**（原厂视频播放实现）',
+        reason='被 smartapp（CommonPlayerActivity / NewsPlayerActivity）、screensaver 以组件引用；'
+               '含 PlayerProxyService（m3u8 代理）、PassportActivity（账号）等播放链路组件；'
+               '桌面“优酷”只是入口，不等于整包可删',
+        reclaimable_mb=0.0,
+        component_option='无：播放链路是整包核心，拆组件会破坏视频能力',
+    ),
+    'com.alibaba.ailabs.genie.children': dict(
+        verdict='**待功能确认后才可整包禁用；不得直接删除**',
+        reason='system uid、19 个 Activity、FORCE_STOP/KILL_BACKGROUND/INTERACT_ACROSS_USERS 权限；'
+               '被 smartapp 以 16 处组件引用（儿童模式技能），与设置/AliSystemUI 无直接引用但共用 system uid',
+        reclaimable_mb=20.14,
+        component_option='组件级禁用无空间收益（空间只能靠删整目录），因此只有“功能确认不用 → 整包禁用 → 观察 → 再谈删除”一条路',
+    ),
+    'com.alibaba.ailabs.genie.albums': dict(
+        verdict='**待功能确认后才可整包禁用；不得直接删除**',
+        reason='system uid；被 screensaver 以组件引用（屏保取图）；MainActivity 为桌面“相册”入口；'
+               '语音“看照片”类技能可能经由 smartapp 调用 AlbumContentProvider',
+        reclaimable_mb=10.56,
+        component_option='同上：组件级禁用不释放空间',
+    ),
+}
+
+# 组件级禁用的理论候选（均未验证，不进执行清单）
+COMPONENT_LEVEL = [
+    dict(pkg='com.alibaba.ailabs.ar.monitor', component='GenieGestureService',
+         what='手势识别服务', why='唯一看似可独立关闭的入口', blocked_by='唤醒/设备控制同包，解耦未证明'),
+    dict(pkg='com.alibaba.ailabs.genie.children', component='LogService / DataCenterService',
+         what='日志与数据中心', why='后台上报', blocked_by='同包核心逻辑依赖，且组件级禁用不省空间'),
+]
+
+DESKTOP_STILL_UNKNOWN = ['旭慧生活']
+
+
 def answer(pkg):
     return B_ANSWERS.get(pkg)
 
@@ -254,7 +334,7 @@ def batch_of(pkg):
 
 
 def screening_fields(pkg):
-    """Fields merged into app_inventory.json / .csv (rev5)."""
+    """Fields merged into app_inventory.json / .csv (rev5.2)."""
     if pkg in B_ANSWERS:
         return {'screening_tier': batch_of(pkg),
                 'screening_batch': {1: '第一批低风险禁用', 2: '第二批待验证禁用'}.get(batch_of(pkg), ''),

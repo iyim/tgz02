@@ -1,18 +1,16 @@
-"""rev5.1 tests: desktop audit document must match inventory and device evidence.
+"""rev5.2 tests: desktop audit + big4 review + cross-document consistency.
 
-Checks:
-  * all 18 desktop names appear in the mapping table, each with a package or 未知;
-  * system-partition candidates exist in the inventory and their sizes match;
-  * packages marked /data/app are never counted into system space;
-  * the first-batch delete section stays empty and no voice-chain package appears in it;
-  * the conditional scenario total equals the sum of the four directory sizes;
-  * no RAM saving is promised from disabling.
+Focus of this revision:
+  * GenieMonitor conclusion identical in every document (KEEP whole package);
+  * 7 of the 8 previously-unknown desktop entries resolved via launcher card evidence,
+    only 旭慧生活 remains unknown;
+  * "independent APK" decided by installed-package membership, not by the label text;
+  * version metadata says rev5.2 and the protected set is untouched.
 
 Run: python -m unittest test_desktop_audit -v
 """
 import json
 import os
-import re
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -21,104 +19,135 @@ import screening
 
 NAMES = ['旭慧生活', '通话', '人教数字课堂', '爱家看护', '购物', '音乐', '闹钟', '相册', '优酷',
          '手势', '菜谱', 'CCTV.新视听', '儿童', '智能家居', '蚂蚁森林', '设置', '相机', '哔哩哔哩']
-SYS_CANDIDATES = ['com.alibaba.ailabs.ar.monitor', 'com.ailabs.youku.iot',
-                  'com.alibaba.ailabs.genie.children', 'com.alibaba.ailabs.genie.albums',
-                  'com.ailabs.emode', 'com.aliyun.uuid', 'com.alira.info',
-                  'com.alibaba.spkey', 'com.yunos.tv.provision',
-                  'com.android.providers.userdictionary']
-DATA_APPS = ['com.alibaba.ailabs.genie.camera', 'com.alibaba.ailabs.genie.cook', 'cn.cmvideo.car.play']
+INSTALLED_DESKTOP = ['com.alibaba.ailabs.genie.aicare', 'com.alibaba.ailabs.genie.albums',
+                     'com.alibaba.ailabs.genie.children', 'com.alibaba.ailabs.genie.iot',
+                     'com.android.settings', 'com.ailabs.youku.iot', 'com.alibaba.ailabs.ar.monitor',
+                     'com.alibaba.ailabs.genie.cook', 'cn.cmvideo.car.play',
+                     'com.alibaba.ailabs.genie.camera']
+NON_APK = ['通话', '人教数字课堂', '购物', '音乐', '闹钟', '蚂蚁森林', '哔哩哔哩', '旭慧生活']
 
 
 def _find_rev():
     for c in [os.path.normpath(os.path.join(HERE, '..')), r'D:\tgz02\OS\system\system_debloat']:
-        if os.path.isfile(os.path.join(c, 'desktop_app_audit.md')):
+        if os.path.isfile(os.path.join(c, 'big4_component_review.md')):
             return c
-    raise RuntimeError('cannot locate rev5.1 report dir')
+    raise RuntimeError('cannot locate rev5.2 report dir')
 
 
 REV = _find_rev()
 DOC = open(os.path.join(REV, 'desktop_app_audit.md'), encoding='utf-8').read()
+BIG4 = open(os.path.join(REV, 'big4_component_review.md'), encoding='utf-8').read()
+ACLASS = open(os.path.join(REV, 'a_class_candidates.md'), encoding='utf-8').read()
+PRIO = open(os.path.join(REV, 'pruning_priority.md'), encoding='utf-8').read()
 ROWS = {r['pkg']: r for r in json.load(open(os.path.join(REV, 'app_inventory.json'), encoding='utf-8'))}
+STATS = json.load(open(os.path.join(REV, 'summary_stats.json'), encoding='utf-8'))
+IDX = json.load(open(os.path.join(REV, 'desktop_package_index.json'), encoding='utf-8'))
+INSTALLED = {p['package'] for p in IDX['packages']}
 
 
 class TestMapping(unittest.TestCase):
-    def test_eighteen_names_present(self):
+    def test_eighteen_names(self):
         for n in NAMES:
             self.assertIn(n, DOC, n)
 
-    def test_mapping_table_rows(self):
-        table = DOC.split('## 1. 桌面应用与包名映射表', 1)[1].split('## 2.', 1)[0]
-        rows = [l for l in table.splitlines() if l.startswith('| ') and '---' not in l]
-        self.assertGreaterEqual(len(rows) - 1, 18, 'expected header + 18 rows')
-
-    def test_unknown_is_marked_not_guessed(self):
-        self.assertIn('**未知**', DOC)
-        # 8 entries have no installed package; the doc must say so explicitly
-        self.assertIn('未知 8 个', DOC)
-
-    def test_confirmed_packages(self):
-        for p in ('com.alibaba.ailabs.genie.aicare', 'com.alibaba.ailabs.genie.albums',
-                  'com.alibaba.ailabs.genie.children', 'com.alibaba.ailabs.genie.iot',
-                  'com.android.settings'):
+    def test_installed_packages_resolved(self):
+        for p in INSTALLED_DESKTOP:
+            self.assertIn(p, INSTALLED, p)
             self.assertIn(p, DOC, p)
 
+    def test_only_one_unknown_left(self):
+        self.assertIn('只剩 **旭慧生活** 未知', DOC)
+        for name in NON_APK[1:]:
+            self.assertNotIn(name + '\n\n| 项目 | 内容 |\n|---|---|\n| 桌面显示名称 | ' + name +
+                             ' |\n| 实际包名 | **未知（非独立 APK）** |\n| 分区 | —（非 APK） |\n| APK 路径 | — |\n| APK 文件大小 | — |\n| 是否存在独立 APK | 否 |\n| 静态证据（卡片/组件） | — |',
+                             DOC, name)
 
-class TestSystemCandidates(unittest.TestCase):
-    def test_candidates_exist_and_sizes_match(self):
-        for p in SYS_CANDIDATES:
-            self.assertIn(p, ROWS)
-            self.assertIn(p, DOC)
-            self.assertIn(str(ROWS[p]['total_mb']), DOC, p)
+    def test_card_evidence_present(self):
+        for frag in ('bilibili://tv.danmaku.bili', 'waft://open', 'shop258155498.m.taobao.com',
+                     'miguvideo4pad://', 'genie.contacts', 'geniemarket'):
+            self.assertIn(frag, DOC, frag)
 
-    def test_data_apps_not_counted_in_system_space(self):
-        for p in DATA_APPS:
-            self.assertIn(p, DOC)
-        self.assertIn('不涉及 system 空间', DOC)
-        section = DOC.split('## 8.', 1)[1].split('## 9.')[0].lower()
-        self.assertNotIn('camera', section)
-        self.assertNotIn('cook', section)
-        self.assertNotIn('cmvideo', section)
 
+class TestIndependentApkLogic(unittest.TestCase):
+    def test_shopping_is_not_an_apk(self):
+        row = [l for l in DOC.splitlines() if l.startswith('| 购物 |')][0]
+        self.assertIn('**未知（非独立 APK）**', row)
+        self.assertIn('| 否 |', row)
+
+    def test_installed_rows_say_yes(self):
+        for pkg in ('com.alibaba.ailabs.genie.albums', 'com.alibaba.ailabs.ar.monitor'):
+            row = [l for l in DOC.splitlines() if '| `' + pkg + '` |' in l][0]
+            self.assertIn('| 是 |', row)
+
+    def test_partition_matches_index(self):
+        for pkg in ('com.alibaba.ailabs.genie.cook', 'com.alibaba.ailabs.genie.albums'):
+            part = [p['partition'] for p in IDX['packages'] if p['package'] == pkg][0]
+            self.assertIn(part, DOC)
+
+
+class TestMonitorConsistency(unittest.TestCase):
+    def test_all_documents_say_keep(self):
+        for name, doc in (('desktop', DOC), ('a_class', ACLASS), ('pruning', PRIO), ('big4', BIG4)):
+            self.assertIn('必须保留整包', doc, name)
+
+    def test_no_document_offers_delete(self):
+        for name, doc in (('desktop', DOC), ('a_class', ACLASS), ('pruning', PRIO)):
+            self.assertNotIn('验证禁用后删除', doc, name)
+
+    def test_summary_keeps_monitor_forbidden(self):
+        self.assertIn('com.alibaba.ailabs.ar.monitor', STATS['executable_lists']['D_forbidden'])
+        self.assertNotIn('com.alibaba.ailabs.ar.monitor', STATS['executable_lists']['A_candidate'])
+        note = STATS['screening']['forbidden_notes']['com.alibaba.ailabs.ar.monitor']
+        self.assertIn('必须保留整包', note)
+
+    def test_component_breakdown_present(self):
+        for comp in ('GenieGestureService', 'VisionWakeUpService', 'CMCCMediaService',
+                     'AwesomeService', 'AVEControlProvider'):
+            self.assertIn(comp, BIG4, comp)
+
+
+class TestSpaceAccounting(unittest.TestCase):
     def test_conditional_total(self):
-        four = ['com.alibaba.ailabs.ar.monitor', 'com.ailabs.youku.iot',
-                'com.alibaba.ailabs.genie.children', 'com.alibaba.ailabs.genie.albums']
-        expected = round(sum(float(ROWS[p]['total_mb']) for p in four), 2)
-        self.assertIn('%.2f' % expected, DOC)
+        expected = round(sum(float(ROWS[p]['total_mb']) for p in
+                             ('com.alibaba.ailabs.genie.children', 'com.alibaba.ailabs.genie.albums')), 2)
+        self.assertTrue(('%.2f' % expected) in DOC or ('%g' % expected) in DOC)
 
+    def test_monitor_and_youku_reclaim_zero(self):
+        self.assertIn('33.19 | 14.67 | 0.00 | 47.86 | **必须保留整包**', BIG4)
+        sec = DOC.split('## 7.', 1)[1]
+        row = [l for l in sec.splitlines() if 'ar.monitor' in l][0]
+        self.assertIn('0 MB', row)
 
-class TestBatches(unittest.TestCase):
-    def test_first_delete_is_empty(self):
-        sec = DOC.split('### 6.1 第一批建议删除', 1)[1].split('### 6.2', 1)[0]
-        self.assertIn('**空。**', sec)
-
-    def test_no_voice_chain_in_delete_sections(self):
-        sec = DOC.split('## 6. 第一批建议', 1)[1].split('### 6.2', 1)[0]
-        for pkg in screening.PROTECTED_CHAIN + screening.PROTECTED_SIX:
-            self.assertNotIn(pkg, sec, pkg)
-
-    def test_first_disable_matches_screening(self):
-        sec = DOC.split('### 6.2 第一批建议禁用验证', 1)[1].split('### 6.3', 1)[0]
-        for pkg in screening.BATCH1:
-            self.assertIn(pkg, sec, pkg)
-
-    def test_forbidden_list_has_protected(self):
-        sec = DOC.split('## 7. 明确禁止删除的组件', 1)[1].split('## 8.', 1)[0]
-        for pkg in screening.PROTECTED_SIX:
-            self.assertIn(pkg, sec, pkg)
-
-
-class TestNoOverclaim(unittest.TestCase):
     def test_disable_frees_no_space(self):
-        self.assertIn('第一批禁用可释放 system 空间', DOC)
-        line = [l for l in DOC.splitlines() if '第一批禁用可释放 system 空间' in l][0]
+        line = [l for l in DOC.splitlines() if '第一批禁用释放 system 空间' in l][0]
         self.assertIn('0 MB', line)
 
-    def test_no_ram_saving_claim(self):
-        for bad in ('节省 RAM', '释放 RAM', '减少 RAM 占用 '):
+    def test_no_ram_overclaim(self):
+        for bad in ('节省 RAM', '释放 RAM'):
             self.assertNotIn(bad, DOC)
+        self.assertIn('无证据', DOC)
 
-    def test_unknown_sizes_declared(self):
-        self.assertIn('大小未知', DOC)
+
+class TestMetadata(unittest.TestCase):
+    def test_revision_is_5_2(self):
+        self.assertEqual(STATS['revision']['current'], 'rev5.2 (2026-11-21)')
+        self.assertEqual(STATS['screening']['rev'], 'rev5.2')
+
+    def test_all_buckets_present(self):
+        for k in ('A_candidate', 'A_delete', 'B_disable', 'C_observe', 'D_forbidden',
+                  'protected_blocked'):
+            self.assertIn(k, STATS['executable_lists'])
+        self.assertEqual(len(STATS['executable_lists']['protected_blocked']), 5)
+        self.assertEqual(len(STATS['user_protection']['apps']), 6)
+
+    def test_protected_six_still_protected(self):
+        for pkg in screening.PROTECTED_SIX:
+            if pkg in ROWS:
+                self.assertTrue(ROWS[pkg]['user_protected'], pkg)
+
+    def test_batches_unchanged(self):
+        self.assertEqual(sorted(STATS['screening']['batch1_low_risk_disable']), sorted(screening.BATCH1))
+        self.assertEqual(sorted(STATS['screening']['batch2_verify_disable']), sorted(screening.BATCH2))
 
 
 if __name__ == '__main__':

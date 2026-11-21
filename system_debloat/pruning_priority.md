@@ -110,7 +110,7 @@
 
 | 包名 | 合计 MB | 原因 |
 |---|---|---|
-| `com.alibaba.ailabs.ar.monitor` | 47.86 | 47.86 MB（`app/GenieMonitor`）：服务含 `geniegesture` / `genieallinone` / CMCC 媒体，被 smartapp 引用且 framework 命中；**手势/体感是否在用未验证** → 只能作为“待验证禁用”候选，不得静态删除 |
+| `com.alibaba.ailabs.ar.monitor` | 47.86 | 47.86 MB（`app/GenieMonitor`）：同包内含 `VisionWakeUpService`（唤醒链路）、`AVEControlProvider`（设备控制，smartapp 引用）、`GenieGestureService`（手势）、`CMCCMediaService`/`AwesomeService`，**未证明可分离 → 必须保留整包**，不得删除/禁用；仅可评估 `GenieGestureService` 组件级禁用（不省空间）。详见 big4_component_review.md |
 | `com.alibaba.ailabs.genie.aicare` | 18.50 | 18.50 MB：`/data/app` 覆盖的系统 prebuilt（4.0.26→4.0.62），删除会让包退化为普通应用 → 不删 |
 | `com.alipay.arome.app` | 87.18 | 87.18 MB：12 处 app 级引用（小程序/H5 容器），禁用它等于关闭小程序能力 → 需产品决策 |
 

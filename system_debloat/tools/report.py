@@ -400,14 +400,17 @@ summary = {
                      'lib_mb': round(v['lib'], 2), 'oat_mb': round(v['oat'], 2),
                      'pss_sum_kb': v['pss']} for k, v in sorted(by_cls.items())},
     'revision': {
-        'current': 'rev3 (2026-11-20)',
-        'basis': 'operator instruction: six apps are protected; three rev2 P2 items',
+        'current': 'rev5.2 (2026-11-21)',
+        'basis': 'rev5.1 review: unify GenieMonitor conclusion, resolve 8 unknown desktop entries, '
+                 'fix independent-APK logic, re-rank large candidates by real space',
         'changes': [
-            'user protection added for 6 apps (dangbei, MT Manager, ES, permissiondog, EasyTouch, Magisk)',
-            'Magisk related components enumerated from image + read-only device evidence',
-            'rev2 A wording replaced by "A 类候选：... 尚未完成真机动态验证"',
-            'filters.is_platform_authority(): boundary-aware prefix matching (com.android.settingshelper.* no longer platform)',
-            'legacy directory references removed from all reports',
+            'GenieMonitor (com.alibaba.ailabs.ar.monitor) unified as KEEP: contains VisionWakeUpService '
+            '(wake-up chain) + CMCC media + gesture + AVEControlProvider; whole-package removal withdrawn everywhere',
+            'desktop entries: 7 of 8 resolved via launcher card evidence (bilibili/taobao/tmall/waft/ampe/'
+            'contacts targets); 旭慧生活 remains unknown (no static hit)',
+            'desktop_app_audit: independent APK is decided by "is an installed package", not by the label text',
+            'big4 component review added: ar.monitor / youku.iot / children / albums with per-component analysis',
+            'screening batches unchanged for B-class; conditional deletion scenarios now exclude ar.monitor',
         ],
         'previous': 'rev2 (2026-11-20)',
     },
@@ -428,7 +431,11 @@ summary = {
     },
     'executable_lists': exec_lists,
     'screening': {
-        'rev': 'rev5',
+        'rev': 'rev5.2',
+        'big4_final_verdict': screening.BIG4_VERDICT,
+        'component_level_candidates': screening.COMPONENT_LEVEL,
+        'monitor_components': screening.MONITOR_COMPONENTS,
+        'desktop_unknown_remaining': screening.DESKTOP_STILL_UNKNOWN,
         'batch1_low_risk_disable': screening.BATCH1,
         'batch2_verify_disable': screening.BATCH2,
         'static_delete_candidates': screening.STATIC_DELETE,

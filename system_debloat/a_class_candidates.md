@@ -107,13 +107,17 @@ waft、albums、screensaver、browser），要么是工厂/开通类（emode、p
 
 | 包名 / 路径 | 合计 MB | 为什么不删 |
 |---|---|---|
-| `com.alibaba.ailabs.ar.monitor` / `app/GenieMonitor` | 47.86 |
-| `com.alibaba.ailabs.genie.aicare` / `app/GenieAicare` | 18.50 |
-| `com.alipay.arome.app` / `app/arome` | 87.18 |
+| `com.alibaba.ailabs.ar.monitor` / `app/GenieMonitor` | 47.86 | 见下（rev5.2 撤销删除候选身份） |
+| `com.alibaba.ailabs.genie.aicare` / `app/GenieAicare` | 18.50 | /data/app 覆盖，删 prebuilt 会退化 |
+| `com.alipay.arome.app` / `app/AMPE` | 87.18 | 12 处 app 级引用，禁用＝关闭小程序/H5 |
 
-- **ar.monitor（GenieMonitor，47.86 MB）**：服务含 `geniegesture`（`android.intent.action.geniegesture`）、
-  `genieallinone`、`CMCCMediaService`，Provider `AVEControlProvider` 被 smartapp 引用，framework 包名命中 1 处。
-  快照无进程。**手势/体感是否在用未验证** → 只能作为“待验证禁用”候选，不得静态删除。
+- **ar.monitor（GenieMonitor，47.86 MB）——rev5.2 统一为“必须保留整包”**：
+  同包内含 `VisionWakeUpService`（`android.intent.action.genieWakeUpService`，**唤醒链路**）、
+  `AVEControlProvider`（`com.alibaba.ailabs.ave.controlProvider`，被 smartapp 引用，**设备控制**）、
+  `GenieGestureService`（手势）、`CMCCMediaService`/`AwesomeService`（媒体/聚合）。
+  四种能力同包同进程，**未证明可分离** → 不得整包删除，也不得整包禁用；
+  唯一理论上的精简点是 `GenieGestureService` 的组件级禁用（需实测且不省空间）。
+  详见 [big4_component_review.md](big4_component_review.md)。
 - **GenieAicare（18.50 MB）**：设备上由 `/data/app` 覆盖（4.0.26 → 4.0.62），删系统内 prebuilt 会让包退化为
   普通数据区应用（失去 SYSTEM flag 与默认权限授予）→ 不删。
 - **AMPE（arome，87.18 MB）**：12 处 app 级引用（`genie.webapps.START/INIT`、`GwaReceiver`），
