@@ -14,6 +14,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import filters
 import protection
+import screening
 
 # Class labels are intentionally verbose: rev3 / P2-2 requires that an A class never
 # reads as "already verified safe to delete".
@@ -309,6 +310,7 @@ for e in apps:
         'protection_reason': protection.protection_reason(pkg),
         'exec_action': (PROTECTED_EXEC_ACTION if protection.is_user_protected(pkg)
                         else EXEC_ACTION[c['cls']]),
+        **screening.screening_fields(pkg),
         'apk_mb': fmt_mb(e['breakdown']['apk']), 'lib_mb': fmt_mb(e['breakdown']['lib']),
         'oat_mb': fmt_mb(e['breakdown']['odex'] + e['breakdown']['vdex'] + e['breakdown']['oat_other']),
         'total_mb': fmt_mb(e['total_bytes']), 'comps': comps,
@@ -338,14 +340,17 @@ with open(os.path.join(DOC, 'app_inventory.csv'), 'w', newline='', encoding='utf
     w.writerow(['dir', 'package', 'version', 'class', 'class_label', 'user_protected',
                 'protection_reason', 'exec_action', 'apk_MB', 'lib_MB', 'oat_MB', 'total_MB',
                 'components', 'persistent', 'sharedUserId', 'minSdk', 'targetSdk', 'device_path',
-                'pss_kb', 'cpu_pct', 'ref_strong', 'ref_action', 'ref_amb', 'evidence', 'note'])
+                'pss_kb', 'cpu_pct', 'ref_strong', 'ref_action', 'ref_amb', 'evidence', 'note',
+                'screening_tier', 'screening_batch', 'screening_note'])
     for r in rows:
         w.writerow([r['dir'], r['pkg'], r['version'], r['cls'], r['class_label'],
                     r['user_protected'], r['protection_reason'] or '', r['exec_action'],
                     r['apk_mb'], r['lib_mb'], r['oat_mb'],
                     r['total_mb'], r['comps'], r['persistent'], r['uid'], r['min_sdk'], r['target'],
                     r['device_path'], r['pss_kb'], r['cpu'], r['ref_strong'], r['ref_action'],
-                    r['ref_amb'], r['ev'], r['note']])
+                    r['ref_amb'], r['ev'], r['note'],
+                    r['screening_tier'] if r['screening_tier'] is not None else '',
+                    r['screening_batch'], r['screening_note']])
 
 json.dump(rows, open(os.path.join(DOC, 'app_inventory.json'), 'w', encoding='utf-8'),
           indent=1, ensure_ascii=False)
@@ -422,6 +427,18 @@ summary = {
         'magisk_forbidden_actions': protection.MAGISK_FORBIDDEN_ACTIONS,
     },
     'executable_lists': exec_lists,
+    'screening': {
+        'rev': 'rev5',
+        'batch1_low_risk_disable': screening.BATCH1,
+        'batch2_verify_disable': screening.BATCH2,
+        'static_delete_candidates': screening.STATIC_DELETE,
+        'disable_first_then_review': screening.VERIFY_FIRST,
+        'extended_static_candidates': sorted(screening.STATIC_CANDIDATES),
+        'b_class_answers': sorted(screening.B_ANSWERS),
+        'forbidden_notes': screening.FORBIDDEN_NOTE,
+        'rule': '禁用不释放 system 空间；APK 体积不等于 RAM；无引用不等于无用；'
+                '六个受保护 App 与语音链路不在精简范围',
+    },
     'memory_snapshot': {
         'source': 'read-only: adb shell dumpsys meminfo + /proc/meminfo',
         'primary_snapshot': '2026-11-20T16:03:19+08:00 (dumpsys Uptime 236883195 ms)',

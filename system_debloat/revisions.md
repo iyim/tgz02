@@ -1,12 +1,26 @@
-# 修订记录（rev3 / rev3.1 / rev4）
+# 修订记录（rev3 / rev3.1 / rev4 / rev4.1 / rev5）
 
-- 修订时间：2026-11-20（rev4.1 观测跨至 2026-11-21 02:00）
+- 修订时间：2026-11-21（rev4.1 观测窗口 2026-11-20 20:00 → 2026-11-21 02:00）
 - 修订对象：本目录（`system_debloat/`）下全部报告与机器可读数据；不涉及 `system` 镜像、APK、T5 代码或设备分区
 - 修订触发：rev3 = ① 操作者指定六个 App 必须保留；② rev2 遗留的三个 P2 问题。
-  rev3.1 = rev3 审查的三项小范围修订（A 类映射、README 旧实验顺序、保护期限措辞）。
-  rev4 = 对剩余 10 个 B 类候选做收益/风险重估。rev4.1 = OTA 六小时只读观测与证据表述修正
+  rev3.1 = rev3 审查的三项小范围修订。rev4 = 10 个 B 类候选收益/风险重估。
+  rev4.1 = OTA 六小时只读观测与证据表述修正。rev5 = B 类筛选七问 + A 类静态候选扩展 + 批次划分
 - 本轮**未执行**任何 `pm disable-user` / `pm enable` / `pm uninstall` / 镜像或 boot 写操作；
   设备 `pm list packages -d` 仍为空
+
+## 00. rev5：筛选与批次（2026-11-21）
+
+| 项 | 内容 |
+|---|---|
+| 新增文件 | `pruning_priority.md`（统一优先级表 + 批次 + 禁止清单 + 下一阶段顺序）、`a_class_candidates.md`（扩展 A 类静态候选逐项分析）、`tools/screening.py`（筛选数据与批次）、`tools/mkdocs7.py`（两文件生成器）、`tools/test_screening.py`（18 条测试） |
+| inventory 变更 | `app_inventory.json` / `.csv` 新增 `screening_tier` / `screening_batch` / `screening_note` 三个字段；`summary_stats.json` 新增 `screening` 块；**技术分类 A/B/C/D 未改动**（仍是 A=1、B=13、C=20、D=21） |
+| B 类七问 | `b_class_priority_analysis.md` 新增 §0.1：10 个候选逐项回答“是否系统必要 / 原厂与 Framework 引用 / 其他依赖 / 禁用影响 / 可否单独 pm 禁用 / 是否优先 / 风险与证据” |
+| 第一批 | 6 个平台小组件：`statementservice`、`bluetoothmidiservice`、`pacprocessor`、`vpndialogs`、`captiveportallogin`、`companiondevicemanager`（无进程、无 app 级引用、功能独立、风险低；**收益为 0，仅减少潜在拉起面**） |
+| 第二批 | `osupdate`（唯一有实测占用：CPU 21.53% / PSS 16,557 kB，但风险最高）、`guide`、`storagemanager`、`mtp` |
+| 静态删除候选 | `com.android.providers.userdictionary`（0.04 MB，AOSP 词典 Provider）——**唯一**给出静态删除建议的项 |
+| 先禁用后评估 | `com.alibaba.spkey`、`com.alira.info`、`com.aliyun.uuid`、`com.yunos.tv.provision`（均 0 app 级引用，但用途不明） |
+| 明令不删 | `ar.monitor`（47.86 MB，手势/CMCC 服务）、`GenieAicare`（/data/app 覆盖）、`arome` AMPE（12 处引用）；语音链路 14 个包、六个受保护 App |
+| 诚实结论 | 本镜像中**没有**“明显无用的厂商推广/演示 App”；能进静态删除验证的只有 0.04 MB 的一项，其余要么用途不明，要么挂在语音/媒体链路上 |
 
 ## 0. rev4.1：OTA 只读观测与证据修正（2026-11-21）
 

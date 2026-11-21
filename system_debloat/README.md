@@ -237,6 +237,8 @@ Magisk 作为**独立保护对象**处理。下表只列**能从当前镜像与�
 | [app_removal_recommendations.md](app_removal_recommendations.md) | **用户保护总表** + A/B/C/D 逐项建议与操作方式 |
 | [b_class_priority_analysis.md](b_class_priority_analysis.md) | **rev4：10 个 B 类候选的收益/风险排序 + OTA 专项 + 验证顺序与回退** |
 | [ota_observation_report.md](ota_observation_report.md) | **rev4.1：OTA 六小时只读观测（CPU 21.53% 持续负载、PSS 中位 16,557 kB、UpdateService 常驻）** |
+| [pruning_priority.md](pruning_priority.md) | **rev5：统一优先级表 + 第一批/第二批/静态删除/禁止清单 + 下一阶段验证顺序** |
+| [a_class_candidates.md](a_class_candidates.md) | **rev5：扩展的 A 类静态删除候选逐项分析（5 个候选 + 3 个明令不删）** |
 | [risk_assessment.md](risk_assessment.md) | 风险矩阵、误删后果、**违反用户保护的风险**、回退与恢复策略 |
 | [optimization_plan.md](optimization_plan.md) | P0–P3 分阶段方案（已剔除受保护项）、测量与验收、逐项恢复命令 |
 | [app_inventory.csv](app_inventory.csv) / [app_inventory.json](app_inventory.json) | 机器可读清单（55 行全字段，含 `user_protected` / `exec_action`） |

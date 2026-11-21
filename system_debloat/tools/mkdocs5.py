@@ -9,6 +9,10 @@ Device measurements are quoted with their snapshot window; nothing is extrapolat
 import csv
 import json
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import screening
 
 DOC = r'D:\tgz02\OS\system\system_debloat'
 rows = {r['pkg']: r for r in json.load(open(os.path.join(DOC, 'app_inventory.json'), encoding='utf-8'))}
@@ -452,9 +456,27 @@ doc = f"""# B 类候选收益与风险分析（rev4）
 ## 0. 先明确三个不能跨越的红线
 
 1. **APK 大小 ≠ RAM 收益**：只有快照里有进程的包才有 PSS 数据；本批 10 个里只有 OTA 有。
-2. **单次 CPU 快照 ≠ 长期占用**：本报告引用的 CPU 数字只有 OTA 的 343 s 窗口一个，且已标注窗口。
+2. **单次 CPU 快照 ≠ 长期占用**：CPU 数字必须带测量窗口；OTA 现有 6 h ticks 差值实测（见 2.7）。
 3. **无入向引用 ≠ 安全**：`mtp`、`pacprocessor`、`vpndialogs`、`bluetoothmidiservice` 等由
    framework 按**组件类名**绑定，静态字符串扫描看不到这种绑定；因此“0 引用”只说明“没有兄弟 App 调用”。
+
+## 0.1 十个候选的七个必答问题（rev5）
+
+| 候选 | 是否系统必要 | 原厂 App / Framework 引用 | 其他组件依赖 | 禁用后影响 | 可否单独 pm 禁用 | 是否优先列入禁用候选 | 风险 | 证据依据 |
+|---|---|---|---|---|---|---|---|---|
+{chr(10).join('| `%s` | %s | %s | %s | %s | %s | %s | **%s** | %s |' % (
+    p, screening.B_ANSWERS[p]['necessary'], screening.B_ANSWERS[p]['refs'],
+    screening.B_ANSWERS[p]['dependents'], screening.B_ANSWERS[p]['impact'],
+    screening.B_ANSWERS[p]['pm_disable'], screening.B_ANSWERS[p]['priority'],
+    screening.B_ANSWERS[p]['risk'], screening.B_ANSWERS[p]['evidence'])
+    for p in ['com.android.statementservice','com.android.bluetoothmidiservice','com.android.pacprocessor',
+              'com.android.vpndialogs','com.android.captiveportallogin','com.android.companiondevicemanager',
+              'com.android.storagemanager','com.android.mtp','com.alibaba.ailabs.genie.guide',
+              'com.alibaba.ailabs.genie.osupdate'])}
+
+**分组结论**：第一批 = 6 个平台小组件（功能独立、无进程、无 app 引用）；第二批 = OTA / Guide /
+StorageManager / MTP（有实测占用或需你确认功能取舍）。完整批次与收益口径见
+[pruning_priority.md](pruning_priority.md)。
 
 ## 1. 10 个候选逐项分析
 

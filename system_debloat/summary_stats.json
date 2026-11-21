@@ -262,6 +262,57 @@
    "com.topjohnwu.magisk"
   ]
  },
+ "screening": {
+  "rev": "rev5",
+  "batch1_low_risk_disable": [
+   "com.android.statementservice",
+   "com.android.bluetoothmidiservice",
+   "com.android.pacprocessor",
+   "com.android.vpndialogs",
+   "com.android.captiveportallogin",
+   "com.android.companiondevicemanager"
+  ],
+  "batch2_verify_disable": [
+   "com.alibaba.ailabs.genie.osupdate",
+   "com.alibaba.ailabs.genie.guide",
+   "com.android.storagemanager",
+   "com.android.mtp"
+  ],
+  "static_delete_candidates": [
+   "com.android.providers.userdictionary"
+  ],
+  "disable_first_then_review": [
+   "com.aliyun.uuid",
+   "com.alira.info",
+   "com.alibaba.spkey",
+   "com.yunos.tv.provision"
+  ],
+  "extended_static_candidates": [
+   "com.alibaba.spkey",
+   "com.alira.info",
+   "com.aliyun.uuid",
+   "com.android.providers.userdictionary",
+   "com.yunos.tv.provision"
+  ],
+  "b_class_answers": [
+   "com.alibaba.ailabs.genie.guide",
+   "com.alibaba.ailabs.genie.osupdate",
+   "com.android.bluetoothmidiservice",
+   "com.android.captiveportallogin",
+   "com.android.companiondevicemanager",
+   "com.android.mtp",
+   "com.android.pacprocessor",
+   "com.android.statementservice",
+   "com.android.storagemanager",
+   "com.android.vpndialogs"
+  ],
+  "forbidden_notes": {
+   "com.alibaba.ailabs.ar.monitor": "47.86 MB（`app/GenieMonitor`）：服务含 `geniegesture` / `genieallinone` / CMCC 媒体，被 smartapp 引用且 framework 命中；**手势/体感是否在用未验证** → 只能作为“待验证禁用”候选，不得静态删除",
+   "com.alibaba.ailabs.genie.aicare": "18.50 MB：`/data/app` 覆盖的系统 prebuilt（4.0.26→4.0.62），删除会让包退化为普通应用 → 不删",
+   "com.alipay.arome.app": "87.18 MB：12 处 app 级引用（小程序/H5 容器），禁用它等于关闭小程序能力 → 需产品决策"
+  },
+  "rule": "禁用不释放 system 空间；APK 体积不等于 RAM；无引用不等于无用；六个受保护 App 与语音链路不在精简范围"
+ },
  "memory_snapshot": {
   "source": "read-only: adb shell dumpsys meminfo + /proc/meminfo",
   "primary_snapshot": "2026-11-20T16:03:19+08:00 (dumpsys Uptime 236883195 ms)",

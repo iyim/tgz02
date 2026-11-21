@@ -12,9 +12,28 @@
 ## 0. 先明确三个不能跨越的红线
 
 1. **APK 大小 ≠ RAM 收益**：只有快照里有进程的包才有 PSS 数据；本批 10 个里只有 OTA 有。
-2. **单次 CPU 快照 ≠ 长期占用**：本报告引用的 CPU 数字只有 OTA 的 343 s 窗口一个，且已标注窗口。
+2. **单次 CPU 快照 ≠ 长期占用**：CPU 数字必须带测量窗口；OTA 现有 6 h ticks 差值实测（见 2.7）。
 3. **无入向引用 ≠ 安全**：`mtp`、`pacprocessor`、`vpndialogs`、`bluetoothmidiservice` 等由
    framework 按**组件类名**绑定，静态字符串扫描看不到这种绑定；因此“0 引用”只说明“没有兄弟 App 调用”。
+
+## 0.1 十个候选的七个必答问题（rev5）
+
+| 候选 | 是否系统必要 | 原厂 App / Framework 引用 | 其他组件依赖 | 禁用后影响 | 可否单独 pm 禁用 | 是否优先列入禁用候选 | 风险 | 证据依据 |
+|---|---|---|---|---|---|---|---|---|
+| `com.android.statementservice` | 否：仅在安装/验证 App Links 时被绑定 | PackageManager 按 action `INTENT_FILTER_NEEDS_VERIFICATION` 绑定；vdex 0 命中 | 无 | http/https 深度链接校验失效（已装应用内跳转一般不受影响） | 可以 | 第一批（低风险、功能独立） | **低** | 2 个组件、无进程、无 app 级引用 |
+| `com.android.bluetoothmidiservice` | 否：AOSP 可选外设服务 | framework 按类名绑定：`com.android.bluetoothmidiservice.BluetoothMidiService`（2 处命中） | 无 | 仅 BLE-MIDI 外设；本机无 MIDI 设备记录 | 可以 | 第一批（低风险、功能独立） | **低** | 1 个 Service、无进程、无 app 级引用；framework 明确点名该类 |
+| `com.android.pacprocessor` | 否：仅在配置 PAC 代理时需要 | framework 按类名绑定：`com.android.pacprocessor.PacService`（2 处命中） | 无 | PAC 代理不可用（不使用 PAC 则无影响） | 可以 | 第一批（低风险、功能独立） | **低** | 1 个导出 Service、无进程、无 app 级引用 |
+| `com.android.vpndialogs` | 否：按需拉起的 UI | framework 按类名绑定 `com.android.vpndialogs.ManageDialog`（2 处命中） | 无 | VPN 客户端首次连接无法弹出授权（不使用 VPN 则无影响） | 可以 | 第一批（低风险、功能独立） | **低** | 2 个 Activity、无进程、无 app 级引用 |
+| `com.android.captiveportallogin` | 否：按需拉起的 UI | framework 按 action `android.net.conn.CAPTIVE_PORTAL` 拉起；vdex 0 命中 | 无 | 需要网页认证的 Wi-Fi 无法完成登录（普通 Wi-Fi 不受影响） | 可以 | 第一批（低风险、功能独立） | **低** | 1 个 Activity、无进程、无 app 级引用 |
+| `com.android.companiondevicemanager` | 否：AOSP 可选 | framework 包名命中 1 处；导出 `DeviceDiscoveryService` | 无 | 伴生设备（手表/耳机类）配对入口不可用 | 可以 | 第一批（低风险、功能独立） | **低** | 2 个组件、无进程、无 app 级引用 |
+| `com.android.storagemanager` | 否：AOSP 可选 UI | 无 app 级引用；vdex 0 命中 | 无 | 低存储告警与“释放空间”入口不可用 | 可以 | 第二批（存储驱动：2.32 MB 需删除才释放） | **低** | BOOT_COMPLETED 接收器（开机会被拉起一次，未测量）、JobService、2 Activity；无进程 |
+| `com.android.mtp` | 否：AOSP 可选，但设备常用功能 | framework 按组件名绑定 `MtpDocumentsProvider`（DOCUMENTS_PROVIDER）；USB_ATTACHED 接收器 | 无 app 级引用 | USB 连 PC 后无法浏览文件（只能用 adb 传） | 可以 | 第二批（功能影响明确，需你确认不用 USB 传输） | **低-中** | 4 个组件（含导出 Provider + USB 接收器）、无进程 |
+| `com.alibaba.ailabs.genie.guide` | 否：一次性向导，设备已过引导阶段 | 无 app 级入向引用；framework 0 命中 | 无；但恢复出厂后首启流程依赖它 | 首次开机引导、Wi-Fi 添加、扫码/账号绑定入口不可用 | 可以（`pm disable-user`）；恢复出厂前须 `pm enable` | 第二批（存储驱动：5.42 MB 需删除才释放） | **中** | Manifest：8 Activity + Provider `SecondInstaller`；快照无进程；`NETWORK_SETUP_WIZARD` 权限 |
+| `com.alibaba.ailabs.genie.osupdate` | 否：不是 Android 运行必需组件，但承担厂商升级链路 | 是：S1Settings→`front.UpdateActivity` + `FOTA_UPDATE`（2 处，静态）；framework→`front.RebootUpdateActivity` | 无 App 反向依赖；但设置页“系统更新”入口依赖它 | 设置页系统更新不可用、FOTA 广播无人接收、framework 重启升级流程失效 | 可以（`pm disable-user`）；恢复需 `pm enable` + 重启一次（persistent） | 第二批（有实测 CPU 收益，但兼容风险最高） | **高** | rev4.1 六小时观测：均值 21.53% CPU、PSS 中位 16,557 kB、UpdateService 73/73 常驻；system uid + INSTALL_PACKAGES/REBOOT/MASTER_CLEAR |
+
+**分组结论**：第一批 = 6 个平台小组件（功能独立、无进程、无 app 引用）；第二批 = OTA / Guide /
+StorageManager / MTP（有实测占用或需你确认功能取舍）。完整批次与收益口径见
+[pruning_priority.md](pruning_priority.md)。
 
 ## 1. 10 个候选逐项分析
 
