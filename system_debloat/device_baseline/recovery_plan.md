@@ -1,144 +1,119 @@
-# 恢复方案（rev5.3）
+# 恢复方案（rev5.6 修正版）
 
-前置事实（全部来自只读采集）：
+## 0. 结论摘要
 
-- 本固件 `pm` 缺 `disable`/`disable-user`/`hide`/`suspend`（root 也一样）→ **恢复命令也要绕开它**。
-- 唯一可用的“禁用/启用”通道是 root + `package-restrictions.xml`（原子写入并重启），见
-  `../experiments/iot_disable_via_xml.md`。
-- 因此**恢复**同样只有两条：`pm enable`（`enable` 是存在的，见 usage）或还原 `package-restrictions.xml`。
-- 分区备份完整：**23 个分区**，大小与设备分区**逐一对得上**，SHA256 已记录（`raw/backup_hashes.txt`）。
+1. **禁止整文件覆盖** `/data/system/users/0/package-restrictions.xml`：那会连带改写其它应用的
+   PackageManager 状态（本机该文件有 **68 个包元素**，一次覆盖就是 68 个应用一起回滚）。
+2. 恢复只走**单包元素级补丁**：备份是“目标包那一行 `<pkg .../>`”，恢复时只替换这一行，
+   并断言**其余元素逐字节不变**。
+3. **退出码 0 ≠ 恢复成功**：`-Mode XmlElementRestore` 的 0 只表示“已提交”；
+   真正的成功要重启后用 `-Mode CheckOnly` 复核（成功 = 退出码 20）。
+4. **文件哈希不能当恢复信号**：实测当前文件 6487 B / `7f7208f7…`，与 10:34 的备份
+   6522 B / `295c3978…` 不同，但**语义完全一致**（68 个包、同样两个 `enabled="1"`、iot 无属性）。
+   PMS 会重写文件，所以只能用 `dumpsys package <pkg>` 的 `enabled=`/`suspended=` 判定状态。
+5. 设备重启后 ADB 可能短暂不在线：这是 **DEVICE-NOT-BACK（退出码 12）**，不是“恢复失败”。
 
-## 0. 分区布局与备份对照（实测）
+## 1. 已验证 / 未验证（严格区分）
 
-设备：`/dev/block/platform/bootdevice/by-name/` → 23 个分区；`/proc/partitions` 给出块数；
-下表块数 × 1024 = 期望字节数，与备份文件大小**完全一致**。
+| 恢复路径 | 状态 | 证据 |
+|---|---|---|
+| A. `pm enable <pkg>` | **未验证** | `pm` 的 `disable/disable-user/hide` 已被厂商裁剪；`enable` 在 usage 里但**未实测**能否工作 |
+| B. 电脑端单包元素恢复脚本 | **仅模拟验证** | 6 个模拟场景通过（见 §4），真机未执行 |
+| C. Recovery 手工恢复 | **未验证** | 未进入过 Recovery，ADB/`/data` 能力未知 |
+| D. 分区回刷 | **不可执行** | 备份齐全但**缺 scatter**、下载模式未验证、secure boot 开启 |
 
-| 分区 | 设备节点 | 块数 | 期望字节 | 备份文件 | 备份字节 | 一致 |
-|---|---|---|---|---|---|---|
-| proinfo | mmcblk0p1 | 3072 | 3,145,728 | ori/proinfo.bin | 3,145,728 | ✅ |
-| nvram | mmcblk0p2 | 5120 | 5,242,880 | ori/nvram.bin | 5,242,880 | ✅ |
-| seccfg | mmcblk0p3 | 256 | 262,144 | ori/seccfg.bin | 262,144 | ✅ |
-| lk | mmcblk0p4 | 384 | 393,216 | ori/lk.bin | 393,216 | ✅ |
-| lk2 | mmcblk0p5 | 384 | 393,216 | ori/lk2.bin | 393,216 | ✅ |
-| boot | mmcblk0p6 | 16384 | 16,777,216 | ori/boot.bin | 16,777,216 | ✅ |
-| recovery | mmcblk0p7 | 16384 | 16,777,216 | ori/recovery.bin | 16,777,216 | ✅ |
-| para | mmcblk0p8 | 512 | 524,288 | ori/para.bin | 524,288 | ✅ |
-| logo | mmcblk0p9 | 8192 | 8,388,608 | ori/logo.bin | 8,388,608 | ✅ |
-| odmdtbo | mmcblk0p10 | 16384 | 16,777,216 | ori/odmdtbo.bin | 16,777,216 | ✅ |
-| vendor | mmcblk0p11 | 163840 | 167,772,160 | ori/vendor.bin | 167,772,160 | ✅ |
-| expdb | mmcblk0p12 | 10240 | 10,485,760 | ori/expdb.bin | 10,485,760 | ✅ |
-| frp | mmcblk0p13 | 1024 | 1,048,576 | ori/frp.bin | 1,048,576 | ✅ |
-| tee1 | mmcblk0p14 | 5120 | 5,242,880 | ori/tee1.bin | 5,242,880 | ✅ |
-| tee2 | mmcblk0p15 | 5120 | 5,242,880 | ori/tee2.bin | 5,242,880 | ✅ |
-| kb | mmcblk0p16 | 2048 | 2,097,152 | ori/kb.bin | 2,097,152 | ✅ |
-| dkb | mmcblk0p17 | 2048 | 2,097,152 | ori/dkb.bin | 2,097,152 | ✅ |
-| metadata | mmcblk0p18 | 33792 | 34,603,008 | ori/metadata.bin | 34,603,008 | ✅ |
-| system | mmcblk0p19 | — | — | ori/system.bin | 1,023,410,176 | ✅（与 `flash/system.img` 同尺寸） |
-| cache | mmcblk0p20 | — | — | ori/cache.bin | 637,534,208 | ✅ |
-| miscdata | mmcblk0p21 | — | — | ori/miscdata.bin | 16,777,216 | ✅ |
-| userdata | mmcblk0p22 | — | — | ori/userdata.bin | 1,916,272,640 | ✅ |
-| flashinfo | mmcblk0p23 | — | — | ori/flashinfo.bin | 16,777,216 | ✅ |
-| **preloader_a/b** | mmcblk0boot0/1 | — | — | **缺失** | — | ❌ 未备份 |
+## 2. 分区与备份对照（实测，未变）
 
-说明：system/cache/userdata 等大分区的块数未在本文件里逐条抄录（`raw/proc_partitions.txt` 有原始行），
-但备份字节数与 `/proc/partitions` 的块数换算一致，故判“完整”。
+设备 `by-name` 共 23 个分区；备份大小与 `/proc/partitions` 块数逐一吻合（块数 × 1024 = 备份字节数）。
 
-**已知缺口**：`preloader_a/preloader_b`（mmcblk0boot0/1）没有备份。若 preloader 损坏，只能靠 MTK BROM 模式救，
-而本机**没有 scatter 文件**，该路径本轮标记为**不可执行**。
+| 分区 | 节点 | 备份 | 说明 |
+|---|---|---|---|
+| boot | mmcblk0p6 | ori/boot.bin（16,777,216） | 与 `flash/boot.img` 同尺寸 |
+| recovery | mmcblk0p7 | ori/recovery.bin（16,777,216） | |
+| system | mmcblk0p19 | ori/system.bin（1,023,410,176） | 与 `flash/system.img` 同尺寸 |
+| vendor | mmcblk0p11 | ori/vendor.bin（167,772,160） | |
+| userdata | mmcblk0p22 | ori/userdata.bin（1,916,272,640） | |
+| cache / metadata / miscdata / flashinfo | p20/p18/p21/p23 | ori/*.bin | |
+| nvram / proinfo / seccfg / lk / lk2 / para / logo / odmdtbo / expdb / frp / tee1 / tee2 / kb / dkb | p2/p1/p3/p4/p5/p8/p9/p10/p12/p13/p14/p15/p16/p17 | ori/*.bin | |
+| **preloader_a / preloader_b** | mmcblk0boot0/1 | **无备份** | ❌ 缺口 |
 
-## A. PackageManager 恢复（单包/单组件）
+SHA256 全表见 `raw/backup_hashes.txt`。
 
-```bash
-# 单包启用（enable 子命令在本固件存在）
-adb shell su -c 'pm enable com.example.pkg'
+## 3. 正确的恢复流程（单包元素级）
 
-# 单组件启用
-adb shell su -c 'pm enable com.example.pkg/com.example.pkg.SomeComponent'
+### 3.1 禁用时应当保存什么（rev5.6 规定）
 
-# 查看当前启用状态
-adb shell dumpsys package com.example.pkg | grep -E 'enabled=|suspended='
-adb shell pm list packages -d          # 期望：不该出现该包
-```
+- **元素备份**：把该包在 XML 里的那一行单独存成文件，例如
+  `/data/local/tmp/pr_elem_com.alibaba.ailabs.genie.iot.xml`，内容只有
+  `<pkg name="com.alibaba.ailabs.genie.iot" ceDataInode="-4294959387" />`。
+- **SHA256**：对上面的元素备份文件取 SHA256 并记录。
+- **状态基线**：`dumpsys package <pkg> | grep -E 'enabled=|suspended='` 的输出。
+- 这三样一起写进 `device_baseline/last_disabled.json`（模板见 `last_disabled.example.json`）。
 
-> 注意：`pm enable` 在本固件的 dispatcher 里存在（`pm` usage 列出 `enable`），但**未实测**是否与
-> `disable-user` 一样被裁剪。若失败，走 B 段。
+> 不再保存/使用整文件 `pr_orig.xml` 作为恢复依据。设备上残留的
+> `/data/local/tmp/pr_orig.xml`、`pr_new.xml`、`pr_backup_before_edit.xml` 以及
+> `iot_disable_apply.sh` / `iot_disable_revert.sh` 都属于“整文件覆盖”路径，**建议删除**（本轮不删）。
 
-## B. ADB 无桌面恢复（脚本化，推荐）
+### 3.2 恢复（电脑端）
 
 ```powershell
-# 1) 设备状态与最近一次禁用记录
-powershell -ExecutionPolicy Bypass -File tools\check_device_state.ps1
+# 1) 先只读复核（重启后也用它，退出码 20 = 通过，21 = 仍未启用，12 = 设备没回来）
+powershell -File tools\restore_last_disabled.ps1 -ConfirmPackage <PKG> -Mode CheckOnly
 
-# 2) 恢复最近一次禁用（会要求你确认包名）
-powershell -ExecutionPolicy Bypass -File tools\restore_last_disabled.ps1
+# 2) 元素级恢复（必须有元素备份 + sha256；整文件备份会被拒绝，退出码 5）
+powershell -File tools\restore_last_disabled.ps1 -ConfirmPackage <PKG> -Mode XmlElementRestore `
+    -BackupFile .\device_baseline\backups\pr_elem_<PKG>.xml `
+    -ExpectedSha256 <SHA256>
 
-# 3) 校验桌面是否回来
-powershell -ExecutionPolicy Bypass -File tools\verify_launcher.ps1
+# 3) 手动重启后，再跑一次第 1 步复核
 ```
 
-手工等价步骤（脚本失败时）：
+脚本的硬性约束（已实现）：
 
-```bash
-adb devices
-adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME
-adb shell am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity
-# 仍不行则切当贝
-adb shell cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity
-```
+| 约束 | 行为 |
+|---|---|
+| 目标包必须显式给出 | `-ConfirmPackage` 为 Mandatory |
+| 六个保护 App | 直接 REFUSED，退出码 4 |
+| 备份必须是单包元素 | 备份含 `<package-restrictions` → 拒绝，退出码 5 |
+| 备份必须属于目标包 | 元素 name ≠ 目标 → 拒绝，退出码 5 |
+| 备份完整性 | 必须提供 `-ExpectedSha256` 且匹配，否则退出码 5 |
+| 当前 XML 结构 | 目标元素必须恰好 1 个，否则退出码 7 |
+| 不影响其它应用 | 打补丁前后比对“除目标外所有 `<pkg .../>` 元素”，不一致即中止，退出码 7 |
+| 写入确认 | 只有输出 `WRITTEN` 才继续；否则退出码 11 |
+| 成功判定 | 退出码 0 = 已提交；`CheckOnly` 退出码 20 才算成功 |
+| 重启 | 默认不重启；需 `-AllowReboot` |
 
-若禁用是通过 `package-restrictions.xml` 做的，恢复必须用**原子脚本**（写回原始备份 + 立即重启）：
+## 4. 脚本模拟测试结果（本轮，不碰真机）
 
-```bash
-adb shell su -c 'sh /data/local/tmp/iot_disable_revert.sh'   # iot 专用；其它包按同模板替换
-```
-
-## C. Recovery 恢复（**未验证，暂不可执行**）
-
-前置条件（缺一不可，当前都未满足）：
-
-1. 确认 `adb reboot recovery` 能进入 Recovery（本轮禁止重启，未验证）。
-2. 确认 Recovery 提供 ADB 且能读 `/data`（未验证）。
-3. 确认 Recovery 内可用 `toybox`/`mount` 写 `/data`（未验证）。
-
-满足后，恢复 `/data/system/users/0/package-restrictions.xml` 的命令形如：
-
-```bash
-# 仅在 (1)(2)(3) 全部验证通过后才可执行
-adb shell mount /data
-adb push package-restrictions.orig.xml /data/system/users/0/package-restrictions.xml
-adb shell chown system:system /data/system/users/0/package-restrictions.xml
-adb shell chmod 660 /data/system/users/0/package-restrictions.xml
-adb shell restorecon /data/system/users/0/package-restrictions.xml
-adb reboot
-```
-
-**本文件不把上面的命令列为“可直接执行”**：Recovery 能力未验证。
-
-## D. 原始分区恢复（有备份、缺工具链）
-
-可用素材：
-
-| 素材 | 位置 | 状态 |
+| 场景 | 期望 | 实际 |
 |---|---|---|
-| 23 个分区原始镜像 | `D:\tgz02\flash\ori\*.bin` | 完整（大小与分区一致），SHA256 已记录 |
-| 改动后的 system/boot | `D:\tgz02\flash\change\{system.bin,boot.bin}` | 存在（改动版） |
-| 刷写后 system 的 img | `D:\tgz02\flash\system.img` | 存在，1,023,410,176 B |
-| app.rar | `D:\tgz02\flash\app.rar` | 26,969,715 B（疑似 APK 集合） |
-| scatter 文件 | **不存在** | ❌ 缺 |
-| SP Flash Tool | 未在本轮检查范围 | 未知 |
+| `CheckOnly`，enabled=0 | 20 CHECK-OK | ✅ 20 |
+| `CheckOnly`，enabled=3 | 21 CHECK-FAIL | ✅ 21 |
+| 整文件备份 | 拒绝 | ✅ 5 |
+| SHA256 不符 | 拒绝 | ✅ 5 |
+| 备份属于别的包 | 拒绝 | ✅ 5 |
+| 目标元素不在当前 XML | 中止 | ✅ 7 |
+| 正确元素备份 | 提交待验证（0） | ✅ 0，输出 `SUBMITTED` |
+| `verify_launcher -WaitSeconds` 设备没回来 | 12 DEVICE-NOT-BACK | ✅ 12 |
 
-**结论**：分区级恢复**素材齐全但工具链不完整**（无 scatter）。因此：
+## 5. Recovery 手工恢复（**未验证，不可照抄执行**）
 
-- ❌ 不列出可直接执行的刷写命令（无法保证分区偏移/名称匹配）。
-- ✅ 可行路径：先用 MTK 官方工具按其“读取分区”功能导出当前布局生成 scatter，或在有 scatter 后
-  按分区名逐一刷 `ori/*.bin`。
-- ⚠️ secure boot 开启（`ro.genie.secureboot.enable=1`）→ 刷入未签名镜像可能被拒，**风险高**。
+只有在下列条件**全部实测通过**后才可以写具体步骤：能进 Recovery、Recovery 有 shell/ADB、
+能挂载 `/data`、能改文件属主与 SELinux 上下文。当前这四条**一条都未验证**，因此本文件
+不给出可直接执行的 Recovery 命令。
 
-## E. 禁用前的标准检查（每个候选都要过）
+## 6. 分区回刷（**不可执行**）
 
-1. `pm list packages -d` 为空。
-2. 记录当前默认 HOME（`resolve-activity`）。
-3. 记录候选包的 `enabled=`、进程、PSS（如适用）。
-4. 备份 `package-restrictions.xml` 到 `/data/local/tmp/pr_orig_<pkg>.xml` 并 `sha256sum` 记录。
-5. 确认 `su -c id` = root、`adb devices` 在线、无线 5555 在监听。
-6. 确认当贝桌面处于启用状态（它是备用桌面）。
+素材：`D:\tgz02\flash\ori\*.bin`（23 个分区）+ `D:\tgz02\flash\change\{boot.bin,system.bin}`。
+缺口：**无 scatter**、**无 preloader 备份**、secure boot 开启。
+因此本文件**不列出可直接执行的刷写命令**；需要先由 MTK 工具导出 scatter 并确认下载模式可用。
+
+## 7. 禁用前检查清单（下一阶段才用）
+
+1. `pm list packages -d` 为空；
+2. 记录默认 HOME（应为 `com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity`）；
+3. 记录目标包 `enabled=`/`suspended=`；
+4. 生成**元素备份** + SHA256 + 写入 `last_disabled.json`；
+5. `su -c id` = root；
+6. 确认当贝桌面处于启用（备用桌面）；
+7. 确认至少一条独立于 Wi-Fi 的救援通道——**当前不满足，所以阶段门禁为 BLOCKED**。

@@ -84,3 +84,19 @@ adb shell cmd package set-home-activity --user 0 com.alibaba.ailabs.genie.launch
 2. `cmd package set-home-activity` 在本固件是否真的生效：**未执行验证**（命令存在 ≠ 执行成功）。
 3. `FallbackHome` 触发条件依赖 AOSP 逻辑，未在本机复现。
 4. 当贝桌面被设为 HOME 后原厂桌面的残留行为（是否仍被 BootHome 拉起）：**未验证**。
+
+## 8. 保护关系（rev5.6 明确）
+
+| 桌面 | 包名 | Activity | 技术分类 | 用户保护 | 允许禁用 |
+|---|---|---|---|---|---|
+| 默认桌面 | `com.alibaba.ailabs.genie.launcher` | `.activity.AdultHomeActivity` | **D_forbidden（启动关键）** | 否 | **否** |
+| 备用桌面 | `com.dangbei1.tvlauncher` | `com.dangbei.launcher.ui.main.MainActivity` | **protected_blocked（启动关键）** | **是（六个保护 App）** | **否** |
+
+- 两者都登记在 `summary_stats.json:screening.launcher_critical`，并由自动测试锁定：
+  **默认桌面与当贝桌面都不得出现在 `A_candidate` 或 `B_disable`**。
+- **系统技术保护**（`D_forbidden` / 启动关键，来自依赖与启动链路分析）与**用户保护**（六个 App，
+  来自用户明确要求）分开存储，互不覆盖。
+- 另一个可作 HOME 的组件是 `com.android.settings/.FallbackHome`（AOSP 兜底），未单独列为保护对象，
+  但它属于系统组件，同样不在候选内。
+- 结论：即便门禁解除，"让当贝顶替默认桌面"也只是**救援手段**，不是精简手段；
+  两个桌面都不在删除/禁用候选里。

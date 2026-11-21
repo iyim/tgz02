@@ -1,21 +1,15 @@
 #!/system/bin/sh
-# 原子回滚：把 package-restrictions.xml 还原为原始备份并立刻重启。
-# 运行：su -c 'sh /data/local/tmp/iot_disable_revert.sh'
-set -e
-TARGET=/data/system/users/0/package-restrictions.xml
-ORIG=/data/local/tmp/pr_orig.xml
-[ -f "$ORIG" ] || { echo "missing backup $ORIG"; exit 1; }
-cp "$TARGET" /data/local/tmp/pr_before_revert_$(date +%s).xml || true
-cp "$ORIG" "$TARGET"
-chown system:system "$TARGET"
-chmod 660 "$TARGET"
-restorecon "$TARGET" >/dev/null 2>&1 || true
-sync
-if grep -q 'name="com.alibaba.ailabs.genie.iot" ceDataInode="-4294959387" />' "$TARGET"; then
-  echo "OK: reverted to original; rebooting now"
-  sync
-  reboot
-else
-  echo "WARN: verify string not matched, inspect $TARGET manually"
-  exit 2
-fi
+# 已废弃（rev5.6）：本脚本会用 `pr_orig.xml`（整文件备份）覆盖当前的
+#   /data/system/users/0/package-restrictions.xml
+# 这会连同其它应用的 PackageManager 状态一起回滚——即使目标包确实需要恢复，
+# 也不允许用整文件覆盖的方式做。
+#
+# 设备上若有旧副本（/data/local/tmp/iot_disable_revert.sh），同样是整文件覆盖，建议删除。
+# 恢复请改用电脑端单包元素级恢复：
+#   powershell -File tools\restore_last_disabled.ps1 -ConfirmPackage <pkg> -Mode CheckOnly
+#   powershell -File tools\restore_last_disabled.ps1 -ConfirmPackage <pkg> -Mode XmlElementRestore \
+#       -BackupFile <单包元素备份> -ExpectedSha256 <sha256>
+#
+# 本脚本现在只做拒绝，不改动设备。
+echo "REFUSED: 整文件 XML 覆盖已被禁用于 rev5.6；请使用 tools/restore_last_disabled.ps1 的单包元素恢复。" >&2
+exit 3

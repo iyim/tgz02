@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<package-restrictions>
+    <pkg name="com.dangbei1.tvlauncher" ceDataInode="-4294959320">
+        <enabled-components>
+            <item name="com.xiaomi.push.service.XMPushService" />
+            <item name="cn.jpush.android.service.PushReceiver" />
+            <item name="cn.jpush.android.service.AlarmReceiver" />
+        </enabled-components>
+    </pkg>
+    <pkg name="com.android.providers.calendar" ceDataInode="-4294959393" />
+    <pkg name="com.android.providers.media" ceDataInode="-4294959390" />
+    <pkg name="com.alibaba.ailabs.genie.iot" ceDataInode="-4294959387" />
+    <pkg name="com.alibaba.ailabs.genie.rtc" ceDataInode="-4294959383" enabled="1">
+        <enabled-components>
+            <item name="com.taobao.accs.ChannelService" />
+        </enabled-components>
+    </pkg>
+    <pkg name="com.alipay.arome.app" ceDataInode="-4294959379" stopped="true" />
+    <pkg name="android.auto_generated_rro__" ceDataInode="-4294959375" />
+    <pkg name="com.android.externalstorage" ceDataInode="-4294959372" />
+    <pkg name="com.alibaba.ailabs.genie.browser" ceDataInode="-4294959369" />
+    <pkg name="com.android.companiondevicemanager" ceDataInode="-4294959365" />
+    <pkg name="com.alibaba.ailabs.genie.intermediary" ceDataInode="-4294950805" />
+    <pkg name="com.android.providers.downloads" ceDataInode="-4294959362" />
+    <pkg name="com.alibaba.ailabs.genie.smartapp" ceDataInode="-4294959359" />
+    <pkg name="com.ktcp.aiagent" ceDataInode="-4294950363" stopped="true" nl="true" />
+    <pkg name="com.ailabs.youku.iot" ceDataInode="-4294959355" stopped="true" />
+    <pkg name="com.alira.info" ceDataInode="-4294959348" />
+    <pkg name="com.android.defcontainer" ceDataInode="-4294959475" />
+    <pkg name="com.android.pacprocessor" ceDataInode="-4294959344" />
+    <pkg name="com.android.certinstaller" ceDataInode="-4294959340" />
+    <pkg name="com.alibaba.ailabs.ar.monitor" ceDataInode="-4294959334" stopped="true" />
+    <pkg name="android" ceDataInode="-4294959467" />
+    <pkg name="com.android.mtp" ceDataInode="-4294959330" />
+    <pkg name="com.alibaba.genie.waft" ceDataInode="-4294959327" stopped="true" />
+    <pkg name="com.android.statementservice" ceDataInode="-4294959323" />
+    <pkg name="bin.mt.plus" ceDataInode="-4294958839" />
+    <pkg name="com.anthouse.ayland" ceDataInode="-4294943839" stopped="true" nl="true" />
+    <pkg name="com.android.providers.settings" ceDataInode="-4294959459" />
+    <pkg name="com.aliyun.uuid" ceDataInode="-4294959316" />
+    <pkg name="com.yunos.tv.provision" ceDataInode="-4294959312" stopped="true">
+        <disabled-components>
+            <item name="com.yunos.tv.provision.DefaultActivity" />
+        </disabled-components>
+    </pkg>
+    <pkg name="com.android.webview" ceDataInode="-4294959308" />
+    <pkg name="com.android.inputdevices" ceDataInode="-4294959451" />
+    <pkg name="com.estrongs.android.pop" ceDataInode="-4294959217" stopped="true" />
+    <pkg name="com.mediatek" ceDataInode="-4294959447" />
+    <pkg name="com.alibaba.ailabs.genie.aicare" ceDataInode="-4294959335" enabled="1" />
+    <pkg name="com.alibaba.ailabs.genie.albums" ceDataInode="-4294959302" stopped="true" />
+    <pkg name="com.alibaba.ailabs.genie.camera" ceDataInode="-4294950682" stopped="true" />
+    <pkg name="android.ext.shared" ceDataInode="-4294959440" />
+    <pkg name="com.alibaba.ailabs.genie.cook" ceDataInode="-4294943773" stopped="true" nl="true" />
+    <pkg name="com.android.keychain" ceDataInode="-4294959298" />
+    <pkg name="android.ext.services" ceDataInode="-4294959434" />
+    <pkg name="com.web1n.permissiondog" ceDataInode="-4294959176" stopped="true" />
+    <pkg name="com.android.packageinstaller" ceDataInode="-4294959428" />
+    <pkg name="com.android.proxyhandler" ceDataInode="-4294959422" />
+    <pkg name="com.topjohnwu.magisk" ceDataInode="-4294959173" />
+    <pkg name="com.mediatek.thermalmanager" ceDataInode="-4294959294" stopped="true" />
+    <pkg name="com.alibaba.ailabs.genie.children" ceDataInode="-4294959290" />
+    <pkg name="cn.cmvideo.car.play" ceDataInode="-4294943843" stopped="true" nl="true" />
+    <pkg name="com.yunos" ceDataInode="-4294959419" />
+    <pkg name="com.aligenie.ags" ceDataInode="-4294959286" />
+    <pkg name="com.shere.assistivetouch" ceDataInode="-4294959170">
+        <enabled-components>
+            <item name="com.shere.easytouch.module.service.view.broatcast.ETServiceBroadcastReceiver" />
+            <item name="com.shere.easytouch.module.service.view.EasyTouchService" />
+            <item name="com.shere.easytouch.alive.KeepAliveService$KeepAliveInnerService" />
+        </enabled-components>
+    </pkg>
+    <pkg name="com.android.storagemanager" ceDataInode="-4294959282" />
+    <pkg name="com.android.settings" ceDataInode="-4294959279" />
+    <pkg name="com.google.android.inputmethod.pinyin" ceDataInode="-4294959275">
+        <disabled-components>
+            <item name="com.google.android.apps.inputmethod.libs.framework.core.LauncherActivity" />
+        </disabled-components>
+    </pkg>
+    <pkg name="com.ailabs.emode" ceDataInode="-4294959271" />
+    <pkg name="com.alibaba.ailabs.genie.guide" ceDataInode="-4294959267" stopped="true" />
+    <pkg name="com.android.vpndialogs" ceDataInode="-4294959263" />
+    <pkg name="com.alibaba.ailabs.genie.screensaver" ceDataInode="-4294959260" />
+    <pkg name="com.android.shell" ceDataInode="-4294959412" />
+    <pkg name="com.android.providers.userdictionary" ceDataInode="-4294959256" />
+    <pkg name="com.alibaba.spkey" ceDataInode="-4294959253" />
+    <pkg name="com.android.location.fused" ceDataInode="-4294959405" />
+    <pkg name="com.android.systemui" ceDataInode="-4294959397" />
+    <pkg name="com.android.bluetoothmidiservice" ceDataInode="-4294959249" />
+    <pkg name="com.alibaba.ailabs.genie.osupdate" ceDataInode="-4294959246">
+        <disabled-components>
+            <item name="com.alibaba.ailabs.genie.osupdate.front.RebootUpdateActivity" />
+        </disabled-components>
+    </pkg>
+    <pkg name="com.android.bluetooth" ceDataInode="-4294959238" />
+    <pkg name="com.android.providers.contacts" ceDataInode="-4294959234" />
+    <pkg name="com.android.captiveportallogin" ceDataInode="-4294959231" />
+    <pkg name="com.alibaba.ailabs.genie.launcher" ceDataInode="-4294959228" />
+    <preferred-activities />
+    <persistent-preferred-activities />
+    <crossProfile-intent-filters />
+    <default-apps />
+</package-restrictions>

@@ -322,6 +322,48 @@ COMPONENT_LEVEL = [
 
 DESKTOP_STILL_UNKNOWN = ['旭慧生活']
 
+# ---------------------------------------------------------------- rev5.6: 桌面保护与门禁
+# 两个桌面都是“启动关键”，不得进入 A_candidate / B_disable；默认桌面不是当贝。
+LAUNCHER_CRITICAL = {
+    'com.alibaba.ailabs.genie.launcher': {
+        'role': '默认 HOME（原厂 GenieLauncher）',
+        'activity': 'com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity',
+        'apk': '/system/app/GenieLauncher/GenieLauncher.apk',
+        'evidence': 'cmd package resolve-activity -c HOME 实测（isDefault=true）+ query-activities 命中',
+        'user_protected': False,
+    },
+    'com.dangbei1.tvlauncher': {
+        'role': '备用 HOME（当贝桌面，用户保护 App）',
+        'activity': 'com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity',
+        'apk': '/system/app/dangbei.apk',
+        'evidence': 'query-activities -c HOME/LAUNCHER 命中 + 用户保护名单',
+        'user_protected': True,
+    },
+}
+
+# 阶段门禁：救援能力未验证前，任何设备禁用都不放行。
+STAGE_GATE = {
+    'stage': 'rev5.6',
+    'device_disable_allowed': False,
+    'verdict': 'BLOCKED：救援能力未验证，不允许设备禁用。',
+    'blocking_reasons': [
+        'USB ADB 没有任何真实证据（当前只有 TCP/IP 192.168.1.9:5555）',
+        '设备重启后 ADB 能否自动连回：未验证',
+        'Recovery ADB 与 /data 访问：未验证',
+        'fastboot / MTK BROM 刷写路径：未验证，且本地缺 scatter 文件',
+        'preloader_a/b 没有备份',
+        '单包元素恢复脚本只做过模拟测试，未在真机验证',
+    ],
+    'unblock_conditions': [
+        '至少一条独立于设备 Wi-Fi 的救援通道（USB ADB 或 Recovery）经实测可用',
+        'Recovery 能读 /data 或存在其它已验证的底层恢复路径',
+        '单包恢复脚本完成完整模拟测试并通过（含失败分支）',
+        '恢复脚本不会覆盖其它应用的 PackageManager 状态（元素级补丁 + 其余元素不变断言）',
+        '默认 Launcher 与当贝备用桌面的保护测试全部通过',
+        '备份缺口与回刷风险已被明确记录并接受',
+    ],
+}
+
 # rev5.3: 操作者明确“不需要设备控制 / 监控 / 相册”——这些包从“保护”降为“用户确认可关”，
 # 但仍是**禁用验证**对象，不是删除对象（删除不可逆且会牵动 voice 技能）。
 USER_OPTIONAL = [

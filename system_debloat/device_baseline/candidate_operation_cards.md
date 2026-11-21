@@ -30,12 +30,12 @@
 | 7 依赖关系 | `ChildrenHomeActivity` ← `com.alibaba.ailabs.genie.guide`（component）<br>`ForbiddenTimeAddActivity` ← `com.alibaba.ailabs.genie.smartapp`（component）<br>`ChildrenHomeActivity` ← `com.alibaba.ailabs.genie.smartapp`（component）<br>`HomeActivity` ← `com.alibaba.ailabs.genie.smartapp`（component）<br>`ChildModeSettingActivity` ← `com.alibaba.ailabs.genie.smartapp`（component）<br>`AppSettingActivity` ← `com.alibaba.ailabs.genie.smartapp`（component）<br>`GenieTimePickerActivity` ← `com.alibaba.ailabs.genie.smartapp`（component）<br>`ForbiddenTimeAddActivity` ← `com.android.settings`（component）<br>`DataCenterReceiver` ← `com.android.settings`（component）<br>`GenieTimePickerActivity` ← `com.android.settings`（component）<br>`HomeActivity` ← `com.android.settings`（component）<br>`EyeyieldSettingActivity` ← `com.android.settings`（component）<br>`ChildModeSettingActivity` ← `com.android.settings`（component）<br>`ChildrenHomeActivity` ← `com.android.systemui`（component）<br>`HomeActivity` ← `com.android.systemui`（component）<br>`ChildInfoInputActivity` ← `com.android.systemui`（component） |
 | 8 可能影响的功能 | 儿童模式界面/禁播时段/应用管控全部失效；smartapp 的 16 处儿童技能引用会报错 |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.alibaba.ailabs.genie.children'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.alibaba.ailabs.genie.children | grep -E 'enabled=|suspended='`、`ps -A | grep children`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **有条件允许：需先完成“放弃儿童模式”确认，并单独授权** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：有条件允许：需先完成“放弃儿童模式”确认，并单独授权） |
 
 风险等级：中高；回滚难度：高：与 smartapp 强耦合，需回归语音。
 
@@ -52,12 +52,12 @@
 | 7 依赖关系 | `albumprovider` ← `com.alibaba.ailabs.genie.screensaver`（authority） |
 | 8 可能影响的功能 | 相册浏览、屏保取图、语音“看照片”失效 |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.alibaba.ailabs.genie.albums'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.alibaba.ailabs.genie.albums | grep -E 'enabled=|suspended='`、`ps -A | grep albums`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **有条件允许：需先确认屏保取图可放弃** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：有条件允许：需先确认屏保取图可放弃） |
 
 风险等级：中；回滚难度：中：screensaver 引用其组件。
 
@@ -74,12 +74,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | 输入法用户词库不可用（本机无输入法场景，影响极低） |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.android.providers.userdictionary'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.android.providers.userdictionary | grep -E 'enabled=|suspended='`、`ps -A | grep userdictionary`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许（最低风险，但收益仅 0.04 MB）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许（最低风险，但收益仅 0.04 MB）） |
 
 风险等级：低；回滚难度：低。
 
@@ -96,12 +96,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | UUID 注册/上报中断，可能影响云端账号绑定 |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.aliyun.uuid'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.aliyun.uuid | grep -E 'enabled=|suspended='`、`ps -A | grep uuid`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许先做“禁用观察”，不建议删除** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许先做“禁用观察”，不建议删除） |
 
 风险等级：中；回滚难度：中：BOOT_COMPLETED 接收器。
 
@@ -118,12 +118,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | raService 用途未确认 |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.alira.info'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.alira.info | grep -E 'enabled=|suspended='`、`ps -A | grep info`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许先做“禁用观察”（用途未确认）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许先做“禁用观察”（用途未确认）） |
 
 风险等级：低；回滚难度：低：0.79 MB，证据不足。
 
@@ -140,12 +140,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | SpKey 相关校验可能失败（用途未确认） |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.alibaba.spkey'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.alibaba.spkey | grep -E 'enabled=|suspended='`、`ps -A | grep spkey`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许先做“禁用观察”（用途未确认）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许先做“禁用观察”（用途未确认）） |
 
 风险等级：低；回滚难度：低：仅 0.13 MB，证据不足。
 
@@ -162,12 +162,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | 开通/清关流程异常（如重置后无法重新开通） |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.yunos.tv.provision'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.yunos.tv.provision | grep -E 'enabled=|suspended='`、`ps -A | grep provision`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许但收益极低（0.03 MB）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许但收益极低（0.03 MB）） |
 
 风险等级：中；回滚难度：中：0.03 MB，收益极低。
 
@@ -184,12 +184,12 @@
 | 7 依赖关系 | `test1` ← `com.android.settings`（action）<br>`test1` ← `com.yunos.tv.provision`（action） |
 | 8 可能影响的功能 | 工厂测试/老化模式不可用，影响返修与产线复测 |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.ailabs.emode'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.ailabs.emode | grep -E 'enabled=|suspended='`、`ps -A | grep emode`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **不建议（影响返修），仅记录** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：不建议（影响返修），仅记录） |
 
 风险等级：中；回滚难度：低：不影响日常使用。
 
@@ -206,12 +206,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | App Links 校验失败，第三方链接可能改为弹选择框 |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.android.statementservice'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.android.statementservice | grep -E 'enabled=|suspended='`、`ps -A | grep statementservice`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许（B 类第一批）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许（B 类第一批）） |
 
 风险等级：低；回滚难度：低。
 
@@ -228,12 +228,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | 蓝牙 MIDI 设备不可用（无此场景） |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.android.bluetoothmidiservice'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.android.bluetoothmidiservice | grep -E 'enabled=|suspended='`、`ps -A | grep bluetoothmidiservice`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许（B 类第一批）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许（B 类第一批）） |
 
 风险等级：低；回滚难度：低。
 
@@ -250,12 +250,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | PAC 代理脚本不生效（无此场景） |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.android.pacprocessor'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.android.pacprocessor | grep -E 'enabled=|suspended='`、`ps -A | grep pacprocessor`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许（B 类第一批）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许（B 类第一批）） |
 
 风险等级：低；回滚难度：低。
 
@@ -272,12 +272,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | VPN 授权对话框缺失，无法确认 VPN 连接 |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.android.vpndialogs'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.android.vpndialogs | grep -E 'enabled=|suspended='`、`ps -A | grep vpndialogs`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许（B 类第一批）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许（B 类第一批）） |
 
 风险等级：低；回滚难度：低。
 
@@ -294,12 +294,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | 公共 Wi-Fi 强制门户登录页不可用 |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.android.captiveportallogin'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.android.captiveportallogin | grep -E 'enabled=|suspended='`、`ps -A | grep captiveportallogin`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许（B 类第一批）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许（B 类第一批）） |
 
 风险等级：低；回滚难度：低。
 
@@ -316,12 +316,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | 伴随设备（手表/耳机）配对管理缺失 |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.android.companiondevicemanager'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.android.companiondevicemanager | grep -E 'enabled=|suspended='`、`ps -A | grep companiondevicemanager`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许（B 类第一批）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许（B 类第一批）） |
 
 风险等级：低；回滚难度：低。
 
@@ -338,12 +338,12 @@
 | 7 依赖关系 | `FOTA_UPDATE` ← `com.alibaba.ailabs.genie.smartapp`（action）<br>`FOTA_UPDATE` ← `com.android.settings`（action）<br>`UpdateActivity` ← `com.android.settings`（component） |
 | 8 可能影响的功能 | OTA 升级入口失效；实测其进程常驻 CPU 21.5%、PSS 16.5 MB |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.alibaba.ailabs.genie.osupdate'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.alibaba.ailabs.genie.osupdate | grep -E 'enabled=|suspended='`、`ps -A | grep osupdate`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许（B 类第二批，需验证 OTA 后果）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许（B 类第二批，需验证 OTA 后果）） |
 
 风险等级：中；回滚难度：中：见 OTA 报告。
 
@@ -360,12 +360,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | 首次使用引导缺失 |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.alibaba.ailabs.genie.guide'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.alibaba.ailabs.genie.guide | grep -E 'enabled=|suspended='`、`ps -A | grep guide`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许（B 类第二批）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许（B 类第二批）） |
 
 风险等级：低；回滚难度：低。
 
@@ -382,12 +382,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | 存储清理界面缺失（可用第三方替代） |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.android.storagemanager'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.android.storagemanager | grep -E 'enabled=|suspended='`、`ps -A | grep storagemanager`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许（B 类第二批）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许（B 类第二批）） |
 
 风险等级：低；回滚难度：低。
 
@@ -404,12 +404,12 @@
 | 7 依赖关系 | 无 app 级入向引用（不等于无依赖） |
 | 8 可能影响的功能 | USB 连接电脑不再以 MTP 方式暴露文件 |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable com.android.mtp'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package com.android.mtp | grep -E 'enabled=|suspended='`、`ps -A | grep mtp`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **允许（B 类第二批，注意会影响 USB 取文件）** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：允许（B 类第二批，注意会影响 USB 取文件）） |
 
 风险等级：低；回滚难度：低：会影响刷机取文件。
 

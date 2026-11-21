@@ -1,70 +1,91 @@
-# ADB / Recovery 救援能力（rev5.3，只读验证）
+# ADB / Recovery 救援能力（rev5.6 修正版）
 
-**结论先说**：`pm disable-user` 在本固件被裁剪（见 `../experiments/iot_disable_attempt.md`），
-所以救援路径必须不依赖 `pm`。当前可用的救援手段按可靠性排序是：
-**① ADB 无线/USB（已实测）→ ② 当贝桌面或 FallbackHome 兜底 → ③ Recovery（未验证 ADB）→ ④ 分区回刷（有完整备份，无 scatter）**。
+**修正要点**：rev5.3 把 `192.168.1.9:5555` 记成了“USB ADB 可用”——**这是错的**。
+那是 TCP/IP 通道。本版把两条通道彻底分开，并按“有证据才写已验证”的规则重写。
 
-## 1. ADB（已实测）
+## 1. 通道分类（真实证据）
 
-| 项 | 值 | 证据 |
+`adb devices -l` 的实际输出（2026-11-21 11:04 只读采集）：
+
+```
+List of devices attached
+192.168.1.9:5555       device product:full_ailabs_s1l model:AILABS_S1L device:ailabs_s1l transport_id:20
+```
+
+| 通道 | 序列号 | 状态 | 判定依据 |
+|---|---|---|---|
+| **TCP/IP** | `192.168.1.9:5555` | `device` | 序列号含 `:`，是 `host:port` 形式 |
+| **USB** | —（列表里没有） | **不存在** | 没有任何无冒号序列号、也没有 `usb:` 字段 |
+
+| 项 | 结论 | 证据 |
 |---|---|---|
-| USB ADB 可用 | **是** | `adb -s 192.168.1.9:5555 shell` 全程可用（本轮所有采集都走它） |
-| 无线 ADB | **是，已在监听** | `persist.adb.tcp.port=5555`、`service.adb.tcp.port=5555`、`netstat` 见 `:::5555 LISTEN` |
-| ADB 是否需要授权 | **需要**（`ro.adb.secure=1`） | 已配对，所以当前免弹窗；换电脑需在设备上点“允许” |
-| ADB 是否 root | **可直接 `su`** | `su -c id` → `uid=0(root) … context=u:r:magisk:s0`（Magisk） |
-| 构建类型 | `user` / `ro.debuggable=0` | 非 userdebug，`adb root` 不可用，只能靠 Magisk `su` |
-| adbd 服务 | `init.svc.adbd=running` | 重启后由 `init.rc` 拉起，不依赖任何被测 APK |
-| 重启后能否自动连回 | **未验证** | 本轮不允许重启；但从 `persist.adb.tcp.port=5555` 看，重启后应仍监听 5555（推断，未实测） |
+| USB ADB 可用 | **unknown / 未验证** | `adb devices -l` 只有 TCP 一台；本轮不允许插拔/重启去验证 |
+| USB 端口配置 | `sys.usb.state=adb`、`sys.usb.config=adb` | 设备侧 USB 处于 adb 模式，但**主机侧没有 USB 传输** |
+| TCP/IP ADB | **已验证可用** | `192.168.1.9:5555` 全程可用（本项目所有采集都走它） |
+| 无线端口监听 | **是** | `persist.adb.tcp.port=5555`、`service.adb.tcp.port=5555`、`netstat` 见 `:::5555 LISTEN` |
+| ADB 授权 | 需要（`ro.adb.secure=1`），已配对 | 当前无弹窗直接可用 |
+| adbd 运行 | `init.svc.adbd=running` | getprop |
+| Root | **可用**（`su -c id` → `uid=0`，context `u:r:magisk:s0`） | 只读命令 |
+| 电脑重启后能否连回 | **unknown** | 未验证 |
+| 设备重启后能否自动连回 | **unknown** | 未验证（`persist.adb.tcp.port=5555` 只能说明端口会继续监听，不等于能连回） |
 
-**风险点**：ADB 守护进程与桌面/语音链路无关，禁用一个 App 不会丢 ADB；但**如果禁用到 `adbd` 相关
-system 组件或改坏 `package-restrictions.xml` 导致 system_server 起不来**，ADB 可能也连不上
-（那时只能靠 Recovery 或回刷）。
+> 关键风险：**目前唯一的救援通道是 TCP/IP，它依赖设备 Wi-Fi 与同一局域网**。
+> 一旦禁用把网络/Wi-Fi/系统服务弄坏，这条通道可能一起消失。因此本轮把“没有独立于 Wi-Fi 的救援通道”
+> 列为阻断条件（见 `candidate_operation_cards.md` 的统一门禁）。
 
-## 2. 备用入口（不依赖桌面）
+## 2. 备用入口（不依赖桌面的 ADB 操作）
 
-| 入口 | 命令 | 已验证程度 |
+| 入口 | 命令 | 验证程度 |
 |---|---|---|
-| 直接启动桌面 Activity | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` | 命令形式有效，**未执行** |
-| HOME intent | `am start -a android.intent.action.MAIN -c android.intent.category.HOME` | 同上 |
-| 切换首选桌面 | `cmd package set-home-activity --user 0 <component>` | 子命令存在（`cmd package help` 列出），**未执行** |
-| 当贝桌面 | `com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` | HOME 类别实测命中 |
-| 系统兜底 | `com.android.settings/.FallbackHome` | HOME 类别实测命中 |
-| 强制停止/启动应用 | `am force-stop` / `am start` | 标准命令，未执行 |
+| 启动默认桌面 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` | 命令存在，**未执行** |
+| 启动备用桌面 | `am start -n com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` | 同上 |
+| 切首选桌面 | `cmd package set-home-activity --user 0 <component>` | 子命令存在（`cmd package help`），**未执行** |
+| 系统兜底 | `com.android.settings/.FallbackHome` | 组件实测存在 |
 
-## 3. Recovery（**未验证**，不得写成“已具备”）
+## 3. Recovery（**全部未验证**）
 
 | 项 | 状态 | 说明 |
 |---|---|---|
-| recovery 分区存在 | **是** | `/dev/block/platform/bootdevice/by-name/recovery → mmcblk0p7`（16384 blocks = 16 MB） |
-| recovery 有备份 | **是** | `flash/ori/recovery.bin` 16,777,216 B，SHA256 见 `raw/backup_hashes.txt` |
-| 能否进入 Recovery | **未验证** | 需要 `adb reboot recovery`，本轮禁止重启 |
-| Recovery 是否提供 ADB | **未验证** | 无法在不重启的前提下确认 |
-| Recovery ADB 能否读 /data | **未验证** | 取决于 recovery 是否为 AOSP recovery 且 `ro.adb.secure` 状态 |
-| Recovery 能否执行恢复操作 | **未验证** | 未进入过 |
+| recovery 分区 | 存在 | `by-name/recovery → mmcblk0p7`（16384 blocks = 16 MB） |
+| recovery 备份 | 存在 | `flash/ori/recovery.bin` 16,777,216 B，SHA256 `raw/backup_hashes.txt` |
+| 能否进入 Recovery | **未验证** | 需 `adb reboot recovery`，本轮禁止重启 |
+| Recovery 内 ADB | **未验证** | 未进入过，不得假设存在 |
+| Recovery 读 `/data` | **未验证** | 依赖 recovery 类型与挂载能力 |
+| Recovery 可执行恢复操作 | **未验证** | — |
 
-> 结论：**Recovery 只是“存在且有备份”，能力全部未验证**。任何写操作不得假设 Recovery 可用。
-
-## 4. Fastboot / MTK 下载模式
+## 4. Fastboot / MTK 下载模式（**未验证**）
 
 | 项 | 状态 |
 |---|---|
-| `fastboot` 设备 | **未知**：本机 `ro.bootloader=unknown`，MT8167 通常不暴露标准 fastboot |
-| MTK 下载模式（BROM/Preloader） | **可能可用**（MT8167S + 完整分区备份），但需要 scatter 文件与 SP Flash Tool，**本轮未验证** |
-| scatter 文件 | **本地不存在**（`D:\tgz02\flash` 下无 `*scatter*`/`*.cfg`）→ 不能直接刷写 |
-| Secure boot | **开启**：`ro.genie.secureboot.enable=1`、`ro.genie.secureboot.hash=7e5a53d9…` → **改 system/boot 可能被校验拒绝** |
+| `fastboot` 设备 | unknown（`ro.bootloader=unknown`；MT8167 通常不暴露标准 fastboot） |
+| MTK BROM/Preloader 下载模式 | 可能可用但**未验证** |
+| scatter 文件 | **本地不存在** → 不能按分区刷写 |
+| secure boot | 开启（`ro.genie.secureboot.enable=1`、`ro.genie.secureboot.hash=7e5a53d9…`） |
+| 分区备份 | 23 个分区齐全（含 system/vendor/boot/recovery/userdata），**preloader_a/b 缺失** |
 
-## 5. 救援优先级（禁用一个包之后按这个顺序试）
+## 5. 分区备份逐项（实际存在 / 缺口）
 
-1. `adb devices` 是否还在 → 不在就换无线（`adb connect <ip>:5555`）。
-2. `adb shell am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity`。
-3. `adb shell cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity`。
-4. `powershell -File tools/restore_last_disabled.ps1`（本仓库脚本，恢复最近一次禁用项）。
-5. 若 system_server 起不来：Recovery（未验证）→ 分区回刷（需 scatter，当前缺）。
+| 分区 | 备份文件 | 字节 | 状态 |
+|---|---|---|---|
+| proinfo / nvram / seccfg / lk / lk2 | ori/*.bin | 3,145,728 / 5,242,880 / 262,144 / 393,216 / 393,216 | ✅ |
+| boot / recovery / para / logo / odmdtbo | ori/*.bin | 16,777,216 / 16,777,216 / 524,288 / 8,388,608 / 16,777,216 | ✅ |
+| vendor / expdb / frp / tee1 / tee2 | ori/*.bin | 167,772,160 / 10,485,760 / 1,048,576 / 5,242,880 / 5,242,880 | ✅ |
+| kb / dkb / metadata | ori/*.bin | 2,097,152 / 2,097,152 / 34,603,008 | ✅ |
+| system / cache / miscdata / userdata / flashinfo | ori/*.bin | 1,023,410,176 / 637,534,208 / 16,777,216 / 1,916,272,640 / 16,777,216 | ✅ |
+| **preloader_a / preloader_b** | **无** | — | ❌ **缺失**（`mmcblk0boot0/1`） |
 
-## 6. 明确未验证清单
+**不宣称“具备完整分区恢复能力”**：备份完整 ≠ 能刷回去。缺 scatter、缺已验证的下载模式、
+secure boot 开启，这三点决定了当前**没有**经过验证的分区级恢复路径。
 
-1. 重启后 ADB 是否自动连回（推断可以，未实测）。
-2. Recovery 是否存在 ADB、能否读 `/data`。
-3. `cmd package set-home-activity` 是否真的生效。
-4. fastboot/BROM 是否可进。
-5. 我**没有**为了测试救援能力而重启或改动设备——这是本轮的硬约束。
+## 6. 结论
+
+| 能力 | 结论 |
+|---|---|
+| TCP/IP ADB 救援 | ✅ 可用（但依赖 Wi-Fi/局域网） |
+| USB ADB 救援 | ⚠️ unknown（无证据） |
+| 重启后自动恢复连接 | ⚠️ unknown |
+| Recovery 救援 | ⚠️ unknown（分区存在且有备份，能力未验证） |
+| fastboot / BROM 刷写 | ⚠️ unknown（且缺 scatter） |
+| 分区级恢复 | ❌ 不具备经过验证的路径 |
+
+因此 rev5.6 阶段门禁维持 **BLOCKED**，任何候选都不得进入设备禁用。

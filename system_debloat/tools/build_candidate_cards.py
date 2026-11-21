@@ -96,12 +96,12 @@ def card(pkg, stage_ok, extra_note=''):
 | 7 依赖关系 | {('<br>'.join(r) if r else '无 app 级入向引用（不等于无依赖）')} |
 | 8 可能影响的功能 | {impact} |
 | 9 禁用前检查 | ① `pm list packages -d` 为空 ② 记录默认 HOME ③ 备份 `package-restrictions.xml` 并记 sha256 ④ `su -c id` = root ⑤ 当贝桌面处于启用 ⑥ 无线 5555 在监听 |
-| 10 禁用命令 | 本固件 `pm disable-user` 被裁剪，须用原子脚本（写 XML + 立即重启）：<br>`adb shell su -c 'sh /data/local/tmp/<pkg>_disable_apply.sh'`<br>脚本模板见 `../experiments/iot_disable_apply.sh` |
+| 10 禁用命令 | **当前不提供可执行命令（门禁 BLOCKED）**。历史路径仅供追溯：本固件 `pm disable-user` 被裁剪；rev5.4/5.5 使用过的“整文件 XML 覆盖 + 写入即重启”脚本已在 rev5.6 废止，不得再用 |
 | 11 恢复命令 | `adb shell su -c 'sh /data/local/tmp/<pkg>_disable_revert.sh'`<br>或 `adb shell su -c 'pm enable {pkg}'`（`enable` 子命令存在，未实测） |
 | 12 重启后检查 | `dumpsys package {pkg} | grep -E 'enabled=|suspended='`、`ps -A | grep {pkg.split('.')[-1]}`、`logcat -b crash -d`、`pm list packages -d` |
 | 13 桌面异常恢复 | `am start -n com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity` → 不行则 `cmd package set-home-activity --user 0 com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity` |
 | 14 失败判据 | ① 重启后 system_server 未起（`adb devices` 无设备） ② 连续崩溃日志指向本包 ③ 桌面/语音回归失败且 15 分钟内无法恢复 |
-| 15 是否允许进入下一阶段 | **{stage_ok}** |
+| 15 是否允许进入下一阶段 | **BLOCKED：救援能力未验证，不允许设备禁用。**（本卡登记的历史判定：{stage_ok}） |
 
 风险等级：{risk}；回滚难度：{rollback}。{extra_note}
 """

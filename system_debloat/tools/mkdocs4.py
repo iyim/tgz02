@@ -328,6 +328,7 @@ for fn in ('axml.py', 'scan.py', 'refs2.py', 'report.py', 'digest.py', 'edges.py
            'mkdocs.py', 'mkdocs2.py', 'mkdocs3.py', 'mkdocs4.py',
            'mkdocs5.py', 'mkdocs6.py', 'mkdocs7.py', 'mkdocs8.py', 'mkdocs9.py',
            'build_device_baseline.py', 'build_device_baseline_md.py', 'build_candidate_cards.py',
+           'adb_transport.ps1', 'test_rescue_gates.py',
            'check_device_state.ps1', 'restore_last_disabled.ps1', 'verify_launcher.ps1'):
     src = os.path.join(SRC, fn)
     if os.path.exists(src):
@@ -421,6 +422,21 @@ rev = f"""# 修订记录（rev3 / rev3.1 / rev4 / rev4.1 / rev5）
   rev5.1 = 桌面 18 个入口专项排查。rev5.2 = 候选冲突修正 + 四个大体积组件级复核
 - 本轮**未执行**任何 `pm disable-user` / `pm enable` / `pm uninstall` / 镜像或 boot 写操作；
   设备 `pm list packages -d` 仍为空
+
+## 000000. rev5.6：救援能力纠错与禁用门禁（2026-11-21）
+
+**本轮仍然零设备写入**：没有禁用、卸载、清数据、改 XML、刷写或重启。
+
+| 修正 | 内容 |
+|---|---|
+| ADB 分类纠错 | rev5.3 把 `192.168.1.9:5555` 当成 USB ADB 是**错的**。实测 `adb devices -l` 只有这一条 TCP 记录（序列号含 `:`），**USB 通道没有任何证据 → unknown**；重启后能否连回、Recovery ADB、`/data` 访问、fastboot 全部 unknown |
+| 桌面保护 | 默认 `com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity`（D_forbidden）与备用 `com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity`（protected_blocked，用户保护）双双锁定；系统技术保护与用户保护分开存储 |
+| 恢复方案 | **禁止整文件覆盖** `package-restrictions.xml`（68 个包元素，一次覆盖会连带 68 个应用）；改为**单包元素级补丁** + SHA256 校验 + “其余元素逐字节不变”断言；退出码 0 只表示已提交，成功要 `CheckOnly` 返回 20 |
+| 脚本 | 三个 PS 脚本用 `adb_transport.ps1` 统一分类；`restore_last_disabled.ps1` 重写为 `CheckOnly/Enable/XmlElementRestore` 三种模式；`verify_launcher.ps1` 增加 `-WaitSeconds`，设备未回来返回 12 而不是“恢复失败” |
+| 设备实验桩 | `experiments/iot_disable_apply.sh`、`iot_disable_revert.sh` 改为**只拒绝**的桩（`exit 3`），不再整文件覆盖、不再重启 |
+| 门禁 | 全部 18 张候选卡统一 **BLOCKED：救援能力未验证，不允许设备禁用**，并移除可执行禁用命令 |
+| 状态复核 | `device_baseline/rev54_55_state_review.md`：iot `enabled=0`、`suspended=false`、`pm list packages -d` 为空；XML 现状 6487 B/`7f7208f7…` 与备份 6522 B/`295c3978…` **字节不同但语义一致**（PMS 会重写文件，故哈希不能当恢复判据）；`/data/local/tmp` 仍留有 `pr_*.xml` 与两个危险脚本，建议清理 |
+| 测试 | 新增 `test_rescue_gates.py`（34 条）：USB/TCP 不混淆、两个桌面受保护、备份须对应目标包、禁止整文件覆盖、重启后断开不误判、未验证 Recovery 时不得放行、六个保护 App 仍在 |
 
 ## 00000. rev5.3：设备基线与救援准备（2026-11-21）
 

@@ -1,11 +1,12 @@
 ﻿<#
 .SYNOPSIS
-    只读检查：ADB 连接、默认桌面、禁用包、候选包状态。
+    只读检查设备状态：ADB 通道分类（USB / TCP）、默认桌面、禁用包、候选包状态。
 .DESCRIPTION
-    TG-Z02 系统精简项目的救援前置检查。**只读**：不禁用、不卸载、不清数据、不刷写。
-    所有 ADB 失败都会明确报错并退出，不会假装成功。
+    **只读**：不禁用、不卸载、不清数据、不写 XML、不刷写、不重启。
+    USB 与 TCP/IP 分开报告：序列号形如 host:port 的一律记为 TCP，绝不当作 USB。
+    所有 ADB 失败都会明确报错并返回非零码，不会假装成功。
 .NOTES
-    Android 8.1 / SDK 27。pm 的 disable/disable-user 在本固件被裁剪，本脚本不依赖它们。
+    TG-Z02 / Android 8.1 (SDK 27)。
 #>
 [CmdletBinding()]
 param(
@@ -18,22 +19,14 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-
-function Resolve-Adb {
-    $adb = Get-Command adb -ErrorAction SilentlyContinue
-    if (-not $adb) { throw 'adb 不在 PATH 中：请先安装 platform-tools 或把 adb 加入 PATH。' }
-    return $adb.Source
-}
+. (Join-Path $PSScriptRoot 'adb_transport.ps1')
 
 function Invoke-Adb {
     param([string]$Adb, [string]$AdbArgs, [switch]$AllowFail)
-    $target = @()
-    if ($Serial) { $target = @('-s', $Serial) }
+    $target = @(); if ($Serial) { $target = @('-s', $Serial) }
     $out = & $Adb @target shell $AdbArgs 2>&1
     $code = $LASTEXITCODE
-    if ($code -ne 0 -and -not $AllowFail) {
-        throw "adb 命令失败 (exit $code): $AdbArgs`n$out"
-    }
+    if ($code -ne 0 -and -not $AllowFail) { throw "adb 命令失败 (exit $code): $AdbArgs`n$out" }
     return ($out -join "`n")
 }
 
@@ -42,28 +35,32 @@ if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Forc
 $stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
 $log = Join-Path $LogDir "check_device_state_$stamp.log"
 
-$Adb = Resolve-Adb
+$Adb = Get-AdbPath
 $report = [System.Collections.Generic.List[string]]::new()
-function Say($t) { $report.Add($t); Write-Host $t }
+function Say($t) { $report.Add([string]$t); Write-Host $t }
 
 Say "# check_device_state  $stamp"
 Say "adb = $Adb"
 
-$devices = & $Adb devices 2>&1
-Say "`n## adb devices`n$($devices -join "`n")"
-if (-not ($devices -match '\bdevice\b')) {
-    Say 'RESULT: FAIL - 没有处于 device 状态的设备；恢复脚本此时无法工作。'
+$ti = Get-AdbTransportInfo -AdbPath $Adb
+Say "`n## ADB 通道分类（USB 与 TCP 分开）"
+Say ("原始输出:`n{0}" -f ($ti.raw -join "`n"))
+Say ("USB  在线设备数 = {0}  序列号 = {1}" -f $ti.usb_online, (($ti.usb_serials -join ', ') -replace '^$', '无'))
+Say ("TCP  在线设备数 = {0}  地址   = {1}" -f $ti.tcp_online, (($ti.tcp_serials -join ', ') -replace '^$', '无'))
+Say ("USB 通道已验证 = {0}（没有 USB 序列号即视为未验证）" -f $ti.usb_verified)
+Say ("TCP 通道已验证 = {0}" -f $ti.tcp_verified)
+
+if (-not $ti.any_online) {
+    Say 'RESULT: FAIL - 没有任何处于 device 状态的设备（USB 与 TCP 均不可用）。'
     $report -join "`n" | Set-Content -Encoding UTF8 $log
     Say "日志: $log"
     exit 2
 }
 
-$online = ($devices | Select-String -Pattern '^(\S+)\s+device$').Matches.Count
-Say "在线设备数: $online"
-
 Say "`n## 设备属性"
 foreach ($p in 'ro.product.device', 'ro.build.version.sdk', 'ro.build.type', 'ro.adb.secure',
-               'persist.adb.tcp.port', 'service.adb.tcp.port', 'ro.genie.secureboot.enable') {
+               'persist.adb.tcp.port', 'service.adb.tcp.port', 'sys.usb.state',
+               'sys.usb.config', 'ro.genie.secureboot.enable') {
     $v = Invoke-Adb -Adb $Adb -AdbArgs "getprop $p" -AllowFail
     Say ("{0} = {1}" -f $p, $v.Trim())
 }
@@ -88,17 +85,23 @@ foreach ($pkg in $Packages) {
     $d = Invoke-Adb -Adb $Adb -AdbArgs "dumpsys package $pkg" -AllowFail
     $en = ($d | Select-String -Pattern 'User 0:.*enabled=(\d+)').Matches
     $installed = $d -match 'installed=true'
+    $sus = ($d | Select-String -Pattern 'User 0:.*suspended=(true|false)').Matches
     $state = if ($en.Count -gt 0) { $en[0].Groups[1].Value } else { 'unknown' }
-    Say ("{0,-46} installed={1,-5} enabled={2}" -f $pkg, $installed, $state)
+    $susVal = if ($sus.Count -gt 0) { $sus[0].Groups[1].Value } else { 'unknown' }
+    Say ("{0,-46} installed={1,-5} enabled={2} suspended={3}" -f $pkg, $installed, $state, $susVal)
 }
 
-Say "`n## 备用桌面（当贝）是否可用"
-$db = Invoke-Adb -Adb $Adb -AdbArgs 'dumpsys package com.dangbei1.tvlauncher' -AllowFail
-Say ("dangbei installed={0} enabled={1}" -f ($db -match 'installed=true'),
-      (($db | Select-String -Pattern 'User 0:.*enabled=(\d+)').Matches | ForEach-Object { $_.Groups[1].Value }))
+Say "`n## 两个桌面（默认 + 备用）"
+foreach ($pkg in 'com.alibaba.ailabs.genie.launcher', 'com.dangbei1.tvlauncher') {
+    $d = Invoke-Adb -Adb $Adb -AdbArgs "dumpsys package $pkg" -AllowFail
+    $m = @(($d | Select-String -Pattern 'User 0:.*enabled=(\d+)').Matches)
+    $en = if ($m.Count -gt 0) { $m[0].Groups[1].Value } else { 'unknown' }
+    Say ("{0,-42} installed={1,-5} enabled={2}" -f $pkg, ($d -match 'installed=true'), $en)
+}
 
 Say "`n## 结论"
 $verdict = if ($hasRoot -and $homeOk) { 'OK - ADB 在线、root 可用、默认桌面存在' } else { 'WARN - 见上面各项' }
+if (-not $ti.usb_verified) { Say 'NOTE: USB 通道没有任何证据，USB 救援能力记为 unknown。' }
 Say $verdict
 
 $report -join "`n" | Set-Content -Encoding UTF8 $log

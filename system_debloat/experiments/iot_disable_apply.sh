@@ -1,28 +1,15 @@
 #!/system/bin/sh
-# 原子应用：把 iot 标记为 disabled(3) 并立刻重启，避免 system_server 把改动写回。
-# 运行：su -c 'sh /data/local/tmp/iot_disable_apply.sh'
-set -e
-TARGET=/data/system/users/0/package-restrictions.xml
-NEW=/data/local/tmp/pr_new.xml
-ORIG=/data/local/tmp/pr_orig.xml
-[ -f "$NEW" ] || { echo "missing $NEW"; exit 1; }
-[ -f "$ORIG" ] || { echo "missing $ORIG (backup)"; exit 1; }
-cp "$TARGET" /data/local/tmp/pr_before_apply_$(date +%s).xml || true
-cp "$NEW" "$TARGET"
-chown system:system "$TARGET"
-chmod 660 "$TARGET"
-restorecon "$TARGET" >/dev/null 2>&1 || true
-sync
-if grep -q 'name="com.alibaba.ailabs.genie.iot".*enabled="3"' "$TARGET"; then
-  echo "OK: iot marked enabled=3; rebooting now"
-  sync
-  reboot
-else
-  echo "FAIL: verify failed, restoring"
-  cp "$ORIG" "$TARGET"
-  chown system:system "$TARGET"
-  chmod 660 "$TARGET"
-  restorecon "$TARGET" >/dev/null 2>&1 || true
-  sync
-  exit 2
-fi
+# 已废弃（rev5.6）：本脚本会用**整文件**内容覆盖
+#   /data/system/users/0/package-restrictions.xml
+# 从而连带改写其它应用的 PackageManager 状态；而且它是“写入即重启”的，
+# 在救援能力未验证前不允许使用。
+#
+# 设备上若有旧副本（/data/local/tmp/iot_disable_apply.sh），同样视为危险，建议删除。
+# 恢复请改用电脑端：
+#   powershell -File tools\restore_last_disabled.ps1 -ConfirmPackage <pkg> -Mode CheckOnly
+#   powershell -File tools\restore_last_disabled.ps1 -ConfirmPackage <pkg> -Mode XmlElementRestore \
+#       -BackupFile <单包元素备份> -ExpectedSha256 <sha256>
+#
+# 本脚本现在只做拒绝，不改动设备。
+echo "REFUSED: 整文件 XML 覆盖已被禁用于 rev5.6；请使用 tools/restore_last_disabled.ps1 的单包元素恢复。" >&2
+exit 3

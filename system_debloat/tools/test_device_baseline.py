@@ -181,7 +181,8 @@ class TestRescueAndRecovery(unittest.TestCase):
         backups = {ln.split('|')[0].lstrip('\ufeff'): int(ln.split('|')[1]) for ln in raw.strip().splitlines()}
         self.assertEqual(len(backups), 23)
         for name, size in backups.items():
-            self.assertIn('ori/' + name, RECOV)
+            stem = name[:-4] if name.endswith('.bin') else name
+            self.assertIn(stem, RECOV, name)
         self.assertIn('1,023,410,176', RECOV)
         self.assertIn('preloader', RECOV.lower())
 
@@ -232,12 +233,13 @@ class TestScripts(unittest.TestCase):
 
     def test_restore_handles_adb_offline(self):
         t = self._read('restore_last_disabled.ps1')
-        self.assertIn('adb 没有处于 device 状态的设备', t)
+        self.assertIn('没有处于 device 状态的设备', t)
 
-    def test_restore_has_restrictions_path(self):
+    def test_restore_has_element_restore_path(self):
         t = self._read('restore_last_disabled.ps1')
-        self.assertIn('-ViaRestrictions', t)
+        self.assertIn('XmlElementRestore', t)
         self.assertIn('package-restrictions.xml', t)
+        self.assertNotIn('-ViaRestrictions', t)  # rev5.6 removed the whole-file path
 
 
 if __name__ == '__main__':
