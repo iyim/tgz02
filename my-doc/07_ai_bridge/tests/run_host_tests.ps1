@@ -25,7 +25,8 @@ New-Item -ItemType Directory -Force (Join-Path $Android "out") | Out-Null
 
 $LibSrc = @(
     "deepseek_provider.c", "event_reader.c", "consumer_state.c", "provider.c",
-    "mock_provider.c", "worker_status.c", "worker_util.c", "seq_gap.c"
+    "mock_provider.c", "worker_status.c", "worker_util.c", "seq_gap.c",
+    "conv_context.c", "worker_conf.c"
 ) | ForEach-Object { Join-Path $Android $_ }
 $WorkerSrc = @((Join-Path $Android "ai_worker.c")) + $LibSrc
 

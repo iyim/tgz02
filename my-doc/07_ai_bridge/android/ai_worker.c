@@ -16,6 +16,7 @@
 #include "ai_worker.h"
 #include "consumer_state.h"
 #include "seq_gap.h"
+#include "worker_conf.h"
 #include "worker_util.h"
 
 #include <errno.h>
@@ -48,6 +49,9 @@ typedef struct {
     int          prov_deepseek;         /* 1 = 当前 provider 是 deepseek（真实网络） */
     t6b_gaptrack gaps;
     wu_lockfile  lock;
+    cv_ctx       cv;                     /* T7-01：多轮上下文（独立模块） */
+    char         msg_json[CV_JSON_MAX];  /* 本轮要发的 messages 数组（历史 + 本轮 user） */
+    char         clear_path[T6B_PATH_MAX]; /* context.clear 请求文件 */
 
     /* 待 Provider 成功的事件（失败期间一直保留，不读下一条） */
     t6b_event    pend;
@@ -259,6 +263,16 @@ static void publish_status(t6b_worker *w, const char *state)
     else
         w->st.pending_event_id[0] = '\0';
     w->st.file_size = (t6b_reader_stat(&w->rd, &size) == 0) ? size : -1;
+
+    /* T7-01：上下文观测（只放条数与计数，绝不含消息正文） */
+    w->st.context_enabled = w->cv.cfg.enabled;
+    w->st.context_max_messages = w->cv.cfg.max_messages;
+    w->st.context_messages = w->cv.count;
+    w->st.context_turns = cv_turn_count(&w->cv);
+    w->st.context_saves = w->cv.saves;
+    w->st.context_save_errors = w->cv.save_errors;
+    w->st.context_evicted = w->cv.evicted_messages;
+    w->st.context_load_state = w->cv.last_load_state;
 
     /* Provider 观测：真实 Provider 才有 http/latency/resp_bytes；
      * 这些字段只放数字与短枚举，绝不含 key / 用户文本 / 上游正文。 */
@@ -714,9 +728,25 @@ static int provider_attempt(t6b_worker *w)
     t6b_reply rep;
     long long t0 = wu_now_ms();
     int rc;
+    int nmsg = 0;
+    char merr[CV_ERR_MAX];
 
     w->pend_attempts++;
-    rc = t6b_provider_complete(&w->prov, w->pend.text, &rep);
+
+    /* T7-01：先把"历史 + 本轮 user"拼成完整 messages 数组，再交给 Provider。
+     * 上下文关闭时 nmsg==1（只有本轮），行为与 T5-06C 完全一致。 */
+    merr[0] = '\0';
+    nmsg = cv_build_messages(&w->cv, w->pend.text, w->msg_json, sizeof(w->msg_json),
+                             merr, sizeof(merr));
+    if (nmsg <= 0) {
+        w->st.provider_err++;
+        snprintf(w->pend_error, sizeof(w->pend_error), "context build failed: %s",
+                 merr[0] != '\0' ? merr : "no messages");
+        t6b_status_note_error(&w->st, "context build failed: %s",
+                              merr[0] != '\0' ? merr : "no messages");
+        return -1;
+    }
+    rc = t6b_provider_complete_msgs(&w->prov, w->msg_json, w->pend.text, &rep);
 
     if (rc != 0) {
         w->st.provider_err++;
@@ -731,9 +761,9 @@ static int provider_attempt(t6b_worker *w)
         w->st.provider_ok++;
         logf_(&w->cfg,
               "event id=%s seq=%lu pid=%lld text_bytes=%d -> provider=%s status=ok "
-              "latency=%lldms reply_bytes=%d (attempt %d)",
+              "latency=%lldms reply_bytes=%d msgs=%d (attempt %d)",
               w->pend.event_id, w->pend.seq, w->pend.pid, w->pend.text_bytes,
-              pname, rep.latency_ms, rep.text_bytes, w->pend_attempts);
+              pname, rep.latency_ms, rep.text_bytes, nmsg, w->pend_attempts);
         if (w->prov_deepseek) {
             /* 真实调用的可核对事实：模型、HTTP 状态、curl 结果、耗时、响应字节数。
              * 不含 key、不含请求体、不含模型原文。 */
@@ -747,6 +777,11 @@ static int provider_attempt(t6b_worker *w)
             always("pending event cleared: id=%s after %d attempts; resuming normal pace",
                    w->pend.event_id, w->pend_attempts);
         }
+        /* T7-01：每轮可核对的请求规模（历史几条 + 本轮 1 条），mock/真实 Provider 都打 */
+        always("provider reply: event=%s provider=%s req_msgs=%d history_msgs=%d "
+               "latency=%lldms reply_bytes=%d",
+               w->pend.event_id, pname, nmsg, (nmsg > 0) ? nmsg - 1 : 0,
+               rep.latency_ms, rep.text_bytes);
         w->pend_stuck = 0;
         w->pend_error[0] = '\0';
         {
@@ -791,6 +826,26 @@ static int provider_attempt(t6b_worker *w)
             int cr = commit_event(w);
             if (cr == -2) return -4;      /* 指纹推进失败：致命 */
             if (cr != 0) return -3;       /* 状态落盘失败 */
+        }
+        /*
+         * T7-01：上下文提交放在"偏移已持久化"之后。
+         *   - 只有走到这里才说明本轮真的成功了（Provider OK + 回答已入队 + 偏移已落盘）；
+         *   - 放在偏移之后，是为了避免"提交失败 -> 重试同一条事件 -> 同一轮被追加两次"；
+         *   - 崩溃窗口的代价只是这一轮不进历史，绝不会写进错误内容。
+         */
+        if (w->cv.cfg.enabled && rep.text_bytes > 0) {
+            int cvc = cv_commit_turn(&w->cv, w->pend.text, rep.text);
+            if (cvc == 0) {
+                always("context commit: event=%s turns=%d msgs=%d file=%s",
+                       w->pend.event_id, cv_turn_count(&w->cv), w->cv.count,
+                       w->cv.cfg.file);
+            } else if (cvc > 0) {
+                always("context commit saved in memory only (write failed): event=%s msgs=%d "
+                       "errors=%llu", w->pend.event_id, w->cv.count, w->cv.save_errors);
+            } else {
+                always("context commit rejected (invalid text): event=%s reply_bytes=%d",
+                       w->pend.event_id, rep.text_bytes);
+            }
         }
         reply_log_append(w, &rep);        /* 偏移已持久化，再记回答（宁可少一行，不重复） */
         return 0;
@@ -885,6 +940,16 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
         if (w->cfg.max_events > 0 && (long long)w->st.events_processed >= w->cfg.max_events) {
             *exit_reason = "max_events";
             return 0;
+        }
+
+        /* 0.5) T7-01：运行中清空上下文的请求（run_ai_worker.sh clear-context 写这个文件） */
+        if (w->clear_path[0] != '\0' && wu_file_size(w->clear_path) >= 0) {
+            (void)cv_clear(&w->cv);
+            always("context cleared on request: file=%s (running worker, memory + file)",
+                   w->cv.cfg.file);
+            (void)wu_unlink(w->clear_path);
+            w->st.context_messages = 0;
+            w->st.context_turns = 0;
         }
         if (w->cfg.max_runtime_ms > 0 && wu_now_ms() - started >= w->cfg.max_runtime_ms) {
             *exit_reason = "max_runtime";
@@ -1036,6 +1101,12 @@ void t6b_config_defaults(t6b_config *c)
     c->state_fail_exit_ms = 3000;
     c->verbose = 0;
     snprintf(c->tts_queue, sizeof(c->tts_queue), "%s", T6B_TTS_QUEUE_DEFAULT);
+    /* T7-01：上下文默认关闭（= T5-06C 行为），打开时默认 3 轮完整对话 */
+    c->context_enabled = 0;
+    c->context_max_messages = CV_DEFAULT_MAX_MESSAGES;
+    c->context_file[0] = '\0';
+    c->conf_path[0] = '\0';
+    c->clear_context = 0;
     t6b_mock_defaults(&c->mock);
     t6b_ds_defaults(&c->deepseek);
 }
@@ -1110,6 +1181,18 @@ int t6b_config_check(const t6b_config *c, char *err, size_t errlen)
         if (err) snprintf(err, errlen, "state-fail-exit-ms out of range [0,3600000]");
         return -1;
     }
+    /* ---- T7-01：上下文参数（缺失时用安全默认值，不让 Worker 起不来） ---- */
+    if (c->context_max_messages <= 0) {
+        /* 0/负数 = 用默认值，不报错 */
+    } else if (c->context_max_messages < 2 || c->context_max_messages > CV_MAX_MESSAGES_CAP) {
+        if (err) snprintf(err, errlen, "context-max-messages out of range [2,%d]",
+                          CV_MAX_MESSAGES_CAP);
+        return -1;
+    }
+    if (c->context_file[0] != '\0' && strpbrk(c->context_file, "\r\n\t") != NULL) {
+        if (err) snprintf(err, errlen, "context-file must not contain control chars");
+        return -1;
+    }
 
     /* ---- provider 选择（T5-06C） ---- */
     if (strcmp(c->provider_name, T6B_PROVIDER_MOCK) == 0) return 0;
@@ -1147,6 +1230,14 @@ int t6b_config_check(const t6b_config *c, char *err, size_t errlen)
     }
     if (c->deepseek.total_timeout_ms < c->deepseek.connect_timeout_ms) {
         if (err) snprintf(err, errlen, "deepseek-timeout-ms must be >= connect timeout");
+        return -1;
+    }
+    if (c->deepseek.temperature < 0.0 || c->deepseek.temperature > 2.0) {
+        if (err) snprintf(err, errlen, "temperature out of range [0.0,2.0]");
+        return -1;
+    }
+    if (c->deepseek.max_tokens < 1 || c->deepseek.max_tokens > 8192) {
+        if (err) snprintf(err, errlen, "max-tokens out of range [1,8192]");
         return -1;
     }
     return 0;
@@ -1210,6 +1301,7 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
     join_path(w.state_path, sizeof(w.state_path), c->state_dir, T6B_STATE_FILE);
     join_path(w.status_path, sizeof(w.status_path), c->state_dir, T6B_STATUS_FILE);
     join_path(w.lock_path, sizeof(w.lock_path), c->state_dir, T6B_LOCK_NAME_DEFAULT);
+    join_path(w.clear_path, sizeof(w.clear_path), c->state_dir, T6B_CONTEXT_CLEAR_NAME);
 
     if (wu_mkdir_p(c->state_dir) != 0) {
         always("cannot create state dir: %s", c->state_dir);
@@ -1227,6 +1319,57 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
             out->pid = wu_self_pid();
         }
         return 3;
+    }
+
+    /* T7-01：初始化对话上下文（独立模块）。文件损坏只留档清空，绝不影响启动。
+     * 放在拿锁之后：--clear-context 与正在运行的 Worker 不会同时改这个文件。 */
+    {
+        cv_cfg cc;
+        char cpath[T6B_PATH_MAX];
+
+        memset(&cc, 0, sizeof(cc));
+        if (c->context_file[0] != '\0') {
+            snprintf(cpath, sizeof(cpath), "%s", c->context_file);
+        } else {
+            join_path(cpath, sizeof(cpath), c->state_dir, T6B_CONTEXT_NAME_DEFAULT);
+        }
+        cc.enabled = c->context_enabled ? 1 : 0;
+        cc.max_messages = (c->context_max_messages > 0) ? c->context_max_messages
+                                                       : CV_DEFAULT_MAX_MESSAGES;
+        snprintf(cc.file, sizeof(cc.file), "%s", cpath);
+
+        if (cv_init(&w.cv, &cc) != 0) {
+            always("context init failed (running without history)");
+            cc.enabled = 0;
+            (void)cv_init(&w.cv, &cc);
+        }
+
+        if (c->clear_context) {
+            (void)cv_clear(&w.cv);
+            always("context cleared: file=%s", cc.file);
+            lock_release(&w);
+            return 0;
+        }
+
+        snprintf(w.st.context_file, sizeof(w.st.context_file), "%s", cc.file);
+        w.st.context_enabled = cc.enabled;
+        w.st.context_max_messages = cc.max_messages;
+        w.st.context_messages = w.cv.count;
+        w.st.context_turns = cv_turn_count(&w.cv);
+        w.st.context_load_state = w.cv.last_load_state;
+        always("context: enabled=%d max_msgs=%d restored_msgs=%d restored_turns=%d "
+               "load=%s file=%s",
+               cc.enabled, cc.max_messages, w.cv.count, cv_turn_count(&w.cv),
+               (w.cv.last_load_state == CV_LOAD_OK) ? "restored" :
+               (w.cv.last_load_state == CV_LOAD_ABSENT) ? "empty" :
+               (w.cv.last_load_state == CV_LOAD_RECOVERED) ? "recovered" :
+               (w.cv.last_load_state == CV_LOAD_DISABLED) ? "disabled" : "read_failed",
+               cc.file);
+        if (w.cv.last_load_state == CV_LOAD_RECOVERED ||
+            w.cv.last_load_state == CV_LOAD_FAILED) {
+            always("context: previous file unusable (%s); continuing with empty history",
+                   w.cv.last_error);
+        }
     }
 
     /* 读消费进度；损坏时留档并从头开始（绝不静默跳过未处理事件） */
@@ -1436,6 +1579,16 @@ static void usage(void)
         "  --reply-log PATH      append each successful answer as one JSON line (default off)\n"
         "  --tts-queue-dir DIR   hand each successful answer to the factory TTS executor\n"
         "                        (local persistent queue, idempotent per event_id; default off)\n"
+        "  --conf PATH           load provider/context settings from a key=value file\n"
+        "                        (CLI options still win; no credential is stored there)\n"
+        "  --temperature X       sampling temperature 0.0-2.0 (default %.1f)\n"
+        "  --max-tokens N        completion limit (default %d)\n"
+        "  --base-url U          alias of --deepseek-base-url\n"
+        "  --model M             alias of --deepseek-model\n"
+        "  --context 0|1         multi-turn context (default 0 = every turn independent)\n"
+        "  --context-max-messages N  keep at most N messages, whole turns only (default %d)\n"
+        "  --context-file PATH   context json (default <state-dir>/context.json)\n"
+        "  --clear-context       delete the stored context and exit\n"
         "  --mock-reply TEXT     fixed mock reply text\n"
         "  --mock-delay-ms N     simulate provider latency\n"
         "  --mock-fail-from N    mock always fails from call N on\n"
@@ -1447,7 +1600,8 @@ static void usage(void)
         "            6 file identity failed (prefix fingerprint cannot be verified/updated)\n",
         T6B_WORK_DIR_DEFAULT, T6B_STATE_DIR_DEFAULT, T6B_EVENTS_NAME_DEFAULT,
         T6B_DS_KEY_FILE_DEFAULT, T6B_DS_MODEL_DEFAULT, T6B_DS_BASE_URL_DEFAULT,
-        T6B_DS_PATH_SUFFIX, T6B_DS_CONNECT_MS_DEFAULT, T6B_DS_TIMEOUT_MS_DEFAULT);
+        T6B_DS_PATH_SUFFIX, T6B_DS_CONNECT_MS_DEFAULT, T6B_DS_TIMEOUT_MS_DEFAULT,
+        T6B_DS_TEMP_DEFAULT, T6B_DS_MAX_TOKENS_DEFAULT, CV_DEFAULT_MAX_MESSAGES);
 }
 
 static int need_str(int argc, char **argv, int i, const char **out)
@@ -1465,6 +1619,25 @@ int main(int argc, char **argv)
     int rc;
 
     t6b_config_defaults(&cfg);
+
+    /*
+     * T7-01：先把 --conf 指定的配置文件加载进来（CLI 参数随后覆盖它）。
+     * 顺序是"先扫一遍 --conf，再正常解析参数"，所以命令行里 --conf 写在前后都一样。
+     */
+    for (i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--conf") == 0 && i + 1 < argc) {
+            char cerr[160];
+            int applied = 0;
+
+            cerr[0] = '\0';
+            snprintf(cfg.conf_path, sizeof(cfg.conf_path), "%s", argv[i + 1]);
+            if (wc_load(&cfg, cfg.conf_path, &applied, cerr, sizeof(cerr)) != 0) {
+                fprintf(stderr, "config file error: %s (%s)\n", cerr, cfg.conf_path);
+                return 2;
+            }
+            break;
+        }
+    }
 
 #ifdef SIGPIPE
     signal(SIGPIPE, SIG_IGN);
@@ -1512,6 +1685,15 @@ int main(int argc, char **argv)
         else if (strcmp(a, "--deepseek-timeout-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.total_timeout_ms = atoi(v); i++; }
         else if (strcmp(a, "--reply-log") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.reply_log, sizeof(cfg.reply_log), "%s", v); i++; }
         else if (strcmp(a, "--tts-queue-dir") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.tts_queue, sizeof(cfg.tts_queue), "%s", v); i++; }
+        else if (strcmp(a, "--conf") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.conf_path, sizeof(cfg.conf_path), "%s", v); i++; }
+        else if (strcmp(a, "--temperature") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.temperature = atof(v); i++; }
+        else if (strcmp(a, "--max-tokens") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.max_tokens = atoi(v); i++; }
+        else if (strcmp(a, "--base-url") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.deepseek.base_url, sizeof(cfg.deepseek.base_url), "%s", v); i++; }
+        else if (strcmp(a, "--model") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.deepseek.model, sizeof(cfg.deepseek.model), "%s", v); i++; }
+        else if (strcmp(a, "--context") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.context_enabled = atoi(v) ? 1 : 0; i++; }
+        else if (strcmp(a, "--context-max-messages") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.context_max_messages = atoi(v); i++; }
+        else if (strcmp(a, "--context-file") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.context_file, sizeof(cfg.context_file), "%s", v); i++; }
+        else if (strcmp(a, "--clear-context") == 0) { cfg.clear_context = 1; continue; }
         else {
             fprintf(stderr, "unknown option: %s\n", a);
             usage();

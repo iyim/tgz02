@@ -43,11 +43,12 @@
 #define T6B_DS_KEY_MAX     256
 #define T6B_DS_MODEL_MAX   64
 #define T6B_DS_URL_MAX     320
-#define T6B_DS_BODY_MAX    4096
+#define T6B_DS_BODY_MAX    32768       /* T7-01：多轮 messages 会比单轮大得多 */
 #define T6B_DS_RESP_MAX    65536     /* 响应体上限：超过即报错，绝不无限读取 */
 #define T6B_DS_CLASS_MAX   40
 #define T6B_DS_XERR_MAX    96
 #define T6B_DS_INPUT_MAX   511       /* 与 T6B_TEXT_MAX 一致：ASR 文本上限（字节） */
+#define T6B_DS_TEMP_DEFAULT 0.7      /* T7-01：temperature 现在可配置 */
 
 /* ---------------- 配置 ---------------- */
 
@@ -58,6 +59,7 @@ typedef struct {
     int  connect_timeout_ms;
     int  total_timeout_ms;
     int  max_tokens;
+    double temperature;      /* T7-01：0.0 - 2.0，默认 0.7 */
     int  insecure_http;      /* 1 = base_url 是明文 http（启动时已告警） */
 } t6b_ds_cfg;
 
@@ -141,6 +143,15 @@ int  t6b_ds_load_key(const char *path, char *out, size_t cap,
  * user_text 必须是合法 UTF-8 且长度 <= T6B_TEXT_MAX；放不下时返回 -1，绝不截断。 */
 int  t6b_ds_build_body(const char *model, const char *user_text,
                        char *out, size_t cap, size_t *outlen, char *err, size_t errlen);
+
+/* T7-01：用完整 messages 数组构造请求体。
+ *   messages_json 必须是 JSON 数组文本（"[" 开头 "]" 结尾），由 conv_context 生成；
+ *   system_prompt 非空时插到数组最前面；temperature/max_tokens 现在都是参数。
+ * 0 = 成功；-1 = 非法/放不下（err 说明）。 */
+int  t6b_ds_build_body_msgs(const char *model, const char *system_prompt,
+                            const char *messages_json, double temperature, int max_tokens,
+                            char *out, size_t cap, size_t *outlen,
+                            char *err, size_t errlen);
 
 /* 从响应体取 choices[0].message.content。
  *   0  = 成功（utf8 文本写入 out，*outlen 为字节数）

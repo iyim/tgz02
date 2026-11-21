@@ -1,0 +1,142 @@
+﻿[2026-11-21 20:04:48] 
+[2026-11-21 20:04:48] === P0 preflight and deploy ===
+[2026-11-21 20:04:49]   ASSERT OK   device online (state=device)
+[2026-11-21 20:04:49]   ASSERT OK   boot_completed=1
+[2026-11-21 20:04:49]   ASSERT OK   native ASR bridge is running (events.jsonl producer)
+[2026-11-21 20:04:50]   ASSERT OK   factory core process alive (pid=1194)
+[2026-11-21 20:04:50]   pre-deploy stop: stopped: pid=13734
+[2026-11-21 20:04:51]   ASSERT OK   push new ai_worker
+[2026-11-21 20:04:52]   ASSERT OK   install ai_worker into 
+[2026-11-21 20:04:52]   ASSERT OK   chmod 755 ai_worker
+[2026-11-21 20:04:52]   ASSERT OK   device ai_worker sha256 matches host build (94d53417294bc39c9193c9e012de93b9c37e88cdc1dc0887721ec05c2a74b4df)
+[2026-11-21 20:04:53]   ASSERT OK   push run_ai_worker.sh
+[2026-11-21 20:04:53]   ASSERT OK   install run_ai_worker.sh
+[2026-11-21 20:04:53]   ASSERT OK   chmod 755 run_ai_worker.sh
+[2026-11-21 20:04:53]   ASSERT OK   push worker.conf
+[2026-11-21 20:04:53]   ASSERT OK   ensure state dir
+[2026-11-21 20:04:54]   ASSERT OK   install worker.conf
+[2026-11-21 20:04:54]   ASSERT OK   chmod 600 worker.conf
+[2026-11-21 20:04:54]   ASSERT OK   conf enables the context switch
+[2026-11-21 20:04:54]   ASSERT OK   conf sets the message limit
+[2026-11-21 20:04:54]   ASSERT OK   conf points at the device local model proxy
+[2026-11-21 20:04:54]   ASSERT OK   conf uses model deepseek-flash
+[2026-11-21 20:04:54]   ASSERT OK   conf has no inline api_key line
+[2026-11-21 20:04:55]   ASSERT OK   worker.conf is 0600 (got: -rw------- 1 root root 1305 2026-11-21 20:04 /data/local/tmp/t5_bridge/ai_worker/worker.conf)
+[2026-11-21 20:04:55]   ASSERT OK   api key file is 0600 (got: -rw------- 1 shell shell 37 2026-11-20 21:48 /data/local/tmp/t5_bridge/secret/deepseek_api_key)
+[2026-11-21 20:04:56]   ASSERT OK   api key file is not empty (length=36, content not printed)
+[2026-11-21 20:04:57]   ASSERT OK   factory TTS executor is alive
+[2026-11-21 20:04:57] 
+[2026-11-21 20:04:57] === P1 synthetic events (mock provider, own sandbox dirs) ===
+[2026-11-21 20:05:02]   ASSERT OK   1) single turn sends exactly one message (msgs=1)
+[2026-11-21 20:05:02]   ASSERT OK   1) the turn was committed after a successful reply
+[2026-11-21 20:05:07]   ASSERT OK   2) two turns send 1 then 3 messages (got 1,3)
+[2026-11-21 20:05:12]   ASSERT OK   3) three turns send 1,3,5 messages (got 1,3,5)
+[2026-11-21 20:05:12]   read context: chars=356
+[2026-11-21 20:05:12]   ASSERT OK   3) context file holds 3 complete turns (messages=6)
+[2026-11-21 20:05:12]   ASSERT OK   3) the file is written as user/assistant pairs in order
+[2026-11-21 20:05:12]   ASSERT OK   3) the three questions are stored in order
+[2026-11-21 20:05:12]   ASSERT OK   3) context file is 0600 (got: -rw------- 1 shell shell 477 2026-11-21 20:05 /data/local/tmp/t7_01/turn3/state/context.json)
+[2026-11-21 20:05:14]   ASSERT OK   4) restart reports restored_msgs=6
+[2026-11-21 20:05:14]   ASSERT OK   4) restart reports restored_turns=3
+[2026-11-21 20:05:14]   ASSERT OK   4) restart reports load=restored
+[2026-11-21 20:05:15]   ASSERT OK   5) messages grow 1,3 then stop at the limit (got 1,3,5,5,5)
+[2026-11-21 20:05:15]   ASSERT OK   5) after the limit every request sends 5 messages = 4 kept + current (got 5)
+[2026-11-21 20:05:15]   read context: chars=246
+[2026-11-21 20:05:15]   ASSERT OK   5) only 4 messages are kept (messages=4)
+[2026-11-21 20:05:15]   ASSERT OK   5) the oldest kept message is a user message (no orphan assistant)
+[2026-11-21 20:05:15]   ASSERT OK   5) the oldest turn (event 1,2,3) was evicted first
+[2026-11-21 20:05:17]   ASSERT OK   5) the limit survives a restart
+[2026-11-21 20:05:22]   ASSERT OK   6) every request sends exactly one message (got 1,1,1)
+[2026-11-21 20:05:22]   ASSERT OK   6) nothing is committed to the history
+[2026-11-21 20:05:26]   ASSERT OK   6) no context file is created when the switch is off
+[2026-11-21 20:05:32]   read context: chars=135
+[2026-11-21 20:05:32]   ASSERT OK   7) the second event really failed at the provider
+[2026-11-21 20:05:32]   ASSERT OK   7) only the successful turn is stored (messages=2)
+[2026-11-21 20:05:32]   ASSERT OK   7) no error text leaked into the assistant reply
+[2026-11-21 20:05:32]   ASSERT OK   7) the failed event is kept and retried, not skipped
+[2026-11-21 20:05:37]   ASSERT OK   8) the corrupt file is reported as recovered
+[2026-11-21 20:05:37]   ASSERT OK   8) the reason is logged (no crash, no exit)
+[2026-11-21 20:05:37]   ASSERT OK   8) the worker keeps working after the recovery
+[2026-11-21 20:05:38]   read context: chars=250
+[2026-11-21 20:05:38]   ASSERT OK   8) a fresh file was written (2 new turns, messages=4)
+[2026-11-21 20:05:38]   ASSERT OK   8) the broken file was kept as context.json.corrupt
+[2026-11-21 20:05:38] 
+[2026-11-21 20:05:38] === P2 real voice: three continuous turns through ASR -> model -> TTS ===
+[2026-11-21 20:05:38]   clear-context (worker stopped): [aiw] 2026-11-21T20:05:39 lock acquired; previous owner pid=13734 no longer holding it
+[aiw] 2026-11-21T20:05:39 context cleared: file=/data/local/tmp/t5_bridge/ai_worker/context.json
+clear-context exit=0
+[2026-11-21 20:05:38]   ASSERT OK   the context can be cleared while the worker is stopped
+[2026-11-21 20:05:40]   start: started (deepseek): pid=14289 key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker conf=/data/local/tmp/t5_bridge/ai_worker/worker.conf
+[2026-11-21 20:05:40]   ASSERT OK   the real worker starts with the context switch on
+[2026-11-21 20:05:40]   ASSERT OK   the context starts empty for this run
+[2026-11-21 20:05:40]   ASSERT OK   the CLI limit overrides the config file
+[2026-11-21 20:05:41]   clear-context (worker running): context cleared (running worker pid=14289, file=/data/local/tmp/t5_bridge/ai_worker/context.json)
+[2026-11-21 20:05:41]   ASSERT OK   the context can be cleared while the worker runs
+[2026-11-21 20:05:41]   ASSERT OK   the running worker logged the clear request
+[2026-11-21 20:06:17]   context after clear: chars=0 messages=0
+[2026-11-21 20:06:17]   ASSERT OK   no turn from the previous conversation survives the clear
+[2026-11-21 20:07:31]   attempt 1: no new ASR event
+[2026-11-21 20:08:08]   spoke turn 1 (Tokyo intro): ASR text = '天猫精灵说说东京的景点' (attempt 2)
+[2026-11-21 20:08:08]   ASSERT OK   turn 1 (Tokyo intro) recognised by the factory ASR
+[2026-11-21 20:08:09]   ASSERT OK   turn 1 (Tokyo intro) committed to the context
+[2026-11-21 20:08:47]   spoke turn 2 (food, city not named): ASR text = '天猫精灵那里有什么好吃的' (attempt 1)
+[2026-11-21 20:08:47]   ASSERT OK   turn 2 (food, city not named) recognised by the factory ASR
+[2026-11-21 20:08:47]   ASSERT OK   turn 2 (food, city not named) committed to the context
+[2026-11-21 20:09:25]   spoke turn 3 (attraction, city not named): ASR text = '天猫精灵推荐个景点' (attempt 1)
+[2026-11-21 20:09:25]   ASSERT OK   turn 3 (attraction, city not named) recognised by the factory ASR
+[2026-11-21 20:09:25]   ASSERT OK   turn 3 (attraction, city not named) committed to the context
+[2026-11-21 20:09:26]   ASSERT OK   context file parses after the three turns
+[2026-11-21 20:09:26]   stored: 6 messages, 3 user / 3 assistant
+[2026-11-21 20:09:26]   ASSERT OK   user and assistant messages are balanced (no half turn)
+[2026-11-21 20:09:26]   ASSERT OK   the stored history respects the configured limit
+[2026-11-21 20:09:26]   ASSERT OK   at least three complete (user, assistant) pairs are stored (got 3)
+[2026-11-21 20:09:26]   ASSERT OK   turn 1 question (Tokyo) is stored
+[2026-11-21 20:09:26]   ASSERT OK   turn 2 question (food) is stored after turn 1
+[2026-11-21 20:09:26]   ASSERT OK   turn 3 question (attraction) is stored after turn 2
+[2026-11-21 20:09:26]   ASSERT OK   turn 2 never names the city (history was required)
+[2026-11-21 20:09:26]   ASSERT OK   turn 3 never names the city (history was required)
+[2026-11-21 20:09:26]   turn 1: Q='天猫精灵说说东京的景点'
+[2026-11-21 20:09:26]           A='东京可以逛浅草寺、东京塔、晴空塔、明治神宫，还有涩谷十字路口和上野公园。想购物去银座，想玩就去东京迪士尼。'
+[2026-11-21 20:09:26]   turn 2: Q='天猫精灵那里有什么好吃的'
+[2026-11-21 20:09:26]           A='东京好吃的有寿司、拉面、天妇罗、烧肉，还有筑地市场的海鲜和月岛文字烧。想省事就去便利店，饭团和甜点也很不错。'
+[2026-11-21 20:09:26]   turn 3: Q='天猫精灵推荐个景点'
+[2026-11-21 20:09:26]           A='推荐浅草寺，第一次去东京很合适，能看雷门、逛仲见世商店街，顺便吃点小吃。'
+[2026-11-21 20:09:26]   ASSERT OK   turn 1 reply is stored
+[2026-11-21 20:09:26]   ASSERT OK   turn 2 reply is stored
+[2026-11-21 20:09:26]   ASSERT OK   turn 3 reply is stored
+[2026-11-21 20:09:26]   ASSERT OK   reply 2 talks about Tokyo food (turn 1 context was used)
+[2026-11-21 20:09:26]   ASSERT OK   reply 3 names a Tokyo place although turn 3 never said the city
+[2026-11-21 20:09:26]   req_msgs sequence: 1,3,5
+[2026-11-21 20:09:26]   ASSERT OK   the worker logged at least three provider requests
+[2026-11-21 20:09:26]   ASSERT OK   the first request carried no history (req_msgs=1)
+[2026-11-21 20:09:26]   ASSERT OK   the last request carried history (req_msgs=5)
+[2026-11-21 20:09:26]   ASSERT OK   the local model proxy answered with HTTP 200
+[2026-11-21 20:09:26]   ASSERT OK   each answer was handed to the factory TTS queue
+[2026-11-21 20:09:27]   ASSERT OK   the factory TTS played at least three answers (outcome ok x144)
+[2026-11-21 20:09:27] 
+[2026-11-21 20:09:27] === P3 restart: history is restored from disk ===
+[2026-11-21 20:09:27]   before restart: messages=6 turns=3
+[2026-11-21 20:09:27]   ASSERT OK   at least three turns are on disk before the restart (3)
+[2026-11-21 20:09:33]   start: started (deepseek): pid=16772 key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker conf=/data/local/tmp/t5_bridge/ai_worker/worker.conf
+[2026-11-21 20:09:33]   ASSERT OK   the restarted worker has the context switch on
+[2026-11-21 20:09:33]   ASSERT OK   restart restored all 6 messages
+[2026-11-21 20:09:33]   ASSERT OK   restart restored all 3 turns
+[2026-11-21 20:09:33]   ASSERT OK   restart load state is "restored"
+[2026-11-21 20:09:35]   read status: chars=1492
+[2026-11-21 20:09:35]   ASSERT OK   status file parses
+[2026-11-21 20:09:35]   ASSERT OK   status: context.enabled = 1
+[2026-11-21 20:09:35]   ASSERT OK   status: context.turns = 3
+[2026-11-21 20:09:35]   ASSERT OK   status: context.messages = 6
+[2026-11-21 20:09:35]   ASSERT OK   status: context.load_state = 2 (restored)
+[2026-11-21 20:09:35]   ASSERT OK   status: no context save errors
+[2026-11-21 20:09:35] 
+[2026-11-21 20:09:35] === P4 credential hygiene ===
+[2026-11-21 20:09:37]   ASSERT OK   the api key does not appear in the worker log
+[2026-11-21 20:09:37]   ASSERT OK   the api key does not appear in the status file
+[2026-11-21 20:09:37]   ASSERT OK   the api key does not appear in the context file
+[2026-11-21 20:09:37]   ASSERT OK   the api key does not appear in the config file
+[2026-11-21 20:09:37]   ASSERT OK   no Authorization header is logged
+[2026-11-21 20:09:37]   ASSERT OK   no key-shaped token is logged
+[2026-11-21 20:09:37] 
+[2026-11-21 20:09:37] SUMMARY: pass=103 fail=0 elapsed=289s
+[2026-11-21 20:09:37] RESULT: PASS

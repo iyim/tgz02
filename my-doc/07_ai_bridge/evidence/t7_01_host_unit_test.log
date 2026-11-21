@@ -1,0 +1,161 @@
+﻿=== T7-01 conversation context unit test (host, no network) ===
+tmp: C:\Users\mac\AppData\Local\Temp\t7_ctx_41320
+
+[1] single turn, context disabled
+  PASS  cv_init ok
+  PASS  commit is a no-op when disabled
+  PASS  no history stored when disabled
+  PASS  messages = exactly one entry
+  PASS  entry is role=user
+  PASS  no assistant in a disabled context
+  PASS  current user text is present
+[2] two turns: the second turn carries the first one
+  PASS  cv_init ok
+  PASS  turn 1 committed
+  PASS  messages = history(2) + current(1)
+  PASS  2 user + 1 assistant
+  PASS  previous question and answer are both present
+  PASS  current question is present
+[3] three turns keep the order user,assistant,...
+  PASS  turn 2 committed
+  PASS  turn 3 committed
+  PASS  messages = 6 history + 1 current
+  PASS  three complete turns stored
+  PASS  history is in chronological order
+  PASS  every turn has its assistant reply
+[4] restart: history is restored from the file
+  PASS  re-init on the existing file
+  PASS  load state = OK (restored)
+  PASS  three turns restored
+  PASS  loads counter = 1
+  PASS  restored history is used for the next request
+  PASS  the last stored turn is back
+[5] over the limit: whole turns are evicted, never an orphan reply
+  PASS  cv_init ok
+  PASS  commit turn
+  PASS  commit turn
+  PASS  commit turn
+  PASS  commit turn
+  PASS  commit turn
+  PASS  only 4 messages are kept
+  PASS  = 2 complete turns
+  PASS  the oldest kept message is a user message
+  PASS  turn 4 is the oldest one kept
+  PASS  turn 5 is the newest one
+  PASS  6 messages were evicted (3 whole turns)
+  PASS  4 history + current
+  PASS  the oldest turn is gone
+  PASS  the two newest turns survive
+  PASS  context file readable
+  PASS  the evicted turn is not in the file either
+  PASS  the file starts with a complete turn
+[7] failures never reach the history
+  PASS  cv_init ok
+  PASS  empty assistant reply refused
+  PASS  history unchanged after an empty reply
+  PASS  empty user text refused
+  PASS  history unchanged after empty user text
+  PASS  over-long reply refused
+  PASS  history unchanged after an over-long reply
+  PASS  invalid UTF-8 refused
+  PASS  history unchanged after invalid UTF-8
+[8] corrupt context file: keep a copy, start empty, keep working
+  PASS  cv_init tolerates the corrupt file
+  PASS  load state = recovered
+  PASS  history is empty
+  PASS  corrupt recovery counted
+  PASS  the broken file was kept as .corrupt
+  PASS  the live file is gone (next save starts clean)
+  PASS  still able to build a request
+  PASS  still able to commit a new turn
+  PASS  a fresh file was written
+  PASS  empty file is treated as corrupt, not as a crash
+  PASS  truncated json is treated as corrupt
+  PASS  no half-parsed history kept
+[6] disabled: every turn is independent
+  PASS  cv_init ok
+  PASS  turn 1 = 1 message
+  PASS  turn 2 = 1 message
+  PASS  turn 2 does not contain turn 1
+  PASS  turn 1 json is exactly one user
+[9] clear() drops the history and the file
+  PASS  cv_init ok
+  PASS  commit one turn
+  PASS  file exists
+  PASS  cv_clear ok
+  PASS  memory cleared
+  PASS  file removed
+  PASS  after clear the next start begins with an empty history
+[10] tight buffer: drop the oldest turns, never truncate a message
+  PASS  cv_init ok
+  PASS  commit turn
+  PASS  commit turn
+  PASS  commit turn
+  PASS  commit turn
+  PASS  still returns a usable request
+  PASS  the current user text is always kept
+  PASS  the oldest turn was dropped to fit
+  PASS  size_dropped counter is reported
+  PASS  json array stays well formed
+[11] worker.conf: parsed, key path only, bad values refused
+  PASS  wc_write (tmp+fsync+rename)
+  PASS  wc_load ok
+  PASS  at least 8 keys applied
+  PASS  context_enabled=1 loaded
+  PASS  context_max_messages=8 loaded
+  PASS  max_tokens=256 loaded
+  PASS  temperature loaded
+  PASS  api_key_file stays a path, never a secret
+  PASS  conf readable
+  PASS  conf stores the key FILE path
+  PASS  conf has no inline key field
+  PASS  api_key in the config file is refused
+  PASS  invalid numeric value is refused
+  PASS  out-of-range context limit is refused
+  PASS  bad/unknown lines are ignored, file still loads
+  PASS  the valid line still applies
+  PASS  missing file reports an error instead of crashing
+[12] provider layer accepts a full messages array
+  PASS  complete_msgs path used
+  PASS  only the messages path was called
+  PASS  reply comes from the messages path
+  PASS  legacy provider still works
+  PASS  fallback used complete(user_text)
+  PASS  fallback passes the current user text only
+  PASS  non-array messages are rejected before any provider call
+  PASS  mock open
+  PASS  mock init
+  PASS  mock answers
+  PASS  mock counted 3 messages
+[13] deepseek request body carries the whole messages array
+  PASS  build ok
+  PASS  length reported
+  PASS  model present
+  PASS  temperature configurable
+  PASS  max_tokens configurable
+  PASS  system prompt is first
+  PASS  all three messages present
+  PASS  roles preserved
+  PASS  body is closed
+  PASS  still non-streaming
+  PASS  non-array messages rejected
+  PASS  unterminated array rejected
+[14] save/load round-trip keeps quotes, newlines and CJK intact
+  PASS  cv_init ok
+  PASS  commit with escapes
+  PASS  reload
+  PASS  load state ok
+  PASS  two messages restored
+  PASS  user text identical after reload
+  PASS  assistant text identical after reload
+[15] smaller limit on restart trims the history at load time
+  PASS  cv_init ok
+  PASS  4 turns stored
+  PASS  reload with a smaller limit
+  PASS  trimmed to 4 messages
+  PASS  the two oldest turns were dropped
+  PASS  still starts with a user message
+
+SUMMARY: pass=139 fail=0
+RESULT: PASS
+

@@ -48,6 +48,12 @@ typedef struct {
     int  (*init)(t6b_provider *p, char *err, size_t errlen);
     int  (*complete)(t6b_provider *p, const char *user_text, t6b_reply *out);
     void (*fini)(t6b_provider *p);
+    /*
+     * T7-01：完整 messages 数组（OpenAI 兼容 JSON 数组文本，历史 + 本轮 user）。
+     * 这是多轮上下文的**唯一**入口；complete() 保留给"只要一句话"的老路径（单测/兜底）。
+     * messages_json 一定由 conversation context 模块生成，长度受 CV_JSON_MAX 限制。
+     */
+    int  (*complete_msgs)(t6b_provider *p, const char *messages_json, t6b_reply *out);
 } t6b_provider_ops;
 
 struct t6b_provider {
@@ -59,6 +65,16 @@ struct t6b_provider {
 int  t6b_provider_init(t6b_provider *p, char *err, size_t errlen);
 int  t6b_provider_complete(t6b_provider *p, const char *user_text, t6b_reply *out);
 void t6b_provider_fini(t6b_provider *p);
+
+/*
+ * T7-01：用完整 messages 数组调用模型。
+ *   - ops->complete_msgs 存在 -> 直接用它（真实 Provider / 支持上下文的 Mock）；
+ *   - 否则退回 complete(user_text)（老实现仍然可用，行为与 T5-06C 一致）。
+ * user_text_fallback 只用于兜底路径，且必须是本轮 user 文本（不含历史）。
+ * 返回码语义与 t6b_provider_complete 一致：0 = 有结果（看 reply.status），-1 = 不可用。
+ */
+int  t6b_provider_complete_msgs(t6b_provider *p, const char *messages_json,
+                                const char *user_text_fallback, t6b_reply *out);
 
 const char *t6b_pstatus_name(t6b_pstatus s);
 
@@ -79,6 +95,9 @@ typedef struct {
     t6b_mock_cfg  cfg;
     unsigned long calls;
     int           inited;
+    /* T7-01：最近一次/累计拿到的 messages 条数（验证历史确实被带上，不含正文） */
+    unsigned long long last_msg_count;
+    unsigned long long total_msg_count;
 } t6b_mock;
 
 void t6b_mock_defaults(t6b_mock_cfg *c);

@@ -359,6 +359,7 @@ void t6b_ds_defaults(t6b_ds_cfg *c)
     c->connect_timeout_ms = T6B_DS_CONNECT_MS_DEFAULT;
     c->total_timeout_ms = T6B_DS_TIMEOUT_MS_DEFAULT;
     c->max_tokens = T6B_DS_MAX_TOKENS_DEFAULT;
+    c->temperature = T6B_DS_TEMP_DEFAULT;
     c->insecure_http = 0;
 }
 
@@ -568,6 +569,97 @@ int t6b_ds_build_body(const char *model, const char *user_text,
     }
     if (outlen != NULL) *outlen = (size_t)n;
     return 0;
+}
+
+/*
+ * T7-01：messages 数组版本。
+ *   {"model":M,"messages":[{"role":"system",...}, <messages_json 去掉首尾方括号> ],
+ *    "stream":false,"max_tokens":N,"temperature":T}
+ * messages_json 由 conv_context 生成，这里只做形状校验与拼接，不改写正文（不截断）。
+ */
+int t6b_ds_build_body_msgs(const char *model, const char *system_prompt,
+                           const char *messages_json, double temperature, int max_tokens,
+                           char *out, size_t cap, size_t *outlen,
+                           char *err, size_t errlen)
+{
+    char esc_model[T6B_DS_MODEL_MAX * 6 + 1];
+    char esc_sys[2048];
+    const char *body;
+    size_t alen, syslen = 0, o = 0;
+    int n;
+
+    if (out == NULL || cap == 0) return -1;
+    out[0] = '\0';
+    if (outlen != NULL) *outlen = 0;
+
+    if (model == NULL || model[0] == '\0') {
+        if (err) snprintf(err, errlen, "model name empty");
+        return -1;
+    }
+    if (strlen(model) > T6B_DS_MODEL_MAX) {
+        if (err) snprintf(err, errlen, "model name too long (> %d)", T6B_DS_MODEL_MAX);
+        return -1;
+    }
+    if (messages_json == NULL || messages_json[0] != '[') {
+        if (err) snprintf(err, errlen, "messages is not a json array");
+        return -1;
+    }
+    alen = strlen(messages_json);
+    if (alen < 2 || messages_json[alen - 1] != ']') {
+        if (err) snprintf(err, errlen, "messages array is not terminated");
+        return -1;
+    }
+    if (alen > (size_t)T6B_DS_BODY_MAX) {
+        if (err) snprintf(err, errlen, "messages too large (%d bytes)", (int)alen);
+        return -1;
+    }
+    if (system_prompt != NULL && system_prompt[0] != '\0') {
+        if (strlen(system_prompt) >= sizeof(esc_sys) / 6) {
+            if (err) snprintf(err, errlen, "system prompt too long");
+            return -1;
+        }
+        wu_json_escape(esc_sys, sizeof(esc_sys), system_prompt);
+        syslen = strlen(esc_sys);
+    } else {
+        esc_sys[0] = '\0';
+    }
+
+    if (temperature < 0.0) temperature = 0.0;
+    if (temperature > 2.0) temperature = 2.0;
+    if (max_tokens <= 0) max_tokens = T6B_DS_MAX_TOKENS_DEFAULT;
+    if (max_tokens > 8192) max_tokens = 8192;
+
+    wu_json_escape(esc_model, sizeof(esc_model), model);
+
+    n = snprintf(out, cap, "{\"model\":\"%s\",\"messages\":[", esc_model);
+    if (n < 0 || (size_t)n >= cap) goto too_big;
+    o = (size_t)n;
+
+    if (syslen > 0) {
+        n = snprintf(out + o, cap - o, "{\"role\":\"system\",\"content\":\"%s\"},", esc_sys);
+        if (n < 0 || (size_t)n >= cap - o) goto too_big;
+        o += (size_t)n;
+    }
+
+    /* 跳过 messages_json 的首 '['，保留到结尾的 ']' */
+    body = messages_json + 1;
+    n = snprintf(out + o, cap - o, "%s", body);
+    if (n < 0 || (size_t)n >= cap - o) goto too_big;
+    o += (size_t)n;
+
+    n = snprintf(out + o, cap - o, ",\"stream\":false,\"max_tokens\":%d,\"temperature\":%.2f}",
+                 max_tokens, temperature);
+    if (n < 0 || (size_t)n >= cap - o) goto too_big;
+    o += (size_t)n;
+
+    if (outlen != NULL) *outlen = o;
+    return 0;
+
+too_big:
+    if (err) snprintf(err, errlen, "request body too large (%d > %d bytes)",
+                      (int)o, (int)cap - 1);
+    out[0] = '\0';
+    return -1;
 }
 
 /* ==========================================================================
@@ -1074,18 +1166,20 @@ static int ds_init(t6b_provider *p, char *err, size_t errlen)
     return 0;
 }
 
-static int ds_complete(t6b_provider *p, const char *user_text, t6b_reply *out)
+/*
+ * 一次真实的 POST + 响应解析（不含请求体构造）。
+ * T7-01 把"请求体怎么来"与"怎么发"拆开：ds_complete（单句）和 ds_complete_msgs（多轮）
+ * 共用同一段发送/解析代码，多轮能力没有复制第二份 HTTP 逻辑。
+ */
+static int ds_exchange(t6b_ds *d, const char *body, size_t blen, t6b_reply *out)
 {
-    t6b_ds *d = (t6b_ds *)p->ctx;
     t6b_ds_xreq req;
     t6b_ds_xresult xr;
-    char body[T6B_DS_BODY_MAX];
     char resp[T6B_DS_RESP_MAX + 1];
     char why[96];
     char cls[T6B_DS_CLASS_MAX];
     char etype[40];
     char ecode[24];
-    size_t blen = 0;
     size_t clen = 0;
     long long t0;
     int rc;
@@ -1098,23 +1192,8 @@ static int ds_complete(t6b_provider *p, const char *user_text, t6b_reply *out)
         return -1;
     }
 
-    d->calls++;
     cls[0] = '\0';
     why[0] = '\0';
-
-    /* --- 请求体：放不下就报错，绝不截断用户文本 --- */
-    if (t6b_ds_build_body(d->cfg.model, user_text, body, sizeof(body), &blen,
-                          why, sizeof(why)) != 0) {
-        d->err++;
-        ds_set_class(d, "request_invalid");
-        snprintf(d->last_error, sizeof(d->last_error), "%s", why);
-        out->status = T6B_P_ERROR;
-        out->code = 2;
-        snprintf(out->message, sizeof(out->message), "request build failed: %s", why);
-        out->latency_ms = 0;
-        out->mock = 0;
-        return 0;
-    }
 
     memset(&req, 0, sizeof(req));
     req.url = d->url;
@@ -1231,6 +1310,73 @@ static int ds_complete(t6b_provider *p, const char *user_text, t6b_reply *out)
     return 0;
 }
 
+/* 单句路径（T5-06C 行为）：只有 system + 一条 user */
+static int ds_complete(t6b_provider *p, const char *user_text, t6b_reply *out)
+{
+    t6b_ds *d = (t6b_ds *)p->ctx;
+    char body[T6B_DS_BODY_MAX];
+    char why[96];
+    size_t blen = 0;
+
+    if (d == NULL || out == NULL) return -1;
+    if (!d->inited) {
+        out->status = T6B_P_ERROR;
+        out->code = 1;
+        snprintf(out->message, sizeof(out->message), "deepseek provider not initialized");
+        return -1;
+    }
+
+    d->calls++;
+    why[0] = '\0';
+    if (t6b_ds_build_body(d->cfg.model, user_text, body, sizeof(body), &blen,
+                          why, sizeof(why)) != 0) {
+        d->err++;
+        ds_set_class(d, "request_invalid");
+        snprintf(d->last_error, sizeof(d->last_error), "%s", why);
+        out->status = T6B_P_ERROR;
+        out->code = 2;
+        snprintf(out->message, sizeof(out->message), "request build failed: %s", why);
+        out->latency_ms = 0;
+        out->mock = 0;
+        return 0;
+    }
+    return ds_exchange(d, body, blen, out);
+}
+
+/* T7-01：多轮路径。messages 数组由 conv_context 生成，这里只负责并入请求体。 */
+static int ds_complete_msgs(t6b_provider *p, const char *messages_json, t6b_reply *out)
+{
+    t6b_ds *d = (t6b_ds *)p->ctx;
+    char body[T6B_DS_BODY_MAX];
+    char why[96];
+    size_t blen = 0;
+
+    if (d == NULL || out == NULL) return -1;
+    if (!d->inited) {
+        out->status = T6B_P_ERROR;
+        out->code = 1;
+        snprintf(out->message, sizeof(out->message), "deepseek provider not initialized");
+        return -1;
+    }
+
+    d->calls++;
+    why[0] = '\0';
+    if (t6b_ds_build_body_msgs(d->cfg.model, T6B_DS_SYSTEM_PROMPT, messages_json,
+                               d->cfg.temperature, d->cfg.max_tokens,
+                               body, sizeof(body), &blen, why, sizeof(why)) != 0) {
+        d->err++;
+        ds_set_class(d, "request_invalid");
+        snprintf(d->last_error, sizeof(d->last_error), "%s", why);
+        out->status = T6B_P_ERROR;
+        out->code = 3;
+        snprintf(out->message, sizeof(out->message), "request build failed: %s", why);
+        out->latency_ms = 0;
+        out->mock = 0;
+        return 0;
+    }
+    return ds_exchange(d, body, blen, out);
+}
+
 static void ds_fini(t6b_provider *p)
 {
     t6b_ds *d = (t6b_ds *)p->ctx;
@@ -1252,7 +1398,8 @@ static const t6b_provider_ops DEEPSEEK_OPS = {
     "deepseek",
     ds_init,
     ds_complete,
-    ds_fini
+    ds_fini,
+    ds_complete_msgs
 };
 
 int t6b_ds_open_with(t6b_provider *p, t6b_ds *d, const t6b_ds_cfg *cfg,

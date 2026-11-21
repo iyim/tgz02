@@ -45,6 +45,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     char esc_model[sizeof(((t6b_status *)0)->model) * 2];
     char esc_class[sizeof(((t6b_status *)0)->last_error_class) * 2];
     char esc_ttsq[T6B_PATH_MAX * 2];
+    char esc_ctxfile[T6B_PATH_MAX * 2];
     char tmp[T6B_PATH_MAX + 8];
     char dir[T6B_PATH_MAX];
     int n;
@@ -62,6 +63,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     wu_json_escape(esc_model, sizeof(esc_model), st->model);
     wu_json_escape(esc_class, sizeof(esc_class), st->last_error_class);
     wu_json_escape(esc_ttsq, sizeof(esc_ttsq), st->tts_queue);
+    wu_json_escape(esc_ctxfile, sizeof(esc_ctxfile), st->context_file);
 
     n = snprintf(buf, sizeof(buf),
         "{\"version\":%d,\"state\":\"%s\",\"pid\":%lld,"
@@ -83,6 +85,9 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"provider_stuck\":%d,\"state_persist_failed\":%d,"
         "\"tts_queued\":%llu,\"tts_skipped\":%llu,\"tts_enqueue_failed\":%llu},"
         "\"tts_queue\":\"%s\","
+        "\"context\":{\"enabled\":%d,\"max_messages\":%d,\"messages\":%d,\"turns\":%d,"
+        "\"load_state\":%d,\"saves\":%llu,\"save_errors\":%llu,\"evicted\":%llu,"
+        "\"file\":\"%s\"},"
         "\"last_seq\":%lu,\"last_event_id\":\"%s\",\"last_event_at\":\"%s\","
         "\"last_gap_from\":%lu,\"last_gap_to\":%lu,"
         "\"pending_event_id\":\"%s\","
@@ -105,6 +110,9 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         st->provider_retries, st->stuck_attempts,
         st->provider_stuck, st->state_persist_failed,
         st->tts_queued, st->tts_skipped, st->tts_enqueue_failed, esc_ttsq,
+        st->context_enabled, st->context_max_messages, st->context_messages,
+        st->context_turns, st->context_load_state, st->context_saves,
+        st->context_save_errors, st->context_evicted, esc_ctxfile,
         st->last_seq, st->last_event_id, st->last_event_at,
         st->last_gap_from, st->last_gap_to,
         esc_pending,

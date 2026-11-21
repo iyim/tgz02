@@ -88,3 +88,51 @@ adb shell "sh /data/local/tmp/t5_bridge/run_tts_exec.sh status"
 
 Worker 侧只需加 `--tts-queue-dir /data/local/tmp/t5_bridge/tts`，回答会按 `event_id` 幂等入队。
 详见 `../t5_06d_factory_tts_report.md`。
+
+## 多轮上下文与配置化（T7-01）
+
+上下文是一个独立模块（`conv_context.c`），不塞进主循环；配置是 `worker.conf`（key=value）。
+
+```
+# /data/local/tmp/t5_bridge/ai_worker/worker.conf   0600 root，只放 key 的路径
+provider=deepseek
+base_url=http://192.168.1.13:8790/v1
+model=deepseek-flash
+api_key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key
+temperature=0.3
+max_tokens=300
+context_enabled=1
+context_max_messages=6
+context_file=/data/local/tmp/t5_bridge/ai_worker/context.json
+```
+
+- 优先级：命令行 > `worker.conf` > 编译默认值；`context_enabled` 默认 0（= T5-06C 行为）。
+- `context_max_messages` 只按**完整轮次**淘汰（强制偶数，2–48），永远不会只剩 assistant。
+- 只有"模型成功 + 回答非空 + 已入 TTS 队列 + 偏移已落盘"之后才提交这一轮；失败/空回复不进历史。
+- `context.json` 写盘是 `tmp + fsync + rename + fsync(dir)`，权限 0600；文件损坏会留档
+  `context.json.corrupt` 并清空历史继续跑（不影响启动）。
+- 状态文件新增：`context{enabled,max_messages,messages,turns,load_state,saves,save_errors,evicted,file}`；
+  每轮日志会打 `provider reply: … req_msgs=<请求条数> history_msgs=<历史条数>`。
+
+```powershell
+# 构建与部署（NDK r21e，产物同时包含 worker_unit_test）
+powershell -ExecutionPolicy Bypass -File build.ps1 -LogName t7_01_ndk_build.log
+adb push out/ai_worker /data/local/tmp/t7_ai_worker
+adb shell "su -c 'cp /data/local/tmp/t7_ai_worker /data/local/tmp/t5_bridge/bin/ai_worker'"
+adb push conf/worker.conf.example /data/local/tmp/t7_worker.conf
+adb shell "su -c 'cp /data/local/tmp/t7_worker.conf /data/local/tmp/t5_bridge/ai_worker/worker.conf'"
+```
+
+设备端控制（`run_ai_worker.sh`）：
+
+```sh
+sh run_ai_worker.sh start-deepseek     # 有 worker.conf 就自动 --conf，有 tts 目录就自动 --tts-queue-dir
+sh run_ai_worker.sh context            # 只读查看上下文（对话正文，不含 key）
+sh run_ai_worker.sh clear-context      # 运行中写 context.clear 请 Worker 就地清空；未运行则直接删文件
+```
+
+新增命令行开关：`--conf PATH`、`--temperature X`、`--max-tokens N`、`--base-url U`、`--model M`、
+`--context 0|1`、`--context-max-messages N`、`--context-file PATH`、`--clear-context`。
+
+两个新模块都进主机测试：`tests/run_t7_host_tests.ps1`（139 断言），
+真机验收：`tests/t7_01_context_device.ps1`。详见 `../t7_01_multi_turn_context_report.md`。

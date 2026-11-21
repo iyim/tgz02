@@ -90,11 +90,30 @@ static void mock_fini(t6b_provider *p)
     if (m != NULL) m->inited = 0;
 }
 
+/* T7-01：统计 messages 数组里有几条消息（只数 "role": 出现次数，不解析内容）。
+ * 用途：主机/设备测试可以确认"历史确实被带上了"，Mock 仍然零网络。 */
+static int mock_complete_msgs(t6b_provider *p, const char *messages_json, t6b_reply *out)
+{
+    t6b_mock *m = (t6b_mock *)p->ctx;
+    const char *q;
+    int n = 0;
+    int rc;
+
+    if (m == NULL || out == NULL) return -1;
+    for (q = messages_json; q != NULL && (q = strstr(q, "\"role\":")) != NULL; q += 7) n++;
+    m->last_msg_count = (unsigned long long)n;
+    m->total_msg_count += (unsigned long long)n;
+
+    rc = mock_complete(p, NULL, out);
+    return rc;
+}
+
 static const t6b_provider_ops MOCK_OPS = {
     "mock",
     mock_init,
     mock_complete,
-    mock_fini
+    mock_fini,
+    mock_complete_msgs
 };
 
 int t6b_mock_open(t6b_provider *p, t6b_mock *m, const t6b_mock_cfg *cfg)

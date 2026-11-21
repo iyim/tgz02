@@ -13,6 +13,7 @@
 #ifndef T6B_AI_WORKER_H
 #define T6B_AI_WORKER_H
 
+#include "conv_context.h"
 #include "deepseek_provider.h"
 #include "event_reader.h"
 #include "provider.h"
@@ -27,6 +28,11 @@
 /* T5-06D：模型回答 -> 原厂 TTS 的本地持久化队列（默认关闭 = 纯 T5-06C 行为） */
 #define T6B_TTS_QUEUE_DEFAULT   ""
 #define T6B_TTS_ID_MAX          128
+/* T7-01：配置与上下文文件（都放在 state_dir 下） */
+#define T6B_CONF_NAME_DEFAULT   "worker.conf"
+#define T6B_CONTEXT_NAME_DEFAULT "context.json"
+/* T7-01：运行中的 Worker 通过这个请求文件清空上下文（见 run_ai_worker.sh clear-context） */
+#define T6B_CONTEXT_CLEAR_NAME  "context.clear"
 
 typedef struct {
     char        work_dir[T6B_PATH_MAX];      /* events.jsonl 所在目录（只读） */
@@ -48,6 +54,12 @@ typedef struct {
     int         verbose;
     char        reply_log[T6B_PATH_MAX];     /* 可选：成功回答的落盘文件（默认关闭） */
     char        tts_queue[T6B_PATH_MAX];     /* 可选：TTS 队列根目录（默认关闭） */
+    /* T7-01 */
+    char        conf_path[T6B_PATH_MAX];     /* 可选：配置文件路径（空 = 没有） */
+    char        context_file[T6B_PATH_MAX];  /* 上下文文件（空 = state_dir/context.json） */
+    int         context_enabled;             /* 1 = 多轮上下文（默认 0，配置文件里打开） */
+    int         context_max_messages;        /* 最多保留的消息条数（成对淘汰） */
+    int         clear_context;               /* 1 = 启动时清空上下文后退出（维护动作） */
     t6b_mock_cfg mock;
     t6b_ds_cfg   deepseek;                   /* 只有 provider=deepseek 时才使用 */
 } t6b_config;

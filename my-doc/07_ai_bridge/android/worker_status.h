@@ -89,6 +89,17 @@ typedef struct {
     unsigned long long tts_enqueue_failed;     /* 入队失败（回答未丢，已显式记录） */
     char               tts_queue[T6B_PATH_MAX];/* 队列根目录（未启用为空） */
 
+    /* T7-01：多轮上下文（只放条数与计数，绝不含消息正文） */
+    int                context_enabled;        /* 1 = 多轮上下文生效 */
+    int                context_max_messages;   /* 生效上限（条） */
+    int                context_messages;       /* 当前保存的消息条数 */
+    int                context_turns;          /* 当前完整轮次数 */
+    int                context_load_state;     /* 0 disabled / 1 absent / 2 ok / 3 recovered / 4 failed */
+    unsigned long long context_saves;          /* 成功落盘次数 */
+    unsigned long long context_save_errors;    /* 落盘失败次数 */
+    unsigned long long context_evicted;        /* 因超上限被淘汰的消息数 */
+    char               context_file[T6B_PATH_MAX];
+
     unsigned long      last_seq;
     char               last_event_id[T6B_ID_MAX + 1];
     char               last_event_at[24];
