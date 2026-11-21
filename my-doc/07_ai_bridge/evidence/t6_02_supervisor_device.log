@@ -1,0 +1,452 @@
+﻿
+################ T6-02 supervisor device verification :: 2026-11-21 16:22:40 ################
+
+===== P0 preflight, deploy the fresh build, clean starting state :: 2026-11-21 16:22:40 =====
+adb devices:
+List of devices attached
+192.168.1.9:5555	device
+
+  ASSERT OK   : device is online
+  id: uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0
+  ASSERT OK   : su gives uid=0
+  bridge pid: 26591
+  ASSERT OK   : T5-05A bridge is running
+  local tg_supervisor sha256: 17dec6e079d7d2efd74cd6d2c49e04436d1b6d56a648024ca0f1986c646c2fa0
+  device tg_supervisor : 17dec6e079d7d2efd74cd6d2c49e04436d1b6d56a648024ca0f1986c646c2fa0  /data/local/tmp/t6/tg_supervisor
+  device tg_injector  : 4d13af84d4c04898f7dd59668e5a38354c4a4b6a202a7b1477ef077323e9f677  /data/local/tmp/t6/tg_injector
+  device libtg_hook.so: b838a731392938b0038355c3ee42af7870e6db4d4b35ef0c78d2dc36c07e67b6  /data/local/tmp/t6/libtg_hook.so
+  ASSERT OK   : device tg_supervisor is byte-identical to the fresh build
+  ASSERT OK   : device tg_injector is byte-identical to the fresh build
+  ASSERT OK   : device libtg_hook.so is byte-identical to the fresh build
+  ASSERT OK   : device wrapper run_supervisor.sh deployed
+  ASSERT OK   : no supervisor is running at the start
+  core pid: 29149
+  ASSERT OK   : factory core is running
+check before the supervisor starts:
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=29149 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] check_only with no library mapped: nothing to query
+EXIT=0
+  ASSERT OK   : starting state: nothing is hooked in the core process
+
+===== P1 start the supervisor and prove the single-instance lock :: 2026-11-21 16:23:04 =====
+start: start requested
+2026-11-21 16:23:06.038 sup: start pid=29762 target=com.alibaba.ailabs.genie.smartapp:core injector=/data/local/tmp/t6/tg_injector agent=/data/local/tmp/t6/libtg_hook.so interval=500ms retry=2000ms max=60000ms
+2026-11-21 16:23:06.066 sup: pidfile=/data/local/tmp/t6/tg_supervisor.pid acquired (single instance)
+2026-11-21 16:23:06.094 sup: target found: pid=29149 starttime=1151797 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 16:23:06.126 sup: target ready: pid=29149 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=29149 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 16:23:06.277 sup: check done: pid=29149 exit=0 hooked=-1 state=unknown
+2026-11-21 16:23:06.277 sup: inject begin: pid=29149 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=29149 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=29149 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xa74fa000 stack=0xa7502000 trap=0xa7509000 gadget=0xa81e2a6c
+inj| [inject] dlopen=0xa90db0ad (libdl.so)
+  supervisor pid: 29762
+  ASSERT OK   : supervisor is running
+  ASSERT OK   : startup line names the exact target
+  ASSERT OK   : pidfile lock acquired
+second instance output:
+2026-11-21 16:23:07.665 sup: start pid=29786 target=com.alibaba.ailabs.genie.smartapp:core injector=/data/local/tmp/t6/tg_injector agent=/data/local/tmp/t6/libtg_hook.so interval=500ms retry=2000ms max=60000ms
+2026-11-21 16:23:07.667 sup: another supervisor is already running (pid=29762, pidfile=/data/local/tmp/t6/tg_supervisor.pid)
+2026-11-21 16:23:07.667 sup: exit: single-instance check failed rc=-1
+  ASSERT OK   : second instance refuses to start
+  ASSERT OK   : refusal was logged with the running pid
+  pidof tg_supervisor: 29762
+  ASSERT OK   : exactly one supervisor process exists
+
+===== P2 auto injection for the core process that is already running :: 2026-11-21 16:23:07 =====
+2026-11-21 16:23:06.038 sup: start pid=29762 target=com.alibaba.ailabs.genie.smartapp:core injector=/data/local/tmp/t6/tg_injector agent=/data/local/tmp/t6/libtg_hook.so interval=500ms retry=2000ms max=60000ms
+2026-11-21 16:23:06.066 sup: pidfile=/data/local/tmp/t6/tg_supervisor.pid acquired (single instance)
+2026-11-21 16:23:06.094 sup: target found: pid=29149 starttime=1151797 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 16:23:06.126 sup: target ready: pid=29149 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=29149 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 16:23:06.277 sup: check done: pid=29149 exit=0 hooked=-1 state=unknown
+2026-11-21 16:23:06.277 sup: inject begin: pid=29149 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=29149 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=29149 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xa74fa000 stack=0xa7502000 trap=0xa7509000 gadget=0xa81e2a6c
+inj| [inject] dlopen=0xa90db0ad (libdl.so)
+inj| [inject] dlsym=0xa90db0bf (libdl.so)
+inj| [inject] dlerror=0xa90db0b7 (libdl.so)
+inj| [inject] path_written=0xa74fa100 len=33
+inj| [inject] dlopen ok handle=0xc2100e61 flags=0x2
+inj| [inject] dlsym ok install=0x8790ebb0 prepare=0x8790e5e4 status=0x8790fc4c
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x8d05553c,0x8d055544)
+inj| [inject] paused 75 other threads (exec tid=29149); [0x8d05553c,0x8d055544) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+inj| [inject] RESULT ok pid=29149 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 16:23:07.089 sup: inject end: pid=29149 exit=0 hooked=1 elapsed=813ms ok
+2026-11-21 16:23:07.665 sup: start pid=29786 target=com.alibaba.ailabs.genie.smartapp:core injector=/data/local/tmp/t6/tg_injector agent=/data/local/tmp/t6/libtg_hook.so interval=500ms retry=2000ms max=60000ms
+2026-11-21 16:23:07.667 sup: another supervisor is already running (pid=29762, pidfile=/data/local/tmp/t6/tg_supervisor.pid)
+2026-11-21 16:23:07.667 sup: exit: single-instance check failed rc=-1
+  ASSERT OK   : exact cmdline match on the core process
+  ASSERT OK   : only one process matched (main process and :business are ignored)
+  ASSERT OK   : a --check ran before the first install
+  ASSERT OK   : install started for this pid
+  ASSERT OK   : install finished with exit=0 and hooked=1
+post-inject check:
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=29149 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=29149 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa7231000 stack=0xa7239000 trap=0xa7240000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa7231100 len=33
+[inject] dlopen ok handle=0xc2100e61 flags=0x6
+[inject] dlsym ok install=0x8790ebb0 prepare=0x8790e5e4 status=0x8790fc4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d05553c,0x8d055544)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT check pid=29149 hooked=1
+[inject] detached (target thread resumed)
+EXIT=0
+  ASSERT OK   : independent --check confirms hooked=1
+  ASSERT OK   : injector did not disturb the target pid
+  watching for 12 s to prove the same pid is not injected twice
+idle window:
+2026-11-21 16:23:07.667 sup: exit: single-instance check failed rc=-1
+  ASSERT OK   : no second install for the same pid
+  ASSERT OK   : no repeated --check on a pid that is already hooked
+  ASSERT OK   : supervisor still running while idle
+  ASSERT OK   : exactly one install attempt in total for this pid
+
+===== P3 3 core-process restarts :: 2026-11-21 16:23:23 =====
+  restart 1: core pid 29149 -> 30057
+  ASSERT OK   : restart 1: core process is back
+  ASSERT OK   : restart 1: core pid changed
+2026-11-21 16:23:07.667 sup: exit: single-instance check failed rc=-1
+2026-11-21 16:23:24.877 sup: target gone: pid=29149 starttime=1151797
+2026-11-21 16:23:25.946 sup: target found: pid=30057 starttime=1155181 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 16:23:25.979 sup: waiting: pid=30057 has not loaded libsmartbox.so yet
+2026-11-21 16:23:26.498 sup: target ready: pid=30057 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=30057 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 16:23:26.554 sup: check done: pid=30057 exit=0 hooked=-1 state=unknown
+2026-11-21 16:23:26.554 sup: inject begin: pid=30057 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=30057 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=30062 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xa7f0d000 stack=0xa7f15000 trap=0xa7f1c000 gadget=0xa81e2a6c
+inj| [inject] dlopen=0xa90db0ad (libdl.so)
+inj| [inject] dlsym=0xa90db0bf (libdl.so)
+inj| [inject] dlerror=0xa90db0b7 (libdl.so)
+inj| [inject] path_written=0xa7f0d100 len=33
+inj| [inject] dlopen ok handle=0xd0a00877 flags=0x2
+inj| [inject] dlsym ok install=0x8b559bb0 prepare=0x8b5595e4 status=0x8b55ac4c
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x8d29453c,0x8d294544)
+inj| [inject] paused 30 other threads (exec tid=30062); [0x8d29453c,0x8d294544) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+inj| [inject] RESULT ok pid=30057 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 16:23:27.272 sup: inject end: pid=30057 exit=0 hooked=1 elapsed=718ms ok
+  ASSERT OK   : restart 1: the old pid was retired
+  ASSERT OK   : restart 1: waited for libsmartbox.so before injecting
+  ASSERT OK   : restart 1: install started for the new pid on the first attempt
+  ASSERT OK   : restart 1: no failed injector attempt in this window
+  ASSERT OK   : restart 1: install succeeded for the new pid
+  ASSERT OK   : restart 1: independent --check confirms hooked=1
+  restart 2: core pid 30057 -> 30677
+  ASSERT OK   : restart 2: core process is back
+  ASSERT OK   : restart 2: core pid changed
+2026-11-21 16:23:27.272 sup: inject end: pid=30057 exit=0 hooked=1 elapsed=718ms ok
+2026-11-21 16:23:41.220 sup: target gone: pid=30057 starttime=1155181
+2026-11-21 16:23:41.733 sup: target found: pid=30677 starttime=1156746 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 16:23:41.777 sup: waiting: pid=30677 has not loaded libsmartbox.so yet
+2026-11-21 16:23:42.290 sup: target ready: pid=30677 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=30677 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 16:23:42.343 sup: check done: pid=30677 exit=0 hooked=-1 state=unknown
+2026-11-21 16:23:42.343 sup: inject begin: pid=30677 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=30677 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=30677 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xa7d96000 stack=0xa7d9e000 trap=0xa7da5000 gadget=0xa81e2a6c
+inj| [inject] dlopen=0xa90db0ad (libdl.so)
+inj| [inject] dlsym=0xa90db0bf (libdl.so)
+inj| [inject] dlerror=0xa90db0b7 (libdl.so)
+inj| [inject] path_written=0xa7d96100 len=33
+inj| [inject] dlopen ok handle=0x92dd029d flags=0x2
+inj| [inject] dlsym ok install=0x8b450bb0 prepare=0x8b4505e4 status=0x8b451c4c
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x8ced753c,0x8ced7544)
+inj| [inject] paused 31 other threads (exec tid=30677); [0x8ced753c,0x8ced7544) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+inj| [inject] RESULT ok pid=30677 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 16:23:42.619 sup: inject end: pid=30677 exit=0 hooked=1 elapsed=275ms ok
+  ASSERT OK   : restart 2: the old pid was retired
+  ASSERT OK   : restart 2: waited for libsmartbox.so before injecting
+  ASSERT OK   : restart 2: install started for the new pid on the first attempt
+  ASSERT OK   : restart 2: no failed injector attempt in this window
+  ASSERT OK   : restart 2: install succeeded for the new pid
+  ASSERT OK   : restart 2: independent --check confirms hooked=1
+  restart 3: core pid 30677 -> 31288
+  ASSERT OK   : restart 3: core process is back
+  ASSERT OK   : restart 3: core pid changed
+2026-11-21 16:23:42.619 sup: inject end: pid=30677 exit=0 hooked=1 elapsed=275ms ok
+2026-11-21 16:23:56.007 sup: target gone: pid=30677 starttime=1156746
+2026-11-21 16:23:56.523 sup: target found: pid=31288 starttime=1158215 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 16:23:56.555 sup: waiting: pid=31288 has not loaded libsmartbox.so yet
+2026-11-21 16:23:57.087 sup: target ready: pid=31288 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=31288 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 16:23:57.134 sup: check done: pid=31288 exit=0 hooked=-1 state=unknown
+2026-11-21 16:23:57.134 sup: inject begin: pid=31288 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=31288 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=31288 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xa7c81000 stack=0xa7c89000 trap=0xa7c90000 gadget=0xa81e2a6c
+inj| [inject] dlopen=0xa90db0ad (libdl.so)
+inj| [inject] dlsym=0xa90db0bf (libdl.so)
+inj| [inject] dlerror=0xa90db0b7 (libdl.so)
+inj| [inject] path_written=0xa7c81100 len=33
+inj| [inject] dlopen ok handle=0x84c9b249 flags=0x2
+inj| [inject] dlsym ok install=0x8b1e0bb0 prepare=0x8b1e05e4 status=0x8b1e1c4c
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x8d2db53c,0x8d2db544)
+inj| [inject] paused 34 other threads (exec tid=31288); [0x8d2db53c,0x8d2db544) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+inj| [inject] RESULT ok pid=31288 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 16:23:57.373 sup: inject end: pid=31288 exit=0 hooked=1 elapsed=239ms ok
+  ASSERT OK   : restart 3: the old pid was retired
+  ASSERT OK   : restart 3: waited for libsmartbox.so before injecting
+  ASSERT OK   : restart 3: install started for the new pid on the first attempt
+  ASSERT OK   : restart 3: no failed injector attempt in this window
+  ASSERT OK   : restart 3: install succeeded for the new pid
+  ASSERT OK   : restart 3: independent --check confirms hooked=1
+  core pid after the restarts: 31288
+  events before the speech: 261
+  played s01
+  attempt 1: no ASR final yet, retrying
+  played s01
+  events after the speech: 262
+  ASSERT OK   : ASR final reached the bridge with the supervisor-installed hook
+new events:
+{"version":1,"rec":"asr_final","event_id":"t6-31288-1967404-g1","event_type":"asr_final","pid":31288,"session_id":"1967404","text":"天猫精灵您现在几点了","text_bytes":30,"text_chars":10,"is_final":true,"received_at_ms":1795249518588,"recv_at_ms":1795249518589,"stored_at_ms":1795249518589,"seq":62}
+  ASSERT OK   : event_id carries the t6- prefix
+  ASSERT OK   : event_type is asr_final
+
+===== P4 restart the supervisor; it must recognise the existing patch :: 2026-11-21 16:25:24 =====
+stop: stopped pid=29762
+2026-11-21 16:23:57.373 sup: inject end: pid=31288 exit=0 hooked=1 elapsed=239ms ok
+2026-11-21 16:25:26.176 sup: stop requested: signal=15
+2026-11-21 16:25:26.176 sup: exit: pid=29762
+  ASSERT OK   : SIGTERM was handled
+  ASSERT OK   : shutdown was logged
+  ASSERT OK   : old supervisor is gone
+  ASSERT OK   : pidfile was removed on shutdown
+start again: start requested
+2026-11-21 16:25:26.176 sup: exit: pid=29762
+2026-11-21 16:25:29.462 sup: start pid=1031 target=com.alibaba.ailabs.genie.smartapp:core injector=/data/local/tmp/t6/tg_injector agent=/data/local/tmp/t6/libtg_hook.so interval=500ms retry=2000ms max=60000ms
+2026-11-21 16:25:29.520 sup: pidfile=/data/local/tmp/t6/tg_supervisor.pid acquired (single instance)
+2026-11-21 16:25:29.533 sup: target found: pid=31288 starttime=1158215 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 16:25:29.567 sup: target ready: pid=31288 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=31288 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+inj| [inject] attached tid=31288 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xa1cfd000 stack=0xa1d05000 trap=0xa1d0c000 gadget=0xa81e2a6c
+inj| [inject] dlopen=0xa90db0ad (libdl.so)
+inj| [inject] dlsym=0xa90db0bf (libdl.so)
+inj| [inject] dlerror=0xa90db0b7 (libdl.so)
+inj| [inject] path_written=0xa1cfd100 len=33
+inj| [inject] dlopen ok handle=0x84c9b249 flags=0x6
+inj| [inject] dlsym ok install=0x8b1e0bb0 prepare=0x8b1e05e4 status=0x8b1e1c4c
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x8d2db53c,0x8d2db544)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=6 final=1 queued=1 sent=1 acked=1 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=1 conn_fail=0 ack_timeout=0
+inj| [inject] RESULT check pid=31288 hooked=1
+inj| [inject] detached (target thread resumed)
+2026-11-21 16:25:30.481 sup: check done: pid=31288 exit=0 hooked=1 state=hooked
+2026-11-21 16:25:30.481 sup: already hooked: pid=31288 (state=1); skip install
+  ASSERT OK   : restarted supervisor ran --check first
+  ASSERT OK   : restarted supervisor recognised the patch
+  ASSERT OK   : no install was attempted after the supervisor restart
+  ASSERT OK   : hook is still hooked=1 after the supervisor restart
+
+===== P5 the target disappears; the supervisor must survive and recover :: 2026-11-21 16:25:31 =====
+2026-11-21 16:25:30.481 sup: already hooked: pid=31288 (state=1); skip install
+2026-11-21 16:25:33.729 sup: target gone: pid=31288 starttime=1158215
+2026-11-21 16:25:34.239 sup: target found: pid=1596 starttime=1168011 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 16:25:34.283 sup: waiting: pid=1596 has not loaded libsmartbox.so yet
+2026-11-21 16:25:35.422 sup: target ready: pid=1596 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=1596 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 16:25:35.582 sup: check done: pid=1596 exit=0 hooked=-1 state=unknown
+2026-11-21 16:25:35.582 sup: inject begin: pid=1596 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=1596 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=1596 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xa7c8b000 stack=0xa7c93000 trap=0xa7c9a000 gadget=0xa81e2a6c
+inj| [inject] dlopen=0xa90db0ad (libdl.so)
+inj| [inject] dlsym=0xa90db0bf (libdl.so)
+inj| [inject] dlerror=0xa90db0b7 (libdl.so)
+inj| [inject] path_written=0xa7c8b100 len=33
+inj| [inject] dlopen ok handle=0x9ca0e2a1 flags=0x2
+inj| [inject] dlsym ok install=0x8b320bb0 prepare=0x8b3205e4 status=0x8b321c4c
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x8cad653c,0x8cad6544)
+inj| [inject] paused 32 other threads (exec tid=1596); [0x8cad653c,0x8cad6544) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+inj| [inject] RESULT ok pid=1596 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 16:25:35.950 sup: inject end: pid=1596 exit=0 hooked=1 elapsed=368ms ok
+  ASSERT OK   : the vanished pid was reported
+  supervisor pid while the target is absent: 1031
+  ASSERT OK   : supervisor did not exit when the target was gone
+  core pid after the recovery restart: 2573
+  ASSERT OK   : core process is running again
+2026-11-21 16:25:35.950 sup: inject end: pid=1596 exit=0 hooked=1 elapsed=368ms ok
+2026-11-21 16:25:41.188 sup: target gone: pid=1596 starttime=1168011
+2026-11-21 16:25:41.745 sup: target found: pid=2573 starttime=1168786 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 16:25:41.783 sup: waiting: pid=2573 has not loaded libsmartbox.so yet
+2026-11-21 16:25:42.938 sup: target ready: pid=2573 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=2573 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 16:25:43.017 sup: check done: pid=2573 exit=0 hooked=-1 state=unknown
+2026-11-21 16:25:43.017 sup: inject begin: pid=2573 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+inj| [inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=2573 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=2573 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xa7fc4000 stack=0xa7fcc000 trap=0xa7fd3000 gadget=0xa81e2a6c
+inj| [inject] dlopen=0xa90db0ad (libdl.so)
+inj| [inject] dlsym=0xa90db0bf (libdl.so)
+inj| [inject] dlerror=0xa90db0b7 (libdl.so)
+inj| [inject] path_written=0xa7fc4100 len=33
+inj| [inject] dlopen ok handle=0x8aa5b5cf flags=0x2
+inj| [inject] dlsym ok install=0x8c034bb0 prepare=0x8c0345e4 status=0x8c035c4c
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x8ceda53c,0x8ceda544)
+inj| [inject] paused 20 other threads (exec tid=2573); [0x8ceda53c,0x8ceda544) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+inj| [inject] RESULT ok pid=2573 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 16:25:43.222 sup: inject end: pid=2573 exit=0 hooked=1 elapsed=206ms ok
+  ASSERT OK   : the new pid was discovered
+  ASSERT OK   : the new pid was injected
+  ASSERT OK   : independent --check confirms hooked=1 on the recovered pid
+
+===== P6 stop the supervisor and check for leftovers :: 2026-11-21 16:25:54 =====
+stop: stopped pid=1031
+  ASSERT OK   : stop reported a clean shutdown
+2026-11-21 16:25:43.222 sup: inject end: pid=2573 exit=0 hooked=1 elapsed=206ms ok
+2026-11-21 16:25:56.462 sup: stop requested: signal=15
+2026-11-21 16:25:56.462 sup: exit: pid=1031
+  ASSERT OK   : SIGTERM was handled
+  ASSERT OK   : the shutdown line names the supervisor pid
+  ASSERT OK   : no supervisor process is left
+  ASSERT OK   : no injector process is left behind
+  ASSERT OK   : no pidfile is left behind
+
+===== P7 factory ASR/NLU/TTS still works :: 2026-11-21 16:25:58 =====
+  played s01
+  factory log lines: 76
+  events during the factory check: 262 -> 263
+  ASSERT OK   : factory ASR/NLU path produced log lines
+  ASSERT OK   : factory path stored a new ASR final
+  ASSERT OK   : core process survived the whole supervisor test
+  ASSERT OK   : no ptrace-stop is left on the target
+
+SUMMARY: passes=78 fails=0
+RESTARTS:
+  restart 1: 29149 -> 30057 (hooked=1)
+  restart 2: 30057 -> 30677 (hooked=1)
+  restart 3: 30677 -> 31288 (hooked=1)

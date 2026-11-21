@@ -1,0 +1,61 @@
+﻿# T6-02 supervisor build
+# host time: 2026-11-21 16:22:29
+# cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd  -O2 -Wall -Wextra -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\tg_supervisor D:\tgz02\OS\system\my-doc\07_ai_bridge\android\supervisor\tg_supervisor.c
+
+(no compiler output: 0 warning, 0 error)
+exit: 0
+artifact: tg_supervisor  60904 B  sha256=17dec6e079d7d2efd74cd6d2c49e04436d1b6d56a648024ca0f1986c646c2fa0
+# --- readelf -h ---
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              DYN (Shared object file)
+  Machine:                           ARM
+  Version:                           0x1
+  Entry point address:               0xd88
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          59464 (bytes into file)
+  Flags:                             0x5000200, Version5 EABI, soft-float ABI
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         9
+  Size of section headers:           40 (bytes)
+  Number of section headers:         36
+  Section header string table index: 35
+# --- readelf -d ---
+
+Dynamic section at offset 0x4dd8 contains 28 entries:
+  Tag        Type                         Name/Value
+ 0x00000003 (PLTGOT)                     0x5f14
+ 0x00000002 (PLTRELSZ)                   448 (bytes)
+ 0x00000017 (JMPREL)                     0x914
+ 0x00000014 (PLTREL)                     REL
+ 0x00000011 (REL)                        0x894
+ 0x00000012 (RELSZ)                      128 (bytes)
+ 0x00000013 (RELENT)                     8 (bytes)
+ 0x6ffffffa (RELCOUNT)                   12
+ 0x00000015 (DEBUG)                      0x0
+ 0x00000006 (SYMTAB)                     0x200
+ 0x0000000b (SYMENT)                     16 (bytes)
+ 0x00000005 (STRTAB)                     0x5c0
+ 0x0000000a (STRSZ)                      531 (bytes)
+ 0x6ffffef5 (GNU_HASH)                   0x7d4
+ 0x00000001 (NEEDED)                     Shared library: [libdl.so]
+ 0x00000001 (NEEDED)                     Shared library: [libc.so]
+ 0x00000020 (PREINIT_ARRAY)              0x5dc0
+ 0x00000021 (PREINIT_ARRAYSZ)            0x8
+ 0x00000019 (INIT_ARRAY)                 0x5dc8
+ 0x0000001b (INIT_ARRAYSZ)               8 (bytes)
+ 0x0000001a (FINI_ARRAY)                 0x5dd0
+ 0x0000001c (FINI_ARRAYSZ)               8 (bytes)
+ 0x0000001e (FLAGS)                      BIND_NOW
+ 0x6ffffffb (FLAGS_1)                    Flags: NOW
+ 0x6ffffff0 (VERSYM)                     0x7ec
+ 0x6ffffffe (VERNEED)                    0x864
+ 0x6fffffff (VERNEEDNUM)                 1
+ 0x00000000 (NULL)                       0x0
+# result: OK (0 warning, 0 error, ELF32/ARM, dynamically linked)
