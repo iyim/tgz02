@@ -1,9 +1,9 @@
 === T5-06B integration subset (host, Mock provider only) ===
 exe    : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_091042
+run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_100415
 filter : still_the_default
 
-PASS i29_mock_is_still_the_default      0.95s  mock default/explicit ok, 2 events, no HTTP
+PASS i29_mock_is_still_the_default      0.96s  mock default/explicit ok, 2 events, no HTTP
 
 cases: 1, failed: 0
 RESULT: PASS

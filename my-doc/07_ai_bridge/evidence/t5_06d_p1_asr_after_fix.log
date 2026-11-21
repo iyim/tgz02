@@ -1,0 +1,61 @@
+﻿
+===== 0. preconditions :: 2026-11-21 10:02:33 =====
+################ T5-06D device acceptance: real ASR -> real model -> factory TTS ################
+host time: 2026-11-21 10:02:33
+core pid           : 28858
+  ASSERT OK   : smartapp:core is running
+bridge             : running: pid=22705 | {"state":"running","pid":22705,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":84,"duplicates":0,"rejected":0,"frames":84,"clients":0,"clients_accepted":24,"clients_closed":24,"client_aborts":24,"client_overflow":0,"frame_errors":0,"store_errors":0,"replay_lines":115,"bad_lines":0,"truncated_bytes":0,"dedup_size":199,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-21T10:02:34"}
+  ASSERT OK   : bridge running
+key file           : mode=-rw------- bytes=37
+  ASSERT OK   : api key file is 0600
+  ASSERT OK   : api key file is non-empty (content never read)
+tts_exec.dex       : /data/local/tmp/t5_bridge/tts_exec.dex B
+ai_worker          : /data/local/tmp/t5d06/bin/ai_worker B
+  ASSERT OK   : tts_exec.dex present
+events.jsonl lines : 199
+  ASSERT OK   : real events.jsonl exists (never truncated by this run)
+  frida-server reachable on 27042
+  frida sender pid=46476 core=28858
+  ASSERT OK   : frida sender ready
+  ASSERT OK   : factory core pid unchanged after foregrounding
+  > already running: supervisor=31079 exec=31083
+executor           : supervisor=31079/alive executor=31083/alive | root=/data/local/tmp/t5_bridge/tts dex=/data/local/tmp/t5_bridge/tts_exec.dex | queue=0 | inflight=0 | done=0 | failed=0 | journal_last: {"ts":"2026-11-21T09:19:23.052+0800","kind":"tts","event_id":"notice-091919","tts_id":5246130,"outcome":"ok","dur_ms":1836,"text_bytes":27,"attempts":1}
+  ASSERT OK   : TTS executor is alive
+> worker(mock max=0 idle=2500 tts=off)
+  rc=0
+  [aiw] 2026-11-21T10:02:59 lock acquired; previous owner pid=16370 no longer holding it
+  [aiw] 2026-11-21T10:02:59 start pid=23667 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d06/state/consumer_state.json provider=mock offset=60208 (mock only, no network)
+  [aiw] 2026-11-21T10:03:02 exit reason=idle_timeout processed=3 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=61106 state_saves=4 state_errors=0
+  [aiw] 2026-11-21T10:03:02 file identity: reason=first_open offset=61106 prefix_hash=bad6524c4cfb0b71 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-21T10:03:02 provider summary: name=mock calls=3 (no network)
+  seeded: events 199 -> 199
+  > capture started pid=23939 file=/data/local/tmp/t5d06/factory_tts_capture.log
+
+===== S8 factory wake word / ASR / volume coexistence :: 2026-11-21 10:03:03 =====
+volume/mute state: - STREAM_MUSIC: |    Muted: false |    Min: 0 | -- | 11-20 18:59:18:611 setStreamVolume(stream:STREAM_MUSIC index:70 flags:0x0) from com.android.commands.media | 11-20 18:59:55:275 adjustSuggestedStreamVolume(sugg:USE_DEFAULT_STREAM_TYPE dir:ADJUST_LOWER flags:0x1011) from android/MediaSessionService uid:1000
+  played: s01  (wake -> 3s -> command)
+factory ASR after the whole run: lines 199 -> 200
+  ASSERT OK   : factory ASR still recognises speech after all TTS activity
+  ASSERT OK   : factory core pid unchanged
+wakeup log tail: 11-21 10:03:23.669 D/WakeupEngineWrapper(28858): setSystemInfo,272: volumeLevel=25, audioType=2, isFullDuplexMode=0, isAsrMode=0 | 11-21 10:03:28.055 D/WakeupEngineWrapper(28858): useWakeupWords,225:begin ... | 11-21 10:03:28.055 D/WakeupEngineWrapper(28858): useWakeupWords,228:end ...
+  ASSERT OK   : api key file still 0600
+  ASSERT OK   : events.jsonl never shrank (no truncation)
+
+===== Z. summary :: 2026-11-21 10:03:43 =====
+  > capture stopped lines=54
+executor: supervisor=31079/alive executor=31083/alive | root=/data/local/tmp/t5_bridge/tts dex=/data/local/tmp/t5_bridge/tts_exec.dex | queue=0 | inflight=0 | done=0 | failed=0 | journal_last: {"ts":"2026-11-21T09:19:23.052+0800","kind":"tts","event_id":"notice-091919","tts_id":5246130,"outcome":"ok","dur_ms":1836,"text_bytes":27,"attempts":1}
+journal:
+{"ts":"2026-11-21T09:00:16.427+0800","kind":"tts","event_id":"t5b-28236-1968622-g1","tts_id":5245426,"outcome":"ok","dur_ms":6423,"text_bytes":96,"attempts":1}
+{"ts":"2026-11-21T09:00:45.185+0800","kind":"tts","event_id":"longtext-090025-1","tts_id":5245427,"outcome":"ok","dur_ms":17605,"text_bytes":243,"attempts":1}
+{"ts":"2026-11-21T09:01:02.266+0800","kind":"tts","event_id":"s4long","tts_id":5245428,"outcome":"interrupted","dur_ms":10261,"text_bytes":222,"attempts":1}
+{"ts":"2026-11-21T09:01:02.282+0800","kind":"retry","event_id":"s4long","attempts":1,"outcome":"interrupted"}
+{"ts":"2026-11-21T09:02:01.935+0800","kind":"tts","event_id":"ord-1","tts_id":5245435,"outcome":"ok","dur_ms":2418,"text_bytes":28,"attempts":1}
+{"ts":"2026-11-21T09:02:04.561+0800","kind":"tts","event_id":"ord-2","tts_id":5245436,"outcome":"ok","dur_ms":2548,"text_bytes":28,"attempts":1}
+{"ts":"2026-11-21T09:02:06.898+0800","kind":"tts","event_id":"ord-3","tts_id":5245437,"outcome":"ok","dur_ms":2301,"text_bytes":28,"attempts":1}
+{"ts":"2026-11-21T09:04:58.654+0800","kind":"tts","event_id":"t5b-28236-1968629-g1","tts_id":5245442,"outcome":"ok","dur_ms":5812,"text_bytes":78,"attempts":1}
+{"ts":"2026-11-21T09:05:26.453+0800","kind":"recover","item":"recover-090507.json","age_ms":12080}
+{"ts":"2026-11-21T09:06:04.245+0800","kind":"recover","item":"recover-090507.json","age_ms":38136}
+{"ts":"2026-11-21T09:06:25.147+0800","kind":"tts","event_id":"recover-090507","tts_id":5245446,"outcome":"ok","dur_ms":20812,"text_bytes":292,"attempts":3}
+{"ts":"2026-11-21T09:19:23.052+0800","kind":"tts","event_id":"notice-091919","tts_id":5246130,"outcome":"ok","dur_ms":1836,"text_bytes":27,"attempts":1}
+FAILS: 0
+RESULT: PASS

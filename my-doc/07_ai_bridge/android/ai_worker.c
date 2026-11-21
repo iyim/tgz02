@@ -401,6 +401,42 @@ static void reply_log_append(t6b_worker *w, const t6b_reply *rep)
     (void)wu_close(fd);
 }
 
+/* ---------------- T5-06D-P1：队列写入的故障注入开关 ----------------
+ *
+ * T6B_FAULT_TTSQ = create | write | fsync | rename | dirfsync
+ *   create   打开 tmp 失败
+ *   write    写 tmp 失败
+ *   fsync    文件 fsync 失败
+ *   rename   rename 到 queue 失败
+ *   dirfsync 目录 fsync 失败（此时 queue/<id>.json 可能已经存在！）
+ *
+ * 和 consumer_state 的 T6B_FAULT_STATE 同一套路：只在这个进程里生效，
+ * 不设置就完全走真实路径；测试靠它证明失败分支不会丢回答、也不会提交偏移。
+ */
+#define T6B_TTSQ_NONE     0
+#define T6B_TTSQ_CREATE   1
+#define T6B_TTSQ_WRITE    2
+#define T6B_TTSQ_FSYNC    3
+#define T6B_TTSQ_RENAME   4
+#define T6B_TTSQ_DIRFSYNC 5
+
+static int t6b_fault_ttsq(void)
+{
+    static int cached = -1;
+    const char *v;
+
+    if (cached >= 0) return cached;
+    v = getenv("T6B_FAULT_TTSQ");
+    cached = T6B_TTSQ_NONE;
+    if (v == NULL || v[0] == '\0') return cached;
+    if (strcmp(v, "create") == 0)         cached = T6B_TTSQ_CREATE;
+    else if (strcmp(v, "write") == 0)     cached = T6B_TTSQ_WRITE;
+    else if (strcmp(v, "fsync") == 0)     cached = T6B_TTSQ_FSYNC;
+    else if (strcmp(v, "rename") == 0)    cached = T6B_TTSQ_RENAME;
+    else if (strcmp(v, "dirfsync") == 0)  cached = T6B_TTSQ_DIRFSYNC;
+    return cached;
+}
+
 /* ---------------- T5-06D：把回答交给原厂 TTS 执行器（本地持久化队列） ----------------
  *
  * 语义（与 tts_exec 一起定义，报告第 5 节有完整说明）：
@@ -488,31 +524,44 @@ static int tts_enqueue(t6b_worker *w, const t6b_reply *rep, char *err, size_t er
     }
 
     (void)wu_unlink(path_tmp);
-    fd = wu_open_excl(path_tmp);
+    fd = (t6b_fault_ttsq() == T6B_TTSQ_CREATE) ? -1 : wu_open_excl(path_tmp);
     if (fd < 0) {
-        if (err) snprintf(err, errlen, "open tmp failed (errno=%d)", errno);
+        if (err) snprintf(err, errlen, "%sopen tmp failed (errno=%d)",
+                          t6b_fault_ttsq() == T6B_TTSQ_CREATE ? "injected fault: " : "", errno);
         return -1;
     }
-    if (wu_write_all(fd, body, (size_t)n) != 0) {
+    if (t6b_fault_ttsq() == T6B_TTSQ_WRITE || wu_write_all(fd, body, (size_t)n) != 0) {
         (void)wu_close(fd);
         (void)wu_unlink(path_tmp);
-        if (err) snprintf(err, errlen, "write tmp failed (errno=%d)", errno);
+        if (err) snprintf(err, errlen, "%swrite tmp failed (errno=%d)",
+                          t6b_fault_ttsq() == T6B_TTSQ_WRITE ? "injected fault: " : "", errno);
         return -1;
     }
-    if (wu_fsync(fd) != 0) {
+    if (t6b_fault_ttsq() == T6B_TTSQ_FSYNC || wu_fsync(fd) != 0) {
         (void)wu_close(fd);
         (void)wu_unlink(path_tmp);
-        if (err) snprintf(err, errlen, "fsync tmp failed");
+        if (err) snprintf(err, errlen, "%sfsync tmp failed",
+                          t6b_fault_ttsq() == T6B_TTSQ_FSYNC ? "injected fault: " : "");
         return -1;
     }
     (void)wu_close(fd);
 
-    if (wu_rename_replace(path_tmp, path_item) != 0) {
+    if (t6b_fault_ttsq() == T6B_TTSQ_RENAME || wu_rename_replace(path_tmp, path_item) != 0) {
         (void)wu_unlink(path_tmp);
-        if (err) snprintf(err, errlen, "rename into queue failed (errno=%d)", errno);
+        if (err) snprintf(err, errlen, "%srename into queue failed (errno=%d)",
+                          t6b_fault_ttsq() == T6B_TTSQ_RENAME ? "injected fault: " : "", errno);
         return -1;
     }
-    (void)wu_fsync_dir(dir_queue);
+
+    /* P1-3：目录 fsync 也必须成功才算入队。
+     * 失败时 queue/<id>.json 可能已经存在 → **不删它**：下一次重试按 event_id
+     * 幂等识别这一份（返回 0 = 已入队），然后才允许提交偏移。 */
+    if (t6b_fault_ttsq() == T6B_TTSQ_DIRFSYNC || wu_fsync_dir(dir_queue) != 0) {
+        if (err) snprintf(err, errlen, "%squeue dir fsync failed (item maybe present)",
+                          t6b_fault_ttsq() == T6B_TTSQ_DIRFSYNC ? "injected fault: " : "");
+        return -1;
+    }
+
     w->st.tts_queued++;
     return 1;
 }
@@ -521,8 +570,9 @@ static int tts_enqueue(t6b_worker *w, const t6b_reply *rep, char *err, size_t er
 
 /*
  * 一次尝试。返回值：
- *    0 = 成功（已提交偏移并落盘）
+ *    0 = 成功（回答已入队（若启用）+ 已提交偏移并落盘）
  *   -1 = 本次失败，稍后重试（偏移不动、recent_ids 不动、成功计数不动）
+ *        包括 P1-2 的"TTS 入队失败"：回答还没落到持久位置，绝不提交偏移
  *   -2 = 本次失败且已超过重试上限 -> 进入 error 状态，但仍继续重试，绝不跳过该事件
  *   -3 = Provider 成功但消费进度落盘失败（调用方必须停止消费）
  *   -4 = Provider 成功但前缀指纹推进失败（致命，调用方必须退出，码 6）
@@ -562,14 +612,16 @@ static int provider_attempt(t6b_worker *w)
                    w->pend.event_id);
         }
         if (w->pend_stuck) {
-            always("provider recovered for event id=%s after %d attempts; resuming normal pace",
+            always("pending event cleared: id=%s after %d attempts; resuming normal pace",
                    w->pend.event_id, w->pend_attempts);
         }
         w->pend_stuck = 0;
         w->pend_error[0] = '\0';
         {
             /* T5-06D：先把回答安全入队（按 event_id 幂等），再提交偏移。
-             * 顺序是"先入队、后提交"，所以崩溃不会让已经回答过的内容无声无息消失。 */
+             * 顺序是"先入队、后提交"，所以崩溃不会让已经回答过的内容无声无息消失。
+             * P1-2：入队失败 = 这条回答还没有落到任何持久位置 → **不许提交偏移**，
+             *       当前事件留在原地，走 Provider 重试/退避，回答会被重新请求。 */
             char terr[96];
             int q = tts_enqueue(w, &rep, terr, sizeof(terr));
             if (q > 0) {
@@ -578,14 +630,27 @@ static int provider_attempt(t6b_worker *w)
             } else if (q == 0) {
                 if (w->cfg.tts_queue[0] != '\0') {
                     w->st.tts_skipped++;
-                    logf_(&w->cfg, "tts skip (already queued/played) event=%s", w->pend.event_id);
+                    /* P1-2：幂等命中必须能在证据里看到（queue/inflight/done/failed 任一路径） */
+                    always("tts skip (already queued/played): event=%s reply_bytes=%d queue=%s",
+                           w->pend.event_id, rep.text_bytes, w->cfg.tts_queue);
                 }
             } else {
                 w->st.tts_enqueue_failed++;
                 t6b_status_note_error(&w->st, "tts enqueue failed: %s", terr);
-                always("WARNING tts enqueue FAILED: event=%s reply_bytes=%d (%s); "
-                       "answer is NOT queued (device-local only), event still committed once",
+                always("tts enqueue FAILED: event=%s reply_bytes=%d (%s); offset NOT advanced, "
+                       "event kept and retried (no answer is dropped)",
                        w->pend.event_id, rep.text_bytes, terr);
+                if (w->cfg.provider_retry_max > 0 && w->pend_attempts >= w->cfg.provider_retry_max) {
+                    if (!w->pend_stuck) {
+                        w->pend_stuck = 1;
+                        snprintf(w->st.state, sizeof(w->st.state), "error");
+                        always("event id=%s tts enqueue still failing after %d attempts (%s): "
+                               "keeping it, no event will be skipped",
+                               w->pend.event_id, w->pend_attempts, terr);
+                    }
+                    return -2;
+                }
+                return -1;
             }
         }
         {

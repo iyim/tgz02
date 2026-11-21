@@ -84,6 +84,21 @@ public final class TtsExec {
     /* --enqueue-file F --event-id ID：只把文本写进队列（不拿单实例锁、不碰 provider），
      * 由正在跑的守护进程负责播报。这样"直连播报"也不会和守护进程抢锁。 */
     static String enqueueTextFile = null;
+    static boolean selfCheck = false;
+    static boolean recoverOnly = false;
+
+    /* ------------------------------------------- 故障注入（T5-06D-P1，仅测试用）
+     * 正常运行时是空集合：不指定 --fault / TTS_EXEC_FAULT 就完全按真实路径执行。
+     * 取值：
+     *   recover_write / recover_fsync / recover_rename / recover_dirfsync   inflight -> queue
+     *   retry_write   / retry_fsync   / retry_rename   / retry_dirfsync     播放失败后回队列
+     *   failed_write  / failed_fsync  / failed_rename  / failed_dirfsync    停车场（failed/）
+     *   done_write    / done_fsync    / done_rename    / done_dirfsync      done 标记
+     *   baditem_rename / baditem_dirfsync                                    坏条目改名入 failed/
+     *   provider_fail   playTts 直接失败（不碰原厂 provider，不出声）
+     *   fake_ok         不调 provider，直接当作播报完成（只用于验证 done 标记持久化）
+     */
+    static final java.util.HashSet<String> faults = new java.util.HashSet<String>();
 
     /* -------------------------------------------------------------- provider */
 
@@ -102,6 +117,11 @@ public final class TtsExec {
     static LogTail logTail;
 
     static long nPlayed, nOk, nTimeout, nError, nStopped, nSkipped, nBadItem, nInterrupted;
+    /* P1：持久化失败不再静默——每一种失败都有自己的计数，都能在 state.json 里看到 */
+    static long nDoneFailed;      /* done 标记没落盘（inflight 原件保留，重启会重放） */
+    static long nPersistFailed;   /* 回队列/停车场写入没落盘（inflight 原件保留） */
+    static long nRecoverFailed;   /* 启动恢复时 inflight -> queue/failed 没落盘 */
+    static long nBadItemStuck;    /* 坏条目改名入 failed/ 没落盘（留在 inflight/） */
     static int lastTtsId = -1;
     static String lastOutcome = "";
     static String lastEventId = "";
@@ -192,6 +212,12 @@ public final class TtsExec {
             o.put("stopped", nStopped);
             o.put("skipped", nSkipped);
             o.put("bad_item", nBadItem);
+            /* P1：持久化失败必须可见（否则"没播"和"播了没记住"分不清） */
+            o.put("done_marker_failed", nDoneFailed);
+            o.put("persist_failed", nPersistFailed);
+            o.put("recover_failed", nRecoverFailed);
+            o.put("bad_item_stuck", nBadItemStuck);
+            o.put("faults", faultList());
             o.put("last_tts_id", lastTtsId);
             o.put("last_outcome", lastOutcome);
             o.put("last_event_id", lastEventId);
@@ -457,10 +483,49 @@ public final class TtsExec {
         return it;
     }
 
-    /** 原子重写条目（tmp + fsync + rename + fsync(dir)），保持 0600。 */
-    static boolean writeItem(Item it, File dir) {
+    static boolean hasFault(String name) { return faults.contains(name); }
+
+    static String faultList() {
+        if (faults.isEmpty()) return "";
+        ArrayList<String> v = new ArrayList<String>(faults);
+        Collections.sort(v);
+        StringBuilder sb = new StringBuilder();
+        for (String s : v) { if (sb.length() > 0) sb.append(','); sb.append(s); }
+        return sb.toString();
+    }
+
+    /**
+     * 目录 fsync。Java 层没有直接 API（FileInputStream/FileOutputStream 拒绝目录），
+     * 用 android.system.Os.open(O_RDONLY) 拿到目录 fd 再 fsync——这正是 POSIX 的语义。
+     * 返回 false = 目录项可能还没落盘，调用方必须把源文件当成唯一副本保留。
+     */
+    static boolean dirSync(File dir) {
+        java.io.FileDescriptor fd = null;
         try {
-            File tmp = new File(tmpDir, it.eventId + ".json.tmp");
+            fd = android.system.Os.open(dir.getAbsolutePath(),
+                    android.system.OsConstants.O_RDONLY, 0);
+            android.system.Os.fsync(fd);
+            return true;
+        } catch (Throwable t) {
+            out("dirfsync failed (" + dir.getAbsolutePath() + "): " + t);
+            return false;
+        } finally {
+            if (fd != null) { try { android.system.Os.close(fd); } catch (Throwable ignored) { } }
+        }
+    }
+
+    /**
+     * 原子写一个条目到 dir/<event_id>.json，**返回 true 仅当四步全部成功**：
+     *   1) tmp 文件写入 2) 文件 fsync 3) 原子 rename（rename(2) 本身覆盖目标）
+     *   4) 目标目录 fsync
+     * 只有 true 之后调用方才允许删除源文件（P1 的核心约定）。
+     * stage 只用于构造 tmp 文件名和选择故障注入点，不写进正文。
+     */
+    static boolean writeItem(Item it, File dir, String stage) {
+        File tmp = new File(tmpDir, it.eventId + "." + stage + ".json.tmp");
+        File dst = new File(dir, it.eventId + ".json");
+        try {
+            if (hasFault(stage + "_write")) throw new IOException("injected fault: " + stage + "_write");
             JSONObject o = new JSONObject();
             o.put("v", 1);
             o.put("event_id", it.eventId);
@@ -471,70 +536,106 @@ public final class TtsExec {
             try {
                 fos.write(o.toString().getBytes(UTF8));
                 fos.flush();
+                if (hasFault(stage + "_fsync")) throw new IOException("injected fault: " + stage + "_fsync");
                 fos.getFD().sync();
             } finally {
                 fos.close();
             }
             chmod600(tmp);
-            File dst = new File(dir, it.eventId + ".json");
-            if (dst.exists()) dst.delete();
-            if (!tmp.renameTo(dst)) { out("requeue rename failed: " + dst); return false; }
+            if (hasFault(stage + "_rename")) throw new IOException("injected fault: " + stage + "_rename");
+            /* rename(2) 原子替换目标：不先删旧文件，避免"删了新的、旧也没了"的窗口 */
+            if (!tmp.renameTo(dst)) throw new IOException("rename into " + dir.getName() + " failed");
+            if (hasFault(stage + "_dirfsync")) throw new IOException("injected fault: " + stage + "_dirfsync");
+            if (!dirSync(dir)) throw new IOException("dir fsync failed (" + dir.getName() + ")");
             return true;
         } catch (Exception e) {
-            out("requeue failed: " + e);
+            out("persist " + stage + " FAILED event=" + it.eventId + " bytes=" + it.textBytes
+                    + " err=" + e.getMessage() + " (source kept)");
+            try { if (tmp.exists()) tmp.delete(); } catch (Throwable ignored) { }
+            return false;
+        }
+    }
+
+    /**
+     * 把已有文件原子改名到 dir/（不复制正文，rename 即两边同一个 inode）。
+     * 只用于无法解析的坏条目：没有 event_id 就没法重写 JSON。
+     */
+    static boolean moveFile(File f, File dir, String stage) {
+        File dst = new File(dir, f.getName());
+        try {
+            if (hasFault(stage + "_rename")) throw new IOException("injected fault: " + stage + "_rename");
+            if (!f.renameTo(dst)) throw new IOException("rename into " + dir.getName() + " failed");
+            if (hasFault(stage + "_dirfsync")) throw new IOException("injected fault: " + stage + "_dirfsync");
+            if (!dirSync(dir)) throw new IOException("dir fsync failed (" + dir.getName() + ")");
+            return true;
+        } catch (Exception e) {
+            out("move " + stage + " FAILED item=" + f.getName() + " err=" + e.getMessage());
             return false;
         }
     }
 
     /* ================================================================== queue */
 
+    /**
+     * 启动恢复：把上次崩溃留在 inflight/ 的条目**先安全落盘再删原件**。
+     * 任何一步失败 → 原 inflight 文件原地保留（下一次启动还能再恢复），并记 event_id + 错误类型。
+     */
     static void recoverInflight() {
         ArrayList<File> left = listItems(inflightDir);
         for (File f : left) {
             long age = nowMs() - f.lastModified();
-            journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"recover\",\"item\":\""
-                    + esc(f.getName()) + "\",\"age_ms\":" + age + "}");
             Item it = null;
-            try { it = readItem(f); } catch (Throwable t) {
+            try {
+                it = readItem(f);
+            } catch (Throwable t) {
                 nBadItem++;
-                moveFailed(f, 0);
+                journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"recover_unreadable\",\"item\":\""
+                        + esc(f.getName()) + "\",\"age_ms\":" + age + "}");
+                if (!moveFile(f, failedDir, "baditem")) {
+                    nBadItemStuck++;
+                    journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"recover_failure\",\"item\":\""
+                            + esc(f.getName()) + "\",\"stage\":\"failed\",\"err\":\"move failed\"}");
+                    out("recover: unreadable item " + f.getName()
+                            + " stays in inflight/ (failed/ not durable)");
+                }
                 continue;
             }
             it.attempts = it.attempts + 1;
-            f.delete();
-            if (it.attempts >= maxAttempts) {
-                out("inflight item " + it.eventId + " reached max attempts (" + it.attempts + "); parking");
+            journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"recover\",\"event_id\":\""
+                    + esc(it.eventId) + "\",\"attempts\":" + it.attempts + ",\"age_ms\":" + age + "}");
+
+            boolean toFailed = it.attempts >= maxAttempts;
+            boolean persisted = toFailed ? parkFailed(it) : writeItem(it, queueDir, "recover");
+            if (!persisted) {
+                nRecoverFailed++;
+                journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"recover_failure\",\"event_id\":\""
+                        + esc(it.eventId) + "\",\"stage\":\"" + (toFailed ? "failed" : "queue")
+                        + "\",\"attempts\":" + it.attempts + "}");
+                out("recover FAILED event=" + it.eventId + " attempts=" + it.attempts
+                        + " target=" + (toFailed ? "failed/" : "queue/") + "; inflight file kept");
+                continue;   /* 目标没落盘 → 原件必须留着 */
+            }
+
+            if (toFailed) {
+                out("inflight item " + it.eventId + " reached max attempts (" + it.attempts
+                        + "); parked in failed/");
                 journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"give_up\",\"event_id\":\""
                         + esc(it.eventId) + "\",\"attempts\":" + it.attempts + "}");
-                parkFailed(it);
-            } else if (writeItem(it, queueDir)) {
+            } else {
                 out("recovered inflight item " + it.eventId + " attempts=" + it.attempts + " -> queue");
             }
+            if (!f.delete()) out("inflight delete failed (kept): " + f.getName());
         }
         File[] tmps = tmpDir.listFiles();
-        if (tmps != null) for (File t : tmps) if (t.isFile()) t.delete();
+        if (tmps != null)
+            for (File t : tmps)
+                /* 只清理明显陈旧的临时文件：enqueue 模式不拿锁，别抢别人正在写的 tmp */
+                if (t.isFile() && nowMs() - t.lastModified() > 10000) t.delete();
     }
 
-    /** 把条目原样停在 failed/（保留正文，设备本地 0600，不进日志/证据）。 */
-    static void parkFailed(Item it) {
-        try {
-            JSONObject o = new JSONObject();
-            o.put("v", 1);
-            o.put("event_id", it.eventId);
-            o.put("created_ms", nowMs());
-            o.put("attempts", it.attempts);
-            o.put("text", it.text);
-            File tmp = new File(tmpDir, it.eventId + ".json.tmp");
-            FileOutputStream fos = new FileOutputStream(tmp, false);
-            try { fos.write(o.toString().getBytes(UTF8)); fos.flush(); fos.getFD().sync(); }
-            finally { fos.close(); }
-            chmod600(tmp);
-            File dst = new File(failedDir, it.eventId + ".json");
-            if (dst.exists()) dst.delete();
-            tmp.renameTo(dst);
-        } catch (Exception e) {
-            out("park failed: " + e);
-        }
+    /** 把条目停到 failed/（保留正文，设备本地 0600，不进日志/证据）。true = 已持久化。 */
+    static boolean parkFailed(Item it) {
+        return writeItem(it, failedDir, "failed");
     }
 
     static String esc(String s) {
@@ -553,6 +654,16 @@ public final class TtsExec {
     static String playItem(Item it, int attempts) {
         long t0 = nowMs();
         int id = -1;
+        /* 故障注入：只在显式 --fault 时进入，正常路径不进这两个分支 */
+        if (hasFault("provider_fail")) {
+            journalEvent(it, -1, "provider_error", t0, nowMs(), it.textBytes, attempts,
+                    "injected fault: provider_fail");
+            return "provider_error";
+        }
+        if (hasFault("fake_ok")) {
+            journalEvent(it, -1, "ok", t0, nowMs(), it.textBytes, attempts, "injected fault: fake_ok");
+            return "ok";
+        }
         try {
             id = playTts(it.text);
         } catch (Throwable t) {
@@ -607,28 +718,45 @@ public final class TtsExec {
         lastEventId = it.eventId;
     }
 
-    static void markDone(Item it) {
+    /**
+     * 写 done 标记（<event_id>.ok）。true = 标记已经落盘，调用方才允许删除 inflight 原件。
+     * 失败时 inflight 原件保留 → 重启后重放（至少一次投递），绝不会"标记失败 + 回答被删"。
+     */
+    static boolean markDone(Item it) {
+        File tmp = new File(tmpDir, it.eventId + ".ok.tmp");
         File marker = new File(doneDir, it.eventId + ".ok");
         try {
-            FileOutputStream fos = new FileOutputStream(marker, false);
-            fos.write((isoNow() + "\n").getBytes(UTF8));
-            fos.close();
-            chmod600(marker);
-        } catch (IOException e) {
-            out("done marker failed: " + e);
+            if (hasFault("done_write")) throw new IOException("injected fault: done_write");
+            FileOutputStream fos = new FileOutputStream(tmp, false);
+            try {
+                fos.write((isoNow() + "\n").getBytes(UTF8));
+                fos.flush();
+                if (hasFault("done_fsync")) throw new IOException("injected fault: done_fsync");
+                fos.getFD().sync();
+            } finally {
+                fos.close();
+            }
+            chmod600(tmp);
+            if (hasFault("done_rename")) throw new IOException("injected fault: done_rename");
+            if (!tmp.renameTo(marker)) throw new IOException("rename into done/ failed");
+            if (hasFault("done_dirfsync")) throw new IOException("injected fault: done_dirfsync");
+            if (!dirSync(doneDir)) throw new IOException("dir fsync failed (done)");
+            return true;
+        } catch (Exception e) {
+            out("done marker NOT persisted event=" + it.eventId + " bytes=" + it.textBytes
+                    + " err=" + e.getMessage() + " (inflight kept, replay after restart)");
+            try { if (tmp.exists()) tmp.delete(); } catch (Throwable ignored) { }
+            return false;
         }
-        if (!it.file.delete()) out("payload delete failed: " + it.file.getName());
-    }
-
-    static void moveFailed(File f, int attempts) {
-        File dst = new File(failedDir, f.getName());
-        if (dst.exists()) dst.delete();
-        if (!f.renameTo(dst)) out("failed move failed for " + f.getName());
-        else out("item moved to failed: " + dst.getName() + " attempts=" + attempts);
     }
 
     /* =================================================================== drain */
 
+    /**
+     * 从队列取一条播报。所有"移走条目"的动作都遵守同一条规则：
+     *   先让目标文件落盘（write/fsync/rename/dirfsync 全成功）→ 才删 inflight 原件；
+     *   目标没落盘 → inflight 原件保留，本次运行不再碰它（下次启动 recoverInflight 再试）。
+     */
     static int drainOnce() {
         ArrayList<File> items = listItems(queueDir);
         if (items.isEmpty()) return 0;
@@ -643,35 +771,62 @@ public final class TtsExec {
                 nBadItem++;
                 journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"bad_item\",\"item\":\""
                         + esc(claimed.getName()) + "\",\"note\":\"" + esc(String.valueOf(t.getMessage())) + "\"}");
-                moveFailed(claimed, 0);
+                if (!moveFile(claimed, failedDir, "baditem")) {
+                    nBadItemStuck++;
+                    journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"persist_failure\",\"item\":\""
+                            + esc(claimed.getName()) + "\",\"stage\":\"failed\",\"err\":\"bad item move failed\"}");
+                    out("bad item " + claimed.getName() + " stays in inflight/ (failed/ not durable)");
+                }
+                processed++;
+                writeState();
                 continue;
             }
             it.attempts = it.attempts + 1;
             String outcome = playItem(it, it.attempts);
             nPlayed++;
-            if (outcome.equals("ok")) {
-                nOk++;
-                markDone(it);
-                claimed.delete();
-            } else if (outcome.equals("stopped")) {
-                nStopped++;
-                stopRequest = false;
-                markDone(it);
-                claimed.delete();
+            processed++;
+
+            if (outcome.equals("ok") || outcome.equals("stopped")) {
+                if (outcome.equals("ok")) nOk++;
+                else { nStopped++; stopRequest = false; }
+                if (!markDone(it)) {
+                    /* done 标记没落盘：回答正文还在 inflight/，绝不删除；重启后重放（可能重复播一次） */
+                    nDoneFailed++;
+                    journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"done_marker_failure\",\"event_id\":\""
+                            + esc(it.eventId) + "\",\"outcome\":\"" + esc(outcome)
+                            + "\",\"attempts\":" + it.attempts + "}");
+                    out("event " + it.eventId + " played (" + outcome + ") but done marker is NOT durable; "
+                            + "payload kept in inflight/ and will be replayed after restart");
+                    writeState();
+                    continue;
+                }
+                if (!claimed.delete()) out("payload delete failed: " + claimed.getName());
             } else {
                 /* timeout / error / interrupted / rejected / provider_error：不丢正文，回到队列重试 */
                 if (outcome.equals("timeout")) nTimeout++;
                 else if (outcome.equals("interrupted")) nInterrupted++;
                 else nError++;
-                claimed.delete();
-                if (it.attempts >= maxAttempts) {
+
+                boolean toFailed = it.attempts >= maxAttempts;
+                boolean persisted = toFailed ? parkFailed(it) : writeItem(it, queueDir, "retry");
+                if (!persisted) {
+                    nPersistFailed++;
+                    journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"persist_failure\",\"event_id\":\""
+                            + esc(it.eventId) + "\",\"stage\":\"" + (toFailed ? "failed" : "queue")
+                            + "\",\"outcome\":\"" + esc(outcome) + "\",\"attempts\":" + it.attempts + "}");
+                    out("event " + it.eventId + " outcome=" + outcome + " attempts=" + it.attempts
+                            + ": " + (toFailed ? "failed/" : "queue/") + " write NOT durable; "
+                            + "payload kept in inflight/");
+                    writeState();
+                    continue;
+                }
+                if (toFailed) {
                     out("event " + it.eventId + " failed after " + it.attempts
                             + " attempts (" + outcome + "); parked in failed/");
                     journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"give_up\",\"event_id\":\""
                             + esc(it.eventId) + "\",\"attempts\":" + it.attempts
                             + ",\"outcome\":\"" + esc(outcome) + "\"}");
-                    parkFailed(it);
-                } else if (writeItem(it, queueDir)) {
+                } else {
                     out("event " + it.eventId + " requeued (attempt " + it.attempts
                             + " failed: " + outcome + ")");
                     journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"retry\",\"event_id\":\""
@@ -679,8 +834,8 @@ public final class TtsExec {
                             + ",\"outcome\":\"" + esc(outcome) + "\"}");
                     try { Thread.sleep(2000); } catch (InterruptedException ignored) { }
                 }
+                if (!claimed.delete()) out("payload delete failed: " + claimed.getName());
             }
-            processed++;
             writeState();
         }
         return processed;
@@ -719,9 +874,26 @@ public final class TtsExec {
                 item.text = readAll(enqueueTextFile);
                 item.textBytes = item.text.getBytes(UTF8).length;
                 item.attempts = 0;
-                boolean ok = writeItem(item, queueDir);
+                boolean ok = writeItem(item, queueDir, "enqueue");
                 out("enqueued event=" + item.eventId + " bytes=" + item.textBytes
                         + " queue=" + queueDir + " ok=" + ok);
+                System.exit(ok ? EXIT_OK : EXIT_ITEM_FAILED);
+            }
+
+            /* 自检模式：不碰 provider，只验证"写文件 + 文件 fsync + rename + 目录 fsync"
+             * 这条链在本机是否真的可用（目录 fsync 走 Os.open + Os.fsync）。 */
+            if (selfCheck) {
+                Item it = new Item();
+                it.eventId = "selfcheck-" + nowMs();
+                it.text = "selfcheck";
+                it.textBytes = it.text.getBytes(UTF8).length;
+                boolean ok = writeItem(it, queueDir, "enqueue") && dirSync(queueDir);
+                File probe = new File(queueDir, it.eventId + ".json");
+                boolean same = probe.isFile() && probe.length() > 0;
+                out("selfcheck root=" + root + " write=" + ok + " dirfsync=" + ok + " file=" + same);
+                journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"selfcheck\",\"event_id\":\""
+                        + esc(it.eventId) + "\",\"ok\":" + ok + "}");
+                if (ok) probe.delete();
                 System.exit(ok ? EXIT_OK : EXIT_ITEM_FAILED);
             }
 
@@ -734,6 +906,16 @@ public final class TtsExec {
             }
             writePidFile();
 
+            /* 只做启动恢复（不碰 provider、不播报）。故障注入测试用它把
+             * "inflight -> queue/failed 的持久化"单独隔离出来验证。 */
+            if (recoverOnly) {
+                recoverInflight();
+                writeState();
+                out("recover_only done recover_failed=" + nRecoverFailed
+                        + " bad_item_stuck=" + nBadItemStuck);
+                finish(fl, lf, (nRecoverFailed + nBadItemStuck) == 0 ? EXIT_OK : EXIT_ITEM_FAILED);
+            }
+
             Class<?> atCls = Class.forName("android.app.ActivityThread");
             Object at = atCls.getMethod("systemMain").invoke(null);
             Context ctx = (Context) atCls.getMethod("getSystemContext").invoke(at);
@@ -745,7 +927,9 @@ public final class TtsExec {
             logTail.start();
 
             out("ready pid=" + android.os.Process.myPid() + " root=" + root
-                    + " timeout_ms=" + playTimeoutMs + " once=" + once);
+                    + " timeout_ms=" + playTimeoutMs + " once=" + once
+                    + " max_attempts=" + maxAttempts
+                    + (faults.isEmpty() ? "" : " faults=" + faultList()));
 
             if (stopRequest) {
                 try { stopTts(stopId); } catch (Throwable t) { out("stop failed: " + t); }
@@ -786,7 +970,9 @@ public final class TtsExec {
             }
             writeState();
             out("exit played=" + nPlayed + " ok=" + nOk + " timeout=" + nTimeout
-                    + " error=" + nError + " stopped=" + nStopped + " bad_item=" + nBadItem);
+                    + " error=" + nError + " stopped=" + nStopped + " bad_item=" + nBadItem
+                    + " done_failed=" + nDoneFailed + " persist_failed=" + nPersistFailed
+                    + " recover_failed=" + nRecoverFailed + " bad_item_stuck=" + nBadItemStuck);
             finish(fl, lf, rc);
         } catch (Throwable t) {
             t.printStackTrace();
@@ -850,6 +1036,9 @@ public final class TtsExec {
     }
 
     static boolean parseArgs(String[] a) {
+        /* 环境变量兜底：守护进程由脚本拉起时不必改命令行 */
+        String env = System.getenv("TTS_EXEC_FAULT");
+        if (env != null && env.length() > 0) addFaults(env);
         for (int i = 0; i < a.length; i++) {
             String s = a[i];
             if (s.equals("--root")) { if (++i >= a.length) return false; root = a[i]; }
@@ -862,6 +1051,9 @@ public final class TtsExec {
             else if (s.equals("--play-file")) { if (++i >= a.length) return false; playTextFile = a[i]; }
             else if (s.equals("--enqueue-file")) { if (++i >= a.length) return false; enqueueTextFile = a[i]; }
             else if (s.equals("--event-id")) { if (++i >= a.length) return false; playEventId = a[i]; }
+            else if (s.equals("--fault")) { if (++i >= a.length) return false; addFaults(a[i]); }
+            else if (s.equals("--selfcheck")) { selfCheck = true; }
+            else if (s.equals("--recover-only")) { recoverOnly = true; }
             else if (s.equals("--stop")) { stopRequest = true; }
             else if (s.equals("--stop-id")) { if (++i >= a.length) return false; stopId = Integer.parseInt(a[i]); }
             else return false;
@@ -869,9 +1061,15 @@ public final class TtsExec {
         return true;
     }
 
+    /** --fault a,b 或 TTS_EXEC_FAULT=a:b 都接受；未知名字直接忽略（不影响正常运行）。 */
+    static void addFaults(String spec) {
+        String[] parts = spec.split("[,: ]+");
+        for (String p : parts) if (p.length() > 0) faults.add(p.trim());
+    }
+
     static void usage() {
         System.out.println("usage: TtsExec [--root DIR] [--once] [--stop] [--play-file F --event-id ID]"
-                + " [--enqueue-file F --event-id ID]"
+                + " [--enqueue-file F --event-id ID] [--selfcheck] [--recover-only] [--fault NAME[,NAME...]]"
                 + " [--timeout-ms N] [--idle-ms N] [--poll-ms N] [--max-attempts N] [--verbose]");
     }
 }

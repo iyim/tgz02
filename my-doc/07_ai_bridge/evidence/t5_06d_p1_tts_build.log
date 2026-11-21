@@ -1,0 +1,7 @@
+﻿== T5-06D tts_exec build 2026-11-21 09:43:48 ==
+javac: Note: D:\tgz02\OS\system\my-doc\07_ai_bridge\android\tts_exec\TtsExec.java uses or overrides a deprecated API.
+javac: Note: Recompile with -Xlint:deprecation for details.
+javac: 5 class file(s)
+dex: tts_exec.dex bytes=33608 sha256=622067a5015c4f7b9b03678dd2785486732e42cc9fd87211451ba2654d14e7fb
+dex: min-api=26 target=android-8.1(arm32) entry=com.tgz02.tts.TtsExec
+# result: OK

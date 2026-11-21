@@ -1,13 +1,13 @@
-﻿# run_t5_06d_host_tests.ps1 -- T5-06D 主机侧验证（dex 构建 + Worker 单元/集成 + TTS 队列用例）
+﻿# run_t5_06d_host_tests.ps1 -- T5-06D/T5-06D-P1 主机侧验证（dex 构建 + Worker 单元/集成 + TTS 队列用例）
 #
 # 做三件事：
 #   1) 构建 tts_exec.dex（javac + d8），把结果写进 evidence/t5_06d_host_test.log
 #   2) 构建并运行 Worker 主机单元测试（含 T5-06D 新增断言）
-#   3) 运行集成测试全集 + TTS 队列相关子集（i31..i34）
+#   3) 运行集成测试全集 + TTS 队列相关子集（i31..i38，含 P1 故障注入用例）
 #
 # 不做：不连真机、不调用模型、不播放任何音频。
 param(
-    [string]$Log = "D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t5_06d_host_test.log"
+    [string]$Log = "D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t5_06d_p1_host_test.log"
 )
 $ErrorActionPreference = 'Continue'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
