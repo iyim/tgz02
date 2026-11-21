@@ -241,6 +241,9 @@ int main(int argc, char **argv)
     const char *fault = "";
     int pause_fail_after = 0;
     int pc_busy_claims = 0;
+    int pc_readfail = 0;
+    int pc_readfail_errno = 0;
+    int pc_readfail_exec = 0;
     int verbose = 0;
     int i;
     int rc;
@@ -292,6 +295,16 @@ int main(int argc, char **argv)
     } else if (strncmp(fault, "pc-busy:", 8) == 0) {
         pc_busy_claims = atoi(fault + 8);
         out("[inject] fault=pc_busy_claims=%d", pc_busy_claims);
+    } else if (strncmp(fault, "pc-readfail-exec", 16) == 0) {
+        /* 让"执行线程"那一次读取失败：验证执行线程这条路径同样 fail-closed */
+        pc_readfail_exec = 1;
+        out("[inject] fault=pc_readfail_exec");
+    } else if (strncmp(fault, "pc-readfail", 11) == 0) {
+        /* pc-readfail / pc-readfail:ERRNO —— 让 PC 读取假装失败一次（errno 默认 EPERM=1）。
+         * 一次就够：读失败必须立刻中止本次安装，不重试、不放过。 */
+        pc_readfail = 1;
+        pc_readfail_errno = (fault[11] == ':') ? atoi(fault + 12) : 0;
+        out("[inject] fault=pc_readfail errno=%d", pc_readfail_errno ? pc_readfail_errno : EPERM);
     }
 
     out("[inject] tg_injector t6-01 begin");
@@ -327,6 +340,9 @@ int main(int argc, char **argv)
     g_ctx.pid = pid;
     g_ctx.pause_fail_after = pause_fail_after;   /* memset 之后再放，避免被清零 */
     g_ctx.pc_busy_claims = pc_busy_claims;
+    g_ctx.pc_readfail = pc_readfail;
+    g_ctx.pc_readfail_errno = pc_readfail_errno;
+    g_ctx.pc_readfail_exec = pc_readfail_exec;
     {
         const char *b = strrchr(so, '/');
         so_base = (b != NULL) ? b + 1 : so;
@@ -542,7 +558,11 @@ int main(int argc, char **argv)
     }
 
     /* 8d) 故障注入：只走"暂停 → 检查 → 恢复"这一段，用来验证清理路径
-     *     （abort-after-pause：暂停成功后故意不打补丁；pause-fail:N：暂停中途失败） */
+     *     （abort-after-pause：暂停成功后故意不打补丁；pause-fail:N：暂停中途失败）
+     *     这一段排在安装分支之前，且不带任何"hooked=1 就跳过"的条件，
+     *     所以这两种故障注入不可能被正常安装逻辑绕过。
+     *     注：pc-readfail 故意不进这一段 —— 它要走的正是真实的安装分支，
+     *     用来证明"PC 读不到 → 安装中止且不写补丁"。 */
     if (!check_only && (strcmp(fault, "abort-after-pause") == 0 ||
                         strncmp(fault, "pause-fail:", 11) == 0)) {
         rc = pause_and_check(patch_lo, patch_hi, err, sizeof(err));
@@ -630,6 +650,13 @@ int main(int argc, char **argv)
         if (status != 0) {
             out("[inject] ERROR stage=status status=%d", status);
             exit_code = 20;
+            goto detach;
+        }
+        if (check_only) {
+            /* --check 只是"报告当前状态"：hooked=0（未安装/已卸载）也是合法结果，
+             * 不能算错误——否则一次成功的卸载会被读成 exit=20 状态错误。 */
+            out("[inject] RESULT check pid=%d hooked=%d", (int)pid, hooked);
+            exit_code = 0;
             goto detach;
         }
         if (hooked != 1) {

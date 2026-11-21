@@ -1,10 +1,10 @@
 ﻿# T6-01 build :: NDK r21e :: armv7a-linux-androideabi26-clang
-# host time: 2026-11-21 14:58:02
+# host time: 2026-11-21 16:02:36
 
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\injector -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\tg_injector D:\tgz02\OS\system\my-doc\07_ai_bridge\android\injector\tg_injector.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\injector\remote_call.c
 (no compiler output: 0 warning, 0 error)
 exit: 0
-artifact: tg_injector  71688 B  sha256=b1ebf8e8ce3322bb9e4d5988b9c989668a63036ced1c8df4784e6d7b42ec4db6
+artifact: tg_injector  71884 B  sha256=4d13af84d4c04898f7dd59668e5a38354c4a4b6a202a7b1477ef077323e9f677
 # --- readelf -h ---
 ELF Header:
   Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
@@ -18,7 +18,7 @@ ELF Header:
   Version:                           0x1
   Entry point address:               0xc44
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          70208 (bytes into file)
+  Start of section headers:          70404 (bytes into file)
   Flags:                             0x5000200, Version5 EABI, soft-float ABI
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)
@@ -62,7 +62,7 @@ Dynamic section at offset 0x8df8 contains 28 entries:
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIC -shared -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_agent -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\libtg_hook.so D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_agent\libtg_hook.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_agent\tg_wire.c -llog
 (no compiler output: 0 warning, 0 error)
 exit: 0
-artifact: libtg_hook.so  27352 B  sha256=ca7c0a7200f4d130c70e6681990a6e261dd64e98cbdaebacb1c7f508ef305cf2
+artifact: libtg_hook.so  27384 B  sha256=b838a731392938b0038355c3ee42af7870e6db4d4b35ef0c78d2dc36c07e67b6
 # --- readelf -h ---
 ELF Header:
   Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
@@ -76,7 +76,7 @@ ELF Header:
   Version:                           0x1
   Entry point address:               0x0
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          26112 (bytes into file)
+  Start of section headers:          26144 (bytes into file)
   Flags:                             0x5000200, Version5 EABI, soft-float ABI
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)

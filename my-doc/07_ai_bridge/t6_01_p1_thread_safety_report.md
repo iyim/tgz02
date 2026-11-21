@@ -138,3 +138,8 @@ powershell -File D:\tgz02\OS\system\my-doc\07_ai_bridge\android\build_t6.ps1
 # 真机验收（P0–P6，约 6 分钟，含 20 轮并发与三处故障注入）
 powershell -File D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t6_01_p1_threadsafety_device.ps1 -Rounds 20
 ```
+
+## 7. 后续（R1）
+
+审计发现的三处问题（PC 检查未 fail-closed、卸载后重装状态机、故障注入与证据可信度）已在 R1 修掉，
+详见 [t6_01_p1_r1_report.md](t6_01_p1_r1_report.md)，真机证据见 evidence/t6_01_p1_r1.log（273 ASSERT OK / 0 ASSERT FAIL）。

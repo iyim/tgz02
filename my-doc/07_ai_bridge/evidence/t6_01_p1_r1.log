@@ -1,0 +1,1686 @@
+﻿
+################ T6-01-P1-R1 device verification :: 2026-11-21 16:02:43 ################
+
+===== P0 preflight, deploy the fresh build, verify the binary on the device :: 2026-11-21 16:02:43 =====
+adb devices:
+List of devices attached
+192.168.1.9:5555	device
+
+  ASSERT OK   : device is online
+  id: uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0
+  ASSERT OK   : su gives uid=0
+  core pid: 2678
+  ASSERT OK   : factory core is running
+  bridge pid: 26591
+  ASSERT OK   : T5-05A bridge is running
+  local tg_injector sha256: 4d13af84d4c04898f7dd59668e5a38354c4a4b6a202a7b1477ef077323e9f677
+  local libtg_hook.so sha256: b838a731392938b0038355c3ee42af7870e6db4d4b35ef0c78d2dc36c07e67b6
+  device tg_injector: 4d13af84d4c04898f7dd59668e5a38354c4a4b6a202a7b1477ef077323e9f677  /data/local/tmp/t6/tg_injector
+  device libtg_hook.so: b838a731392938b0038355c3ee42af7870e6db4d4b35ef0c78d2dc36c07e67b6  /data/local/tmp/t6/libtg_hook.so
+  ASSERT OK   : device tg_injector is byte-identical to the fresh build
+  ASSERT OK   : device libtg_hook.so is byte-identical to the fresh build
+  device run_inject.sh: 176adfee065eb42672772f8453bf0c5c7d56c0a6049ec10a1c8014b98ffe6fe7  /data/local/tmp/t6/run_inject.sh
+  ASSERT OK   : device wrapper run_inject.sh deployed
+  libtg_hook.so already mapped; restarting the assistant for a clean process
+  core pid after restart: 9176
+  ASSERT OK   : factory core came back after the restart
+  baseline threads: 77
+  ASSERT OK   : baseline thread count looks sane
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --check
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] check_only with no library mapped: nothing to query
+EXIT=0
+  preflight --check exit: 0
+  ASSERT OK   : --check on a clean process exits 0
+  ASSERT OK   : device wrapper passed every argument through to the injector
+  ASSERT OK   : no sender thread exists before the first install
+
+===== P1 first install :: 2026-11-21 16:03:06 =====
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa15f2000 stack=0xa15fa000 trap=0xa1601000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa15f2100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x2
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 76 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=0 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  exit: 0
+  ASSERT OK   : injector exit 0
+  paused other threads: 76
+  ASSERT OK   : every other thread was paused before patching
+  ASSERT OK   : PC check reported the patch window clear
+  ASSERT OK   : hook installed (hooked=1)
+  ASSERT OK   : sender thread reported by the agent (created once)
+  patch range low: 0x8d59b53c
+  ASSERT OK   : injector printed the patch range
+  ASSERT OK   : no thread left in ptrace-stop
+  ASSERT OK   : thread count did not collapse
+  ASSERT OK   : factory core pid unchanged
+  entry words: e51ff004 a88a8000
+  ASSERT OK   : entry now holds ldr pc,[pc,#-4] (patch really written)
+
+===== P2 uninstall :: 2026-11-21 16:03:09 =====
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1563000 stack=0xa156b000 trap=0xa1572000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1563100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+  exit: 0
+  ASSERT OK   : uninstall exit 0
+  ASSERT OK   : agent reports hooked=0 after uninstall
+  ASSERT OK   : uninstall used the same thread protection
+  ASSERT OK   : all threads resumed after uninstall
+  entry words: e92d4ff0 e28db01c
+  ASSERT OK   : entry restored to the factory prologue
+  sender thread up/exit: 1 / 0
+  ASSERT OK   : sender thread was created exactly once
+  ASSERT OK   : sender thread stayed alive across uninstall
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --check
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1553000 stack=0xa155b000 trap=0xa1562000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1553100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] hook_status=0 hooked=0
+[inject] stats=state=0 hooked=0 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT check pid=9176 hooked=0
+[inject] detached (target thread resumed)
+EXIT=0
+  --check exit: 0
+  ASSERT OK   : --check after uninstall exits 0 (no bogus exit=20)
+  ASSERT OK   : --check reports hooked=0 and state=0
+  ASSERT OK   : --check reports the live sender thread
+
+===== P3 reinstall in the same process :: 2026-11-21 16:03:14 =====
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa153a000 stack=0xa1542000 trap=0xa1549000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa153a100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  exit: 0
+  ASSERT OK   : reinstall exit 0
+  ASSERT OK   : hook re-installed (hooked=1)
+  entry words: e51ff004 a88a8000
+  ASSERT OK   : entry patched again after the reinstall
+  sender thread reused/up: 1 / 1
+  ASSERT OK   : agent logged that the sender thread was reused
+  ASSERT OK   : no duplicate sender thread was created
+  ASSERT OK   : no ptrace-stop after the reinstall
+  ASSERT OK   : factory core pid unchanged
+
+===== P4 20 uninstall/install rounds :: 2026-11-21 16:03:19 =====
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa70bb000 stack=0xa70c3000 trap=0xa70ca000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa70bb100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1e6f000 stack=0xa1e77000 trap=0xa1e7e000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1e6f100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 1: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 1: uninstall exit 0
+  ASSERT OK   : round 1: hooked=0 after uninstall
+  ASSERT OK   : round 1: entry restored to the factory prologue
+  ASSERT OK   : round 1: install exit 0
+  ASSERT OK   : round 1: hooked=1 after install
+  ASSERT OK   : round 1: one live sender thread, never re-spawned
+  ASSERT OK   : round 1: entry holds the jump again
+  ASSERT OK   : round 1: no ptrace-stop left behind
+  ASSERT OK   : round 1: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1c92000 stack=0xa1c9a000 trap=0xa1ca1000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1c92100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1c82000 stack=0xa1c8a000 trap=0xa1c91000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1c82100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 2: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 2: uninstall exit 0
+  ASSERT OK   : round 2: hooked=0 after uninstall
+  ASSERT OK   : round 2: entry restored to the factory prologue
+  ASSERT OK   : round 2: install exit 0
+  ASSERT OK   : round 2: hooked=1 after install
+  ASSERT OK   : round 2: one live sender thread, never re-spawned
+  ASSERT OK   : round 2: entry holds the jump again
+  ASSERT OK   : round 2: no ptrace-stop left behind
+  ASSERT OK   : round 2: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1c72000 stack=0xa1c7a000 trap=0xa1c81000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1c72100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa195c000 stack=0xa1964000 trap=0xa196b000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa195c100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 3: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 3: uninstall exit 0
+  ASSERT OK   : round 3: hooked=0 after uninstall
+  ASSERT OK   : round 3: entry restored to the factory prologue
+  ASSERT OK   : round 3: install exit 0
+  ASSERT OK   : round 3: hooked=1 after install
+  ASSERT OK   : round 3: one live sender thread, never re-spawned
+  ASSERT OK   : round 3: entry holds the jump again
+  ASSERT OK   : round 3: no ptrace-stop left behind
+  ASSERT OK   : round 3: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa18e8000 stack=0xa18f0000 trap=0xa18f7000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa18e8100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa152a000 stack=0xa1532000 trap=0xa1539000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa152a100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 4: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 4: uninstall exit 0
+  ASSERT OK   : round 4: hooked=0 after uninstall
+  ASSERT OK   : round 4: entry restored to the factory prologue
+  ASSERT OK   : round 4: install exit 0
+  ASSERT OK   : round 4: hooked=1 after install
+  ASSERT OK   : round 4: one live sender thread, never re-spawned
+  ASSERT OK   : round 4: entry holds the jump again
+  ASSERT OK   : round 4: no ptrace-stop left behind
+  ASSERT OK   : round 4: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1509000 stack=0xa1511000 trap=0xa1518000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1509100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa14f9000 stack=0xa1501000 trap=0xa1508000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa14f9100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 5: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 5: uninstall exit 0
+  ASSERT OK   : round 5: hooked=0 after uninstall
+  ASSERT OK   : round 5: entry restored to the factory prologue
+  ASSERT OK   : round 5: install exit 0
+  ASSERT OK   : round 5: hooked=1 after install
+  ASSERT OK   : round 5: one live sender thread, never re-spawned
+  ASSERT OK   : round 5: entry holds the jump again
+  ASSERT OK   : round 5: no ptrace-stop left behind
+  ASSERT OK   : round 5: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1431000 stack=0xa1439000 trap=0xa1440000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1431100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 78 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa13be000 stack=0xa13c6000 trap=0xa13cd000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa13be100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 6: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 6: uninstall exit 0
+  ASSERT OK   : round 6: hooked=0 after uninstall
+  ASSERT OK   : round 6: entry restored to the factory prologue
+  ASSERT OK   : round 6: install exit 0
+  ASSERT OK   : round 6: hooked=1 after install
+  ASSERT OK   : round 6: one live sender thread, never re-spawned
+  ASSERT OK   : round 6: entry holds the jump again
+  ASSERT OK   : round 6: no ptrace-stop left behind
+  ASSERT OK   : round 6: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa1220000 stack=0xa1228000 trap=0xa122f000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa1220100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa0933000 stack=0xa093b000 trap=0xa0942000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa0933100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 7: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 7: uninstall exit 0
+  ASSERT OK   : round 7: hooked=0 after uninstall
+  ASSERT OK   : round 7: entry restored to the factory prologue
+  ASSERT OK   : round 7: install exit 0
+  ASSERT OK   : round 7: hooked=1 after install
+  ASSERT OK   : round 7: one live sender thread, never re-spawned
+  ASSERT OK   : round 7: entry holds the jump again
+  ASSERT OK   : round 7: no ptrace-stop left behind
+  ASSERT OK   : round 7: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa08f0000 stack=0xa08f8000 trap=0xa08ff000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa08f0100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa063a000 stack=0xa0642000 trap=0xa0649000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa063a100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 8: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 8: uninstall exit 0
+  ASSERT OK   : round 8: hooked=0 after uninstall
+  ASSERT OK   : round 8: entry restored to the factory prologue
+  ASSERT OK   : round 8: install exit 0
+  ASSERT OK   : round 8: hooked=1 after install
+  ASSERT OK   : round 8: one live sender thread, never re-spawned
+  ASSERT OK   : round 8: entry holds the jump again
+  ASSERT OK   : round 8: no ptrace-stop left behind
+  ASSERT OK   : round 8: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa01fc000 stack=0xa0204000 trap=0xa020b000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0xa01fc100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9edc9000 stack=0x9edd1000 trap=0x9edd8000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9edc9100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 9: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 9: uninstall exit 0
+  ASSERT OK   : round 9: hooked=0 after uninstall
+  ASSERT OK   : round 9: entry restored to the factory prologue
+  ASSERT OK   : round 9: install exit 0
+  ASSERT OK   : round 9: hooked=1 after install
+  ASSERT OK   : round 9: one live sender thread, never re-spawned
+  ASSERT OK   : round 9: entry holds the jump again
+  ASSERT OK   : round 9: no ptrace-stop left behind
+  ASSERT OK   : round 9: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9edb9000 stack=0x9edc1000 trap=0x9edc8000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9edb9100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9ed8f000 stack=0x9ed97000 trap=0x9ed9e000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9ed8f100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 10: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 10: uninstall exit 0
+  ASSERT OK   : round 10: hooked=0 after uninstall
+  ASSERT OK   : round 10: entry restored to the factory prologue
+  ASSERT OK   : round 10: install exit 0
+  ASSERT OK   : round 10: hooked=1 after install
+  ASSERT OK   : round 10: one live sender thread, never re-spawned
+  ASSERT OK   : round 10: entry holds the jump again
+  ASSERT OK   : round 10: no ptrace-stop left behind
+  ASSERT OK   : round 10: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9ed7f000 stack=0x9ed87000 trap=0x9ed8e000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9ed7f100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9ed6f000 stack=0x9ed77000 trap=0x9ed7e000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9ed6f100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 11: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 11: uninstall exit 0
+  ASSERT OK   : round 11: hooked=0 after uninstall
+  ASSERT OK   : round 11: entry restored to the factory prologue
+  ASSERT OK   : round 11: install exit 0
+  ASSERT OK   : round 11: hooked=1 after install
+  ASSERT OK   : round 11: one live sender thread, never re-spawned
+  ASSERT OK   : round 11: entry holds the jump again
+  ASSERT OK   : round 11: no ptrace-stop left behind
+  ASSERT OK   : round 11: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9ed13000 stack=0x9ed1b000 trap=0x9ed22000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9ed13100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9ecfd000 stack=0x9ed05000 trap=0x9ed0c000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9ecfd100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 12: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 12: uninstall exit 0
+  ASSERT OK   : round 12: hooked=0 after uninstall
+  ASSERT OK   : round 12: entry restored to the factory prologue
+  ASSERT OK   : round 12: install exit 0
+  ASSERT OK   : round 12: hooked=1 after install
+  ASSERT OK   : round 12: one live sender thread, never re-spawned
+  ASSERT OK   : round 12: entry holds the jump again
+  ASSERT OK   : round 12: no ptrace-stop left behind
+  ASSERT OK   : round 12: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9eced000 stack=0x9ecf5000 trap=0x9ecfc000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9eced100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 79 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9cd03000 stack=0x9cd0b000 trap=0x9cd12000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9cd03100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 77 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 13: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 13: uninstall exit 0
+  ASSERT OK   : round 13: hooked=0 after uninstall
+  ASSERT OK   : round 13: entry restored to the factory prologue
+  ASSERT OK   : round 13: install exit 0
+  ASSERT OK   : round 13: hooked=1 after install
+  ASSERT OK   : round 13: one live sender thread, never re-spawned
+  ASSERT OK   : round 13: entry holds the jump again
+  ASSERT OK   : round 13: no ptrace-stop left behind
+  ASSERT OK   : round 13: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bdf0000 stack=0x9bdf8000 trap=0x9bdff000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bdf0100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 77 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bde0000 stack=0x9bde8000 trap=0x9bdef000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bde0100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 77 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 14: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 14: uninstall exit 0
+  ASSERT OK   : round 14: hooked=0 after uninstall
+  ASSERT OK   : round 14: entry restored to the factory prologue
+  ASSERT OK   : round 14: install exit 0
+  ASSERT OK   : round 14: hooked=1 after install
+  ASSERT OK   : round 14: one live sender thread, never re-spawned
+  ASSERT OK   : round 14: entry holds the jump again
+  ASSERT OK   : round 14: no ptrace-stop left behind
+  ASSERT OK   : round 14: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bd1b000 stack=0x9bd23000 trap=0x9bd2a000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bd1b100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 77 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bd0b000 stack=0x9bd13000 trap=0x9bd1a000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bd0b100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 77 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 15: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 15: uninstall exit 0
+  ASSERT OK   : round 15: hooked=0 after uninstall
+  ASSERT OK   : round 15: entry restored to the factory prologue
+  ASSERT OK   : round 15: install exit 0
+  ASSERT OK   : round 15: hooked=1 after install
+  ASSERT OK   : round 15: one live sender thread, never re-spawned
+  ASSERT OK   : round 15: entry holds the jump again
+  ASSERT OK   : round 15: no ptrace-stop left behind
+  ASSERT OK   : round 15: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bcfb000 stack=0x9bd03000 trap=0x9bd0a000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bcfb100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 76 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bceb000 stack=0x9bcf3000 trap=0x9bcfa000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bceb100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 76 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 16: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 16: uninstall exit 0
+  ASSERT OK   : round 16: hooked=0 after uninstall
+  ASSERT OK   : round 16: entry restored to the factory prologue
+  ASSERT OK   : round 16: install exit 0
+  ASSERT OK   : round 16: hooked=1 after install
+  ASSERT OK   : round 16: one live sender thread, never re-spawned
+  ASSERT OK   : round 16: entry holds the jump again
+  ASSERT OK   : round 16: no ptrace-stop left behind
+  ASSERT OK   : round 16: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bcdb000 stack=0x9bce3000 trap=0x9bcea000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bcdb100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 76 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bcbe000 stack=0x9bcc6000 trap=0x9bccd000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bcbe100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 76 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 17: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 17: uninstall exit 0
+  ASSERT OK   : round 17: hooked=0 after uninstall
+  ASSERT OK   : round 17: entry restored to the factory prologue
+  ASSERT OK   : round 17: install exit 0
+  ASSERT OK   : round 17: hooked=1 after install
+  ASSERT OK   : round 17: one live sender thread, never re-spawned
+  ASSERT OK   : round 17: entry holds the jump again
+  ASSERT OK   : round 17: no ptrace-stop left behind
+  ASSERT OK   : round 17: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bc49000 stack=0x9bc51000 trap=0x9bc58000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bc49100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 76 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bc39000 stack=0x9bc41000 trap=0x9bc48000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bc39100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 76 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 18: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 18: uninstall exit 0
+  ASSERT OK   : round 18: hooked=0 after uninstall
+  ASSERT OK   : round 18: entry restored to the factory prologue
+  ASSERT OK   : round 18: install exit 0
+  ASSERT OK   : round 18: hooked=1 after install
+  ASSERT OK   : round 18: one live sender thread, never re-spawned
+  ASSERT OK   : round 18: entry holds the jump again
+  ASSERT OK   : round 18: no ptrace-stop left behind
+  ASSERT OK   : round 18: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bc29000 stack=0x9bc31000 trap=0x9bc38000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bc29100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 76 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bbf1000 stack=0x9bbf9000 trap=0x9bc00000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bbf1100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 76 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 19: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 19: uninstall exit 0
+  ASSERT OK   : round 19: hooked=0 after uninstall
+  ASSERT OK   : round 19: entry restored to the factory prologue
+  ASSERT OK   : round 19: install exit 0
+  ASSERT OK   : round 19: hooked=1 after install
+  ASSERT OK   : round 19: one live sender thread, never re-spawned
+  ASSERT OK   : round 19: entry holds the jump again
+  ASSERT OK   : round 19: no ptrace-stop left behind
+  ASSERT OK   : round 19: factory core pid unchanged
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bbe1000 stack=0x9bbe9000 trap=0x9bbf0000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bbe1100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 76 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bb82000 stack=0x9bb8a000 trap=0x9bb91000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bb82100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 75 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  round 20: uninstall=0 install=0 entry_uninstalled=e92d4ff0 e28db01c entry_installed=e51ff004 a88a8000 tracer_ok=True pid_ok=True
+  ASSERT OK   : round 20: uninstall exit 0
+  ASSERT OK   : round 20: hooked=0 after uninstall
+  ASSERT OK   : round 20: entry restored to the factory prologue
+  ASSERT OK   : round 20: install exit 0
+  ASSERT OK   : round 20: hooked=1 after install
+  ASSERT OK   : round 20: one live sender thread, never re-spawned
+  ASSERT OK   : round 20: entry holds the jump again
+  ASSERT OK   : round 20: no ptrace-stop left behind
+  ASSERT OK   : round 20: factory core pid unchanged
+  ASSERT OK   : all 20 rounds were clean
+  transport retries during the rounds: 0
+  logcat sender thread up/exit (ring buffer may have rotated): 0 / 0
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bb72000 stack=0x9bb7a000 trap=0x9bb81000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bb72100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] patch already installed (hooked=1); nothing to do
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  stats after the rounds: [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+  ASSERT OK   : after 20 rounds: one live sender thread, spawned exactly once
+  ASSERT OK   : hook still installed after the rounds
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --check
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bb62000 stack=0x9bb6a000 trap=0x9bb71000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bb62100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT check pid=9176 hooked=1
+[inject] detached (target thread resumed)
+EXIT=0
+  ASSERT OK   : --check after the rounds exits 0
+  ASSERT OK   : --check confirms the sender thread was never re-spawned
+
+===== P5 fault injection: abort after pausing every thread :: 2026-11-21 16:04:31 =====
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bb39000 stack=0x9bb41000 trap=0x9bb48000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bb39100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 74 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+  ASSERT OK   : precondition: hook uninstalled so the install path really runs
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --fault abort-after-pause
+[inject] fault=abort_after_pause
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bb13000 stack=0x9bb1b000 trap=0x9bb22000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bb13100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 74 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] ERROR stage=install_aborted (fault injection): threads resumed, no patch written
+[inject] detached after error (target thread resumed) exit=21
+EXIT=21
+  exit: 21
+  ASSERT OK   : abort-after-pause returns 21
+  ASSERT OK   : every thread was paused before the abort
+  ASSERT OK   : PC window was clear before the abort
+  ASSERT OK   : abort path reported no patch written
+  entry words: e92d4ff0 e28db01c
+  ASSERT OK   : no patch in memory after the abort
+  ASSERT OK   : every paused thread was resumed after the abort
+  threads after the abort: 75 (baseline 77)
+  ASSERT OK   : process did not collapse after the abort
+
+===== P5b fault injection: pause fails at the 3rd thread :: 2026-11-21 16:04:34 =====
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --fault pause-fail:3
+[inject] fault=pause_fail_after=3
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bb03000 stack=0x9bb0b000 trap=0x9bb12000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bb03100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] ERROR stage=pause rc=-11 err=injected pause failure after 3 thread(s) (tid=9190)
+[inject] ERROR stage=install_pause rc=-11 err=injected pause failure after 3 thread(s) (tid=9190)
+[inject] detached after error (target thread resumed) exit=19
+EXIT=19
+  exit: 19
+  ASSERT OK   : pause-fail:3 returns 19
+  ASSERT OK   : the injected pause failure was reported
+  ASSERT OK   : failure was classified as install_pause
+  entry words: e92d4ff0 e28db01c
+  ASSERT OK   : no patch in memory after the pause failure
+  ASSERT OK   : already paused threads were resumed
+  threads after the pause failure: 75 (baseline 77)
+  ASSERT OK   : process did not collapse after the pause failure
+
+===== P5c fault injection: PC read fails with EPERM (fail-closed) :: 2026-11-21 16:04:36 =====
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --fault pc-readfail
+[inject] fault=pc_readfail errno=1
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9baf3000 stack=0x9bafb000 trap=0x9bb02000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9baf3100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] ERROR stage=pc_check rc=-3 err=PC read failed tid=9181 errno=1 EPERM (injected); refusing to patch
+[inject] ERROR stage=install_pause rc=-3 err=PC read failed tid=9181 errno=1 EPERM (injected); refusing to patch
+[inject] detached after error (target thread resumed) exit=19
+EXIT=19
+  exit: 19
+  ASSERT OK   : pc-readfail returns 19
+  ASSERT OK   : failure came from the PC check
+  ASSERT OK   : log names the TID and errno
+  ASSERT OK   : the injector refused to patch
+  entry words: e92d4ff0 e28db01c
+  ASSERT OK   : no patch in memory after the failed PC read
+  ASSERT OK   : all threads resumed after the failed PC read
+
+===== P5d fault injection: PC read fails with EIO (still fail-closed) :: 2026-11-21 16:04:38 =====
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --fault pc-readfail:5
+[inject] fault=pc_readfail errno=5
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bac7000 stack=0x9bacf000 trap=0x9bad6000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bac7100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] ERROR stage=pc_check rc=-3 err=PC read failed tid=9181 errno=5 EIO (injected); refusing to patch
+[inject] ERROR stage=install_pause rc=-3 err=PC read failed tid=9181 errno=5 EIO (injected); refusing to patch
+[inject] detached after error (target thread resumed) exit=19
+EXIT=19
+  exit: 19
+  ASSERT OK   : pc-readfail:5 returns 19
+  ASSERT OK   : EIO is reported, not treated as thread exit
+  ASSERT OK   : EIO also refuses to patch
+  entry words: e92d4ff0 e28db01c
+  ASSERT OK   : no patch in memory after the EIO case
+  ASSERT OK   : all threads resumed after the EIO case
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --check
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9bab7000 stack=0x9babf000 trap=0x9bac6000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9bab7100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] hook_status=0 hooked=0
+[inject] stats=state=0 hooked=0 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT check pid=9176 hooked=0
+[inject] detached (target thread resumed)
+EXIT=0
+  ASSERT OK   : --check still exits 0 after the fault runs
+  ASSERT OK   : the agent is consistent: state=0, hooked=0
+
+===== P5e fault injection: PC read of the executor thread fails (fail-closed) :: 2026-11-21 16:04:41 =====
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --fault pc-readfail-exec
+[inject] fault=pc_readfail_exec
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9ba9a000 stack=0x9baa2000 trap=0x9baa9000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9ba9a100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] ERROR stage=pc_check rc=-3 err=PC read failed tid=9176 (executor) errno=1 EPERM (injected); refusing to patch
+[inject] ERROR stage=install_pause rc=-3 err=PC read failed tid=9176 (executor) errno=1 EPERM (injected); refusing to patch
+[inject] detached after error (target thread resumed) exit=19
+EXIT=19
+  exit: 19
+  ASSERT OK   : pc-readfail-exec returns 19
+  ASSERT OK   : executor read failure is reported with TID and errno
+  ASSERT OK   : executor read failure also refuses to patch
+  entry words: e92d4ff0 e28db01c
+  ASSERT OK   : no patch in memory after the executor read failure
+  ASSERT OK   : all threads resumed after the executor read failure
+
+===== P6 reinstall after the rounds and a real ASR round-trip :: 2026-11-21 16:04:43 =====
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9ba8a000 stack=0x9ba92000 trap=0x9ba99000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9ba8a100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 74 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  ASSERT OK   : install after the fault runs exits 0
+  ASSERT OK   : hook is installed again
+  entry words: e51ff004 a88a8000
+  ASSERT OK   : entry patched after the reinstall
+  events before: 256
+  played s01
+  events after: 257
+  ASSERT OK   : bridge stored a new ASR final with the hook installed
+new events:
+{"version":1,"rec":"asr_final","event_id":"t6-9176-1967583-g1","event_type":"asr_final","pid":9176,"session_id":"1967583","text":"天猫精灵您现在几点了","text_bytes":30,"text_chars":10,"is_final":true,"received_at_ms":1795248297877,"recv_at_ms":1795248297878,"stored_at_ms":1795248297878,"seq":57}
+  ASSERT OK   : event_id carries the t6- prefix
+  ASSERT OK   : event_type is asr_final
+  ASSERT OK   : is_final is true
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9ba7a000 stack=0x9ba82000 trap=0x9ba89000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9ba7a100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] patch already installed (hooked=1); nothing to do
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=6 final=1 queued=1 sent=1 acked=1 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=1 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=9176 already_mapped=1 check_only=0
+[inject] detached (target thread resumed)
+EXIT=0
+  ASSERT OK   : hook agent received an ACK from the bridge
+  ASSERT OK   : hook still installed after the speech
+
+===== P7 final uninstall and factory path :: 2026-11-21 16:05:04 =====
+> /data/local/tmp/t6/run_inject.sh --so /data/local/tmp/t6/libtg_hook.so --pid 9176 --uninstall
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t6/libtg_hook.so check_only=0
+[inject] so_size=27384 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=9176 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t6/libtg_hook.so)
+[inject] attached tid=9176 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x9ba6a000 stack=0x9ba72000 trap=0x9ba79000 gadget=0xa81e2a6c
+[inject] dlopen=0xa90db0ad (libdl.so)
+[inject] dlsym=0xa90db0bf (libdl.so)
+[inject] dlerror=0xa90db0b7 (libdl.so)
+[inject] path_written=0x9ba6a100 len=33
+[inject] dlopen ok handle=0x7c620371 flags=0x6
+[inject] dlsym ok install=0x86764bb0 prepare=0x867645e4 status=0x86765c4c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x8d59b53c,0x8d59b544)
+[inject] paused 81 other threads (exec tid=9176); [0x8d59b53c,0x8d59b544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=9176
+[inject] detached (target thread resumed)
+EXIT=0
+  exit: 0
+  ASSERT OK   : final uninstall exit 0
+  ASSERT OK   : hook patch removed
+  entry words: e92d4ff0 e28db01c
+  ASSERT OK   : factory prologue is byte-identical again
+  played s01
+  events before/after final play: 257 / 257
+  ASSERT OK   : no t6- event once the hook is removed
+  factory log lines after uninstall: 66
+  ASSERT OK   : factory ASR/NLU path is alive after uninstall
+  ASSERT OK   : factory core still running at the end
+  ASSERT OK   : no ptrace-stop at the end
+  ASSERT OK   : the sender thread outlived the whole run
+
+SUMMARY: passes=273 fails=0 transport_retries=0

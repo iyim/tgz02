@@ -47,6 +47,9 @@ typedef struct {
     int      attach_score;
     int      pause_fail_after; /* 故障注入：暂停到第 N 个线程时故意失败（0=关闭） */
     int      pc_busy_claims;   /* 故障注入：前 N 次 PC 检查都假装"有线程在补丁窗口里" */
+    int      pc_readfail;      /* 故障注入：剩余多少次 PC 读取要假装失败（0=关闭） */
+    int      pc_readfail_errno;/* 上面那个失败用的 errno（0 → EPERM） */
+    int      pc_readfail_exec; /* 故障注入：让"执行线程"那一次读取失败（验证两条路径都 fail-closed） */
 } rc_ctx;
 
 /* 附加到目标进程的一个"安全"线程（不在动态链接器/被 Hook 模块里） */

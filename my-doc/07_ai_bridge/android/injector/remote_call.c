@@ -571,9 +571,15 @@ int rc_attach(rc_ctx *c, pid_t pid, char *err, size_t errlen)
         /* 保留调用方在 attach 之前设置的故障注入开关（memset 会清掉它） */
         int keep_fault = c->pause_fail_after;
         int keep_busy = c->pc_busy_claims;
+        int keep_rf = c->pc_readfail;
+        int keep_rf_errno = c->pc_readfail_errno;
+        int keep_rf_exec = c->pc_readfail_exec;
         memset(c, 0, sizeof(*c));
         c->pause_fail_after = keep_fault;
         c->pc_busy_claims = keep_busy;
+        c->pc_readfail = keep_rf;
+        c->pc_readfail_errno = keep_rf_errno;
+        c->pc_readfail_exec = keep_rf_exec;
     }
     c->pid = pid;
     c->tid = pid;
@@ -803,6 +809,29 @@ int rc_pause_all(rc_ctx *c, rc_thread_set *set, char *err, size_t errlen)
     return RC_E_PAUSE;
 }
 
+/* 给 errno 一个短名字，日志里 TID + errno + 名字一起出现（数值才是权威） */
+static const char *errno_name(int e)
+{
+    switch (e) {
+    case ESRCH:  return "ESRCH";
+    case EPERM:  return "EPERM";
+    case EIO:    return "EIO";
+    case EACCES: return "EACCES";
+    case EINVAL: return "EINVAL";
+    case EFAULT: return "EFAULT";
+    default:     return "?";
+    }
+}
+
+/*
+ * 检查所有已暂停线程（含执行线程）的 PC 是否落在 [lo,hi)。
+ *
+ * fail-closed：读寄存器失败一律当成"不知道这条线程停在哪里"，必须拒绝打补丁。
+ * 唯一可以忽略的错误是 ESRCH —— 线程在暂停窗口里被杀死/退出，它已经不可能
+ * 再执行目标函数。EPERM/EIO/EACCES/EFAULT 等一律返回错误，绝不当成"已退出"。
+ *
+ * 返回 1 = 有线程在范围内（*offender 给出 TID），0 = 安全，<0 = 读寄存器失败。
+ */
 int rc_pc_in_range(rc_ctx *c, const rc_thread_set *set, uint32_t lo, uint32_t hi,
                    pid_t *offender, char *err, size_t errlen)
 {
@@ -821,12 +850,59 @@ int rc_pc_in_range(rc_ctx *c, const rc_thread_set *set, uint32_t lo, uint32_t hi
         return 1;
     }
 
-    for (i = -1; i < set->n; i++) {
-        pid_t t = (i < 0) ? c->tid : set->tids[i];
+    /* 执行线程：它本来就 attached，读不到寄存器说明本次注入已经不成立，
+     * 连 ESRCH 都不能放过——没有执行线程就没有安全窗口可言。 */
+    {
         struct user_regs regs;
+        int e;
 
         memset(&regs, 0, sizeof(regs));
-        if (ptrace(PTRACE_GETREGS, t, NULL, &regs) != 0) continue;   /* 刚退出 */
+        if (c->pc_readfail_exec) {
+            c->pc_readfail_exec = 0;
+            rc_err(err, errlen,
+                   "PC read failed tid=%d (executor) errno=%d %s (injected); refusing to patch",
+                   (int)c->tid, EPERM, errno_name(EPERM));
+            return RC_E_REGS;
+        }
+        if (ptrace(PTRACE_GETREGS, c->tid, NULL, &regs) != 0) {
+            e = errno;
+            rc_err(err, errlen,
+                   "PC read failed tid=%d (executor) errno=%d %s; refusing to patch",
+                   (int)c->tid, e, errno_name(e));
+            return RC_E_REGS;
+        }
+        if ((uint32_t)regs.ARM_pc >= lo && (uint32_t)regs.ARM_pc < hi) {
+            if (offender != NULL) *offender = c->tid;
+            return 1;
+        }
+    }
+
+    for (i = 0; i < set->n; i++) {
+        pid_t t = set->tids[i];
+        struct user_regs regs;
+        int e;
+
+        memset(&regs, 0, sizeof(regs));
+
+        /* 故障注入：模拟"线程还活着、但读寄存器失败"（EPERM/EIO…），
+         * 用来证明这条路径会拒绝打补丁，而不是把线程当成已退出跳过。 */
+        if (c->pc_readfail > 0) {
+            c->pc_readfail--;
+            e = (c->pc_readfail_errno != 0) ? c->pc_readfail_errno : EPERM;
+            rc_err(err, errlen,
+                   "PC read failed tid=%d errno=%d %s (injected); refusing to patch",
+                   (int)t, e, errno_name(e));
+            return RC_E_REGS;
+        }
+
+        if (ptrace(PTRACE_GETREGS, t, NULL, &regs) != 0) {
+            e = errno;
+            if (e == ESRCH) continue;   /* 暂停窗口里刚退出：唯一允许忽略的情况 */
+            rc_err(err, errlen,
+                   "PC read failed tid=%d errno=%d %s; refusing to patch",
+                   (int)t, e, errno_name(e));
+            return RC_E_REGS;
+        }
         if ((uint32_t)regs.ARM_pc >= lo && (uint32_t)regs.ARM_pc < hi) {
             if (offender != NULL) *offender = t;
             return 1;

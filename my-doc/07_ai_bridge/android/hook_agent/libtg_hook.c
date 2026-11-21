@@ -107,6 +107,8 @@ static volatile unsigned long g_seen, g_final, g_queued, g_sent, g_acked;
 static volatile unsigned long g_dup, g_rejected, g_dropped, g_reconn, g_overflow;
 static volatile unsigned long g_drop_bad_utf8, g_drop_too_long, g_drop_empty, g_drop_control;
 static volatile unsigned long g_conn_open, g_conn_fail, g_ack_timeout;
+/* 发送线程被创建过几次：用来证明"卸载 → 重装"复用了同一个线程，没有重复创建 */
+static volatile unsigned long g_sender_spawns;
 
 #define INC(v) __atomic_fetch_add(&(v), 1UL, __ATOMIC_RELAXED)
 #define GET(v) __atomic_load_n(&(v), __ATOMIC_RELAXED)
@@ -394,10 +396,16 @@ int tg_hook_uninstall(void)
     __builtin___clear_cache((char *)p, (char *)p + 8);
     (void)mprotect((void *)page, 4096, old ? old : (PROT_READ | PROT_EXEC));
     g_patched = 0;
-    /* 允许同一进程里再次 install：把状态退回"未安装"，
-     * 否则第二次 tg_hook_install() 会因为 g_state==TG_OK 直接返回、什么都不做。 */
-    g_state = TG_E_NOT_INSTALLED;
-    slog("hook uninstalled, original prologue restored");
+    /*
+     * 安装状态只由 g_patched 表达；g_state 是"上一次操作的结果"。
+     * 卸载成功之后没有任何错误可言，所以这里回到 TG_OK —— 否则 Injector 的
+     * --check 会把一次成功的卸载当成错误（exit=20），重装路径也会到处看到"状态错误"。
+     * 发送线程保持运行（不设 g_stop）：重装时复用它，不再起第二个。
+     */
+    g_state = TG_OK;
+    g_err[0] = '\0';
+    slog("hook uninstalled, original prologue restored (func=0x%08x sender=%d)",
+         g_func, g_thread_started);
     return TG_OK;
 }
 
@@ -735,6 +743,10 @@ static void *sender_main(void *arg)
     }
 
     if (fd >= 0) close(fd);
+    /* 线程自己退出时必须把标志清掉：否则下一轮 install 会以为"发送线程还在"，
+     * 复用一个已经结束的线程，事件就再也不会发出去（不可恢复的停止状态）。 */
+    g_thread_started = 0;
+    slog("hook agent sender thread exit (stop=%d)", g_stop);
     return NULL;
 }
 
@@ -816,6 +828,32 @@ unsigned int tg_hook_patch_hi(void)
     return (g_func != 0) ? (g_func + 8u) : 0u;
 }
 
+/*
+ * 安装前的一致性检查：目标入口必须还是原厂那两条指令。
+ *
+ * 卸载会把 g_orig[0..1] 原样写回去，所以"卸载 → 重装"这条路上这里必然通过。
+ * 如果看到的是我们自己的跳转、而 g_patched 却是 0，或者入口被别的东西改过，
+ * 说明状态机已经不一致（例如上一轮卸载只写回了一半）；这时必须拒绝安装，
+ * 绝不能把跳转再写一遍——那会把原厂指令永久丢掉。
+ */
+static int verify_entry_state(void)
+{
+    const uint32_t *p = (const uint32_t *)g_func;
+    uint32_t w0, w1;
+
+    if (g_func == 0) {
+        set_err("verify_entry_state: func is not resolved");
+        return TG_E_SYMBOL;
+    }
+    w0 = p[0];
+    w1 = p[1];
+    if (w0 == g_orig[0] && w1 == g_orig[1]) return TG_OK;
+
+    set_err("entry not original at %p: %08x %08x (orig %08x %08x, patched=%d, sender=%d)",
+            (void *)g_func, w0, w1, g_orig[0], g_orig[1], g_patched, g_thread_started);
+    return TG_E_PROLOGUE;
+}
+
 int tg_hook_install(void)
 {
     int err;
@@ -829,6 +867,14 @@ int tg_hook_install(void)
     err = tg_hook_prepare();
     if (err != TG_OK) return err;
 
+    /* g_func 非空时 tg_hook_prepare() 会直接返回，所以这里要单独复核入口指令：
+     * 它同时覆盖"首次安装"和"卸载后重装"两件事，状态不一致一律拒绝。 */
+    err = verify_entry_state();
+    if (err != TG_OK) {
+        g_state = err;
+        return err;
+    }
+
     if (build_stub_page(g_func, &err) != 0) {
         g_state = err;
         return err;
@@ -840,9 +886,11 @@ int tg_hook_install(void)
         return err;
     }
 
+    /* 复用判定只看"线程是否真的还在跑"：sender_main 退出时会把自己的
+     * g_thread_started 清 0，所以这里不会复用一个已经死掉的线程，
+     * 也不会在每轮重装时多起一个发送线程。 */
     g_stop = 0;
     if (g_thread_started) {
-        /* 卸载后再安装：发送线程还活着，复用即可，不再起第二个 */
         g_state = TG_OK;
         g_err[0] = '\0';
         slog("hook re-installed: func=0x%08x (sender thread reused)", g_func);
@@ -863,6 +911,7 @@ int tg_hook_install(void)
     }
     pthread_attr_destroy(&attr);
     g_thread_started = 1;
+    INC(g_sender_spawns);
 
     g_state = TG_OK;
     g_err[0] = '\0';
@@ -898,10 +947,10 @@ const char *tg_hook_stats(void)
     static char buf[320];
 
     snprintf(buf, sizeof(buf),
-             "state=%d hooked=%d seen=%lu final=%lu queued=%lu sent=%lu acked=%lu "
+             "state=%d hooked=%d sender=%d spawns=%lu seen=%lu final=%lu queued=%lu sent=%lu acked=%lu "
              "dup=%lu rejected=%lu dropped=%lu reconn=%lu overflow=%lu "
              "drop_empty=%lu drop_utf8=%lu drop_long=%lu drop_control=%lu conn_open=%lu conn_fail=%lu ack_timeout=%lu",
-             g_state, g_patched ? 1 : 0,
+             g_state, g_patched ? 1 : 0, g_thread_started ? 1 : 0, GET(g_sender_spawns),
              GET(g_seen), GET(g_final), GET(g_queued), GET(g_sent), GET(g_acked),
              GET(g_dup), GET(g_rejected), GET(g_dropped), GET(g_reconn), GET(g_overflow),
              GET(g_drop_empty), GET(g_drop_bad_utf8), GET(g_drop_too_long), GET(g_drop_control),
