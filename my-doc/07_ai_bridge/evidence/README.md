@@ -102,3 +102,16 @@ adb shell 'sh /data/local/tmp/t5d_http.sh'
 - `device_http_probe.txt` 里的请求**没有** `Authorization` 头，命中 401 属预期；**没有**产生任何计费调用。
 - 所有探针只读设备状态；没有写 `/system`、没有改原厂 APK/SO、没有安装任何 APK。
 - 探针二进制留在 `/data/local/tmp`（可随时删除），不参与 T5-05A/B/C 的运行路径。
+
+## T5-06D（原厂 TTS 播报）
+
+| 文件 | 内容 |
+|---|---|
+| `t5_06d_device_e2e.log` | 真机 8 场景验收原始日志（`RESULT: PASS`，FAILS 0；含 event_id / http / reply_bytes / tts_id / dur_ms） |
+| `t5_06d_device_e2e_run1_pass.log` | 同一套编排的前一次通过记录（用于对照抖动） |
+| `t5_06d_host_test.log` | 主机：dex 构建 + 单元 621 + 集成全集 + i31–i34 + 锁压测 |
+| `t5_06d_tts_build.log` | `tts_exec.dex` 构建（javac + d8，min-api 26） |
+| `t5_06d_ndk_build.log` | `ai_worker` ARM32 交叉编译（0 warning / 0 error） |
+
+设备端运行期产物（不在仓库）：`/data/local/tmp/t5_bridge/tts/{queue,inflight,done,failed,journal.jsonl,state.json,tts_exec.log}`，
+全部 root 0700/0600；`journal.jsonl` 不含回答正文。

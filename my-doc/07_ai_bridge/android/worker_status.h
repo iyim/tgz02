@@ -83,6 +83,12 @@ typedef struct {
     /* 状态落盘（P1-3） */
     int                state_persist_failed;   /* 1 = 上次落盘失败，已停止推进消费 */
 
+    /* T5-06D：回答 -> 原厂 TTS 队列 */
+    unsigned long long tts_queued;             /* 成功入队的回答数 */
+    unsigned long long tts_skipped;            /* event_id 已在队列/已播报而跳过 */
+    unsigned long long tts_enqueue_failed;     /* 入队失败（回答未丢，已显式记录） */
+    char               tts_queue[T6B_PATH_MAX];/* 队列根目录（未启用为空） */
+
     unsigned long      last_seq;
     char               last_event_id[T6B_ID_MAX + 1];
     char               last_event_at[24];

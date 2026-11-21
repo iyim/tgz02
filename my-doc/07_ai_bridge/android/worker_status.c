@@ -44,6 +44,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     char esc_pending[(T6B_ID_MAX + 1) * 2];
     char esc_model[sizeof(((t6b_status *)0)->model) * 2];
     char esc_class[sizeof(((t6b_status *)0)->last_error_class) * 2];
+    char esc_ttsq[T6B_PATH_MAX * 2];
     char tmp[T6B_PATH_MAX + 8];
     char dir[T6B_PATH_MAX];
     int n;
@@ -60,6 +61,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     wu_json_escape(esc_pending, sizeof(esc_pending), st->pending_event_id);
     wu_json_escape(esc_model, sizeof(esc_model), st->model);
     wu_json_escape(esc_class, sizeof(esc_class), st->last_error_class);
+    wu_json_escape(esc_ttsq, sizeof(esc_ttsq), st->tts_queue);
 
     n = snprintf(buf, sizeof(buf),
         "{\"version\":%d,\"state\":\"%s\",\"pid\":%lld,"
@@ -78,7 +80,9 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"state_saves\":%llu,\"state_errors\":%llu,"
         "\"provider_ok\":%llu,\"provider_err\":%llu,\"provider_timeout\":%llu,"
         "\"provider_retries\":%llu,\"stuck_attempts\":%llu,"
-        "\"provider_stuck\":%d,\"state_persist_failed\":%d},"
+        "\"provider_stuck\":%d,\"state_persist_failed\":%d,"
+        "\"tts_queued\":%llu,\"tts_skipped\":%llu,\"tts_enqueue_failed\":%llu},"
+        "\"tts_queue\":\"%s\","
         "\"last_seq\":%lu,\"last_event_id\":\"%s\",\"last_event_at\":\"%s\","
         "\"last_gap_from\":%lu,\"last_gap_to\":%lu,"
         "\"pending_event_id\":\"%s\","
@@ -100,6 +104,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         st->provider_ok, st->provider_err, st->provider_timeout,
         st->provider_retries, st->stuck_attempts,
         st->provider_stuck, st->state_persist_failed,
+        st->tts_queued, st->tts_skipped, st->tts_enqueue_failed, esc_ttsq,
         st->last_seq, st->last_event_id, st->last_event_at,
         st->last_gap_from, st->last_gap_to,
         esc_pending,

@@ -401,6 +401,122 @@ static void reply_log_append(t6b_worker *w, const t6b_reply *rep)
     (void)wu_close(fd);
 }
 
+/* ---------------- T5-06D：把回答交给原厂 TTS 执行器（本地持久化队列） ----------------
+ *
+ * 语义（与 tts_exec 一起定义，报告第 5 节有完整说明）：
+ *   - 每个 event_id 最多入队一次：queue/<id>.json、inflight/<id>.json、done/<id>.ok、
+ *     failed/<id>.json 任一存在就跳过（重启重放同一事件不会重复播报）。
+ *   - 原子可见：先写 tmp/<id>.json.tmp（0600 + fsync），再 rename 到 queue/<id>.json，
+ *     最后 fsync 目录。执行器只会看到完整条目。
+ *   - 入队发生在 **提交消费偏移之前**：崩溃在两者之间 → 事件重放 → 模型重新回答，
+ *     但 TTS 入队按 event_id 去重，不会重复播报。
+ *   - 入队失败不改偏移语义（事件已由 Provider 成功回答），但必须显式记日志 + 计数，
+ *     绝不静默丢弃。
+ *   - 回答正文只进这个 0600 队列文件；日志/状态/证据只记 event_id 与字节数。
+ *
+ * 返回：1 = 已入队；0 = 重复（跳过）；-1 = 失败（err 里写原因，不含正文）
+ */
+static int tts_enqueue(t6b_worker *w, const t6b_reply *rep, char *err, size_t errlen)
+{
+    static char esc[2 * T6B_REPLY_TEXT_MAX + 64];
+    static char body[2 * T6B_REPLY_TEXT_MAX + 256];
+    char dir_queue[T6B_PATH_MAX], dir_inflight[T6B_PATH_MAX];
+    char dir_done[T6B_PATH_MAX], dir_failed[T6B_PATH_MAX], dir_tmp[T6B_PATH_MAX];
+    char path_item[T6B_PATH_MAX], path_tmp[T6B_PATH_MAX], path_done[T6B_PATH_MAX];
+    char path_inflight[T6B_PATH_MAX], path_failed[T6B_PATH_MAX];
+    const char *eid;
+    int n, fd;
+    long long t0 = wu_wall_ms();
+
+    if (w->cfg.tts_queue[0] == '\0' || rep == NULL) return 0;
+    if (err && errlen) err[0] = '\0';
+
+    eid = w->pend.event_id;
+    if (eid[0] == '\0' || strlen(eid) > T6B_TTS_ID_MAX) {
+        if (err) snprintf(err, errlen, "event_id invalid");
+        return -1;
+    }
+    for (n = 0; eid[n] != '\0'; n++) {
+        char c = eid[n];
+        int ok = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                 (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.';
+        if (!ok) { if (err) snprintf(err, errlen, "event_id has unsafe chars"); return -1; }
+    }
+    /* 正文必须是合法 UTF-8 才有意义（原厂 TTS 收 UTF-8 字符串） */
+    if (rep->text_bytes <= 0 || rep->text_bytes > T6B_REPLY_TEXT_MAX) {
+        if (err) snprintf(err, errlen, "reply size out of range (%d)", rep->text_bytes);
+        return -1;
+    }
+    if (wu_utf8_validate(rep->text, (size_t)rep->text_bytes) != 0) {
+        if (err) snprintf(err, errlen, "reply is not valid UTF-8");
+        return -1;
+    }
+
+    snprintf(dir_queue,    sizeof(dir_queue),    "%s/queue",    w->cfg.tts_queue);
+    snprintf(dir_inflight, sizeof(dir_inflight), "%s/inflight", w->cfg.tts_queue);
+    snprintf(dir_done,     sizeof(dir_done),     "%s/done",     w->cfg.tts_queue);
+    snprintf(dir_failed,   sizeof(dir_failed),   "%s/failed",   w->cfg.tts_queue);
+    snprintf(dir_tmp,      sizeof(dir_tmp),      "%s/tmp",      w->cfg.tts_queue);
+
+    if (wu_mkdir_p(w->cfg.tts_queue) != 0 || wu_mkdir_p(dir_queue) != 0 ||
+        wu_mkdir_p(dir_inflight) != 0 || wu_mkdir_p(dir_done) != 0 ||
+        wu_mkdir_p(dir_failed) != 0 || wu_mkdir_p(dir_tmp) != 0) {
+        if (err) snprintf(err, errlen, "cannot create queue dirs under %s", w->cfg.tts_queue);
+        return -1;
+    }
+
+    snprintf(path_item,     sizeof(path_item),     "%s/%s.json", dir_queue, eid);
+    snprintf(path_tmp,      sizeof(path_tmp),      "%s/%s.json.tmp", dir_tmp, eid);
+    snprintf(path_done,     sizeof(path_done),     "%s/%s.ok", dir_done, eid);
+    snprintf(path_inflight, sizeof(path_inflight), "%s/%s.json", dir_inflight, eid);
+    snprintf(path_failed,   sizeof(path_failed),   "%s/%s.json", dir_failed, eid);
+
+    /* 幂等：同一个 event_id 已经在任何一个阶段存在就跳过 */
+    if (wu_file_size(path_item) >= 0 || wu_file_size(path_inflight) >= 0 ||
+        wu_file_size(path_done) >= 0 || wu_file_size(path_failed) >= 0) {
+        return 0;
+    }
+
+    wu_json_escape(esc, sizeof(esc), rep->text);
+    n = snprintf(body, sizeof(body),
+                 "{\"v\":1,\"event_id\":\"%s\",\"created_ms\":%lld,\"attempts\":0,"
+                 "\"reply_bytes\":%d,\"text\":\"%s\"}\n",
+                 eid, t0, rep->text_bytes, esc);
+    if (n <= 0 || (size_t)n >= sizeof(body)) {
+        if (err) snprintf(err, errlen, "queue item too long");
+        return -1;
+    }
+
+    (void)wu_unlink(path_tmp);
+    fd = wu_open_excl(path_tmp);
+    if (fd < 0) {
+        if (err) snprintf(err, errlen, "open tmp failed (errno=%d)", errno);
+        return -1;
+    }
+    if (wu_write_all(fd, body, (size_t)n) != 0) {
+        (void)wu_close(fd);
+        (void)wu_unlink(path_tmp);
+        if (err) snprintf(err, errlen, "write tmp failed (errno=%d)", errno);
+        return -1;
+    }
+    if (wu_fsync(fd) != 0) {
+        (void)wu_close(fd);
+        (void)wu_unlink(path_tmp);
+        if (err) snprintf(err, errlen, "fsync tmp failed");
+        return -1;
+    }
+    (void)wu_close(fd);
+
+    if (wu_rename_replace(path_tmp, path_item) != 0) {
+        (void)wu_unlink(path_tmp);
+        if (err) snprintf(err, errlen, "rename into queue failed (errno=%d)", errno);
+        return -1;
+    }
+    (void)wu_fsync_dir(dir_queue);
+    w->st.tts_queued++;
+    return 1;
+}
+
 /* ---------------- Provider 调用与重试（P1-2） ---------------- */
 
 /*
@@ -451,6 +567,27 @@ static int provider_attempt(t6b_worker *w)
         }
         w->pend_stuck = 0;
         w->pend_error[0] = '\0';
+        {
+            /* T5-06D：先把回答安全入队（按 event_id 幂等），再提交偏移。
+             * 顺序是"先入队、后提交"，所以崩溃不会让已经回答过的内容无声无息消失。 */
+            char terr[96];
+            int q = tts_enqueue(w, &rep, terr, sizeof(terr));
+            if (q > 0) {
+                always("tts queued: event=%s reply_bytes=%d queue=%s",
+                       w->pend.event_id, rep.text_bytes, w->cfg.tts_queue);
+            } else if (q == 0) {
+                if (w->cfg.tts_queue[0] != '\0') {
+                    w->st.tts_skipped++;
+                    logf_(&w->cfg, "tts skip (already queued/played) event=%s", w->pend.event_id);
+                }
+            } else {
+                w->st.tts_enqueue_failed++;
+                t6b_status_note_error(&w->st, "tts enqueue failed: %s", terr);
+                always("WARNING tts enqueue FAILED: event=%s reply_bytes=%d (%s); "
+                       "answer is NOT queued (device-local only), event still committed once",
+                       w->pend.event_id, rep.text_bytes, terr);
+            }
+        }
         {
             int cr = commit_event(w);
             if (cr == -2) return -4;      /* 指纹推进失败：致命 */
@@ -699,6 +836,7 @@ void t6b_config_defaults(t6b_config *c)
     c->state_retry_ms = 100;
     c->state_fail_exit_ms = 3000;
     c->verbose = 0;
+    snprintf(c->tts_queue, sizeof(c->tts_queue), "%s", T6B_TTS_QUEUE_DEFAULT);
     t6b_mock_defaults(&c->mock);
     t6b_ds_defaults(&c->deepseek);
 }
@@ -714,6 +852,30 @@ int t6b_config_check(const t6b_config *c, char *err, size_t errlen)
         strchr(c->events_name, '\\') != NULL) {
         if (err) snprintf(err, errlen, "events-file must be a plain file name");
         return -1;
+    }
+    if (c->tts_queue[0] != '\0') {
+        int abs_path = (c->tts_queue[0] == '/' || c->tts_queue[0] == '.');
+#ifdef _WIN32
+        /* 主机测试用 Windows 绝对路径（D:\...）；设备上永远走 POSIX 分支 */
+        if (!abs_path && strlen(c->tts_queue) > 2 &&
+            ((c->tts_queue[0] >= 'A' && c->tts_queue[0] <= 'Z') ||
+             (c->tts_queue[0] >= 'a' && c->tts_queue[0] <= 'z')) &&
+            c->tts_queue[1] == ':') {
+            abs_path = 1;
+        }
+#endif
+        if (!abs_path) {
+            if (err) snprintf(err, errlen, "tts-queue-dir must be an absolute path");
+            return -1;
+        }
+        if (strpbrk(c->tts_queue, "\r\n\t") != NULL) {
+            if (err) snprintf(err, errlen, "tts-queue-dir must not contain control chars");
+            return -1;
+        }
+        if (strlen(c->tts_queue) >= sizeof(c->tts_queue) - 16) {
+            if (err) snprintf(err, errlen, "tts-queue-dir too long");
+            return -1;
+        }
     }
     if (c->poll_ms < 10 || c->poll_ms > 60000) {
         if (err) snprintf(err, errlen, "poll-ms out of range [10,60000]");
@@ -842,6 +1004,7 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
     w.lock.fd = -1;
     t6b_state_init(&w.state);
     t6b_status_init(&w.st);
+    snprintf(w.st.tts_queue, sizeof(w.st.tts_queue), "%s", c->tts_queue);
     t6b_gap_init(&w.gaps);
 
     join_path(w.events_path, sizeof(w.events_path), c->work_dir, c->events_name);
@@ -859,6 +1022,7 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         always("%s", err);
         if (rc == 1 && out != NULL) {
             t6b_status_init(out);
+            snprintf(out->tts_queue, sizeof(out->tts_queue), "%s", c->tts_queue);
             snprintf(out->state, sizeof(out->state), "refused");
             snprintf(out->exit_reason, sizeof(out->exit_reason), "already_running");
             out->pid = wu_self_pid();
@@ -1071,6 +1235,8 @@ static void usage(void)
         "  --deepseek-connect-timeout-ms N  connect timeout (default %d)\n"
         "  --deepseek-timeout-ms N          total timeout (default %d)\n"
         "  --reply-log PATH      append each successful answer as one JSON line (default off)\n"
+        "  --tts-queue-dir DIR   hand each successful answer to the factory TTS executor\n"
+        "                        (local persistent queue, idempotent per event_id; default off)\n"
         "  --mock-reply TEXT     fixed mock reply text\n"
         "  --mock-delay-ms N     simulate provider latency\n"
         "  --mock-fail-from N    mock always fails from call N on\n"
@@ -1146,6 +1312,7 @@ int main(int argc, char **argv)
         else if (strcmp(a, "--deepseek-connect-timeout-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.connect_timeout_ms = atoi(v); i++; }
         else if (strcmp(a, "--deepseek-timeout-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.total_timeout_ms = atoi(v); i++; }
         else if (strcmp(a, "--reply-log") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.reply_log, sizeof(cfg.reply_log), "%s", v); i++; }
+        else if (strcmp(a, "--tts-queue-dir") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.tts_queue, sizeof(cfg.tts_queue), "%s", v); i++; }
         else {
             fprintf(stderr, "unknown option: %s\n", a);
             usage();

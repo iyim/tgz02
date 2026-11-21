@@ -1311,6 +1311,168 @@ def i30_reply_log_optional(exe):
     return "2 answers logged, 0 lines for failures, state stays clean"
 
 
+@case
+def i31_tts_queue_item_written(exe):
+    """--tts-queue-dir：成功回答按 event_id 入队（0600、可解析、正文在里面、日志/状态里没有）"""
+    work = path_of("i31/work")
+    state = path_of("i31/state")
+    tts = path_of("i31/tts")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+
+    write_events("i31/work/events.jsonl", [rec(1, 4242, "t5b-4242-q1-g1", "q1")])
+    rc, out, err = run_once(exe, work, state,
+                            ["--idle-exit-ms", "600", "--tts-queue-dir", tts,
+                             "--mock-reply", "answer-one"])
+    assert_eq(rc, 0, "queue run exits cleanly")
+    item = os.path.join(tts, "queue", "t5b-4242-q1-g1.json")
+    assert_eq(os.path.exists(item), True, "queue item created for the event id")
+    obj = json.loads(open(item, encoding="utf-8").read())
+    assert_eq(obj.get("v"), 1, "item version")
+    assert_eq(obj.get("event_id"), "t5b-4242-q1-g1", "event id in item")
+    assert_eq(obj.get("attempts"), 0, "fresh item has attempts=0")
+    assert_eq(obj.get("text"), "answer-one", "answer text lives in the local queue item")
+    assert_eq(obj.get("reply_bytes"), 10, "reply byte count recorded")
+
+    st = json.loads(open(os.path.join(state, "ai_worker_status.json"),
+                         encoding="utf-8").read())
+    ctr = st.get("counters", {})
+    assert_eq(ctr.get("tts_queued"), 1, "status counts the queued answer")
+    assert_eq(ctr.get("tts_enqueue_failed"), 0, "no enqueue failures")
+    assert_eq(st.get("tts_queue"), tts, "status reports the queue dir")
+    assert_eq("answer-one" in json.dumps(st, ensure_ascii=False), False,
+              "answer text must not appear in ai_worker_status.json")
+    assert_eq("answer-one" in out, False,
+              "answer text must not appear on stdout/log")
+
+    # 第二个事件：同一队列目录继续入队，条目互不覆盖（每个 event_id 一个文件）
+    write_events("i31/work2/events.jsonl" if False else os.path.join(work, "events.jsonl"),
+                 [rec(1, 4242, "t5b-4242-q1-g1", "q1"), rec(2, 4242, "t5b-4242-q2-g1", "q2")])
+    rc2, out2, _ = run_once(exe, work, state,
+                            ["--idle-exit-ms", "600", "--tts-queue-dir", tts,
+                             "--mock-reply", "answer-two"])
+    assert_eq(rc2, 0, "second run exits cleanly")
+    item2 = os.path.join(tts, "queue", "t5b-4242-q2-g1.json")
+    assert_eq(os.path.exists(item2), True, "second event gets its own queue item")
+    assert_eq(os.path.exists(item), True, "first item is untouched by later runs")
+    objs = [json.loads(open(p, encoding="utf-8").read())
+            for p in (item, item2)]
+    assert_eq([o.get("text") for o in objs], ["answer-one", "answer-two"],
+              "each item keeps its own answer text")
+    if os.name != "nt":
+        assert_eq(oct(os.stat(item).st_mode & 0o777), "0o600", "queue item is 0600")
+    assert_eq("answer-one" in out2 or "answer-two" in out2, False,
+              "no answer text on stdout")
+    return "1 item per answer, 0600, device-local text, status/logs clean"
+
+
+@case
+def i32_tts_queue_idempotent_by_event_id(exe):
+    """同一个 event_id 只会入队一次：done 标记、已在队列、inflight 都算已处理"""
+    tts = path_of("i32/tts")
+    # 场景 A：队列已有同名条目 → 不重复入队
+    work = path_of("i32/work_a")
+    state = path_of("i32/state_a")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    os.makedirs(os.path.join(tts, "queue"), exist_ok=True)
+    with open(os.path.join(tts, "queue", "t5b-4242-dup-g1.json"), "w",
+              encoding="utf-8") as f:
+        f.write(u'{"v":1,"event_id":"t5b-4242-dup-g1","attempts":0,"text":"already"}\n')
+    write_events("i32/work_a/events.jsonl", [rec(1, 4242, "t5b-4242-dup-g1", "dup")])
+    rc, out, _ = run_once(exe, work, state,
+                          ["--idle-exit-ms", "600", "--tts-queue-dir", tts,
+                           "--mock-reply", "answer-dup"])
+    assert_eq(rc, 0, "dedupe run exits cleanly")
+    st = json.loads(open(os.path.join(state, "ai_worker_status.json"),
+                         encoding="utf-8").read())
+    ctr = st.get("counters", {})
+    assert_eq(ctr.get("tts_queued"), 0, "nothing queued when the id is already pending")
+    assert_eq(ctr.get("tts_skipped"), 1, "skip counter moved instead")
+    assert_eq(json.loads(open(os.path.join(tts, "queue", "t5b-4242-dup-g1.json"),
+                              encoding="utf-8").read()).get("text"), "already",
+              "existing item is left untouched")
+    assert_eq(ctr.get("events_processed"), 1, "the event itself is still consumed")
+
+    # 场景 B：done/<id>.ok 已存在（已播报）→ 重放事件也不再播报
+    tts2 = path_of("i32/tts_b")
+    work2 = path_of("i32/work_b")
+    state2 = path_of("i32/state_b")
+    os.makedirs(work2, exist_ok=True)
+    os.makedirs(state2, exist_ok=True)
+    os.makedirs(os.path.join(tts2, "done"), exist_ok=True)
+    with open(os.path.join(tts2, "done", "t5b-4242-played-g1.ok"), "w",
+              encoding="utf-8") as f:
+        f.write("2026-11-20T22:00:00.000+0800\n")
+    write_events("i32/work_b/events.jsonl", [rec(1, 4242, "t5b-4242-played-g1", "p")])
+    rc2, _, _ = run_once(exe, work2, state2,
+                         ["--idle-exit-ms", "600", "--tts-queue-dir", tts2,
+                          "--mock-reply", "answer-played"])
+    assert_eq(rc2, 0, "replay run exits cleanly")
+    st2 = json.loads(open(os.path.join(state2, "ai_worker_status.json"),
+                          encoding="utf-8").read())
+    assert_eq(st2.get("counters", {}).get("tts_skipped"), 1,
+              "already-played event is not enqueued again")
+    assert_eq(os.path.exists(os.path.join(tts2, "queue", "t5b-4242-played-g1.json")),
+              False, "no duplicate item for a played event")
+    return "queue/inflight/done all suppress re-enqueue; offset still advances"
+
+
+@case
+def i33_tts_queue_config_and_failure(exe):
+    """配置校验 + 入队失败必须显式记账（不静默丢回答）"""
+    work = path_of("i33/work")
+    state = path_of("i33/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    write_events("i33/work/events.jsonl", [rec(1, 4242, "t5b-4242-cfg-g1", "c")])
+
+    # 相对路径直接拒绝
+    rc, _, err = run_once(exe, work, state, ["--tts-queue-dir", "relative/tts"])
+    assert_eq(rc, 2, "relative tts-queue-dir is a usage error")
+
+    # 入队失败：用一个文件占住目录名，mkdir 必失败
+    blocker = path_of("i33/blocker")
+    with open(blocker, "w", encoding="utf-8") as f:
+        f.write("x")
+    rc2, out2, _ = run_once(exe, work, state,
+                            ["--idle-exit-ms", "600", "--tts-queue-dir", blocker,
+                             "--mock-reply", "answer-blocked"])
+    assert_eq(rc2, 0, "enqueue failure does not kill the worker")
+    st = json.loads(open(os.path.join(state, "ai_worker_status.json"),
+                         encoding="utf-8").read())
+    ctr = st.get("counters", {})
+    assert_eq(ctr.get("tts_enqueue_failed"), 1, "enqueue failure is counted")
+    assert_eq(ctr.get("events_processed"), 1, "event still committed exactly once")
+    assert_eq("tts enqueue FAILED" in out2, True, "failure is logged loudly")
+    assert_eq("answer-blocked" in out2, False, "answer text never reaches the log")
+    return "bad dir rejected; enqueue failure counted + logged, answer text never logged"
+
+
+@case
+def i34_tts_queue_off_by_default(exe):
+    """不传 --tts-queue-dir 时行为与 T5-06C 完全一致（不建目录、不计数）"""
+    work = path_of("i34/work")
+    state = path_of("i34/state")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    write_events("i34/work/events.jsonl", [rec(1, 4242, "t5b-4242-off-g1", "o")])
+    before = sorted(os.listdir(HERE))
+    rc, _, _ = run_once(exe, work, state,
+                        ["--idle-exit-ms", "600", "--mock-reply", "answer-off"])
+    assert_eq(rc, 0, "default run exits cleanly")
+    st = json.loads(open(os.path.join(state, "ai_worker_status.json"),
+                         encoding="utf-8").read())
+    ctr = st.get("counters", {})
+    assert_eq(ctr.get("tts_queued"), 0, "no queueing when disabled")
+    assert_eq(ctr.get("tts_enqueue_failed"), 0, "no failures when disabled")
+    assert_eq(st.get("tts_queue"), "", "status shows the queue as disabled")
+    assert_eq(os.path.exists(os.path.join(state, "tts")), False,
+              "no tts directory is created next to the state dir")
+    assert_eq(sorted(os.listdir(HERE)), before, "no stray files in the tests dir")
+    return "disabled by default: no dirs, no counters, T5-06C behaviour preserved"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--exe", default=DEFAULT_EXE)

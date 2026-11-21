@@ -67,3 +67,24 @@ key 只在 Provider 内存里（`t6b_ds.api_key`），`fini` 时清零；文件�
 
 `0` 正常 · `2` 参数错误 · `3` 已有实例 · `4` 初始化失败（含 key 缺失、libcurl 不可用）·
 `5` 消费进度无法落盘 · `6` 文件身份（前缀指纹）无法核对或推进
+
+## 原厂 TTS 执行器（T5-06D）
+
+`tts_exec/TtsExec.java` 编译成 `tts_exec.dex`，用 `app_process` 独立运行（不装 APK、不改 system）。
+
+- 入口：`ContentProviderClient.query(content://com.alibaba.ailabs.genie.assistant.provider/GenieApi, selection={"method":4,...})`
+- 状态：按 `tts_id` 过滤原厂日志 `status = play|complete|interupt`（行内不含回答正文）
+- 队列：`queue/ → inflight/ → done/`，`journal.jsonl` 只记 id/字节数/时间/结果
+- 停止：`control/stop` 或 `run_tts_exec.sh stop-now` → provider `method=5`
+- 不碰 AudioManager，原厂音量控制保持
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File build_tts_exec.ps1   # -> tts_exec.dex
+adb push tts_exec.dex /data/local/tmp/t5_bridge/tts_exec.dex
+adb push run_tts_exec.sh /data/local/tmp/t5_bridge/run_tts_exec.sh
+adb shell "sh /data/local/tmp/t5_bridge/run_tts_exec.sh start"
+adb shell "sh /data/local/tmp/t5_bridge/run_tts_exec.sh status"
+```
+
+Worker 侧只需加 `--tts-queue-dir /data/local/tmp/t5_bridge/tts`，回答会按 `event_id` 幂等入队。
+详见 `../t5_06d_factory_tts_report.md`。

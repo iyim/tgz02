@@ -1,0 +1,307 @@
+﻿
+===== 0. preconditions :: 2026-11-21 08:47:27 =====
+################ T5-06D device acceptance: real ASR -> real model -> factory TTS ################
+host time: 2026-11-21 08:47:27
+core pid           : 28236
+  ASSERT OK   : smartapp:core is running
+bridge             : running: pid=22705 | {"state":"running","pid":22705,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":68,"duplicates":0,"rejected":0,"frames":68,"clients":0,"clients_accepted":21,"clients_closed":21,"client_aborts":21,"client_overflow":0,"frame_errors":0,"store_errors":0,"replay_lines":115,"bad_lines":0,"truncated_bytes":0,"dedup_size":183,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-21T08:47:29"}
+  ASSERT OK   : bridge running
+key file           : mode=-rw------- bytes=37
+  ASSERT OK   : api key file is 0600
+  ASSERT OK   : api key file is non-empty (content never read)
+tts_exec.dex       : /data/local/tmp/t5_bridge/tts_exec.dex B
+ai_worker          : /data/local/tmp/t5d06/bin/ai_worker B
+  ASSERT OK   : tts_exec.dex present
+events.jsonl lines : 183
+  ASSERT OK   : real events.jsonl exists (never truncated by this run)
+  frida-server reachable on 27042
+  frida sender pid=36756 core=28236
+  ASSERT OK   : frida sender ready
+  ASSERT OK   : factory core pid unchanged after foregrounding
+  > already running: supervisor=13422 exec=15147
+executor           : supervisor=13422/alive executor=15147/alive | root=/data/local/tmp/t5_bridge/tts dex=/data/local/tmp/t5_bridge/tts_exec.dex | queue=0 | inflight=0 | done=0 | failed=0 | journal_last: {"ts":"2026-11-21T08:45:52.204+0800","kind":"tts","event_id":"recover-084517","tts_id":5245354,"outcome":"ok","dur_ms":21259,"text_bytes":292,"attempts":2}
+  ASSERT OK   : TTS executor is alive
+> worker(mock max=0 idle=2500 tts=off)
+  rc=0
+  [aiw] 2026-11-21T08:47:52 lock acquired; previous owner pid=11135 no longer holding it
+  [aiw] 2026-11-21T08:47:52 start pid=18067 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d06/state/consumer_state.json provider=mock offset=54628 (mock only, no network)
+  [aiw] 2026-11-21T08:47:55 exit reason=idle_timeout processed=5 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=56178 state_saves=6 state_errors=0
+  [aiw] 2026-11-21T08:47:55 file identity: reason=first_open offset=56178 prefix_hash=d8a408ca51202e29 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-21T08:47:55 provider summary: name=mock calls=5 (no network)
+  seeded: events 183 -> 183
+  > capture started pid=18107 file=/data/local/tmp/t5d06/factory_tts_capture.log
+
+===== S1 single short question: real ASR -> real model -> factory TTS :: 2026-11-21 08:47:55 =====
+  played: s01  (wake -> 3s -> command)
+events lines: 183 -> 184  ids=t5b-28236-1968559-g1
+  ASSERT OK   : factory ASR produced a new final
+> worker(deepseek max=1 idle=8000 tts=on)
+  rc=0
+  [aiw] 2026-11-21T08:48:16 lock acquired; previous owner pid=18067 no longer holding it
+  [aiw] 2026-11-21T08:48:16 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+  [aiw] 2026-11-21T08:48:16 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+  [aiw] 2026-11-21T08:48:16 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+  [aiw] 2026-11-21T08:48:16 start pid=18252 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d06/state/consumer_state.json provider=deepseek offset=56178 (network enabled)
+  [aiw] 2026-11-21T08:48:17 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1399ms resp_bytes=1061 reply_bytes=63 event=t5b-28236-1968559-g1
+  [aiw] 2026-11-21T08:48:17 tts queued: event=t5b-28236-1968559-g1 reply_bytes=63 queue=/data/local/tmp/t5_bridge/tts
+  [aiw] 2026-11-21T08:48:17 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=56488 state_saves=2 state_errors=0
+  [aiw] 2026-11-21T08:48:17 file identity: reason=first_open offset=56488 prefix_hash=2be98445fba5ec8a resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-21T08:48:17 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1399ms last_resp_bytes=1061
+  ASSERT OK   : worker: real model HTTP 200
+  ASSERT OK   : worker: answer queued for TTS
+  worker event id: t5b-28236-1968559-g1
+journal: {"ts":"2026-11-21T08:48:21.927+0800","kind":"tts","event_id":"t5b-28236-1968559-g1","tts_id":5245363,"outcome":"ok","dur_ms":4239,"text_bytes":63,"attempts":1}
+  ASSERT OK   : executor: factory TTS reported complete
+tts_id: 5245363
+factory audio log: [28499] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = complete,type = tts,agmcId(tts_id) =5245363 | --- voiceManager notify --- | 11-21 08:48:21.981 D/VoiceManager(28236): onNotify id= 5245363 ,status = 2, uri = content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245363?status=2
+  ASSERT OK   : factory: audio state machine reported complete
+  ASSERT OK   : playback lasted a real amount of time (dur_ms>400)
+
+===== S2 two consecutive turns :: 2026-11-21 08:48:27 =====
+  played: s01  (wake -> 3s -> command)
+  ASSERT OK   : turn 1: ASR final produced
+> worker(deepseek max=1 idle=8000 tts=on)
+  rc=0
+  [aiw] 2026-11-21T08:48:49 lock acquired; previous owner pid=18252 no longer holding it
+  [aiw] 2026-11-21T08:48:49 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+  [aiw] 2026-11-21T08:48:49 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+  [aiw] 2026-11-21T08:48:49 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+  [aiw] 2026-11-21T08:48:49 start pid=19456 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d06/state/consumer_state.json provider=deepseek offset=56488 (network enabled)
+  [aiw] 2026-11-21T08:48:51 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1822ms resp_bytes=1074 reply_bytes=75 event=t5b-28236-1968564-g1
+  [aiw] 2026-11-21T08:48:51 tts queued: event=t5b-28236-1968564-g1 reply_bytes=75 queue=/data/local/tmp/t5_bridge/tts
+  [aiw] 2026-11-21T08:48:51 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=56798 state_saves=2 state_errors=0
+  [aiw] 2026-11-21T08:48:51 file identity: reason=first_open offset=56798 prefix_hash=52b368c90ca5ed8d resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-21T08:48:51 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1822ms last_resp_bytes=1074
+  ASSERT OK   : turn 1: model HTTP 200
+  worker event id: t5b-28236-1968564-g1
+turn 1 journal: {"ts":"2026-11-21T08:48:56.588+0800","kind":"tts","event_id":"t5b-28236-1968564-g1","tts_id":5245368,"outcome":"ok","dur_ms":4996,"text_bytes":75,"attempts":1}
+  ASSERT OK   : turn 1: TTS complete
+  played: s01  (wake -> 3s -> command)
+  ASSERT OK   : turn 2: ASR final produced
+> worker(deepseek max=1 idle=8000 tts=on)
+  rc=0
+  [aiw] 2026-11-21T08:49:20 lock acquired; previous owner pid=19456 no longer holding it
+  [aiw] 2026-11-21T08:49:20 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+  [aiw] 2026-11-21T08:49:20 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+  [aiw] 2026-11-21T08:49:20 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+  [aiw] 2026-11-21T08:49:20 start pid=20680 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d06/state/consumer_state.json provider=deepseek offset=56798 (network enabled)
+  [aiw] 2026-11-21T08:49:22 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1631ms resp_bytes=1096 reply_bytes=72 event=t5b-28236-1968569-g1
+  [aiw] 2026-11-21T08:49:22 tts queued: event=t5b-28236-1968569-g1 reply_bytes=72 queue=/data/local/tmp/t5_bridge/tts
+  [aiw] 2026-11-21T08:49:22 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=57108 state_saves=2 state_errors=0
+  [aiw] 2026-11-21T08:49:22 file identity: reason=first_open offset=57108 prefix_hash=6b219c7da4506ec2 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-21T08:49:22 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1631ms last_resp_bytes=1096
+  ASSERT OK   : turn 2: model HTTP 200
+  worker event id: t5b-28236-1968569-g1
+turn 2 journal: {"ts":"2026-11-21T08:49:26.690+0800","kind":"tts","event_id":"t5b-28236-1968569-g1","tts_id":5245373,"outcome":"ok","dur_ms":4582,"text_bytes":72,"attempts":1}
+  ASSERT OK   : turn 2: TTS complete
+  ASSERT OK   : two distinct turns handled
+  ASSERT OK   : turn event ids are distinct
+
+===== S3 long Chinese text: real answer + direct long text :: 2026-11-21 08:49:29 =====
+  played: s01  (wake -> 3s -> command)
+> worker(deepseek max=1 idle=8000 tts=on)
+  rc=0
+  [aiw] 2026-11-21T08:49:52 lock acquired; previous owner pid=20680 no longer holding it
+  [aiw] 2026-11-21T08:49:52 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+  [aiw] 2026-11-21T08:49:52 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+  [aiw] 2026-11-21T08:49:52 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+  [aiw] 2026-11-21T08:49:52 start pid=21856 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d06/state/consumer_state.json provider=deepseek offset=57108 (network enabled)
+  [aiw] 2026-11-21T08:49:54 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1770ms resp_bytes=853 reply_bytes=108 event=t5b-28236-1968574-g1
+  [aiw] 2026-11-21T08:49:54 tts queued: event=t5b-28236-1968574-g1 reply_bytes=108 queue=/data/local/tmp/t5_bridge/tts
+  [aiw] 2026-11-21T08:49:54 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=57418 state_saves=2 state_errors=0
+  [aiw] 2026-11-21T08:49:54 file identity: reason=first_open offset=57418 prefix_hash=055668f44e8d3fa4 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-21T08:49:54 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1770ms last_resp_bytes=853
+  ASSERT OK   : real answer HTTP 200
+  real answer reply_bytes=108
+  worker event id: t5b-28236-1968574-g1
+  ASSERT OK   : real answer played to completion
+long text bytes=243
+> tts_exec: enqueued event=longtext1 bytes=243 queue=/data/local/tmp/t5_bridge/tts/queue ok=true
+journal: {"ts":"2026-11-21T08:38:52.723+0800","kind":"tts","event_id":"longtext1","tts_id":5245336,"outcome":"ok","dur_ms":17548,"text_bytes":243,"attempts":1}
+  ASSERT OK   : long text played to completion
+  long text dur_ms=17548
+  ASSERT OK   : long text duration is consistent with its length
+  ASSERT OK   : long text reached the engine byte-exact
+
+===== S4 speak while playing: ASR/TTS interaction :: 2026-11-21 08:50:13 =====
+  played: s01  (wake -> 3s -> command)
+> direct play during speech: tts_exec: enqueued event=s4long bytes=222 queue=/data/local/tmp/t5_bridge/tts/queue ok=true
+events lines: 187 -> 188 ids=t5b-28236-1968580-g1
+  ASR during playback produced 1 new final(s)
+factory tts log: 11-21 08:50:28.051 W/TtsManager(28236): JNI_AILABS TtsManager.cpp:playTts:295 [29196] isInterrupted, sessionId = 0 | 11-21 08:50:33.538 W/TtsManager(28236): JNI_AILABS TtsManager.cpp:playTts:295 [29196] isInterrupted, sessionId = 0
+  ASSERT OK   : interaction observed and recorded (no crash, chain still alive)
+  ASSERT OK   : factory core survived the overlap
+
+===== S5 ordering: several answers queued back to back :: 2026-11-21 08:50:39 =====
+  > Killed 
+stopped (supervisor=13422 executor=none)
+  > reset: 5 entries left
+  > Killed 
+stopped (supervisor=none executor=none)
+  queue before: 0
+queued ord-1: tts_exec: enqueued event=ord-1 bytes=28 queue=/data/local/tmp/t5_bridge/tts/queue ok=true
+queued ord-2: tts_exec: enqueued event=ord-2 bytes=28 queue=/data/local/tmp/t5_bridge/tts/queue ok=true
+queued ord-3: tts_exec: enqueued event=ord-3 bytes=28 queue=/data/local/tmp/t5_bridge/tts/queue ok=true
+  queued: ord-1,ord-2,ord-3
+  ASSERT OK   : three items queued while the executor is down
+  > started: supervisor=24911 executor=24915
+journal tail:
+{"ts":"2026-11-21T08:50:25.982+0800","kind":"retry","event_id":"longtext1","attempts":1,"outcome":"interrupted"}
+{"ts":"2026-11-21T08:50:31.471+0800","kind":"tts","event_id":"s4long","tts_id":5245383,"outcome":"interrupted","dur_ms":3422,"text_bytes":222,"attempts":1}
+{"ts":"2026-11-21T08:50:31.488+0800","kind":"retry","event_id":"s4long","attempts":1,"outcome":"interrupted"}
+{"ts":"2026-11-21T08:51:23.670+0800","kind":"tts","event_id":"ord-1","tts_id":5245386,"outcome":"ok","dur_ms":1845,"text_bytes":28,"attempts":1}
+{"ts":"2026-11-21T08:51:26.039+0800","kind":"tts","event_id":"ord-2","tts_id":5245387,"outcome":"ok","dur_ms":2299,"text_bytes":28,"attempts":1}
+{"ts":"2026-11-21T08:51:28.768+0800","kind":"tts","event_id":"ord-3","tts_id":5245388,"outcome":"ok","dur_ms":2668,"text_bytes":28,"attempts":1}
+  journal order: ord-1>ord-2>ord-3
+  ASSERT OK   : plays happened in FIFO order
+  ASSERT OK   : queue drained
+  ASSERT OK   : last item completed
+
+===== S6 TTS executor down -> answer must not be lost -> recovery :: 2026-11-21 08:51:48 =====
+  > reset: 5 entries left
+  > Killed 
+stopped (supervisor=24911 executor=none)
+  played: s01  (wake -> 3s -> command)
+  ASSERT OK   : ASR final produced while executor is down
+> worker(deepseek max=1 idle=8000 tts=on)
+  rc=0
+  [aiw] 2026-11-21T08:52:16 lock acquired; previous owner pid=21856 no longer holding it
+  [aiw] 2026-11-21T08:52:16 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+  [aiw] 2026-11-21T08:52:16 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+  [aiw] 2026-11-21T08:52:16 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+  [aiw] 2026-11-21T08:52:16 start pid=25333 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d06/state/consumer_state.json provider=deepseek offset=57418 (network enabled)
+  [aiw] 2026-11-21T08:52:17 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1879ms resp_bytes=1290 reply_bytes=78 event=t5b-28236-1968580-g1
+  [aiw] 2026-11-21T08:52:18 tts queued: event=t5b-28236-1968580-g1 reply_bytes=78 queue=/data/local/tmp/t5_bridge/tts
+  [aiw] 2026-11-21T08:52:18 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=57728 state_saves=2 state_errors=0
+  [aiw] 2026-11-21T08:52:18 file identity: reason=first_open offset=57728 prefix_hash=e00284487c1392f3 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-21T08:52:18 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1879ms last_resp_bytes=1290
+  ASSERT OK   : model still answered (executor down)
+  ASSERT OK   : answer queued locally
+  queue depth with executor down: 1
+  ASSERT OK   : answer survives in the local queue (not silently dropped)
+  worker event id: t5b-28236-1968580-g1
+  ASSERT OK   : no journal entry yet (nothing played)
+  > started: supervisor=27607 executor=27613
+  worker event id: t5b-28236-1968580-g1
+after recovery: {"ts":"2026-11-21T08:54:22.224+0800","kind":"tts","event_id":"t5b-28236-1968580-g1","tts_id":5245393,"outcome":"ok","dur_ms":5127,"text_bytes":78,"attempts":1}
+  ASSERT OK   : queued answer played after executor came back
+  ASSERT OK   : queue drained after recovery
+
+===== S7 executor restart mid-play -> pending item recovered :: 2026-11-21 08:54:28 =====
+  > reset: 5 entries left
+> tts_exec: enqueued event=recover-085429 bytes=292 queue=/data/local/tmp/t5_bridge/tts/queue ok=true
+  inflight while playing: 1
+  killing executor pid=27613
+  after kill: queue=0 inflight=1
+  > already running: supervisor=27607 exec=27941
+journal for recover-085429: {"ts":"2026-11-21T08:54:58.709+0800","kind":"tts","event_id":"recover-085429","tts_id":5245395,"outcome":"ok","dur_ms":21596,"text_bytes":292,"attempts":2}
+  recover markers in journal: 11
+  ASSERT OK   : pending answer was replayed/played after restart
+  ASSERT OK   : journal records the inflight recovery
+  ASSERT OK   : no leftover work
+
+===== S8 factory wake word / ASR / volume coexistence :: 2026-11-21 08:55:01 =====
+volume/mute state: - STREAM_MUSIC: |    Muted: false |    Min: 0 | -- | 11-20 18:59:18:611 setStreamVolume(stream:STREAM_MUSIC index:70 flags:0x0) from com.android.commands.media | 11-20 18:59:55:275 adjustSuggestedStreamVolume(sugg:USE_DEFAULT_STREAM_TYPE dir:ADJUST_LOWER flags:0x1011) from android/MediaSessionService uid:1000
+  played: s01  (wake -> 3s -> command)
+factory ASR after the whole run: lines 189 -> 190
+  ASSERT OK   : factory ASR still recognises speech after all TTS activity
+  ASSERT OK   : factory core pid unchanged
+wakeup log tail: 11-21 08:55:22.878 D/WakeupEngineWrapper(28236): setSystemInfo,272: volumeLevel=25, audioType=2, isFullDuplexMode=0, isAsrMode=0 | 11-21 08:55:24.213 D/WakeupEngineWrapper(28236): useWakeupWords,225:begin ... | 11-21 08:55:24.213 D/WakeupEngineWrapper(28236): useWakeupWords,228:end ...
+  ASSERT OK   : api key file still 0600
+  ASSERT OK   : events.jsonl never shrank (no truncation)
+
+===== Z. summary :: 2026-11-21 08:55:34 =====
+  > capture stopped lines=1164
+executor: supervisor=27607/alive executor=27941/alive | root=/data/local/tmp/t5_bridge/tts dex=/data/local/tmp/t5_bridge/tts_exec.dex | queue=0 | inflight=0 | done=0 | failed=0 | journal_last: {"ts":"2026-11-21T08:54:58.709+0800","kind":"tts","event_id":"recover-085429","tts_id":5245395,"outcome":"ok","dur_ms":21596,"text_bytes":292,"attempts":2}
+journal:
+{"ts":"2026-11-21T08:49:26.690+0800","kind":"tts","event_id":"t5b-28236-1968569-g1","tts_id":5245373,"outcome":"ok","dur_ms":4582,"text_bytes":72,"attempts":1}
+{"ts":"2026-11-21T08:50:01.181+0800","kind":"tts","event_id":"t5b-28236-1968574-g1","tts_id":5245378,"outcome":"ok","dur_ms":6881,"text_bytes":108,"attempts":1}
+{"ts":"2026-11-21T08:50:25.889+0800","kind":"tts","event_id":"longtext1","tts_id":5245379,"outcome":"interrupted","dur_ms":12668,"text_bytes":243,"attempts":1}
+{"ts":"2026-11-21T08:50:25.982+0800","kind":"retry","event_id":"longtext1","attempts":1,"outcome":"interrupted"}
+{"ts":"2026-11-21T08:50:31.471+0800","kind":"tts","event_id":"s4long","tts_id":5245383,"outcome":"interrupted","dur_ms":3422,"text_bytes":222,"attempts":1}
+{"ts":"2026-11-21T08:50:31.488+0800","kind":"retry","event_id":"s4long","attempts":1,"outcome":"interrupted"}
+{"ts":"2026-11-21T08:51:23.670+0800","kind":"tts","event_id":"ord-1","tts_id":5245386,"outcome":"ok","dur_ms":1845,"text_bytes":28,"attempts":1}
+{"ts":"2026-11-21T08:51:26.039+0800","kind":"tts","event_id":"ord-2","tts_id":5245387,"outcome":"ok","dur_ms":2299,"text_bytes":28,"attempts":1}
+{"ts":"2026-11-21T08:51:28.768+0800","kind":"tts","event_id":"ord-3","tts_id":5245388,"outcome":"ok","dur_ms":2668,"text_bytes":28,"attempts":1}
+{"ts":"2026-11-21T08:54:22.224+0800","kind":"tts","event_id":"t5b-28236-1968580-g1","tts_id":5245393,"outcome":"ok","dur_ms":5127,"text_bytes":78,"attempts":1}
+{"ts":"2026-11-21T08:54:37.084+0800","kind":"recover","item":"recover-085429.json","age_ms":5024}
+{"ts":"2026-11-21T08:54:58.709+0800","kind":"tts","event_id":"recover-085429","tts_id":5245395,"outcome":"ok","dur_ms":21596,"text_bytes":292,"attempts":2}
+FAILS: 0
+RESULT: PASS
+
+===== 0. preconditions :: 2026-11-21 08:55:50 =====
+################ T5-06D device acceptance: real ASR -> real model -> factory TTS ################
+host time: 2026-11-21 08:55:50
+core pid           : 28236
+  ASSERT OK   : smartapp:core is running
+bridge             : running: pid=22705 | {"state":"running","pid":22705,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":75,"duplicates":0,"rejected":0,"frames":75,"clients":0,"clients_accepted":22,"clients_closed":22,"client_aborts":22,"client_overflow":0,"frame_errors":0,"store_errors":0,"replay_lines":115,"bad_lines":0,"truncated_bytes":0,"dedup_size":190,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-21T08:55:51"}
+  ASSERT OK   : bridge running
+key file           : mode=-rw------- bytes=37
+  ASSERT OK   : api key file is 0600
+  ASSERT OK   : api key file is non-empty (content never read)
+tts_exec.dex       : /data/local/tmp/t5_bridge/tts_exec.dex B
+ai_worker          : /data/local/tmp/t5d06/bin/ai_worker B
+  ASSERT OK   : tts_exec.dex present
+events.jsonl lines : 190
+  ASSERT OK   : real events.jsonl exists (never truncated by this run)
+  frida-server reachable on 27042
+  frida sender pid=34440 core=28236
+  ASSERT OK   : frida sender ready
+  ASSERT OK   : factory core pid unchanged after foregrounding
+  > already running: supervisor=27607 exec=27941
+executor           : supervisor=27607/alive executor=27941/alive | root=/data/local/tmp/t5_bridge/tts dex=/data/local/tmp/t5_bridge/tts_exec.dex | queue=0 | inflight=0 | done=0 | failed=0 | journal_last: {"ts":"2026-11-21T08:54:58.709+0800","kind":"tts","event_id":"recover-085429","tts_id":5245395,"outcome":"ok","dur_ms":21596,"text_bytes":292,"attempts":2}
+  ASSERT OK   : TTS executor is alive
+> worker(mock max=0 idle=2500 tts=off)
+  rc=0
+  [aiw] 2026-11-21T08:56:17 lock acquired; previous owner pid=25333 no longer holding it
+  [aiw] 2026-11-21T08:56:17 start pid=30298 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d06/state/consumer_state.json provider=mock offset=57728 (mock only, no network)
+  [aiw] 2026-11-21T08:56:19 exit reason=idle_timeout processed=2 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=58348 state_saves=3 state_errors=0
+  [aiw] 2026-11-21T08:56:19 file identity: reason=first_open offset=58348 prefix_hash=8463adc05aaf6372 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-21T08:56:19 provider summary: name=mock calls=2 (no network)
+  seeded: events 190 -> 190
+  > capture started pid=30406 file=/data/local/tmp/t5d06/factory_tts_capture.log
+
+===== S3 long Chinese text: real answer + direct long text :: 2026-11-21 08:56:20 =====
+  played: s01  (wake -> 3s -> command)
+> worker(deepseek max=1 idle=8000 tts=on)
+  rc=0
+  [aiw] 2026-11-21T08:56:43 lock acquired; previous owner pid=30298 no longer holding it
+  [aiw] 2026-11-21T08:56:43 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+  [aiw] 2026-11-21T08:56:43 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+  [aiw] 2026-11-21T08:56:43 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+  [aiw] 2026-11-21T08:56:43 start pid=31400 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5d06/state/consumer_state.json provider=deepseek offset=58348 (network enabled)
+  [aiw] 2026-11-21T08:56:45 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1708ms resp_bytes=1261 reply_bytes=78 event=t5b-28236-1968600-g1
+  [aiw] 2026-11-21T08:56:45 tts queued: event=t5b-28236-1968600-g1 reply_bytes=78 queue=/data/local/tmp/t5_bridge/tts
+  [aiw] 2026-11-21T08:56:45 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=58658 state_saves=2 state_errors=0
+  [aiw] 2026-11-21T08:56:45 file identity: reason=first_open offset=58658 prefix_hash=b699781ce1e0e869 resets=0 legacy_rescans=0 replacements=0 truncations=0
+  [aiw] 2026-11-21T08:56:45 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1708ms last_resp_bytes=1261
+  ASSERT OK   : real answer HTTP 200
+  real answer reply_bytes=78
+  worker event id: t5b-28236-1968600-g1
+  ASSERT OK   : real answer played to completion
+long text bytes=243
+> tts_exec: enqueued event=longtext-085700-1 bytes=243 queue=/data/local/tmp/t5_bridge/tts/queue ok=true
+journal: {"ts":"2026-11-21T08:57:19.341+0800","kind":"tts","event_id":"longtext-085700-1","tts_id":5245405,"outcome":"ok","dur_ms":17407,"text_bytes":243,"attempts":1}
+  ASSERT OK   : long text played to completion
+  long text dur_ms=17407
+  ASSERT OK   : long text duration is consistent with its length
+  ASSERT OK   : long text reached the engine byte-exact
+
+===== Z. summary :: 2026-11-21 08:57:19 =====
+  > capture stopped lines=187
+executor: supervisor=27607/alive executor=27941/alive | root=/data/local/tmp/t5_bridge/tts dex=/data/local/tmp/t5_bridge/tts_exec.dex | queue=0 | inflight=0 | done=0 | failed=0 | journal_last: {"ts":"2026-11-21T08:57:19.341+0800","kind":"tts","event_id":"longtext-085700-1","tts_id":5245405,"outcome":"ok","dur_ms":17407,"text_bytes":243,"attempts":1}
+journal:
+{"ts":"2026-11-21T08:50:25.889+0800","kind":"tts","event_id":"longtext1","tts_id":5245379,"outcome":"interrupted","dur_ms":12668,"text_bytes":243,"attempts":1}
+{"ts":"2026-11-21T08:50:25.982+0800","kind":"retry","event_id":"longtext1","attempts":1,"outcome":"interrupted"}
+{"ts":"2026-11-21T08:50:31.471+0800","kind":"tts","event_id":"s4long","tts_id":5245383,"outcome":"interrupted","dur_ms":3422,"text_bytes":222,"attempts":1}
+{"ts":"2026-11-21T08:50:31.488+0800","kind":"retry","event_id":"s4long","attempts":1,"outcome":"interrupted"}
+{"ts":"2026-11-21T08:51:23.670+0800","kind":"tts","event_id":"ord-1","tts_id":5245386,"outcome":"ok","dur_ms":1845,"text_bytes":28,"attempts":1}
+{"ts":"2026-11-21T08:51:26.039+0800","kind":"tts","event_id":"ord-2","tts_id":5245387,"outcome":"ok","dur_ms":2299,"text_bytes":28,"attempts":1}
+{"ts":"2026-11-21T08:51:28.768+0800","kind":"tts","event_id":"ord-3","tts_id":5245388,"outcome":"ok","dur_ms":2668,"text_bytes":28,"attempts":1}
+{"ts":"2026-11-21T08:54:22.224+0800","kind":"tts","event_id":"t5b-28236-1968580-g1","tts_id":5245393,"outcome":"ok","dur_ms":5127,"text_bytes":78,"attempts":1}
+{"ts":"2026-11-21T08:54:37.084+0800","kind":"recover","item":"recover-085429.json","age_ms":5024}
+{"ts":"2026-11-21T08:54:58.709+0800","kind":"tts","event_id":"recover-085429","tts_id":5245395,"outcome":"ok","dur_ms":21596,"text_bytes":292,"attempts":2}
+{"ts":"2026-11-21T08:56:51.238+0800","kind":"tts","event_id":"t5b-28236-1968600-g1","tts_id":5245404,"outcome":"ok","dur_ms":5557,"text_bytes":78,"attempts":1}
+{"ts":"2026-11-21T08:57:19.341+0800","kind":"tts","event_id":"longtext-085700-1","tts_id":5245405,"outcome":"ok","dur_ms":17407,"text_bytes":243,"attempts":1}
+FAILS: 0
+RESULT: PASS

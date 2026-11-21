@@ -24,6 +24,9 @@
 #define T6B_LOCK_NAME_DEFAULT   "ai_worker.lock"
 #define T6B_PROVIDER_MOCK       "mock"
 #define T6B_PROVIDER_DEEPSEEK   "deepseek"
+/* T5-06D：模型回答 -> 原厂 TTS 的本地持久化队列（默认关闭 = 纯 T5-06C 行为） */
+#define T6B_TTS_QUEUE_DEFAULT   ""
+#define T6B_TTS_ID_MAX          128
 
 typedef struct {
     char        work_dir[T6B_PATH_MAX];      /* events.jsonl 所在目录（只读） */
@@ -44,6 +47,7 @@ typedef struct {
     long long   state_fail_exit_ms;          /* 持续失败多久后带错误退出（0 = 立即退出） */
     int         verbose;
     char        reply_log[T6B_PATH_MAX];     /* 可选：成功回答的落盘文件（默认关闭） */
+    char        tts_queue[T6B_PATH_MAX];     /* 可选：TTS 队列根目录（默认关闭） */
     t6b_mock_cfg mock;
     t6b_ds_cfg   deepseek;                   /* 只有 provider=deepseek 时才使用 */
 } t6b_config;
