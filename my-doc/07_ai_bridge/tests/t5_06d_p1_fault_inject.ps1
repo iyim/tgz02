@@ -119,11 +119,11 @@ function Preflight() {
     Assert (Has '/data/local/tmp/t5d06/bin/ai_worker') "ai_worker binary present"
     $kp = Su "ls -l /data/local/tmp/t5_bridge/secret/deepseek_api_key"
     Assert ($kp -match '^-rw-------') ("api key file is 0600 (content not read): " + $kp)
-    foreach ($f in @('seed_item.sh', 'run_exec.sh', 'run_worker_p1.sh', 'dump_state.sh', 'pids.sh', 'kill_pid.sh', 'kill_during_play.sh')) {
+    foreach ($f in @('seed_item.sh', 'run_exec.sh', 'run_worker_p1.sh', 'dump_state.sh', 'pids.sh', 'kill_pid.sh', 'kill_during_play.sh', 'run_worker_mock.sh')) {
         Push (Join-Path $devSrc $f) ($devDir + "/" + $f)
     }
     Su ("chmod 700 " + $devDir + "/*.sh") | Out-Null
-    Assert ((N $devDir) -ge 7) "device helpers installed"
+    Assert ((N $devDir) -ge 8) "device helpers installed"
 }
 
 # ---------------------------------------------------------------- 阶段 exec
@@ -310,6 +310,19 @@ function RunWorker([string]$work, [string]$state, [string]$tts, [string]$maxEven
     return $log
 }
 
+function RunWorkerMock([string]$work, [string]$state, [string]$tts, [string]$maxEvents, [string]$idle, [string]$outName, [string]$faultEnv, [string]$extra) {
+    $env = ''
+    if ($faultEnv -ne '') { $env = "T6B_FAULT_TTSQ=" + $faultEnv + " " }
+    $cmd = $env + "sh " + $devDir + "/run_worker_mock.sh " + $work + " " + $state + " " + $tts + " " + $maxEvents + " " + $idle + " " + $devDir + "/" + $outName
+    if ($extra -ne '') { $cmd = $cmd + " " + $extra }
+    $out = Su $cmd
+    Rec ("[worker-mock] tts=" + $tts + " extra=" + $extra + " out=" + $outName)
+    foreach ($ln in ($out -split "`n")) { Rec ("    " + $ln) }
+    $log = Su ("cat " + $devDir + "/" + $outName + " 2>/dev/null")
+    foreach ($ln in ($log -split "`n")) { Rec ("    | " + $ln) }
+    return $log
+}
+
 function WorkerStatus([string]$state) { return (CatJson ($state + "/ai_worker_status.json")) }
 function Offset([string]$state) {
     $s = CatJson ($state + "/consumer_state.json")
@@ -454,13 +467,15 @@ function RealPhase() {
     Assert ($linkOk -eq 'yes') "R5 self-referential symlink created at the done stage"
     $off5 = Offset $rstate
     $log5 = RunWorker $rwork $rstate $rtts '0' '0' 'r5_statlog.log' '' '--max-runtime-ms 12000 --provider-retry-max 3'
-    Assert ($log5 -match 'cannot inspect existing done item \(errno=\d+\)') "R5 a stat error other than ENOENT/ENOTDIR fails closed"
-    Assert (-not ($log5 -match 'tts skip \(already queued/played\)')) "R5 the broken record is never treated as an idempotent hit"
+    Assert ($log5 -match 'existing done item is not a regular file') "R5 the self-referential link is seen as a link (lstat), not followed into ELOOP"
+    Assert (-not ($log5 -match 'cannot inspect existing')) "R5 no stat failure is reported any more (the link itself is inspected)"
+    Assert (-not ($log5 -match 'tts skip')) "R5 the link record is never treated as an idempotent hit"
     $st5 = WorkerStatus $rstate
     Assert ([int]$st5.counters.tts_enqueue_failed -ge 1) "R5 failure counted"
-    Assert ([int]$st5.counters.events_processed -eq 0) "R5 event not committed while the stat fails"
+    Assert ([int]$st5.counters.tts_skipped -eq 0) "R5 the link is never counted as a hit"
+    Assert ([int]$st5.counters.events_processed -eq 0) "R5 event not committed while the link exists"
     Assert ((Offset $rstate) -eq $off5) ("R5 offset unchanged (" + $off5 + " -> " + (Offset $rstate) + ")")
-    Assert ((N "$rtts/queue") -eq 0) "R5 no queue item is created for the un-inspectable event"
+    Assert ((Su ("test -L " + $rtts + "/done/" + $eid5 + ".ok && echo yes || echo no")) -eq 'yes') "R5 the link is left untouched"
     # 移除坏对象 → 变成 ENOENT → 正常入队并提交一次
     Su ("rm -f " + $rtts + "/done/" + $eid5 + ".ok") | Out-Null
     $log5b = RunWorker $rwork $rstate $rtts '1' '2500' 'r5_retry.log' '' ''
@@ -495,6 +510,86 @@ function RealPhase() {
     $j5 = JFor (Journal $rtts) $eid5
     Assert ((@($j5 | Where-Object { $_.outcome -eq 'ok' }).Count) -ge 1) "R5 answered text was played by factory TTS"
     Assert ((@(JFor (Journal $rtts) $eid6 | Where-Object { $_.outcome -eq 'ok' }).Count) -ge 1) "R6 answered text was played by factory TTS"
+
+    # ---- R7：四个阶段的条目是指向"有效普通文件"的符号链接 → lstat 见 link，失败关闭 ----
+    # 用 mock provider：符号链接分类与 Provider 无关，真机跑的是同一份 ARM32 二进制。
+    $seq = 6
+    foreach ($stage in @('queue', 'inflight', 'done', 'failed')) {
+        $seq = $seq + 1
+        $eidL = ('p1r7' + $stage.Substring(0, 1) + '-' + (Get-Date -Format 'HHmmss'))
+        MakeEvents $rwork $eidL '请用一句话回答：链接测试' $seq | Out-Null
+        Su ("printf real-target > " + $rtts + "/_target.bin") | Out-Null
+        $name = if ($stage -eq 'done') { $eidL + '.ok' } else { $eidL + '.json' }
+        Su ("mkdir -p " + $rtts + "/" + $stage) | Out-Null
+        Su ("ln -s " + $rtts + "/_target.bin " + $rtts + "/" + $stage + "/" + $name) | Out-Null
+        $isLink = Su ("test -L " + $rtts + "/" + $stage + "/" + $name + " && echo yes || echo no")
+        Assert ($isLink -eq 'yes') ("R7 " + $stage + ": symlink to a real file created")
+        $offL = Offset $rstate
+        $logL = RunWorkerMock $rwork $rstate $rtts '0' '0' ('r7_' + $stage + '.log') '' '--max-runtime-ms 1500 --provider-retry-max 2'
+        Assert ($logL -match ('existing ' + $stage + ' item is not a regular file')) ("R7 " + $stage + ": lstat sees the link itself, not its target")
+        Assert (-not ($logL -match 'tts skip')) ("R7 " + $stage + ": no idempotent skip is logged")
+        $stL = WorkerStatus $rstate
+        Assert ([int]$stL.counters.tts_enqueue_failed -ge 1) ("R7 " + $stage + ": failure counted")
+        Assert ([int]$stL.counters.tts_skipped -eq 0) ("R7 " + $stage + ": symlink never counted as a hit")
+        Assert ([int]$stL.counters.events_processed -eq 0) ("R7 " + $stage + ": not committed")
+        Assert ((Offset $rstate) -eq $offL) ("R7 " + $stage + ": offset unchanged (" + $offL + ")")
+        Assert ((Su ("test -L " + $rtts + "/" + $stage + "/" + $name + " && echo yes || echo no")) -eq 'yes') ("R7 " + $stage + ": the link is left untouched")
+        # 删除符号链接 → ENOENT → 同一事件入队并只提交一次
+        Su ("rm -f " + $rtts + "/" + $stage + "/" + $name) | Out-Null
+        $logL2 = RunWorkerMock $rwork $rstate $rtts '1' '2500' ('r7_' + $stage + '_retry.log') '' ''
+        Assert ($logL2 -match ('tts queued: event=' + $eidL)) ("R7 " + $stage + ": same event queued after the link is gone")
+        Assert ([int](WorkerStatus $rstate).counters.events_processed -eq 1) ("R7 " + $stage + ": committed exactly once")
+        Assert ((Offset $rstate) -gt $offL) ("R7 " + $stage + ": offset advanced after cleanup")
+        $qf = Su ("test -f " + $rtts + "/queue/" + $eidL + ".json && echo yes || echo no")
+        Assert ($qf -eq 'yes') ("R7 " + $stage + ": a real queue file exists now")
+        Rec ("[i] R7 " + $stage + " event=" + $eidL)
+    }
+    # 悬空符号链接（POSIX lstat 的关键用例）：目标不存在也必须失败关闭
+    $seq = $seq + 1
+    $eidD = 'p1r7d-' + (Get-Date -Format 'HHmmss')
+    MakeEvents $rwork $eidD '请用一句话回答：悬空链接' $seq | Out-Null
+    Su ("mkdir -p " + $rtts + "/queue") | Out-Null
+    Su ("ln -s " + $rtts + "/no-such-target.bin " + $rtts + "/queue/" + $eidD + ".json") | Out-Null
+    Assert ((Su ("test -L " + $rtts + "/queue/" + $eidD + ".json && echo yes || echo no")) -eq 'yes') "R7d dangling symlink created at the queue stage"
+    $offD = Offset $rstate
+    $logD = RunWorkerMock $rwork $rstate $rtts '0' '0' 'r7_dangling.log' '' '--max-runtime-ms 1500 --provider-retry-max 2'
+    Assert ($logD -match 'existing queue item is not a regular file') "R7d a dangling symlink is NOT treated as ENOENT"
+    Assert (-not ($logD -match 'tts skip')) "R7d no idempotent skip is logged"
+    $stD = WorkerStatus $rstate
+    Assert ([int]$stD.counters.events_processed -eq 0) "R7d not committed"
+    Assert ((Offset $rstate) -eq $offD) ("R7d offset unchanged (" + $offD + ")")
+    Assert ((Su ("test -L " + $rtts + "/queue/" + $eidD + ".json && echo yes || echo no")) -eq 'yes') "R7d the dangling link is left untouched"
+    Su ("rm -f " + $rtts + "/queue/" + $eidD + ".json") | Out-Null
+    $logD2 = RunWorkerMock $rwork $rstate $rtts '1' '2500' 'r7_dangling_retry.log' '' ''
+    Assert ($logD2 -match ('tts queued: event=' + $eidD)) "R7d dangling event queued after cleanup"
+    Assert ([int](WorkerStatus $rstate).counters.events_processed -eq 1) "R7d committed exactly once"
+
+    # ---- R8：真实模型 + 有效符号链接（queue 阶段）→ 不提交；删除后入队并由原厂 TTS 播报 ----
+    $seq = $seq + 1
+    $eid8 = 'p1r8-' + (Get-Date -Format 'HHmmss')
+    MakeEvents $rwork $eid8 '请用一句话回答：真实链接测试' $seq | Out-Null
+    Su ("printf real-target > " + $rtts + "/_target8.bin") | Out-Null
+    Su ("ln -s " + $rtts + "/_target8.bin " + $rtts + "/queue/" + $eid8 + ".json") | Out-Null
+    $off8 = Offset $rstate
+    $log8 = RunWorker $rwork $rstate $rtts '0' '0' 'r8_link.log' '' '--max-runtime-ms 12000 --provider-retry-max 3'
+    Assert ($log8 -match 'deepseek ok: model=deepseek-flash http=200') "R8 real model answered while the link occupies the path"
+    Assert ($log8 -match 'existing queue item is not a regular file') "R8 real-device symlink is rejected"
+    Assert (-not ($log8 -match 'tts skip')) "R8 no idempotent skip is logged"
+    Assert ([int](WorkerStatus $rstate).counters.events_processed -eq 0) "R8 not committed while the link exists"
+    Assert ((Offset $rstate) -eq $off8) ("R8 offset unchanged (" + $off8 + " -> " + (Offset $rstate) + ")")
+    Su ("rm -f " + $rtts + "/queue/" + $eid8 + ".json") | Out-Null
+    $log8b = RunWorker $rwork $rstate $rtts '1' '2500' 'r8_retry.log' '' ''
+    Assert ($log8b -match ('tts queued: event=' + $eid8)) "R8 same event queued after the link is gone"
+    Assert ([int](WorkerStatus $rstate).counters.events_processed -eq 1) "R8 committed exactly once"
+    Assert ((Offset $rstate) -gt $off8) "R8 offset advanced after the durable enqueue"
+
+    # 播报 R7/R7d/R8 的条目（原厂 TTS）
+    $outAll = RunExec $rtts "--once --timeout-ms 60000"
+    Assert ((N "$rtts/queue") -eq 0) "R8 queue drained by the executor"
+    Assert ((N "$rtts/inflight") -eq 0) "R8 inflight empty"
+    $j8 = JFor (Journal $rtts) $eid8
+    Assert ((@($j8 | Where-Object { $_.outcome -eq 'ok' }).Count) -ge 1) "R8 the real answer was played by factory TTS"
+    Assert ([int](@($j8 | Where-Object { $_.outcome -eq 'ok' })[0]).tts_id -gt 0) "R8 playback used a real factory tts id"
 
     # ---- R4 原厂 ASR / 模型代理 / 原厂 TTS 存活 ----
     $core = Dev1 "pidof com.alibaba.ailabs.genie.smartapp:core"

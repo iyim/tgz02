@@ -1,11 +1,11 @@
 === T5-06B integration subset (host, Mock provider only) ===
 exe    : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_104838
+run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_110924
 filter : i11
 
-PASS i11_provider_retry_recover         0.59s  2 failed attempts then recovery; 3 events processed exactly once
-PASS i11b_provider_stuck_no_skip        2.91s  stuck at [t5b-4242-f000-g1], offset 0, recent_n 0; recovered after restart
-PASS i11c_kill9_keeps_failed_event      0.57s  killed while retrying; event survived and completed after restart
+PASS i11_provider_retry_recover         0.58s  2 failed attempts then recovery; 3 events processed exactly once
+PASS i11b_provider_stuck_no_skip        2.96s  stuck at [t5b-4242-f000-g1], offset 0, recent_n 0; recovered after restart
+PASS i11c_kill9_keeps_failed_event      0.58s  killed while retrying; event survived and completed after restart
 
 cases: 3, failed: 0
 RESULT: PASS

@@ -1,6 +1,6 @@
 === T5-06B integration subset (host, Mock provider only) ===
 exe    : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_104854
+run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_110940
 filter : provider_config
 
 PASS i28_provider_config_errors         0.05s  5 config rejections all exit 2

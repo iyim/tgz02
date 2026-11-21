@@ -1,9 +1,9 @@
 === T5-06B integration subset (host, Mock provider only) ===
 exe    : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_104843
+run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_110929
 filter : i15
 
-PASS i15_half_line_oversize             1.27s  8500B half line waited; skipped only after newline; next record processed
+PASS i15_half_line_oversize             1.37s  8500B half line waited; skipped only after newline; next record processed
 
 cases: 1, failed: 0
 RESULT: PASS

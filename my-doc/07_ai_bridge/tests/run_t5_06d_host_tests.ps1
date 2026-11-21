@@ -44,6 +44,11 @@ $iout2 = & py -3 (Join-Path $here 'worker_integration_test.py') --exe (Join-Path
 $iout2 | Where-Object { $_ -match '^(PASS|FAIL)|^cases:' } | ForEach-Object { Rec ("   " + $_) }
 
 Rec ""
+Rec "3c) P1-4 symlink matrix (i42) -- verbose (SKIP 行表示该子用例无法在主机断言，不算 PASS)"
+$iout3 = & py -3 (Join-Path $here 'worker_integration_test.py') --exe (Join-Path $android 'out\ai_worker.exe') --only i42 --keep 2>&1
+$iout3 | Where-Object { $_ -match '^(PASS|FAIL|SKIP)|^cases:' } | ForEach-Object { Rec ("   " + $_) }
+
+Rec ""
 if ($hrc -eq 0) { Rec "# result: OK (dex built, host unit + integration + tts queue cases pass)" }
 else { Rec "# result: FAIL (host suite)" }
 $lines | Set-Content -Path $Log -Encoding UTF8

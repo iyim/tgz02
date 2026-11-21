@@ -1,9 +1,9 @@
 === T5-06B integration subset (host, Mock provider only) ===
 exe    : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_104846
+run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_110932
 filter : i17
 
-PASS i17_state_persist_failure          3.21s  create: rc=5, processed<=1, durable offset=0/732; write: rc=5, processed<=1, durable offset=0/732; fsync: rc=5, processed<=1, durable offset=0/732; rename: rc=5, processed<=1, durable offset=0/732; dirfsync: rc=5, processed<=1, durable offset=244/732
+PASS i17_state_persist_failure          3.27s  create: rc=5, processed<=1, durable offset=0/732; write: rc=5, processed<=1, durable offset=0/732; fsync: rc=5, processed<=1, durable offset=0/732; rename: rc=5, processed<=1, durable offset=0/732; dirfsync: rc=5, processed<=1, durable offset=244/732
 
 cases: 1, failed: 0
 RESULT: PASS

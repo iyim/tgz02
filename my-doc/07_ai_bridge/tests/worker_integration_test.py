@@ -831,7 +831,8 @@ def i18_recreate_longer_while_running(exe):
 
     proc = start_bg(exe, work, state, ["--idle-exit-ms", "12000", "--verbose"], "i18/worker.log")
     try:
-        wait_until(lambda: counters_of(state).get("events_processed") == 2, 15,
+        # 状态文件是原子 rename 的，极短窗口内可能读不到 → 用 or 0 避免把 None 拿去比较
+        wait_until(lambda: (counters_of(state).get("events_processed") or 0) == 2, 15,
                    what="old file consumed")
         off_before = durable_offset(state)
         assert_ge(off_before, 1, "old offset is durable")
@@ -844,7 +845,7 @@ def i18_recreate_longer_while_running(exe):
         new_size = os.path.getsize(ev)
         assert_ge(new_size, off_before + 1, "new file must be longer than the old offset")
 
-        wait_until(lambda: counters_of(state).get("events_processed") >= 5, 20,
+        wait_until(lambda: (counters_of(state).get("events_processed") or 0) >= 5, 20,
                    what="new file consumed from its first record")
         c = counters_of(state)
         assert_eq(c.get("events_processed"), 5, "2 old + 3 new, nothing skipped")
@@ -1825,6 +1826,94 @@ def i41_tts_stat_error_classification(exe):
     notes.append("dir-at-done")
     return ("ENOENT still means absent (after mkdir_p); non-regular items in queue/done are "
             "fatal for that event (%s)" % ",".join(notes))
+
+
+@case
+def i42_tts_symlink_item_rejected(exe):
+    """P1-4：条目是符号链接时必须失败关闭（Windows: reparse point；POSIX: lstat 见非普通文件）"""
+    notes = []
+    skipped = []
+
+    for stage in ("queue", "inflight", "done", "failed"):
+        work = path_of("i42/%s/work" % stage)
+        state = path_of("i42/%s/state" % stage)
+        tts = path_of("i42/%s/tts" % stage)
+        os.makedirs(work, exist_ok=True)
+        os.makedirs(state, exist_ok=True)
+        eid = "t5b-4242-link-%s" % stage
+        write_events("i42/%s/work/events.jsonl" % stage, [rec(1, 4242, eid, "l")])
+        stage_dir = os.path.join(tts, stage)
+        os.makedirs(stage_dir, exist_ok=True)
+
+        target = os.path.join(tts, "_target.bin")
+        with open(target, "wb") as f:
+            f.write(b"real-file-target\n")
+        name = eid + (".ok" if stage == "done" else ".json")
+        link = os.path.join(stage_dir, name)
+        try:
+            os.symlink(target, link)
+        except (OSError, NotImplementedError) as e:
+            skipped.append("%s:%s" % (stage, getattr(e, "errno", e)))
+            print("SKIP i42 symlink at %s stage: cannot create symlink (%s)" % (stage, e))
+            continue
+        assert_eq(os.path.islink(link), True, "%s: symlink created" % stage)
+
+        rc, out, _ = run_once(exe, work, state,
+                              ["--max-runtime-ms", "900", "--provider-retry-max", "2",
+                               "--tts-queue-dir", tts, "--mock-reply", "answer-link"],
+                              timeout=60)
+        assert_eq(rc, 0, "%s: symlink item keeps the worker alive" % stage)
+        assert_eq(("is a reparse point" in out) or ("is not a regular file" in out), True,
+                  "%s: symlink item is rejected explicitly" % stage)
+        ctr = counters_of(state)
+        assert_ge(ctr.get("tts_enqueue_failed", 0), 1, "%s: symlink counted as a failure" % stage)
+        assert_eq(ctr.get("tts_skipped"), 0, "%s: symlink is never an idempotent hit" % stage)
+        assert_eq(ctr.get("events_processed"), 0, "%s: symlink must not commit" % stage)
+        assert_eq(durable_offset(state), 0, "%s: symlink must not move the offset" % stage)
+        assert_eq(os.path.islink(link), True, "%s: the symlink is left untouched" % stage)
+        qdir = os.path.join(tts, "queue")
+        qn = len(os.listdir(qdir)) if os.path.isdir(qdir) else 0
+        assert_eq(qn, 1 if stage == "queue" else 0,
+                  "%s: no new queue copy is created while the link exists" % stage)
+
+        os.remove(link)
+        rc2, _, _ = run_once(exe, work, state,
+                             ["--idle-exit-ms", "600", "--tts-queue-dir", tts,
+                              "--mock-reply", "answer-link"])
+        assert_eq(rc2, 0, "%s: run after removing the symlink exits cleanly" % stage)
+        assert_eq(counters_of(state).get("tts_queued"), 1,
+                  "%s: the same event is queued once the link is gone" % stage)
+        assert_eq(counters_of(state).get("events_processed"), 1,
+                  "%s: committed exactly once after cleanup" % stage)
+        assert_eq(durable_offset(state) > 0, True, "%s: offset advanced after cleanup" % stage)
+        notes.append(stage)
+
+    # 悬空符号链接：Windows 的 GetFileAttributesA 会跟随链接，无法与"不存在"区分，
+    # 这一条只能在 POSIX/Android 上用 lstat 验证（设备用例 R7），这里明确记为 SKIP。
+    work = path_of("i42/dangling/work")
+    state = path_of("i42/dangling/state")
+    tts = path_of("i42/dangling/tts")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    eid = "t5b-4242-link-dangling"
+    write_events("i42/dangling/work/events.jsonl", [rec(1, 4242, eid, "d")])
+    os.makedirs(os.path.join(tts, "queue"), exist_ok=True)
+    link = os.path.join(tts, "queue", eid + ".json")
+    try:
+        os.symlink(os.path.join(tts, "does-not-exist.bin"), link)
+        print("SKIP i42 dangling symlink: Windows GetFileAttributesA follows the link, "
+              "so this case cannot be asserted on the host (covered by device case R7)")
+        skipped.append("dangling")
+        if os.path.islink(link):
+            os.remove(link)
+    except (OSError, NotImplementedError) as e:
+        print("SKIP i42 dangling symlink: cannot create symlink (%s)" % e)
+        skipped.append("dangling:%s" % getattr(e, "errno", e))
+
+    if skipped:
+        return ("symlink matrix on %s stages rejected + committed once after cleanup; "
+                "SKIPPED (not PASS): %s" % (",".join(notes), ",".join(skipped)))
+    return "all four stages reject symlink items and commit once after cleanup"
 
 
 def main():

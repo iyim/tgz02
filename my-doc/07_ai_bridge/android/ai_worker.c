@@ -29,6 +29,7 @@
 #ifdef _WIN32
 #  include <fcntl.h>
 #  include <io.h>
+#  include <windows.h>
 #endif
 
 typedef struct {
@@ -439,20 +440,33 @@ static int t6b_fault_ttsq(void)
 }
 
 /*
- * 检查一个幂等记录是否存在且其目录项已重新同步。
+ * 检查幂等记录是否存在、是否为普通文件，以及所在目录是否已同步。
  *
  * 返回：
- *   1  文件存在，所在目录 fsync 成功；
- *   0  stat 明确报告文件不存在；
- *  -1  文件状态异常、无法检查或目录 fsync 失败。
+ *   1  普通文件存在，目录 fsync 成功；
+ *   0  明确不存在（ENOENT / ENOTDIR）；
+ *  -1  检查异常、非普通文件、符号链接或目录 fsync 失败。
  *
- * 只有 ENOENT / ENOTDIR 可以作为不存在处理。
- * 权限错误、I/O 错误等一律失败关闭。
+ * 注意：必须检查目录项本身，不能跟随符号链接。
  */
 static int tts_existing_item_durable(const char *path, const char *dir,
                                      const char *stage, char *err, size_t errlen)
 {
     struct stat st;
+
+#ifdef _WIN32
+    {
+        DWORD attrs = GetFileAttributesA(path);
+
+        if (attrs != INVALID_FILE_ATTRIBUTES) {
+            if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
+                if (err && errlen)
+                    snprintf(err, errlen,
+                             "existing %s item is a reparse point", stage);
+                return -1;
+            }
+        }
+    }
 
     if (stat(path, &st) != 0) {
         int saved_errno = errno;
@@ -460,13 +474,26 @@ static int tts_existing_item_durable(const char *path, const char *dir,
         if (saved_errno == ENOENT || saved_errno == ENOTDIR)
             return 0;
 
-        if (err && errlen) {
+        if (err && errlen)
             snprintf(err, errlen,
                      "cannot inspect existing %s item (errno=%d)",
                      stage, saved_errno);
-        }
         return -1;
     }
+#else
+    if (lstat(path, &st) != 0) {
+        int saved_errno = errno;
+
+        if (saved_errno == ENOENT || saved_errno == ENOTDIR)
+            return 0;
+
+        if (err && errlen)
+            snprintf(err, errlen,
+                     "cannot inspect existing %s item (errno=%d)",
+                     stage, saved_errno);
+        return -1;
+    }
+#endif
 
     if (!S_ISREG(st.st_mode)) {
         if (err && errlen)
@@ -475,7 +502,6 @@ static int tts_existing_item_durable(const char *path, const char *dir,
         return -1;
     }
 
-    /* 故障注入覆盖幂等命中路径。 */
     if (t6b_fault_ttsq() == T6B_TTSQ_DIRFSYNC) {
         if (err && errlen)
             snprintf(err, errlen,
