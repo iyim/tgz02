@@ -1,0 +1,41 @@
+# T6-01 device availability evidence :: 2026-11-21 13:08:54
+
+## adb devices -l
+List of devices attached
+192.168.1.9:5555       device product:full_ailabs_s1l model:AILABS_S1L device:ailabs_s1l transport_id:1
+
+
+## ping
+192.168.1.9 rt=3ms status=0
+192.168.1.9 rt=2ms status=0
+
+## TCP 5555
+open=True
+
+## adb connect + shell
+already connected to 192.168.1.9:5555
+error: closed
+
+## adb pull (sync service)
+11-21 13:08:58.850 15868 34928 F adb.exe : file_sync_client.cpp:477 protocol fault: failed to read stat response: No error
+
+## adb forward (in-process service) / adb pull / adb shell
+19995
+
+## watch log (device_watch.log)
+13:05:52 port-open-shell-fail error: closed
+13:06:37 port-open-shell-fail error: closed
+13:07:43 port-closed 
+13:08:29 port-open-shell-fail error: closed
+## direct adbd client (bypassing the host adb server) :: 13:12:38
+> py -3 _analysis/t6/adb_client.py 192.168.1.9 5555 'echo hi; id'
+handshake=True
+shell_started=False bytes=0
+  [log] CNXN banner='device::ro.product.name=full_ailabs_s1l;ro.product.model=AILABS_S1L;ro.product.device=ailabs_s1l;features=stat_v2,cmd,shell_v2'
+  [log] CLSE received
+
+## same client, alternative services
+exec: / shell,raw: / shell,v2,raw: / abb: -> CLSE immediately; sync: -> OKAY then CLSE on the first request
+
+## after an extra 'adb reboot' (request accepted, port came back)
+handshake=True, but OPEN(shell:...) -> CLSE on all 6 attempts at 10 s intervals

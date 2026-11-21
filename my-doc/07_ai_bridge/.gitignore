@@ -3,3 +3,4 @@ android/out/
 tests/out/
 tests/_run/
 tests/__pycache__/
+out/
