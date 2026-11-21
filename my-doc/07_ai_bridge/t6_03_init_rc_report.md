@@ -151,3 +151,14 @@ adb.exe : file_sync_client.cpp:477 protocol fault: failed to read stat response
    测试脚本的读取全部包进重试，并在重启后等待 `shell` 真正可用）。
 5. **是否把 rc 留在设备上**由操作者决定：现在（§0）恢复成原厂状态更安全，
    需要启用时执行 `deploy_rc.sh` 后重启。
+## 7. 测试脚本的防链路过硬保护（第二个提交）
+
+因为本机 adbd 会偶发 error: closed，	ests/t6_03_init_rc_device.ps1 现在：
+
+- 每个阶段开头先 WaitShell 90，拿不到可用 shell 就写 ABORT: adb shell is not usable 并 exit 2，
+  不再把链路错误记成一串断言失败；
+- 所有设备读取（Dev1）都识别 adb 层错误并重试，必要时 db reconnect / db connect；
+- 重启后会等到"一条 shell 命令真的能跑通"才继续，而不只看 sys.boot_completed；
+- 故障演练改成**不重启**的版本：临时改名二进制 → ctl.start → 断言系统不受影响 → 立刻改名回来。
+
+提交记录：77ad2e68（rc + 脚本 + 报告 + 证据）、 21fc60d（测试脚本加固）。
