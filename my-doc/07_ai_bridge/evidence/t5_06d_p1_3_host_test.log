@@ -1,0 +1,124 @@
+﻿=== T5-06D host verification 2026-11-21 10:47:33 ===
+1) build tts_exec.dex
+   d8        : D:\Android\Sdk\build-tools\37.0.0\lib\d8.jar
+   android.jar: D:\Android\Sdk\platforms\android-37.1\android.jar
+   == T5-06D tts_exec build 2026-11-21 10:47:33 ==
+   javac: Note: D:\tgz02\OS\system\my-doc\07_ai_bridge\android\tts_exec\TtsExec.java uses or overrides a deprecated API.
+   javac: Note: Recompile with -Xlint:deprecation for details.
+   javac: 5 class file(s)
+   dex: tts_exec.dex bytes=33608 sha256=622067a5015c4f7b9b03678dd2785486732e42cc9fd87211451ba2654d14e7fb
+   dex: min-api=26 target=android-8.1(arm32) entry=com.tgz02.tts.TtsExec
+   # result: OK
+   Set-Content : Could not open the alternate data stream '\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t5_06d_tts_build.
+   log' of the file 'D:\tgz02\OS\system\my-doc\07_ai_bridge\android\D'.
+   At D:\tgz02\OS\system\my-doc\07_ai_bridge\android\build_tts_exec.ps1:73 char:10
+   + $lines | Set-Content -Path $log -Encoding UTF8
+   +          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       + CategoryInfo          : ObjectNotFound: (D:\tgz02\OS\sys...ridge\android\D:String) [Set-Content], FileNotFoundEx 
+      ception
+       + FullyQualifiedErrorId : GetContentWriterFileNotFoundError,Microsoft.PowerShell.Commands.SetContentCommand
+    
+   log: D:\tgz02\OS\system\my-doc\07_ai_bridge\android\D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t5_06d_tts_build.log
+
+2) worker unit tests (host)
+   checks passed: 621, failed: 0
+   RESULT: PASS
+   PASS i1_basic_consume_and_readonly   0.72s  10 events, file untouched, rerun is a no-op
+   PASS i2_half_line                   1.06s  half line waited ~1s then consumed after completion
+   PASS i3_invalid_json                0.37s  1 invalid line skipped, 2 valid processed
+   PASS i4_duplicate_event_id          0.39s  duplicate event_id skipped, counted
+   PASS i5_seq_gap                     0.37s  gap [3,4] recorded, no fabricated events
+   PASS i6_crash_and_resume            1.89s  killed after 20 processed (offset=5002), resumed to cumulative total=20, dup=0
+   PASS i7_resume_after_clean_exit     0.62s  append after restart consumed incrementally (2 new)
+   PASS i8_truncation                  0.63s  truncation detected, rescan from 0, 1 record processed
+   PASS i9_recreated                   0.57s  same-size recreated file detected via file identity
+   PASS i10_corrupt_state              0.76s  corrupt state archived as consumer_state.json.corrupt-2026_11_21T10_47_54, rescanned from 0 (4 records reprocessed)
+   PASS i11_provider_retry_recover     0.62s  2 failed attempts then recovery; 3 events processed exactly once
+   PASS i11b_provider_stuck_no_skip    3.10s  stuck at [t5b-4242-f000-g1], offset 0, recent_n 0; recovered after restart
+   PASS i11c_kill9_keeps_failed_event   0.56s  killed while retrying; event survived and completed after restart
+   PASS i12_oversize                   0.38s  1 oversize line skipped (limit 1024), neighbours processed
+   PASS i13_double_start               0.30s  second instance exits 3, lock held by first
+   PASS i14_memory_stable              0.49s  RSS [3972, 3972, 3972] KB, growth 0 KB over 3000 events
+   PASS i15_half_line_oversize         1.27s  8500B half line waited; skipped only after newline; next record processed
+   PASS i16_file_deleted_while_running   0.94s  absent -> shorter -> longer recreation all detected via file identity
+   PASS i17_state_persist_failure      3.12s  create: rc=5, processed<=1, durable offset=0/732; write: rc=5, processed<=1, durable offset=0/732; fsync: rc=5, processed<=1, durable offset=0/732; rename: rc=5, processed<=1, durable offset=0/732; dirfsync: rc=5, processed<=1, durable offset=244/732
+   PASS i18_recreate_longer_while_running   0.42s  offset 494 -> new file 822 B, 3 records read from record 1
+   PASS i19_absent_then_recreated_longer   0.87s  absent window seen; recreated file consumed from record 1
+   PASS i20_restart_detects_recreate   0.87s  saved offset 494 ignored, new file 1124 B consumed from 0
+   PASS i21_identical_prefix_keeps_offset   0.86s  prefix identical up to 744, appended 2 records processed, 0 resets
+   PASS i22_legacy_state_migration     0.53s  v1 -> v2, rescan from 0, 1 duplicate suppressed, 2 processed
+   PASS i23_prefix_fault_stops         0.44s  read: rc=6, offset kept at 744; fold: rc=6, offset stayed 0
+   PASS i24_append_does_not_reset      0.88s  4 appends, 0 resets/replacements/truncations, prefix hash matches
+   PASS i25_prefix_fold_partial_atomic   0.92s  rc=6 with offset/hash pair kept at 250, restart completes, 1 record retried
+   PASS i26_deepseek_missing_key       0.02s  rc=4, no request, offset untouched, status shows deepseek
+   PASS i27_deepseek_libcurl_unavailable   0.04s  rc=4, transport error explicit, key absent from stdout/state/work
+   PASS i28_provider_config_errors     0.05s  5 config rejections all exit 2
+   PASS i29_mock_is_still_the_default   0.90s  mock default/explicit ok, 2 events, no HTTP
+   PASS i30_reply_log_optional         1.90s  2 answers logged, 0 lines for failures, state stays clean
+   PASS i31_tts_queue_item_written     1.36s  1 item per answer, 0600, device-local text, status/logs clean
+   PASS i32_tts_queue_idempotent_by_event_id   1.32s  queue/inflight/done all suppress re-enqueue; offset still advances
+   PASS i33_tts_queue_config_and_failure   1.91s  bad dir rejected; enqueue failure keeps event + offset, recovery queues it exactly once
+   PASS i34_tts_queue_off_by_default   0.67s  disabled by default: no dirs, no counters, T5-06C behaviour preserved
+   PASS i35_tts_enqueue_file_fsync_fault   1.93s  fsync fault: no item, no tmp, offset 0; after the fault clears: 1 item, 1 commit
+   PASS i36_tts_enqueue_dirfsync_fault_idempotent   3.44s  new-item dirfsync fault: item visible but not committed; idempotent retry with the fault still fails; after recovery the hit re-fsyncs and commits once (sha256 stable)
+   PASS i39_tts_idempotent_stage_dirsync   4.85s  inflight/done/failed hits re-fsync their own dir and only then commit (inflight,done,failed)
+   PASS i39b_tts_multi_stage_conflict_rejected   0.94s  queue+done for one event id is refused (no skip, no commit, nothing deleted)
+   PASS i37_tts_enqueue_create_write_rename_faults   2.86s  create/write/rename faults: no item, no commit, no offset move (create,write,rename)
+   PASS i38_tts_fault_env_ignored_when_queue_off   0.66s  T5-06C unchanged: queue off + fault env -> normal commit, no counters, no dirs
+   PASS i41_tts_stat_error_classification   3.92s  ENOENT still means absent (after mkdir_p); non-regular items in queue/done are fatal for that event (parent-missing,dir-at-item,dir-at-done)
+   cases: 43, failed: 0
+   RESULT: PASS
+   PASS i11_provider_retry_recover     0.59s  2 failed attempts then recovery; 3 events processed exactly once
+   PASS i11b_provider_stuck_no_skip    2.91s  stuck at [t5b-4242-f000-g1], offset 0, recent_n 0; recovered after restart
+   PASS i11c_kill9_keeps_failed_event   0.57s  killed while retrying; event survived and completed after restart
+   RESULT: PASS
+   PASS i15_half_line_oversize         1.27s  8500B half line waited; skipped only after newline; next record processed
+   RESULT: PASS
+   PASS i16_file_deleted_while_running   0.88s  absent -> shorter -> longer recreation all detected via file identity
+   RESULT: PASS
+   PASS i17_state_persist_failure      3.21s  create: rc=5, processed<=1, durable offset=0/732; write: rc=5, processed<=1, durable offset=0/732; fsync: rc=5, processed<=1, durable offset=0/732; rename: rc=5, processed<=1, durable offset=0/732; dirfsync: rc=5, processed<=1, durable offset=244/732
+   RESULT: PASS
+   PASS i18_recreate_longer_while_running   0.42s  offset 494 -> new file 822 B, 3 records read from record 1
+   RESULT: PASS
+   PASS i21_identical_prefix_keeps_offset   0.83s  prefix identical up to 744, appended 2 records processed, 0 resets
+   RESULT: PASS
+   PASS i22_legacy_state_migration     0.48s  v1 -> v2, rescan from 0, 1 duplicate suppressed, 2 processed
+   RESULT: PASS
+   PASS i23_prefix_fault_stops         0.45s  read: rc=6, offset kept at 744; fold: rc=6, offset stayed 0
+   RESULT: PASS
+   PASS i24_append_does_not_reset      0.88s  4 appends, 0 resets/replacements/truncations, prefix hash matches
+   RESULT: PASS
+   PASS i25_prefix_fold_partial_atomic   0.93s  rc=6 with offset/hash pair kept at 250, restart completes, 1 record retried
+   RESULT: PASS
+   PASS i26_deepseek_missing_key       0.03s  rc=4, no request, offset untouched, status shows deepseek
+   PASS i27_deepseek_libcurl_unavailable   0.03s  rc=4, transport error explicit, key absent from stdout/state/work
+   RESULT: PASS
+   PASS i28_provider_config_errors     0.05s  5 config rejections all exit 2
+   RESULT: PASS
+   PASS i29_mock_is_still_the_default   0.95s  mock default/explicit ok, 2 events, no HTTP
+   RESULT: PASS
+   rounds: 100, failed: 0, 33.1s
+   RESULT: PASS
+   RESULT: PASS (host unit + integration + subsets + 100-round lock stress, Mock only)
+   host suite exit: 0
+
+3) TTS queue integration subset (i31..i39b) -- verbose
+   PASS i3_invalid_json                0.40s  1 invalid line skipped, 2 valid processed
+   PASS i30_reply_log_optional         1.95s  2 answers logged, 0 lines for failures, state stays clean
+   PASS i31_tts_queue_item_written     1.44s  1 item per answer, 0600, device-local text, status/logs clean
+   PASS i32_tts_queue_idempotent_by_event_id   1.35s  queue/inflight/done all suppress re-enqueue; offset still advances
+   PASS i33_tts_queue_config_and_failure   1.93s  bad dir rejected; enqueue failure keeps event + offset, recovery queues it exactly once
+   PASS i34_tts_queue_off_by_default   0.67s  disabled by default: no dirs, no counters, T5-06C behaviour preserved
+   PASS i35_tts_enqueue_file_fsync_fault   1.93s  fsync fault: no item, no tmp, offset 0; after the fault clears: 1 item, 1 commit
+   PASS i36_tts_enqueue_dirfsync_fault_idempotent   3.48s  new-item dirfsync fault: item visible but not committed; idempotent retry with the fault still fails; after recovery the hit re-fsyncs and commits once (sha256 stable)
+   PASS i39_tts_idempotent_stage_dirsync   4.88s  inflight/done/failed hits re-fsync their own dir and only then commit (inflight,done,failed)
+   PASS i39b_tts_multi_stage_conflict_rejected   0.95s  queue+done for one event id is refused (no skip, no commit, nothing deleted)
+   PASS i37_tts_enqueue_create_write_rename_faults   2.91s  create/write/rename faults: no item, no commit, no offset move (create,write,rename)
+   PASS i38_tts_fault_env_ignored_when_queue_off   0.68s  T5-06C unchanged: queue off + fault env -> normal commit, no counters, no dirs
+   cases: 12, failed: 0
+
+3b) P1-3 stat/error-classification case (i41) -- verbose
+   PASS i41_tts_stat_error_classification   3.98s  ENOENT still means absent (after mkdir_p); non-regular items in queue/done are fatal for that event (parent-missing,dir-at-item,dir-at-done)
+   cases: 1, failed: 0
+
+# result: OK (dex built, host unit + integration + tts queue cases pass)

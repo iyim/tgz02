@@ -1,0 +1,511 @@
+﻿
+=== T5-06D-P1 fault injection 2026-11-21 10:50:03 ===
+PASS device is TG-Z02 (sdk 27)
+PASS factory core is running (pid=28858)
+PASS tts_exec.dex present
+PASS ai_worker binary present
+PASS api key file is 0600 (content not read): -rw------- 1 shell shell 37 2026-11-20 21:48 /data/local/tmp/t5_bridge/secret/deepseek_api_key
+[push] /data/local/tmp/t5p1/seed_item.sh :: D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t5_06d_p1\seed_item.sh: 1 file pushed, 0 skipped. 3.1 MB/s (808 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/run_exec.sh :: D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t5_06d_p1\run_exec.sh: 1 file pushed, 0 skipped. 1.5 MB/s (373 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/run_worker_p1.sh :: D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t5_06d_p1\run_worker_p1.sh: 1 file pushed, 0 skipped. 3.0 MB/s (843 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/dump_state.sh :: D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t5_06d_p1\dump_state.sh: 1 file pushed, 0 skipped. 1.5 MB/s (633 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/pids.sh :: D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t5_06d_p1\pids.sh: 1 file pushed, 0 skipped. 0.8 MB/s (288 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/kill_pid.sh :: D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t5_06d_p1\kill_pid.sh: 1 file pushed, 0 skipped. 2.0 MB/s (576 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/kill_during_play.sh :: D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t5_06d_p1\kill_during_play.sh: 1 file pushed, 0 skipped. 4.6 MB/s (1247 bytes in 0.000s)
+PASS device helpers installed
+[push] /data/local/tmp/t5p1/e2.txt :: D:\tgz02\OS\_analysis\t5p1\e2.txt: 1 file pushed, 0 skipped. 0.1 MB/s (28 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/e3.txt :: D:\tgz02\OS\_analysis\t5p1\e3.txt: 1 file pushed, 0 skipped. 0.1 MB/s (33 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/e4.txt :: D:\tgz02\OS\_analysis\t5p1\e4.txt: 1 file pushed, 0 skipped. 0.1 MB/s (27 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/e5.txt :: D:\tgz02\OS\_analysis\t5p1\e5.txt: 1 file pushed, 0 skipped. 0.1 MB/s (28 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/e6.txt :: D:\tgz02\OS\_analysis\t5p1\e6.txt: 1 file pushed, 0 skipped. 0.1 MB/s (25 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/e7.txt :: D:\tgz02\OS\_analysis\t5p1\e7.txt: 1 file pushed, 0 skipped. 0.1 MB/s (28 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/e8.txt :: D:\tgz02\OS\_analysis\t5p1\e8.txt: 1 file pushed, 0 skipped. 0.1 MB/s (30 bytes in 0.000s)
+[push] /data/local/tmp/t5p1/e9.txt :: D:\tgz02\OS\_analysis\t5p1\e9.txt: 1 file pushed, 0 skipped. 0.1 MB/s (24 bytes in 0.000s)
+
+--- exec phase: executor persistence fault injection ---
+[exec] --selfcheck
+    tts_exec: selfcheck root=/data/local/tmp/t5p1/tts write=true dirfsync=true file=true
+PASS E1 dir fsync + atomic write work on this device
+PASS E1 selfcheck leaves no queue item behind
+[seed] seeded /data/local/tmp/t5p1/tts/inflight/ev-e2.json bytes=122 attempts=0
+[exec] --recover-only --fault recover_write
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: persist recover FAILED event=ev-e2 bytes=28 err=injected fault: recover_write (source kept)
+    tts_exec: recover FAILED event=ev-e2 attempts=1 target=queue/; inflight file kept
+    tts_exec: recover_only done recover_failed=1 bad_item_stuck=0
+PASS E2 inflight source kept (queue write failed)
+PASS E2 no queue item created
+PASS E2 nothing marked done
+PASS E2 state.recover_failed = 1
+PASS E2 journal records recover_failure with event_id
+PASS E2 failure stage = queue
+PASS E2 executor says the inflight file is kept
+[exec] --once --fault fake_ok
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=26098 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=3 faults=fake_ok
+    tts_exec: recovered inflight item ev-e2 attempts=1 -> queue
+    tts_exec: exit played=1 ok=1 timeout=0 error=0 stopped=0 bad_item=0 done_failed=0 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS E2 after the fault clears: inflight empty
+PASS E2 after the fault clears: done marker written
+PASS E2 recovery moves the item back to the queue
+[seed] seeded /data/local/tmp/t5p1/tts/inflight/ev-e3.json bytes=127 attempts=0
+[exec] --recover-only --fault recover_dirfsync
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: persist recover FAILED event=ev-e3 bytes=33 err=injected fault: recover_dirfsync (source kept)
+    tts_exec: recover FAILED event=ev-e3 attempts=1 target=queue/; inflight file kept
+    tts_exec: recover_only done recover_failed=1 bad_item_stuck=0
+PASS E3 queue item exists (rename already happened)
+PASS E3 inflight source still kept (dir fsync failed)
+PASS E3 state.recover_failed = 1
+PASS E3 failure stage = queue
+PASS E3 queue item carries the same event_id
+PASS E3 queue item text is byte-identical
+[exec] --once --fault fake_ok
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=27454 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=3 faults=fake_ok
+    tts_exec: recovered inflight item ev-e3 attempts=1 -> queue
+    tts_exec: exit played=1 ok=1 timeout=0 error=0 stopped=0 bad_item=0 done_failed=0 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS E3 after the fault clears: queue drained
+PASS E3 after the fault clears: inflight cleaned up
+PASS E3 after the fault clears: single done marker
+PASS E3 recovery re-runs over the same item id
+[seed] seeded /data/local/tmp/t5p1/tts/queue/ev-e4.json bytes=121 attempts=0
+[exec] --once --fault provider_fail,retry_write --max-attempts 3
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=28320 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=3 faults=provider_fail,retry_write
+    tts_exec: persist retry FAILED event=ev-e4 bytes=27 err=injected fault: retry_write (source kept)
+    tts_exec: event ev-e4 outcome=provider_error attempts=1: queue/ write NOT durable; payload kept in inflight/
+    tts_exec: exit played=1 ok=0 timeout=0 error=1 stopped=0 bad_item=0 done_failed=0 persist_failed=1 recover_failed=0 bad_item_stuck=0
+PASS E4 no queue item (write failed)
+PASS E4 claimed payload kept in inflight
+PASS E4 nothing parked in failed
+PASS E4 state.persist_failed = 1
+PASS E4 journal records persist_failure
+PASS E4 persist_failure stage = queue
+PASS E4 persist_failure carries the outcome
+[exec] --once --fault fake_ok
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=28767 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=3 faults=fake_ok
+    tts_exec: recovered inflight item ev-e4 attempts=1 -> queue
+    tts_exec: exit played=1 ok=1 timeout=0 error=0 stopped=0 bad_item=0 done_failed=0 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS E4 after the fault clears: inflight empty
+PASS E4 after the fault clears: played and marked done
+PASS E4 recovery re-runs over the same item id
+PASS E4 exactly one successful playback after recovery
+PASS E4 attempts advanced to 2 after recovery
+PASS E4 recovered payload keeps its byte length
+[seed] seeded /data/local/tmp/t5p1/tts/queue/ev-e5.json bytes=122 attempts=0
+[exec] --once --fault provider_fail,failed_write --max-attempts 1
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=29600 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=1 faults=failed_write,provider_fail
+    tts_exec: persist failed FAILED event=ev-e5 bytes=28 err=injected fault: failed_write (source kept)
+    tts_exec: event ev-e5 outcome=provider_error attempts=1: failed/ write NOT durable; payload kept in inflight/
+    tts_exec: exit played=1 ok=0 timeout=0 error=1 stopped=0 bad_item=0 done_failed=0 persist_failed=1 recover_failed=0 bad_item_stuck=0
+PASS E5 failed/ write did not happen
+PASS E5 payload kept in inflight
+PASS E5 state.persist_failed = 1
+PASS E5 persist_failure stage = failed
+[exec] --once --fault provider_fail --max-attempts 1
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=30840 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=1 faults=provider_fail
+    tts_exec: inflight item ev-e5 reached max attempts (1); parked in failed/
+    tts_exec: exit played=0 ok=0 timeout=0 error=0 stopped=0 bad_item=0 done_failed=0 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS E5 after the fault clears: parked in failed/
+PASS E5 after the fault clears: inflight empty
+PASS E5 parked answer text is byte-identical
+PASS E5 give_up recorded once
+[seed] seeded /data/local/tmp/t5p1/tts/queue/ev-e6.json bytes=119 attempts=0
+[exec] --once --fault fake_ok,done_write
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=32311 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=3 faults=done_write,fake_ok
+    tts_exec: done marker NOT persisted event=ev-e6 bytes=25 err=injected fault: done_write (inflight kept, replay after restart)
+    tts_exec: event ev-e6 played (ok) but done marker is NOT durable; payload kept in inflight/ and will be replayed after restart
+    tts_exec: exit played=1 ok=1 timeout=0 error=0 stopped=0 bad_item=0 done_failed=1 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS E6 state.done_marker_failed = 1
+PASS E6 payload kept in inflight
+PASS E6 no done marker written
+PASS E6 journal records done_marker_failure
+PASS E6 inflight payload text unchanged
+[exec] --once --fault fake_ok
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=32619 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=3 faults=fake_ok
+    tts_exec: recovered inflight item ev-e6 attempts=1 -> queue
+    tts_exec: exit played=1 ok=1 timeout=0 error=0 stopped=0 bad_item=0 done_failed=0 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS E6 after the fault clears: inflight empty
+PASS E6 after the fault clears: exactly one done marker
+PASS E6 replay happened (at-least-once boundary: 3 ok outcomes)
+PASS E6 recovery replays the same event id
+[seed] seeded /data/local/tmp/t5p1/tts/queue/ev-e7.json bytes=122 attempts=0
+[exec] --once --fault fake_ok,done_rename
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=377 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=3 faults=done_rename,fake_ok
+    tts_exec: done marker NOT persisted event=ev-e7 bytes=28 err=injected fault: done_rename (inflight kept, replay after restart)
+    tts_exec: event ev-e7 played (ok) but done marker is NOT durable; payload kept in inflight/ and will be replayed after restart
+    tts_exec: exit played=1 ok=1 timeout=0 error=0 stopped=0 bad_item=0 done_failed=1 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS E7 state.done_marker_failed = 1
+PASS E7 payload kept in inflight
+PASS E7 no done marker written
+PASS E7 journal records done_marker_failure
+PASS E7 inflight payload text unchanged
+[exec] --once --fault fake_ok
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=716 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=3 faults=fake_ok
+    tts_exec: recovered inflight item ev-e7 attempts=1 -> queue
+    tts_exec: exit played=1 ok=1 timeout=0 error=0 stopped=0 bad_item=0 done_failed=0 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS E7 after the fault clears: inflight empty
+PASS E7 after the fault clears: exactly one done marker
+PASS E7 replay happened (at-least-once boundary: 3 ok outcomes)
+PASS E7 recovery replays the same event id
+[seed] seeded /data/local/tmp/t5p1/tts/queue/ev-e8.json bytes=124 attempts=0
+[exec] --once --fault fake_ok,done_dirfsync
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=1666 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=3 faults=done_dirfsync,fake_ok
+    tts_exec: done marker NOT persisted event=ev-e8 bytes=30 err=injected fault: done_dirfsync (inflight kept, replay after restart)
+    tts_exec: event ev-e8 played (ok) but done marker is NOT durable; payload kept in inflight/ and will be replayed after restart
+    tts_exec: exit played=1 ok=1 timeout=0 error=0 stopped=0 bad_item=0 done_failed=1 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS E8 state.done_marker_failed = 1
+PASS E8 payload kept in inflight
+PASS E8 done marker reached done/ but was not durable
+PASS E8 journal records done_marker_failure
+PASS E8 inflight payload text unchanged
+[exec] --once --fault fake_ok
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=1990 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=3 faults=fake_ok
+    tts_exec: recovered inflight item ev-e8 attempts=1 -> queue
+    tts_exec: exit played=1 ok=1 timeout=0 error=0 stopped=0 bad_item=0 done_failed=0 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS E8 after the fault clears: inflight empty
+PASS E8 after the fault clears: exactly one done marker
+PASS E8 replay happened (at-least-once boundary: 3 ok outcomes)
+PASS E8 recovery replays the same event id
+[seed] seeded /data/local/tmp/t5p1/tts/queue/ev-e9.json bytes=118 attempts=0
+[exec] --once --fault fake_ok
+    tts_exec: pid file written: /data/local/tmp/t5p1/tts/tts_exec.pid exists=true
+    tts_exec: ready pid=2380 root=/data/local/tmp/t5p1/tts timeout_ms=60000 once=true max_attempts=3 faults=fake_ok
+    tts_exec: exit played=1 ok=1 timeout=0 error=0 stopped=0 bad_item=0 done_failed=0 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS E9 queue drained
+PASS E9 inflight empty
+PASS E9 done marker written
+PASS E9 played exactly once
+PASS E9 no done failure
+PASS E9 no persist failure
+PASS E9 summary line reports one successful playback
+
+--- real phase: real model via LAN proxy + factory TTS on the speaker ---
+[push] /data/local/tmp/t5p1/_seed_p1r1a-105333.jsonl :: D:\tgz02\OS\_analysis\t5p1\run_p1r1a-105333.jsonl: 1 file pushed, 0 skipped. 0.9 MB/s (291 bytes in 0.000s)
+[events] appended p1r1a-105333 -> lines=1
+PASS event p1r1a-105333 appended (events.jsonl now 1 lines)
+PASS R1a queue path blocked by a regular file (real mkdir failure)
+[worker] tts=/data/local/tmp/t5p1/rtts_blocked fault= extra=--max-runtime-ms 9000 --provider-retry-max 3 out=r1a_fault.log
+    rc=0
+    | [aiw] 2026-11-21T10:53:38 no consumer state yet (first run); scanning events from offset 0
+    | [aiw] 2026-11-21T10:53:38 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+    | [aiw] 2026-11-21T10:53:38 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+    | [aiw] 2026-11-21T10:53:38 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+    | [aiw] 2026-11-21T10:53:38 start pid=3342 events=/data/local/tmp/t5p1/rwork/events.jsonl state=/data/local/tmp/t5p1/rstate/consumer_state.json provider=deepseek offset=0 (network enabled)
+    | [aiw] 2026-11-21T10:53:40 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1365ms resp_bytes=896 reply_bytes=54 event=p1r1a-105333
+    | [aiw] 2026-11-21T10:53:40 tts enqueue FAILED: event=p1r1a-105333 reply_bytes=54 (cannot create TTS queue directories); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:53:41 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1203ms resp_bytes=893 reply_bytes=45 event=p1r1a-105333
+    | [aiw] 2026-11-21T10:53:41 tts enqueue FAILED: event=p1r1a-105333 reply_bytes=45 (cannot create TTS queue directories); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:53:43 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1223ms resp_bytes=841 reply_bytes=54 event=p1r1a-105333
+    | [aiw] 2026-11-21T10:53:43 tts enqueue FAILED: event=p1r1a-105333 reply_bytes=54 (cannot create TTS queue directories); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:53:43 event id=p1r1a-105333 tts enqueue still failing after 3 attempts (cannot create TTS queue directories): keeping it, no event will be skipped
+    | [aiw] 2026-11-21T10:53:46 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1554ms resp_bytes=796 reply_bytes=39 event=p1r1a-105333
+    | [aiw] 2026-11-21T10:53:46 pending event cleared: id=p1r1a-105333 after 4 attempts; resuming normal pace
+    | [aiw] 2026-11-21T10:53:46 tts enqueue FAILED: event=p1r1a-105333 reply_bytes=39 (cannot create TTS queue directories); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:53:46 event id=p1r1a-105333 tts enqueue still failing after 4 attempts (cannot create TTS queue directories): keeping it, no event will be skipped
+    | [aiw] 2026-11-21T10:53:47 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=4 offset=0 state_saves=1 state_errors=0
+    | [aiw] 2026-11-21T10:53:47 file identity: reason=first_open offset=0 prefix_hash=14650fb0739d0383 resets=0 legacy_rescans=0 replacements=0 truncations=0
+    | [aiw] 2026-11-21T10:53:47 WARNING: event id=p1r1a-105333 was still unprocessed at exit (4 attempts, offset kept at 0)
+    | [aiw] 2026-11-21T10:53:47 provider summary: name=deepseek model=deepseek-flash calls=4 ok=4 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1554ms last_resp_bytes=796
+PASS R1a real model answered (http 200 via 192.168.1.13:8790)
+PASS R1a queue failure is loud in the worker log
+PASS R1a failure reason = the queue dir cannot be created
+PASS R1a event NOT committed while the answer is not durable
+PASS R1a enqueue failure counted
+PASS R1a consumer offset still 0
+PASS R1a no queue directory was created
+[worker] tts=/data/local/tmp/t5p1/rtts fault= extra= out=r1b_retry.log
+    rc=0
+    | [aiw] 2026-11-21T10:53:51 lock acquired; previous owner pid=3342 no longer holding it
+    | [aiw] 2026-11-21T10:53:51 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+    | [aiw] 2026-11-21T10:53:51 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+    | [aiw] 2026-11-21T10:53:51 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+    | [aiw] 2026-11-21T10:53:51 start pid=3537 events=/data/local/tmp/t5p1/rwork/events.jsonl state=/data/local/tmp/t5p1/rstate/consumer_state.json provider=deepseek offset=0 (network enabled)
+    | [aiw] 2026-11-21T10:53:53 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1869ms resp_bytes=874 reply_bytes=45 event=p1r1a-105333
+    | [aiw] 2026-11-21T10:53:53 tts queued: event=p1r1a-105333 reply_bytes=45 queue=/data/local/tmp/t5p1/rtts
+    | [aiw] 2026-11-21T10:53:53 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=291 state_saves=2 state_errors=0
+    | [aiw] 2026-11-21T10:53:53 file identity: reason=first_open offset=291 prefix_hash=4a8248975bd49348 resets=0 legacy_rescans=0 replacements=0 truncations=0
+    | [aiw] 2026-11-21T10:53:53 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1869ms last_resp_bytes=874
+PASS R1b the same event is answered again after the fault clears
+PASS R1b answer is queued once the dir works
+PASS R1b exactly one queue item on the device
+PASS R1b queue item is readable JSON
+PASS R1b queue item carries the same event_id
+PASS R1b event committed exactly once after the queue write
+PASS R1b offset advanced only after the item existed
+[push] /data/local/tmp/t5p1/_seed_p1r1c-105356.jsonl :: D:\tgz02\OS\_analysis\t5p1\run_p1r1c-105356.jsonl: 1 file pushed, 0 skipped. 1.1 MB/s (288 bytes in 0.000s)
+[events] appended p1r1c-105356 -> lines=2
+PASS event p1r1c-105356 appended (events.jsonl now 2 lines)
+[worker] tts=/data/local/tmp/t5p1/rtts fault=dirfsync extra=--max-runtime-ms 14000 --provider-retry-max 3 out=r1c_dirsync.log
+    rc=0
+    | [aiw] 2026-11-21T10:53:59 lock acquired; previous owner pid=3537 no longer holding it
+    | [aiw] 2026-11-21T10:53:59 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+    | [aiw] 2026-11-21T10:53:59 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+    | [aiw] 2026-11-21T10:53:59 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+    | [aiw] 2026-11-21T10:53:59 start pid=3690 events=/data/local/tmp/t5p1/rwork/events.jsonl state=/data/local/tmp/t5p1/rstate/consumer_state.json provider=deepseek offset=291 (network enabled)
+    | [aiw] 2026-11-21T10:54:01 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1469ms resp_bytes=992 reply_bytes=69 event=p1r1c-105356
+    | [aiw] 2026-11-21T10:54:01 tts enqueue FAILED: event=p1r1c-105356 reply_bytes=69 (queue directory fsync failed after rename); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:54:09 deepseek ok: model=deepseek-flash http=200 curl=0 latency=8437ms resp_bytes=940 reply_bytes=84 event=p1r1c-105356
+    | [aiw] 2026-11-21T10:54:09 tts enqueue FAILED: event=p1r1c-105356 reply_bytes=84 (injected dirfsync failure for queue); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:54:14 deepseek ok: model=deepseek-flash http=200 curl=0 latency=3889ms resp_bytes=978 reply_bytes=72 event=p1r1c-105356
+    | [aiw] 2026-11-21T10:54:14 tts enqueue FAILED: event=p1r1c-105356 reply_bytes=72 (injected dirfsync failure for queue); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:54:14 event id=p1r1c-105356 tts enqueue still failing after 3 attempts (injected dirfsync failure for queue): keeping it, no event will be skipped
+    | [aiw] 2026-11-21T10:54:14 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=3 offset=291 state_saves=1 state_errors=0
+    | [aiw] 2026-11-21T10:54:14 file identity: reason=first_open offset=291 prefix_hash=4a8248975bd49348 resets=0 legacy_rescans=0 replacements=0 truncations=0
+    | [aiw] 2026-11-21T10:54:14 WARNING: event id=p1r1c-105356 was still unprocessed at exit (3 attempts, offset kept at 291)
+    | [aiw] 2026-11-21T10:54:14 provider summary: name=deepseek model=deepseek-flash calls=3 ok=3 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=3889ms last_resp_bytes=978
+PASS R1c dirfsync fault is reported
+PASS R1c new-item failure reason = dir fsync after rename
+PASS R1c idempotent retry also hits its own dir fsync
+PASS R1c enqueue failure counted
+PASS R1c a hit without a durable dir fsync is NOT counted as a skip
+PASS R1c nothing committed while the dir fsync fails
+PASS R1c offset unchanged (291 -> 291)
+PASS R1c the item written before the dirfsync failure is still there
+PASS R1c item text is intact
+PASS R1c queue item sha256 captured
+[worker] tts=/data/local/tmp/t5p1/rtts fault= extra= out=r1c_retry.log
+    rc=0
+    | [aiw] 2026-11-21T10:54:20 lock acquired; previous owner pid=3690 no longer holding it
+    | [aiw] 2026-11-21T10:54:20 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+    | [aiw] 2026-11-21T10:54:20 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+    | [aiw] 2026-11-21T10:54:20 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+    | [aiw] 2026-11-21T10:54:20 start pid=3867 events=/data/local/tmp/t5p1/rwork/events.jsonl state=/data/local/tmp/t5p1/rstate/consumer_state.json provider=deepseek offset=291 (network enabled)
+    | [aiw] 2026-11-21T10:54:27 deepseek ok: model=deepseek-flash http=200 curl=0 latency=7471ms resp_bytes=1017 reply_bytes=69 event=p1r1c-105356
+    | [aiw] 2026-11-21T10:54:27 tts skip (already queued/played): event=p1r1c-105356 reply_bytes=69 queue=/data/local/tmp/t5p1/rtts
+    | [aiw] 2026-11-21T10:54:27 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=579 state_saves=2 state_errors=0
+    | [aiw] 2026-11-21T10:54:27 file identity: reason=first_open offset=579 prefix_hash=75dbed8f7a0290ed resets=0 legacy_rescans=0 replacements=0 truncations=0
+    | [aiw] 2026-11-21T10:54:27 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=7471ms last_resp_bytes=1017
+PASS R1c2 the hit is recognised by event_id
+PASS R1c2 idempotent hit counted
+PASS R1c2 no new item is written
+PASS R1c2 committed exactly once after the dir fsync works
+PASS R1c2 offset advanced only after the durable hit
+PASS R1c2 queue item sha256 unchanged across failure and retry
+PASS R1c2 no duplicate item for the same event id
+[exec] --once --timeout-ms 60000
+    tts_exec: pid file written: /data/local/tmp/t5p1/rtts/tts_exec.pid exists=true
+    tts_exec: ready pid=4067 root=/data/local/tmp/t5p1/rtts timeout_ms=60000 once=true max_attempts=3
+    tts_exec: play tts_id=5246237 event=p1r1a-105333 bytes=45
+    tts_exec: play tts_id=5246238 event=p1r1c-105356 bytes=69
+    tts_exec: exit played=2 ok=2 timeout=0 error=0 stopped=0 bad_item=0 done_failed=0 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS R1d executor wrote a done marker for both items
+PASS R1d inflight empty after playback
+PASS R1d exactly one successful playback for the first event
+PASS R1d factory accepted a real tts id (5246237)
+PASS R1d played text is byte-identical to the answered text
+[worker] tts=/data/local/tmp/t5p1/rtts fault= extra= out=r1d_after.log
+    rc=0
+    | [aiw] 2026-11-21T10:54:55 lock acquired; previous owner pid=3867 no longer holding it
+    | [aiw] 2026-11-21T10:54:55 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+    | [aiw] 2026-11-21T10:54:55 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+    | [aiw] 2026-11-21T10:54:55 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+    | [aiw] 2026-11-21T10:54:55 start pid=4877 events=/data/local/tmp/t5p1/rwork/events.jsonl state=/data/local/tmp/t5p1/rstate/consumer_state.json provider=deepseek offset=579 (network enabled)
+    | [aiw] 2026-11-21T10:54:56 exit reason=idle_timeout processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=579 state_saves=1 state_errors=0
+    | [aiw] 2026-11-21T10:54:56 file identity: reason=first_open offset=579 prefix_hash=75dbed8f7a0290ed resets=0 legacy_rescans=0 replacements=0 truncations=0
+    | [aiw] 2026-11-21T10:54:56 provider summary: name=deepseek model=deepseek-flash calls=0 ok=0 err=0 timeout=0 last_http=0 last_curl=0 last_class= last_latency=0ms last_resp_bytes=0
+PASS R1d worker restart queues nothing new
+PASS R1d worker restart keeps two done markers
+[i] worker restart tail: [aiw] 2026-11-21T10:54:56 file identity: reason=first_open offset=579 prefix_hash=75dbed8f7a0290ed resets=0 legacy_rescans=0 replacements=0 truncations=0 / [aiw] 2026-11-21T10:54:56 provider summary: name=deepseek model=deepseek-flash calls=0 ok=0 err=0 timeout=0 last_http=0 last_curl=0 last_class= last_latency=0ms last_resp_bytes=0
+[push] /data/local/tmp/t5p1/_seed_p1r2-105500.jsonl :: D:\tgz02\OS\_analysis\t5p1\run_p1r2-105500.jsonl: 1 file pushed, 0 skipped. 1.1 MB/s (287 bytes in 0.000s)
+[events] appended p1r2-105500 -> lines=3
+PASS event p1r2-105500 appended (events.jsonl now 3 lines)
+[worker] tts=/data/local/tmp/t5p1/rtts fault= extra= out=r2_seed.log
+    rc=0
+    | [aiw] 2026-11-21T10:55:05 lock acquired; previous owner pid=4877 no longer holding it
+    | [aiw] 2026-11-21T10:55:05 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+    | [aiw] 2026-11-21T10:55:05 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+    | [aiw] 2026-11-21T10:55:05 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+    | [aiw] 2026-11-21T10:55:05 start pid=5808 events=/data/local/tmp/t5p1/rwork/events.jsonl state=/data/local/tmp/t5p1/rstate/consumer_state.json provider=deepseek offset=579 (network enabled)
+    | [aiw] 2026-11-21T10:55:09 deepseek ok: model=deepseek-flash http=200 curl=0 latency=3985ms resp_bytes=1319 reply_bytes=69 event=p1r2-105500
+    | [aiw] 2026-11-21T10:55:09 tts queued: event=p1r2-105500 reply_bytes=69 queue=/data/local/tmp/t5p1/rtts
+    | [aiw] 2026-11-21T10:55:09 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=866 state_saves=2 state_errors=0
+    | [aiw] 2026-11-21T10:55:09 file identity: reason=first_open offset=866 prefix_hash=f11c90574abbf4cc resets=0 legacy_rescans=0 replacements=0 truncations=0
+    | [aiw] 2026-11-21T10:55:09 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=3985ms last_resp_bytes=1319
+PASS R2 second event queued by the real worker
+PASS R2 queued payload digest captured
+PASS R2 queued payload byte count captured
+[kill] done_before=0 / inflight_bytes_before=169 / md5_before=7e4c4d80d2955c7758b6ac21cd94d5a9 / pid=6857 / kill_rc=0 / pid_gone=yes / inflight_after=1 / queue_after=0 / done_after=2 / md5_after=7e4c4d80d2955c7758b6ac21cd94d5a9 / KEPT
+PASS R2 playback started (item in inflight)
+PASS R2 killed before the playback completed
+PASS R2 kill -9 actually terminated the executor
+PASS R2 after kill -9 the payload stays in inflight/
+PASS R2 payload bytes untouched by the crash
+PASS R2 inflight still holds exactly one item
+PASS R2 inflight payload digest still matches
+[exec] --once --timeout-ms 60000
+    tts_exec: pid file written: /data/local/tmp/t5p1/rtts/tts_exec.pid exists=true
+    tts_exec: ready pid=8004 root=/data/local/tmp/t5p1/rtts timeout_ms=60000 once=true max_attempts=3
+    tts_exec: recovered inflight item p1r2-105500 attempts=1 -> queue
+    tts_exec: play tts_id=5246240 event=p1r2-105500 bytes=69
+    tts_exec: exit played=1 ok=1 timeout=0 error=0 stopped=0 bad_item=0 done_failed=0 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS R2 restart recovers the inflight item
+PASS R2 inflight empty after the replayed playback
+PASS R2 replays and completes (at-least-once)
+PASS R2 replay used a real factory tts id
+PASS R2 replay kept the answered payload size
+[push] /data/local/tmp/t5p1/_seed_p1r3-105543.jsonl :: D:\tgz02\OS\_analysis\t5p1\run_p1r3-105543.jsonl: 1 file pushed, 0 skipped. 1.1 MB/s (278 bytes in 0.000s)
+[events] appended p1r3-105543 -> lines=4
+PASS event p1r3-105543 appended (events.jsonl now 4 lines)
+[worker] tts=/data/local/tmp/t5p1/rtts fault= extra= out=r3_seed.log
+    rc=0
+    | [aiw] 2026-11-21T10:55:46 lock acquired; previous owner pid=5808 no longer holding it
+    | [aiw] 2026-11-21T10:55:46 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+    | [aiw] 2026-11-21T10:55:46 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+    | [aiw] 2026-11-21T10:55:46 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+    | [aiw] 2026-11-21T10:55:46 start pid=9072 events=/data/local/tmp/t5p1/rwork/events.jsonl state=/data/local/tmp/t5p1/rstate/consumer_state.json provider=deepseek offset=866 (network enabled)
+    | [aiw] 2026-11-21T10:55:49 deepseek ok: model=deepseek-flash http=200 curl=0 latency=2742ms resp_bytes=1301 reply_bytes=15 event=p1r3-105543
+    | [aiw] 2026-11-21T10:55:49 tts queued: event=p1r3-105543 reply_bytes=15 queue=/data/local/tmp/t5p1/rtts
+    | [aiw] 2026-11-21T10:55:49 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=1144 state_saves=2 state_errors=0
+    | [aiw] 2026-11-21T10:55:49 file identity: reason=first_open offset=1144 prefix_hash=408a0650f1249991 resets=0 legacy_rescans=0 replacements=0 truncations=0
+    | [aiw] 2026-11-21T10:55:49 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=2742ms last_resp_bytes=1301
+PASS R3 third event queued
+[exec] --once --fault done_write --timeout-ms 60000
+    tts_exec: pid file written: /data/local/tmp/t5p1/rtts/tts_exec.pid exists=true
+    tts_exec: ready pid=9279 root=/data/local/tmp/t5p1/rtts timeout_ms=60000 once=true max_attempts=3 faults=done_write
+    tts_exec: play tts_id=5246241 event=p1r3-105543 bytes=15
+    tts_exec: done marker NOT persisted event=p1r3-105543 bytes=15 err=injected fault: done_write (inflight kept, replay after restart)
+    tts_exec: event p1r3-105543 played (ok) but done marker is NOT durable; payload kept in inflight/ and will be replayed after restart
+    tts_exec: exit played=1 ok=1 timeout=0 error=0 stopped=0 bad_item=0 done_failed=1 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS R3 executor reports the done marker failure
+PASS R3 earlier done markers are untouched
+PASS R3 payload kept in inflight/ (answer preserved)
+PASS R3 state.done_marker_failed = 1
+PASS R3 real playback happened before the marker failed
+PASS R3 journal records done_marker_failure
+[exec] --once --timeout-ms 60000
+    tts_exec: pid file written: /data/local/tmp/t5p1/rtts/tts_exec.pid exists=true
+    tts_exec: ready pid=9923 root=/data/local/tmp/t5p1/rtts timeout_ms=60000 once=true max_attempts=3
+    tts_exec: recovered inflight item p1r3-105543 attempts=1 -> queue
+    tts_exec: play tts_id=5246242 event=p1r3-105543 bytes=15
+    tts_exec: event p1r3-105543 requeued (attempt 2 failed: timeout)
+    tts_exec: play tts_id=5246245 event=p1r3-105543 bytes=15
+    tts_exec: exit played=2 ok=1 timeout=1 error=0 stopped=0 bad_item=0 done_failed=0 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS R3 restart replays the preserved answer
+PASS R3 inflight empty after the replay
+[push] /data/local/tmp/t5p1/_seed_p1r5-105720.jsonl :: D:\tgz02\OS\_analysis\t5p1\run_p1r5-105720.jsonl: 1 file pushed, 0 skipped. 1.0 MB/s (284 bytes in 0.000s)
+[events] appended p1r5-105720 -> lines=5
+PASS event p1r5-105720 appended (events.jsonl now 5 lines)
+PASS R5 self-referential symlink created at the done stage
+[worker] tts=/data/local/tmp/t5p1/rtts fault= extra=--max-runtime-ms 12000 --provider-retry-max 3 out=r5_statlog.log
+    rc=0
+    | [aiw] 2026-11-21T10:57:26 lock acquired; previous owner pid=9072 no longer holding it
+    | [aiw] 2026-11-21T10:57:26 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+    | [aiw] 2026-11-21T10:57:26 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+    | [aiw] 2026-11-21T10:57:26 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+    | [aiw] 2026-11-21T10:57:26 start pid=13087 events=/data/local/tmp/t5p1/rwork/events.jsonl state=/data/local/tmp/t5p1/rstate/consumer_state.json provider=deepseek offset=1144 (network enabled)
+    | [aiw] 2026-11-21T10:57:28 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1426ms resp_bytes=906 reply_bytes=45 event=p1r5-105720
+    | [aiw] 2026-11-21T10:57:28 tts enqueue FAILED: event=p1r5-105720 reply_bytes=45 (cannot inspect existing done item (errno=40)); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:57:30 deepseek ok: model=deepseek-flash http=200 curl=0 latency=2273ms resp_bytes=1276 reply_bytes=39 event=p1r5-105720
+    | [aiw] 2026-11-21T10:57:30 tts enqueue FAILED: event=p1r5-105720 reply_bytes=39 (cannot inspect existing done item (errno=40)); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:57:32 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1726ms resp_bytes=1136 reply_bytes=42 event=p1r5-105720
+    | [aiw] 2026-11-21T10:57:32 tts enqueue FAILED: event=p1r5-105720 reply_bytes=42 (cannot inspect existing done item (errno=40)); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:57:32 event id=p1r5-105720 tts enqueue still failing after 3 attempts (cannot inspect existing done item (errno=40)): keeping it, no event will be skipped
+    | [aiw] 2026-11-21T10:57:36 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1668ms resp_bytes=1135 reply_bytes=39 event=p1r5-105720
+    | [aiw] 2026-11-21T10:57:36 pending event cleared: id=p1r5-105720 after 4 attempts; resuming normal pace
+    | [aiw] 2026-11-21T10:57:36 tts enqueue FAILED: event=p1r5-105720 reply_bytes=39 (cannot inspect existing done item (errno=40)); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:57:36 event id=p1r5-105720 tts enqueue still failing after 4 attempts (cannot inspect existing done item (errno=40)): keeping it, no event will be skipped
+    | [aiw] 2026-11-21T10:57:40 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1553ms resp_bytes=911 reply_bytes=42 event=p1r5-105720
+    | [aiw] 2026-11-21T10:57:40 pending event cleared: id=p1r5-105720 after 5 attempts; resuming normal pace
+    | [aiw] 2026-11-21T10:57:40 tts enqueue FAILED: event=p1r5-105720 reply_bytes=42 (cannot inspect existing done item (errno=40)); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:57:40 event id=p1r5-105720 tts enqueue still failing after 5 attempts (cannot inspect existing done item (errno=40)): keeping it, no event will be skipped
+    | [aiw] 2026-11-21T10:57:40 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=5 offset=1144 state_saves=1 state_errors=0
+    | [aiw] 2026-11-21T10:57:40 file identity: reason=first_open offset=1144 prefix_hash=408a0650f1249991 resets=0 legacy_rescans=0 replacements=0 truncations=0
+    | [aiw] 2026-11-21T10:57:40 WARNING: event id=p1r5-105720 was still unprocessed at exit (5 attempts, offset kept at 1144)
+    | [aiw] 2026-11-21T10:57:40 provider summary: name=deepseek model=deepseek-flash calls=5 ok=5 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1553ms last_resp_bytes=911
+PASS R5 a stat error other than ENOENT/ENOTDIR fails closed
+PASS R5 the broken record is never treated as an idempotent hit
+PASS R5 failure counted
+PASS R5 event not committed while the stat fails
+PASS R5 offset unchanged (1144 -> 1144)
+PASS R5 no queue item is created for the un-inspectable event
+[worker] tts=/data/local/tmp/t5p1/rtts fault= extra= out=r5_retry.log
+    rc=0
+    | [aiw] 2026-11-21T10:57:46 lock acquired; previous owner pid=13087 no longer holding it
+    | [aiw] 2026-11-21T10:57:46 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+    | [aiw] 2026-11-21T10:57:46 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+    | [aiw] 2026-11-21T10:57:46 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+    | [aiw] 2026-11-21T10:57:46 start pid=13838 events=/data/local/tmp/t5p1/rwork/events.jsonl state=/data/local/tmp/t5p1/rstate/consumer_state.json provider=deepseek offset=1144 (network enabled)
+    | [aiw] 2026-11-21T10:57:48 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1642ms resp_bytes=1137 reply_bytes=54 event=p1r5-105720
+    | [aiw] 2026-11-21T10:57:48 tts queued: event=p1r5-105720 reply_bytes=54 queue=/data/local/tmp/t5p1/rtts
+    | [aiw] 2026-11-21T10:57:48 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=1428 state_saves=2 state_errors=0
+    | [aiw] 2026-11-21T10:57:48 file identity: reason=first_open offset=1428 prefix_hash=0f75c04570068045 resets=0 legacy_rescans=0 replacements=0 truncations=0
+    | [aiw] 2026-11-21T10:57:48 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1642ms last_resp_bytes=1137
+PASS R5 after the bad record is gone the event is queued (ENOENT = absent)
+PASS R5 committed exactly once
+PASS R5 offset advanced after the durable enqueue
+[push] /data/local/tmp/t5p1/_seed_p1r6-105752.jsonl :: D:\tgz02\OS\_analysis\t5p1\run_p1r6-105752.jsonl: 1 file pushed, 0 skipped. 0.8 MB/s (284 bytes in 0.000s)
+[events] appended p1r6-105752 -> lines=6
+PASS event p1r6-105752 appended (events.jsonl now 6 lines)
+PASS R6 a directory occupies the queue item path
+[worker] tts=/data/local/tmp/t5p1/rtts fault= extra=--max-runtime-ms 12000 --provider-retry-max 3 out=r6_statlog.log
+    rc=0
+    | [aiw] 2026-11-21T10:58:00 lock acquired; previous owner pid=13838 no longer holding it
+    | [aiw] 2026-11-21T10:58:00 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+    | [aiw] 2026-11-21T10:58:00 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+    | [aiw] 2026-11-21T10:58:00 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+    | [aiw] 2026-11-21T10:58:00 start pid=14582 events=/data/local/tmp/t5p1/rwork/events.jsonl state=/data/local/tmp/t5p1/rstate/consumer_state.json provider=deepseek offset=1428 (network enabled)
+    | [aiw] 2026-11-21T10:58:02 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1794ms resp_bytes=1226 reply_bytes=33 event=p1r6-105752
+    | [aiw] 2026-11-21T10:58:02 tts enqueue FAILED: event=p1r6-105752 reply_bytes=33 (existing queue item is not a regular file); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:58:04 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1566ms resp_bytes=892 reply_bytes=39 event=p1r6-105752
+    | [aiw] 2026-11-21T10:58:04 tts enqueue FAILED: event=p1r6-105752 reply_bytes=39 (existing queue item is not a regular file); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:58:06 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1836ms resp_bytes=930 reply_bytes=30 event=p1r6-105752
+    | [aiw] 2026-11-21T10:58:06 tts enqueue FAILED: event=p1r6-105752 reply_bytes=30 (existing queue item is not a regular file); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:58:06 event id=p1r6-105752 tts enqueue still failing after 3 attempts (existing queue item is not a regular file): keeping it, no event will be skipped
+    | [aiw] 2026-11-21T10:58:09 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1593ms resp_bytes=1103 reply_bytes=33 event=p1r6-105752
+    | [aiw] 2026-11-21T10:58:09 pending event cleared: id=p1r6-105752 after 4 attempts; resuming normal pace
+    | [aiw] 2026-11-21T10:58:09 tts enqueue FAILED: event=p1r6-105752 reply_bytes=33 (existing queue item is not a regular file); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:58:09 event id=p1r6-105752 tts enqueue still failing after 4 attempts (existing queue item is not a regular file): keeping it, no event will be skipped
+    | [aiw] 2026-11-21T10:58:13 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1757ms resp_bytes=1007 reply_bytes=42 event=p1r6-105752
+    | [aiw] 2026-11-21T10:58:13 pending event cleared: id=p1r6-105752 after 5 attempts; resuming normal pace
+    | [aiw] 2026-11-21T10:58:13 tts enqueue FAILED: event=p1r6-105752 reply_bytes=42 (existing queue item is not a regular file); offset NOT advanced, event kept and retried (no answer is dropped)
+    | [aiw] 2026-11-21T10:58:13 event id=p1r6-105752 tts enqueue still failing after 5 attempts (existing queue item is not a regular file): keeping it, no event will be skipped
+    | [aiw] 2026-11-21T10:58:13 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=5 offset=1428 state_saves=1 state_errors=0
+    | [aiw] 2026-11-21T10:58:13 file identity: reason=first_open offset=1428 prefix_hash=0f75c04570068045 resets=0 legacy_rescans=0 replacements=0 truncations=0
+    | [aiw] 2026-11-21T10:58:13 WARNING: event id=p1r6-105752 was still unprocessed at exit (5 attempts, offset kept at 1428)
+    | [aiw] 2026-11-21T10:58:13 provider summary: name=deepseek model=deepseek-flash calls=5 ok=5 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1757ms last_resp_bytes=1007
+PASS R6 a non-regular record is rejected
+PASS R6 failure counted
+PASS R6 event not committed
+PASS R6 offset unchanged (1428 -> 1428)
+PASS R6 the offending directory is left untouched
+[worker] tts=/data/local/tmp/t5p1/rtts fault= extra= out=r6_retry.log
+    rc=0
+    | [aiw] 2026-11-21T10:58:20 lock acquired; previous owner pid=14582 no longer holding it
+    | [aiw] 2026-11-21T10:58:20 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+    | [aiw] 2026-11-21T10:58:20 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+    | [aiw] 2026-11-21T10:58:20 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+    | [aiw] 2026-11-21T10:58:20 start pid=16002 events=/data/local/tmp/t5p1/rwork/events.jsonl state=/data/local/tmp/t5p1/rstate/consumer_state.json provider=deepseek offset=1428 (network enabled)
+    | [aiw] 2026-11-21T10:58:22 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1392ms resp_bytes=963 reply_bytes=39 event=p1r6-105752
+    | [aiw] 2026-11-21T10:58:22 tts queued: event=p1r6-105752 reply_bytes=39 queue=/data/local/tmp/t5p1/rtts
+    | [aiw] 2026-11-21T10:58:22 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=1712 state_saves=2 state_errors=0
+    | [aiw] 2026-11-21T10:58:22 file identity: reason=first_open offset=1712 prefix_hash=a43bd291fb78d8e1 resets=0 legacy_rescans=0 replacements=0 truncations=0
+    | [aiw] 2026-11-21T10:58:22 provider summary: name=deepseek model=deepseek-flash calls=1 ok=1 err=0 timeout=0 last_http=200 last_curl=0 last_class=ok last_latency=1392ms last_resp_bytes=963
+PASS R6 after cleanup the event is queued (ENOENT = absent)
+PASS R6 committed exactly once
+PASS R6 offset advanced after the durable enqueue
+[exec] --once --timeout-ms 60000
+    tts_exec: pid file written: /data/local/tmp/t5p1/rtts/tts_exec.pid exists=true
+    tts_exec: ready pid=16699 root=/data/local/tmp/t5p1/rtts timeout_ms=60000 once=true max_attempts=3
+    tts_exec: play tts_id=5246251 event=p1r5-105720 bytes=54
+    tts_exec: play tts_id=5246252 event=p1r6-105752 bytes=39
+    tts_exec: exit played=2 ok=2 timeout=0 error=0 stopped=0 bad_item=0 done_failed=0 persist_failed=0 recover_failed=0 bad_item_stuck=0
+PASS R6 replay queue drained
+PASS R5 answered text was played by factory TTS
+PASS R6 answered text was played by factory TTS
+PASS R4 factory core still running
+PASS R4 factory TTS reported complete at least once
+PASS R4 model proxy healthy (http 200, curl=0)
+[i] real ASR coverage is provided by t5_06d_device_e2e.ps1 -Only s8 (see evidence log)
+
+RESULT: PASS (fails=0 skips=0)

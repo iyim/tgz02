@@ -1,9 +1,9 @@
 === T5-06B integration subset (host, Mock provider only) ===
 exe    : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_102620
+run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_104851
 filter : i23
 
-PASS i23_prefix_fault_stops             0.49s  read: rc=6, offset kept at 744; fold: rc=6, offset stayed 0
+PASS i23_prefix_fault_stops             0.45s  read: rc=6, offset kept at 744; fold: rc=6, offset stayed 0
 
 cases: 1, failed: 0
 RESULT: PASS

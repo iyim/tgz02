@@ -1,6 +1,6 @@
 === T5-06B integration subset (host, Mock provider only) ===
 exe    : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.exe
-run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_102618
+run    : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\_run\t506b_20261121_104849
 filter : i18
 
 PASS i18_recreate_longer_while_running   0.42s  offset 494 -> new file 822 B, 3 records read from record 1

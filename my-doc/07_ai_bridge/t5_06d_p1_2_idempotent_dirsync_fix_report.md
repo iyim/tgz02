@@ -5,6 +5,11 @@
 - 代码来源：**ChatGPT 提供的完整替换代码**；本任务只做替换、验证、记录，未重新设计
 - 状态：替换完成、主机 + 真机全部通过；**不自行宣布 P1 关闭**，等待 ChatGPT 复审
 
+> 后续（P1-3）：本报告的 `tts_existing_item_durable()` 存在错误分类问题（权限/I-O 等 `stat` 失败会被
+> 当成"文件不存在"），已由 ChatGPT 复审替换为 `stat()` + `ENOENT/ENOTDIR` 判定 + `S_ISREG()`
+> 的版本，见 `t5_06d_p1_3_error_classification_fix_report.md`。`tts_enqueue()` 的幂等/目录 fsync
+> 语义不变。
+
 ---
 
 ## 一、代码替换（`my-doc/07_ai_bridge/android/ai_worker.c`）

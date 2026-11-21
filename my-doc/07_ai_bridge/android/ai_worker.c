@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #ifdef _WIN32
 #  include <fcntl.h>
@@ -442,41 +443,50 @@ static int t6b_fault_ttsq(void)
  *
  * 返回：
  *   1  文件存在，所在目录 fsync 成功；
- *   0  文件不存在；
- *  -1  文件状态异常或目录 fsync 失败。
+ *   0  stat 明确报告文件不存在；
+ *  -1  文件状态异常、无法检查或目录 fsync 失败。
  *
- * 注意：文件存在不代表目录项已经持久化。每次幂等命中都必须重新 fsync。
+ * 只有 ENOENT / ENOTDIR 可以作为不存在处理。
+ * 权限错误、I/O 错误等一律失败关闭。
  */
 static int tts_existing_item_durable(const char *path, const char *dir,
                                      const char *stage, char *err, size_t errlen)
 {
-    unsigned long long dev, ino;
-    long long size;
+    struct stat st;
 
-    if (wu_file_identity(path, &dev, &ino, &size) != 0) {
-        /* 不存在时返回 0；若路径实际是目录或其他异常对象，保守拒绝。 */
-        if (wu_file_size(path) < 0 && !wu_is_dir(path)) return 0;
-        if (err && errlen)
-            snprintf(err, errlen, "cannot inspect existing %s item", stage);
+    if (stat(path, &st) != 0) {
+        int saved_errno = errno;
+
+        if (saved_errno == ENOENT || saved_errno == ENOTDIR)
+            return 0;
+
+        if (err && errlen) {
+            snprintf(err, errlen,
+                     "cannot inspect existing %s item (errno=%d)",
+                     stage, saved_errno);
+        }
         return -1;
     }
 
-    if (wu_is_dir(path) || size < 0) {
+    if (!S_ISREG(st.st_mode)) {
         if (err && errlen)
-            snprintf(err, errlen, "existing %s item is not a regular file", stage);
+            snprintf(err, errlen,
+                     "existing %s item is not a regular file", stage);
         return -1;
     }
 
-    /* 故障注入覆盖幂等命中路径，确保测试不会绕过目录 fsync。 */
+    /* 故障注入覆盖幂等命中路径。 */
     if (t6b_fault_ttsq() == T6B_TTSQ_DIRFSYNC) {
         if (err && errlen)
-            snprintf(err, errlen, "injected dirfsync failure for %s", stage);
+            snprintf(err, errlen,
+                     "injected dirfsync failure for %s", stage);
         return -1;
     }
 
     if (wu_fsync_dir(dir) != 0) {
         if (err && errlen)
-            snprintf(err, errlen, "directory fsync failed for %s", stage);
+            snprintf(err, errlen,
+                     "directory fsync failed for %s", stage);
         return -1;
     }
 

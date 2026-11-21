@@ -445,7 +445,58 @@ function RealPhase() {
     Assert ($out4 -match ('recovered inflight item ' + $eid3)) "R3 restart replays the preserved answer"
     Assert ((N "$rtts/inflight") -eq 0) "R3 inflight empty after the replay"
 
-    # R4 原厂 ASR / 模型代理 / 原厂 TTS 存活
+    # ---- R5：stat 无法检查（自指 symlink → ELOOP）→ 失败关闭，不提交偏移 ----
+    $eid5 = 'p1r5-' + (Get-Date -Format 'HHmmss')
+    MakeEvents $rwork $eid5 '请用一句话回答：错误分类测试一' 5 | Out-Null
+    Su ("mkdir -p " + $rtts + "/done") | Out-Null
+    Su ("ln -s " + $eid5 + ".ok " + $rtts + "/done/" + $eid5 + ".ok") | Out-Null
+    $linkOk = Su ("test -L " + $rtts + "/done/" + $eid5 + ".ok && echo yes || echo no")
+    Assert ($linkOk -eq 'yes') "R5 self-referential symlink created at the done stage"
+    $off5 = Offset $rstate
+    $log5 = RunWorker $rwork $rstate $rtts '0' '0' 'r5_statlog.log' '' '--max-runtime-ms 12000 --provider-retry-max 3'
+    Assert ($log5 -match 'cannot inspect existing done item \(errno=\d+\)') "R5 a stat error other than ENOENT/ENOTDIR fails closed"
+    Assert (-not ($log5 -match 'tts skip \(already queued/played\)')) "R5 the broken record is never treated as an idempotent hit"
+    $st5 = WorkerStatus $rstate
+    Assert ([int]$st5.counters.tts_enqueue_failed -ge 1) "R5 failure counted"
+    Assert ([int]$st5.counters.events_processed -eq 0) "R5 event not committed while the stat fails"
+    Assert ((Offset $rstate) -eq $off5) ("R5 offset unchanged (" + $off5 + " -> " + (Offset $rstate) + ")")
+    Assert ((N "$rtts/queue") -eq 0) "R5 no queue item is created for the un-inspectable event"
+    # 移除坏对象 → 变成 ENOENT → 正常入队并提交一次
+    Su ("rm -f " + $rtts + "/done/" + $eid5 + ".ok") | Out-Null
+    $log5b = RunWorker $rwork $rstate $rtts '1' '2500' 'r5_retry.log' '' ''
+    Assert ($log5b -match ('tts queued: event=' + $eid5)) "R5 after the bad record is gone the event is queued (ENOENT = absent)"
+    $st5b = WorkerStatus $rstate
+    Assert ([int]$st5b.counters.events_processed -eq 1) "R5 committed exactly once"
+    Assert ((Offset $rstate) -gt $off5) "R5 offset advanced after the durable enqueue"
+
+    # ---- R6：条目路径是目录（S_ISREG 失败）→ 失败关闭，不提交偏移 ----
+    $eid6 = 'p1r6-' + (Get-Date -Format 'HHmmss')
+    MakeEvents $rwork $eid6 '请用一句话回答：错误分类测试二' 6 | Out-Null
+    Su ("mkdir -p " + $rtts + "/queue/" + $eid6 + ".json") | Out-Null
+    $dirOk = Su ("test -d " + $rtts + "/queue/" + $eid6 + ".json && echo yes || echo no")
+    Assert ($dirOk -eq 'yes') "R6 a directory occupies the queue item path"
+    $off6 = Offset $rstate
+    $log6 = RunWorker $rwork $rstate $rtts '0' '0' 'r6_statlog.log' '' '--max-runtime-ms 12000 --provider-retry-max 3'
+    Assert ($log6 -match 'existing queue item is not a regular file') "R6 a non-regular record is rejected"
+    $st6 = WorkerStatus $rstate
+    Assert ([int]$st6.counters.tts_enqueue_failed -ge 1) "R6 failure counted"
+    Assert ([int]$st6.counters.events_processed -eq 0) "R6 event not committed"
+    Assert ((Offset $rstate) -eq $off6) ("R6 offset unchanged (" + $off6 + " -> " + (Offset $rstate) + ")")
+    Assert ((Su ("test -d " + $rtts + "/queue/" + $eid6 + ".json && echo yes || echo no")) -eq 'yes') "R6 the offending directory is left untouched"
+    Su ("rmdir " + $rtts + "/queue/" + $eid6 + ".json") | Out-Null
+    $log6b = RunWorker $rwork $rstate $rtts '1' '2500' 'r6_retry.log' '' ''
+    Assert ($log6b -match ('tts queued: event=' + $eid6)) "R6 after cleanup the event is queued (ENOENT = absent)"
+    Assert ([int](WorkerStatus $rstate).counters.events_processed -eq 1) "R6 committed exactly once"
+    Assert ((Offset $rstate) -gt $off6) "R6 offset advanced after the durable enqueue"
+
+    # 播报 R5/R6 的真实回答（顺带确认原厂 TTS 正常）
+    $out5 = RunExec $rtts "--once --timeout-ms 60000"
+    Assert ((N "$rtts/inflight") -eq 0) "R6 replay queue drained"
+    $j5 = JFor (Journal $rtts) $eid5
+    Assert ((@($j5 | Where-Object { $_.outcome -eq 'ok' }).Count) -ge 1) "R5 answered text was played by factory TTS"
+    Assert ((@(JFor (Journal $rtts) $eid6 | Where-Object { $_.outcome -eq 'ok' }).Count) -ge 1) "R6 answered text was played by factory TTS"
+
+    # ---- R4 原厂 ASR / 模型代理 / 原厂 TTS 存活 ----
     $core = Dev1 "pidof com.alibaba.ailabs.genie.smartapp:core"
     Assert ($core -ne '') "R4 factory core still running"
     $all = (Su ("cat " + $rtts + "/journal.jsonl"))

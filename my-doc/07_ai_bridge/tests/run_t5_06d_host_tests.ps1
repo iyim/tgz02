@@ -34,9 +34,14 @@ $hout | Where-Object { $_ -match 'checks passed|PASS |FAIL |cases:|rounds:|RESUL
 Rec ("   host suite exit: " + $hrc)
 
 Rec ""
-Rec "3) TTS queue integration subset (i31..i34) -- verbose"
+Rec "3) TTS queue integration subset (i31..i39b) -- verbose"
 $iout = & py -3 (Join-Path $here 'worker_integration_test.py') --exe (Join-Path $android 'out\ai_worker.exe') --only i3 --keep 2>&1
 $iout | Where-Object { $_ -match '^(PASS|FAIL)|^cases:' } | ForEach-Object { Rec ("   " + $_) }
+
+Rec ""
+Rec "3b) P1-3 stat/error-classification case (i41) -- verbose"
+$iout2 = & py -3 (Join-Path $here 'worker_integration_test.py') --exe (Join-Path $android 'out\ai_worker.exe') --only i41 --keep 2>&1
+$iout2 | Where-Object { $_ -match '^(PASS|FAIL)|^cases:' } | ForEach-Object { Rec ("   " + $_) }
 
 Rec ""
 if ($hrc -eq 0) { Rec "# result: OK (dex built, host unit + integration + tts queue cases pass)" }

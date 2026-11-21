@@ -1739,6 +1739,94 @@ def i38_tts_fault_env_ignored_when_queue_off(exe):
     return "T5-06C unchanged: queue off + fault env -> normal commit, no counters, no dirs"
 
 
+@case
+def i41_tts_stat_error_classification(exe):
+    """P1-3：只有 ENOENT/ENOTDIR 才算"不存在"；stat 失败或非普通文件一律失败关闭"""
+    notes = []
+
+    # 1) 父目录缺失：mkdir_p 必须先建回来，然后 ENOENT → 正常新建入队
+    work = path_of("i41/parent/work")
+    state = path_of("i41/parent/state")
+    tts = path_of("i41/parent/tts")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    eid = "t5b-4242-parent-g1"
+    write_events("i41/parent/work/events.jsonl", [rec(1, 4242, eid, "p")])
+    rc, out, _ = run_once(exe, work, state,
+                          ["--idle-exit-ms", "600", "--tts-queue-dir", tts,
+                           "--mock-reply", "answer-parent"])
+    assert_eq(rc, 0, "missing stage dirs are recreated, run exits cleanly")
+    assert_eq(os.path.isdir(os.path.join(tts, "queue")), True,
+              "mkdir_p recreates the stage dir before the stat probe")
+    assert_eq(os.path.isfile(os.path.join(tts, "queue", eid + ".json")), True,
+              "ENOENT on the item path means 'absent' and a new item is written")
+    assert_eq(counters_of(state).get("tts_queued"), 1, "parent-missing path queues once")
+    assert_eq(counters_of(state).get("events_processed"), 1, "parent-missing path commits once")
+    assert_eq(durable_offset(state) > 0, True, "offset advanced")
+    notes.append("parent-missing")
+
+    # 2) queue/<id>.json 是目录（S_ISREG 失败）→ -1，不提交；删掉后 ENOENT → 正常入队
+    work = path_of("i41/diritem/work")
+    state = path_of("i41/diritem/state")
+    tts = path_of("i41/diritem/tts")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    eid = "t5b-4242-diritem-g1"
+    write_events("i41/diritem/work/events.jsonl", [rec(1, 4242, eid, "d")])
+    os.makedirs(os.path.join(tts, "queue", eid + ".json"))
+    rc, out, _ = run_once(exe, work, state,
+                          ["--max-runtime-ms", "900", "--provider-retry-max", "2",
+                           "--tts-queue-dir", tts, "--mock-reply", "answer-diritem"],
+                          timeout=60)
+    assert_eq(rc, 0, "directory-at-item-path keeps the worker alive")
+    assert_eq("existing queue item is not a regular file" in out, True,
+              "non-regular item is rejected explicitly")
+    ctr = counters_of(state)
+    assert_ge(ctr.get("tts_enqueue_failed", 0), 1, "non-regular item counted as a failure")
+    assert_eq(ctr.get("tts_skipped"), 0, "non-regular item is never a skip")
+    assert_eq(ctr.get("events_processed"), 0, "non-regular item must not commit")
+    assert_eq(durable_offset(state), 0, "non-regular item must not move the offset")
+    assert_eq(os.path.isdir(os.path.join(tts, "queue", eid + ".json")), True,
+              "the offending directory is left untouched")
+    os.rmdir(os.path.join(tts, "queue", eid + ".json"))
+    rc2, out2, _ = run_once(exe, work, state,
+                            ["--idle-exit-ms", "600", "--tts-queue-dir", tts,
+                             "--mock-reply", "answer-diritem"])
+    assert_eq(rc2, 0, "after removing the directory the run exits cleanly")
+    assert_eq(os.path.isfile(os.path.join(tts, "queue", eid + ".json")), True,
+              "ENOENT after cleanup writes a real item")
+    assert_eq(counters_of(state).get("events_processed"), 1, "committed once after cleanup")
+    notes.append("dir-at-item")
+
+    # 3) done/<id>.ok 是目录 → 同样失败关闭（命中阶段无关）
+    work = path_of("i41/donedir/work")
+    state = path_of("i41/donedir/state")
+    tts = path_of("i41/donedir/tts")
+    os.makedirs(work, exist_ok=True)
+    os.makedirs(state, exist_ok=True)
+    eid = "t5b-4242-donedir-g1"
+    write_events("i41/donedir/work/events.jsonl", [rec(1, 4242, eid, "o")])
+    os.makedirs(os.path.join(tts, "done", eid + ".ok"))
+    rc, out, _ = run_once(exe, work, state,
+                          ["--max-runtime-ms", "900", "--provider-retry-max", "2",
+                           "--tts-queue-dir", tts, "--mock-reply", "answer-donedir"],
+                          timeout=60)
+    assert_eq(rc, 0, "directory-at-done-path keeps the worker alive")
+    assert_eq("existing done item is not a regular file" in out, True,
+              "done stage is checked the same way")
+    assert_eq(counters_of(state).get("events_processed"), 0, "done-stage anomaly must not commit")
+    assert_eq(durable_offset(state), 0, "done-stage anomaly must not move the offset")
+    os.rmdir(os.path.join(tts, "done", eid + ".ok"))
+    rc2, _, _ = run_once(exe, work, state,
+                         ["--idle-exit-ms", "600", "--tts-queue-dir", tts,
+                          "--mock-reply", "answer-donedir"])
+    assert_eq(rc2, 0, "done-stage cleanup run exits cleanly")
+    assert_eq(counters_of(state).get("events_processed"), 1, "committed once after cleanup")
+    notes.append("dir-at-done")
+    return ("ENOENT still means absent (after mkdir_p); non-regular items in queue/done are "
+            "fatal for that event (%s)" % ",".join(notes))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--exe", default=DEFAULT_EXE)
