@@ -1,0 +1,54 @@
+=== T8-12.6 probe stub ARM32 ABI test (Unicorn 2.1.4) ===
+base lib: 'D:\\nonexistent\\libsmartbox.so'
+stub binary: D:\tgz02\OS\system\my-doc\07_ai_bridge\probe_abi\probe_stub.bin (68 bytes, sha256 F571E1778EDBA7E9EDDFE690F0A447F713BEF78CAE2EEFA590041624F304A613)
+
+[case 1] 参数落位 + 易失/非易失寄存器保存恢复（回调写垃圾）
+         序言 = push {r4,lr} / mov r4,r0（寄存器类，无 PC 相对）
+  [PASS] 回调被调用 1 次（实际 1）
+  [PASS] r0 = site = 10（实际 10）
+  [PASS] r1 = a0 = 0xA0（实际 0xA0）
+  [PASS] r2 = a1 = 0xA1（实际 0xA1）
+  [PASS] r3 = a2 = 0xA2（实际 0xA2）
+  [PASS] [sp+0] = a3 = 0xA3（实际 0xA3）
+  [PASS] [sp+4] = caller_lr = 0x40000（实际 0x40000）
+  [PASS] 回调入口 SP = 入口-32 = 0x2FEE0（实际 0x2FEE0）
+  [PASS] 回调入口 SP 8 字节对齐
+  [PASS] 返回后 SP 复原 = 0x2FF00（实际 0x2FF00）
+  [PASS] r4 未被破坏 = 0x44444444（实际 0x44444444）
+  [PASS] r5 未被破坏 = 0x55555555（实际 0x55555555）
+  [PASS] r6 未被破坏 = 0x66666666（实际 0x66666666）
+  [PASS] r7 未被破坏 = 0x77777777（实际 0x77777777）
+  [PASS] r8 未被破坏 = 0x88888888（实际 0x88888888）
+  [PASS] r9 未被破坏 = 0x99999999（实际 0x99999999）
+  [PASS] r10 未被破坏 = 0xAAAAAAAA（实际 0xAAAAAAAA）
+  [PASS] r11 未被破坏 = 0xBBBBBBBB（实际 0xBBBBBBBB）
+  [PASS] 返回值 = 806（序言 mov r4,r0 + 4 条加法，实际 806）
+  [PASS] PC 停在调用者返回地址
+
+[case 2] 六个真实安装点序言：A 路(补丁) vs B 路(未补丁) 状态等价
+         比较点 = 函数体入口处的 15 个值 (r0-r12 / sp / lr)
+  [PASS] SessionProxy::onHandler (0x11C238): 15 个寄存器(r0-r12/SP/LR)与未补丁路径完全一致
+  [PASS]    SessionProxy::onHandler: 序言 push 后 SP = 0x2FEE0（期望 0x2FEE0）
+  [PASS] SessionDispatch::onNlpResultInner (0x11896C): 15 个寄存器(r0-r12/SP/LR)与未补丁路径完全一致
+  [PASS]    SessionDispatch::onNlpResultInner: 序言 push 后 SP = 0x2FEE8（期望 0x2FEE8）
+  [PASS] SessionDispatch::onPushNlpResult (0x1189EC): 15 个寄存器(r0-r12/SP/LR)与未补丁路径完全一致
+  [PASS]    SessionDispatch::onPushNlpResult: 序言 push 后 SP = 0x2FEDC（期望 0x2FEDC）
+  [PASS] SessionDispatch::onRouterDetailInfo (0x118830): 15 个寄存器(r0-r12/SP/LR)与未补丁路径完全一致
+  [PASS]    SessionDispatch::onRouterDetailInfo: 序言 push 后 SP = 0x2FEDC（期望 0x2FEDC）
+  [PASS] SessionDispatch::playAudios (0x117D40): 15 个寄存器(r0-r12/SP/LR)与未补丁路径完全一致
+  [PASS]    SessionDispatch::playAudios: 序言 push 后 SP = 0x2FEDC（期望 0x2FEDC）
+  [PASS] SessionManager::exitTalk (0x1110E4): 15 个寄存器(r0-r12/SP/LR)与未补丁路径完全一致
+  [PASS]    SessionManager::exitTalk: 序言 push 后 SP = 0x2FEE0（期望 0x2FEE0）
+
+[case 3] 六个真实序言均不含 PC 相对寻址（trampoline 直接搬运的前提）
+  [PASS] SessionProxy::onHandler: 0xE92D4BF0 / 0xE28DB018 均非 PC 相对
+  [PASS] SessionDispatch::onNlpResultInner: 0xE92D48F0 / 0xE28DB010 均非 PC 相对
+  [PASS] SessionDispatch::onPushNlpResult: 0xE92D4FF0 / 0xE28DB01C 均非 PC 相对
+  [PASS] SessionDispatch::onRouterDetailInfo: 0xE92D4FF0 / 0xE28DB01C 均非 PC 相对
+  [PASS] SessionDispatch::playAudios: 0xE92D4FF0 / 0xE28DB01C 均非 PC 相对
+  [PASS] SessionManager::exitTalk: 0xE92D4DF0 / 0xE28DB018 均非 PC 相对
+
+[case 4] 与真实库字节交叉核对（基准库路径可配置）
+  [INCOMPLETE] 未找到基准库（路径='D:\\nonexistent\\libsmartbox.so'）。
+              本测试不允许在缺少基准库的情况下宣称完整 PASS；
+              请用 --lib <path> 或环境变量 TG_LIBSMARTBOX 指定。

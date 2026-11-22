@@ -1,0 +1,32 @@
+=== T8-12.6 R14 window policy model (host build) ===
+
+[S1] 会话缺失：key="" 触发 fail-closed 窗口
+  [PASS] CURRENT: 缺失会话当次被丢
+  [PASS] CURRENT: 无关会话 "42" 也被丢（误拦，复现）
+  [PASS] SCOPED : 缺失会话当次被丢（行为不变）
+  [PASS] SCOPED : 无关会话 "42" 不再被误拦
+
+[S2] 槽位容量耗尽（64 槽全被占用后登记新会话 "999"）
+  [PASS] CURRENT: 溢出会话 "999" 被丢
+  [PASS] CURRENT: 无关未登记会话也被丢（误拦，复现）
+  [PASS] SCOPED : 溢出会话 "999" 仍被丢（安全属性保留）
+  [PASS] SCOPED : 无关未登记会话不再被误拦
+
+[S3] sid 复用："77" 收尾后重新登记
+  [PASS] SCOPED : 登记后立即命中（接管）
+  [PASS] SCOPED : 同轮晚到的结果仍被接管（宽限期内不放行）
+  [PASS] SCOPED : 收尾后 100ms 内仍命中（不放行，避免同轮漏拦）
+  [PASS] SCOPED : 宽限期过后自动放行（槽位不再长期占用）
+  [PASS] SCOPED : 新一轮登记后重新接管（sid 复用安全）
+
+[S4] 正常结束：CURRENT 只能等 30s TTL
+  [PASS] CURRENT: 收尾后 100ms 仍命中（无收尾钩子）
+  [PASS] CURRENT: 直到 TTL 到期才放行（最长 30s 占用）
+
+[S5] 状态异常（mutex 不可用）：两条策略都必须 fail-closed
+  [PASS] CURRENT: mutex 不可用 -> 已登记会话也丢（fail-closed）
+  [PASS] CURRENT: mutex 不可用 -> 缺失会话也丢
+  [PASS] SCOPED : mutex 不可用 -> 同样丢（窗口策略不参与该分支）
+  [PASS] SCOPED : mutex 不可用 -> 缺失会话也丢
+
+RESULT: PASS (checks=19 fails=0)

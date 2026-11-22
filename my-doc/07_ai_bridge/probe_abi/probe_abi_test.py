@@ -14,6 +14,7 @@
 #
 # 环境：Python 3 + unicorn（主机侧 ARM32 指令模拟）。非真机、不注入、不改任何库。
 
+import argparse
 import hashlib
 import os
 import struct
@@ -30,7 +31,13 @@ from unicorn.arm_const import (
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUB_BIN = os.path.join(HERE, "probe_stub.bin")
 
-LIBSMARTBOX = r"D:\tgz02\OS\_analysis\t6\libsmartbox.so"
+# 基准库不再写死绝对路径：--lib 优先，其次环境变量 TG_LIBSMARTBOX，最后才是本机默认位置。
+DEFAULT_LIB_CANDIDATES = [
+    os.environ.get("TG_LIBSMARTBOX", ""),
+    os.path.join(HERE, "libsmartbox.so"),        # 可选：把库放在本目录下
+    r"D:\tgz02\OS\_analysis\t6\libsmartbox.so",
+    os.path.join(HERE, "..", "..", "OS", "_analysis", "t6", "libsmartbox.so"),
+]
 LIBSMARTBOX_SHA256 = "F6E3C3543FF6DA5B59BF60B884B6CE4332897C75AA6B89B8DCCC0C266DF80940"
 
 PAGE        = 0x1000
@@ -71,6 +78,7 @@ INSTALL_POINTS = [
 
 _checks = 0
 _fails = 0
+LIB_PATH = None
 
 
 def check(cond, msg):
@@ -81,6 +89,34 @@ def check(cond, msg):
     else:
         _fails += 1
         print("  [FAIL] " + msg)
+
+
+def elf_load_segments(blob):
+    """解析 ELF32 LE 的 PT_LOAD 段，返回 [(p_vaddr, p_offset, p_filesz), ...]。"""
+    if blob[:4] != b"\x7fELF" or blob[4] != 1 or blob[5] != 1:
+        raise ValueError("不是 ELF32 little-endian 文件")
+    e_phoff = struct.unpack_from("<I", blob, 0x1C)[0]
+    e_phentsize = struct.unpack_from("<H", blob, 0x2A)[0]
+    e_phnum = struct.unpack_from("<H", blob, 0x2C)[0]
+    segs = []
+    for i in range(e_phnum):
+        off = e_phoff + i * e_phentsize
+        p_type = struct.unpack_from("<I", blob, off)[0]
+        if p_type != 1:                     # PT_LOAD
+            continue
+        p_offset = struct.unpack_from("<I", blob, off + 0x04)[0]
+        p_vaddr = struct.unpack_from("<I", blob, off + 0x08)[0]
+        p_filesz = struct.unpack_from("<I", blob, off + 0x10)[0]
+        segs.append((p_vaddr, p_offset, p_filesz))
+    return segs
+
+
+def vaddr_to_off(segs, vaddr):
+    """按 PT_LOAD 的 p_vaddr/p_offset 换算文件偏移（禁止默认 vaddr == offset）。"""
+    for v, o, sz in segs:
+        if v <= vaddr < v + sz:
+            return o + (vaddr - v)
+    raise ValueError("vaddr 0x%X 不在任何 PT_LOAD 段内" % vaddr)
 
 
 def w(x):
@@ -156,9 +192,19 @@ def run_reference(w0, w1, body_words):
     return uc
 
 
-def main():
-    print("=== T8-12.5 probe stub ARM32 ABI test (Unicorn %s) ===" %
+def main(argv=None):
+    global LIB_PATH
+    ap = argparse.ArgumentParser(description="T8-12.6 probe stub ARM32 ABI test")
+    ap.add_argument("--lib", default=None, help="基准库路径（默认自动探测；缺库 => INCOMPLETE）")
+    args = ap.parse_args(argv)
+    if args.lib:
+        LIB_PATH = args.lib
+    else:
+        LIB_PATH = next((p for p in DEFAULT_LIB_CANDIDATES if p and os.path.exists(p)), None)
+
+    print("=== T8-12.6 probe stub ARM32 ABI test (Unicorn %s) ===" %
           __import__("unicorn").__version__)
+    print("base lib: %r" % LIB_PATH)
     blob = open(STUB_BIN, "rb").read()
     print("stub binary: %s (%d bytes, sha256 %s)" %
           (STUB_BIN, len(blob), hashlib.sha256(blob).hexdigest().upper()))
@@ -215,7 +261,7 @@ def main():
 
     # ---------------------------------------------------------------
     print("[case 2] 六个真实安装点序言：A 路(补丁) vs B 路(未补丁) 状态等价")
-    print("         比较点 = 函数体入口处的 r0-r12 / sp / lr")
+    print("         比较点 = 函数体入口处的 15 个值 (r0-r12 / sp / lr)")
     body_ret = [0xE12FFF1E]                  # bx lr（只作为"函数体入口"的落点）
     for label, site, vaddr, w0, w1 in INSTALL_POINTS:
         ua = run_patched(site, w0, w1, body_ret)
@@ -224,7 +270,7 @@ def main():
         sb = snapshot(ub)
         same = all(sa[r] == sb[r] for r in sa)
         diff = [hex(r) for r in sa if sa[r] != sb[r]]
-        check(same, "%s (0x%X): 20 个寄存器/SP/LR 与未补丁路径完全一致%s" %
+        check(same, "%s (0x%X): 15 个寄存器(r0-r12/SP/LR)与未补丁路径完全一致%s" %
               (label, vaddr, "" if same else "，差异: " + ",".join(diff)))
         check(sa[UC_ARM_REG_SP] == SP_INIT - (
             4 * bin(w0 & 0xFFFF).count("1")),          # push 的寄存器个数 * 4
@@ -247,17 +293,36 @@ def main():
     print()
 
     # ---------------------------------------------------------------
-    print("[case 4] 与真实库字节交叉核对（libsmartbox.so）")
-    if os.path.exists(LIBSMARTBOX):
-        blob = open(LIBSMARTBOX, "rb").read()
-        sha = hashlib.sha256(blob).hexdigest().upper()
-        check(sha == LIBSMARTBOX_SHA256, "库 sha256 与基线一致（%s）" % sha[:16] + "…")
-        for label, site, vaddr, w0, w1 in INSTALL_POINTS:
-            got0, got1 = struct.unpack_from("<II", blob, vaddr)
-            check(got0 == w0 and got1 == w1,
-                  "%s @0x%X 库内字节 = 0x%08X 0x%08X" % (label, vaddr, got0, got1))
-    else:
-        print("  [SKIP] 未找到 %s，跳过 7 条交叉核对断言" % LIBSMARTBOX)
+    print("[case 4] 与真实库字节交叉核对（基准库路径可配置）")
+    if LIB_PATH is None or not os.path.exists(LIB_PATH):
+        print("  [INCOMPLETE] 未找到基准库（路径=%r）。" % LIB_PATH)
+        print("              本测试不允许在缺少基准库的情况下宣称完整 PASS；")
+        print("              请用 --lib <path> 或环境变量 TG_LIBSMARTBOX 指定。")
+        return 2
+    blob = open(LIB_PATH, "rb").read()
+    sha = hashlib.sha256(blob).hexdigest().upper()
+    check(sha == LIBSMARTBOX_SHA256, "基准库 sha256 与基线一致（%s…，路径 %s）" % (sha[:16], LIB_PATH))
+    segs = elf_load_segments(blob)
+    check(len(segs) > 0, "ELF 解析出 %d 个 PT_LOAD 段" % len(segs))
+    # 打印段表（换算依据），并显式验证"我们读的这 6 个地址所在的段恰好 p_vaddr == p_offset"
+    for v, o, sz in segs:
+        print("    PT_LOAD vaddr=0x%08X off=0x%08X filesz=0x%X%s" %
+              (v, o, sz, "  (identity)" if v == o else ""))
+    ident_ok = True
+    for label, site, vaddr, w0, w1 in INSTALL_POINTS:
+        seg = next(((v, o, sz) for v, o, sz in segs if v <= vaddr < v + sz), None)
+        if seg is None or seg[0] != seg[1]:
+            ident_ok = False
+    check(ident_ok,
+          "6 个安装点所在 PT_LOAD 段均满足 p_vaddr == p_offset（这是本库的事实，不是假设）")
+    check(all(vaddr_to_off(segs, va) == va for _, _, va, _, _ in INSTALL_POINTS),
+          "vaddr_to_off() 对 6 个地址的换算结果与直接偏移一致（换算函数自洽）")
+    for label, site, vaddr, w0, w1 in INSTALL_POINTS:
+        foff = vaddr_to_off(segs, vaddr)
+        got0, got1 = struct.unpack_from("<II", blob, foff)
+        check(got0 == w0 and got1 == w1,
+              "%s @0x%X (file off 0x%X) 库内字节 = 0x%08X 0x%08X" %
+              (label, vaddr, foff, got0, got1))
     print()
 
     # ---------------------------------------------------------------
@@ -279,9 +344,13 @@ def main():
     check(seen["n"] == 1000, "回调累计 1000 次（实际 %d）" % seen["n"])
     print()
 
-    print("RESULT: %s  (断言 %d 条，失败 %d 条)" %
-          ("PASS" if _fails == 0 else "FAIL", _checks, _fails))
-    return 0 if _fails == 0 else 1
+    complete = (_fails == 0)
+    print("RESULT: %s  (断言 %d 条，失败 %d 条，complete=%s)" %
+          ("PASS" if complete else "FAIL", _checks, _fails,
+           "True" if complete else "False"))
+    if not complete:
+        print("      注意：失败/不完整的运行不得作为验收依据。")
+    return 0 if complete else 1
 
 
 if __name__ == "__main__":
