@@ -42,6 +42,12 @@ typedef struct {
     int cross_session_ms;   /* 默认 1200：跨 session 续说的最大间隔 */
     int cross_session;      /* 1 = 允许"悬空谓词"跨 session 合并（默认 1） */
     int revision_sim;       /* 默认 80：同 session 修订判定的相似度（%） */
+    /* T7-05：完整的本地指令不必等 debounce_ms（"关闭屏幕"说完就该执行）。
+     * 只对"明确动作 + 语义完整"的本地意图开快路，聊天文本仍等满窗口，
+     * 否则同 session 的 ASR 修订会被拆成两次回答。
+     * fast_intents 是 T7B_ROUTE_* 位掩码，0 = 快路关闭。 */
+    int          fast_native;
+    unsigned int fast_intents;
 } ug_config;
 
 typedef struct {
@@ -67,6 +73,12 @@ typedef struct {
     long long due_ms;
     int       merges;
 
+    /* T7-05：快路刚放出去的完整指令（用来挡住紧随其后的同 session 修订，
+     * 否则"关闭屏幕" + "关闭屏幕吧"会被执行两次） */
+    char      fast_session[UG_ID_MAX];
+    char      fast_text[UG_TEXT_MAX];
+    long long fast_ms;
+
     /* 观测（打进 Worker 状态文件） */
     unsigned long seen;
     unsigned long held;
@@ -77,6 +89,7 @@ typedef struct {
     unsigned long truncated;
     unsigned long restored;
     unsigned long expired_on_restore;
+    unsigned long fast_released;    /* T7-05：不等窗口直接提交的完整本地指令数 */
     char      last_detail[UG_DETAIL_MAX];
 } ug_ctx;
 

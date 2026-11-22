@@ -130,6 +130,15 @@ typedef struct {
     char               route_last[96];         /* "route=native intent=time rule=time.keyword" */
     char               route_publish_file[T6B_PATH_MAX]; /* 给 TTS 守卫的原厂放行标记 */
 
+    /* T7-05：放行标记（native_route.public.json）的可靠性计数 */
+    unsigned long long route_publish_ok;       /* 落盘 + 回读校验通过 */
+    unsigned long long route_publish_fail;     /* 任一步失败（已回退 AI） */
+    unsigned long long route_fallback_ai;      /* 标记写失败后改走模型的条数 */
+    unsigned long long route_dup_dropped;      /* ASR 二次识别被并入前一次的条数 */
+    unsigned long long route_publish_retry;    /* 重试次数 */
+    long long          route_seq;              /* 标记单调序号（守卫用它区分两条连续指令） */
+    char               route_publish_err[128]; /* 最近一次失败原因 */
+
     /* T7-04：ASR 暂存门（半句话/修订合并） */
     int                gate_enabled;
     int                gate_debounce_ms;
@@ -142,6 +151,7 @@ typedef struct {
     unsigned long long gate_cross_merged;
     unsigned long long gate_dropped_dup;
     unsigned long long gate_restored;
+    unsigned long long gate_fast_released;    /* T7-05：完整本地指令不等窗口直接提交的次数 */
     char               gate_last_detail[160];
     char               gate_hold_file[T6B_PATH_MAX];
 

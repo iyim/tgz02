@@ -6,6 +6,7 @@
  */
 #include "utterance_gate.h"
 #include "echo_filter.h"
+#include "intent_route.h"
 #include "worker_util.h"
 
 #include <stdio.h>
@@ -46,6 +47,8 @@ int ug_defaults(ug_config *c)
     c->cross_session_ms = 1200;
     c->cross_session = 1;
     c->revision_sim = 80;
+    c->fast_native = 1;
+    c->fast_intents = T7B_ROUTE_ALL;
     return 0;
 }
 
@@ -84,6 +87,18 @@ static const char *const UG_DANGLING[] = {
     "来一首", "来点", "给我", "给我放", "帮我", "麻烦你", "那个", "然后",
     "还有", "另外", "接着", "以及", "和", "跟", "我想", "我要", "想听",
     "介绍一下", "说说", "讲讲", "告诉", "关于", "对比", "还有呢",
+    /* T7-05：数量前缀也要算"没说完"。真机上 ASR 把"音量调到百分之十"截成
+     * "音量调到百分之"，如果这里不拦住，就会拿半句话去路由（实测被解析成 100）。 */
+    "百分之", "百分", "到百分之",
+    NULL
+};
+
+/* T7-05：整句等于这些词 = 只是在给下一句做开头（"明天" + "会下雨吗"）。
+ * 按整句相等比较，不做前缀匹配，避免误伤"明天去北京怎么走"。 */
+static const char *const UG_OPEN_PREFIX[] = {
+    "明天", "今天", "后天", "昨天", "今晚", "明早", "明晚", "大后天",
+    "周末", "这周", "下周", "上周", "现在", "最近", "刚才", "然后",
+    "郑州", "北京", "上海", "深圳", "广州", "杭州", "成都", "武汉",
     NULL
 };
 
@@ -100,7 +115,46 @@ int ug_looks_incomplete(const char *text)
         klen = strlen(UG_DANGLING[i]);
         if (len >= klen && strcmp(n + (len - klen), UG_DANGLING[i]) == 0) return 1;
     }
+    /* T7-05：开头就"悬空"的短语。ASR 常把"明天/会下雨吗"切成两条 final，
+     * 而"明天"既不以悬空谓词结尾、也不命中任何意图 —— 只靠后缀判定会把它
+     * 当完整指令立刻提交，后半句就成了第二条独立指令。
+     * 这里按**整句相等**判定（不做前缀匹配），避免把"明天去北京怎么走"误伤。 */
+    for (i = 0; UG_OPEN_PREFIX[i] != NULL; i++) {
+        if (strcmp(n, UG_OPEN_PREFIX[i]) == 0) return 1;
+    }
     return 0;
+}
+
+int ug_looks_incomplete(const char *text);
+
+/* ---------------- 完整本地指令的快路（T7-05） ---------------- */
+
+/* 说完就能执行的本地指令：意图明确 + 语义完整（不以悬空谓词结尾）。
+ * 典型："关闭屏幕"、"现在几点"、"音量调到百分之十"、"把声音调到二十五"、"停止"。
+ * 不满足就不走快路（"音量调到"会被 ug_looks_incomplete 拦下）。 */
+static int ug_fast_ready(const ug_config *c, const char *text, const char **why)
+{
+    ir_result ir;
+    int bit;
+
+    if (why != NULL) *why = "";
+    if (c == NULL || !c->fast_native || c->fast_intents == 0) return 0;
+    if (text == NULL || text[0] == '\0') return 0;
+    if (ug_looks_incomplete(text)) return 0;
+    if (!ir_classify(text, &ir)) return 0;
+    switch (ir.intent) {
+    case IR_VOLUME:     bit = T7B_ROUTE_VOLUME; break;
+    case IR_WEATHER:    bit = T7B_ROUTE_WEATHER; break;
+    case IR_SCREEN_OFF: bit = T7B_ROUTE_SCREEN_OFF; break;
+    case IR_SCREEN_ON:  bit = T7B_ROUTE_SCREEN_ON; break;
+    case IR_MEDIA:      bit = T7B_ROUTE_MEDIA; break;
+    case IR_STOP:       bit = T7B_ROUTE_STOP; break;
+    case IR_TIME:       bit = T7B_ROUTE_TIME; break;
+    default:            return 0;
+    }
+    if ((c->fast_intents & bit) == 0) return 0;
+    if (why != NULL) *why = ir_intent_name(ir.intent);
+    return 1;
 }
 
 /* ---------------- 暂存槽 ---------------- */
@@ -191,6 +245,55 @@ int ug_feed(ug_ctx *g, const char *session, const char *event_id,
     }
 
     if (!g->have) {
+        /* T7-05：快路放出去的文本还要挡住紧随其后的同 session 修订
+         * （"关闭屏幕" -> "关闭屏幕吧"），否则同一条指令会被执行两次。 */
+        if (g->cfg.fast_native && g->fast_text[0] != '\0' &&
+            strcmp(g->fast_session, session != NULL ? session : "") == 0 &&
+            now_ms - g->fast_ms <= (long long)g->cfg.debounce_ms * 2) {
+            ug_norm(text, nn, sizeof(nn));
+            ug_norm(g->fast_text, nh, sizeof(nh));
+            if (nn[0] != '\0' &&
+                (strcmp(nn, nh) == 0 ||
+                 strncmp(nn, nh, strlen(nh)) == 0 ||
+                 strncmp(nh, nn, strlen(nn)) == 0)) {
+                g->dropped_dup++;
+                snprintf(g->last_detail, sizeof(g->last_detail),
+                         "dup of fast release event=%s age=%lldms",
+                         event_id != NULL ? event_id : "-", now_ms - g->fast_ms);
+                if (out != NULL) {
+                    memset(out, 0, sizeof(*out));
+                    out->kind = UG_DROP;
+                    ug_copy(out->text, sizeof(out->text), text);
+                    ug_copy(out->why, sizeof(out->why), "dup");
+                }
+                return UG_DROP;
+            }
+        }
+        /* T7-05：完整本地指令不占暂存槽，立刻交出去（"关闭屏幕"不该等 450 ms）。
+         * 只对语义完整、意图明确的本地指令开快路；聊天仍然握满窗口。 */
+        {
+            const char *fast_intent = NULL;
+
+            if (ug_fast_ready(&g->cfg, text, &fast_intent)) {
+                g->fast_released++;
+                snprintf(g->last_detail, sizeof(g->last_detail), "fast native intent=%s",
+                         fast_intent[0] != '\0' ? fast_intent : "?");
+                ug_copy(g->fast_session, sizeof(g->fast_session), session);
+                ug_copy(g->fast_text, sizeof(g->fast_text), text);
+                g->fast_ms = now_ms;
+                if (out != NULL) {
+                    memset(out, 0, sizeof(*out));
+                    out->kind = UG_RELEASE;
+                    ug_copy(out->text, sizeof(out->text), text);
+                    ug_copy(out->session, sizeof(out->session), session);
+                    ug_copy(out->first_event_id, sizeof(out->first_event_id), event_id);
+                    ug_copy(out->last_event_id, sizeof(out->last_event_id), event_id);
+                    ug_copy(out->why, sizeof(out->why), "fast");
+                }
+                g->released++;
+                return UG_RELEASE;
+            }
+        }
         snprintf(g->last_detail, sizeof(g->last_detail), "hold session=%s", session ? session : "-");
         return ug_stash(g, session, event_id, text, now_ms);
     }
@@ -246,6 +349,29 @@ int ug_feed(ug_ctx *g, const char *session, const char *event_id,
             ug_extend(g, now_ms);
             snprintf(g->last_detail, sizeof(g->last_detail),
                      "revision similar=%d%% merges=%d", ef_similar(nh, nn), g->merges);
+            return UG_HELD;
+        }
+        /* T7-05：同一个 session 内被 ASR 切成两段的悬空句也要拼起来。
+         * 实测里"音量调到"与"百分之十"经常落在同一个 session 的两次 final 上
+         * （原厂端点没有换 session），只靠跨 session 合并救不回来。
+         * 判据仍然是"旧文本以悬空谓词结尾" + 间隔不超窗口，所以
+         * "关闭屏幕" + "现在几点" 这种两条独立指令不会被拼在一起。 */
+        gap = now_ms - g->last_ms;
+        if (gap >= 0 && gap <= (long long)g->cfg.cross_session_ms &&
+            ug_looks_incomplete(g->text)) {
+            if (strlen(g->text) + strlen(text) + 1 < sizeof(merged)) {
+                snprintf(merged, sizeof(merged), "%s%s", g->text, text);
+            } else {
+                ug_copy(merged, sizeof(merged), text);
+                g->truncated++;
+            }
+            ug_copy(g->text, sizeof(g->text), merged);
+            ug_copy(g->last_event_id, sizeof(g->last_event_id), event_id);
+            g->merges++;
+            g->merged++;
+            ug_extend(g, now_ms);
+            snprintf(g->last_detail, sizeof(g->last_detail),
+                     "dangling merge same session gap=%lldms merges=%d", gap, g->merges);
             return UG_HELD;
         }
         /* 同一 session 里两句不同的话：先交旧的，再握新的 */

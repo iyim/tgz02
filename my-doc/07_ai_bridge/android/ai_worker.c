@@ -46,6 +46,7 @@ typedef struct {
 } t6b_utt;
 
 #define T6B_UTT_QUEUE 4
+#define T6B_ROUTE_TEXT_MAX 256
 
 typedef struct {
     t6b_config   cfg;
@@ -77,6 +78,10 @@ typedef struct {
     unsigned long uttq_dropped;
     int          play_playing;            /* 最近一次读到的播报状态：1=playing */
     int          play_known;              /* 1 = 至少读到过一次播报状态 */
+    /* T7-05：最近一次真正执行过的 native 指令（用于识别 ASR 的二次识别） */
+    char         last_native_text[T6B_ROUTE_TEXT_MAX];
+    long long    last_native_ms;
+    int          last_native_intent;
 
     /* 待 Provider 成功的事件（失败期间一直保留，不读下一条） */
     t6b_event    pend;
@@ -1015,20 +1020,13 @@ static int commit_skipped(t6b_worker *w, const char **exit_reason)
 
 /* ---------------- T7-04：路由 / 暂存门 / 会话 ---------------- */
 
+static void tts_request_stop(t6b_worker *w, const char *why);
+
 static int route_intent_enabled(const t6b_worker *w, ir_intent it)
 {
-    int bit;
+    int bit = ir_route_bit(it);
 
-    switch (it) {
-    case IR_VOLUME:     bit = T7B_ROUTE_VOLUME; break;
-    case IR_WEATHER:    bit = T7B_ROUTE_WEATHER; break;
-    case IR_SCREEN_OFF: bit = T7B_ROUTE_SCREEN_OFF; break;
-    case IR_SCREEN_ON:  bit = T7B_ROUTE_SCREEN_ON; break;
-    case IR_MEDIA:      bit = T7B_ROUTE_MEDIA; break;
-    case IR_STOP:       bit = T7B_ROUTE_STOP; break;
-    case IR_TIME:       bit = T7B_ROUTE_TIME; break;
-    default:            return 0;
-    }
+    if (bit == 0) return 0;
     return (w->cfg.route_intents & bit) != 0;
 }
 
@@ -1052,52 +1050,130 @@ static void utf8_copy_trunc(char *dst, size_t cap, const char *src)
  * 写"原厂放行"标记：TTS 守卫在 :core 里读它，用来判断某条原厂回答对应的是一条
  * route=native 的指令，于是放行而不是屏蔽。
  * 文件必须 0644（Worker 以 root 跑，:core 以 system 跑）；内容只有 session/意图，没有正文。
+ *
+ * T7-05：返回值必须可信。任一步失败（open/write/fsync/fchmod/rename/chmod/回读校验）
+ * 都返回 -1，调用方据此**回退到 AI 回答**——绝不允许出现"Worker 以为放行了、
+ * 守卫却把原厂回答拦掉"这种两边都没有回答的静默故障。
+ * 返回值：0 = 标记已生效且回读一致；-1 = 失败（原因写在 st.route_publish_err）。
  */
-static void route_publish(t6b_worker *w, const t6b_event *ev, const ir_result *ir)
+static int route_publish(t6b_worker *w, const char *session, const char *event_id,
+                         const ir_result *ir)
 {
     char body[512];
     char tmp[T6B_PATH_MAX + 8];
     char esc_sess[(T6B_ID_MAX + 1) * 2];
     char esc_ev[(T6B_ID_MAX + 1) * 2];
+    char check[64];
+    char back[512];
+    size_t back_len = 0;
     long long now = wu_wall_ms();
+    long long seq;
     int fd;
     int n;
+    int attempt;
 
-    if (w->route_publish_path[0] == '\0') return;
+    w->st.route_publish_err[0] = '\0';
+    if (w->route_publish_path[0] == '\0') {
+        /* 路由开着但标记路径为空 = 配置错误：不能"假装放行"，直接失败让调用方回退 */
+        snprintf(w->st.route_publish_err, sizeof(w->st.route_publish_err), "no publish path");
+        return -1;
+    }
 
-    wu_json_escape(esc_sess, sizeof(esc_sess), ev->session_id);
-    wu_json_escape(esc_ev, sizeof(esc_ev), ev->event_id);
+    seq = ++w->st.route_seq;
+    wu_json_escape(esc_sess, sizeof(esc_sess), session);
+    wu_json_escape(esc_ev, sizeof(esc_ev), event_id);
     n = snprintf(body, sizeof(body),
-                 "{\"version\":1,\"wall_ms\":%lld,\"exp_ms\":%lld,\"session\":\"%s\","
-                 "\"event_id\":\"%s\",\"intent\":\"%s\",\"rule\":\"%s\"}\n",
-                 now, now + T6B_ROUTE_SLACK_MS, esc_sess, esc_ev,
+                 "{\"version\":2,\"seq\":%lld,\"wall_ms\":%lld,\"exp_ms\":%lld,"
+                 "\"session\":\"%s\",\"event_id\":\"%s\",\"intent\":\"%s\",\"rule\":\"%s\"}\n",
+                 seq, now, now + T6B_ROUTE_SLACK_MS, esc_sess, esc_ev,
                  ir_intent_name(ir->intent), ir->rule);
-    if (n < 0 || (size_t)n >= sizeof(body)) return;
-
+    if (n < 0 || (size_t)n >= sizeof(body)) {
+        snprintf(w->st.route_publish_err, sizeof(w->st.route_publish_err), "body too long");
+        return -1;
+    }
+    snprintf(check, sizeof(check), "\"seq\":%lld", seq);
     snprintf(tmp, sizeof(tmp), "%s.tmp", w->route_publish_path);
-    fd = wu_open_wo(tmp);
-    if (fd < 0) {
-        always("route publish open failed: %s", w->route_publish_path);
-        return;
-    }
-    if (wu_write_all(fd, body, (size_t)n) != 0 || wu_fsync(fd) != 0) {
-        wu_close(fd);
-        wu_unlink(tmp);
-        always("route publish write failed: %s", w->route_publish_path);
-        return;
-    }
-    wu_close(fd);
+
+    for (attempt = 1; attempt <= T7B_PUBLISH_TRIES; attempt++) {
+        if (attempt > 1) {
+            w->st.route_publish_retry++;
+            (void)wu_sleep_ms(20);
+        }
+        if (attempt > 1) seq = w->st.route_seq;   /* 重试沿用同一个 seq，守卫不会看到跳号 */
+
+        fd = wu_open_wo(tmp);
+        if (fd < 0) {
+            snprintf(w->st.route_publish_err, sizeof(w->st.route_publish_err),
+                     "open tmp: %s", strerror(errno));
+            continue;
+        }
+        if (wu_write_all(fd, body, (size_t)n) != 0) {
+            snprintf(w->st.route_publish_err, sizeof(w->st.route_publish_err),
+                     "write tmp: %s", strerror(errno));
+            wu_close(fd);
+            (void)wu_unlink(tmp);
+            continue;
+        }
+        if (wu_fsync(fd) != 0) {
+            snprintf(w->st.route_publish_err, sizeof(w->st.route_publish_err),
+                     "fsync tmp: %s", strerror(errno));
+            wu_close(fd);
+            (void)wu_unlink(tmp);
+            continue;
+        }
 #ifndef _WIN32
-    (void)chmod(tmp, 0644);
+        /* 权限必须在 rename 之前设好：守卫是 system 用户，rename 之后再 chmod 存在
+         * "短暂 0600" 的窗口，而且 chmod 失败时文件已经就位、错得更隐蔽。 */
+        if (fchmod(fd, 0644) != 0) {
+            snprintf(w->st.route_publish_err, sizeof(w->st.route_publish_err),
+                     "fchmod tmp: %s", strerror(errno));
+            wu_close(fd);
+            (void)wu_unlink(tmp);
+            continue;
+        }
 #endif
-    if (wu_rename_replace(tmp, w->route_publish_path) != 0) {
-        wu_unlink(tmp);
-        always("route publish rename failed: %s", w->route_publish_path);
-        return;
-    }
+        if (wu_close(fd) != 0) {
+            snprintf(w->st.route_publish_err, sizeof(w->st.route_publish_err),
+                     "close tmp: %s", strerror(errno));
+            (void)wu_unlink(tmp);
+            continue;
+        }
+        if (wu_rename_replace(tmp, w->route_publish_path) != 0) {
+            snprintf(w->st.route_publish_err, sizeof(w->st.route_publish_err),
+                     "rename: %s", strerror(errno));
+            (void)wu_unlink(tmp);
+            continue;
+        }
 #ifndef _WIN32
-    (void)chmod(w->route_publish_path, 0644);
+        /* rename 之后按路径再确认一次：SELinux/挂载策略可能让 rename 成功但属性不对 */
+        {
+            struct stat sb;
+
+            if (chmod(w->route_publish_path, 0644) != 0 ||
+                stat(w->route_publish_path, &sb) != 0 ||
+                (sb.st_mode & 0777) != 0644) {
+                snprintf(w->st.route_publish_err, sizeof(w->st.route_publish_err),
+                         "chmod/stat final: %s mode=%04o", strerror(errno),
+                         (unsigned)((stat(w->route_publish_path, &sb) == 0) ?
+                                    (sb.st_mode & 0777) : 0));
+                continue;
+            }
+        }
 #endif
+        /* 回读校验：内容里必须能看到本次 seq —— 覆盖"写成功但被别的进程覆盖/清理"的情况 */
+        back[0] = '\0';
+        if (wu_read_file(w->route_publish_path, back, sizeof(back), &back_len) != 0 ||
+            strstr(back, check) == NULL || strstr(back, esc_sess) == NULL) {
+            snprintf(w->st.route_publish_err, sizeof(w->st.route_publish_err),
+                     "verify readback failed (len=%d)", (int)back_len);
+            continue;
+        }
+        w->st.route_publish_ok++;
+        return 0;
+    }
+
+    w->st.route_publish_fail++;
+    return -1;
 }
 
 static void uttq_push(t6b_worker *w, const ug_out *u, unsigned long seq)
@@ -1126,15 +1202,90 @@ static void uttq_push(t6b_worker *w, const ug_out *u, unsigned long seq)
     w->uttq_count++;
 }
 
+/*
+ * 从暂存队列取一条"完整 utterance"，此时才做本地意图判定（T7-05）。
+ * 返回 1 = 已按 route=native 交给原厂（不建 pend，不需要模型）；
+ *      0 = 已建 pend（route=ai，等 Provider 处理）；
+ *     -1 = 队列空。
+ *
+ * 为什么要等到这里才判定：ASR 经常把一句话拆成两条 final
+ * （"音量调到" + "百分之十"）。如果在 ug_feed 之前就判定，第一段可能已经命中
+ * 本地路由被提前提交，后半句就永远跟不上，用户听到的是"调音量到了百分之十"这种
+ * 中间态。放到暂存门放出**完整 utterance**之后判定，才保证"一段话只判一次、
+ * 只执行一次"，也不会出现原厂和 AI 双回答。
+ */
 static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
 {
     t6b_utt *slot;
     size_t n;
+    ir_result ir;
 
     if (w->uttq_count <= 0) return -1;
     slot = &w->uttq[w->uttq_head];
     w->uttq_head = (w->uttq_head + 1) % T6B_UTT_QUEUE;
     w->uttq_count--;
+
+    /* ---- T7-05 ①：完整 utterance 到手，先看能不能交给原厂 ---- */
+    if (w->cfg.route_native && ir_classify(slot->text, &ir) &&
+        route_intent_enabled(w, ir.intent)) {
+        /* 同一条指令被 ASR 二次识别（真机样本：先"…调到百分之"，13 s 后"…调到百分之二十"）
+         * 时不再执行第二次：两段文本是前缀关系且意图相同，用户说的是同一句话。
+         * 只认前缀关系，所以"调到十"之后再说"调到二十"不会被误吞。 */
+        if (w->last_native_text[0] != '\0' && w->last_native_intent == (int)ir.intent &&
+            now_ms - w->last_native_ms >= 0 &&
+            now_ms - w->last_native_ms <= T7B_NATIVE_REEVAL_MS) {
+            size_t a = strlen(w->last_native_text);
+            size_t b = strlen(slot->text);
+
+            if ((a < b && strncmp(slot->text, w->last_native_text, a) == 0) ||
+                (b < a && strncmp(w->last_native_text, slot->text, b) == 0)) {
+                w->st.route_dup_dropped++;
+                always("route=native SKIP duplicate recognition: event=%s session=%s "
+                       "intent=%s (prev was %dB, now %dB, gap=%lldms)",
+                       slot->event_id, slot->session, ir_intent_name(ir.intent),
+                       (int)a, (int)b, now_ms - w->last_native_ms);
+                return 1;
+            }
+        }
+        if (route_publish(w, slot->session, slot->event_id, &ir) == 0) {
+            w->st.route_native++;
+            /* 记下这次真正执行的指令，用来识别同一句话的二次识别 */
+            utf8_copy_trunc(w->last_native_text, sizeof(w->last_native_text), slot->text);
+            w->last_native_ms = now_ms;
+            w->last_native_intent = (int)ir.intent;
+            switch (ir.intent) {
+            case IR_VOLUME:     w->st.route_volume++; break;
+            case IR_WEATHER:    w->st.route_weather++; break;
+            case IR_SCREEN_OFF: w->st.route_screen_off++; break;
+            case IR_SCREEN_ON:  w->st.route_screen_on++; break;
+            case IR_MEDIA:      w->st.route_media++; break;
+            case IR_STOP:       w->st.route_stop++; break;
+            case IR_TIME:       w->st.route_time++; break;
+            default: break;
+            }
+            if (ir.intent == IR_STOP) {
+                /* 打断类：先把声音停掉，再让原厂回一句 */
+                tts_request_stop(w, "route=native intent=stop");
+            }
+            snprintf(w->st.route_last, sizeof(w->st.route_last),
+                     "route=native intent=%s rule=%s arg=%s session=%s seq=%lld",
+                     ir_intent_name(ir.intent), ir.rule, ir.arg, slot->session,
+                     w->st.route_seq);
+            always("route=native intent=%s rule=%s arg=%s event=%s seq=%lu session=%s "
+                   "text_bytes=%d merges=%d held_ms=%lld publish_seq=%lld "
+                   "(factory answers; AI worker does not)",
+                   ir_intent_name(ir.intent), ir.rule, ir.arg, slot->event_id, slot->seq,
+                   slot->session, (int)strlen(slot->text), slot->merges, slot->held_ms,
+                   w->st.route_seq);
+            return 1;
+        }
+        /* ---- T7-05 ②：标记没写成功 -> 不能静默跳过 AI，改走模型 ---- */
+        w->st.route_fallback_ai++;
+        always("route=native FALLBACK to ai: intent=%s event=%s session=%s reason=%s "
+               "(guard would drop the factory answer, so the model must answer)",
+               ir_intent_name(ir.intent), slot->event_id, slot->session,
+               w->st.route_publish_err[0] != '\0' ? w->st.route_publish_err : "publish failed");
+    }
 
     memset(&w->pend, 0, sizeof(w->pend));
     w->pend.version = 1;
@@ -1413,46 +1564,14 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                  * 否则"暂停/停止"只能排队等在长回答后面（实测就是这样）。 */
                 interrupt_if_speaking(w);
 
-                /* T7-04 功能二：本地意图优先路由。
-                 * 命中原厂已有能力（音量/天气/关屏/开屏/时间）时：
-                 *   1) 不请求模型（route=native），避免原厂与 AI 双重回答；
-                 *   2) 写"原厂放行"标记，让 TTS 守卫保留这条原厂回答；
-                 *   3) 偏移照常提交，这条 ASR 文本绝不会被重复处理。 */
-                if (w->cfg.route_native) {
-                    ir_result ir;
-
-                    if (ir_classify(ev.text, &ir) && route_intent_enabled(w, ir.intent)) {
-                        w->st.route_native++;
-                        switch (ir.intent) {
-                        case IR_VOLUME:     w->st.route_volume++; break;
-                        case IR_WEATHER:    w->st.route_weather++; break;
-                        case IR_SCREEN_OFF: w->st.route_screen_off++; break;
-                        case IR_SCREEN_ON:  w->st.route_screen_on++; break;
-                        case IR_MEDIA:      w->st.route_media++; break;
-                        case IR_STOP:       w->st.route_stop++; break;
-                        case IR_TIME:       w->st.route_time++; break;
-                        default: break;
-                        }
-                        route_publish(w, &ev, &ir);
-                        if (ir.intent == IR_STOP) {
-                            /* 打断类：先把声音停掉，再让原厂回一句 */
-                            tts_request_stop(w, "route=native intent=stop");
-                        }
-                        snprintf(w->st.route_last, sizeof(w->st.route_last),
-                                 "route=native intent=%s rule=%s arg=%s session=%s",
-                                 ir_intent_name(ir.intent), ir.rule, ir.arg, ev.session_id);
-                        always("route=native intent=%s rule=%s arg=%s event=%s seq=%lu "
-                               "session=%s text_bytes=%d (factory answers; AI worker does not)",
-                               ir_intent_name(ir.intent), ir.rule, ir.arg, ev.event_id,
-                               ev.seq, ev.session_id, ev.text_bytes);
-                        if (commit_skipped(w, exit_reason) != 0) return 6;
-                        continue;
-                    }
-                }
+                /* T7-05：本地意图判定不再放在这里。
+                 * ASR 会把一句话拆成两条 final（"音量调到" + "百分之十"），在这里判定等于
+                 * 用半句话做路由决策。判定统一挪到 uttq_pop_to_pend()：只有暂存门放出
+                 * 完整 utterance 之后才分类，一段话只判一次、只执行一次。 */
 
                 /* T7-04 功能四：ASR 暂存门。
                  * 命中暂存时偏移立即提交（文本已经在内存 + 落盘槽里），
-                 * 到期后由主循环 0.8 段取出提交模型。 */
+                 * 到期后由主循环 0.8 段取出，交给 uttq_pop_to_pend() 判定路由。 */
                 {
                     ug_out ugo;
                     int g = ug_feed(&w->ug, ev.session_id, ev.event_id, ev.text,
@@ -1465,6 +1584,7 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                     w->st.gate_cross_merged = w->ug.cross_merged;
                     w->st.gate_dropped_dup = w->ug.dropped_dup;
                     w->st.gate_restored = w->ug.restored;
+                    w->st.gate_fast_released = w->ug.fast_released;
                     snprintf(w->st.gate_last_detail, sizeof(w->st.gate_last_detail), "%s",
                              w->ug.last_detail);
                     gate_hold_flush(w);
@@ -1909,6 +2029,10 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         if (!c->route_native) w.route_publish_path[0] = '\0';
 
         ug_init(&w.ug, &c->gate);
+        /* T7-05：快路只对"当前真正启用的意图"生效，与 route_intents 保持同一份开关，
+         * 免得出现"路由关了但门还在提前放行"的不一致。 */
+        w.ug.cfg.fast_native = c->route_native ? 1 : 0;
+        w.ug.cfg.fast_intents = (unsigned int)c->route_intents;
         cs_init(&w.cs, &c->session);
 
         w.st.route_enabled = c->route_native;

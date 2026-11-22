@@ -17,6 +17,7 @@
 #include "conv_session.h"
 #include "deepseek_provider.h"
 #include "event_reader.h"
+#include "intent_route.h"
 #include "provider.h"
 #include "utterance_gate.h"
 #include "worker_status.h"
@@ -38,18 +39,12 @@
 /* T7-04：暂存槽与"原厂放行"标记 */
 #define T6B_GATE_HOLD_NAME      "utterance_hold.json"
 #define T6B_ROUTE_PUBLISH_NAME  "native_route.public.json"
-#define T6B_ROUTE_SLACK_MS      8000    /* 放行标记的有效期（覆盖原厂云端应答延迟） */
+#define T6B_ROUTE_SLACK_MS      2000    /* T7-05：放行窗口收紧到 2 s（原 8000 太宽，会放过无关原厂回答） */
+#define T7B_PUBLISH_TRIES       3       /* T7-05：放行标记写盘的重试次数（全失败则回退 AI） */
+#define T7B_NATIVE_REEVAL_MS    15000   /* T7-05：同一条指令被 ASR 二次识别（文本为前缀关系）时，
+                                         * 在这段时间内只执行一次，避免原厂播两遍 */
 
-/* T7-04：本地意图路由的位掩码（worker.conf 的 route_intents=volume,time,...）
- * 任务书 §4 只要求音量/天气/关屏/时间四类；开屏同属原厂屏幕能力，一起管。 */
-#define T7B_ROUTE_VOLUME     0x01
-#define T7B_ROUTE_WEATHER    0x02
-#define T7B_ROUTE_SCREEN_OFF 0x04
-#define T7B_ROUTE_TIME       0x08
-#define T7B_ROUTE_SCREEN_ON  0x10
-#define T7B_ROUTE_MEDIA      0x20
-#define T7B_ROUTE_STOP       0x40
-#define T7B_ROUTE_ALL        0x7F
+/* T7-04：本地意图路由的位掩码见 intent_route.h（T7B_ROUTE_*） */
 
 typedef struct {
     char        work_dir[T6B_PATH_MAX];      /* events.jsonl 所在目录（只读） */

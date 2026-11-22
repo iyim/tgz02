@@ -47,8 +47,23 @@ typedef struct {
     char      arg[IR_ARG_MAX];    /* volume 的参数：up / down / set:30 / mute / unmute */
 } ir_result;
 
+/* 本地意图路由的位掩码（worker.conf 的 route_intents=volume,time,...）
+ * 放在这里而不是 ai_worker.h：utterance_gate 也要用同一套位做"完整指令快路"，
+ * 而它不应该依赖整个 Worker 头文件。 */
+#define T7B_ROUTE_VOLUME     0x01
+#define T7B_ROUTE_WEATHER    0x02
+#define T7B_ROUTE_SCREEN_OFF 0x04
+#define T7B_ROUTE_TIME       0x08
+#define T7B_ROUTE_SCREEN_ON  0x10
+#define T7B_ROUTE_MEDIA      0x20
+#define T7B_ROUTE_STOP       0x40
+#define T7B_ROUTE_ALL        0x7F
+
 /* 判定一条 ASR 文本：1 = 属于原厂基础指令（route=native），0 = 不是（route=ai） */
 int ir_classify(const char *text, ir_result *out);
+
+/* 意图对应的路由位（未知意图返回 0） */
+int ir_route_bit(ir_intent it);
 
 /* 同上，但输入已经是 ir_normalize() 的结果（host 单测与内部复用） */
 int ir_classify_norm(const char *norm, ir_result *out);

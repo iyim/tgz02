@@ -52,6 +52,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     /* T7-04 */
     char esc_route_last[224];
     char esc_route_file[T6B_PATH_MAX * 2];
+    char esc_publish_err[288];
     char esc_gate_detail[352];
     char esc_gate_file[T6B_PATH_MAX * 2];
     char esc_session_state[48];
@@ -79,6 +80,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     wu_json_escape(esc_echo_detail, sizeof(esc_echo_detail), st->echo_last_detail);
     wu_json_escape(esc_route_last, sizeof(esc_route_last), st->route_last);
     wu_json_escape(esc_route_file, sizeof(esc_route_file), st->route_publish_file);
+    wu_json_escape(esc_publish_err, sizeof(esc_publish_err), st->route_publish_err);
     wu_json_escape(esc_gate_detail, sizeof(esc_gate_detail), st->gate_last_detail);
     wu_json_escape(esc_gate_file, sizeof(esc_gate_file), st->gate_hold_file);
     wu_json_escape(esc_session_state, sizeof(esc_session_state), st->session_state);
@@ -116,11 +118,13 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"route\":{\"enabled\":%d,\"intents\":%d,\"native\":%llu,\"ai\":%llu,"
         "\"volume\":%llu,\"weather\":%llu,\"screen_off\":%llu,\"time\":%llu,"
         "\"screen_on\":%llu,\"media\":%llu,\"stop\":%llu,\"interrupts\":%llu,"
+        "\"publish_ok\":%llu,\"publish_fail\":%llu,\"fallback_ai\":%llu,"
+        "\"publish_retry\":%llu,\"seq\":%lld,\"dup_dropped\":%llu,\"publish_err\":\"%s\","
         "\"last\":\"%s\",\"publish_file\":\"%s\"},"
         "\"gate\":{\"enabled\":%d,\"debounce_ms\":%d,\"max_hold_ms\":%d,"
         "\"cross_session\":%d,\"seen\":%llu,\"held\":%llu,\"released\":%llu,"
         "\"merged\":%llu,\"cross_merged\":%llu,\"dropped_dup\":%llu,\"restored\":%llu,"
-        "\"last_detail\":\"%s\",\"hold_file\":\"%s\"},"
+        "\"fast_released\":%llu,\"last_detail\":\"%s\",\"hold_file\":\"%s\"},"
         "\"session\":{\"enabled\":%d,\"timeout_ms\":%d,\"state\":\"%s\","
         "\"turns\":%d,\"followups\":%d,\"opened\":%lu,\"closed\":%lu,"
         "\"detail\":\"%s\"},"
@@ -156,11 +160,13 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         st->route_enabled, st->route_intents, st->route_native, st->route_ai,
         st->route_volume, st->route_weather, st->route_screen_off, st->route_time,
         st->route_screen_on, st->route_media, st->route_stop, st->interrupts,
+        st->route_publish_ok, st->route_publish_fail, st->route_fallback_ai,
+        st->route_publish_retry, st->route_seq, st->route_dup_dropped, esc_publish_err,
         esc_route_last, esc_route_file,
         st->gate_enabled, st->gate_debounce_ms, st->gate_max_hold_ms,
         st->gate_cross_session, st->gate_seen, st->gate_held, st->gate_released,
         st->gate_merged, st->gate_cross_merged, st->gate_dropped_dup, st->gate_restored,
-        esc_gate_detail, esc_gate_file,
+        st->gate_fast_released, esc_gate_detail, esc_gate_file,
         st->session_enabled, st->session_timeout_ms, esc_session_state,
         st->session_turns, st->session_followups, st->session_opened, st->session_closed,
         esc_session_detail,

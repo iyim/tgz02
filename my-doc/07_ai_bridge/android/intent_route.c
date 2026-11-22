@@ -84,12 +84,17 @@ static int ir_cn_digit(const char *p)
  * 中文数字：只有"数量语境"才解析 —— 出现 百分之 / 调到 / 调成 / 设成 / 设为 之后才是数值，
  * 否则"调大一点""小一点"里的"一"会被误当成 1。
  * 支持 0..100：十 / 十五 / 二十五 / 三十 / 一百 / 一百五（一百五 => 150 超范围，按 100 处理）。
+ *
+ * T7-05 修正（真机翻车点）：必须用**离数字最近的那个触发词**，而不是按表的顺序试。
+ * 原实现按表顺序试，"百分之"后面没有数字时会落到后面的短触发词"到"，
+ * 于是"音量调到百分之"（ASR 截断）被解析成 set:100 —— 用户没说要 100，原厂却把音量拉满。
  */
 static int ir_take_cn_number(const char *norm, char *arg, size_t cap)
 {
     static const char *const trig[] = {
-        "百分之", "调到", "调成", "调到", "设成", "设为", "到", NULL
+        "百分之", "调到", "调成", "设成", "设为", "到", NULL
     };
+    const char *best = NULL;      /* 最靠右的触发词之后的位置 */
     int ti;
 
     for (ti = 0; trig[ti] != NULL; ti++) {
@@ -97,46 +102,50 @@ static int ir_take_cn_number(const char *norm, char *arg, size_t cap)
 
         while (hit != NULL) {
             const char *p = hit + strlen(trig[ti]);
-            int section = 0, num = -1, seen = 0, total;
 
-            while (*p != '\0') {
-                const unsigned char *b = (const unsigned char *)p;
-
-                if (b[0] < 0xE0) break;                    /* 数字段结束 */
-                if (memcmp(p, "百", 3) == 0) {
-                    section += (num <= 0 ? 1 : num) * 100;
-                    num = -1;
-                    seen = 1;
-                    p += 3;
-                    continue;
-                }
-                if (memcmp(p, "十", 3) == 0) {
-                    section += (num <= 0 ? 1 : num) * 10;
-                    num = -1;
-                    seen = 1;
-                    p += 3;
-                    continue;
-                }
-                {
-                    int d = ir_cn_digit(p);
-                    if (d < 0) break;
-                    num = d;
-                    seen = 1;
-                    p += 3;
-                }
-            }
-            if (seen) {
-                total = section + (num < 0 ? 0 : num);
-                if (total > 100) total = 100;
-                if (total > 0) {
-                    if (snprintf(arg, cap, "set:%d", total) < 0) return 0;
-                    return 1;
-                }
-            }
-            hit = strstr(hit + 3, trig[ti]);
+            if (best == NULL || p > best) best = p;
+            hit = strstr(hit + strlen(trig[ti]), trig[ti]);
         }
     }
-    return 0;
+    if (best == NULL) return 0;
+
+    {
+        const char *p = best;
+        int section = 0, num = -1, seen = 0, total;
+
+        while (*p != '\0') {
+            const unsigned char *b = (const unsigned char *)p;
+
+            if (b[0] < 0xE0) break;                    /* 数字段结束 */
+            if (memcmp(p, "百", 3) == 0) {
+                section += (num <= 0 ? 1 : num) * 100;
+                num = -1;
+                seen = 1;
+                p += 3;
+                continue;
+            }
+            if (memcmp(p, "十", 3) == 0) {
+                section += (num <= 0 ? 1 : num) * 10;
+                num = -1;
+                seen = 1;
+                p += 3;
+                continue;
+            }
+            {
+                int d = ir_cn_digit(p);
+                if (d < 0) break;
+                num = d;
+                seen = 1;
+                p += 3;
+            }
+        }
+        if (!seen) return 0;
+        total = section + (num < 0 ? 0 : num);
+        if (total > 100) total = 100;
+        if (total <= 0) return 0;
+        if (snprintf(arg, cap, "set:%d", total) < 0) return 0;
+        return 1;
+    }
 }
 /* ---------------- 音量 ---------------- */
 
@@ -148,7 +157,11 @@ static const char *const IR_VOL_HIT[] = {
 
 static const char *const IR_VOL_VETO[] = {
     /* 内容类说法：说的是"放什么"，不是音量 */
-    "歌曲音量", "音量大小对比", "音量知识", NULL
+    "歌曲音量", "音量大小对比", "音量知识",
+    /* T7-05：问句/知识类说法不是操作回声（真人样本："声音小了是什么原因"） */
+    "什么意思", "是什么意思", "为什么", "原理", "怎么调", "怎么设置",
+    "聊", "说说", "讲讲", "科普", "什么原因", "怎么回事", "怎么办", "原因",
+    NULL
 };
 
 static const char *const IR_VOL_MUTE[] = {
@@ -250,7 +263,13 @@ static const char *const IR_WEATHER_HIT[] = {
 
 static const char *const IR_WEATHER_VETO[] = {
     /* 影视/歌曲作品名里带"天气" */
-    "天气之子", "天气预爆", NULL
+    "天气之子", "天气预爆",
+    /* T7-05 真人样本："我想聊聊天气"/"天气是怎么形成的" 都要走 AI，
+     * 但"天气怎么样""明天会下雨吗"必须留给原厂，所以这里只否决
+     * "聊天/知识/成因"这些明确的非查询语境，不否决裸"怎么"。 */
+    "聊", "说说", "讲讲", "谈谈", "唠", "介绍", "为什么", "怎么形成",
+    "形成", "成因", "原理", "科学", "科普", "诗句", "知识", "是什么意思",
+    "是什么", "怎么回事", NULL
 };
 
 static int ir_match_weather(const char *n, ir_result *out)
@@ -273,7 +292,10 @@ static const char *const IR_TIME_VETO[] = {
     /* 带"几号/日期"但不是问时间的说法 */
     "号码", "电话", "生日", "航班", "车次", "订单", "快递", "快递号",
     "房间号", "门牌", "编号", "账号", "密码", "倒计时", "定个闹钟",
-    "设置闹钟", "几分钟", "多少分钟", "几点提醒", "几点叫我", NULL
+    "设置闹钟", "几分钟", "多少分钟", "几点提醒", "几点叫我",
+    /* T7-05 真人样本："日期格式是什么"是知识问题，不是问现在几点 */
+    "格式", "怎么写", "写法", "定义", "含义", "怎么算", "换算", "由来",
+    "为什么", "是什么意思", "是什么", NULL
 };
 
 static int ir_match_time(const char *n, ir_result *out)
@@ -295,7 +317,10 @@ static const char *const IR_SCREEN_OFF_HIT[] = {
 static const char *const IR_SCREEN_VETO[] = {
     /* 亮度类不是关屏（原厂另有能力，这里不抢） */
     "亮度", "调亮", "点亮", "打开屏幕", "开屏", "亮一点", "更亮", "暗一点",
-    "屏幕暗", "亮屏", NULL
+    "屏幕暗", "亮屏",
+    /* T7-05 真人样本："黑屏怎么办"是提问，不是关屏指令 */
+    "怎么办", "怎么回事", "什么原因", "坏了", "为什么", "怎么修", "修理",
+    "是什么意思", "什么意思", "风险", "危害", "知识", NULL
 };
 
 static const char *const IR_SCREEN_ON_HIT[] = {
@@ -452,6 +477,21 @@ int ir_classify(const char *text, ir_result *out)
     n = ir_normalize(prepared, norm, sizeof(norm));
     if (n <= 0) return 0;
     return ir_classify_norm(norm, out);
+}
+
+int ir_route_bit(ir_intent it)
+{
+    switch (it) {
+    case IR_VOLUME:     return T7B_ROUTE_VOLUME;
+    case IR_WEATHER:    return T7B_ROUTE_WEATHER;
+    case IR_SCREEN_OFF: return T7B_ROUTE_SCREEN_OFF;
+    case IR_TIME:       return T7B_ROUTE_TIME;
+    case IR_SCREEN_ON:  return T7B_ROUTE_SCREEN_ON;
+    case IR_MEDIA:      return T7B_ROUTE_MEDIA;
+    case IR_STOP:       return T7B_ROUTE_STOP;
+    case IR_NONE:
+    default:            return 0;
+    }
 }
 
 const char *ir_intent_name(ir_intent it)
