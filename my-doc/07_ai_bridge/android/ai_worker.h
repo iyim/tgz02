@@ -39,7 +39,10 @@
 /* T7-04：暂存槽与"原厂放行"标记 */
 #define T6B_GATE_HOLD_NAME      "utterance_hold.json"
 #define T6B_ROUTE_PUBLISH_NAME  "native_route.public.json"
-#define T6B_ROUTE_SLACK_MS      2000    /* T7-05：放行窗口收紧到 2 s（原 8000 太宽，会放过无关原厂回答） */
+/* T7-06-R1 现场：2 s 窗口在这台设备上不够——原厂从收到 ASR 结果到真正开口要 2~4 s，
+ * 结果是本地指令的答案被守卫当成"原厂主动回答"丢掉，用户听起来就是"叫得醒但不回答"。
+ * 放回 8 s 的窗口；精确性由"有没有发标记"保证（route=ai 不发标记，必被拦）。 */
+#define T6B_ROUTE_SLACK_MS      8000
 #define T7B_PUBLISH_TRIES       3       /* T7-05：放行标记写盘的重试次数（全失败则回退 AI） */
 /* T7-05-R2：原来的"文本相同 + 3 s 窗口"去重已删除，改为按事件身份判定，见 t7_dup.h */
 
@@ -57,7 +60,8 @@ typedef struct {
     long long   idle_exit_ms;                /* 空闲 N ms 后退出（0 = 常驻） */
     long long   max_events;                  /* 处理 N 条后退出（0 = 不限） */
     long long   max_runtime_ms;              /* 运行 N ms 后退出（0 = 不限） */
-    int         provider_retry_max;          /* 超过 N 次尝试仍失败 → 报 stuck（继续重试，不跳过） */
+    int         provider_retry_max;          /* 超过 N 次尝试仍失败 → 报 stuck，再试 EXTRA 次后进死信 */
+    int         provider_dead_letter;        /* T7-06-R1：1 = 卡死的事件写死信后跳过，0 = 永远堵住（旧行为） */
     int         provider_backoff_ms;         /* 首次重试间隔 */
     int         provider_backoff_max_ms;     /* 重试间隔上限 */
     int         state_retry_ms;              /* 进度落盘失败后的重试间隔 */

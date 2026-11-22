@@ -78,6 +78,7 @@ typedef struct {
     int  total_timeout_ms;
     int  max_tokens;
     double temperature;      /* T7-01：0.0 - 2.0，默认 0.7 */
+    char thinking[24]; /* T7-06-R1：思考档位（fast/medium/high），空=不发这个字段 */
     int  insecure_http;      /* 1 = base_url 是明文 http（启动时已告警） */
     /* T7-03：统一 system prompt（空 = 用 T6B_DS_SYSTEM_PROMPT_DEFAULT）。
      * Worker 优先生成 messages[0]；这里保留一份，用于"单轮老路径"和兜底。 */
@@ -170,7 +171,8 @@ int  t6b_ds_build_body(const char *model, const char *user_text,
  *   system_prompt 非空时插到数组最前面；temperature/max_tokens 现在都是参数。
  * 0 = 成功；-1 = 非法/放不下（err 说明）。 */
 int  t6b_ds_build_body_msgs(const char *model, const char *system_prompt,
-                            const char *messages_json, double temperature, int max_tokens,
+                            const char *messages_json, const char *thinking,
+                            double temperature, int max_tokens,
                             char *out, size_t cap, size_t *outlen,
                             char *err, size_t errlen);
 

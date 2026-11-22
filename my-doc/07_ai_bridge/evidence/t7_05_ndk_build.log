@@ -1,5 +1,5 @@
 ﻿# T7-05 NDK build log (libtg_ttsguard native_marker + ai_worker gate-first routing)
-# time: 2026-11-22 11:21:14
+# time: 2026-11-22 13:59:19
 # ndk : D:\tgz02\OS\_analysis\tools\android-ndk-r21e
 # cc  : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd
 
@@ -64,7 +64,7 @@ Dynamic section at offset 0x3e5c contains 28 entries:
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_session.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t7_dup.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c -ldl -llog
 (no compiler output: 0 warning, 0 error)
 exit: 0
-artifact: ai_worker  222832 B  sha256=3ff340096131350cff0d72032b4b0e8636b86ae54dcabc113e9dff62dc1df339
+artifact: ai_worker  223092 B  sha256=32fc280019103d58ccd094788f9ad995ca3feefc2155f21afb22f5ecfe0cec44
 # --- readelf -h ---
 ELF Header:
   Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
@@ -78,7 +78,7 @@ ELF Header:
   Version:                           0x1
   Entry point address:               0x2070
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          221352 (bytes into file)
+  Start of section headers:          221612 (bytes into file)
   Flags:                             0x5000200, Version5 EABI, soft-float ABI
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)

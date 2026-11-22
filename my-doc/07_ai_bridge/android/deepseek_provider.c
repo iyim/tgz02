@@ -360,6 +360,7 @@ void t6b_ds_defaults(t6b_ds_cfg *c)
     c->total_timeout_ms = T6B_DS_TIMEOUT_MS_DEFAULT;
     c->max_tokens = T6B_DS_MAX_TOKENS_DEFAULT;
     c->temperature = T6B_DS_TEMP_DEFAULT;
+    c->thinking[0] = '\0';   /* T7-06-R1：默认不发 thinking */
     c->insecure_http = 0;
     /* T7-03：默认 system prompt 落进配置，之后可被 worker.conf / CLI 覆盖 */
     snprintf(c->system_prompt, sizeof(c->system_prompt), "%s", T6B_DS_SYSTEM_PROMPT_DEFAULT);
@@ -580,12 +581,14 @@ int t6b_ds_build_body(const char *model, const char *user_text,
  * messages_json 由 conv_context 生成，这里只做形状校验与拼接，不改写正文（不截断）。
  */
 int t6b_ds_build_body_msgs(const char *model, const char *system_prompt,
-                           const char *messages_json, double temperature, int max_tokens,
+                           const char *messages_json, const char *thinking,
+                           double temperature, int max_tokens,
                            char *out, size_t cap, size_t *outlen,
                            char *err, size_t errlen)
 {
     char esc_model[T6B_DS_MODEL_MAX * 6 + 1];
     char esc_sys[T6B_DS_SYS_PROMPT_MAX * 6 + 1];
+    char esc_eff[24 * 6 + 1];
     const char *body;
     size_t alen, syslen = 0, o = 0;
     int n;
@@ -655,8 +658,20 @@ int t6b_ds_build_body_msgs(const char *model, const char *system_prompt,
     if (n < 0 || (size_t)n >= cap - o) goto too_big;
     o += (size_t)n;
 
-    n = snprintf(out + o, cap - o, ",\"stream\":false,\"max_tokens\":%d,\"temperature\":%.2f}",
+    n = snprintf(out + o, cap - o, ",\"stream\":false,\"max_tokens\":%d,\"temperature\":%.2f",
                  max_tokens, temperature);
+    if (n < 0 || (size_t)n >= cap - o) goto too_big;
+    o += (size_t)n;
+
+    /* T7-06-R1：思考档位（fast/medium/high）。空值不发这个字段，保持老行为。 */
+    if (thinking != NULL && thinking[0] != '\0') {
+        wu_json_escape(esc_eff, sizeof(esc_eff), thinking);
+        n = snprintf(out + o, cap - o, ",\"thinking\":\"%s\"", esc_eff);
+        if (n < 0 || (size_t)n >= cap - o) goto too_big;
+        o += (size_t)n;
+    }
+
+    n = snprintf(out + o, cap - o, "}");
     if (n < 0 || (size_t)n >= cap - o) goto too_big;
     o += (size_t)n;
 
@@ -1373,6 +1388,7 @@ static int ds_complete_msgs(t6b_provider *p, const char *messages_json, t6b_repl
                                (d->cfg.system_prompt[0] != '\0') ? d->cfg.system_prompt
                                                                  : T6B_DS_SYSTEM_PROMPT_DEFAULT,
                                messages_json,
+                               d->cfg.thinking,
                                d->cfg.temperature, d->cfg.max_tokens,
                                body, sizeof(body), &blen, why, sizeof(why)) != 0) {
         d->err++;

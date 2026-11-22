@@ -198,6 +198,12 @@ static int wc_apply(t6b_config *cfg, const char *key, const char *val, char *err
         cfg->deepseek.max_tokens = iv;
         return 0;
     }
+    if (strcmp(key, "thinking") == 0) {
+        /* T7-06-R1：思考档位（fast/medium/high）。空字符串 = 不发送该字段。 */
+        if (wc_copy(cfg->deepseek.thinking,
+                    sizeof(cfg->deepseek.thinking), val) != 0) goto bad;
+        return 0;
+    }
     if (strcmp(key, "context_enabled") == 0) {
         if (wc_bool(val, &iv) != 0) goto bad;
         cfg->context_enabled = iv;

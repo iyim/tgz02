@@ -1,5 +1,5 @@
 ﻿=== T7-01 conversation context unit test (host, no network) ===
-tmp: C:\Users\mac\AppData\Local\Temp\t7_ctx_52300
+tmp: C:\Users\mac\AppData\Local\Temp\t7_ctx_17692
 
 [1] single turn, context disabled
   PASS  cv_init ok
@@ -140,6 +140,14 @@ tmp: C:\Users\mac\AppData\Local\Temp\t7_ctx_52300
   PASS  still non-streaming
   PASS  non-array messages rejected
   PASS  unterminated array rejected
+[13b] thinking field is emitted only when configured
+  PASS  build with thinking ok
+  PASS  thinking=fast present
+  PASS  body still closed
+  PASS  build without thinking ok
+  PASS  no thinking field when unset
+  PASS  empty thinking accepted
+  PASS  empty thinking sends nothing
 [13b] system prompt sits at messages[0] and is not counted in eviction
   PASS  cv_init ok
   PASS  commit turn
@@ -177,6 +185,6 @@ tmp: C:\Users\mac\AppData\Local\Temp\t7_ctx_52300
   PASS  the two oldest turns were dropped
   PASS  still starts with a user message
 
-SUMMARY: pass=159 fail=0
+SUMMARY: pass=166 fail=0
 RESULT: PASS
 

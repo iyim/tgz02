@@ -77,6 +77,7 @@ typedef struct {
     unsigned long long provider_timeout;
     unsigned long long provider_retries;   /* 因超时/错误而重试的总次数（P1-2） */
     unsigned long long stuck_attempts;     /* 当前卡住事件的累计尝试次数 */
+    unsigned long long dead_lettered;      /* T7-06-R1：写死信后跳过的事件数 */
     int                provider_stuck;     /* 1 = 已超过重试上限，等待死信策略（不跳过） */
     char               pending_event_id[T6B_ID_MAX + 1]; /* 正在重试/卡住的事件 */
 

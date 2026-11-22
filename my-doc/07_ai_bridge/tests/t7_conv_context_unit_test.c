@@ -405,6 +405,10 @@ static void test_cfg_defaults(t6b_config *c)
     t6b_ds_defaults(&c->deepseek);
     t6b_mock_defaults(&c->mock);
     c->context_max_messages = CV_DEFAULT_MAX_MESSAGES;
+    /* T7-05 之后 conf 里有 session 两行；这里必须给出**可回读**的值，
+     * 否则 wc_write 会写 session_timeout_ms=0，wc_load 会以 bad value 拒绝整个文件。 */
+    c->session.enabled = 1;
+    c->session.timeout_ms = 12000;
 }
 
 static void test_conf_file(void)
@@ -422,7 +426,11 @@ static void test_conf_file(void)
     ok(wc_write(&cfg, conf_path(), err, sizeof(err)) == 0, "wc_write (tmp+fsync+rename)");
 
     test_cfg_defaults(&cfg);
-    ok(wc_load(&cfg, conf_path(), &applied, err, sizeof(err)) == 0, "wc_load ok");
+    {
+        int rc = wc_load(&cfg, conf_path(), &applied, err, sizeof(err));
+        if (rc != 0) printf("      wc_load rc=%d err=%s path=%s\n", rc, err, conf_path());
+        ok(rc == 0, "wc_load ok");
+    }
     ok(applied >= 8, "at least 8 keys applied");
     ok(cfg.context_enabled == 1, "context_enabled=1 loaded");
     ok(cfg.context_max_messages == 8, "context_max_messages=8 loaded");
@@ -610,7 +618,7 @@ static void test_build_body_msgs(void)
                        "{\"role\":\"user\",\"content\":\"FOOD\"}]";
 
     printf("[13] deepseek request body carries the whole messages array\n");
-    ok(t6b_ds_build_body_msgs("deepseek-flash", T6B_DS_SYSTEM_PROMPT, msgs, 0.5, 321,
+    ok(t6b_ds_build_body_msgs("deepseek-flash", T6B_DS_SYSTEM_PROMPT, msgs, NULL, 0.5, 321,
                               body, sizeof(body), &blen, err, sizeof(err)) == 0, "build ok");
     ok(blen == strlen(body), "length reported");
     ok(strstr(body, "\"model\":\"deepseek-flash\"") != NULL, "model present");
@@ -623,10 +631,26 @@ static void test_build_body_msgs(void)
     ok(body[strlen(body) - 1] == '}', "body is closed");
     ok(strstr(body, "\"stream\":false") != NULL, "still non-streaming");
 
-    ok(t6b_ds_build_body_msgs("m", NULL, "{}", 0.5, 100, body, sizeof(body), &blen,
+    ok(t6b_ds_build_body_msgs("m", NULL, "{}", NULL, 0.5, 100, body, sizeof(body), &blen,
                               err, sizeof(err)) == -1, "non-array messages rejected");
-    ok(t6b_ds_build_body_msgs("m", NULL, "[{\"a\":1}", 0.5, 100, body, sizeof(body), &blen,
+    ok(t6b_ds_build_body_msgs("m", NULL, "[{\"a\":1}", NULL, 0.5, 100, body, sizeof(body), &blen,
                               err, sizeof(err)) == -1, "unterminated array rejected");
+
+    /* T7-06-R1：思考档位（"thinking":"fast"）。空值必须**不发**这个字段，保持老行为。 */
+    printf("[13b] thinking field is emitted only when configured\n");
+    ok(t6b_ds_build_body_msgs("qwen4-max", NULL, "[{\"role\":\"user\",\"content\":\"HI\"}]",
+                              "fast", 0.5, 64, body, sizeof(body), &blen,
+                              err, sizeof(err)) == 0, "build with thinking ok");
+    ok(strstr(body, "\"thinking\":\"fast\"") != NULL, "thinking=fast present");
+    ok(body[strlen(body) - 1] == '}', "body still closed");
+    ok(t6b_ds_build_body_msgs("qwen4-max", NULL, "[{\"role\":\"user\",\"content\":\"HI\"}]",
+                              NULL, 0.5, 64, body, sizeof(body), &blen,
+                              err, sizeof(err)) == 0, "build without thinking ok");
+    ok(strstr(body, "thinking") == NULL, "no thinking field when unset");
+    ok(t6b_ds_build_body_msgs("qwen4-max", NULL, "[{\"role\":\"user\",\"content\":\"HI\"}]",
+                              "", 0.5, 64, body, sizeof(body), &blen,
+                              err, sizeof(err)) == 0, "empty thinking accepted");
+    ok(strstr(body, "thinking") == NULL, "empty thinking sends nothing");
 }
 
 /* ==========================================================================

@@ -408,6 +408,53 @@ static void gap_report(t6b_worker *w, const t6b_event *ev)
     }
 }
 
+/* ---- T7-06-R1：死信（dead letter） -------------------------------------
+ * 现场教训：Provider 一直 503 时，pend 事件被"永远保留"，整条流水线（包括本地指令的
+ * 路由标记）全被堵死 —— 用户看到的就是"叫得醒、什么都不回答"。
+ * 现在：超过 provider_retry_max + T6B_DEAD_LETTER_EXTRA 次仍然失败 → 写一条死信、
+ * 提交偏移（等于跳过这一条事件），流水线继续。事件本身不丢在日志里，落在死信文件里。 */
+#define T6B_DEAD_LETTER_EXTRA 3
+
+static int commit_event(t6b_worker *w);
+
+static int dead_letter_event(t6b_worker *w)
+{
+    char path[T6B_PATH_MAX];
+    char line[1024];
+    int fd;
+    size_t o = 0, i;
+
+    snprintf(path, sizeof(path), "%s/dead_letter.jsonl",
+             (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT);
+    o = (size_t)snprintf(line, sizeof(line),
+                         "{\"ts\":%lld,\"event_id\":\"%s\",\"seq\":%lu,\"attempts\":%d,"
+                         "\"error_class\":\"%s\",\"error_bytes\":%d}\n",
+                         wu_now_ms(), w->pend.event_id, w->pend.seq, w->pend_attempts,
+                         w->ds.last_class, (int)strlen(w->pend_error));
+    if (o >= sizeof(line)) o = sizeof(line) - 2;
+    for (i = 0; i < o; i++) {
+        if (line[i] == '"' && i > 0) { /* 不做完整转义，只把引号压掉，保证一行一条合法 JSON */
+            line[i] = '\'';
+        }
+    }
+    fd = wu_open_append(path);
+    if (fd < 0) {
+        always("dead-letter: open(%s) failed errno=%d; event %s stays pending",
+               path, errno, w->pend.event_id);
+        return -1;
+    }
+    if (wu_write_all(fd, line, o) != 0) {
+        (void)wu_close(fd);
+        always("dead-letter: short write for event %s", w->pend.event_id);
+        return -1;
+    }
+    (void)wu_close(fd);
+    if (commit_event(w) != 0) return -2;
+    always("dead-letter: event %s skipped after %d attempts (%s); pipeline continues",
+           w->pend.event_id, w->pend_attempts, w->ds.last_class);
+    return 0;
+}
+
 /* ---------------- 事件提交（Provider 成功之后） ---------------- */
 
 /* 返回 0 = 已提交并落盘；
@@ -979,9 +1026,17 @@ static int provider_attempt(t6b_worker *w)
         if (!w->pend_stuck) {
             w->pend_stuck = 1;
             snprintf(w->st.state, sizeof(w->st.state), "error");
-            always("event id=%s stuck after %d attempts (%s): keeping it, waiting for a "
-                   "dead-letter policy; no event will be skipped",
-                   w->pend.event_id, w->pend_attempts, w->pend_error);
+            always("event id=%s stuck after %d attempts (%s)", w->pend.event_id,
+                   w->pend_attempts, w->pend_error);
+        }
+        /* T7-06-R1：stuck 之后再给 EXTRA 次机会，仍失败就进死信并跳过，
+         * 否则一个 503 会把后面所有事件（包括本地指令路由）一起堵死。 */
+        if (w->cfg.provider_dead_letter &&
+            w->pend_attempts >= w->cfg.provider_retry_max + T6B_DEAD_LETTER_EXTRA) {
+            int drc = dead_letter_event(w);
+            if (drc == 0) return -3;
+            if (drc == -2) return -4;
+            return -2;
         }
         return -2;
     }
@@ -1090,7 +1145,7 @@ static int route_publish(t6b_worker *w, const char *session, const char *event_i
     wu_json_escape(esc_ev, sizeof(esc_ev), event_id);
     n = snprintf(body, sizeof(body),
                  "{\"version\":2,\"seq\":%lld,\"wall_ms\":%lld,\"exp_ms\":%lld,"
-                 "\"session\":\"%s\",\"event_id\":\"%s\",\"intent\":\"%s\",\"rule\":\"%s\"}\n",
+                 "\"asr_session\":\"%s\",\"event_id\":\"%s\",\"intent\":\"%s\",\"rule\":\"%s\"}\n",
                  seq, now, now + T6B_ROUTE_SLACK_MS, esc_sess, esc_ev,
                  ir_intent_name(ir->intent), ir->rule);
     if (n < 0 || (size_t)n >= sizeof(body)) {
@@ -1528,6 +1583,15 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                 schedule_retry(w, 0);
             } else if (rc == -2) {
                 schedule_retry(w, 1);
+            } else if (rc == -3) {
+                /* 死信已写、偏移已提交（dead_letter_event 内部做的）：清 pending 继续 */
+                w->have_pend = 0;
+                w->pend_attempts = 0;
+                w->pend_backoff_ms = 0;
+                w->pend_next_ms = 0;
+                w->pend_stuck = 0;
+                w->st.dead_lettered++;
+                snprintf(w->st.state, sizeof(w->st.state), "running");
             } else if (rc == -4) {
                 /* 指纹推进失败：偏移没有前进，必须停止消费（不许退化成只比 inode） */
                 *exit_reason = "identity_hash_failed";
@@ -1712,6 +1776,7 @@ void t6b_config_defaults(t6b_config *c)
     c->max_events = 0;
     c->max_runtime_ms = 0;
     c->provider_retry_max = 5;
+    c->provider_dead_letter = 1;
     c->provider_backoff_ms = 200;
     c->provider_backoff_max_ms = 2000;
     c->state_retry_ms = 100;
@@ -2445,6 +2510,7 @@ int main(int argc, char **argv)
         else if (strcmp(a, "--conf") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.conf_path, sizeof(cfg.conf_path), "%s", v); i++; }
         else if (strcmp(a, "--temperature") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.temperature = atof(v); i++; }
         else if (strcmp(a, "--max-tokens") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.max_tokens = atoi(v); i++; }
+        else if (strcmp(a, "--thinking") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.deepseek.thinking, sizeof(cfg.deepseek.thinking), "%s", v); i++; }
         else if (strcmp(a, "--base-url") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.deepseek.base_url, sizeof(cfg.deepseek.base_url), "%s", v); i++; }
         else if (strcmp(a, "--model") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.deepseek.model, sizeof(cfg.deepseek.model), "%s", v); i++; }
         else if (strcmp(a, "--context") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.context_enabled = atoi(v) ? 1 : 0; i++; }
