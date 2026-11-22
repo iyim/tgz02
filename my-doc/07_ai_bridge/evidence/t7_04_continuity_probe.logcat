@@ -1,0 +1,9 @@
+﻿# T7-04 continuity probe: why a follow-up without the wake word never reaches the bridge
+# source: adb logcat during wake.wav + time clip on 2026-11-22 07:49 (factory answered normally)
+
+11-22 07:49:46.926 D/WakeupEngineWrapper(10414): [2026-11-22 07:49:46.234][FullLink]onWakeupCallback 
+11-22 07:49:46.928 D/AGSpeechEngineProxy(10414): onListenStarted,684
+11-22 07:49:46.934 D/SessionManager(10414): JNI_AILABS SessionManager.cpp:onStartTalk:255 [10490] sessionId = 1969141, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-22 07:49:52.463 D/SessionManager(10414): JNI_AILABS SessionManager.cpp:onStopTalk:697 [10490] onStopTalk, mStopTalkReason = 0, reason = normal
+11-22 07:49:52.463 D/SessionManager(10414): JNI_AILABS SessionManager.cpp:onStopTalk:749 [10490] on stop talk, session=1969141
+uration": 7268, "voiceDuration": 7268, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex",

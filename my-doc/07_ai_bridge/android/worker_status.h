@@ -114,6 +114,44 @@ typedef struct {
     char               echo_last_detail[96];   /* 判定细节（相似度等） */
     char               echo_state_file[T6B_PATH_MAX];
 
+    /* T7-04：本地意图优先路由（route=native / route=ai） */
+    int                route_enabled;          /* 1 = 本地意图路由生效 */
+    int                route_intents;          /* 启用的意图位掩码 */
+    unsigned long long route_native;           /* 交给原厂处理的条数 */
+    unsigned long long route_ai;               /* 进入大模型的条数 */
+    unsigned long long route_volume;
+    unsigned long long route_weather;
+    unsigned long long route_screen_off;
+    unsigned long long route_time;
+    unsigned long long route_screen_on;
+    char               route_last[96];         /* "route=native intent=time rule=time.keyword" */
+    char               route_publish_file[T6B_PATH_MAX]; /* 给 TTS 守卫的原厂放行标记 */
+
+    /* T7-04：ASR 暂存门（半句话/修订合并） */
+    int                gate_enabled;
+    int                gate_debounce_ms;
+    int                gate_max_hold_ms;
+    int                gate_cross_session;
+    unsigned long long gate_seen;
+    unsigned long long gate_held;
+    unsigned long long gate_released;
+    unsigned long long gate_merged;
+    unsigned long long gate_cross_merged;
+    unsigned long long gate_dropped_dup;
+    unsigned long long gate_restored;
+    char               gate_last_detail[160];
+    char               gate_hold_file[T6B_PATH_MAX];
+
+    /* T7-04：连续对话会话状态（免唤醒续听的会话生命周期） */
+    int                session_enabled;
+    int                session_timeout_ms;
+    char               session_state[16];      /* IDLE/ACTIVE/PROCESSING/SPEAKING/WAIT_NEXT */
+    int                session_turns;
+    int                session_followups;
+    unsigned long      session_opened;
+    unsigned long      session_closed;
+    char               session_detail[160];
+
     unsigned long      last_seq;
     char               last_event_id[T6B_ID_MAX + 1];
     char               last_event_at[24];

@@ -46,6 +46,32 @@ static int wc_bool(const char *v, int *out)
     return -1;
 }
 
+/* route_intents=volume,weather,screen_off,time（空 = 0，不认识的名字忽略但不报错） */
+static int wc_route_intents(const char *v, int *out)
+{
+    int mask = 0;
+    char buf[128];
+    char *p;
+
+    if (v == NULL || out == NULL) return -1;
+    if (strlen(v) >= sizeof(buf)) return -1;
+    snprintf(buf, sizeof(buf), "%s", v);
+    for (p = buf; ; p = NULL) {
+        char *tok = strtok(p, ", ");
+        if (tok == NULL) break;
+        if (strcmp(tok, "volume") == 0) mask |= T7B_ROUTE_VOLUME;
+        else if (strcmp(tok, "weather") == 0) mask |= T7B_ROUTE_WEATHER;
+        else if (strcmp(tok, "screen_off") == 0) mask |= T7B_ROUTE_SCREEN_OFF;
+        else if (strcmp(tok, "screen_on") == 0) mask |= T7B_ROUTE_SCREEN_ON;
+        else if (strcmp(tok, "time") == 0) mask |= T7B_ROUTE_TIME;
+        else if (strcmp(tok, "all") == 0) mask |= T7B_ROUTE_ALL;
+        else if (strcmp(tok, "none") == 0) mask = 0;
+        /* 其它名字：忽略（前向兼容，不让一个拼写错误把整份配置废掉） */
+    }
+    *out = mask;
+    return 0;
+}
+
 static int wc_int(const char *v, int lo, int hi, int *out)
 {
     char *end = NULL;
@@ -210,6 +236,53 @@ static int wc_apply(t6b_config *cfg, const char *key, const char *val, char *err
                                     err, errlen) != 0) return -2;
         return 0;
     }
+    /* T7-04：本地意图优先路由（route=native）与 ASR 暂存门 / 会话窗口。
+     * route_intents 用名字列表，写成 "volume,weather,screen_off,time"；空值 = 一个都不路由。 */
+    if (strcmp(key, "route_native") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->route_native = iv;
+        return 0;
+    }
+    if (strcmp(key, "route_intents") == 0) {
+        if (wc_route_intents(val, &iv) != 0) goto bad;
+        cfg->route_intents = iv;
+        return 0;
+    }
+    if (strcmp(key, "gate") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->gate.enabled = iv;
+        return 0;
+    }
+    if (strcmp(key, "gate_debounce_ms") == 0) {
+        if (wc_int(val, 0, 10000, &iv) != 0) goto bad;
+        cfg->gate.debounce_ms = iv;
+        return 0;
+    }
+    if (strcmp(key, "gate_max_hold_ms") == 0) {
+        if (wc_int(val, 0, 30000, &iv) != 0) goto bad;
+        cfg->gate.max_hold_ms = iv;
+        return 0;
+    }
+    if (strcmp(key, "gate_cross_session") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->gate.cross_session = iv;
+        return 0;
+    }
+    if (strcmp(key, "gate_cross_session_ms") == 0) {
+        if (wc_int(val, 0, 10000, &iv) != 0) goto bad;
+        cfg->gate.cross_session_ms = iv;
+        return 0;
+    }
+    if (strcmp(key, "session") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->session.enabled = iv;
+        return 0;
+    }
+    if (strcmp(key, "session_timeout_ms") == 0) {
+        if (wc_int(val, 1000, 600000, &iv) != 0) goto bad;
+        cfg->session.timeout_ms = iv;
+        return 0;
+    }
     /* 明确拒绝把凭据写进普通配置：只认 api_key_file */
     if (strcmp(key, "api_key") == 0) {
         if (err) snprintf(err, errlen, "api_key is not accepted in the config file; "
@@ -278,6 +351,27 @@ int wc_load(t6b_config *cfg, const char *path, int *applied, char *err, size_t e
 
 /* ---------------- 写出当前配置（原子） ---------------- */
 
+/* 位掩码 -> 名字串（写成配置文件用；固定缓冲区，调用方立即使用） */
+static const char *wc_route_intents_str(int mask)
+{
+    static char out[96];
+    size_t o = 0;
+
+    out[0] = '\0';
+    if (mask & T7B_ROUTE_VOLUME)
+        o += (size_t)snprintf(out + o, sizeof(out) - o, "%svolume", o ? "," : "");
+    if ((mask & T7B_ROUTE_WEATHER) && o + 9 < sizeof(out))
+        o += (size_t)snprintf(out + o, sizeof(out) - o, "%sweather", o ? "," : "");
+    if ((mask & T7B_ROUTE_SCREEN_OFF) && o + 12 < sizeof(out))
+        o += (size_t)snprintf(out + o, sizeof(out) - o, "%sscreen_off", o ? "," : "");
+    if ((mask & T7B_ROUTE_SCREEN_ON) && o + 11 < sizeof(out))
+        o += (size_t)snprintf(out + o, sizeof(out) - o, "%sscreen_on", o ? "," : "");
+    if ((mask & T7B_ROUTE_TIME) && o + 6 < sizeof(out))
+        o += (size_t)snprintf(out + o, sizeof(out) - o, "%stime", o ? "," : "");
+    if (o == 0) snprintf(out, sizeof(out), "none");
+    return out;
+}
+
 int wc_write(const t6b_config *cfg, const char *path, char *err, size_t errlen)
 {
     static char buf[2048];
@@ -303,11 +397,24 @@ int wc_write(const t6b_config *cfg, const char *path, char *err, size_t errlen)
                  "context_enabled=%d\n"
                  "context_max_messages=%d\n"
                  "echo_filter=%d\n"
-                 "echo_no_command=%d\n",
+                 "echo_no_command=%d\n"
+                 "route_native=%d\n"
+                 "route_intents=%s\n"
+                 "gate=%d\n"
+                 "gate_debounce_ms=%d\n"
+                 "gate_max_hold_ms=%d\n"
+                 "gate_cross_session=%d\n"
+                 "gate_cross_session_ms=%d\n"
+                 "session=%d\n"
+                 "session_timeout_ms=%d\n",
                  cfg->provider_name, cfg->deepseek.base_url, cfg->deepseek.model,
                  cfg->deepseek.api_key_file, cfg->deepseek.temperature,
                  cfg->deepseek.max_tokens, cfg->context_enabled, cfg->context_max_messages,
-                 cfg->echo_filter, cfg->echo_no_command);
+                 cfg->echo_filter, cfg->echo_no_command,
+                 cfg->route_native, wc_route_intents_str(cfg->route_intents),
+                 cfg->gate.enabled ? 1 : 0, cfg->gate.debounce_ms, cfg->gate.max_hold_ms,
+                 cfg->gate.cross_session ? 1 : 0, cfg->gate.cross_session_ms,
+                 cfg->session.enabled ? 1 : 0, cfg->session.timeout_ms);
     if (n < 0 || (size_t)n >= sizeof(buf)) {
         if (err) snprintf(err, errlen, "config buffer too small");
         return -1;

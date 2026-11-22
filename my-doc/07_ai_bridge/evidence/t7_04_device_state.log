@@ -1,0 +1,54 @@
+﻿# T7-04 device evidence (collected 2026-11-22 08:16:35)
+## guard status (single supervisor)
+supervisor=running pid=27260
+watch=stopped
+pid=10414 guard=mapped:yes
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 play=1 start=1 func_play=95465afc func_start=95465110 play_seen=20 ours=20 not_ours=0 start_seen=28 allowed=20 dropped=6 hit_id=20 hit_text=0 empty=0 native_allowed=2 native_reads=8 native_expired=6 native_file=/data/local/tmp/t5_bridge/work/native_route.public.json
+[inject] RESULT check pid=10414 hooked=1
+## worker status: route/gate/session
+"last_detail":"kept outside playback window"
+"route":{"enabled":1
+"native":1
+"screen_on":1
+"gate":{"enabled":1
+"cross_merged":1
+"last_detail":"cross session merge gap=616ms merges=1"
+"session":{"enabled":1
+## native route marker
+{"version":1,"wall_ms":1795306573079,"exp_ms":1795306581079,"session":"1969295","event_id":"t6-10414-1969295-g28","intent":"screen_on","rule":"screen.on"}
+## recent asr_final events (last 12)
+{"version":1,"rec":"asr_final","event_id":"t704-gate-b","event_type":"asr_final","pid":1,"session_id":"97002","text":"周杰伦的歌","text_bytes":15,"text_chars":5,"is_final":true,"received_at_ms":1795306302832,"recv_at_ms":1795306302832,"stored_at_ms":1795306302832,"seq":101}
+{"version":1,"rec":"asr_final","event_id":"t704-gate-c","event_type":"asr_final","pid":1,"session_id":"97101","text":"帮我播放","text_bytes":12,"text_chars":4,"is_final":true,"received_at_ms":1795306356916,"recv_at_ms":1795306356916,"stored_at_ms":1795306356916,"seq":200}
+{"version":1,"rec":"asr_final","event_id":"t704-gate-d","event_type":"asr_final","pid":1,"session_id":"97102","text":"周杰伦的歌","text_bytes":15,"text_chars":5,"is_final":true,"received_at_ms":1795306356916,"recv_at_ms":1795306356916,"stored_at_ms":1795306356916,"seq":201}
+{"version":1,"rec":"asr_final","event_id":"t704-gate-e","event_type":"asr_final","pid":1,"session_id":"97201","text":"帮我播放","text_bytes":12,"text_chars":4,"is_final":true,"received_at_ms":1795306382611,"recv_at_ms":1795306382611,"stored_at_ms":1795306382611,"seq":300}
+{"version":1,"rec":"asr_final","event_id":"t704-gate-f","event_type":"asr_final","pid":1,"session_id":"97202","text":"周杰伦的歌","text_bytes":15,"text_chars":5,"is_final":true,"received_at_ms":1795306382611,"recv_at_ms":1795306382611,"stored_at_ms":1795306382611,"seq":301}
+{"version":1,"rec":"asr_final","event_id":"t704-gate-g","event_type":"asr_final","pid":1,"session_id":"97301","text":"帮我播放","text_bytes":12,"text_chars":4,"is_final":true,"received_at_ms":1795306414084,"recv_at_ms":1795306414084,"stored_at_ms":1795306414084,"seq":400}
+{"version":1,"rec":"asr_final","event_id":"t704-gate-h","event_type":"asr_final","pid":1,"session_id":"97302","text":"周杰伦的歌","text_bytes":15,"text_chars":5,"is_final":true,"received_at_ms":1795306414084,"recv_at_ms":1795306414084,"stored_at_ms":1795306414084,"seq":401}
+{"version":1,"rec":"asr_final","event_id":"t704-gate-i","event_type":"asr_final","pid":1,"session_id":"97401","text":"介绍一下东京","text_bytes":18,"text_chars":6,"is_final":true,"received_at_ms":1795306442282,"recv_at_ms":1795306442282,"stored_at_ms":1795306442282,"seq":500}
+{"version":1,"rec":"asr_final","event_id":"t704-gate-j","event_type":"asr_final","pid":1,"session_id":"97402","text":"的景点","text_bytes":9,"text_chars":3,"is_final":true,"received_at_ms":1795306442282,"recv_at_ms":1795306442282,"stored_at_ms":1795306442282,"seq":501}
+{"version":1,"rec":"asr_final","event_id":"t704-gate-k","event_type":"asr_final","pid":1,"session_id":"97501","text":"帮我播放","text_bytes":12,"text_chars":4,"is_final":true,"received_at_ms":1795306520110,"recv_at_ms":1795306520110,"stored_at_ms":1795306520110,"seq":600}
+{"version":1,"rec":"asr_final","event_id":"t704-gate-l","event_type":"asr_final","pid":1,"session_id":"97502","text":"周杰伦的歌","text_bytes":15,"text_chars":5,"is_final":true,"received_at_ms":1795306520110,"recv_at_ms":1795306520110,"stored_at_ms":1795306520110,"seq":601}
+{"version":1,"rec":"asr_final","event_id":"t6-10414-1969295-g28","event_type":"asr_final","pid":10414,"session_id":"1969295","text":"天猫精灵打开屏幕","text_bytes":24,"text_chars":8,"is_final":true,"received_at_ms":1795306572976,"recv_at_ms":1795306572976,"stored_at_ms":1795306572976,"seq":29}
+## worker log: route/gate/session lines
+[aiw] 2026-11-22T08:12:27 echo filter: enabled=1 no_command=1 window=+1200/-1500ms sim=60% state_file=/data/local/tmp/t5_bridge/tts/play.public.json
+[aiw] 2026-11-22T08:12:27 gate: enabled=1 debounce=450ms max_hold=2500ms cross_session=1(1200ms) sim=80% hold_file=/data/local/tmp/t5_bridge/ai_worker/utterance_hold.json
+[aiw] 2026-11-22T08:12:27 session: enabled=1 timeout=12000ms (follow-up window after playback)
+[aiw] 2026-11-22T08:12:40 route=ai event=t704-gate-c seq=0 session=97101 merges=0 held_ms=1241 why=timeout text_bytes=12 session_state=PROCESSING
+[aiw] 2026-11-22T08:12:40 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T08:12:41 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T08:12:42 route=ai event=t704-gate-d seq=0 session=97102 merges=0 held_ms=619 why=timeout text_bytes=15 session_state=PROCESSING
+[aiw] 2026-11-22T08:13:05 echo filter: drop event=t704-gate-f seq=301 reason=drop_echo (echo: sim=100% playing=t704-gate-d playing_now=1) text_bytes=15
+[aiw] 2026-11-22T08:13:05 route=ai event=t704-gate-e seq=0 session=97201 merges=0 held_ms=1227 why=timeout text_bytes=12 session_state=PROCESSING
+[aiw] 2026-11-22T08:13:35 echo filter: drop event=t704-gate-h seq=401 reason=drop_echo (echo: sim=100% playing=t704-gate-e playing_now=1) text_bytes=15
+[aiw] 2026-11-22T08:13:36 route=ai event=t704-gate-g seq=0 session=97301 merges=0 held_ms=1298 why=timeout text_bytes=12 session_state=PROCESSING
+[aiw] 2026-11-22T08:14:02 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T08:14:04 route=ai event=t704-gate-i seq=501 session=97401 merges=0 held_ms=411 why=separate text_bytes=18 session_state=PROCESSING
+[aiw] 2026-11-22T08:14:04 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T08:14:06 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T08:14:06 route=ai event=t704-gate-j seq=0 session=97402 merges=0 held_ms=1992 why=timeout text_bytes=9 session_state=PROCESSING
+[aiw] 2026-11-22T08:14:06 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T08:15:26 route=ai event=t704-gate-k seq=0 session=97502 merges=1 held_ms=1241 why=timeout text_bytes=27 session_state=PROCESSING
+[aiw] 2026-11-22T08:16:01 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T08:16:13 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-22T08:16:13 route=native intent=screen_on rule=screen.on arg= event=t6-10414-1969295-g28 seq=29 session=1969295 text_bytes=24 (factory answers; AI worker does not)

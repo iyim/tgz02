@@ -36,7 +36,7 @@ void t6b_status_note_error(t6b_status *st, const char *fmt, ...)
 
 int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t errlen)
 {
-    static char buf[4096];
+    static char buf[8192];
     char esc_events[T6B_PATH_MAX * 2];
     char esc_state[T6B_PATH_MAX * 2];
     char esc_invalid[T6B_PROVIDER_MSG_MAX * 2];
@@ -49,6 +49,13 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     char esc_echo_state[T6B_PATH_MAX * 2];
     char esc_echo_reason[96];
     char esc_echo_detail[224];
+    /* T7-04 */
+    char esc_route_last[224];
+    char esc_route_file[T6B_PATH_MAX * 2];
+    char esc_gate_detail[352];
+    char esc_gate_file[T6B_PATH_MAX * 2];
+    char esc_session_state[48];
+    char esc_session_detail[352];
     char tmp[T6B_PATH_MAX + 8];
     char dir[T6B_PATH_MAX];
     int n;
@@ -70,6 +77,12 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     wu_json_escape(esc_echo_state, sizeof(esc_echo_state), st->echo_state_file);
     wu_json_escape(esc_echo_reason, sizeof(esc_echo_reason), st->echo_last_reason);
     wu_json_escape(esc_echo_detail, sizeof(esc_echo_detail), st->echo_last_detail);
+    wu_json_escape(esc_route_last, sizeof(esc_route_last), st->route_last);
+    wu_json_escape(esc_route_file, sizeof(esc_route_file), st->route_publish_file);
+    wu_json_escape(esc_gate_detail, sizeof(esc_gate_detail), st->gate_last_detail);
+    wu_json_escape(esc_gate_file, sizeof(esc_gate_file), st->gate_hold_file);
+    wu_json_escape(esc_session_state, sizeof(esc_session_state), st->session_state);
+    wu_json_escape(esc_session_detail, sizeof(esc_session_detail), st->session_detail);
 
     n = snprintf(buf, sizeof(buf),
         "{\"version\":%d,\"state\":\"%s\",\"pid\":%lld,"
@@ -100,6 +113,17 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"state_file\":\"%s\"},"
         "\"last_seq\":%lu,\"last_event_id\":\"%s\",\"last_event_at\":\"%s\","
         "\"last_gap_from\":%lu,\"last_gap_to\":%lu,"
+        "\"route\":{\"enabled\":%d,\"intents\":%d,\"native\":%llu,\"ai\":%llu,"
+        "\"volume\":%llu,\"weather\":%llu,\"screen_off\":%llu,\"time\":%llu,"
+        "\"screen_on\":%llu,"
+        "\"last\":\"%s\",\"publish_file\":\"%s\"},"
+        "\"gate\":{\"enabled\":%d,\"debounce_ms\":%d,\"max_hold_ms\":%d,"
+        "\"cross_session\":%d,\"seen\":%llu,\"held\":%llu,\"released\":%llu,"
+        "\"merged\":%llu,\"cross_merged\":%llu,\"dropped_dup\":%llu,\"restored\":%llu,"
+        "\"last_detail\":\"%s\",\"hold_file\":\"%s\"},"
+        "\"session\":{\"enabled\":%d,\"timeout_ms\":%d,\"state\":\"%s\","
+        "\"turns\":%d,\"followups\":%d,\"opened\":%lu,\"closed\":%lu,"
+        "\"detail\":\"%s\"},"
         "\"pending_event_id\":\"%s\","
         "\"last_invalid\":\"%s\",\"last_error\":\"%s\",\"exit_reason\":\"%s\"}\n",
         st->version, st->state, st->pid,
@@ -129,6 +153,17 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         esc_echo_reason, esc_echo_detail, esc_echo_state,
         st->last_seq, st->last_event_id, st->last_event_at,
         st->last_gap_from, st->last_gap_to,
+        st->route_enabled, st->route_intents, st->route_native, st->route_ai,
+        st->route_volume, st->route_weather, st->route_screen_off, st->route_time,
+        st->route_screen_on,
+        esc_route_last, esc_route_file,
+        st->gate_enabled, st->gate_debounce_ms, st->gate_max_hold_ms,
+        st->gate_cross_session, st->gate_seen, st->gate_held, st->gate_released,
+        st->gate_merged, st->gate_cross_merged, st->gate_dropped_dup, st->gate_restored,
+        esc_gate_detail, esc_gate_file,
+        st->session_enabled, st->session_timeout_ms, esc_session_state,
+        st->session_turns, st->session_followups, st->session_opened, st->session_closed,
+        esc_session_detail,
         esc_pending,
         esc_invalid, esc_error, st->exit_reason);
     if (n < 0 || (size_t)n >= sizeof(buf)) {

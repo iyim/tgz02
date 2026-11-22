@@ -214,3 +214,58 @@ setVADPauseTime: 700 ms -> 900 ms (config floor)、setSilenceTimeout: 5000 ms (u
 un_aux_supervisors.sh start 用 T6-02 Supervisor 已有的 --so 参数，为
 libtg_ttsguard.so 与 libtg_dialog.so 各起一个实例；:core 一出现就注入
 （实测 elapsed=1573ms，hooked=1），不再依赖 5 s 一次的 watch。
+
+## 本地指令优先路由 / 暂存门 / 会话状态（T7-04）
+
+三个独立模块，全部是纯本地逻辑，不调用任何原厂 Native 私有函数：
+
+- `intent_route.c`：`ir_classify(text, &ir)` 判定音量 / 天气 / 关屏 / 开屏 / 时间。命中后 Worker 只做三件事：
+  `route=native`（不请求模型）、写 0644 放行标记 `work/native_route.public.json`、提交偏移（不重复处理）。
+  规则 = 每类的 `hit` / `veto` 关键词表，判不准就返回 0 继续走大模型。
+- `utterance_gate.c`：final 先握 `debounce_ms`（默认 450 ms）；同 session 按前缀/相似度合并修订；
+  跨 session 只在"旧文本以悬空谓词结尾 + 间隔 <= `cross_session_ms`"时拼接；
+  `max_hold_ms` 封顶；暂存槽落盘 `state_dir/utterance_hold.json`，重启恢复一次、过期丢弃。
+- `conv_session.c`：IDLE / ACTIVE / PROCESSING / SPEAKING / WAIT_NEXT / CLOSED。播报结束
+  （`play.public.json` 变 idle）进入 `WAIT_NEXT`，`session_timeout_ms`（默认 12000）后回到 `IDLE`。
+
+开关（优先级 CLI > `worker.conf` > 默认值）：
+
+```ini
+route_native=1                     # 0 = 全部走大模型（回退到 T7-03 行为）
+route_intents=volume,weather,screen_off,screen_on,time
+gate=1
+gate_debounce_ms=450
+gate_max_hold_ms=2500
+gate_cross_session=1
+gate_cross_session_ms=1200
+session=1
+session_timeout_ms=12000
+```
+
+命令行：`--route-native 0|1`、`--gate 0|1`、`--gate-debounce-ms`、`--gate-max-hold-ms`、
+`--gate-cross-session 0|1`、`--gate-cross-session-ms`、`--session 0|1`、`--session-timeout-ms`。
+
+状态文件新增三段（只放计数与短标签，不含用户正文）：
+
+```json
+"route":{"enabled":1,"intents":31,"native":1,"ai":7,"volume":0,"weather":0,
+         "screen_off":0,"time":0,"screen_on":1,"last":"route=native intent=screen_on ..."},
+"gate":{"enabled":1,"debounce_ms":450,"max_hold_ms":2500,"cross_session":1,
+        "seen":8,"held":7,"released":7,"merged":0,"cross_merged":1,
+        "dropped_dup":0,"restored":0,"last_detail":"cross session merge gap=616ms merges=1"},
+"session":{"enabled":1,"timeout_ms":12000,"state":"IDLE","turns":0,"followups":0,
+           "opened":0,"closed":1,"detail":"CLOSED->IDLE (back to standby)"}
+```
+
+设备生命周期（单一所有者，不再用 5 s watch）：
+
+```
+su -c 'sh /data/local/tmp/t7/run_t7_04.sh guard-start'    # 唯一 supervisor（先清重复实例）
+su -c 'sh /data/local/tmp/t7/run_t7_04.sh guard-status'
+su -c 'sh /data/local/tmp/t7/run_t7_04.sh guard-stop'     # 停 supervisor + 卸载注入
+su -c 'sh /data/local/tmp/t7/run_t7_04.sh rollback'       # 再还原 T7-03 的 worker/conf
+```
+
+`native_allow`：守卫读 Worker 写的放行标记，`sessionId` 命中或仍在 `exp_ms` 有效期内就放行原厂回答
+（日志 `onTtsStart ALLOW ... by=native_session intent=volume`）。这样"原厂基础指令的回答"
+与"原厂对普通对话的抢答"在守卫里被区分开，守卫不再是"无条件屏蔽所有原厂回答"。

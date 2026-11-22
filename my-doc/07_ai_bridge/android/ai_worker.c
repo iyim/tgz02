@@ -16,6 +16,7 @@
 #include "ai_worker.h"
 #include "consumer_state.h"
 #include "echo_filter.h"
+#include "intent_route.h"
 #include "seq_gap.h"
 #include "worker_conf.h"
 #include "worker_util.h"
@@ -33,6 +34,18 @@
 #  include <io.h>
 #  include <windows.h>
 #endif
+
+typedef struct {
+    char         text[T6B_TEXT_MAX + 1];   /* 已合并/修订后的完整指令 */
+    char         event_id[T6B_ID_MAX + 1]; /* 首条 final 的 event_id（去重与幂等用） */
+    char         session[T6B_ID_MAX + 1];
+    unsigned long seq;
+    int          merges;
+    long long    held_ms;
+    char         why[24];
+} t6b_utt;
+
+#define T6B_UTT_QUEUE 4
 
 typedef struct {
     t6b_config   cfg;
@@ -54,6 +67,16 @@ typedef struct {
     char         msg_json[CV_JSON_MAX];  /* 本轮要发的 messages 数组（历史 + 本轮 user） */
     char         clear_path[T6B_PATH_MAX]; /* context.clear 请求文件 */
     ef_ctx       ef;                     /* T7-02：播报回声 / 无指令过滤 */
+    ug_ctx       ug;                     /* T7-04：ASR 暂存门（半句话/修订合并） */
+    cs_ctx       cs;                     /* T7-04：连续对话会话状态 */
+    char         gate_hold_path[T6B_PATH_MAX];
+    char         route_publish_path[T6B_PATH_MAX];
+    t6b_utt      uttq[T6B_UTT_QUEUE];     /* 等待 Provider 的完整指令（最多 4 条） */
+    int          uttq_head;
+    int          uttq_count;
+    unsigned long uttq_dropped;
+    int          play_playing;            /* 最近一次读到的播报状态：1=playing */
+    int          play_known;              /* 1 = 至少读到过一次播报状态 */
 
     /* 待 Provider 成功的事件（失败期间一直保留，不读下一条） */
     t6b_event    pend;
@@ -291,6 +314,34 @@ static void publish_status(t6b_worker *w, const char *state)
     snprintf(w->st.echo_last_detail, sizeof(w->st.echo_last_detail), "%s",
              w->ef.last_reason_text);
     snprintf(w->st.echo_state_file, sizeof(w->st.echo_state_file), "%s", w->ef.state_path);
+
+    /* T7-04：路由 / 暂存门 / 会话（只放计数与短标签，不含用户正文） */
+    w->st.route_enabled = w->cfg.route_native;
+    w->st.route_intents = w->cfg.route_intents;
+    w->st.gate_enabled = w->ug.cfg.enabled;
+    w->st.gate_debounce_ms = w->ug.cfg.debounce_ms;
+    w->st.gate_max_hold_ms = w->ug.cfg.max_hold_ms;
+    w->st.gate_cross_session = w->ug.cfg.cross_session;
+    w->st.gate_seen = w->ug.seen;
+    w->st.gate_held = w->ug.held;
+    w->st.gate_released = w->ug.released;
+    w->st.gate_merged = w->ug.merged;
+    w->st.gate_cross_merged = w->ug.cross_merged;
+    w->st.gate_dropped_dup = w->ug.dropped_dup;
+    w->st.gate_restored = w->ug.restored;
+    if (w->ug.last_detail[0] != '\0') {
+        snprintf(w->st.gate_last_detail, sizeof(w->st.gate_last_detail), "%s",
+                 w->ug.last_detail);
+    }
+    w->st.session_enabled = w->cs.cfg.enabled;
+    w->st.session_timeout_ms = w->cs.cfg.timeout_ms;
+    snprintf(w->st.session_state, sizeof(w->st.session_state), "%s",
+             cs_state_name(w->cs.state));
+    w->st.session_turns = w->cs.turns;
+    w->st.session_followups = w->cs.followups;
+    w->st.session_opened = w->cs.opened;
+    w->st.session_closed = w->cs.closed_by_timeout;
+    snprintf(w->st.session_detail, sizeof(w->st.session_detail), "%s", w->cs.last_detail);
 
     /* Provider 观测：真实 Provider 才有 http/latency/resp_bytes；
      * 这些字段只放数字与短枚举，绝不含 key / 用户文本 / 上游正文。 */
@@ -829,6 +880,8 @@ static int provider_attempt(t6b_worker *w)
                        w->pend.event_id, rep.text_bytes, w->cfg.tts_queue);
                 /* T7-02：把"我刚让它播的文本"登记进回声过滤器的候选集 */
                 ef_note_enqueue(&w->ef, w->pend.event_id, rep.text, wu_wall_ms());
+                /* T7-04：回答已入队 = 会话进入 SPEAKING，播报结束后等用户追问 */
+                (void)cs_on_queued(&w->cs, wu_now_ms());
             } else if (q == 0) {
                 if (w->cfg.tts_queue[0] != '\0') {
                     w->st.tts_skipped++;
@@ -856,6 +909,10 @@ static int provider_attempt(t6b_worker *w)
                 }
                 return -1;
             }
+        }
+        if (w->cfg.tts_queue[0] == '\0') {
+            /* 没有 TTS 队列 = 不会有播报：会话直接进入"等下一句"，避免卡在 SPEAKING */
+            (void)cs_on_play_idle(&w->cs, wu_now_ms());
         }
         {
             int cr = commit_event(w);
@@ -956,6 +1013,212 @@ static int commit_skipped(t6b_worker *w, const char **exit_reason)
     return 0;
 }
 
+/* ---------------- T7-04：路由 / 暂存门 / 会话 ---------------- */
+
+static int route_intent_enabled(const t6b_worker *w, ir_intent it)
+{
+    int bit;
+
+    switch (it) {
+    case IR_VOLUME:     bit = T7B_ROUTE_VOLUME; break;
+    case IR_WEATHER:    bit = T7B_ROUTE_WEATHER; break;
+    case IR_SCREEN_OFF: bit = T7B_ROUTE_SCREEN_OFF; break;
+    case IR_SCREEN_ON:  bit = T7B_ROUTE_SCREEN_ON; break;
+    case IR_TIME:       bit = T7B_ROUTE_TIME; break;
+    default:            return 0;
+    }
+    return (w->cfg.route_intents & bit) != 0;
+}
+
+/* UTF-8 安全截断：绝不把多字节字符切开（否则 text_chars 与上下文校验都会错） */
+static void utf8_copy_trunc(char *dst, size_t cap, const char *src)
+{
+    size_t n;
+
+    if (dst == NULL || cap == 0) return;
+    if (src == NULL) { dst[0] = '\0'; return; }
+    n = strlen(src);
+    if (n > cap - 1) {
+        n = cap - 1;
+        while (n > 0 && ((unsigned char)src[n] & 0xC0) == 0x80) n--;
+    }
+    memcpy(dst, src, n);
+    dst[n] = '\0';
+}
+
+/*
+ * 写"原厂放行"标记：TTS 守卫在 :core 里读它，用来判断某条原厂回答对应的是一条
+ * route=native 的指令，于是放行而不是屏蔽。
+ * 文件必须 0644（Worker 以 root 跑，:core 以 system 跑）；内容只有 session/意图，没有正文。
+ */
+static void route_publish(t6b_worker *w, const t6b_event *ev, const ir_result *ir)
+{
+    char body[512];
+    char tmp[T6B_PATH_MAX + 8];
+    char esc_sess[(T6B_ID_MAX + 1) * 2];
+    char esc_ev[(T6B_ID_MAX + 1) * 2];
+    long long now = wu_wall_ms();
+    int fd;
+    int n;
+
+    if (w->route_publish_path[0] == '\0') return;
+
+    wu_json_escape(esc_sess, sizeof(esc_sess), ev->session_id);
+    wu_json_escape(esc_ev, sizeof(esc_ev), ev->event_id);
+    n = snprintf(body, sizeof(body),
+                 "{\"version\":1,\"wall_ms\":%lld,\"exp_ms\":%lld,\"session\":\"%s\","
+                 "\"event_id\":\"%s\",\"intent\":\"%s\",\"rule\":\"%s\"}\n",
+                 now, now + T6B_ROUTE_SLACK_MS, esc_sess, esc_ev,
+                 ir_intent_name(ir->intent), ir->rule);
+    if (n < 0 || (size_t)n >= sizeof(body)) return;
+
+    snprintf(tmp, sizeof(tmp), "%s.tmp", w->route_publish_path);
+    fd = wu_open_wo(tmp);
+    if (fd < 0) {
+        always("route publish open failed: %s", w->route_publish_path);
+        return;
+    }
+    if (wu_write_all(fd, body, (size_t)n) != 0 || wu_fsync(fd) != 0) {
+        wu_close(fd);
+        wu_unlink(tmp);
+        always("route publish write failed: %s", w->route_publish_path);
+        return;
+    }
+    wu_close(fd);
+#ifndef _WIN32
+    (void)chmod(tmp, 0644);
+#endif
+    if (wu_rename_replace(tmp, w->route_publish_path) != 0) {
+        wu_unlink(tmp);
+        always("route publish rename failed: %s", w->route_publish_path);
+        return;
+    }
+#ifndef _WIN32
+    (void)chmod(w->route_publish_path, 0644);
+#endif
+}
+
+static void uttq_push(t6b_worker *w, const ug_out *u, unsigned long seq)
+{
+    t6b_utt *slot;
+    int idx;
+
+    if (w->uttq_count >= T6B_UTT_QUEUE) {
+        /* 正常语音下不会满（最多两条：一条旧的 + 一条新的）；真满了就丢最新的一条并计数，
+         * 绝不覆盖还没处理的指令 */
+        w->uttq_dropped++;
+        always("utterance queue overflow (cap=%d): drop event=%s text_bytes=%d",
+               T6B_UTT_QUEUE, u->first_event_id, (int)strlen(u->text));
+        return;
+    }
+    idx = (w->uttq_head + w->uttq_count) % T6B_UTT_QUEUE;
+    slot = &w->uttq[idx];
+    memset(slot, 0, sizeof(*slot));
+    utf8_copy_trunc(slot->text, sizeof(slot->text), u->text);
+    snprintf(slot->event_id, sizeof(slot->event_id), "%s", u->first_event_id);
+    snprintf(slot->session, sizeof(slot->session), "%s", u->session);
+    slot->seq = seq;
+    slot->merges = u->merges;
+    slot->held_ms = u->held_ms;
+    snprintf(slot->why, sizeof(slot->why), "%s", u->why);
+    w->uttq_count++;
+}
+
+static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
+{
+    t6b_utt *slot;
+    size_t n;
+
+    if (w->uttq_count <= 0) return -1;
+    slot = &w->uttq[w->uttq_head];
+    w->uttq_head = (w->uttq_head + 1) % T6B_UTT_QUEUE;
+    w->uttq_count--;
+
+    memset(&w->pend, 0, sizeof(w->pend));
+    w->pend.version = 1;
+    snprintf(w->pend.rec, sizeof(w->pend.rec), "%s", "asr_final");
+    snprintf(w->pend.event_type, sizeof(w->pend.event_type), "%s", "asr_final");
+    snprintf(w->pend.event_id, sizeof(w->pend.event_id), "%s", slot->event_id);
+    snprintf(w->pend.session_id, sizeof(w->pend.session_id), "%s", slot->session);
+    snprintf(w->pend.text, sizeof(w->pend.text), "%s", slot->text);
+    n = strlen(w->pend.text);
+    w->pend.text_bytes = (int)n;
+    w->pend.text_chars = wu_utf8_count(w->pend.text, n);
+    w->pend.is_final = 1;
+    w->pend.seq = slot->seq;
+    w->pend.received_at_ms = now_ms;
+    w->pend.recv_at_ms = now_ms;
+
+    w->have_pend = 1;
+    w->pend_attempts = 0;
+    w->pend_stuck = 0;
+    w->pend_backoff_ms = 0;
+    w->pend_next_ms = 0;
+    w->pend_error[0] = '\0';
+
+    (void)cs_on_submit(&w->cs, now_ms);
+    w->st.route_ai++;
+    snprintf(w->st.route_last, sizeof(w->st.route_last),
+             "route=ai event=%s session=%s merges=%d held_ms=%lld why=%s",
+             slot->event_id, slot->session, slot->merges, slot->held_ms, slot->why);
+    always("route=ai event=%s seq=%lu session=%s merges=%d held_ms=%lld why=%s text_bytes=%d "
+           "session_state=%s",
+           slot->event_id, slot->seq, slot->session, slot->merges, slot->held_ms, slot->why,
+           (int)n, cs_state_name(w->cs.state));
+    return 0;
+}
+
+/* 播报状态轮询：playing -> idle 时进入 WAIT_NEXT（连续对话的等待窗口） */
+static void play_state_poll(t6b_worker *w, long long now_ms)
+{
+    char path[T6B_PATH_MAX];
+    char buf[768];
+    size_t len = 0;
+    int playing;
+
+    if (w->cfg.tts_queue[0] == '\0') return;
+    if (w->cs.state != CS_SPEAKING && w->cs.state != CS_PROCESSING) return;
+
+    join_path(path, sizeof(path), w->cfg.tts_queue, "play.public.json");
+    if (wu_read_file(path, buf, sizeof(buf), &len) != 0) return;
+    if (strstr(buf, "\"playing\"") != NULL) playing = 1;
+    else if (strstr(buf, "\"idle\"") != NULL) playing = 0;
+    else return;
+
+    w->play_playing = playing;
+    w->play_known = 1;
+    if (!playing) {
+        (void)cs_on_play_idle(&w->cs, now_ms);
+        if (w->cs.state == CS_WAIT_NEXT) {
+            always("session: state=WAIT_NEXT turns=%d followups=%d wait=%dms "
+                   "(follow-up works only if factory keeps the listen session alive)",
+                   w->cs.turns, w->cs.followups, w->cfg.session.timeout_ms);
+        }
+    }
+}
+
+static void gate_hold_flush(t6b_worker *w)
+{
+    char err[96];
+
+    if (w->gate_hold_path[0] == '\0') return;
+    err[0] = '\0';
+    if (ug_hold_save(&w->ug, w->gate_hold_path, err, sizeof(err)) != 0) {
+        always("gate hold save failed: %s", err[0] != '\0' ? err : "unknown");
+    }
+}
+
+static void session_poll(t6b_worker *w, long long now_ms)
+{
+    int before = w->cs.state;
+
+    (void)cs_poll(&w->cs, now_ms);
+    if (before == CS_WAIT_NEXT && w->cs.state != CS_WAIT_NEXT) {
+        always("session: state=%s (%s) turns=%d followups=%d (back to wake-word standby)",
+               cs_state_name(w->cs.state), w->cs.last_detail, w->cs.turns, w->cs.followups);
+    }
+}
+
 static int worker_loop(t6b_worker *w, const char **exit_reason)
 {
     long long started = wu_now_ms();
@@ -989,6 +1252,26 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
         if (w->cfg.max_runtime_ms > 0 && wu_now_ms() - started >= w->cfg.max_runtime_ms) {
             *exit_reason = "max_runtime";
             return 0;
+        }
+
+        /* 0.8) T7-04：会话超时 / 播报状态 / 暂存门到期 / 待提交队列。
+         *      顺序很重要：先让"到期的东西"进队列，再统一提交，保证同一句话只提一次。 */
+        session_poll(w, wu_now_ms());
+        play_state_poll(w, wu_now_ms());
+        if (!w->have_pend) {
+            ug_out ugo;
+
+            if (ug_poll(&w->ug, wu_now_ms(), &ugo) == UG_RELEASE) {
+                gate_hold_flush(w);
+                uttq_push(w, &ugo, 0);
+                snprintf(w->st.gate_last_detail, sizeof(w->st.gate_last_detail), "%s",
+                         w->ug.last_detail);
+                continue;
+            }
+            if (w->uttq_count > 0) {
+                (void)uttq_pop_to_pend(w, wu_now_ms());
+                continue;
+            }
         }
 
         /* 1) 有待处理事件：先把它处理完（成功前不读下一条） */
@@ -1047,6 +1330,9 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                 if (commit_skipped(w, exit_reason) != 0) return 6;
             } else {
                 w->st.events_accepted++;
+                /* seq 缺口必须先记账：这条记录无论是被回声过滤、本地路由还是暂存门消费掉，
+                 * seq 都已经"到达并处理"，不能再被算成缺口。 */
+                gap_report(w, &ev);
                 /* T7-02：播报回声 / 无指令过滤必须在建 pend 之前判定——
                  * 被丢弃的事件按"合法但不处理"提交偏移，绝不让它进入 Provider，
                  * 也不让它把上下文、TTS 队列再推一遍（否则就是自问自答）。 */
@@ -1070,15 +1356,76 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                               ev.event_id, ev.seq, w->ef.last_reason_text);
                     }
                 }
-                gap_report(w, &ev);
-                w->pend = ev;
-                w->have_pend = 1;
-                w->pend_attempts = 0;
-                w->pend_stuck = 0;
-                w->pend_backoff_ms = 0;
-                w->pend_next_ms = 0;
-                w->pend_error[0] = '\0';
-                continue;      /* 立刻进入 Provider 处理分支 */
+                /* T7-04 功能二：本地意图优先路由。
+                 * 命中原厂已有能力（音量/天气/关屏/开屏/时间）时：
+                 *   1) 不请求模型（route=native），避免原厂与 AI 双重回答；
+                 *   2) 写"原厂放行"标记，让 TTS 守卫保留这条原厂回答；
+                 *   3) 偏移照常提交，这条 ASR 文本绝不会被重复处理。 */
+                if (w->cfg.route_native) {
+                    ir_result ir;
+
+                    if (ir_classify(ev.text, &ir) && route_intent_enabled(w, ir.intent)) {
+                        w->st.route_native++;
+                        switch (ir.intent) {
+                        case IR_VOLUME:     w->st.route_volume++; break;
+                        case IR_WEATHER:    w->st.route_weather++; break;
+                        case IR_SCREEN_OFF: w->st.route_screen_off++; break;
+                        case IR_SCREEN_ON:  w->st.route_screen_on++; break;
+                        case IR_TIME:       w->st.route_time++; break;
+                        default: break;
+                        }
+                        route_publish(w, &ev, &ir);
+                        snprintf(w->st.route_last, sizeof(w->st.route_last),
+                                 "route=native intent=%s rule=%s arg=%s session=%s",
+                                 ir_intent_name(ir.intent), ir.rule, ir.arg, ev.session_id);
+                        always("route=native intent=%s rule=%s arg=%s event=%s seq=%lu "
+                               "session=%s text_bytes=%d (factory answers; AI worker does not)",
+                               ir_intent_name(ir.intent), ir.rule, ir.arg, ev.event_id,
+                               ev.seq, ev.session_id, ev.text_bytes);
+                        if (commit_skipped(w, exit_reason) != 0) return 6;
+                        continue;
+                    }
+                }
+
+                /* T7-04 功能四：ASR 暂存门。
+                 * 命中暂存时偏移立即提交（文本已经在内存 + 落盘槽里），
+                 * 到期后由主循环 0.8 段取出提交模型。 */
+                {
+                    ug_out ugo;
+                    int g = ug_feed(&w->ug, ev.session_id, ev.event_id, ev.text,
+                                    wu_now_ms(), &ugo);
+
+                    w->st.gate_seen = w->ug.seen;
+                    w->st.gate_held = w->ug.held;
+                    w->st.gate_released = w->ug.released;
+                    w->st.gate_merged = w->ug.merged;
+                    w->st.gate_cross_merged = w->ug.cross_merged;
+                    w->st.gate_dropped_dup = w->ug.dropped_dup;
+                    w->st.gate_restored = w->ug.restored;
+                    snprintf(w->st.gate_last_detail, sizeof(w->st.gate_last_detail), "%s",
+                             w->ug.last_detail);
+                    gate_hold_flush(w);
+
+                    if (g == UG_HELD) {
+                        if (w->cfg.verbose) {
+                            logf_(&w->cfg, "gate: hold event=%s session=%s (%s)",
+                                  ev.event_id, ev.session_id, w->ug.last_detail);
+                        }
+                        if (commit_skipped(w, exit_reason) != 0) return 6;
+                        continue;
+                    }
+                    if (g == UG_DROP) {
+                        always("gate: drop fragment event=%s session=%s (%s)",
+                               ev.event_id, ev.session_id, w->ug.last_detail);
+                        if (commit_skipped(w, exit_reason) != 0) return 6;
+                        continue;
+                    }
+                    /* UG_RELEASE：交出来的是（可能是合并后的）完整指令；
+                     * 当前这条事件的文本已经被门吸收，所以偏移同样提交。 */
+                    uttq_push(w, &ugo, ev.seq);
+                    if (commit_skipped(w, exit_reason) != 0) return 6;
+                    continue;
+                }
             }
         } else if (rc == 0) {
             backoff_ms = 0;
@@ -1168,6 +1515,12 @@ void t6b_config_defaults(t6b_config *c)
     /* T7-02：播报回声过滤默认打开（原厂回答屏蔽后只剩我方播报，回声只会污染对话） */
     c->echo_filter = 1;
     c->echo_no_command = 1;
+    /* T7-04：本地意图路由默认打开（音量/天气/关屏/开屏/时间交给原厂，不进大模型） */
+    c->route_native = 1;
+    c->route_intents = T7B_ROUTE_ALL;
+    /* T7-04：暂存门默认打开（半句话/修订合并），会话状态默认打开 */
+    (void)ug_defaults(&c->gate);
+    cs_defaults(&c->session);
     t6b_mock_defaults(&c->mock);
     t6b_ds_defaults(&c->deepseek);
 }
@@ -1299,6 +1652,27 @@ int t6b_config_check(const t6b_config *c, char *err, size_t errlen)
     }
     if (c->deepseek.max_tokens < 1 || c->deepseek.max_tokens > 8192) {
         if (err) snprintf(err, errlen, "max-tokens out of range [1,8192]");
+        return -1;
+    }
+    /* T7-04 */
+    if (c->route_intents < 0 || (c->route_intents & ~T7B_ROUTE_ALL) != 0) {
+        if (err) snprintf(err, errlen, "route-intents mask out of range [0,%d]", T7B_ROUTE_ALL);
+        return -1;
+    }
+    if (c->gate.debounce_ms < 0 || c->gate.debounce_ms > 10000) {
+        if (err) snprintf(err, errlen, "gate-debounce-ms out of range [0,10000]");
+        return -1;
+    }
+    if (c->gate.max_hold_ms < c->gate.debounce_ms || c->gate.max_hold_ms > 30000) {
+        if (err) snprintf(err, errlen, "gate-max-hold-ms out of range [debounce,30000]");
+        return -1;
+    }
+    if (c->gate.cross_session_ms < 0 || c->gate.cross_session_ms > 10000) {
+        if (err) snprintf(err, errlen, "gate-cross-session-ms out of range [0,10000]");
+        return -1;
+    }
+    if (c->session.timeout_ms < 1000 || c->session.timeout_ms > 600000) {
+        if (err) snprintf(err, errlen, "session-timeout-ms out of range [1000,600000]");
         return -1;
     }
     return 0;
@@ -1458,6 +1832,70 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
                w.ef.cfg.enabled, w.ef.cfg.drop_nocmd, w.ef.cfg.before_ms, w.ef.cfg.after_ms,
                w.ef.cfg.sim_percent,
                w.ef.state_path[0] != '\0' ? w.ef.state_path : "(no tts queue)");
+    }
+
+    /* T7-04：暂存门（半句话/修订合并）与会话状态。暂存槽落盘在 state_dir；
+     * 放行标记写进 work_dir（TTS 守卫要读，必须 0644 且目录可进入）。 */
+    {
+        ug_out ugo;
+
+        join_path(w.gate_hold_path, sizeof(w.gate_hold_path), c->state_dir,
+                  T6B_GATE_HOLD_NAME);
+        join_path(w.route_publish_path, sizeof(w.route_publish_path), c->work_dir,
+                  T6B_ROUTE_PUBLISH_NAME);
+        if (!c->route_native) w.route_publish_path[0] = '\0';
+
+        ug_init(&w.ug, &c->gate);
+        cs_init(&w.cs, &c->session);
+
+        w.st.route_enabled = c->route_native;
+        w.st.route_intents = c->route_intents;
+        snprintf(w.st.route_publish_file, sizeof(w.st.route_publish_file), "%s",
+                 w.route_publish_path);
+        w.st.gate_enabled = w.ug.cfg.enabled;
+        w.st.gate_debounce_ms = w.ug.cfg.debounce_ms;
+        w.st.gate_max_hold_ms = w.ug.cfg.max_hold_ms;
+        w.st.gate_cross_session = w.ug.cfg.cross_session;
+        snprintf(w.st.gate_hold_file, sizeof(w.st.gate_hold_file), "%s", w.gate_hold_path);
+        w.st.session_enabled = w.cs.cfg.enabled;
+        w.st.session_timeout_ms = w.cs.cfg.timeout_ms;
+        snprintf(w.st.session_state, sizeof(w.st.session_state), "%s",
+                 cs_state_name(w.cs.state));
+
+        always("route: enabled=%d intents=0x%02x (volume=%d weather=%d screen_off=%d "
+               "time=%d screen_on=%d) publish_file=%s",
+               c->route_native, c->route_intents,
+               (c->route_intents & T7B_ROUTE_VOLUME) ? 1 : 0,
+               (c->route_intents & T7B_ROUTE_WEATHER) ? 1 : 0,
+               (c->route_intents & T7B_ROUTE_SCREEN_OFF) ? 1 : 0,
+               (c->route_intents & T7B_ROUTE_TIME) ? 1 : 0,
+               (c->route_intents & T7B_ROUTE_SCREEN_ON) ? 1 : 0,
+               w.route_publish_path[0] != '\0' ? w.route_publish_path : "(disabled)");
+        always("gate: enabled=%d debounce=%dms max_hold=%dms cross_session=%d(%dms) sim=%d%% "
+               "hold_file=%s",
+               w.ug.cfg.enabled, w.ug.cfg.debounce_ms, w.ug.cfg.max_hold_ms,
+               w.ug.cfg.cross_session, w.ug.cfg.cross_session_ms, w.ug.cfg.revision_sim,
+               w.gate_hold_path);
+        always("session: enabled=%d timeout=%dms (follow-up window after playback)",
+               w.cs.cfg.enabled, w.cs.cfg.timeout_ms);
+
+        /* 上次退出时还有一句没交出去：恢复它（并立刻提交），绝不重复提交 */
+        if (ug_hold_restore(&w.ug, w.gate_hold_path, wu_now_ms(), &ugo) == UG_HELD &&
+            w.ug.have) {
+            always("gate: restored pending utterance from %s (%s) event=%s session=%s "
+                   "text_bytes=%d",
+                   w.gate_hold_path, w.ug.last_detail, w.ug.event_id, w.ug.session,
+                   (int)strlen(w.ug.text));
+            w.st.gate_restored = w.ug.restored;
+            snprintf(w.st.gate_last_detail, sizeof(w.st.gate_last_detail), "%s",
+                     w.ug.last_detail);
+        } else if (w.ug.expired_on_restore > 0) {
+            always("gate: pending utterance on disk was too old and was dropped (%s)",
+                   w.ug.last_detail);
+        }
+        w.st.gate_seen = w.ug.seen;
+        w.st.gate_held = w.ug.held;
+        w.st.gate_released = w.ug.released;
     }
 
     /* 读消费进度；损坏时留档并从头开始（绝不静默跳过未处理事件） */
@@ -1679,6 +2117,14 @@ static void usage(void)
         "  --clear-context       delete the stored context and exit\n"
         "  --echo-filter 0|1     drop ASR events that echo our own TTS playback (default 1)\n"
         "  --echo-no-command 0|1 also drop events with no command left after wake/filler strip\n"
+        "  --route-native 0|1    route factory base intents (volume/weather/screen/time) natively\n"
+        "  --gate 0|1            hold ASR finals briefly and merge revisions (default 1)\n"
+        "  --gate-debounce-ms N  continue-speaking window before submitting (default 450)\n"
+        "  --gate-max-hold-ms N  hard cap on how long one utterance may be held (default 2500)\n"
+        "  --gate-cross-session 0|1  merge a dangling utterance with the next session (default 1)\n"
+        "  --gate-cross-session-ms N max gap for that merge (default 1200)\n"
+        "  --session 0|1         track the conversation session state machine (default 1)\n"
+        "  --session-timeout-ms N follow-up wait after playback ends (default 12000)\n"
         "  --system-prompt TEXT  system message put at messages[0] (empty = built-in default)\n"
         "  --system-prompt-file PATH  read the system message from a UTF-8 file\n"
         "                        (default 1; e.g. a bare wake word or a trailing '嗯')\n"
@@ -1789,6 +2235,14 @@ int main(int argc, char **argv)
         else if (strcmp(a, "--clear-context") == 0) { cfg.clear_context = 1; continue; }
         else if (strcmp(a, "--echo-filter") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.echo_filter = (atoi(v) != 0); i++; }
         else if (strcmp(a, "--echo-no-command") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.echo_no_command = (atoi(v) != 0); i++; }
+        else if (strcmp(a, "--route-native") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.route_native = (atoi(v) != 0); i++; }
+        else if (strcmp(a, "--gate") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.gate.enabled = (atoi(v) != 0); i++; }
+        else if (strcmp(a, "--gate-debounce-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.gate.debounce_ms = atoi(v); i++; }
+        else if (strcmp(a, "--gate-max-hold-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.gate.max_hold_ms = atoi(v); i++; }
+        else if (strcmp(a, "--gate-cross-session") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.gate.cross_session = (atoi(v) != 0); i++; }
+        else if (strcmp(a, "--gate-cross-session-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.gate.cross_session_ms = atoi(v); i++; }
+        else if (strcmp(a, "--session") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.session.enabled = (atoi(v) != 0); i++; }
+        else if (strcmp(a, "--session-timeout-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.session.timeout_ms = atoi(v); i++; }
         else if (strcmp(a, "--system-prompt") == 0) {
             if (need_str(argc, argv, i, &v)) goto bad;
             snprintf(cfg.deepseek.system_prompt, sizeof(cfg.deepseek.system_prompt), "%s", v);

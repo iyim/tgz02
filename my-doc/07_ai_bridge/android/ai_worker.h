@@ -14,9 +14,11 @@
 #define T6B_AI_WORKER_H
 
 #include "conv_context.h"
+#include "conv_session.h"
 #include "deepseek_provider.h"
 #include "event_reader.h"
 #include "provider.h"
+#include "utterance_gate.h"
 #include "worker_status.h"
 
 #define T6B_WORK_DIR_DEFAULT    "/data/local/tmp/t5_bridge/work"
@@ -33,6 +35,19 @@
 #define T6B_CONTEXT_NAME_DEFAULT "context.json"
 /* T7-01：运行中的 Worker 通过这个请求文件清空上下文（见 run_ai_worker.sh clear-context） */
 #define T6B_CONTEXT_CLEAR_NAME  "context.clear"
+/* T7-04：暂存槽与"原厂放行"标记 */
+#define T6B_GATE_HOLD_NAME      "utterance_hold.json"
+#define T6B_ROUTE_PUBLISH_NAME  "native_route.public.json"
+#define T6B_ROUTE_SLACK_MS      8000    /* 放行标记的有效期（覆盖原厂云端应答延迟） */
+
+/* T7-04：本地意图路由的位掩码（worker.conf 的 route_intents=volume,time,...）
+ * 任务书 §4 只要求音量/天气/关屏/时间四类；开屏同属原厂屏幕能力，一起管。 */
+#define T7B_ROUTE_VOLUME     0x01
+#define T7B_ROUTE_WEATHER    0x02
+#define T7B_ROUTE_SCREEN_OFF 0x04
+#define T7B_ROUTE_TIME       0x08
+#define T7B_ROUTE_SCREEN_ON  0x10
+#define T7B_ROUTE_ALL        0x1F
 
 typedef struct {
     char        work_dir[T6B_PATH_MAX];      /* events.jsonl 所在目录（只读） */
@@ -63,6 +78,13 @@ typedef struct {
     /* T7-02：播报回声 / 无指令过滤 */
     int         echo_filter;                 /* 1 = 播报窗口内丢弃回声事件（默认 1） */
     int         echo_no_command;             /* 1 = 丢弃"只有唤醒词/语气词"的事件（默认 1） */
+    /* T7-04：本地意图优先路由（原厂已有能力优先，不进大模型） */
+    int         route_native;                /* 1 = 启用本地意图路由（默认 1） */
+    int         route_intents;               /* 位掩码：见 T7B_ROUTE_* */
+    /* T7-04：ASR 暂存门（半句话/修订合并） */
+    ug_config   gate;
+    /* T7-04：连续对话会话状态 */
+    cs_config   session;
     t6b_mock_cfg mock;
     t6b_ds_cfg   deepseek;                   /* 只有 provider=deepseek 时才使用 */
 } t6b_config;

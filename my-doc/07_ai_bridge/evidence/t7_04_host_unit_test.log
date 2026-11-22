@@ -1,0 +1,88 @@
+﻿# T7-04 host unit test log
+# host time: 2026-11-22 08:12:07
+
+=== build t7_04_route_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_04_route_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_04_route_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_04_route_unit_test ===
+=== T7-04 intent route unit test ===
+
+[1] volume
+
+[2] weather
+
+[3] screen off / on
+
+[4] time
+
+[5] negatives (must stay on the AI path)
+
+[6] names / helpers
+
+SUMMARY: pass=93 fail=0
+RESULT: PASS
+
+=== build t7_04_gate_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_04_gate_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_04_gate_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_04_gate_unit_test ===
+=== T7-04 utterance gate unit test ===
+
+[1] same session, prefix revision
+
+[1b] dangling utterance gets the wider (cross-session) window
+
+[2] same session, shorter middle result ignored
+
+[3] same session, two different utterances
+
+[4] cross session, dangling predicate merges
+
+[5] cross session, not dangling -> not merged
+
+[6] max_hold caps the wait
+
+[7] gate disabled = legacy behaviour
+
+[8] hold slot persistence
+
+[9] expired hold slot is dropped, not replayed
+
+[10] dangling predicate helper
+
+SUMMARY: pass=45 fail=0
+RESULT: PASS
+
+=== build t7_04_session_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_04_session_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_04_session_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_session.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_04_session_unit_test ===
+=== T7-04 conversation session unit test ===
+
+[1] normal turn lifecycle
+
+[2] follow-up inside the window
+
+[3] timeout closes the session
+
+[4] new wake after close opens a new session
+
+[5] playback idle without queued TTS still settles
+
+[6] disabled session keeps state untouched
+
+[7] timeout is configurable
+
+SUMMARY: pass=25 fail=0
+RESULT: PASS
+
+=== worker compile check (-c, warnings are failures) ===
+intent_route.c : 0 warning
+utterance_gate.c : 0 warning
+conv_session.c : 0 warning
+worker_conf.c : 0 warning
+worker_status.c : 0 warning
+ai_worker.c : 0 warning
+
+SUMMARY pass=163 fail=0
+RESULT: PASS
