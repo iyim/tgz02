@@ -1,0 +1,37 @@
+﻿# T8-02 host test log (takeover capacity + concurrency)
+# host time: 2026-11-22 18:16:36
+
+=== build t8_02_nlu_takeover_unit_test ===
+gcc -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_02_nlu_takeover_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_02_nlu_takeover_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_takeover.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c
+(no compiler output: 0 warning, 0 error)
+exit : 0
+
+=== run t8_02_nlu_takeover_unit_test ===
+=== T8-02 NLU/CDM takeover unit test (capacity + concurrency) ===
+slots=64 ttl_ms=30000 degraded_ms=5000
+
+[A] 判定（真机 2026-11-22 17:52 的真实文本）
+  天猫精灵现在几点   -> PASS (why=none intent=time rule=time.keyword arg= complete=1)
+  天猫精灵音量调到五 -> PASS (why=none intent=volume rule=volume.set arg=set:5 complete=1)
+  天猫精灵暂停         -> PASS (why=none intent=stop rule=stop.keyword arg=stop complete=1)
+  天猫精灵给我讲一个笑话 -> TAKE (why=ai intent=none rule= arg= complete=0)
+
+[A2] 参数不完整 / 意图未启用 / 全禁用
+  音量调到百分之 -> TAKE (intent=volume complete=0 note=dangling)
+
+[B] 丢弃语义
+
+[C] 技能接口
+
+[D] 端到端：onStream -> onNlpResult 的分流
+  summary: factory_runs=1 our_replies=1 our_apply=1 dropped_nlu=1
+
+[E] 容量耗尽（不覆盖有效登记 / fail-closed 窗口）
+
+[F] 并发（登记/查询/清理/TTL 回收/重复登记）
+  mixed: threads=6 iters=400 marked=2400 dropped=2400 expired=0
+
+RESULT: pass=184 fail=0
+exit : 0
+
+# result: OK (184 assertions, 0 warning, 0 error)

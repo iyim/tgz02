@@ -1,0 +1,495 @@
+﻿
+libsmartbox.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+00118ebc AliAiLabs::AGUI::SessionDispatch::onNlpResult(int, int, AliAiLabs::AGUI::NlpResult*):
+  118ebc: f0 4f 2d e9                  	push	{r4, r5, r6, r7, r8, r9, r10, r11, lr}
+  118ec0: 1c b0 8d e2                  	add	r11, sp, #28
+  118ec4: 34 d0 4d e2                  	sub	sp, sp, #52
+  118ec8: 03 a0 a0 e1                  	mov	r10, r3
+  118ecc: 01 60 a0 e1                  	mov	r6, r1
+  118ed0: 0c 17 9f e5                  	ldr	r1, [pc, #1804]
+  118ed4: 02 40 a0 e1                  	mov	r4, r2
+  118ed8: 08 27 9f e5                  	ldr	r2, [pc, #1800]
+  118edc: 00 80 a0 e1                  	mov	r8, r0
+  118ee0: 04 37 9f e5                  	ldr	r3, [pc, #1796]
+  118ee4: 01 10 8f e0                  	add	r1, pc, r1
+  118ee8: 00 07 9f e5                  	ldr	r0, [pc, #1792]
+  118eec: 1a 5e a0 e3                  	mov	r5, #416
+  118ef0: 02 20 8f e0                  	add	r2, pc, r2
+  118ef4: 03 30 8f e0                  	add	r3, pc, r3
+  118ef8: 00 00 8f e0                  	add	r0, pc, r0
+  118efc: 00 00 5a e3                  	cmp	r10, #0
+  118f00: 0a 70 a0 e1                  	mov	r7, r10
+  118f04: 00 50 8d e5                  	str	r5, [sp]
+  118f08: 41 00 8d e9                  	stmib	sp, {r0, r6}
+  118f0c: 01 70 00 13                  	movwne	r7, #1
+  118f10: 01 00 a0 e3                  	mov	r0, #1
+  118f14: 0c 40 8d e5                  	str	r4, [sp, #12]
+  118f18: 10 70 8d e5                  	str	r7, [sp, #16]
+  118f1c: d9 e1 fd eb                  	bl	#-555164 <.plt+0x42ec>
+  118f20: 00 00 5a e3                  	cmp	r10, #0
+  118f24: 04 00 00 0a                  	beq	#16 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x80>
+  118f28: 00 00 a0 e3                  	mov	r0, #0
+  118f2c: 00 00 54 e3                  	cmp	r4, #0
+  118f30: 18 00 8d e5                  	str	r0, [sp, #24]
+  118f34: 08 00 00 1a                  	bne	#32 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0xa0>
+  118f38: 0c 00 00 ea                  	b	#48 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0xb4>
+  118f3c: 00 00 54 e3                  	cmp	r4, #0
+  118f40: 8a 01 00 0a                  	beq	#1576 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x6b4>
+  118f44: 98 00 a0 e3                  	mov	r0, #152
+  118f48: 69 d1 fd eb                  	bl	#-571996 <.plt+0x158>
+  118f4c: 00 a0 a0 e1                  	mov	r10, r0
+  118f50: 3c e7 fd eb                  	bl	#-549648 <.plt+0x58ac>
+  118f54: 08 40 8a e5                  	str	r4, [r10, #8]
+  118f58: 18 a0 8d e5                  	str	r10, [sp, #24]
+  118f5c: 0f 06 06 e2                  	and	r0, r6, #15728640
+  118f60: 01 06 50 e3                  	cmp	r0, #1048576
+  118f64: 04 00 9a 05                  	ldreq	r0, [r10, #4]
+  118f68: 00 00 50 03                  	cmpeq	r0, #0
+  118f6c: 4f 00 00 0a                  	beq	#316 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x1f4>
+  118f70: 08 40 a0 e1                  	mov	r4, r8
+  118f74: 34 00 b4 e5                  	ldr	r0, [r4, #52]!
+  118f78: 00 00 50 e3                  	cmp	r0, #0
+  118f7c: 05 00 00 1a                  	bne	#20 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0xdc>
+  118f80: 3c 20 88 e2                  	add	r2, r8, #60
+  118f84: 2c 30 88 e2                  	add	r3, r8, #44
+  118f88: 08 00 a0 e1                  	mov	r0, r8
+  118f8c: 06 10 a0 e1                  	mov	r1, r6
+  118f90: 00 40 8d e5                  	str	r4, [sp]
+  118f94: 51 e8 fd eb                  	bl	#-548540 <.plt+0x5d44>
+  118f98: 74 06 9f e5                  	ldr	r0, [pc, #1652]
+  118f9c: 00 00 8f e0                  	add	r0, pc, r0
+  118fa0: a1 d1 fd eb                  	bl	#-571772 <.plt+0x290>
+  118fa4: 6f 27 06 e3                  	movw	r2, #26479
+  118fa8: 00 10 a0 e3                  	mov	r1, #0
+  118fac: 49 24 46 e3                  	movt	r2, #25673
+  118fb0: 30 10 8d e5                  	str	r1, [sp, #48]
+  118fb4: 2c 10 8d e5                  	str	r1, [sp, #44]
+  118fb8: 28 10 8d e5                  	str	r1, [sp, #40]
+  118fbc: 2d 20 8d e5                  	str	r2, [sp, #45]
+  118fc0: 61 23 07 e3                  	movw	r2, #29537
+  118fc4: 72 2c 44 e3                  	movt	r2, #19570
+  118fc8: 29 20 8d e5                  	str	r2, [sp, #41]
+  118fcc: 10 20 a0 e3                  	mov	r2, #16
+  118fd0: 28 20 cd e5                  	strb	r2, [sp, #40]
+  118fd4: 31 10 cd e5                  	strb	r1, [sp, #49]
+  118fd8: 00 10 90 e5                  	ldr	r1, [r0]
+  118fdc: 4c 20 9a e5                  	ldr	r2, [r10, #76]
+  118fe0: 48 30 91 e5                  	ldr	r3, [r1, #72]
+  118fe4: 28 10 8d e2                  	add	r1, sp, #40
+  118fe8: 33 ff 2f e1                  	blx	r3
+  118fec: 28 00 dd e5                  	ldrb	r0, [sp, #40]
+  118ff0: 01 00 10 e3                  	tst	r0, #1
+  118ff4: 01 00 00 0a                  	beq	#4 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x144>
+  118ff8: 30 00 9d e5                  	ldr	r0, [sp, #48]
+  118ffc: 45 d1 fd eb                  	bl	#-572140 <.plt+0x17c>
+  119000: 08 10 a0 e1                  	mov	r1, r8
+  119004: 2c 00 b1 e5                  	ldr	r0, [r1, #44]!
+  119008: 14 10 8d e5                  	str	r1, [sp, #20]
+  11900c: 00 00 50 e3                  	cmp	r0, #0
+  119010: 02 00 00 0a                  	beq	#8 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x164>
+  119014: 34 e8 fd eb                  	bl	#-548656 <.plt+0x5d50>
+  119018: 00 00 50 e3                  	cmp	r0, #0
+  11901c: 02 00 00 0a                  	beq	#8 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x170>
+  119020: 00 90 94 e5                  	ldr	r9, [r4]
+  119024: 00 00 59 e3                  	cmp	r9, #0
+  119028: 0d 00 00 1a                  	bne	#52 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x1a8>
+  11902c: e4 15 9f e5                  	ldr	r1, [pc, #1508]
+  119030: cb 71 00 e3                  	movw	r7, #459
+  119034: e0 25 9f e5                  	ldr	r2, [pc, #1504]
+  119038: e0 35 9f e5                  	ldr	r3, [pc, #1504]
+  11903c: 01 10 8f e0                  	add	r1, pc, r1
+  119040: dc 05 9f e5                  	ldr	r0, [pc, #1500]
+  119044: 02 20 8f e0                  	add	r2, pc, r2
+  119048: 03 30 8f e0                  	add	r3, pc, r3
+  11904c: 00 70 8d e5                  	str	r7, [sp]
+  119050: 00 00 8f e0                  	add	r0, pc, r0
+  119054: 04 00 8d e5                  	str	r0, [sp, #4]
+  119058: 01 00 a0 e3                  	mov	r0, #1
+  11905c: 89 e1 fd eb                  	bl	#-555484 <.plt+0x42ec>
+  119060: 00 90 a0 e3                  	mov	r9, #0
+  119064: 00 00 a0 e3                  	mov	r0, #0
+  119068: 28 00 8d e5                  	str	r0, [sp, #40]
+  11906c: 38 00 9a e5                  	ldr	r0, [r10, #56]
+  119070: ed fb ff eb                  	bl	#-4172 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x2ec>
+  119074: 00 00 59 e3                  	cmp	r9, #0
+  119078: 20 00 8d e5                  	str	r0, [sp, #32]
+  11907c: 34 00 00 0a                  	beq	#208 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x298>
+  119080: 38 00 9a e5                  	ldr	r0, [r10, #56]
+  119084: 00 00 50 e3                  	cmp	r0, #0
+  119088: 26 00 00 0a                  	beq	#152 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x26c>
+  11908c: 00 10 99 e5                  	ldr	r1, [r9]
+  119090: 04 30 90 e5                  	ldr	r3, [r0, #4]
+  119094: 08 20 90 e5                  	ldr	r2, [r0, #8]
+  119098: 0c 00 90 e5                  	ldr	r0, [r0, #12]
+  11909c: 20 70 91 e5                  	ldr	r7, [r1, #32]
+  1190a0: 06 10 a0 e1                  	mov	r1, r6
+  1190a4: 00 20 8d e5                  	str	r2, [sp]
+  1190a8: 0a 20 a0 e1                  	mov	r2, r10
+  1190ac: 24 00 00 ea                  	b	#144 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x288>
+  1190b0: 10 00 98 e5                  	ldr	r0, [r8, #16]
+  1190b4: 00 20 a0 e3                  	mov	r2, #0
+  1190b8: 00 10 90 e5                  	ldr	r1, [r0]
+  1190bc: b0 30 91 e5                  	ldr	r3, [r1, #176]
+  1190c0: 00 10 a0 e3                  	mov	r1, #0
+  1190c4: 33 ff 2f e1                  	blx	r3
+  1190c8: 00 00 50 e3                  	cmp	r0, #0
+  1190cc: a7 ff ff 0a                  	beq	#-356 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0xb4>
+  1190d0: ea d2 fd eb                  	bl	#-570456 <.plt+0x8e4>
+  1190d4: 00 10 90 e5                  	ldr	r1, [r0]
+  1190d8: 3c 10 91 e5                  	ldr	r1, [r1, #60]
+  1190dc: 31 ff 2f e1                  	blx	r1
+  1190e0: 00 10 90 e5                  	ldr	r1, [r0]
+  1190e4: 74 20 91 e5                  	ldr	r2, [r1, #116]
+  1190e8: 04 10 a0 e3                  	mov	r1, #4
+  1190ec: 32 ff 2f e1                  	blx	r2
+  1190f0: 0c 15 9f e5                  	ldr	r1, [pc, #1292]
+  1190f4: b6 71 00 e3                  	movw	r7, #438
+  1190f8: 08 25 9f e5                  	ldr	r2, [pc, #1288]
+  1190fc: 08 35 9f e5                  	ldr	r3, [pc, #1288]
+  119100: 01 10 8f e0                  	add	r1, pc, r1
+  119104: 04 05 9f e5                  	ldr	r0, [pc, #1284]
+  119108: 02 20 8f e0                  	add	r2, pc, r2
+  11910c: 03 30 8f e0                  	add	r3, pc, r3
+  119110: 00 70 8d e5                  	str	r7, [sp]
+  119114: 00 00 8f e0                  	add	r0, pc, r0
+  119118: 41 00 8d e9                  	stmib	sp, {r0, r6}
+  11911c: 01 00 a0 e3                  	mov	r0, #1
+  119120: 58 e1 fd eb                  	bl	#-555680 <.plt+0x42ec>
+  119124: 91 ff ff ea                  	b	#-444 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0xb4>
+  119128: 00 00 99 e5                  	ldr	r0, [r9]
+  11912c: 06 10 a0 e1                  	mov	r1, r6
+  119130: 0a 20 a0 e1                  	mov	r2, r10
+  119134: 00 30 a0 e3                  	mov	r3, #0
+  119138: 20 70 90 e5                  	ldr	r7, [r0, #32]
+  11913c: 00 00 a0 e3                  	mov	r0, #0
+  119140: 00 00 8d e5                  	str	r0, [sp]
+  119144: 04 00 8d e5                  	str	r0, [sp, #4]
+  119148: 09 00 a0 e1                  	mov	r0, r9
+  11914c: 37 ff 2f e1                  	blx	r7
+  119150: 28 00 8d e5                  	str	r0, [sp, #40]
+  119154: cc 74 9f e5                  	ldr	r7, [pc, #1228]
+  119158: 07 70 9f e7                  	ldr	r7, [pc, r7]
+  11915c: 00 00 d7 e5                  	ldrb	r0, [r7]
+  119160: 00 00 50 e3                  	cmp	r0, #0
+  119164: 0f 00 00 0a                  	beq	#60 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x2ec>
+  119168: bc 14 9f e5                  	ldr	r1, [pc, #1212]
+  11916c: 07 40 a0 e1                  	mov	r4, r7
+  119170: b8 24 9f e5                  	ldr	r2, [pc, #1208]
+  119174: e1 51 00 e3                  	movw	r5, #481
+  119178: b4 34 9f e5                  	ldr	r3, [pc, #1204]
+  11917c: 01 10 8f e0                  	add	r1, pc, r1
+  119180: 28 00 9d e5                  	ldr	r0, [sp, #40]
+  119184: 02 20 8f e0                  	add	r2, pc, r2
+  119188: a8 74 9f e5                  	ldr	r7, [pc, #1192]
+  11918c: 03 30 8f e0                  	add	r3, pc, r3
+  119190: 07 70 8f e0                  	add	r7, pc, r7
+  119194: a0 00 8d e8                  	stm	sp, {r5, r7}
+  119198: 04 70 a0 e1                  	mov	r7, r4
+  11919c: 08 00 8d e5                  	str	r0, [sp, #8]
+  1191a0: 04 00 a0 e3                  	mov	r0, #4
+  1191a4: 37 e1 fd eb                  	bl	#-555812 <.plt+0x42ec>
+  1191a8: 28 00 9d e5                  	ldr	r0, [sp, #40]
+  1191ac: 06 00 50 e3                  	cmp	r0, #6
+  1191b0: 06 00 00 1a                  	bne	#24 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x314>
+  1191b4: 98 00 a0 e3                  	mov	r0, #152
+  1191b8: cd d0 fd eb                  	bl	#-572620 <.plt+0x158>
+  1191bc: 00 a0 a0 e1                  	mov	r10, r0
+  1191c0: a0 e6 fd eb                  	bl	#-550272 <.plt+0x58ac>
+  1191c4: 01 00 a0 e3                  	mov	r0, #1
+  1191c8: 18 a0 8d e5                  	str	r10, [sp, #24]
+  1191cc: 08 00 8a e5                  	str	r0, [r10, #8]
+  1191d0: 01 18 a0 e3                  	mov	r1, #65536
+  1191d4: 0a 30 a0 e1                  	mov	r3, r10
+  1191d8: ed e7 fd eb                  	bl	#-548940 <.plt+0x5df8>
+  1191dc: 00 00 a0 e3                  	mov	r0, #0
+  1191e0: 28 10 8d e2                  	add	r1, sp, #40
+  1191e4: 27 00 cd e5                  	strb	r0, [sp, #39]
+  1191e8: 27 00 8d e2                  	add	r0, sp, #39
+  1191ec: 00 10 8d e5                  	str	r1, [sp]
+  1191f0: 01 18 a0 e3                  	mov	r1, #65536
+  1191f4: 06 20 a0 e1                  	mov	r2, r6
+  1191f8: 0a 30 a0 e1                  	mov	r3, r10
+  1191fc: 04 00 8d e5                  	str	r0, [sp, #4]
+  119200: e0 e7 fd eb                  	bl	#-548992 <.plt+0x5dec>
+  119204: 00 00 d7 e5                  	ldrb	r0, [r7]
+  119208: 1c 60 8d e5                  	str	r6, [sp, #28]
+  11920c: 00 00 50 e3                  	cmp	r0, #0
+  119210: 13 00 00 0a                  	beq	#76 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x3a8>
+  119214: 20 14 9f e5                  	ldr	r1, [pc, #1056]
+  119218: 07 40 a0 e1                  	mov	r4, r7
+  11921c: 1c 24 9f e5                  	ldr	r2, [pc, #1052]
+  119220: ee 61 00 e3                  	movw	r6, #494
+  119224: 18 34 9f e5                  	ldr	r3, [pc, #1048]
+  119228: 01 10 8f e0                  	add	r1, pc, r1
+  11922c: 02 20 8f e0                  	add	r2, pc, r2
+  119230: 28 00 9d e5                  	ldr	r0, [sp, #40]
+  119234: 04 70 9a e5                  	ldr	r7, [r10, #4]
+  119238: 03 30 8f e0                  	add	r3, pc, r3
+  11923c: 04 54 9f e5                  	ldr	r5, [pc, #1028]
+  119240: 08 00 8d e5                  	str	r0, [sp, #8]
+  119244: 04 00 a0 e3                  	mov	r0, #4
+  119248: 05 50 8f e0                  	add	r5, pc, r5
+  11924c: 00 60 8d e5                  	str	r6, [sp]
+  119250: 0c 70 8d e5                  	str	r7, [sp, #12]
+  119254: 04 70 a0 e1                  	mov	r7, r4
+  119258: 1c 60 9d e5                  	ldr	r6, [sp, #28]
+  11925c: 04 50 8d e5                  	str	r5, [sp, #4]
+  119260: 08 e1 fd eb                  	bl	#-556000 <.plt+0x42ec>
+  119264: 20 00 9d e5                  	ldr	r0, [sp, #32]
+  119268: 00 00 50 e3                  	cmp	r0, #0
+  11926c: 16 00 00 0a                  	beq	#88 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x410>
+  119270: 28 00 9d e5                  	ldr	r0, [sp, #40]
+  119274: 00 00 50 e3                  	cmp	r0, #0
+  119278: 82 00 00 0a                  	beq	#520 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x5cc>
+  11927c: 00 00 d7 e5                  	ldrb	r0, [r7]
+  119280: 00 00 50 e3                  	cmp	r0, #0
+  119284: 10 00 00 0a                  	beq	#64 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x410>
+  119288: bc 13 9f e5                  	ldr	r1, [pc, #956]
+  11928c: f6 51 00 e3                  	movw	r5, #502
+  119290: b8 23 9f e5                  	ldr	r2, [pc, #952]
+  119294: b8 33 9f e5                  	ldr	r3, [pc, #952]
+  119298: 01 10 8f e0                  	add	r1, pc, r1
+  11929c: 28 00 9d e5                  	ldr	r0, [sp, #40]
+  1192a0: 02 20 8f e0                  	add	r2, pc, r2
+  1192a4: 04 70 9a e5                  	ldr	r7, [r10, #4]
+  1192a8: 03 30 8f e0                  	add	r3, pc, r3
+  1192ac: a4 63 9f e5                  	ldr	r6, [pc, #932]
+  1192b0: 06 60 8f e0                  	add	r6, pc, r6
+  1192b4: 60 00 8d e8                  	stm	sp, {r5, r6}
+  1192b8: 08 00 8d e5                  	str	r0, [sp, #8]
+  1192bc: 04 00 a0 e3                  	mov	r0, #4
+  1192c0: 1c 60 9d e5                  	ldr	r6, [sp, #28]
+  1192c4: 0c 70 8d e5                  	str	r7, [sp, #12]
+  1192c8: ee e0 fd eb                  	bl	#-556104 <.plt+0x42ec>
+  1192cc: 00 00 59 e3                  	cmp	r9, #0
+  1192d0: 0f 00 00 0a                  	beq	#60 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x458>
+  1192d4: 04 00 9a e5                  	ldr	r0, [r10, #4]
+  1192d8: 00 00 50 e3                  	cmp	r0, #0
+  1192dc: 06 00 00 1a                  	bne	#24 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x440>
+  1192e0: 28 00 9d e5                  	ldr	r0, [sp, #40]
+  1192e4: 04 00 8a e5                  	str	r0, [r10, #4]
+  1192e8: 0c 10 98 e5                  	ldr	r1, [r8, #12]
+  1192ec: 84 10 91 e5                  	ldr	r1, [r1, #132]
+  1192f0: 01 00 51 e3                  	cmp	r1, #1
+  1192f4: 03 00 00 03                  	movweq	r0, #3
+  1192f8: 04 00 8a e5                  	str	r0, [r10, #4]
+  1192fc: 00 00 99 e5                  	ldr	r0, [r9]
+  119300: 06 10 a0 e1                  	mov	r1, r6
+  119304: 0a 20 a0 e1                  	mov	r2, r10
+  119308: 18 30 90 e5                  	ldr	r3, [r0, #24]
+  11930c: 09 00 a0 e1                  	mov	r0, r9
+  119310: 33 ff 2f e1                  	blx	r3
+  119314: 0a 00 a0 e1                  	mov	r0, r10
+  119318: a0 e7 fd eb                  	bl	#-549248 <.plt+0x5e04>
+  11931c: 00 00 50 e3                  	cmp	r0, #0
+  119320: 13 00 00 0a                  	beq	#76 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x4b8>
+  119324: 00 40 a0 e1                  	mov	r4, r0
+  119328: 04 00 90 e5                  	ldr	r0, [r0, #4]
+  11932c: 0e 00 50 e3                  	cmp	r0, #14
+  119330: 0f 00 00 1a                  	bne	#60 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x4b8>
+  119334: 08 60 94 e5                  	ldr	r6, [r4, #8]
+  119338: 00 00 56 e3                  	cmp	r6, #0
+  11933c: 0c 00 00 0a                  	beq	#48 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x4b8>
+  119340: 4e d2 fd eb                  	bl	#-571080 <.plt+0x8e4>
+  119344: e5 e5 fd eb                  	bl	#-551020 <.plt+0x5744>
+  119348: 8c 10 9a e5                  	ldr	r1, [r10, #140]
+  11934c: 00 30 a0 e3                  	mov	r3, #0
+  119350: 04 20 96 e5                  	ldr	r2, [r6, #4]
+  119354: 00 50 a0 e3                  	mov	r5, #0
+  119358: e3 e5 fd eb                  	bl	#-551028 <.plt+0x5750>
+  11935c: 00 00 96 e5                  	ldr	r0, [r6]
+  119360: 04 10 90 e5                  	ldr	r1, [r0, #4]
+  119364: 06 00 a0 e1                  	mov	r0, r6
+  119368: 31 ff 2f e1                  	blx	r1
+  11936c: 00 00 e0 e3                  	mvn	r0, #0
+  119370: 21 00 84 e9                  	stmib	r4, {r0, r5}
+  119374: 20 00 9d e5                  	ldr	r0, [sp, #32]
+  119378: 00 00 50 e3                  	cmp	r0, #0
+  11937c: 00 00 00 0a                  	beq	#0 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x4c8>
+  119380: 22 d0 fd eb                  	bl	#-573304 <.plt+0x74>
+  119384: 08 40 a0 e1                  	mov	r4, r8
+  119388: 24 10 b4 e5                  	ldr	r1, [r4, #36]!
+  11938c: 04 00 44 e2                  	sub	r0, r4, #4
+  119390: c1 db fd eb                  	bl	#-561404 <.plt+0x2f00>
+  119394: 00 00 a0 e3                  	mov	r0, #0
+  119398: 04 40 04 e5                  	str	r4, [r4, #-4]
+  11939c: 00 00 84 e5                  	str	r0, [r4]
+  1193a0: 04 00 84 e5                  	str	r0, [r4, #4]
+  1193a4: 08 10 14 e5                  	ldr	r1, [r4, #-8]
+  1193a8: 18 90 9d e5                  	ldr	r9, [sp, #24]
+  1193ac: 00 00 51 e3                  	cmp	r1, #0
+  1193b0: 23 00 00 0a                  	beq	#140 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x588>
+  1193b4: 18 50 98 e5                  	ldr	r5, [r8, #24]
+  1193b8: 10 70 44 e2                  	sub	r7, r4, #16
+  1193bc: 14 10 98 e5                  	ldr	r1, [r8, #20]
+  1193c0: 00 20 95 e5                  	ldr	r2, [r5]
+  1193c4: 04 30 91 e5                  	ldr	r3, [r1, #4]
+  1193c8: 04 30 82 e5                  	str	r3, [r2, #4]
+  1193cc: 04 10 91 e5                  	ldr	r1, [r1, #4]
+  1193d0: 00 20 81 e5                  	str	r2, [r1]
+  1193d4: 1c 00 88 e5                  	str	r0, [r8, #28]
+  1193d8: 07 00 55 e1                  	cmp	r5, r7
+  1193dc: 18 00 00 0a                  	beq	#96 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x588>
+  1193e0: 05 40 a0 e1                  	mov	r4, r5
+  1193e4: 04 50 95 e5                  	ldr	r5, [r5, #4]
+  1193e8: 0c 60 94 e5                  	ldr	r6, [r4, #12]
+  1193ec: 00 00 56 e3                  	cmp	r6, #0
+  1193f0: 0f 00 00 0a                  	beq	#60 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x578>
+  1193f4: 04 10 86 e2                  	add	r1, r6, #4
+  1193f8: 5b f0 7f f5                  	dmb	ish
+  1193fc: 9f 0f 91 e1                  	ldrex	r0, [r1]
+  119400: 01 20 40 e2                  	sub	r2, r0, #1
+  119404: 92 3f 81 e1                  	strex	r3, r2, [r1]
+  119408: 00 00 53 e3                  	cmp	r3, #0
+  11940c: fa ff ff 1a                  	bne	#-24 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x540>
+  119410: 00 00 50 e3                  	cmp	r0, #0
+  119414: 5b f0 7f f5                  	dmb	ish
+  119418: 05 00 00 1a                  	bne	#20 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x578>
+  11941c: 00 00 96 e5                  	ldr	r0, [r6]
+  119420: 08 10 90 e5                  	ldr	r1, [r0, #8]
+  119424: 06 00 a0 e1                  	mov	r0, r6
+  119428: 31 ff 2f e1                  	blx	r1
+  11942c: 06 00 a0 e1                  	mov	r0, r6
+  119430: 35 d0 fd eb                  	bl	#-573228 <.plt+0x170>
+  119434: 04 00 a0 e1                  	mov	r0, r4
+  119438: 36 d0 fd eb                  	bl	#-573224 <.plt+0x17c>
+  11943c: 07 00 55 e1                  	cmp	r5, r7
+  119440: e6 ff ff 1a                  	bne	#-104 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x524>
+  119444: 00 00 59 e3                  	cmp	r9, #0
+  119448: 03 00 00 0a                  	beq	#12 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x5a0>
+  11944c: 00 00 99 e5                  	ldr	r0, [r9]
+  119450: 04 10 90 e5                  	ldr	r1, [r0, #4]
+  119454: 09 00 a0 e1                  	mov	r0, r9
+  119458: 31 ff 2f e1                  	blx	r1
+  11945c: 27 00 dd e5                  	ldrb	r0, [sp, #39]
+  119460: 1c 10 9d e5                  	ldr	r1, [sp, #28]
+  119464: 00 00 50 e3                  	cmp	r0, #0
+  119468: 01 00 00 0a                  	beq	#4 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x5b8>
+  11946c: 1c d0 4b e2                  	sub	sp, r11, #28
+  119470: f0 8f bd e8                  	pop	{r4, r5, r6, r7, r8, r9, r10, r11, pc}
+  119474: 0c 00 98 e5                  	ldr	r0, [r8, #12]
+  119478: 07 20 a0 e3                  	mov	r2, #7
+  11947c: 50 e7 fd eb                  	bl	#-549568 <.plt+0x5e28>
+  119480: 1c d0 4b e2                  	sub	sp, r11, #28
+  119484: f0 8f bd e8                  	pop	{r4, r5, r6, r7, r8, r9, r10, r11, pc}
+  119488: 38 50 9a e5                  	ldr	r5, [r10, #56]
+  11948c: 00 00 55 e3                  	cmp	r5, #0
+  119490: 79 ff ff 0a                  	beq	#-540 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x3c0>
+  119494: 10 00 95 e5                  	ldr	r0, [r5, #16]
+  119498: 8f e0 fd eb                  	bl	#-556484 <.plt+0x4340>
+  11949c: 00 00 50 e3                  	cmp	r0, #0
+  1194a0: 08 00 00 1a                  	bne	#32 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x60c>
+  1194a4: 10 00 95 e5                  	ldr	r0, [r5, #16]
+  1194a8: 06 10 a0 e1                  	mov	r1, r6
+  1194ac: 20 30 9d e5                  	ldr	r3, [sp, #32]
+  1194b0: 0a 20 a0 e1                  	mov	r2, r10
+  1194b4: 00 00 8d e5                  	str	r0, [sp]
+  1194b8: 28 00 8d e2                  	add	r0, sp, #40
+  1194bc: 04 00 8d e5                  	str	r0, [sp, #4]
+  1194c0: 08 00 a0 e1                  	mov	r0, r8
+  1194c4: 38 e7 fd eb                  	bl	#-549664 <.plt+0x5e10>
+  1194c8: 28 00 9d e5                  	ldr	r0, [sp, #40]
+  1194cc: 00 00 50 e3                  	cmp	r0, #0
+  1194d0: 69 ff ff 1a                  	bne	#-604 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x3c0>
+  1194d4: 14 00 9d e5                  	ldr	r0, [sp, #20]
+  1194d8: 06 10 a0 e1                  	mov	r1, r6
+  1194dc: 20 30 9d e5                  	ldr	r3, [sp, #32]
+  1194e0: 0a 20 a0 e1                  	mov	r2, r10
+  1194e4: 00 00 8d e5                  	str	r0, [sp]
+  1194e8: 28 00 8d e2                  	add	r0, sp, #40
+  1194ec: 04 00 8d e5                  	str	r0, [sp, #4]
+  1194f0: 08 00 a0 e1                  	mov	r0, r8
+  1194f4: 2f e7 fd eb                  	bl	#-549700 <.plt+0x5e1c>
+  1194f8: 28 00 9d e5                  	ldr	r0, [sp, #40]
+  1194fc: 00 00 50 e3                  	cmp	r0, #0
+  119500: 5d ff ff 1a                  	bne	#-652 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x3c0>
+  119504: 38 00 9a e5                  	ldr	r0, [r10, #56]
+  119508: 00 00 50 e3                  	cmp	r0, #0
+  11950c: 5a ff ff 0a                  	beq	#-664 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x3c0>
+  119510: 14 40 88 e2                  	add	r4, r8, #20
+  119514: 04 00 98 e5                  	ldr	r0, [r8, #4]
+  119518: 00 20 a0 e3                  	mov	r2, #0
+  11951c: 04 10 a0 e1                  	mov	r1, r4
+  119520: 2a e7 fd eb                  	bl	#-549720 <.plt+0x5e34>
+  119524: 18 50 98 e5                  	ldr	r5, [r8, #24]
+  119528: 05 00 54 e1                  	cmp	r4, r5
+  11952c: 52 ff ff 0a                  	beq	#-696 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x3c0>
+  119530: 08 00 85 e2                  	add	r0, r5, #8
+  119534: 20 30 9d e5                  	ldr	r3, [sp, #32]
+  119538: 00 00 8d e5                  	str	r0, [sp]
+  11953c: 28 00 8d e2                  	add	r0, sp, #40
+  119540: 04 00 8d e5                  	str	r0, [sp, #4]
+  119544: 08 00 a0 e1                  	mov	r0, r8
+  119548: 06 10 a0 e1                  	mov	r1, r6
+  11954c: 0a 20 a0 e1                  	mov	r2, r10
+  119550: 18 e7 fd eb                  	bl	#-549792 <.plt+0x5e1c>
+  119554: 28 00 9d e5                  	ldr	r0, [sp, #40]
+  119558: 00 00 50 e3                  	cmp	r0, #0
+  11955c: 46 ff ff 1a                  	bne	#-744 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x3c0>
+  119560: 04 50 95 e5                  	ldr	r5, [r5, #4]
+  119564: 05 00 54 e1                  	cmp	r4, r5
+  119568: f0 ff ff 1a                  	bne	#-64 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x674>
+  11956c: 42 ff ff ea                  	b	#-760 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x3c0>
+  119570: 7c 10 9f e5                  	ldr	r1, [pc, #124]
+  119574: 06 50 a0 e1                  	mov	r5, r6
+  119578: 78 20 9f e5                  	ldr	r2, [pc, #120]
+  11957c: aa 61 00 e3                  	movw	r6, #426
+  119580: 74 30 9f e5                  	ldr	r3, [pc, #116]
+  119584: 01 10 8f e0                  	add	r1, pc, r1
+  119588: 70 00 9f e5                  	ldr	r0, [pc, #112]
+  11958c: 02 20 8f e0                  	add	r2, pc, r2
+  119590: 03 30 8f e0                  	add	r3, pc, r3
+  119594: 00 70 a0 e3                  	mov	r7, #0
+  119598: 00 00 8f e0                  	add	r0, pc, r0
+  11959c: 00 60 8d e5                  	str	r6, [sp]
+  1195a0: a1 00 8d e9                  	stmib	sp, {r0, r5, r7}
+  1195a4: 01 00 a0 e3                  	mov	r0, #1
+  1195a8: 36 e0 fd eb                  	bl	#-556840 <.plt+0x42ec>
+  1195ac: 1c d0 4b e2                  	sub	sp, r11, #28
+  1195b0: f0 8f bd e8                  	pop	{r4, r5, r6, r7, r8, r9, r10, r11, pc}
+  1195b4: ff ff ff ea                  	b	#-4 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x6fc>
+  1195b8: 00 40 a0 e1                  	mov	r4, r0
+  1195bc: 0a 00 a0 e1                  	mov	r0, r10
+  1195c0: 04 00 00 ea                  	b	#16 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x71c>
+  1195c4: 00 40 a0 e1                  	mov	r4, r0
+  1195c8: 28 00 dd e5                  	ldrb	r0, [sp, #40]
+  1195cc: 01 00 10 e3                  	tst	r0, #1
+  1195d0: 01 00 00 0a                  	beq	#4 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x720>
+  1195d4: 30 00 9d e5                  	ldr	r0, [sp, #48]
+  1195d8: ce cf fd eb                  	bl	#-573640 <.plt+0x17c>
+  1195dc: 04 00 a0 e1                  	mov	r0, r4
+  1195e0: d2 cf fd eb                  	bl	#-573624 <.plt+0x194>
+  1195e4: 18 63 0b 00                  	andeq	r6, r11, r8, lsl r3
+  1195e8: 1c 63 0b 00                  	andeq	r6, r11, r12, lsl r3
+  1195ec: 9f 5b 0b 00                  	muleq	r11, pc, r11
+  1195f0: a4 65 0b 00                  	andeq	r6, r11, r4, lsr #11
+  1195f4: 78 5c 0b 00                  	andeq	r5, r11, r8, ror r12
+  1195f8: 80 5c 0b 00                  	andeq	r5, r11, r0, lsl #25
+  1195fc: 03 55 0b 00                  	andeq	r5, r11, r3, lsl #10
+  119600: 29 5f 0b 00                  	andeq	r5, r11, r9, lsr #30
+  119604: fc 60 0b 00                  	strdeq	r6, r7, [r11], -r12
+  119608: 04 61 0b 00                  	andeq	r6, r11, r4, lsl #2
+  11960c: 87 59 0b 00                  	andeq	r5, r11, r7, lsl #19
+  119610: d6 63 0b 00                  	ldrdeq	r6, r7, [r11], -r6
+  119614: 17 5b 0a 00                  	andeq	r5, r10, r7, lsl r11
+  119618: c0 61 0b 00                  	andeq	r6, r11, r0, asr #3
+  11961c: c8 61 0b 00                  	andeq	r6, r11, r8, asr #3
+  119620: 4b 5a 0b 00                  	andeq	r5, r11, r11, asr #20
+  119624: 38 62 0b 00                  	andeq	r6, r11, r8, lsr r2
+  119628: ac 62 0d 00                  	andeq	r6, sp, r12, lsr #5
+  11962c: 80 60 0b 00                  	andeq	r6, r11, r0, lsl #1
+  119630: 88 60 0b 00                  	andeq	r6, r11, r8, lsl #1
+  119634: 07 59 0b 00                  	andeq	r5, r11, r7, lsl #18
+  119638: 7b 63 0b 00                  	andeq	r6, r11, r11, ror r3
+  11963c: d4 5f 0b 00                  	ldrdeq	r5, r6, [r11], -r4
+  119640: e0 5f 0b 00                  	andeq	r5, r11, r0, ror #31
+  119644: 5b 58 0b 00                  	andeq	r5, r11, r11, asr r8
+  119648: d3 62 0b 00                  	ldrdeq	r6, r7, [r11], -r3
+  11964c: 64 5f 0b 00                  	andeq	r5, r11, r4, ror #30
+  119650: 6c 5f 0b 00                  	andeq	r5, r11, r12, ror #30
+  119654: eb 57 0b 00                  	andeq	r5, r11, r11, ror #15
+  119658: 6b 62 0b 00                  	andeq	r6, r11, r11, ror #4

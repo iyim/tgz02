@@ -1,23 +1,29 @@
 /*
- * nlu_takeover.c -- T8-01：会话级 NLU/CDM 接管判据的实现
+ * nlu_takeover.c -- T8-02：会话级接管状态的实现（并发安全 / 容量耗尽安全）
  *
- * 判定链（与 T7-05 的 worker 路由语义逐条对齐，不新增规则）：
- *   1) ir_classify(text) 命中某个本地意图；
- *   2) 该意图在当前 route_mask 里已启用；
- *   3) ir.complete == 1（参数完整）。
- * 三条同时成立 -> 放行原厂（T8_TO_PASS）；否则 -> 我方接管（T8_TO_TAKE）。
+ * 三条硬约束：
+ *   1) 绝不覆盖仍在 TTL 内的登记。槽位满 = 显式故障（overflow + 降级窗口），不是"淘汰旧的"。
+ *   2) 降级窗口内对未登记会话 fail-closed：宁可这一轮不执行原厂技能，也不让 AI 会话漏进 CDM。
+ *   3) 所有导出函数内部加锁；临界区只有内存操作（无 I/O / 无日志 / 无回调），失败路径也不漏锁。
  *
- * 与 worker 的差别只有一个，且是本轮刻意的：
- *   worker 遇到"意图命中但参数不完整"时走 AI（不执行原厂），但**不拦**原厂的 NLU——
- *   原厂仍可能自己把"音量调到百分之"理解成一个数并执行。T8-01 把这种情况也登记为接管，
- *   让这类半句话在原厂侧彻底不执行。
+ * 为什么容量取 64：真机实测一次只有一条识别会话（session 每次识别递增），
+ * 30 s TTL 内堆到 64 条未回 NLU 的会话已经不是正常现象。所以这里不做动态分配、
+ * 不做 LRU，直接把"满"当故障报出来。
  */
 #include "nlu_takeover.h"
 #include "intent_route.h"
 
 #include <string.h>
 
-static void t8_to_copy(char *dst, size_t cap, const char *src)
+#if defined(_WIN32)
+static void t8_lock(t8_to_state *st)   { EnterCriticalSection(&st->mutex); }
+static void t8_unlock(t8_to_state *st) { LeaveCriticalSection(&st->mutex); }
+#else
+static void t8_lock(t8_to_state *st)   { pthread_mutex_lock(&st->mutex); }
+static void t8_unlock(t8_to_state *st) { pthread_mutex_unlock(&st->mutex); }
+#endif
+
+static void t8_copy(char *dst, size_t cap, const char *src)
 {
     size_t n;
 
@@ -29,65 +35,99 @@ static void t8_to_copy(char *dst, size_t cap, const char *src)
     dst[n] = '\0';
 }
 
-static int t8_to_same(const char *a, const char *b)
+static int t8_same(const char *a, const char *b)
 {
     if (a == NULL || b == NULL) return 0;
     return strcmp(a, b) == 0;
 }
 
-static t8_to_slot *t8_to_find(t8_to_state *st, const char *session)
-{
-    int i;
-
-    if (st == NULL || session == NULL || session[0] == '\0') return NULL;
-    for (i = 0; i < T8_TO_SLOTS; i++) {
-        if (st->slot[i].used && t8_to_same(st->slot[i].session, session)) return &st->slot[i];
-    }
-    return NULL;
-}
-
-static void t8_to_clear(t8_to_slot *s)
+static void t8_clear(t8_to_slot *s)
 {
     memset(s, 0, sizeof(*s));
 }
 
-/* 取一个槽位：优先空槽，否则回收"最早过期/最久未用"的那一个 */
-static t8_to_slot *t8_to_alloc(t8_to_state *st, long long now_ms)
+/* ---- 以下 *_locked 版本要求调用方已持锁 ---- */
+
+static t8_to_slot *t8_find_locked(t8_to_state *st, const char *session)
 {
     int i;
-    t8_to_slot *victim = NULL;
 
+    if (session == NULL || session[0] == '\0') return NULL;
     for (i = 0; i < T8_TO_SLOTS; i++) {
-        if (!st->slot[i].used) return &st->slot[i];
+        if (st->slot[i].used && t8_same(st->slot[i].session, session)) return &st->slot[i];
     }
-    for (i = 0; i < T8_TO_SLOTS; i++) {
-        t8_to_slot *s = &st->slot[i];
-        if (s->deadline_ms <= now_ms) return s;               /* 已过期，直接回收 */
-        if (victim == NULL || s->deadline_ms < victim->deadline_ms) victim = s;
-    }
-    return victim;                                            /* 全都活着：回收最先过期的 */
+    return NULL;
 }
 
-void t8_to_init(t8_to_state *st)
-{
-    if (st == NULL) return;
-    memset(st, 0, sizeof(*st));
-}
-
-int t8_to_purge(t8_to_state *st, long long now_ms)
+static int t8_purge_locked(t8_to_state *st, long long now_ms)
 {
     int i;
     int n = 0;
 
-    if (st == NULL) return 0;
     for (i = 0; i < T8_TO_SLOTS; i++) {
         if (st->slot[i].used && st->slot[i].deadline_ms <= now_ms) {
-            t8_to_clear(&st->slot[i]);
+            t8_clear(&st->slot[i]);
             st->expired++;
             n++;
         }
     }
+    if (st->degraded_until_ms != 0 && st->degraded_until_ms <= now_ms) {
+        st->degraded_until_ms = 0;      /* 降级窗口自然结束 */
+    }
     return n;
+}
+
+/* 只找空槽，**不淘汰任何有效登记**；返回 NULL = 容量耗尽 */
+static t8_to_slot *t8_alloc_free_only_locked(t8_to_state *st)
+{
+    int i;
+
+    for (i = 0; i < T8_TO_SLOTS; i++) {
+        if (!st->slot[i].used) return &st->slot[i];
+    }
+    return NULL;
+}
+
+static int t8_active_locked(const t8_to_state *st, long long now_ms)
+{
+    int i;
+    int n = 0;
+
+    for (i = 0; i < T8_TO_SLOTS; i++) {
+        if (st->slot[i].used && st->slot[i].deadline_ms > now_ms) n++;
+    }
+    return n;
+}
+
+/* ---- 导出 API ---- */
+
+int t8_to_init(t8_to_state *st)
+{
+    if (st == NULL) return -1;
+    memset(st, 0, sizeof(*st));
+#if defined(_WIN32)
+    InitializeCriticalSection(&st->mutex);
+    st->mutex_ready = 1;
+    return 0;
+#else
+    if (pthread_mutex_init(&st->mutex, NULL) != 0) {
+        st->mutex_ready = 0;
+        return -1;
+    }
+    st->mutex_ready = 1;
+    return 0;
+#endif
+}
+
+void t8_to_destroy(t8_to_state *st)
+{
+    if (st == NULL || !st->mutex_ready) return;
+#if defined(_WIN32)
+    DeleteCriticalSection(&st->mutex);
+#else
+    (void)pthread_mutex_destroy(&st->mutex);
+#endif
+    st->mutex_ready = 0;
 }
 
 t8_to_decision t8_to_on_final(t8_to_state *st, const char *session, const char *text,
@@ -98,83 +138,152 @@ t8_to_decision t8_to_on_final(t8_to_state *st, const char *session, const char *
     int hit;
     int enabled;
     t8_to_why why;
+    t8_to_decision decision = T8_TO_PASS;
 
     if (out_why != NULL) *out_why = T8_TO_WHY_NONE;
-    if (st == NULL || session == NULL || session[0] == '\0') return T8_TO_PASS;
-
-    (void)t8_to_purge(st, now_ms);
+    if (st == NULL || !st->mutex_ready) return T8_TO_PASS;   /* 锁不可用 -> 不接管（绝不裸跑） */
+    if (session == NULL || session[0] == '\0') return T8_TO_PASS;
 
     memset(&ir, 0, sizeof(ir));
     hit = ir_classify(text, &ir);
     enabled = (hit && (route_mask & ir_route_bit(ir.intent))) ? 1 : 0;
 
+    t8_lock(st);
+    (void)t8_purge_locked(st, now_ms);
+
     if (hit && enabled && ir.complete) {
-        /* 本地指令：清掉可能残留的同名会话登记，交给原厂 */
-        s = t8_to_find(st, session);
-        if (s != NULL) t8_to_clear(s);
+        /* 本地指令：清掉可能残留的同名登记，交给原厂 */
+        s = t8_find_locked(st, session);
+        if (s != NULL) t8_clear(s);
         st->passed++;
+        t8_unlock(st);
         return T8_TO_PASS;
     }
 
-    if (!hit)                     why = T8_TO_WHY_AI;
-    else if (!enabled)            why = T8_TO_WHY_AI_INTENT_OFF;
-    else                          why = T8_TO_WHY_AI_INCOMPLETE;
+    why = !hit ? T8_TO_WHY_AI
+        : (!enabled ? T8_TO_WHY_AI_INTENT_OFF : T8_TO_WHY_AI_INCOMPLETE);
 
-    s = t8_to_find(st, session);
-    if (s == NULL) s = t8_to_alloc(st, now_ms);
-    if (s == NULL) return T8_TO_PASS;      /* 理论上不会发生：兜底放行，绝不误伤 */
+    s = t8_find_locked(st, session);
+    if (s != NULL) {
+        /* 同一会话重复投递 final：只刷新 TTL，不重复登记 */
+        st->reentrant_marks++;
+        s->deadline_ms = now_ms + T8_TO_TTL_MS;
+        s->why = why;
+        t8_copy(s->intent, sizeof(s->intent), hit ? ir_intent_name(ir.intent) : "none");
+        t8_copy(s->rule, sizeof(s->rule), hit ? ir.rule : "");
+        st->marked++;
+        decision = T8_TO_TAKE;
+    } else {
+        s = t8_alloc_free_only_locked(st);
+        if (s == NULL) {
+            /* 容量耗尽：不覆盖任何有效登记；开 fail-closed 降级窗口并如实上报 */
+            st->overflow++;
+            st->degraded_until_ms = now_ms + T8_TO_DEGRADED_MS;
+            if (out_why != NULL) *out_why = T8_TO_WHY_OVERFLOW;
+            t8_unlock(st);
+            return T8_TO_TAKE_UNREGISTERED;
+        }
+        t8_clear(s);
+        s->used = 1;
+        t8_copy(s->session, sizeof(s->session), session);
+        s->deadline_ms = now_ms + T8_TO_TTL_MS;
+        s->why = why;
+        t8_copy(s->intent, sizeof(s->intent), hit ? ir_intent_name(ir.intent) : "none");
+        t8_copy(s->rule, sizeof(s->rule), hit ? ir.rule : "");
+        st->marked++;
+        decision = T8_TO_TAKE;
+    }
 
-    t8_to_clear(s);
-    s->used = 1;
-    t8_to_copy(s->session, sizeof(s->session), session);
-    s->deadline_ms = now_ms + T8_TO_TTL_MS;
-    s->why = why;
-    t8_to_copy(s->intent, sizeof(s->intent), hit ? ir_intent_name(ir.intent) : "none");
-    t8_to_copy(s->rule, sizeof(s->rule), hit ? ir.rule : "");
-    st->marked++;
     if (out_why != NULL) *out_why = why;
-    return T8_TO_TAKE;
+    t8_unlock(st);
+    return decision;
 }
 
 int t8_to_should_drop(t8_to_state *st, const char *session, long long now_ms)
 {
     t8_to_slot *s;
+    int rc = 0;
 
-    if (st == NULL || session == NULL || session[0] == '\0') return 0;
-    s = t8_to_find(st, session);
-    if (s == NULL) {
-        st->unknown++;
-        return 0;
-    }
-    if (s->deadline_ms <= now_ms) {
-        t8_to_clear(s);
+    if (st == NULL || !st->mutex_ready) return 0;
+    if (session == NULL || session[0] == '\0') return 0;
+
+    t8_lock(st);
+    s = t8_find_locked(st, session);
+    if (s != NULL && s->deadline_ms <= now_ms) {
+        t8_clear(s);
         st->expired++;
-        return 0;
+        s = NULL;
     }
-    s->drops++;
-    st->dropped++;
-    return 1;
+    if (s != NULL) {
+        s->drops++;
+        st->dropped++;
+        rc = 1;
+    } else if (st->degraded_until_ms > now_ms) {
+        /* 容量耗尽后的窗口：未登记也不放行（fail-closed，计数可见） */
+        st->degraded_passes++;
+        rc = 1;
+    } else {
+        st->unknown++;
+        rc = 0;
+    }
+    t8_unlock(st);
+    return rc;
 }
 
 void t8_to_on_session_end(t8_to_state *st, const char *session)
 {
     t8_to_slot *s;
 
-    if (st == NULL) return;
-    s = t8_to_find(st, session);
-    if (s != NULL) t8_to_clear(s);
+    if (st == NULL || !st->mutex_ready) return;
+    if (session == NULL || session[0] == '\0') return;
+    t8_lock(st);
+    s = t8_find_locked(st, session);
+    if (s != NULL) t8_clear(s);
+    t8_unlock(st);
 }
 
-int t8_to_active(const t8_to_state *st, long long now_ms)
+int t8_to_purge(t8_to_state *st, long long now_ms)
 {
-    int i;
-    int n = 0;
+    int n;
 
-    if (st == NULL) return 0;
-    for (i = 0; i < T8_TO_SLOTS; i++) {
-        if (st->slot[i].used && st->slot[i].deadline_ms > now_ms) n++;
-    }
+    if (st == NULL || !st->mutex_ready) return 0;
+    t8_lock(st);
+    n = t8_purge_locked(st, now_ms);
+    t8_unlock(st);
     return n;
+}
+
+int t8_to_active(t8_to_state *st, long long now_ms)
+{
+    int n;
+
+    if (st == NULL || !st->mutex_ready) return 0;
+    t8_lock(st);
+    n = t8_active_locked(st, now_ms);
+    t8_unlock(st);
+    return n;
+}
+
+void t8_to_snapshot_take(t8_to_state *st, long long now_ms, t8_to_snapshot *out)
+{
+    if (out == NULL) return;
+    memset(out, 0, sizeof(*out));
+    if (st == NULL || !st->mutex_ready) return;
+
+    t8_lock(st);
+    (void)t8_purge_locked(st, now_ms);
+    out->active = t8_active_locked(st, now_ms);
+    out->overflow = (st->overflow > 0) ? 1 : 0;
+    out->degraded = (st->degraded_until_ms > now_ms) ? 1 : 0;
+    out->marked = st->marked;
+    out->passed = st->passed;
+    out->dropped = st->dropped;
+    out->expired = st->expired;
+    out->unknown = st->unknown;
+    out->overflow_events = st->overflow;
+    out->degraded_passes = st->degraded_passes;
+    out->reentrant_marks = st->reentrant_marks;
+    t8_unlock(st);
 }
 
 const char *t8_to_why_name(t8_to_why why)
@@ -183,6 +292,7 @@ const char *t8_to_why_name(t8_to_why why)
     case T8_TO_WHY_AI:            return "ai";
     case T8_TO_WHY_AI_INCOMPLETE: return "ai-incomplete";
     case T8_TO_WHY_AI_INTENT_OFF: return "ai-intent-off";
+    case T8_TO_WHY_OVERFLOW:      return "overflow";
     default:                      return "none";
     }
 }
