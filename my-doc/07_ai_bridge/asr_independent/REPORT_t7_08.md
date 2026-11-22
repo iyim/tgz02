@@ -157,3 +157,14 @@ static long long dl_last_record_end(int fd, long long size)
 | 2 | 通道钉死 | 按 `T7-08_CHANNEL_OBSERVATION.md` §7 路线 1（只读）即可，或路线 2（Hook 加 `is_offline`，需批准） |
 | 3 | 死信 `seq` 字段语义 | 仍来自暂存门槽位，可能与事件自身 seq 不同；关联用 `event_id` |
 | 4 | `worker_unit_test.exe` 的 1 条既有失败 | `deepseek/request body escaping` 断言把 prompt 原文（裸换行）塞进期望串，与实现不符；与本轮无关，未动 |
+
+---
+
+## 八、提交
+
+| SHA | 内容 |
+|---|---|
+| `440c1c5a` | `fix(ai-bridge)`：死信墙钟时间戳 / 无上限半行修复 / 互斥追加与 close 语义 + 扩展测试 + ARM 构建日志（9 files） |
+| `05949ea7` | `docs(ai-bridge)`：通道只读观测报告、口径修正、`asr_watch.sh`、采样证据（8 files） |
+
+基线 `90d32f6c` → 本轮 `05949ea7`，直接提交 `main`（`90d32f6c..05949ea7`），未建分支/未开 PR、未做历史重写。
