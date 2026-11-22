@@ -1,0 +1,12 @@
+采集窗口: 首条快照 t_ms=1795322408928 (pid 14515)
+快照: 8 条, 可信 4 条, 批次 4
+  wake#1 pid=14515 t=1795322408928 calls=2 kinds=['real', 'second'] info=['0x95682660', '0xb2ad3d80']
+  wake#2 pid=14515 t=1795322440881 calls=2 kinds=['real', 'second'] info=['0x95682660', '0xb2ad3d80']
+  wake#3 pid=14515 t=1795322456800 calls=2 kinds=['real', 'second'] info=['0x95682660', '0xb2ad3d80']
+  wake#4 pid=14515 t=1795322472835 calls=2 kinds=['real', 'second'] info=['0x95682660', '0xb2ad3d80']
+cb_us: max=28 avg~16
+
+ASR final 总数 538；其中落在采集窗口之后的 0 条
+
+关联判定（同 pid + final 在可信快照之后 0..8000ms）：
+  （窗口内没有任何新的 final，因此本轮无法建立关联）

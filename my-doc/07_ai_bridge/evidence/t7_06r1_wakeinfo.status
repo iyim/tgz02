@@ -1,0 +1,1 @@
+seq=8 calls=8 queued=0 sent=8 depth=0 max_depth=2 dropped=0 write_errors=0 cb_us_last=12 cb_us_max=28 cb_us_avg=16 vm_ok=8 vm_fail=0 threaded=1 thread_exited=0 uid=1000 dir_mode=0700 file_mode=0600 dir=/data/data/com.alibaba.ailabs.genie.smartapp/files/wake
