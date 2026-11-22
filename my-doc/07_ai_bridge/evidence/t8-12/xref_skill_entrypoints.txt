@@ -1,0 +1,24 @@
+# T8-12 xref report: every bl that targets a PLT stub of the listed symbols
+# caller = nearest preceding 'section .text' function header (demangled)
+10ffa4  AliAiLabs::AGUI::RouterManager::onResponse(int, json_object*)  ->  _ZN9AliAiLabs4AGUI14SessionManager16onNlpResultInnerEiPNS0_9NlpResultE
+111134  AliAiLabs::AGUI::SessionManager::exitTalk(int, unsigned char)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE
+1149d0  AliAiLabs::AGUI::SessionManager::onNlpResult(int, int, AliAiLabs::AGUI::NlpResult*)  ->  _ZN9AliAiLabs4AGUI12SessionProxy11onNlpResultEiiPNS0_9NlpResultE
+114a00  AliAiLabs::AGUI::SessionManager::onNlpResult(int, int, AliAiLabs::AGUI::NlpResult*)  ->  _ZN9AliAiLabs4AGUI12SessionProxy16onNlpResultInnerEiPNS0_9NlpResultE
+114b9c  AliAiLabs::AGUI::SessionManager::onNlpResultInner(int, AliAiLabs::AGUI::NlpResult*)  ->  _ZN9AliAiLabs4AGUI12SessionProxy16onNlpResultInnerEiPNS0_9NlpResultE
+117db8  AliAiLabs::AGUI::SessionDispatch::playAudios(int, int, AliAiLabs::AGUI::NlpResult*, AliAiLabs::AGUI::ReturnCode*, unsigned char*)  ->  _ZN9AliAiLabs4AGUI12AudioManager19processMediaCommandEPNS0_9NlpResultEPNS0_10ReturnCodeERh
+117f0c  AliAiLabs::AGUI::SessionDispatch::playAudios(int, int, AliAiLabs::AGUI::NlpResult*, AliAiLabs::AGUI::ReturnCode*, unsigned char*)  ->  _ZN9AliAiLabs4AGUI12AudioManager17preProcessCommandEPNS0_12ProtocolDataEPcPNS0_10ReturnCodeE
+11899c  AliAiLabs::AGUI::SessionDispatch::onNlpResultInner(int, AliAiLabs::AGUI::NlpResult*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh
+1189a8  AliAiLabs::AGUI::SessionDispatch::onNlpResultInner(int, AliAiLabs::AGUI::NlpResult*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE
+118a2c  AliAiLabs::AGUI::SessionDispatch::onPushNlpResult(int, AliAiLabs::AGUI::NlpResult*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh
+118b70  AliAiLabs::AGUI::SessionDispatch::onPushNlpResult(int, AliAiLabs::AGUI::NlpResult*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE
+118cfc  AliAiLabs::AGUI::SessionDispatch::onPushNlpResult(int, AliAiLabs::AGUI::NlpResult*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch14processCommandEiPNS0_12ProtocolDataEPcPKcPi
+118e88  AliAiLabs::AGUI::SessionDispatch::processForeground(int, AliAiLabs::AGUI::ProtocolData*, char*, int*, std::__ndk1::shared_ptr<AliAiLabs::AGUI::AppClientInfo>&)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch14processCommandEiPNS0_12ProtocolDataEPcPKcPi
+1191d8  AliAiLabs::AGUI::SessionDispatch::onNlpResult(int, int, AliAiLabs::AGUI::NlpResult*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE
+119200  AliAiLabs::AGUI::SessionDispatch::onNlpResult(int, int, AliAiLabs::AGUI::NlpResult*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh
+1194c4  AliAiLabs::AGUI::SessionDispatch::onNlpResult(int, int, AliAiLabs::AGUI::NlpResult*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch14processCommandEiPNS0_12ProtocolDataEPcPKcPi
+11c41c  AliAiLabs::AGUI::SessionProxy::onHandler(AliAiLabs::AGUI::Message*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch16onNlpResultInnerEiPNS0_9NlpResultE
+11c430  AliAiLabs::AGUI::SessionProxy::onHandler(AliAiLabs::AGUI::Message*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch15onPushNlpResultEiPNS0_9NlpResultE
+11c490  AliAiLabs::AGUI::SessionProxy::onHandler(AliAiLabs::AGUI::Message*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch18onSpecialNlpResultEiPNS0_9NlpResultE
+11c95c  AliAiLabs::AGUI::SessionProxy::onHandler(AliAiLabs::AGUI::Message*)  ->  _ZN9AliAiLabs4AGUI12SessionProxy16onNlpResultInnerEiiPNS0_9NlpResultE
+11cbf8  AliAiLabs::AGUI::SessionProxy::onHandler(AliAiLabs::AGUI::Message*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE
+11d674  AliAiLabs::AGUI::SessionProxy::onNlpResultInner(int, int, AliAiLabs::AGUI::NlpResult*)  ->  _ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE

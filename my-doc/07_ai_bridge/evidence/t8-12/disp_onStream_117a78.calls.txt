@@ -1,0 +1,13 @@
+# disp_onStream_117a78  0x117a78..0x117cec
+# 'at' = address of the bl; 'target' = .rel.plt symbol it calls
+117aa0  plt[1951]  _ZNK9AliAiLabs4AGUI13AppClientInfo20getAppClientCallbackEv
+117aac  plt[1989]  _ZNK9AliAiLabs4AGUI13AppClientInfo11getIsShowUIEv
+117b18  plt[1426]  AgutilLog
+117b68  plt[1426]  AgutilLog
+117b90  plt[1992]  _ZNK9AliAiLabs4AGUI13AppClientInfo10getAsrModeEv
+117bfc  plt[1426]  AgutilLog
+117c0c  plt[1993]  _ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih
+117c58  plt[29]  _ZNSt6__ndk119__shared_weak_count14__release_weakEv
+117cac  plt[29]  _ZNSt6__ndk119__shared_weak_count14__release_weakEv
+117cb4  plt[32]  _Unwind_Resume
+# total plt calls = 10

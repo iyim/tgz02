@@ -1,0 +1,9 @@
+
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+00114b98 AliAiLabs::AGUI::SessionManager::onNlpResultInner(int, AliAiLabs::AGUI::NlpResult*):
+  114b98: 14 00 90 e5                  	ldr	r0, [r0, #20]
+  114b9c: aa f8 fd ea                  	b	#-531800 <.plt+0x5ab0>

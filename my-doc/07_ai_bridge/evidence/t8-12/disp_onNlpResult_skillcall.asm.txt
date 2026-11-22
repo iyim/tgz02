@@ -1,0 +1,43 @@
+
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+00118ebc AliAiLabs::AGUI::SessionDispatch::onNlpResult(int, int, AliAiLabs::AGUI::NlpResult*):
+  119190: 07 70 8f e0                  	add	r7, pc, r7
+  119194: a0 00 8d e8                  	stm	sp, {r5, r7}
+  119198: 04 70 a0 e1                  	mov	r7, r4
+  11919c: 08 00 8d e5                  	str	r0, [sp, #8]
+  1191a0: 04 00 a0 e3                  	mov	r0, #4
+  1191a4: 37 e1 fd eb                  	bl	#-555812 <.plt+0x42ec>
+  1191a8: 28 00 9d e5                  	ldr	r0, [sp, #40]
+  1191ac: 06 00 50 e3                  	cmp	r0, #6
+  1191b0: 06 00 00 1a                  	bne	#24 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x314>
+  1191b4: 98 00 a0 e3                  	mov	r0, #152
+  1191b8: cd d0 fd eb                  	bl	#-572620 <.plt+0x158>
+  1191bc: 00 a0 a0 e1                  	mov	r10, r0
+  1191c0: a0 e6 fd eb                  	bl	#-550272 <.plt+0x58ac>
+  1191c4: 01 00 a0 e3                  	mov	r0, #1
+  1191c8: 18 a0 8d e5                  	str	r10, [sp, #24]
+  1191cc: 08 00 8a e5                  	str	r0, [r10, #8]
+  1191d0: 01 18 a0 e3                  	mov	r1, #65536
+  1191d4: 0a 30 a0 e1                  	mov	r3, r10
+  1191d8: ed e7 fd eb                  	bl	#-548940 <.plt+0x5df8>
+  1191dc: 00 00 a0 e3                  	mov	r0, #0
+  1191e0: 28 10 8d e2                  	add	r1, sp, #40
+  1191e4: 27 00 cd e5                  	strb	r0, [sp, #39]
+  1191e8: 27 00 8d e2                  	add	r0, sp, #39
+  1191ec: 00 10 8d e5                  	str	r1, [sp]
+  1191f0: 01 18 a0 e3                  	mov	r1, #65536
+  1191f4: 06 20 a0 e1                  	mov	r2, r6
+  1191f8: 0a 30 a0 e1                  	mov	r3, r10
+  1191fc: 04 00 8d e5                  	str	r0, [sp, #4]
+  119200: e0 e7 fd eb                  	bl	#-548992 <.plt+0x5dec>
+  119204: 00 00 d7 e5                  	ldrb	r0, [r7]
+  119208: 1c 60 8d e5                  	str	r6, [sp, #28]
+  11920c: 00 00 50 e3                  	cmp	r0, #0
+  119210: 13 00 00 0a                  	beq	#76 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE+0x3a8>
+  119214: 20 14 9f e5                  	ldr	r1, [pc, #1056]
+  119218: 07 40 a0 e1                  	mov	r4, r7
+  11921c: 1c 24 9f e5                  	ldr	r2, [pc, #1052]

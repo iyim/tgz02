@@ -1,0 +1,12 @@
+# disp_playAudios_117d40  0x117d40..0x11802c
+# 'at' = address of the bl; 'target' = .rel.plt symbol it calls
+117d58  plt[188]  _ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+117db8  plt[1994]  _ZN9AliAiLabs4AGUI12AudioManager19processMediaCommandEPNS0_9NlpResultEPNS0_10ReturnCodeERh
+117e20  plt[1426]  AgutilLog
+117e64  plt[1426]  AgutilLog
+117ee8  plt[1426]  AgutilLog
+117f0c  plt[1995]  _ZN9AliAiLabs4AGUI12AudioManager17preProcessCommandEPNS0_12ProtocolDataEPcPNS0_10ReturnCodeE
+117f1c  plt[8]  free@LIBC
+117f90  plt[110]  _ZN9AliAiLabs4AGUI8StrUtils5equalEPKcS3_
+117fa8  plt[110]  _ZN9AliAiLabs4AGUI8StrUtils5equalEPKcS3_
+# total plt calls = 9

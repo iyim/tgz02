@@ -1,0 +1,58 @@
+
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+0011d708 AliAiLabs::AGUI::SessionProxy::onStream(int, char const*, unsigned char, unsigned char):
+  11d708: f0 4b 2d e9                  	push	{r4, r5, r6, r7, r8, r9, r11, lr}
+  11d70c: 18 b0 8d e2                  	add	r11, sp, #24
+  11d710: 08 d0 4d e2                  	sub	sp, sp, #8
+  11d714: 00 40 a0 e1                  	mov	r4, r0
+  11d718: 08 00 9b e5                  	ldr	r0, [r11, #8]
+  11d71c: 03 70 a0 e1                  	mov	r7, r3
+  11d720: 01 80 a0 e1                  	mov	r8, r1
+  11d724: 00 00 50 e3                  	cmp	r0, #0
+  11d728: 04 00 00 0a                  	beq	#16 <_ZN9AliAiLabs4AGUI12SessionProxy8onStreamEiPKchh+0x38>
+  11d72c: 34 00 d4 e5                  	ldrb	r0, [r4, #52]
+  11d730: 02 60 a0 e3                  	mov	r6, #2
+  11d734: 01 00 50 e3                  	cmp	r0, #1
+  11d738: 01 00 00 1a                  	bne	#4 <_ZN9AliAiLabs4AGUI12SessionProxy8onStreamEiPKchh+0x3c>
+  11d73c: 21 00 00 ea                  	b	#132 <_ZN9AliAiLabs4AGUI12SessionProxy8onStreamEiPKchh+0xc0>
+  11d740: 00 60 a0 e3                  	mov	r6, #0
+  11d744: 00 00 57 e3                  	cmp	r7, #0
+  11d748: 02 00 a0 e1                  	mov	r0, r2
+  11d74c: 00 10 a0 e3                  	mov	r1, #0
+  11d750: 00 20 e0 e3                  	mvn	r2, #0
+  11d754: 00 30 a0 e3                  	mov	r3, #0
+  11d758: 01 60 86 13                  	orrne	r6, r6, #1
+  11d75c: 00 90 a0 e3                  	mov	r9, #0
+  11d760: 78 c5 fd eb                  	bl	#-584224 <.plt+0x19ac>
+  11d764: 00 50 a0 e1                  	mov	r5, r0
+  11d768: 00 00 57 e3                  	cmp	r7, #0
+  11d76c: 09 00 00 1a                  	bne	#36 <_ZN9AliAiLabs4AGUI12SessionProxy8onStreamEiPKchh+0x90>
+  11d770: 05 00 a0 e1                  	mov	r0, r5
+  11d774: d8 cf fd eb                  	bl	#-573600 <.plt+0x4340>
+  11d778: 00 00 50 e3                  	cmp	r0, #0
+  11d77c: 05 00 00 0a                  	beq	#20 <_ZN9AliAiLabs4AGUI12SessionProxy8onStreamEiPKchh+0x90>
+  11d780: 00 00 55 e3                  	cmp	r5, #0
+  11d784: 0f 00 00 0a                  	beq	#60 <_ZN9AliAiLabs4AGUI12SessionProxy8onStreamEiPKchh+0xc0>
+  11d788: 05 00 a0 e1                  	mov	r0, r5
+  11d78c: 18 d0 4b e2                  	sub	sp, r11, #24
+  11d790: f0 4b bd e8                  	pop	{r4, r5, r6, r7, r8, r9, r11, lr}
+  11d794: 1d bf fd ea                  	b	#-590732 <.plt+0x74>
+  11d798: 04 90 8d e5                  	str	r9, [sp, #4]
+  11d79c: 08 10 a0 e1                  	mov	r1, r8
+  11d7a0: 28 00 9f e5                  	ldr	r0, [pc, #40]
+  11d7a4: 06 20 a0 e1                  	mov	r2, r6
+  11d7a8: 05 30 a0 e1                  	mov	r3, r5
+  11d7ac: 00 00 9f e7                  	ldr	r0, [pc, r0]
+  11d7b0: 00 00 8d e5                  	str	r0, [sp]
+  11d7b4: 05 00 a0 e3                  	mov	r0, #5
+  11d7b8: e7 c4 fd eb                  	bl	#-584804 <.plt+0x17c0>
+  11d7bc: 00 10 a0 e1                  	mov	r1, r0
+  11d7c0: 0c 00 94 e5                  	ldr	r0, [r4, #12]
+  11d7c4: e2 d2 fd eb                  	bl	#-570488 <.plt+0x4fb8>
+  11d7c8: 18 d0 4b e2                  	sub	sp, r11, #24
+  11d7cc: f0 8b bd e8                  	pop	{r4, r5, r6, r7, r8, r9, r11, pc}
+  11d7d0: f8 1c 0d 00                  	strdeq	r1, r2, [sp], -r8

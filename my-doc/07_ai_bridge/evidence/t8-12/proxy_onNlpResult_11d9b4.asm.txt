@@ -1,0 +1,24 @@
+
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+0011d9b4 AliAiLabs::AGUI::SessionProxy::onNlpResult(int, int, AliAiLabs::AGUI::NlpResult*):
+  11d9b4: 10 4c 2d e9                  	push	{r4, r10, r11, lr}
+  11d9b8: 08 b0 8d e2                  	add	r11, sp, #8
+  11d9bc: 08 d0 4d e2                  	sub	sp, sp, #8
+  11d9c0: 00 40 a0 e1                  	mov	r4, r0
+  11d9c4: 00 00 a0 e3                  	mov	r0, #0
+  11d9c8: 04 00 8d e5                  	str	r0, [sp, #4]
+  11d9cc: 20 00 9f e5                  	ldr	r0, [pc, #32]
+  11d9d0: 00 00 9f e7                  	ldr	r0, [pc, r0]
+  11d9d4: 00 00 8d e5                  	str	r0, [sp]
+  11d9d8: 07 00 a0 e3                  	mov	r0, #7
+  11d9dc: 5e c4 fd eb                  	bl	#-585352 <.plt+0x17c0>
+  11d9e0: 00 10 a0 e1                  	mov	r1, r0
+  11d9e4: 0c 00 94 e5                  	ldr	r0, [r4, #12]
+  11d9e8: 08 d0 4b e2                  	sub	sp, r11, #8
+  11d9ec: 10 4c bd e8                  	pop	{r4, r10, r11, lr}
+  11d9f0: 57 d2 fd ea                  	b	#-571044 <.plt+0x4fb8>
+  11d9f4: 2c 1b 0d 00                  	andeq	r1, sp, r12, lsr #22

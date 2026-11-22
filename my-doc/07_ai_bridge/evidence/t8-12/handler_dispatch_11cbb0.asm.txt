@@ -1,0 +1,35 @@
+
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+0011c238 AliAiLabs::AGUI::SessionProxy::onHandler(AliAiLabs::AGUI::Message*):
+  11cbb0: 58 c2 fd eb                  	bl	#-587424 <.plt+0x17c>
+  11cbb4: 18 d0 4b e2                  	sub	sp, r11, #24
+  11cbb8: f0 8b bd e8                  	pop	{r4, r5, r6, r7, r8, r9, r11, pc}
+  11cbbc: 00 00 a0 e3                  	mov	r0, #0
+  11cbc0: 18 00 84 e5                  	str	r0, [r4, #24]
+  11cbc4: 18 d0 4b e2                  	sub	sp, r11, #24
+  11cbc8: f0 8b bd e8                  	pop	{r4, r5, r6, r7, r8, r9, r11, pc}
+  11cbcc: 0c 00 94 e5                  	ldr	r0, [r4, #12]
+  11cbd0: 01 10 a0 e3                  	mov	r1, #1
+  11cbd4: 10 da fd eb                  	bl	#-563136 <.plt+0x6080>
+  11cbd8: 04 00 94 e5                  	ldr	r0, [r4, #4]
+  11cbdc: 09 10 a0 e1                  	mov	r1, r9
+  11cbe0: 06 20 a0 e3                  	mov	r2, #6
+  11cbe4: eb d9 fd eb                  	bl	#-563284 <.plt+0x5ffc>
+  11cbe8: 08 00 94 e5                  	ldr	r0, [r4, #8]
+  11cbec: 09 10 a0 e1                  	mov	r1, r9
+  11cbf0: 03 20 a0 e3                  	mov	r2, #3
+  11cbf4: 00 30 a0 e3                  	mov	r3, #0
+  11cbf8: 15 d8 fd eb                  	bl	#-565164 <.plt+0x58b8>
+  11cbfc: 0c 00 94 e5                  	ldr	r0, [r4, #12]
+  11cc00: 01 10 a0 e3                  	mov	r1, #1
+  11cc04: 04 da fd eb                  	bl	#-563184 <.plt+0x6080>
+  11cc08: 04 00 94 e5                  	ldr	r0, [r4, #4]
+  11cc0c: 09 10 a0 e1                  	mov	r1, r9
+  11cc10: 00 20 a0 e3                  	mov	r2, #0
+  11cc14: 03 30 a0 e3                  	mov	r3, #3
+  11cc18: 18 d0 4b e2                  	sub	sp, r11, #24
+  11cc1c: f0 4b bd e8                  	pop	{r4, r5, r6, r7, r8, r9, r11, lr}

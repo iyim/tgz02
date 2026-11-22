@@ -1,0 +1,36 @@
+
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+0011896c AliAiLabs::AGUI::SessionDispatch::onNlpResultInner(int, AliAiLabs::AGUI::NlpResult*):
+  11896c: f0 48 2d e9                  	push	{r4, r5, r6, r7, r11, lr}
+  118970: 10 b0 8d e2                  	add	r11, sp, #16
+  118974: 10 d0 4d e2                  	sub	sp, sp, #16
+  118978: 02 50 a0 e1                  	mov	r5, r2
+  11897c: 01 40 a0 e1                  	mov	r4, r1
+  118980: 0c 00 8d e2                  	add	r0, sp, #12
+  118984: 00 70 a0 e3                  	mov	r7, #0
+  118988: 02 18 a0 e3                  	mov	r1, #131072
+  11898c: 04 20 a0 e1                  	mov	r2, r4
+  118990: 05 30 a0 e1                  	mov	r3, r5
+  118994: 0c 70 8d e5                  	str	r7, [sp, #12]
+  118998: 81 00 8d e8                  	stm	sp, {r0, r7}
+  11899c: f9 e9 fd eb                  	bl	#-546844 <.plt+0x5dec>
+  1189a0: 02 18 a0 e3                  	mov	r1, #131072
+  1189a4: 05 30 a0 e1                  	mov	r3, r5
+  1189a8: f9 e9 fd eb                  	bl	#-546844 <.plt+0x5df8>
+  1189ac: b3 d4 fd eb                  	bl	#-568628 <.plt+0x8e4>
+  1189b0: 00 10 90 e5                  	ldr	r1, [r0]
+  1189b4: 2c 10 91 e5                  	ldr	r1, [r1, #44]
+  1189b8: 31 ff 2f e1                  	blx	r1
+  1189bc: 00 10 90 e5                  	ldr	r1, [r0]
+  1189c0: 05 20 a0 e1                  	mov	r2, r5
+  1189c4: 04 30 a0 e1                  	mov	r3, r4
+  1189c8: 08 60 91 e5                  	ldr	r6, [r1, #8]
+  1189cc: 04 10 a0 e3                  	mov	r1, #4
+  1189d0: 00 70 8d e5                  	str	r7, [sp]
+  1189d4: 36 ff 2f e1                  	blx	r6
+  1189d8: 10 d0 4b e2                  	sub	sp, r11, #16
+  1189dc: f0 88 bd e8                  	pop	{r4, r5, r6, r7, r11, pc}

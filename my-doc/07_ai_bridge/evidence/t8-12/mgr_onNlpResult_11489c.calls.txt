@@ -1,0 +1,22 @@
+# mgr_onNlpResult_11489c  0x11489c..0x114b98
+# 'at' = address of the bl; 'target' = .rel.plt symbol it calls
+11491c  plt[1426]  AgutilLog
+114938  plt[188]  _ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+11495c  plt[1887]  _ZN9AliAiLabs4AGUI14SessionManager8getLogIdEi
+114978  plt[1929]  _ZN9AliAiLabs4AGUI9UtManager20sendAsrGateWayResultEPKcP11json_object
+11498c  plt[30]  _ZdlPv
+114994  plt[1894]  _ZN9AliAiLabs4AGUI15AutoTestManager12isTestEnableEv
+1149a0  plt[1893]  _ZN9AliAiLabs4AGUI15AutoTestManager11getInstanceEv
+1149ac  plt[294]  json_object_get_string
+1149bc  plt[1930]  _ZN9AliAiLabs4AGUI15AutoTestManager15insertResultMapEiPKc
+1149d0  plt[1931]  _ZN9AliAiLabs4AGUI12SessionProxy11onNlpResultEiiPNS0_9NlpResultE
+1149e8  plt[1932]  _ZN9AliAiLabs4AGUI12ProtocolData14isTtsStreamingEv
+114a00  plt[1933]  _ZN9AliAiLabs4AGUI12SessionProxy16onNlpResultInnerEiPNS0_9NlpResultE
+114a48  plt[1426]  AgutilLog
+114a8c  plt[1426]  AgutilLog
+114aa8  plt[1896]  _ZN9AliAiLabs4AGUI14SessionManager10sendTraceEENS0_15SessionUTType_TEPKcS4_z
+114af0  plt[1426]  AgutilLog
+114b0c  plt[1896]  _ZN9AliAiLabs4AGUI14SessionManager10sendTraceEENS0_15SessionUTType_TEPKcS4_z
+114b3c  plt[30]  _ZdlPv
+114b44  plt[32]  _Unwind_Resume
+# total plt calls = 19

@@ -1,0 +1,42 @@
+
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+0011353c AliAiLabs::AGUI::SessionManager::onStream(int, char const*, unsigned char, unsigned char, unsigned char, unsigned char):
+  11353c: f0 4f 2d e9                  	push	{r4, r5, r6, r7, r8, r9, r10, r11, lr}
+  113540: 1c b0 8d e2                  	add	r11, sp, #28
+  113544: 2c d0 4d e2                  	sub	sp, sp, #44
+  113548: 00 60 a0 e1                  	mov	r6, r0
+  11354c: 40 00 90 e5                  	ldr	r0, [r0, #64]
+  113550: 01 90 a0 e1                  	mov	r9, r1
+  113554: 01 00 50 e1                  	cmp	r0, r1
+  113558: 66 00 00 1a                  	bne	#408 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x1bc>
+  11355c: 02 80 a0 e1                  	mov	r8, r2
+  113560: 00 00 52 e3                  	cmp	r2, #0
+  113564: 79 00 00 0a                  	beq	#484 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x214>
+  113568: 0c c0 9b e5                  	ldr	r12, [r11, #12]
+  11356c: 03 a0 a0 e1                  	mov	r10, r3
+  113570: 10 40 9b e5                  	ldr	r4, [r11, #16]
+  113574: 00 00 5c e3                  	cmp	r12, #0
+  113578: 0b 00 00 1a                  	bne	#44 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x70>
+  11357c: 84 10 96 e5                  	ldr	r1, [r6, #132]
+  113580: 0a 30 a0 e1                  	mov	r3, r10
+  113584: 14 00 96 e5                  	ldr	r0, [r6, #20]
+  113588: 0c 50 a0 e1                  	mov	r5, r12
+  11358c: 5c 22 9f e5                  	ldr	r2, [pc, #604]
+  113590: 01 00 51 e3                  	cmp	r1, #1
+  113594: 09 10 a0 e1                  	mov	r1, r9
+  113598: 00 40 8d e5                  	str	r4, [sp]
+  11359c: 02 20 8f e0                  	add	r2, pc, r2
+  1135a0: 08 20 a0 11                  	movne	r2, r8
+  1135a4: f5 fd fd eb                  	bl	#-526380 <.plt+0x59e4>
+  1135a8: 05 c0 a0 e1                  	mov	r12, r5
+  1135ac: 40 02 9f e5                  	ldr	r0, [pc, #576]
+  1135b0: 08 50 9b e5                  	ldr	r5, [r11, #8]
+  1135b4: 00 00 9f e7                  	ldr	r0, [pc, r0]
+  1135b8: 00 00 d0 e5                  	ldrb	r0, [r0]
+  1135bc: 00 00 50 e3                  	cmp	r0, #0
+  1135c0: 10 00 00 0a                  	beq	#64 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0xcc>
+  1135c4: 2c 12 9f e5                  	ldr	r1, [pc, #556]

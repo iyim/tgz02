@@ -1,0 +1,20 @@
+# mgr_onStream_11353c  0x11353c..0x113808
+# 'at' = address of the bl; 'target' = .rel.plt symbol it calls
+1135a4  plt[1916]  _ZN9AliAiLabs4AGUI12SessionProxy8onStreamEiPKchh
+113604  plt[1426]  AgutilLog
+113628  plt[1917]  _ZN9AliAiLabs4AGUI12SessionProxy17onSendTextRequestEiPKc
+11363c  plt[1900]  _ZN9AliAiLabs4AGUI9Timestamp10getNowTimeEv
+113650  plt[1918]  _ZN9AliAiLabs4AGUI15PerformanceData11setTextTimeEiPKcxh
+11365c  plt[188]  _ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+113680  plt[1887]  _ZN9AliAiLabs4AGUI14SessionManager8getLogIdEi
+1136c0  plt[1919]  _ZN9AliAiLabs4AGUI9UtManager13sendAsrResultEPKcS3_hxx
+1136c4  plt[1894]  _ZN9AliAiLabs4AGUI15AutoTestManager12isTestEnableEv
+1136d0  plt[1893]  _ZN9AliAiLabs4AGUI15AutoTestManager11getInstanceEv
+1136dc  plt[1920]  _ZN9AliAiLabs4AGUI15AutoTestManager12insertAsrMapEiPKc
+1136f0  plt[30]  _ZdlPv
+113730  plt[1426]  AgutilLog
+11377c  plt[1426]  AgutilLog
+113794  plt[1896]  _ZN9AliAiLabs4AGUI14SessionManager10sendTraceEENS0_15SessionUTType_TEPKcS4_z
+1137bc  plt[30]  _ZdlPv
+1137c4  plt[32]  _Unwind_Resume
+# total plt calls = 17

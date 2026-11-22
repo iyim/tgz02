@@ -1,0 +1,37 @@
+# disp_onNlpResult_118ebc  0x118ebc..0x11965c
+# 'at' = address of the bl; 'target' = .rel.plt symbol it calls
+118f1c  plt[1426]  AgutilLog
+118f48  plt[27]  _Znwj
+118f50  plt[1890]  _ZN9AliAiLabs4AGUI9NlpResultC1Ev
+118f94  plt[1988]  _ZN9AliAiLabs4AGUI15SessionDispatch17getForegroundInfoEiPNSt6__ndk110shared_ptrINS0_17AppForegroundInfoEEEPNS3_INS0_13AppClientInfoEEEPNS3_INS0_15IMultiUIManager10IUIManagerEEE
+118fa0  plt[53]  _ZN14ServiceManager10getServiceEPKc
+118ffc  plt[30]  _ZdlPv
+119014  plt[1989]  _ZNK9AliAiLabs4AGUI13AppClientInfo11getIsShowUIEv
+11905c  plt[1426]  AgutilLog
+1190d0  plt[188]  _ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+119120  plt[1426]  AgutilLog
+1191a4  plt[1426]  AgutilLog
+1191b8  plt[27]  _Znwj
+1191c0  plt[1890]  _ZN9AliAiLabs4AGUI9NlpResultC1Ev
+1191d8  plt[2003]  _ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE
+119200  plt[2002]  _ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh
+119260  plt[1426]  AgutilLog
+1192c8  plt[1426]  AgutilLog
+119318  plt[2004]  _ZN9AliAiLabs4AGUI12ProtocolData20getProtocolDataExtraEv
+119340  plt[188]  _ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+119344  plt[1860]  _ZN9AliAiLabs4AGUI6MmiCtx26getContinuousDialogManagerEv
+119358  plt[1861]  _ZN9AliAiLabs4AGUI23ContinuousDialogManager14onSpeakCommandEiP11json_objecth
+119380  plt[8]  free@LIBC
+119390  plt[1001]  _ZNSt6__ndk16__treeINS_12basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEENS_4lessIS6_EENS4_IS6_EEE7destroyEPNS_11__tree_nodeIS6_PvEE
+119430  plt[29]  _ZNSt6__ndk119__shared_weak_count14__release_weakEv
+119438  plt[30]  _ZdlPv
+11947c  plt[2007]  _ZN9AliAiLabs4AGUI14SessionManager19setSessionTtsStatusEiNS0_13IDeviceMirror13SessionStatusE
+119498  plt[1433]  _ZN9AliAiLabs4AGUI8StrUtils7isEmptyEPKc
+1194c4  plt[2005]  _ZN9AliAiLabs4AGUI15SessionDispatch14processCommandEiPNS0_12ProtocolDataEPcPKcPi
+1194f4  plt[2006]  _ZN9AliAiLabs4AGUI15SessionDispatch14processCommandEiPNS0_12ProtocolDataEPcRNSt6__ndk110shared_ptrINS0_13AppClientInfoEEEPi
+119520  plt[2008]  _ZN9AliAiLabs4AGUI13ClientManager17getBackgroundAppsERNSt6__ndk14listINS2_10shared_ptrINS0_13AppClientInfoEEENS2_9allocatorIS6_EEEEPNS0_18IAppClientCallbackE
+119550  plt[2006]  _ZN9AliAiLabs4AGUI15SessionDispatch14processCommandEiPNS0_12ProtocolDataEPcRNSt6__ndk110shared_ptrINS0_13AppClientInfoEEEPi
+1195a8  plt[1426]  AgutilLog
+1195d8  plt[30]  _ZdlPv
+1195e0  plt[32]  _Unwind_Resume
+# total plt calls = 34
