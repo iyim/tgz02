@@ -1,0 +1,137 @@
+
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+0011c198 _ZN9AliAiLabs4AGUI12SessionProxyD0Ev:
+  11c200: fa ff ff 1a                  	bne	#-24 <_ZN9AliAiLabs4AGUI12SessionProxyD0Ev+0x58>
+  11c204: 00 00 50 e3                  	cmp	r0, #0
+  11c208: 5b f0 7f f5                  	dmb	ish
+  11c20c: 05 00 00 1a                  	bne	#20 <_ZN9AliAiLabs4AGUI12SessionProxyD0Ev+0x90>
+  11c210: 00 00 95 e5                  	ldr	r0, [r5]
+  11c214: 08 10 90 e5                  	ldr	r1, [r0, #8]
+  11c218: 05 00 a0 e1                  	mov	r0, r5
+  11c21c: 31 ff 2f e1                  	blx	r1
+  11c220: 05 00 a0 e1                  	mov	r0, r5
+  11c224: b8 c4 fd eb                  	bl	#-584992 <.plt+0x170>
+  11c228: 04 00 a0 e1                  	mov	r0, r4
+  11c22c: 30 48 bd e8                  	pop	{r4, r5, r11, lr}
+  11c230: b8 c4 fd ea                  	b	#-584992 <.plt+0x17c>
+  11c234: 50 33 0d 00                  	andeq	r3, sp, r0, asr r3
+
+0011c238 _ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE:
+  11c238: f0 4b 2d e9                  	push	{r4, r5, r6, r7, r8, r9, r11, lr}
+  11c23c: 18 b0 8d e2                  	add	r11, sp, #24
+  11c240: 30 d0 4d e2                  	sub	sp, sp, #48
+  11c244: d0 80 c1 e1                  	ldrd	r8, r9, [r1]
+  11c248: 01 50 a0 e1                  	mov	r5, r1
+  11c24c: 00 40 a0 e1                  	mov	r4, r0
+  11c250: 09 00 58 e3                  	cmp	r8, #9
+  11c254: 48 00 00 8a                  	bhi	#288 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x144>
+  11c258: 02 10 48 e2                  	sub	r1, r8, #2
+  11c25c: 04 00 94 e5                  	ldr	r0, [r4, #4]
+  11c260: 11 1f 6f e1                  	clz	r1, r1
+  11c264: 09 20 a0 e1                  	mov	r2, r9
+  11c268: a1 12 a0 e1                  	lsr	r1, r1, #5
+  11c26c: 3d dc fd eb                  	bl	#-560908 <.plt+0x5fcc>
+  11c270: 00 00 50 e3                  	cmp	r0, #0
+  11c274: 53 00 00 0a                  	beq	#332 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x190>
+  11c278: 01 00 48 e2                  	sub	r0, r8, #1
+  11c27c: 07 00 50 e3                  	cmp	r0, #7
+  11c280: ce 00 00 8a                  	bhi	#824 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x388>
+  11c284: 04 10 8f e2                  	add	r1, pc, #4
+  11c288: 00 01 91 e7                  	ldr	r0, [r1, r0, lsl #2]
+  11c28c: 00 f0 81 e0                  	add	pc, r1, r0
+  11c290: 20 00 00 00                  	andeq	r0, r0, r0, lsr #32
+  11c294: 64 03 00 00                  	andeq	r0, r0, r4, ror #6
+  11c298: 30 05 00 00                  	andeq	r0, r0, r0, lsr r5
+  11c29c: d0 05 00 00                  	ldrdeq	r0, r1, [r0], -r0
+  11c2a0: e8 05 00 00                  	andeq	r0, r0, r8, ror #11
+  11c2a4: 9c 06 00 00                  	muleq	r0, r12, r6
+  11c2a8: b8 06 00 00                  	strheq	r0, [r0], -r8
+  11c2ac: 24 07 00 00                  	andeq	r0, r0, r4, lsr #14
+  11c2b0: 08 00 95 e5                  	ldr	r0, [r5, #8]
+  11c2b4: 01 00 50 e3                  	cmp	r0, #1
+  11c2b8: cd 01 00 1a                  	bne	#1844 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x7bc>
+  11c2bc: 02 00 a0 e3                  	mov	r0, #2
+  11c2c0: 34 00 c4 e5                  	strb	r0, [r4, #52]
+  11c2c4: 00 00 a0 e3                  	mov	r0, #0
+  11c2c8: 24 00 8d e5                  	str	r0, [sp, #36]
+  11c2cc: 20 00 8d e5                  	str	r0, [sp, #32]
+  11c2d0: 28 00 8d e5                  	str	r0, [sp, #40]
+  11c2d4: 04 00 a0 e1                  	mov	r0, r4
+  11c2d8: 28 10 f0 e5                  	ldrb	r1, [r0, #40]!
+  11c2dc: 01 00 11 e3                  	tst	r1, #1
+  11c2e0: 01 10 80 02                  	addeq	r1, r0, #1
+  11c2e4: 30 10 94 15                  	ldrne	r1, [r4, #48]
+  11c2e8: 20 50 8d e2                  	add	r5, sp, #32
+  11c2ec: 1c 20 84 e2                  	add	r2, r4, #28
+  11c2f0: 05 30 a0 e1                  	mov	r3, r5
+  11c2f4: 1e dc fd eb                  	bl	#-561032 <.plt+0x5fd8>
+  11c2f8: 20 20 dd e5                  	ldrb	r2, [sp, #32]
+  11c2fc: 24 00 9d e5                  	ldr	r0, [sp, #36]
+  11c300: 01 10 12 e2                  	ands	r1, r2, #1
+  11c304: a2 00 a0 01                  	lsreq	r0, r2, #1
+  11c308: 00 00 50 e3                  	cmp	r0, #0
+  11c30c: 06 00 00 0a                  	beq	#24 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0xf4>
+  11c310: 08 00 94 e5                  	ldr	r0, [r4, #8]
+  11c314: 00 00 51 e3                  	cmp	r1, #0
+  11c318: 28 20 9d e5                  	ldr	r2, [sp, #40]
+  11c31c: 01 20 85 03                  	orreq	r2, r5, #1
+  11c320: 09 10 a0 e1                  	mov	r1, r9
+  11c324: 00 30 a0 e3                  	mov	r3, #0
+  11c328: 14 dc fd eb                  	bl	#-561072 <.plt+0x5fe4>
+  11c32c: 00 00 a0 e3                  	mov	r0, #0
+  11c330: 09 10 a0 e1                  	mov	r1, r9
+  11c334: 00 00 8d e5                  	str	r0, [sp]
+  11c338: 02 20 a0 e3                  	mov	r2, #2
+  11c33c: 04 00 8d e5                  	str	r0, [sp, #4]
+  11c340: 01 00 a0 e3                  	mov	r0, #1
+  11c344: 00 30 a0 e3                  	mov	r3, #0
+  11c348: 03 ca fd eb                  	bl	#-579572 <.plt+0x17c0>
+  11c34c: 00 50 a0 e1                  	mov	r5, r0
+  11c350: 04 00 94 e5                  	ldr	r0, [r4, #4]
+  11c354: 02 10 a0 e3                  	mov	r1, #2
+  11c358: 0b dc fd eb                  	bl	#-561108 <.plt+0x5ff0>
+  11c35c: 0c 20 94 e5                  	ldr	r2, [r4, #12]
+  11c360: 00 30 a0 e3                  	mov	r3, #0
+  11c364: 0b 00 8d e8                  	stm	sp, {r0, r1, r3}
+  11c368: 02 00 a0 e1                  	mov	r0, r2
+  11c36c: 05 10 a0 e1                  	mov	r1, r5
+  11c370: 01 20 a0 e3                  	mov	r2, #1
+  11c374: 1c d9 fd eb                  	bl	#-564112 <.plt+0x5450>
+  11c378: 08 02 00 ea                  	b	#2080 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x968>
+  11c37c: 0a 00 48 e2                  	sub	r0, r8, #10
+  11c380: 06 00 50 e3                  	cmp	r0, #6
+  11c384: 0e 02 00 8a                  	bhi	#2104 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x98c>
+  11c388: 04 10 8f e2                  	add	r1, pc, #4
+  11c38c: 00 01 91 e7                  	ldr	r0, [r1, r0, lsl #2]
+  11c390: 00 f0 81 e0                  	add	pc, r1, r0
+  11c394: 1c 00 00 00                  	andeq	r0, r0, r12, lsl r0
+  11c398: 7c 00 00 00                  	andeq	r0, r0, r12, ror r0
+  11c39c: 90 00 00 00                  	muleq	r0, r0, r0
+  11c3a0: b0 00 00 00                  	strheq	r0, [r0], -r0
+  11c3a4: 00 01 00 00                  	andeq	r0, r0, r0, lsl #2
+  11c3a8: 4c 01 00 00                  	andeq	r0, r0, r12, asr #2
+  11c3ac: e4 01 00 00                  	andeq	r0, r0, r4, ror #3
+  11c3b0: 08 20 95 e5                  	ldr	r2, [r5, #8]
+  11c3b4: 09 10 a0 e1                  	mov	r1, r9
+  11c3b8: 04 00 94 e5                  	ldr	r0, [r4, #4]
+  11c3bc: 18 d0 4b e2                  	sub	sp, r11, #24
+  11c3c0: f0 4b bd e8                  	pop	{r4, r5, r6, r7, r8, r9, r11, lr}
+  11c3c4: f3 db fd ea                  	b	#-561204 <.plt+0x5ffc>
+  11c3c8: 04 00 94 e5                  	ldr	r0, [r4, #4]
+  11c3cc: 18 d9 fd eb                  	bl	#-564128 <.plt+0x5498>
+  11c3d0: e4 18 9f e5                  	ldr	r1, [pc, #2276]
+  11c3d4: 4a 60 a0 e3                  	mov	r6, #74
+  11c3d8: e0 28 9f e5                  	ldr	r2, [pc, #2272]
+  11c3dc: e0 38 9f e5                  	ldr	r3, [pc, #2272]
+  11c3e0: 01 10 8f e0                  	add	r1, pc, r1
+  11c3e4: dc 78 9f e5                  	ldr	r7, [pc, #2268]
+  11c3e8: 02 20 8f e0                  	add	r2, pc, r2
+  11c3ec: 03 30 8f e0                  	add	r3, pc, r3
+  11c3f0: 07 70 8f e0                  	add	r7, pc, r7
+  11c3f4: c0 02 8d e8                  	stm	sp, {r6, r7, r9}
+  11c3f8: 0c 80 8d e5                  	str	r8, [sp, #12]
+  11c3fc: 10 00 8d e5                  	str	r0, [sp, #16]

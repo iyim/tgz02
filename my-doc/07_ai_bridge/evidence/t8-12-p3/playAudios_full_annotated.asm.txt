@@ -1,0 +1,193 @@
+# annotated disassembly 0x117d40..0x11802c of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh @ 0x117d40 ====
+117d40  f0 4f 2d e9 push    {r4, r5, r6, r7, r8, r9, r10, r11, lr}
+117d44  1c b0 8d e2 add     r11, sp, #28
+117d48  14 d0 4d e2 sub     sp, sp, #20
+117d4c  03 40 a0 e1 mov     r4, r3
+117d50  02 a0 a0 e1 mov     r10, r2
+117d54  01 80 a0 e1 mov     r8, r1
+117d58  c8 d7 fd eb bl      #-565472 <.plt+0x8e4>  ; -> 0x8dc80 PLT:_ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+117d5c  00 10 90 e5 ldr     r1, [r0]
+117d60  3c 10 91 e5 ldr     r1, [r1, #60]
+117d64  31 ff 2f e1 blx     r1  ; -> indirect via r1
+117d68  00 50 a0 e1 mov     r5, r0
+117d6c  00 00 50 e3 cmp     r0, #0
+117d70  10 50 45 12 subne   r5, r5, #16
+117d74  00 00 54 e3 cmp     r4, #0
+117d78  3b 00 00 0a beq     #236 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x12c>
+117d7c  90 00 94 e5 ldr     r0, [r4, #144]
+117d80  0c 60 9b e5 ldr     r6, [r11, #12]
+117d84  08 70 9b e5 ldr     r7, [r11, #8]
+117d88  00 00 50 e3 cmp     r0, #0
+117d8c  03 00 00 1a bne     #12 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x60>
+117d90  00 00 95 e5 ldr     r0, [r5]
+117d94  38 10 90 e5 ldr     r1, [r0, #56]
+117d98  05 00 a0 e1 mov     r0, r5
+117d9c  31 ff 2f e1 blx     r1  ; -> indirect via r1
+117da0  00 00 a0 e3 mov     r0, #0
+117da4  13 30 8d e2 add     r3, sp, #19
+117da8  13 00 cd e5 strb    r0, [sp, #19]
+117dac  05 00 a0 e1 mov     r0, r5
+117db0  04 10 a0 e1 mov     r1, r4
+117db4  07 20 a0 e1 mov     r2, r7
+117db8  da ec fd eb bl      #-543896 <.plt+0x5d8c>  ; -> 0x93128 PLT:_ZN9AliAiLabs4AGUI12AudioManager19processMediaCommandEPNS0_9NlpResultEPNS0_10ReturnCodeERh
+117dbc  00 00 56 e3 cmp     r6, #0
+117dc0  13 00 dd 15 ldrbne  r0, [sp, #19]
+117dc4  00 00 c6 15 strbne  r0, [r6]
+117dc8  20 92 9f e5 ldr     r9, [pc, #544]
+117dcc  09 90 9f e7 ldr     r9, [pc, r9]
+117dd0  00 00 d9 e5 ldrb    r0, [r9]
+117dd4  00 00 50 e3 cmp     r0, #0
+117dd8  27 00 00 0a beq     #156 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x13c>
+117ddc  00 00 56 e3 cmp     r6, #0
+117de0  f2 70 a0 e3 mov     r7, #242
+117de4  00 00 d6 15 ldrbne  r0, [r6]
+117de8  04 12 9f e5 ldr     r1, [pc, #516]
+117dec  00 00 a0 03 moveq   r0, #0
+117df0  00 22 9f e5 ldr     r2, [pc, #512]
+117df4  00 32 9f e5 ldr     r3, [pc, #512]
+117df8  01 10 8f e0 add     r1, pc, r1
+117dfc  13 60 dd e5 ldrb    r6, [sp, #19]
+117e00  02 20 8f e0 add     r2, pc, r2
+117e04  f4 c1 9f e5 ldr     r12, [pc, #500]
+117e08  03 30 8f e0 add     r3, pc, r3
+117e0c  0c c0 8f e0 add     r12, pc, r12
+117e10  80 10 8d e8 stm     sp, {r7, r12}
+117e14  08 00 8d e5 str     r0, [sp, #8]
+117e18  04 00 a0 e3 mov     r0, #4
+117e1c  0c 60 8d e5 str     r6, [sp, #12]
+117e20  18 e6 fd eb bl      #-550816 <.plt+0x42ec>  ; -> 0x91688 PLT:AgutilLog
+117e24  00 00 d9 e5 ldrb    r0, [r9]
+117e28  5a 6a e3 e7 ubfx    r6, r10, #20, #4
+117e2c  00 00 50 e3 cmp     r0, #0
+117e30  12 00 00 0a beq     #72 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x140>
+117e34  c8 11 9f e5 ldr     r1, [pc, #456]
+117e38  f5 70 a0 e3 mov     r7, #245
+117e3c  c4 21 9f e5 ldr     r2, [pc, #452]
+117e40  c4 31 9f e5 ldr     r3, [pc, #452]
+117e44  01 10 8f e0 add     r1, pc, r1
+117e48  c0 01 9f e5 ldr     r0, [pc, #448]
+117e4c  02 20 8f e0 add     r2, pc, r2
+117e50  03 30 8f e0 add     r3, pc, r3
+117e54  00 70 8d e5 str     r7, [sp]
+117e58  00 00 8f e0 add     r0, pc, r0
+117e5c  41 00 8d e9 stmib   sp, {r0, r6}
+117e60  04 00 a0 e3 mov     r0, #4
+117e64  07 e6 fd eb bl      #-550884 <.plt+0x42ec>  ; -> 0x91688 PLT:AgutilLog
+117e68  04 00 00 ea b       #16 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x140>  ; -> 0x117e80 FUNC:_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x140
+117e6c  00 00 95 e5 ldr     r0, [r5]
+117e70  00 10 a0 e3 mov     r1, #0
+117e74  00 20 a0 e3 mov     r2, #0
+117e78  32 00 00 ea b       #200 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x208>  ; -> 0x117f48 FUNC:_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x208
+117e7c  5a 6a e3 e7 ubfx    r6, r10, #20, #4
+117e80  03 00 56 e3 cmp     r6, #3
+117e84  38 00 94 15 ldrne   r0, [r4, #56]
+117e88  00 00 50 13 cmpne   r0, #0
+117e8c  18 00 00 1a bne     #96 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x1b4>
+117e90  02 00 56 e3 cmp     r6, #2
+117e94  23 00 00 1a bne     #140 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x1e8>
+117e98  80 00 94 e5 ldr     r0, [r4, #128]
+117e9c  00 00 50 e3 cmp     r0, #0
+117ea0  08 00 90 15 ldrne   r0, [r0, #8]
+117ea4  00 00 50 13 cmpne   r0, #0
+117ea8  1e 00 00 1a bne     #120 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x1e8>
+117eac  00 00 d9 e5 ldrb    r0, [r9]
+117eb0  00 00 50 e3 cmp     r0, #0
+117eb4  26 00 00 0a beq     #152 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x214>
+117eb8  54 11 9f e5 ldr     r1, [pc, #340]
+117ebc  fc 70 a0 e3 mov     r7, #252
+117ec0  50 21 9f e5 ldr     r2, [pc, #336]
+117ec4  50 31 9f e5 ldr     r3, [pc, #336]
+117ec8  01 10 8f e0 add     r1, pc, r1
+117ecc  4c 01 9f e5 ldr     r0, [pc, #332]
+117ed0  02 20 8f e0 add     r2, pc, r2
+117ed4  03 30 8f e0 add     r3, pc, r3
+117ed8  00 70 8d e5 str     r7, [sp]
+117edc  00 00 8f e0 add     r0, pc, r0
+117ee0  04 00 8d e5 str     r0, [sp, #4]
+117ee4  04 00 a0 e3 mov     r0, #4
+117ee8  e6 e5 fd eb bl      #-551016 <.plt+0x42ec>  ; -> 0x91688 PLT:AgutilLog
+117eec  1c d0 4b e2 sub     sp, r11, #28
+117ef0  f0 8f bd e8 pop     {r4, r5, r6, r7, r8, r9, r10, r11, pc}
+117ef4  4c 00 00 eb bl      #304 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x2ec>  ; -> 0x11802c ADDR:0x11802c
+117ef8  08 30 9b e5 ldr     r3, [r11, #8]
+117efc  00 70 a0 e1 mov     r7, r0
+117f00  05 00 a0 e1 mov     r0, r5
+117f04  04 10 a0 e1 mov     r1, r4
+117f08  07 20 a0 e1 mov     r2, r7
+117f0c  88 ec fd eb bl      #-544224 <.plt+0x5d98>  ; -> 0x93134 PLT:_ZN9AliAiLabs4AGUI12AudioManager17preProcessCommandEPNS0_12ProtocolDataEPcPNS0_10ReturnCodeE
+117f10  00 00 57 e3 cmp     r7, #0
+117f14  dd ff ff 0a beq     #-140 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x150>
+117f18  07 00 a0 e1 mov     r0, r7
+117f1c  3b d5 fd eb bl      #-568084 <.plt+0x74>  ; -> 0x8d410 PLT:free@LIBC
+117f20  02 00 56 e3 cmp     r6, #2
+117f24  db ff ff 0a beq     #-148 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x158>
+117f28  78 70 94 e5 ldr     r7, [r4, #120]
+117f2c  00 20 a0 e3 mov     r2, #0
+117f30  00 00 57 e3 cmp     r7, #0
+117f34  04 90 97 15 ldrne   r9, [r7, #4]
+117f38  09 00 57 11 cmpne   r7, r9
+117f3c  06 00 00 1a bne     #24 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x21c>
+117f40  00 00 95 e5 ldr     r0, [r5]
+117f44  80 10 94 e5 ldr     r1, [r4, #128]
+117f48  20 30 90 e5 ldr     r3, [r0, #32]
+117f4c  05 00 a0 e1 mov     r0, r5
+117f50  33 ff 2f e1 blx     r3  ; -> indirect via r3
+117f54  1c d0 4b e2 sub     sp, r11, #28
+117f58  f0 8f bd e8 pop     {r4, r5, r6, r7, r8, r9, r10, r11, pc}
+117f5c  08 a0 99 e5 ldr     r10, [r9, #8]
+117f60  03 00 9a e9 ldmib   r10, {r0, r1}
+117f64  00 00 51 e0 subs    r0, r1, r0
+117f68  19 00 00 0a beq     #100 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x294>
+117f6c  c0 61 a0 e1 asr     r6, r0, #3
+117f70  10 00 9a e5 ldr     r0, [r10, #16]
+117f74  14 10 9a e5 ldr     r1, [r10, #20]
+117f78  00 00 41 e0 sub     r0, r1, r0
+117f7c  40 01 56 e1 cmp     r6, r0, asr #2
+117f80  13 00 00 1a bne     #76 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x294>
+117f84  1c 00 9a e5 ldr     r0, [r10, #28]
+117f88  94 10 9f e5 ldr     r1, [pc, #148]
+117f8c  01 10 8f e0 add     r1, pc, r1
+117f90  50 d6 fd eb bl      #-566976 <.plt+0x53c>  ; -> 0x8d8d8 PLT:_ZN9AliAiLabs4AGUI8StrUtils5equalEPKcS3_
+117f94  00 00 50 e3 cmp     r0, #0
+117f98  0d 00 00 0a beq     #52 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x294>
+117f9c  20 00 9a e5 ldr     r0, [r10, #32]
+117fa0  80 10 9f e5 ldr     r1, [pc, #128]
+117fa4  01 10 8f e0 add     r1, pc, r1
+117fa8  4a d6 fd eb bl      #-567000 <.plt+0x53c>  ; -> 0x8d8d8 PLT:_ZN9AliAiLabs4AGUI8StrUtils5equalEPKcS3_
+117fac  00 00 50 e3 cmp     r0, #0
+117fb0  07 00 00 0a beq     #28 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x294>
+117fb4  10 00 9a e5 ldr     r0, [r10, #16]
+117fb8  00 10 a0 e3 mov     r1, #0
+117fbc  01 21 90 e7 ldr     r2, [r0, r1, lsl #2]
+117fc0  08 00 12 e1 tst     r2, r8
+117fc4  07 00 00 1a bne     #28 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x2a8>
+117fc8  01 10 81 e2 add     r1, r1, #1
+117fcc  06 00 51 e1 cmp     r1, r6
+117fd0  f9 ff ff 3a blo     #-28 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x27c>
+117fd4  04 90 99 e5 ldr     r9, [r9, #4]
+117fd8  09 00 57 e1 cmp     r7, r9
+117fdc  de ff ff 1a bne     #-136 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x21c>
+117fe0  00 20 a0 e3 mov     r2, #0
+117fe4  d5 ff ff ea b       #-172 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x200>  ; -> 0x117f40 FUNC:_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x200
+117fe8  01 20 a0 e3 mov     r2, #1
+117fec  d3 ff ff ea b       #-180 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x200>  ; -> 0x117f40 FUNC:_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x200
+117ff0  38 76 0d 00 andeq   r7, sp, r8, lsr r6
+117ff4  04 74 0b 00 andeq   r7, r11, r4, lsl #8
+117ff8  0c 74 0b 00 andeq   r7, r11, r12, lsl #8
+117ffc  1d 75 0b 00 andeq   r7, r11, sp, lsl r5
+118000  24 75 0b 00 andeq   r7, r11, r4, lsr #10
+118004  b8 73 0b 00 strheq  r7, [r11], -r8
+118008  c0 73 0b 00 andeq   r7, r11, r0, asr #7
+11800c  d5 74 0b 00 ldrdeq  r7, r8, [r11], -r5
+118010  08 75 0b 00 andeq   r7, r11, r8, lsl #10
+118014  34 73 0b 00 andeq   r7, r11, r4, lsr r3
+118018  3c 73 0b 00 andeq   r7, r11, r12, lsr r3
+11801c  51 74 0b 00 andeq   r7, r11, r1, asr r4
+118020  8e 74 0b 00 andeq   r7, r11, lr, lsl #9
+118024  03 74 0b 00 andeq   r7, r11, r3, lsl #8
+118028  fa 73 0b 00 strdeq  r7, r8, [r11], -r10

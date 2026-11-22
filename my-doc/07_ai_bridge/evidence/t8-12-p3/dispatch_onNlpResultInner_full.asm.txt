@@ -1,0 +1,35 @@
+# annotated disassembly 0x11896c..0x1189e0 of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI15SessionDispatch16onNlpResultInnerEiPNS0_9NlpResultE @ 0x11896c ====
+11896c  f0 48 2d e9 {r4, r5, r6, r7, r11, lr}
+118970  10 b0 8d e2 r11, sp, #16
+118974  10 d0 4d e2 sp, sp, #16
+118978  02 50 a0 e1 r5, r2
+11897c  01 40 a0 e1 r4, r1
+118980  0c 00 8d e2 r0, sp, #12
+118984  00 70 a0 e3 r7, #0
+118988  02 18 a0 e3 r1, #131072
+11898c  04 20 a0 e1 r2, r4
+118990  05 30 a0 e1 r3, r5
+118994  0c 70 8d e5 r7, [sp, #12]
+118998  81 00 8d e8 sp, {r0, r7}
+11899c  f9 e9 fd eb #-546844 <.plt+0x5dec>  ; -> 0x93188 PLT:_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh
+1189a0  02 18 a0 e3 r1, #131072
+1189a4  05 30 a0 e1 r3, r5
+1189a8  f9 e9 fd eb #-546844 <.plt+0x5df8>  ; -> 0x93194 PLT:_ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE
+1189ac  b3 d4 fd eb #-568628 <.plt+0x8e4>  ; -> 0x8dc80 PLT:_ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+1189b0  00 10 90 e5 r1, [r0]
+1189b4  2c 10 91 e5 r1, [r1, #44]
+1189b8  31 ff 2f e1 r1  ; -> indirect via r1
+1189bc  00 10 90 e5 r1, [r0]
+1189c0  05 20 a0 e1 r2, r5
+1189c4  04 30 a0 e1 r3, r4
+1189c8  08 60 91 e5 r6, [r1, #8]
+1189cc  04 10 a0 e3 r1, #4
+1189d0  00 70 8d e5 r7, [sp]
+1189d4  36 ff 2f e1 r6  ; -> indirect via r6
+1189d8  10 d0 4b e2 sp, r11, #16
+1189dc  f0 88 bd e8 {r4, r5, r6, r7, r11, pc}

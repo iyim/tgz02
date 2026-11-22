@@ -1,0 +1,95 @@
+# _ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE  (plt annotation 0x17c0)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+0xbd808`t_ZN11AuthService26handleAuthActionThreadFuncEPv`tmov #1`tmov #0`tmov #0`tstm {r1, r5}
+0xbdb74`t_ZN11AuthService26handleAuthActionThreadFuncEPv`tmov #1`tmov #0`tmov #0`tstm {r1, r5}
+0xc6718`t_ZN11AuthService27processRecvOauthGetCodeRespEP17_OAUTH_RESPONSE_TibPv`tmov #0`tmov #0`tmov #0`tstm {r0, r6}
+0xc8018`t_ZN11AuthService14redoAuthActionE17_AUTH_ACTION_ID_EibPvl`tmov #1`tmov #0`tmov #0`tstm {r7, r9}
+0x1060a4`t_ZN9AliAiLabs4AGUI13ClientManager16registerCallbackERNSt6__ndk110shared_ptrINS0_13AppClientInfoEEE`tmov #0`tmov #0`tmov #0`tmov r5
+0x1061b0`t_ZN9AliAiLabs4AGUI13ClientManager18unregisterCallbackEPKch`tmov #1`tmov r4`tmov #0`tmov r0
+0x106220`t_ZN9AliAiLabs4AGUI13ClientManager9setEnableEPKch`tmov #2`tmov r4`tmov #0`tmov r0
+0x1065d0`t_ZN9AliAiLabs4AGUI13ClientManager13setResultModeEPKci`tmov #3`tmov r4`tmov #0`tmov r0
+0x106638`t_ZN9AliAiLabs4AGUI13ClientManager10setAsrModeEPKci`tmov #4`tmov r4`tmov #0`tmov r0
+0x1066a8`t_ZN9AliAiLabs4AGUI13ClientManager9showAsrUIEPKch`tmov #5`tmov r4`tmov #0`tmov r0
+0x106718`t_ZN9AliAiLabs4AGUI13ClientManager20setBackgroundServiceEPKch`tmov #6`tmov r4`tmov #0`tmov r0
+0x106788`t_ZN9AliAiLabs4AGUI13ClientManager13setWindowTypeEPKch`tmov #7`tmov r4`tmov #0`tmov r0
+0x10c0b8`t_ZN9AliAiLabs4AGUI17MultiModalManager9onHandlerEPNS0_7MessageE`tmov #0`tmov r5`tcmpne #11`tmov #0
+0x10c884`t_ZN9AliAiLabs4AGUI17MultiModalManager14canVoiceWakeupENS0_19IInputDeviceManager15InputDeviceTypeEPNS2_12_WakeUpInfo_E`tmov #0`tmov r5`tmov #0`tmov #0
+0x10cd34`t_ZN9AliAiLabs4AGUI17MultiModalManager12enableWakeupEh`tmov #0`tandeq r11, r7, ror #11`tmov #0`tmov #0
+0x11b47c`t_ZN9AliAiLabs4AGUI15OfflineDecision13onLocalResultEiPNS0_19IInputDeviceManager17_LocalResultInfo_E`tmovw #1001`tmov r8`tmov #0`tmov r7
+0x11c348`t_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE`tmov #1`tmov r9`tmov #2`tmov #0
+0x11c6a0`t_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE`tmov #1`tmov r9`tmov #1`tmov #0
+0x11c82c`t_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE`tmov #1`tmov r9`tmov #3`tmov #0
+0x11cb70`t_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE`tmov #1`tmov r9`tmov r6`tmov #0
+0x11cdcc`t_ZN9AliAiLabs4AGUI12SessionProxy14sendTimeoutMsgEiNS0_13IDeviceMirror13SessionStatusE`tmov #1`tandeq r11, pc, asr #5`t`tmov #0
+0x11d6ec`t_ZN9AliAiLabs4AGUI12SessionProxy11onStartTalkEiPKc`tmov #2`tmov r6`tmov #0`tmov r0
+0x11d7b8`t_ZN9AliAiLabs4AGUI12SessionProxy8onStreamEiPKchh`tmov #5`tmov r8`tmov r6`tmov r5
+0x11d820`t_ZN9AliAiLabs4AGUI12SessionProxy17onSendTextRequestEiPKc`tmov #6`tmov r4`tmov #0`tmov r0
+0x11d864`t_ZN9AliAiLabs4AGUI12SessionProxy17onGetSystemConextEi`tmov #16`tmov r0`tmov #0`tmov #0
+0x11d8a0`t_ZN9AliAiLabs4AGUI12SessionProxy8onVolumeEii`tmov #4`tmov r0`tmov #0`tmov #0
+0x11d910`t_ZN9AliAiLabs4AGUI12SessionProxy10onStopTalkEi`tmov #3`tadd pc, r1`tmov #0`tmov #0
+0x11d98c`t_ZN9AliAiLabs4AGUI12SessionProxy10onExitTalkEi`tmov #14`tmov r4`tmov #0`tmov #0
+0x11d9dc`t_ZN9AliAiLabs4AGUI12SessionProxy11onNlpResultEiiPNS0_9NlpResultE`tmov #7`tandeq r11, r11, lsl r1`tldrdeq r3, [r11], -r9`tmov #0
+0x11da28`t_ZN9AliAiLabs4AGUI12SessionProxy16onNlpResultInnerEiPNS0_9NlpResultE`tmov #11`tandeq sp, r12, lsr #22`tmov #0`tmov r2
+0x11da74`t_ZN9AliAiLabs4AGUI12SessionProxy18onSpecialNlpResultEiPNS0_9NlpResultE`tmov #13`tandeq sp, r0, ror #21`tmov #0`tmov r2
+0x11dac0`t_ZN9AliAiLabs4AGUI12SessionProxy12onPushResultEiPNS0_9NlpResultE`tmov #12`tmov r0`tmov #0`tmov r2
+0x11db54`t_ZN9AliAiLabs4AGUI12SessionProxy10onMmiEventEiNSt6__ndk110shared_ptrINS0_8MmiEventEEE`tmov #15`tmov r5`tmov #0`tmov r0
+0x11dc10`t_ZN9AliAiLabs4AGUI12SessionProxy16setSessionStatusEiNS0_13IDeviceMirror13SessionStatusE`tmov #10`tldr [r0, #8]`t`tmov #0
+0x11dc8c`t_ZN9AliAiLabs4AGUI12SessionProxy19setSessionTtsStatusEih`tmov #8`tmov r3`tmov #0`tmov #0
+0x125314`t_ZN9AliAiLabs4AGUI13StatusManager14onStatusChangeEiPvh`tmvn #0`tmov #0`tmov #0`tmov #0
+0x12b5e0`t_ZN9AliAiLabs4AGUI14FeatureManager23syncFullFirmwareFeatureEv`tmov #0`tmov #0`tmov #0`tmov #0
+0x12b940`t_ZN9AliAiLabs4AGUI14FeatureManager18syncFullAppFeatureEv`tmov #1`tmov #0`tmov #0`tmov #0
+0x12bcb8`t_ZN9AliAiLabs4AGUI14FeatureManager17syncIncAppFeatureEP11json_object`tmov #2`tmov #0`tmov #0`tmov r0
+0x12cbb0`t_ZN9AliAiLabs4AGUI14FeatureManager8onRouterEPNS0_9NlpResultEPcS4_P11json_objectS6_`tmov #1`tmov #0`tmov #0`tmov #0
+0x12cbf4`t_ZN9AliAiLabs4AGUI14FeatureManager8onRouterEPNS0_9NlpResultEPcS4_P11json_objectS6_`tmov #0`tmov #0`tmov #0`tmov #0
+0x12cda0`t_ZN9AliAiLabs4AGUI14FeatureManager10onResponseENS0_4IGcs12ResponseCodeEiP11json_object`tmov #0`tmov #0`tmov #0`tmov #0
+0x12cefc`t_ZN9AliAiLabs4AGUI14FeatureManager10onResponseENS0_4IGcs12ResponseCodeEiP11json_object`tmov #1`tmov #0`tmov #0`tmov #0
+0x12cf40`t_ZN9AliAiLabs4AGUI14FeatureManager10onResponseENS0_4IGcs12ResponseCodeEiP11json_object`tmov #1`tmov #0`tmov #0`tmov #0
+0x12e898`t_ZN9AliAiLabs4AGUI10GcsManager10addRequestEiPNSt6__ndk110shared_ptrINS0_4IGcs17IResponseCallbackEEE`tmov #1`tmov r7`tmov #0`tmov #0
+0x12eb48`t_ZN9AliAiLabs4AGUI10GcsManager10addRequestEiPNSt6__ndk110shared_ptrINS0_4IGcs17IResponseCallbackEEE`tmov #2`tmov r7`tmov #0`tstm {r0, r5}
+0x12f018`t_ZN9AliAiLabs4AGUI10GcsManager10onResponseEiP11json_objecth`tmov #3`tmov r6`tmov r4`tmov r0
+0x138678`t_ZN9AliAiLabs4AGUI13NotifyManager8onNotifyEiPvii`tmov #3`tmov r5`tldr [r11, #8]`tmov r0
+0x138778`t_ZN9AliAiLabs4AGUI13NotifyManager20registerGlobalNotifyEPNS0_13IGlobalNotifyE`tmov #1`tmov #0`tmov #0`tmov r1
+0x1387c8`t_ZN9AliAiLabs4AGUI13NotifyManager22unregisterGlobalNotifyEPNS0_13IGlobalNotifyE`tmov #2`tmov #0`tmov #0`tmov r1
+0x139900`t_ZN9AliAiLabs4AGUI12AudioManager9onHandlerEPNS0_7MessageE`tmov #4`tmov r8`tmov #1`tmov #0
+0x139be0`t_ZN9AliAiLabs4AGUI12AudioManager9onHandlerEPNS0_7MessageE`tmov #5`tmov r6`tmov r8`tmov r5
+0x13a338`t_ZN9AliAiLabs4AGUI12AudioManager14playBufferListEv`tmov #0`tmov #0`tmov #0`tmov #0
+0x13a880`t_ZN9AliAiLabs4AGUI12AudioManager14processTtsDataEv`tmov #0`tmov #0`tmov #0`tmov #0
+0x13dab0`t_ZN9AliAiLabs4AGUI12AudioManager10onTtsStartEiPKNS0_10ITtsClient15TtsResponseInfoE`tmov #2`tmov r5`tmov #0`tmov r6
+0x13db34`t_ZN9AliAiLabs4AGUI12AudioManager9onTtsDataEiPKai`tmov #3`tmov r6`tmov r5`tmov r4
+0x13db78`t_ZN9AliAiLabs4AGUI12AudioManager8onTtsEndEi`tmov #4`tmov r0`tmov #0`tmov #0
+0x13dd2c`t_ZN9AliAiLabs4AGUI12AudioManager4playEPNSt6__ndk14listIPNS0_9AudioInfoENS2_9allocatorIS5_EEEEh`tmov #1`tmov #0`tmov #0`tmov r6
+0x13eed8`t_ZN9AliAiLabs4AGUI12AudioManager18onPlayStatusChangeEiiPv`tmov #5`tmov r4`tmov #5`tmov r7
+0x140144`t_ZN9AliAiLabs4AGUI12AudioManager12playGenieURLEPNS0_9AudioInfoE`tmov #6`tmov #0`tmov #0`tmov r0
+0x1401c0`t_ZThn16_N9AliAiLabs4AGUI12AudioManager12playGenieURLEPNS0_9AudioInfoE`tmov #6`tmov #0`tmov #0`tmov r0
+0x140238`t_ZN9AliAiLabs4AGUI12AudioManager7playURLEPKc`tmov #7`tmov r6`tmov #0`tmov r0
+0x1402b0`t_ZThn16_N9AliAiLabs4AGUI12AudioManager7playURLEPKc`tmov #7`tmov r6`tmov #0`tmov r0
+0x1403f8`t_ZN9AliAiLabs4AGUI12AudioManager6seekToEx`tmov #5`tldr [r4]`tmov #5`tmov r4
+0x14671c`t_ZN9AliAiLabs4AGUI8FocusMgr9onHandlerEPNS0_7MessageE`tmov #1`tmov #1`tmov r0`tmov #0
+0x146bb4`t_ZN9AliAiLabs4AGUI8FocusMgr19onCheckReleaseFocusEi`tmov #1`tmov r9`tmov r0`tmov #0
+0x147450`t_ZN9AliAiLabs4AGUI8FocusMgr13onFocusChangeEi`tmov #0`t`tmov #0`tmov #0
+0x147854`t_ZN9AliAiLabs4AGUI8FocusMgr8onNotifyEiPvii`tmov #1`tmov #0`tmov #0`tmov #0
+0x147884`t_ZN9AliAiLabs4AGUI8FocusMgr8onNotifyEiPvii`tmov #1`tmov #1`tmov #0`tmov #0
+0x147a08`t_ZN9AliAiLabs4AGUI8FocusMgr12requestFocusEii`tmov #1`tmov r5`tmov r0`tmov #0
+0x14b914`t_ZN9AliAiLabs4AGUI12OrangeMangerC1Ev`tmov #0`tmov #0`tmov #0`tmov #0
+0x14bb34`t_ZN9AliAiLabs4AGUI12OrangeManger13sendDirectMsgEiiiiPvPFvPNS0_7MessageEEh`tmov r6`tmov r9`tmov r8`tmov r10
+0x14e688`t_ZN9AliAiLabs4AGUI12OrangeManger13configSyncallEh`tmov #3`tmov #0`tmov #0`tmov #0
+0x14e71c`t_ZN9AliAiLabs4AGUI12OrangeManger15startConfigSyncEP11json_object`tmov #2`tmov #0`tmov #0`tmov r0
+0x14e7ac`t_ZThn4_N9AliAiLabs4AGUI12OrangeManger15startConfigSyncEP11json_object`tmov #2`tmov #0`tmov #0`tmov r0
+0x14e81c`t_ZN9AliAiLabs4AGUI12OrangeManger18startConfigSyncallEh`tmov #3`tmov r4`tmov #0`tmov #0
+0x14e8b4`t_ZThn4_N9AliAiLabs4AGUI12OrangeManger18startConfigSyncallEh`tmov #3`tmov r4`tmov #0`tmov #0
+0x14e948`t_ZN9AliAiLabs4AGUI12OrangeManger10onResponseENS0_4IGcs12ResponseCodeEiP11json_object`tmov #3`tmov #0`tmov #0`tmov #0
+0x14ea24`t_ZN9AliAiLabs4AGUI12OrangeManger10onResponseENS0_4IGcs12ResponseCodeEiP11json_object`tmov #5`tmov #0`tmov #0`tmov r0
+0x1544f4`t_ZN9AliAiLabs4AGUI11TestCaseMgr10executeCmdEPKc`tmov #0`tmov #0`tmov #0`tmov r5
+0x155004`t_ZN9AliAiLabs4AGUI11TestCaseMgr9onHandlerEPNS0_7MessageE`tmov #1`tmov #0`tmov #0`tmov #0
+0x1554ac`t_ZN9AliAiLabs4AGUI11TestCaseMgr8onMonkeyEv`tmov #1`tmov #0`tmov #0`tmov #0
+0x157ff8`t_ZN9AliAiLabs4AGUI10DataCenterC2EPNS0_6MmiCtxE`tmov #0`tmov #0`tmov #0`tmov #0
+0x158adc`t_ZN9AliAiLabs4AGUI10DataCenter9onHandlerEPNS0_7MessageE`tmov #3`tmov #0`tmov #0`tmov #0
+0x159794`t_ZN9AliAiLabs4AGUI10DataCenter10uploadDataEv`tmov #3`tmov #0`tmov #0`tmov #0
+0x15a714`t_ZN9AliAiLabs4AGUI10DataCenter9mergeDataEP11json_object`tmov #3`tmov #0`tmov #0`tmov #0
+0x15abb8`t_ZN9AliAiLabs4AGUI10DataCenter14setMirrorValueENSt6__ndk112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEES8_h`tmov #3`tmov #0`tmov #0`tmov #0
+0x15bb64`t_ZN9AliAiLabs4AGUI10DataCenter10onResponseENS0_4IGcs12ResponseCodeEiP11json_object`tmov #5`tmov #1`tmov #0`tmov r0
+0x15bbac`t_ZN9AliAiLabs4AGUI10DataCenter10onResponseENS0_4IGcs12ResponseCodeEiP11json_object`tmov #1`tmov #0`tmov #0`tmov #0
+0x15bd00`t_ZN9AliAiLabs4AGUI10DataCenter8onRouterEPNS0_9NlpResultEPcS4_P11json_objectS6_`tmov #5`tmov #2`tmov #0`tmov r0
+0x15be78`t_ZN9AliAiLabs4AGUI10DataCenter12clearAllDataEv`tmov #6`tmov #0`tmov #0`tmov #0
+0x167c38`t_ZN9AliAiLabs4AGUI7SvrDemo9onHandlerEPNS0_7MessageE`tmov #0`tmov #0`tmov #0`tmov #0
+0x167fb4`t_ZN9AliAiLabs4AGUI7SvrDemo5startEi`tmov #0`tmov #0`tmov #0`tmov #0

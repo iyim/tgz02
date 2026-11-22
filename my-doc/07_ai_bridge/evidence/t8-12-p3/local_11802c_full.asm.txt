@@ -1,0 +1,98 @@
+# annotated disassembly 0x11802c..0x11819c of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh @ 0x117d40 ====
+11802c  70 4c 2d e9 push    {r4, r5, r6, r10, r11, lr}
+118030  10 b0 8d e2 add     r11, sp, #16
+118034  10 d0 4d e2 sub     sp, sp, #16
+118038  00 60 a0 e3 mov     r6, #0
+11803c  00 00 50 e3 cmp     r0, #0
+118040  43 00 00 0a beq     #268 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x414>
+118044  00 50 a0 e1 mov     r5, r0
+118048  28 01 9f e5 ldr     r0, [pc, #296]
+11804c  28 11 9f e5 ldr     r1, [pc, #296]
+118050  25 20 a0 e3 mov     r2, #37
+118054  00 00 8f e0 add     r0, pc, r0
+118058  01 10 8f e0 add     r1, pc, r1
+11805c  69 d5 fd eb bl      #-567900 <.plt+0x26c>  ; -> 0x8d608 PLT:json_object_new_object_2
+118060  00 00 50 e3 cmp     r0, #0
+118064  3a 00 00 0a beq     #232 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x414>
+118068  00 40 a0 e1 mov     r4, r0
+11806c  0c 00 95 e5 ldr     r0, [r5, #12]
+118070  00 00 50 e3 cmp     r0, #0
+118074  06 00 00 0a beq     #24 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x354>
+118078  00 11 9f e5 ldr     r1, [pc, #256]
+11807c  2c 30 a0 e3 mov     r3, #44
+118080  fc 20 9f e5 ldr     r2, [pc, #252]
+118084  01 10 8f e0 add     r1, pc, r1
+118088  02 20 8f e0 add     r2, pc, r2
+11808c  9b d9 fd eb bl      #-563604 <.plt+0x1364>  ; -> 0x8e700 PLT:json_tokener_parse_2
+118090  05 00 00 ea b       #20 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x36c>  ; -> 0x1180ac ADDR:0x1180ac
+118094  ec 00 9f e5 ldr     r0, [pc, #236]
+118098  2e 20 a0 e3 mov     r2, #46
+11809c  e8 10 9f e5 ldr     r1, [pc, #232]
+1180a0  00 00 8f e0 add     r0, pc, r0
+1180a4  01 10 8f e0 add     r1, pc, r1
+1180a8  56 d5 fd eb bl      #-567976 <.plt+0x26c>  ; -> 0x8d608 PLT:json_object_new_object_2
+1180ac  dc 10 9f e5 ldr     r1, [pc, #220]
+1180b0  00 20 a0 e1 mov     r2, r0
+1180b4  04 00 a0 e1 mov     r0, r4
+1180b8  01 10 8f e0 add     r1, pc, r1
+1180bc  57 d5 fd eb bl      #-567972 <.plt+0x284>  ; -> 0x8d620 PLT:json_object_object_add
+1180c0  0d 00 a0 e1 mov     r0, sp
+1180c4  34 10 a0 e3 mov     r1, #52
+1180c8  1c ec fd eb bl      #-544656 <.plt+0x5da4>  ; -> 0x93140 PLT:_ZN9AliAiLabs4AGUI10ByteBufferC1Ei
+1180cc  c0 10 9f e5 ldr     r1, [pc, #192]
+1180d0  01 10 8f e0 add     r1, pc, r1
+1180d4  1c ec fd eb bl      #-544656 <.plt+0x5db0>  ; -> 0x9314c PLT:_ZN9AliAiLabs4AGUI10ByteBuffer5writeEPKc
+1180d8  04 10 95 e5 ldr     r1, [r5, #4]
+1180dc  0d 00 a0 e1 mov     r0, sp
+1180e0  19 ec fd eb bl      #-544668 <.plt+0x5db0>  ; -> 0x9314c PLT:_ZN9AliAiLabs4AGUI10ByteBuffer5writeEPKc
+1180e4  0d 00 a0 e1 mov     r0, sp
+1180e8  2f 10 a0 e3 mov     r1, #47
+1180ec  19 ec fd eb bl      #-544668 <.plt+0x5dbc>  ; -> 0x93158 PLT:_ZN9AliAiLabs4AGUI10ByteBuffer5writeEc
+1180f0  08 10 95 e5 ldr     r1, [r5, #8]
+1180f4  0d 00 a0 e1 mov     r0, sp
+1180f8  13 ec fd eb bl      #-544692 <.plt+0x5db0>  ; -> 0x9314c PLT:_ZN9AliAiLabs4AGUI10ByteBuffer5writeEPKc
+1180fc  0d 00 a0 e1 mov     r0, sp
+118100  00 10 a0 e3 mov     r1, #0
+118104  00 20 a0 e3 mov     r2, #0
+118108  00 30 a0 e3 mov     r3, #0
+11810c  14 ec fd eb bl      #-544688 <.plt+0x5dc8>  ; -> 0x93164 PLT:_ZN9AliAiLabs4AGUI10ByteBuffer4readEPibb
+118110  92 d6 fd eb bl      #-566712 <.plt+0x7c4>  ; -> 0x8db60 PLT:json_object_new_string
+118114  7c 10 9f e5 ldr     r1, [pc, #124]
+118118  00 20 a0 e1 mov     r2, r0
+11811c  01 10 8f e0 add     r1, pc, r1
+118120  04 00 a0 e1 mov     r0, r4
+118124  3d d5 fd eb bl      #-568076 <.plt+0x284>  ; -> 0x8d620 PLT:json_object_object_add
+118128  04 00 a0 e1 mov     r0, r4
+11812c  11 d8 fd eb bl      #-565180 <.plt+0xddc>  ; -> 0x8e178 PLT:json_object_get_string
+118130  00 10 a0 e3 mov     r1, #0
+118134  00 20 e0 e3 mvn     r2, #0
+118138  00 30 a0 e3 mov     r3, #0
+11813c  01 db fd eb bl      #-562172 <.plt+0x19ac>  ; -> 0x8ed48 PLT:_ZN9AliAiLabs4AGUI8StrUtils6strDupEPKciii
+118140  00 60 a0 e1 mov     r6, r0
+118144  04 00 a0 e1 mov     r0, r4
+118148  3d d5 fd eb bl      #-568076 <.plt+0x2a8>  ; -> 0x8d644 PLT:json_object_put
+11814c  0d 00 a0 e1 mov     r0, sp
+118150  06 ec fd eb bl      #-544744 <.plt+0x5dd4>  ; -> 0x93170 PLT:_ZN9AliAiLabs4AGUI10ByteBufferD1Ev
+118154  06 00 a0 e1 mov     r0, r6
+118158  10 d0 4b e2 sub     sp, r11, #16
+11815c  70 8c bd e8 pop     {r4, r5, r6, r10, r11, pc}
+118160  ff ff ff ea b       #-4 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x424>  ; -> 0x118164 ADDR:0x118164
+118164  00 40 a0 e1 mov     r4, r0
+118168  0d 00 a0 e1 mov     r0, sp
+11816c  ff eb fd eb bl      #-544772 <.plt+0x5dd4>  ; -> 0x93170 PLT:_ZN9AliAiLabs4AGUI10ByteBufferD1Ev
+118170  04 00 a0 e1 mov     r0, r4
+118174  ed d4 fd eb bl      #-568396 <.plt+0x194>  ; -> 0x8d530 PLT:_Unwind_Resume
+118178  b8 71 0b 00 strheq  r7, [r11], -r8
+11817c  33 76 0b 00 andeq   r7, r11, r3, lsr r6
+118180  88 71 0b 00 andeq   r7, r11, r8, lsl #3
+118184  03 76 0b 00 andeq   r7, r11, r3, lsl #12
+118188  6c 71 0b 00 andeq   r7, r11, r12, ror #2
+11818c  e7 75 0b 00 andeq   r7, r11, r7, ror #11
+118190  de 75 0b 00 ldrdeq  r7, r8, [r11], -lr
+118194  d3 75 0b 00 ldrdeq  r7, r8, [r11], -r3
+118198  8b 63 0b 00 andeq   r6, r11, r11, lsl #7

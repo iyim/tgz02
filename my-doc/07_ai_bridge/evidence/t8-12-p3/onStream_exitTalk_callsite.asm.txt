@@ -1,0 +1,22 @@
+# annotated disassembly 0x117be0..0x117c20 of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI15SessionDispatch8onStreamEiPKch @ 0x117a78 ====
+117be0  02 20 8f e0 add     r2, pc, r2
+117be4  03 30 8f e0 add     r3, pc, r3
+117be8  00 00 8f e0 add     r0, pc, r0
+117bec  c8 50 a0 e3 mov     r5, #200
+117bf0  00 50 8d e5 str     r5, [sp]
+117bf4  01 01 8d e9 stmib   sp, {r0, r8}
+117bf8  01 00 a0 e3 mov     r0, #1
+117bfc  a1 e6 fd eb bl      #-550268 <.plt+0x42ec>  ; -> 0x91688 PLT:AgutilLog
+117c00  0c 00 97 e5 ldr     r0, [r7, #12]
+117c04  08 10 a0 e1 mov     r1, r8
+117c08  00 20 a0 e3 mov     r2, #0
+117c0c  42 ed fd eb bl      #-543480 <.plt+0x5d80>  ; -> 0x9311c PLT:_ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih
+117c10  1c 50 9d e5 ldr     r5, [sp, #28]
+117c14  00 00 55 e3 cmp     r5, #0
+117c18  c2 ff ff 0a beq     #-248 <_ZN9AliAiLabs4AGUI15SessionDispatch8onStreamEiPKch+0xb0>
+117c1c  04 10 85 e2 add     r1, r5, #4

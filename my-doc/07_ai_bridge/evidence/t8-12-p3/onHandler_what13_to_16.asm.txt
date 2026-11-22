@@ -1,0 +1,101 @@
+# annotated disassembly 0x11c444..0x11c5c0 of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE @ 0x11c238 ====
+11c444  28 19 9f e5 ldr     r1, [pc, #2344]
+11c448  f1 70 a0 e3 mov     r7, #241
+11c44c  24 29 9f e5 ldr     r2, [pc, #2340]
+11c450  24 39 9f e5 ldr     r3, [pc, #2340]
+11c454  01 10 8f e0 add     r1, pc, r1
+11c458  0c 50 95 e5 ldr     r5, [r5, #12]
+11c45c  02 20 8f e0 add     r2, pc, r2
+11c460  18 09 9f e5 ldr     r0, [pc, #2328]
+11c464  03 30 8f e0 add     r3, pc, r3
+11c468  00 70 8d e5 str     r7, [sp]
+11c46c  00 00 8f e0 add     r0, pc, r0
+11c470  01 02 8d e9 stmib   sp, {r0, r9}
+11c474  01 00 a0 e3 mov     r0, #1
+11c478  82 d4 fd eb bl      #-568824 <.plt+0x42ec>  ; -> 0x91688 PLT:AgutilLog
+11c47c  08 00 94 e5 ldr     r0, [r4, #8]
+11c480  09 10 a0 e1 mov     r1, r9
+11c484  05 20 a0 e1 mov     r2, r5
+11c488  18 d0 4b e2 sub     sp, r11, #24
+11c48c  f0 4b bd e8 pop     {r4, r5, r6, r7, r8, r9, r11, lr}
+11c490  c9 db fd ea b       #-561372 <.plt+0x6020>  ; -> 0x933bc PLT:_ZN9AliAiLabs4AGUI15SessionDispatch18onSpecialNlpResultEiPNS0_9NlpResultE
+11c494  e8 18 9f e5 ldr     r1, [pc, #2280]
+11c498  f6 70 a0 e3 mov     r7, #246
+11c49c  e4 28 9f e5 ldr     r2, [pc, #2276]
+11c4a0  e4 38 9f e5 ldr     r3, [pc, #2276]
+11c4a4  01 10 8f e0 add     r1, pc, r1
+11c4a8  e0 08 9f e5 ldr     r0, [pc, #2272]
+11c4ac  02 20 8f e0 add     r2, pc, r2
+11c4b0  03 30 8f e0 add     r3, pc, r3
+11c4b4  00 70 8d e5 str     r7, [sp]
+11c4b8  00 00 8f e0 add     r0, pc, r0
+11c4bc  01 02 8d e9 stmib   sp, {r0, r9}
+11c4c0  01 00 a0 e3 mov     r0, #1
+11c4c4  6f d4 fd eb bl      #-568900 <.plt+0x42ec>  ; -> 0x91688 PLT:AgutilLog
+11c4c8  04 00 94 e5 ldr     r0, [r4, #4]
+11c4cc  09 10 a0 e1 mov     r1, r9
+11c4d0  01 20 a0 e3 mov     r2, #1
+11c4d4  18 d0 4b e2 sub     sp, r11, #24
+11c4d8  f0 4b bd e8 pop     {r4, r5, r6, r7, r8, r9, r11, lr}
+11c4dc  0e db fd ea b       #-562120 <.plt+0x5d80>  ; -> 0x9311c PLT:_ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih
+11c4e0  0c 10 95 e5 ldr     r1, [r5, #12]
+11c4e4  08 00 94 e5 ldr     r0, [r4, #8]
+11c4e8  00 20 91 e5 ldr     r2, [r1]
+11c4ec  18 20 8d e5 str     r2, [sp, #24]
+11c4f0  04 10 91 e5 ldr     r1, [r1, #4]
+11c4f4  1c 10 8d e5 str     r1, [sp, #28]
+11c4f8  00 00 51 e3 cmp     r1, #0
+11c4fc  05 00 00 0a beq     #20 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x2e0>
+11c500  04 10 81 e2 add     r1, r1, #4
+11c504  9f 2f 91 e1 ldrex   r2, [r1]
+11c508  01 20 82 e2 add     r2, r2, #1
+11c50c  92 3f 81 e1 strex   r3, r2, [r1]
+11c510  00 00 53 e3 cmp     r3, #0
+11c514  fa ff ff 1a bne     #-24 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x2cc>
+11c518  18 20 8d e2 add     r2, sp, #24
+11c51c  09 10 a0 e1 mov     r1, r9
+11c520  a8 db fd eb bl      #-561504 <.plt+0x602c>  ; -> 0x933c8 PLT:_ZN9AliAiLabs4AGUI15SessionDispatch10onMmiEventEiNSt6__ndk110shared_ptrINS0_8MmiEventEEE
+11c524  1c 40 9d e5 ldr     r4, [sp, #28]
+11c528  00 00 54 e3 cmp     r4, #0
+11c52c  a4 01 00 0a beq     #1680 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x98c>
+11c530  04 10 84 e2 add     r1, r4, #4
+11c534  5b f0 7f f5 dmb     ish
+11c538  9f 0f 91 e1 ldrex   r0, [r1]
+11c53c  01 20 40 e2 sub     r2, r0, #1
+11c540  92 3f 81 e1 strex   r3, r2, [r1]
+11c544  00 00 53 e3 cmp     r3, #0
+11c548  fa ff ff 1a bne     #-24 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x300>
+11c54c  00 00 50 e3 cmp     r0, #0
+11c550  5b f0 7f f5 dmb     ish
+11c554  9a 01 00 1a bne     #1640 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x98c>
+11c558  00 00 94 e5 ldr     r0, [r4]
+11c55c  08 10 90 e5 ldr     r1, [r0, #8]
+11c560  04 00 a0 e1 mov     r0, r4
+11c564  31 ff 2f e1 blx     r1  ; -> indirect via r1
+11c568  04 00 a0 e1 mov     r0, r4
+11c56c  e6 c3 fd eb bl      #-585832 <.plt+0x170>  ; -> 0x8d50c PLT:_ZNSt6__ndk119__shared_weak_count14__release_weakEv
+11c570  18 d0 4b e2 sub     sp, r11, #24
+11c574  f0 8b bd e8 pop     {r4, r5, r6, r7, r8, r9, r11, pc}
+11c578  14 18 9f e5 ldr     r1, [pc, #2068]
+11c57c  fd 70 a0 e3 mov     r7, #253
+11c580  10 28 9f e5 ldr     r2, [pc, #2064]
+11c584  10 38 9f e5 ldr     r3, [pc, #2064]
+11c588  01 10 8f e0 add     r1, pc, r1
+11c58c  0c 08 9f e5 ldr     r0, [pc, #2060]
+11c590  02 20 8f e0 add     r2, pc, r2
+11c594  03 30 8f e0 add     r3, pc, r3
+11c598  00 70 8d e5 str     r7, [sp]
+11c59c  00 00 8f e0 add     r0, pc, r0
+11c5a0  01 02 8d e9 stmib   sp, {r0, r9}
+11c5a4  01 00 a0 e3 mov     r0, #1
+11c5a8  36 d4 fd eb bl      #-569128 <.plt+0x42ec>  ; -> 0x91688 PLT:AgutilLog
+11c5ac  04 00 94 e5 ldr     r0, [r4, #4]
+11c5b0  09 10 a0 e1 mov     r1, r9
+11c5b4  18 d0 4b e2 sub     sp, r11, #24
+11c5b8  f0 4b bd e8 pop     {r4, r5, r6, r7, r8, r9, r11, lr}
+11c5bc  84 db fd ea b       #-561648 <.plt+0x6038>  ; -> 0x933d4 PLT:_ZN9AliAiLabs4AGUI14SessionManager18onGetSystemContextEi

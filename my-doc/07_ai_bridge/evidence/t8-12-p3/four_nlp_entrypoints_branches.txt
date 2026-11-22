@@ -1,0 +1,59 @@
+# annotated disassembly 0x118830..0x118e20 of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE @ 0x118830 ====
+118898  00 00 00 ea #0 <_ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE+0x70>  ; -> 0x1188a0 FUNC:_ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE+0x70
+1188d4  37 ff 2f e1 r7  ; -> indirect via r7
+118930  54 e3 fd eb #-553648 <.plt+0x42ec>  ; -> 0x91688 PLT:AgutilLog
+
+==== _ZN9AliAiLabs4AGUI15SessionDispatch16onNlpResultInnerEiPNS0_9NlpResultE @ 0x11896c ====
+11899c  f9 e9 fd eb #-546844 <.plt+0x5dec>  ; -> 0x93188 PLT:_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh
+1189a8  f9 e9 fd eb #-546844 <.plt+0x5df8>  ; -> 0x93194 PLT:_ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE
+1189ac  b3 d4 fd eb #-568628 <.plt+0x8e4>  ; -> 0x8dc80 PLT:_ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+1189b8  31 ff 2f e1 r1  ; -> indirect via r1
+1189d4  36 ff 2f e1 r6  ; -> indirect via r6
+
+==== _ZN9AliAiLabs4AGUI15SessionDispatch18onSpecialNlpResultEiPNS0_9NlpResultE @ 0x1189e0 ====
+1189e8  90 ff ff ea #-448 <_ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE>  ; -> 0x118830 FUNC:_ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE
+
+==== _ZN9AliAiLabs4AGUI15SessionDispatch15onPushNlpResultEiPNS0_9NlpResultE @ 0x1189ec ====
+118a10  85 fd ff eb #-2540 <_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh+0x2ec>  ; -> 0x11802c ADDR:0x11802c
+118a2c  d5 e9 fd eb #-546988 <.plt+0x5dec>  ; -> 0x93188 PLT:_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh
+118a6c  9b e9 fd eb #-547220 <.plt+0x5d44>  ; -> 0x930e0 PLT:_ZN9AliAiLabs4AGUI15SessionDispatch17getForegroundInfoEiPNSt6__ndk110shared_ptrINS0_17AppForegroundInfoEEEPNS3_INS0_13AppClientInfoEEEPNS3_INS0_15IMultiUIManager10IUIManagerEEE
+118a80  62 d2 fd eb #-571000 <.plt+0x74>  ; -> 0x8d410 PLT:free@LIBC
+118ac4  31 ff 2f e1 r1  ; -> indirect via r1
+118acc  8e d2 fd eb #-570824 <.plt+0x170>  ; -> 0x8d50c PLT:_ZNSt6__ndk119__shared_weak_count14__release_weakEv
+118b10  31 ff 2f e1 r1  ; -> indirect via r1
+118b18  7b d2 fd eb #-570900 <.plt+0x170>  ; -> 0x8d50c PLT:_ZNSt6__ndk119__shared_weak_count14__release_weakEv
+118b5c  31 ff 2f e1 r1  ; -> indirect via r1
+118b64  68 d2 fd eb #-570976 <.plt+0x170>  ; -> 0x8d50c PLT:_ZNSt6__ndk119__shared_weak_count14__release_weakEv
+118b70  87 e9 fd eb #-547300 <.plt+0x5df8>  ; -> 0x93194 PLT:_ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE
+118b78  88 e9 fd eb #-547296 <.plt+0x5e04>  ; -> 0x931a0 PLT:_ZN9AliAiLabs4AGUI12ProtocolData20getProtocolDataExtraEv
+118ba0  36 d4 fd eb #-569128 <.plt+0x8e4>  ; -> 0x8dc80 PLT:_ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+118ba4  cd e7 fd eb #-549068 <.plt+0x5744>  ; -> 0x92ae0 PLT:_ZN9AliAiLabs4AGUI6MmiCtx26getContinuousDialogManagerEv
+118bb4  cc e7 fd eb #-549072 <.plt+0x5750>  ; -> 0x92aec PLT:_ZN9AliAiLabs4AGUI23ContinuousDialogManager14onSpeakCommandEiP11json_objecth
+118bc4  31 ff 2f e1 r1  ; -> indirect via r1
+118be0  ad dd fd eb #-559436 <.plt+0x2f00>  ; -> 0x9029c PLT:_ZNSt6__ndk16__treeINS_12basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEENS_4lessIS6_EENS4_IS6_EEE7destroyEPNS_11__tree_nodeIS6_PvEE
+118c28  19 00 00 ea #100 <_ZN9AliAiLabs4AGUI15SessionDispatch15onPushNlpResultEiPNS0_9NlpResultE+0x2a8>  ; -> 0x118c94 FUNC:_ZN9AliAiLabs4AGUI15SessionDispatch15onPushNlpResultEiPNS0_9NlpResultE+0x2a8
+118c30  38 d2 fd eb #-571168 <.plt+0x17c>  ; -> 0x8d518 PLT:_ZdlPv
+118c84  31 ff 2f e1 r1  ; -> indirect via r1
+118c8c  1e d2 fd eb #-571272 <.plt+0x170>  ; -> 0x8d50c PLT:_ZNSt6__ndk119__shared_weak_count14__release_weakEv
+118c90  e5 ff ff ea #-108 <_ZN9AliAiLabs4AGUI15SessionDispatch15onPushNlpResultEiPNS0_9NlpResultE+0x240>  ; -> 0x118c2c FUNC:_ZN9AliAiLabs4AGUI15SessionDispatch15onPushNlpResultEiPNS0_9NlpResultE+0x240
+118c94  f9 d3 fd eb #-569372 <.plt+0x8e4>  ; -> 0x8dc80 PLT:_ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+118ca0  31 ff 2f e1 r1  ; -> indirect via r1
+118cbc  37 ff 2f e1 r7  ; -> indirect via r7
+118cd8  7f e2 fd eb #-554500 <.plt+0x4340>  ; -> 0x916dc PLT:_ZN9AliAiLabs4AGUI8StrUtils7isEmptyEPKc
+118cfc  2a e9 fd eb #-547672 <.plt+0x5e10>  ; -> 0x931ac PLT:_ZN9AliAiLabs4AGUI15SessionDispatch14processCommandEiPNS0_12ProtocolDataEPcPKcPi
+118d24  23 e9 fd eb #-547700 <.plt+0x5e1c>  ; -> 0x931b8 PLT:_ZN9AliAiLabs4AGUI15SessionDispatch14processCommandEiPNS0_12ProtocolDataEPcRNSt6__ndk110shared_ptrINS0_13AppClientInfoEEEPi
+118d28  53 ff ff ea #-692 <_ZN9AliAiLabs4AGUI15SessionDispatch15onPushNlpResultEiPNS0_9NlpResultE+0x90>  ; -> 0x118a7c FUNC:_ZN9AliAiLabs4AGUI15SessionDispatch15onPushNlpResultEiPNS0_9NlpResultE+0x90
+118d70  31 ff 2f e1 r1  ; -> indirect via r1
+118d78  e3 d1 fd eb #-571508 <.plt+0x170>  ; -> 0x8d50c PLT:_ZNSt6__ndk119__shared_weak_count14__release_weakEv
+118dbc  31 ff 2f e1 r1  ; -> indirect via r1
+118dc4  d0 d1 fd eb #-571584 <.plt+0x170>  ; -> 0x8d50c PLT:_ZNSt6__ndk119__shared_weak_count14__release_weakEv
+118e08  31 ff 2f e1 r1  ; -> indirect via r1
+118e10  bd d1 fd eb #-571660 <.plt+0x170>  ; -> 0x8d50c PLT:_ZNSt6__ndk119__shared_weak_count14__release_weakEv
+118e18  c4 d1 fd eb #-571632 <.plt+0x194>  ; -> 0x8d530 PLT:_Unwind_Resume
+
+==== _ZN9AliAiLabs4AGUI15SessionDispatch17processForegroundEiPNS0_12ProtocolDataEPcPiRNSt6__ndk110shared_ptrINS0_13AppClientInfoEEE @ 0x118e1c ====

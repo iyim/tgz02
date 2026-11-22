@@ -1,0 +1,50 @@
+# annotated disassembly 0x11cb90..0x11cc40 of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE @ 0x11c238 ====
+11cb90  02 00 a0 e1 mov     r0, r2
+11cb94  05 10 a0 e1 mov     r1, r5
+11cb98  01 20 a0 e3 mov     r2, #1
+11cb9c  12 d7 fd eb bl      #-566200 <.plt+0x5450>  ; -> 0x927ec PLT:_ZN9AliAiLabs4AGUI7Handler11postMessageEPNS0_7MessageEhyh
+11cba0  20 00 dd e5 ldrb    r0, [sp, #32]
+11cba4  01 00 10 e3 tst     r0, #1
+11cba8  05 00 00 0a beq     #20 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x98c>
+11cbac  28 00 9d e5 ldr     r0, [sp, #40]
+11cbb0  58 c2 fd eb bl      #-587424 <.plt+0x17c>  ; -> 0x8d518 PLT:_ZdlPv
+11cbb4  18 d0 4b e2 sub     sp, r11, #24
+11cbb8  f0 8b bd e8 pop     {r4, r5, r6, r7, r8, r9, r11, pc}
+11cbbc  00 00 a0 e3 mov     r0, #0
+11cbc0  18 00 84 e5 str     r0, [r4, #24]
+11cbc4  18 d0 4b e2 sub     sp, r11, #24
+11cbc8  f0 8b bd e8 pop     {r4, r5, r6, r7, r8, r9, r11, pc}
+11cbcc  0c 00 94 e5 ldr     r0, [r4, #12]
+11cbd0  01 10 a0 e3 mov     r1, #1
+11cbd4  10 da fd eb bl      #-563136 <.plt+0x6080>  ; -> 0x9341c PLT:_ZN9AliAiLabs4AGUI7Handler13removeMessageEi
+11cbd8  04 00 94 e5 ldr     r0, [r4, #4]
+11cbdc  09 10 a0 e1 mov     r1, r9
+11cbe0  06 20 a0 e3 mov     r2, #6
+11cbe4  eb d9 fd eb bl      #-563284 <.plt+0x5ffc>  ; -> 0x93398 PLT:_ZN9AliAiLabs4AGUI14SessionManager16setSessionStatusEiNS0_13IDeviceMirror13SessionStatusE
+11cbe8  08 00 94 e5 ldr     r0, [r4, #8]
+11cbec  09 10 a0 e1 mov     r1, r9
+11cbf0  03 20 a0 e3 mov     r2, #3
+11cbf4  00 30 a0 e3 mov     r3, #0
+11cbf8  15 d8 fd eb bl      #-565164 <.plt+0x58b8>  ; -> 0x92c54 PLT:_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE
+11cbfc  0c 00 94 e5 ldr     r0, [r4, #12]
+11cc00  01 10 a0 e3 mov     r1, #1
+11cc04  04 da fd eb bl      #-563184 <.plt+0x6080>  ; -> 0x9341c PLT:_ZN9AliAiLabs4AGUI7Handler13removeMessageEi
+11cc08  04 00 94 e5 ldr     r0, [r4, #4]
+11cc0c  09 10 a0 e1 mov     r1, r9
+11cc10  00 20 a0 e3 mov     r2, #0
+11cc14  03 30 a0 e3 mov     r3, #3
+11cc18  18 d0 4b e2 sub     sp, r11, #24
+11cc1c  f0 4b bd e8 pop     {r4, r5, r6, r7, r8, r9, r11, lr}
+11cc20  fa d9 fd ea b       #-563224 <.plt+0x6074>  ; -> 0x93410 PLT:_ZN9AliAiLabs4AGUI14SessionManager14onNlpResultEndEiPNS0_9NlpResultEi
+11cc24  28 00 84 e2 add     r0, r4, #40
+11cc28  05 10 a0 e1 mov     r1, r5
+11cc2c  ce c3 fd eb bl      #-585928 <.plt+0x7d0>  ; -> 0x8db6c PLT:_ZNSt6__ndk112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6assignEPKc
+11cc30  18 d0 4b e2 sub     sp, r11, #24
+11cc34  f0 8b bd e8 pop     {r4, r5, r6, r7, r8, r9, r11, pc}
+11cc38  1c 50 9d e5 ldr     r5, [sp, #28]
+11cc3c  00 40 a0 e1 mov     r4, r0

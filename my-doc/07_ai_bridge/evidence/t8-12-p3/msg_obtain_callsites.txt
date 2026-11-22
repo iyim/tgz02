@@ -1,0 +1,1583 @@
+# call-site dump for _ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE
+# plt annotation 0x17c0 ; context = previous 14 instructions
+
+=== call site #1 ===
+   bd7d0:      	bl	#-197348 <.plt+0x158>
+   bd7d4:      	mov	r1, #12
+   bd7d8:      	mov	r3, r0
+   bd7dc:      	vst1.64	{d8, d9}, [r0], r1
+   bd7e0:      	mov	r1, #1
+   bd7e4:      	mov	r2, #0
+   bd7e8:      	strb	r6, [r3, #8]
+   bd7ec:      	stm	r3, {r1, r5}
+   bd7f0:      	mov	r1, #0
+   bd7f4:      	str	r4, [r0]
+   bd7f8:      	mov	r0, #0
+   bd7fc:      	str	r0, [sp]
+   bd800:      	str	r0, [sp, #4]
+   bd804:      	mov	r0, #1
+   bd808:      	bl	#-191668 <.plt+0x17c0>
+
+=== call site #2 ===
+   bdb3c:      	mov	r3, r0
+   bdb40:      	vst1.64	{d8, d9}, [r0], r1
+   bdb44:      	mov	r1, #1
+   bdb48:      	mov	r2, #0
+   bdb4c:      	strb	r6, [r3, #8]
+   bdb50:      	stm	r3, {r1, r5}
+   bdb54:      	mov	r1, #0
+   bdb58:      	ldr	r5, [pc, #820]
+   bdb5c:      	str	r4, [r0]
+   bdb60:      	mov	r0, #0
+   bdb64:      	str	r0, [sp]
+   bdb68:      	add	r5, pc, r5
+   bdb6c:      	str	r0, [sp, #4]
+   bdb70:      	mov	r0, #1
+   bdb74:      	bl	#-192544 <.plt+0x17c0>
+
+=== call site #3 ===
+   c66e0:      	vmov.i32	q8, #0x0
+   c66e4:      	mov	r0, #12
+   c66e8:      	mov	r1, r3
+   c66ec:      	vst1.64	{d16, d17}, [r1], r0
+   c66f0:      	mov	r0, #8
+   c66f4:      	stm	r3, {r0, r6}
+   c66f8:      	strb	r7, [r3, #8]
+   c66fc:      	str	r5, [r1]
+   c6700:      	mov	r0, #0
+   c6704:      	mov	r1, #0
+   c6708:      	str	r0, [sp]
+   c670c:      	mov	r2, #0
+   c6710:      	str	r0, [sp, #4]
+   c6714:      	mov	r0, #0
+   c6718:      	bl	#-228292 <.plt+0x17c0>
+
+=== call site #4 ===
+   c7fe0:      	mov	r3, r0
+   c7fe4:      	vmov.i32	q8, #0x0
+   c7fe8:      	mov	r0, #12
+   c7fec:      	mov	r1, r3
+   c7ff0:      	vst1.64	{d16, d17}, [r1], r0
+   c7ff4:      	mov	r0, #0
+   c7ff8:      	mov	r2, #0
+   c7ffc:      	strb	r4, [r3, #8]
+   c8000:      	stm	r3, {r7, r9}
+   c8004:      	str	r6, [r1]
+   c8008:      	mov	r1, #0
+   c800c:      	str	r0, [sp]
+   c8010:      	str	r0, [sp, #4]
+   c8014:      	mov	r0, #1
+   c8018:      	bl	#-234692 <.plt+0x17c0>
+
+=== call site #5 ===
+  10606c:      	blx	r1
+  106070:      	mov	r0, r6
+  106074:      	bl	#-494448 <.plt+0x170>
+  106078:      	b	#4 <_ZN9AliAiLabs4AGUI13ClientManager16registerCallbackERNSt6__ndk110shared_ptrINS0_13AppClientInfoEEE+0x154>
+  10607c:      	str	r1, [r5]
+  106080:      	str	r0, [r5, #4]
+  106084:      	ldr	r0, [pc, #80]
+  106088:      	mov	r1, #0
+  10608c:      	mov	r2, #0
+  106090:      	mov	r3, r5
+  106094:      	add	r0, pc, r0
+  106098:      	stm	sp, {r0, r1}
+  10609c:      	mov	r0, #0
+  1060a0:      	mov	r1, #0
+  1060a4:      	bl	#-488784 <.plt+0x17c0>
+
+=== call site #6 ===
+  106178:      	mvn	r2, #0
+  10617c:      	mov	r3, #0
+  106180:      	mov	r6, #0
+  106184:      	bl	#-488516 <.plt+0x19ac>
+  106188:      	str	r6, [sp, #4]
+  10618c:      	mov	r3, r0
+  106190:      	ldr	r0, [pc, #48]
+  106194:      	cmp	r4, #0
+  106198:      	movwne	r4, #1
+  10619c:      	mov	r2, #0
+  1061a0:      	mov	r1, r4
+  1061a4:      	ldr	r0, [pc, r0]
+  1061a8:      	str	r0, [sp]
+  1061ac:      	mov	r0, #1
+  1061b0:      	bl	#-489052 <.plt+0x17c0>
+
+=== call site #7 ===
+  1061e8:      	mvn	r2, #0
+  1061ec:      	mov	r3, #0
+  1061f0:      	mov	r6, #0
+  1061f4:      	bl	#-488628 <.plt+0x19ac>
+  1061f8:      	str	r6, [sp, #4]
+  1061fc:      	mov	r3, r0
+  106200:      	ldr	r0, [pc, #48]
+  106204:      	cmp	r4, #0
+  106208:      	movwne	r4, #1
+  10620c:      	mov	r2, #0
+  106210:      	mov	r1, r4
+  106214:      	ldr	r0, [pc, r0]
+  106218:      	str	r0, [sp]
+  10621c:      	mov	r0, #2
+  106220:      	bl	#-489164 <.plt+0x17c0>
+
+=== call site #8 ===
+  106598:      	mov	r0, r1
+  10659c:      	mov	r1, #0
+  1065a0:      	mvn	r2, #0
+  1065a4:      	mov	r3, #0
+  1065a8:      	mov	r6, #0
+  1065ac:      	bl	#-489580 <.plt+0x19ac>
+  1065b0:      	str	r6, [sp, #4]
+  1065b4:      	mov	r3, r0
+  1065b8:      	ldr	r0, [pc, #40]
+  1065bc:      	mov	r1, r4
+  1065c0:      	mov	r2, #0
+  1065c4:      	ldr	r0, [pc, r0]
+  1065c8:      	str	r0, [sp]
+  1065cc:      	mov	r0, #3
+  1065d0:      	bl	#-490108 <.plt+0x17c0>
+
+=== call site #9 ===
+  106600:      	mov	r0, r1
+  106604:      	mov	r1, #0
+  106608:      	mvn	r2, #0
+  10660c:      	mov	r3, #0
+  106610:      	mov	r6, #0
+  106614:      	bl	#-489684 <.plt+0x19ac>
+  106618:      	str	r6, [sp, #4]
+  10661c:      	mov	r3, r0
+  106620:      	ldr	r0, [pc, #40]
+  106624:      	mov	r1, r4
+  106628:      	mov	r2, #0
+  10662c:      	ldr	r0, [pc, r0]
+  106630:      	str	r0, [sp]
+  106634:      	mov	r0, #4
+  106638:      	bl	#-490212 <.plt+0x17c0>
+
+=== call site #10 ===
+  106670:      	mvn	r2, #0
+  106674:      	mov	r3, #0
+  106678:      	mov	r6, #0
+  10667c:      	bl	#-489788 <.plt+0x19ac>
+  106680:      	str	r6, [sp, #4]
+  106684:      	mov	r3, r0
+  106688:      	ldr	r0, [pc, #48]
+  10668c:      	cmp	r4, #0
+  106690:      	movwne	r4, #1
+  106694:      	mov	r2, #0
+  106698:      	mov	r1, r4
+  10669c:      	ldr	r0, [pc, r0]
+  1066a0:      	str	r0, [sp]
+  1066a4:      	mov	r0, #5
+  1066a8:      	bl	#-490324 <.plt+0x17c0>
+
+=== call site #11 ===
+  1066e0:      	mvn	r2, #0
+  1066e4:      	mov	r3, #0
+  1066e8:      	mov	r6, #0
+  1066ec:      	bl	#-489900 <.plt+0x19ac>
+  1066f0:      	str	r6, [sp, #4]
+  1066f4:      	mov	r3, r0
+  1066f8:      	ldr	r0, [pc, #48]
+  1066fc:      	cmp	r4, #0
+  106700:      	movwne	r4, #1
+  106704:      	mov	r2, #0
+  106708:      	mov	r1, r4
+  10670c:      	ldr	r0, [pc, r0]
+  106710:      	str	r0, [sp]
+  106714:      	mov	r0, #6
+  106718:      	bl	#-490436 <.plt+0x17c0>
+
+=== call site #12 ===
+  106750:      	mvn	r2, #0
+  106754:      	mov	r3, #0
+  106758:      	mov	r6, #0
+  10675c:      	bl	#-490012 <.plt+0x19ac>
+  106760:      	str	r6, [sp, #4]
+  106764:      	mov	r3, r0
+  106768:      	ldr	r0, [pc, #48]
+  10676c:      	cmp	r4, #0
+  106770:      	movwne	r4, #1
+  106774:      	mov	r2, #0
+  106778:      	mov	r1, r4
+  10677c:      	ldr	r0, [pc, r0]
+  106780:      	str	r0, [sp]
+  106784:      	mov	r0, #7
+  106788:      	bl	#-490548 <.plt+0x17c0>
+
+=== call site #13 ===
+  10c080:      	mov	r1, r6
+  10c084:      	mov	r3, r8
+  10c088:      	bl	#-502280 <.plt+0x42ec>
+  10c08c:      	cmp	r5, #0
+  10c090:      	mov	r2, #0
+  10c094:      	addne	r2, r9, #1
+  10c098:      	mov	r6, #0
+  10c09c:      	cmpne	r2, #11
+  10c0a0:      	bhi	#48 <_ZN9AliAiLabs4AGUI17MultiModalManager9onHandlerEPNS0_7MessageE+0x1e4>
+  10c0a4:      	mov	r0, #0
+  10c0a8:      	mov	r1, r5
+  10c0ac:      	mov	r3, #0
+  10c0b0:      	str	r6, [sp]
+  10c0b4:      	str	r6, [sp, #4]
+  10c0b8:      	bl	#-513380 <.plt+0x17c0>
+
+=== call site #14 ===
+  10c84c:      	bl	#-504268 <.plt+0x42ec>
+  10c850:      	mov	r5, #0
+  10c854:      	b	#0 <_ZN9AliAiLabs4AGUI17MultiModalManager14canVoiceWakeupENS0_19IInputDeviceManager15InputDeviceTypeEPNS2_12_WakeUpInfo_E+0xb4>
+  10c858:      	mov	r5, #1
+  10c85c:      	ldrb	r0, [r4, #20]
+  10c860:      	cmp	r0, r5
+  10c864:      	beq	#56 <_ZN9AliAiLabs4AGUI17MultiModalManager14canVoiceWakeupENS0_19IInputDeviceManager15InputDeviceTypeEPNS2_12_WakeUpInfo_E+0xfc>
+  10c868:      	mov	r6, #0
+  10c86c:      	mov	r0, #0
+  10c870:      	mov	r1, r5
+  10c874:      	mov	r2, #0
+  10c878:      	mov	r3, #0
+  10c87c:      	str	r6, [sp]
+  10c880:      	str	r6, [sp, #4]
+  10c884:      	bl	#-515376 <.plt+0x17c0>
+
+=== call site #15 ===
+  10cd04:      	b	#-704 <_ZN9AliAiLabs4AGUI17MultiModalManager10StopRecordEv>
+
+0010cd08 _ZN9AliAiLabs4AGUI17MultiModalManager12enableWakeupEh:
+  10cd08:      	push	{r4, r5, r6, r10, r11, lr}
+  10cd0c:      	add	r11, sp, #16
+  10cd10:      	sub	sp, sp, #16
+  10cd14:      	mov	r6, #0
+  10cd18:      	mov	r5, r0
+  10cd1c:      	mov	r0, #0
+  10cd20:      	mov	r2, #0
+  10cd24:      	mov	r3, #0
+  10cd28:      	mov	r4, r1
+  10cd2c:      	str	r6, [sp]
+  10cd30:      	str	r6, [sp, #4]
+  10cd34:      	bl	#-516576 <.plt+0x17c0>
+
+=== call site #16 ===
+  11b444:      	ldr	r0, [r4, #12]
+  11b448:      	mvn	r2, #0
+  11b44c:      	mov	r3, #0
+  11b450:      	bl	#-575248 <.plt+0x19ac>
+  11b454:      	str	r0, [r7, #12]
+  11b458:      	mov	r2, #0
+  11b45c:      	ldrb	r0, [r4]
+  11b460:      	mov	r3, r7
+  11b464:      	ldr	r1, [pc, #1484]
+  11b468:      	strb	r0, [r7]
+  11b46c:      	movw	r0, #1001
+  11b470:      	add	r1, pc, r1
+  11b474:      	stm	sp, {r1, r9}
+  11b478:      	mov	r1, r8
+  11b47c:      	bl	#-575784 <.plt+0x17c0>
+
+=== call site #17 ===
+  11c310:      	ldr	r0, [r4, #8]
+  11c314:      	cmp	r1, #0
+  11c318:      	ldr	r2, [sp, #40]
+  11c31c:      	orreq	r2, r5, #1
+  11c320:      	mov	r1, r9
+  11c324:      	mov	r3, #0
+  11c328:      	bl	#-561072 <.plt+0x5fe4>
+  11c32c:      	mov	r0, #0
+  11c330:      	mov	r1, r9
+  11c334:      	str	r0, [sp]
+  11c338:      	mov	r2, #2
+  11c33c:      	str	r0, [sp, #4]
+  11c340:      	mov	r0, #1
+  11c344:      	mov	r3, #0
+  11c348:      	bl	#-579572 <.plt+0x17c0>
+
+=== call site #18 ===
+  11c668:      	ldreq	r1, [pc, #1648]
+  11c66c:      	addeq	r1, pc, r1
+  11c670:      	bl	#-584460 <.plt+0x7d0>
+  11c674:      	mov	r0, r9
+  11c678:      	bl	#-563120 <.plt+0x5b34>
+  11c67c:      	cmp	r0, #16
+  11c680:      	beq	#68 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x494>
+  11c684:      	mov	r6, #0
+  11c688:      	mov	r0, #1
+  11c68c:      	mov	r1, r9
+  11c690:      	mov	r2, #1
+  11c694:      	mov	r3, #0
+  11c698:      	str	r6, [sp]
+  11c69c:      	str	r6, [sp, #4]
+  11c6a0:      	bl	#-580428 <.plt+0x17c0>
+
+=== call site #19 ===
+  11c7f4:      	ldr	r0, [r4, #4]
+  11c7f8:      	mov	r1, r9
+  11c7fc:      	mov	r2, #3
+  11c800:      	bl	#-562288 <.plt+0x5ffc>
+  11c804:      	ldr	r0, [r4, #8]
+  11c808:      	mov	r1, r9
+  11c80c:      	bl	#-562216 <.plt+0x6050>
+  11c810:      	mov	r6, #0
+  11c814:      	mov	r0, #1
+  11c818:      	mov	r1, r9
+  11c81c:      	mov	r2, #3
+  11c820:      	mov	r3, #0
+  11c824:      	str	r6, [sp]
+  11c828:      	str	r6, [sp, #4]
+  11c82c:      	bl	#-580824 <.plt+0x17c0>
+
+=== call site #20 ===
+  11cb38:      	ldr	r0, [r4, #8]
+  11cb3c:      	cmp	r1, #0
+  11cb40:      	ldr	r2, [sp, #40]
+  11cb44:      	orreq	r2, r7, #1
+  11cb48:      	mov	r1, r9
+  11cb4c:      	mov	r3, r8
+  11cb50:      	bl	#-563160 <.plt+0x5fe4>
+  11cb54:      	mov	r0, #0
+  11cb58:      	mov	r1, r9
+  11cb5c:      	str	r0, [sp]
+  11cb60:      	mov	r2, r6
+  11cb64:      	str	r0, [sp, #4]
+  11cb68:      	mov	r0, #1
+  11cb6c:      	mov	r3, #0
+  11cb70:      	bl	#-581660 <.plt+0x17c0>
+
+=== call site #21 ===
+  11cd9c:      	andeq	r1, r11, pc, asr #5
+  11cda0:      	andeq	r3, r11, r7, ror r6
+
+0011cda4 _ZN9AliAiLabs4AGUI12SessionProxy14sendTimeoutMsgEiNS0_13IDeviceMirror13SessionStatusE:
+  11cda4:      	push	{r4, r5, r6, r7, r11, lr}
+  11cda8:      	add	r11, sp, #16
+  11cdac:      	sub	sp, sp, #16
+  11cdb0:      	mov	r7, #0
+  11cdb4:      	mov	r5, r0
+  11cdb8:      	mov	r0, #1
+  11cdbc:      	mov	r3, #0
+  11cdc0:      	mov	r4, r2
+  11cdc4:      	str	r7, [sp]
+  11cdc8:      	str	r7, [sp, #4]
+  11cdcc:      	bl	#-582264 <.plt+0x17c0>
+
+=== call site #22 ===
+  11d6b4:      	bl	#-565908 <.plt+0x608c>
+  11d6b8:      	mov	r0, r5
+  11d6bc:      	mov	r1, #0
+  11d6c0:      	mvn	r2, #0
+  11d6c4:      	mov	r3, #0
+  11d6c8:      	bl	#-584072 <.plt+0x19ac>
+  11d6cc:      	str	r7, [sp, #4]
+  11d6d0:      	mov	r3, r0
+  11d6d4:      	ldr	r0, [pc, #40]
+  11d6d8:      	mov	r1, r6
+  11d6dc:      	mov	r2, #0
+  11d6e0:      	ldr	r0, [pc, r0]
+  11d6e4:      	str	r0, [sp]
+  11d6e8:      	mov	r0, #2
+  11d6ec:      	bl	#-584600 <.plt+0x17c0>
+
+=== call site #23 ===
+  11d780:      	cmp	r5, #0
+  11d784:      	beq	#60 <_ZN9AliAiLabs4AGUI12SessionProxy8onStreamEiPKchh+0xc0>
+  11d788:      	mov	r0, r5
+  11d78c:      	sub	sp, r11, #24
+  11d790:      	pop	{r4, r5, r6, r7, r8, r9, r11, lr}
+  11d794:      	b	#-590732 <.plt+0x74>
+  11d798:      	str	r9, [sp, #4]
+  11d79c:      	mov	r1, r8
+  11d7a0:      	ldr	r0, [pc, #40]
+  11d7a4:      	mov	r2, r6
+  11d7a8:      	mov	r3, r5
+  11d7ac:      	ldr	r0, [pc, r0]
+  11d7b0:      	str	r0, [sp]
+  11d7b4:      	mov	r0, #5
+  11d7b8:      	bl	#-584804 <.plt+0x17c0>
+
+=== call site #24 ===
+  11d7e8:      	mov	r0, r2
+  11d7ec:      	mov	r1, #0
+  11d7f0:      	mvn	r2, #0
+  11d7f4:      	mov	r3, #0
+  11d7f8:      	mov	r6, #0
+  11d7fc:      	bl	#-584380 <.plt+0x19ac>
+  11d800:      	str	r6, [sp, #4]
+  11d804:      	mov	r3, r0
+  11d808:      	ldr	r0, [pc, #40]
+  11d80c:      	mov	r1, r4
+  11d810:      	mov	r2, #0
+  11d814:      	ldr	r0, [pc, r0]
+  11d818:      	str	r0, [sp]
+  11d81c:      	mov	r0, #6
+  11d820:      	bl	#-584908 <.plt+0x17c0>
+
+=== call site #25 ===
+  11d834:      	b	#-570600 <.plt+0x4fb8>
+  11d838:      	muleq	sp, r0, r12
+
+0011d83c _ZN9AliAiLabs4AGUI12SessionProxy17onGetSystemConextEi:
+  11d83c:      	push	{r4, r10, r11, lr}
+  11d840:      	add	r11, sp, #8
+  11d844:      	sub	sp, sp, #8
+  11d848:      	mov	r4, r0
+  11d84c:      	mov	r0, #0
+  11d850:      	str	r0, [sp]
+  11d854:      	mov	r2, #0
+  11d858:      	str	r0, [sp, #4]
+  11d85c:      	mov	r0, #16
+  11d860:      	mov	r3, #0
+  11d864:      	bl	#-584976 <.plt+0x17c0>
+
+=== call site #26 ===
+  11d870:      	sub	sp, r11, #8
+  11d874:      	pop	{r4, r10, r11, lr}
+  11d878:      	b	#-570668 <.plt+0x4fb8>
+
+0011d87c _ZN9AliAiLabs4AGUI12SessionProxy8onVolumeEii:
+  11d87c:      	push	{r4, r5, r11, lr}
+  11d880:      	add	r11, sp, #8
+  11d884:      	sub	sp, sp, #8
+  11d888:      	mov	r4, r0
+  11d88c:      	mov	r0, #0
+  11d890:      	str	r0, [sp]
+  11d894:      	mov	r3, #0
+  11d898:      	str	r0, [sp, #4]
+  11d89c:      	mov	r0, #4
+  11d8a0:      	bl	#-585036 <.plt+0x17c0>
+
+=== call site #27 ===
+  11d8e0:      	andeq	r2, r11, r4, lsr r1
+  11d8e4:      	andeq	r0, r11, sp, lsr #29
+
+0011d8e8 _ZN9AliAiLabs4AGUI12SessionProxy10onStopTalkEi:
+  11d8e8:      	push	{r4, r10, r11, lr}
+  11d8ec:      	add	r11, sp, #8
+  11d8f0:      	sub	sp, sp, #8
+  11d8f4:      	mov	r4, r0
+  11d8f8:      	mov	r0, #0
+  11d8fc:      	str	r0, [sp]
+  11d900:      	mov	r2, #0
+  11d904:      	str	r0, [sp, #4]
+  11d908:      	mov	r0, #3
+  11d90c:      	mov	r3, #0
+  11d910:      	bl	#-585148 <.plt+0x17c0>
+
+=== call site #28 ===
+  11d954:      	add	r3, pc, r3
+  11d958:      	movw	r0, #326
+  11d95c:      	add	r12, pc, r12
+  11d960:      	stm	sp, {r0, r12}
+  11d964:      	mov	r0, #1
+  11d968:      	str	r4, [sp, #8]
+  11d96c:      	bl	#-574188 <.plt+0x42ec>
+  11d970:      	mov	r0, #0
+  11d974:      	mov	r1, r4
+  11d978:      	str	r0, [sp]
+  11d97c:      	mov	r2, #0
+  11d980:      	str	r0, [sp, #4]
+  11d984:      	mov	r0, #14
+  11d988:      	mov	r3, #0
+  11d98c:      	bl	#-585272 <.plt+0x17c0>
+
+=== call site #29 ===
+  11d9ac:      	andeq	r1, r11, r11, lsl r1
+  11d9b0:      	ldrdeq	r2, r3, [r11], -r9
+
+0011d9b4 _ZN9AliAiLabs4AGUI12SessionProxy11onNlpResultEiiPNS0_9NlpResultE:
+  11d9b4:      	push	{r4, r10, r11, lr}
+  11d9b8:      	add	r11, sp, #8
+  11d9bc:      	sub	sp, sp, #8
+  11d9c0:      	mov	r4, r0
+  11d9c4:      	mov	r0, #0
+  11d9c8:      	str	r0, [sp, #4]
+  11d9cc:      	ldr	r0, [pc, #32]
+  11d9d0:      	ldr	r0, [pc, r0]
+  11d9d4:      	str	r0, [sp]
+  11d9d8:      	mov	r0, #7
+  11d9dc:      	bl	#-585352 <.plt+0x17c0>
+
+=== call site #30 ===
+
+0011d9f8 _ZN9AliAiLabs4AGUI12SessionProxy16onNlpResultInnerEiPNS0_9NlpResultE:
+  11d9f8:      	push	{r4, r10, r11, lr}
+  11d9fc:      	add	r11, sp, #8
+  11da00:      	sub	sp, sp, #8
+  11da04:      	mov	r4, r0
+  11da08:      	mov	r0, #0
+  11da0c:      	str	r0, [sp, #4]
+  11da10:      	mov	r3, r2
+  11da14:      	ldr	r0, [pc, #36]
+  11da18:      	mov	r2, #0
+  11da1c:      	ldr	r0, [pc, r0]
+  11da20:      	str	r0, [sp]
+  11da24:      	mov	r0, #11
+  11da28:      	bl	#-585428 <.plt+0x17c0>
+
+=== call site #31 ===
+
+0011da44 _ZN9AliAiLabs4AGUI12SessionProxy18onSpecialNlpResultEiPNS0_9NlpResultE:
+  11da44:      	push	{r4, r10, r11, lr}
+  11da48:      	add	r11, sp, #8
+  11da4c:      	sub	sp, sp, #8
+  11da50:      	mov	r4, r0
+  11da54:      	mov	r0, #0
+  11da58:      	str	r0, [sp, #4]
+  11da5c:      	mov	r3, r2
+  11da60:      	ldr	r0, [pc, #36]
+  11da64:      	mov	r2, #0
+  11da68:      	ldr	r0, [pc, r0]
+  11da6c:      	str	r0, [sp]
+  11da70:      	mov	r0, #13
+  11da74:      	bl	#-585504 <.plt+0x17c0>
+
+=== call site #32 ===
+
+0011da90 _ZN9AliAiLabs4AGUI12SessionProxy12onPushResultEiPNS0_9NlpResultE:
+  11da90:      	push	{r4, r10, r11, lr}
+  11da94:      	add	r11, sp, #8
+  11da98:      	sub	sp, sp, #8
+  11da9c:      	mov	r4, r0
+  11daa0:      	mov	r0, #0
+  11daa4:      	str	r0, [sp, #4]
+  11daa8:      	mov	r3, r2
+  11daac:      	ldr	r0, [pc, #36]
+  11dab0:      	mov	r2, #0
+  11dab4:      	ldr	r0, [pc, r0]
+  11dab8:      	str	r0, [sp]
+  11dabc:      	mov	r0, #12
+  11dac0:      	bl	#-585580 <.plt+0x17c0>
+
+=== call site #33 ===
+  11db1c:      	beq	#20 <_ZN9AliAiLabs4AGUI12SessionProxy10onMmiEventEiNSt6__ndk110shared_ptrINS0_8MmiEventEEE+0x5c>
+  11db20:      	add	r0, r0, #4
+  11db24:      	ldrex	r1, [r0]
+  11db28:      	add	r1, r1, #1
+  11db2c:      	strex	r2, r1, [r0]
+  11db30:      	cmp	r2, #0
+  11db34:      	bne	#-24 <_ZN9AliAiLabs4AGUI12SessionProxy10onMmiEventEiNSt6__ndk110shared_ptrINS0_8MmiEventEEE+0x48>
+  11db38:      	ldr	r0, [pc, #44]
+  11db3c:      	mov	r1, #0
+  11db40:      	mov	r2, #0
+  11db44:      	add	r0, pc, r0
+  11db48:      	stm	sp, {r0, r1}
+  11db4c:      	mov	r0, #15
+  11db50:      	mov	r1, r5
+  11db54:      	bl	#-585728 <.plt+0x17c0>
+
+=== call site #34 ===
+  11dbe0:      	pop	{r4, r5, r11, lr}
+  11dbe4:      	b	#-591572 <.plt+0x17c>
+  11dbe8:      	pop	{r4, r5, r11, pc}
+
+0011dbec _ZN9AliAiLabs4AGUI12SessionProxy16setSessionStatusEiNS0_13IDeviceMirror13SessionStatusE:
+  11dbec:      	push	{r4, r10, r11, lr}
+  11dbf0:      	add	r11, sp, #8
+  11dbf4:      	sub	sp, sp, #8
+  11dbf8:      	mov	r4, r0
+  11dbfc:      	mov	r0, #0
+  11dc00:      	str	r0, [sp]
+  11dc04:      	mov	r3, #0
+  11dc08:      	str	r0, [sp, #4]
+  11dc0c:      	mov	r0, #10
+  11dc10:      	bl	#-585916 <.plt+0x17c0>
+
+=== call site #35 ===
+  11dc54:      	str	r1, [sp]
+  11dc58:      	mov	r2, r3
+  11dc5c:      	mov	r1, #8
+  11dc60:      	mov	r3, #0
+  11dc64:      	bl	#-567328 <.plt+0x60b0>
+  11dc68:      	sub	sp, r11, #8
+  11dc6c:      	pop	{r4, r10, r11, pc}
+  11dc70:      	mov	r0, #0
+  11dc74:      	mov	r1, r3
+  11dc78:      	str	r0, [sp]
+  11dc7c:      	mov	r2, #0
+  11dc80:      	str	r0, [sp, #4]
+  11dc84:      	mov	r0, #8
+  11dc88:      	mov	r3, #0
+  11dc8c:      	bl	#-586040 <.plt+0x17c0>
+
+=== call site #36 ===
+  1252dc:      	vst1.64	{d16, d17}, [r7], r0
+  1252e0:      	mov	r0, #0
+  1252e4:      	mov	r1, #0
+  1252e8:      	mov	r2, #0
+  1252ec:      	mov	r3, #3
+  1252f0:      	str	r9, [sp, #72]
+  1252f4:      	bl	#-621584 <.plt+0x350>
+  1252f8:      	str	r0, [sp, #20]
+  1252fc:      	mvn	r0, #0
+  125300:      	mov	r1, #0
+  125304:      	mov	r2, #0
+  125308:      	mov	r3, #0
+  12530c:      	str	r9, [sp]
+  125310:      	str	r9, [sp, #4]
+  125314:      	bl	#-616384 <.plt+0x17c0>
+
+=== call site #37 ===
+  12b5a8:      	str	r3, [sp, #8]
+  12b5ac:      	mov	r3, #1
+  12b5b0:      	str	r3, [sp, #12]
+  12b5b4:      	mov	r3, r8
+  12b5b8:      	blx	r7
+  12b5bc:      	cmn	r0, #1
+  12b5c0:      	str	r0, [r9, #56]
+  12b5c4:      	bgt	#72 <_ZN9AliAiLabs4AGUI14FeatureManager23syncFullFirmwareFeatureEv+0x218>
+  12b5c8:      	mov	r0, #0
+  12b5cc:      	mov	r1, #0
+  12b5d0:      	mov	r2, #0
+  12b5d4:      	mov	r3, #0
+  12b5d8:      	str	r10, [sp]
+  12b5dc:      	str	r10, [sp, #4]
+  12b5e0:      	bl	#-641676 <.plt+0x17c0>
+
+=== call site #38 ===
+  12b908:      	add	r2, pc, r2
+  12b90c:      	str	r3, [sp, #12]
+  12b910:      	mov	r3, r9
+  12b914:      	str	r6, [sp, #8]
+  12b918:      	blx	r7
+  12b91c:      	cmn	r0, #1
+  12b920:      	str	r0, [r5, #60]
+  12b924:      	bgt	#72 <_ZN9AliAiLabs4AGUI14FeatureManager18syncFullAppFeatureEv+0x318>
+  12b928:      	mov	r0, #1
+  12b92c:      	mov	r1, #0
+  12b930:      	mov	r2, #0
+  12b934:      	mov	r3, #0
+  12b938:      	str	r8, [sp]
+  12b93c:      	str	r8, [sp, #4]
+  12b940:      	bl	#-642540 <.plt+0x17c0>
+
+=== call site #39 ===
+  12bc80:      	str	r6, [sp, #8]
+  12bc84:      	str	r12, [sp, #12]
+  12bc88:      	blx	r7
+  12bc8c:      	cmn	r0, #1
+  12bc90:      	str	r0, [r5, #64]
+  12bc94:      	bgt	#80 <_ZN9AliAiLabs4AGUI14FeatureManager17syncIncAppFeatureEP11json_object+0x2bc>
+  12bc98:      	mov	r0, r4
+  12bc9c:      	bl	#-629180 <.plt+0x4f4c>
+  12bca0:      	mov	r3, r0
+  12bca4:      	mov	r0, #2
+  12bca8:      	mov	r1, #0
+  12bcac:      	mov	r2, #0
+  12bcb0:      	str	r9, [sp]
+  12bcb4:      	str	r9, [sp, #4]
+  12bcb8:      	bl	#-643428 <.plt+0x17c0>
+
+=== call site #40 ===
+  12cb78:      	bl	#-636152 <.plt+0x42ec>
+  12cb7c:      	ldr	r1, [pc, #164]
+  12cb80:      	mov	r0, r5
+  12cb84:      	add	r1, pc, r1
+  12cb88:      	bl	#-651960 <.plt+0x53c>
+  12cb8c:      	cmp	r0, #0
+  12cb90:      	beq	#40 <_ZN9AliAiLabs4AGUI14FeatureManager8onRouterEPNS0_9NlpResultEPcS4_P11json_objectS6_+0xc4>
+  12cb94:      	mov	r0, #0
+  12cb98:      	mov	r1, #0
+  12cb9c:      	str	r0, [sp]
+  12cba0:      	mov	r2, #0
+  12cba4:      	str	r0, [sp, #4]
+  12cba8:      	mov	r0, #1
+  12cbac:      	mov	r3, #0
+  12cbb0:      	bl	#-647260 <.plt+0x17c0>
+
+=== call site #41 ===
+  12cbbc:      	bl	#-632944 <.plt+0x4fb8>
+  12cbc0:      	ldr	r1, [pc, #100]
+  12cbc4:      	mov	r0, r5
+  12cbc8:      	add	r1, pc, r1
+  12cbcc:      	bl	#-652028 <.plt+0x53c>
+  12cbd0:      	cmp	r0, #0
+  12cbd4:      	beq	#40 <_ZN9AliAiLabs4AGUI14FeatureManager8onRouterEPNS0_9NlpResultEPcS4_P11json_objectS6_+0x108>
+  12cbd8:      	mov	r0, #0
+  12cbdc:      	mov	r1, #0
+  12cbe0:      	str	r0, [sp]
+  12cbe4:      	mov	r2, #0
+  12cbe8:      	str	r0, [sp, #4]
+  12cbec:      	mov	r0, #0
+  12cbf0:      	mov	r3, #0
+  12cbf4:      	bl	#-647328 <.plt+0x17c0>
+
+=== call site #42 ===
+  12cd68:      	mov	r2, #0
+  12cd6c:      	add	r1, pc, r1
+  12cd70:      	bl	#-633500 <.plt+0x4f40>
+  12cd74:      	cmp	r0, #200
+  12cd78:      	beq	#344 <_ZN9AliAiLabs4AGUI14FeatureManager10onResponseENS0_4IGcs12ResponseCodeEiP11json_object+0x280>
+  12cd7c:      	cmp	r0, #500
+  12cd80:      	bne	#396 <_ZN9AliAiLabs4AGUI14FeatureManager10onResponseENS0_4IGcs12ResponseCodeEiP11json_object+0x2bc>
+  12cd84:      	mov	r0, #0
+  12cd88:      	str	r0, [sp]
+  12cd8c:      	str	r0, [sp, #4]
+  12cd90:      	mov	r0, #0
+  12cd94:      	mov	r1, #0
+  12cd98:      	mov	r2, #0
+  12cd9c:      	mov	r3, #0
+  12cda0:      	bl	#-647756 <.plt+0x17c0>
+
+=== call site #43 ===
+  12cec4:      	beq	#148 <_ZN9AliAiLabs4AGUI14FeatureManager10onResponseENS0_4IGcs12ResponseCodeEiP11json_object+0x308>
+  12cec8:      	cmp	r0, #200
+  12cecc:      	ldreq	r0, [r8, #60]
+  12ced0:      	cmpeq	r0, r5
+  12ced4:      	beq	#152 <_ZN9AliAiLabs4AGUI14FeatureManager10onResponseENS0_4IGcs12ResponseCodeEiP11json_object+0x31c>
+  12ced8:      	sub	sp, r11, #24
+  12cedc:      	pop	{r4, r5, r6, r7, r8, r9, r11, pc}
+  12cee0:      	mov	r0, #0
+  12cee4:      	mov	r1, #0
+  12cee8:      	str	r0, [sp]
+  12ceec:      	mov	r2, #0
+  12cef0:      	str	r0, [sp, #4]
+  12cef4:      	mov	r0, #1
+  12cef8:      	mov	r3, #0
+  12cefc:      	bl	#-648104 <.plt+0x17c0>
+
+=== call site #44 ===
+  12cf08:      	bl	#-633788 <.plt+0x4fb8>
+  12cf0c:      	sub	sp, r11, #24
+  12cf10:      	pop	{r4, r5, r6, r7, r8, r9, r11, pc}
+  12cf14:      	mov	r0, #0
+  12cf18:      	str	r0, [sp]
+  12cf1c:      	str	r0, [sp, #4]
+  12cf20:      	mov	r0, #0
+  12cf24:      	b	#8 <_ZN9AliAiLabs4AGUI14FeatureManager10onResponseENS0_4IGcs12ResponseCodeEiP11json_object+0x2dc>
+  12cf28:      	mov	r0, #1
+  12cf2c:      	str	r4, [sp]
+  12cf30:      	str	r4, [sp, #4]
+  12cf34:      	mov	r1, #0
+  12cf38:      	mov	r2, #0
+  12cf3c:      	mov	r3, #0
+  12cf40:      	bl	#-648172 <.plt+0x17c0>
+
+=== call site #45 ===
+  12e860:      	mov	r4, r2
+  12e864:      	cmp	r0, #0
+  12e868:      	beq	#840 <_ZN9AliAiLabs4AGUI10GcsManager10addRequestEiPNSt6__ndk110shared_ptrINS0_4IGcs17IResponseCallbackEEE+0x374>
+  12e86c:      	mov	r0, r8
+  12e870:      	mov	r7, r1
+  12e874:      	bl	#-633432 <.plt+0x6a88>
+  12e878:      	mov	r5, r0
+  12e87c:      	mov	r0, #0
+  12e880:      	str	r0, [sp]
+  12e884:      	mov	r1, r7
+  12e888:      	str	r0, [sp, #4]
+  12e88c:      	mov	r0, #1
+  12e890:      	mov	r2, #0
+  12e894:      	mov	r3, #0
+  12e898:      	bl	#-654660 <.plt+0x17c0>
+
+=== call site #46 ===
+  12eb10:      	beq	#20 <_ZN9AliAiLabs4AGUI10GcsManager10addRequestEiPNSt6__ndk110shared_ptrINS0_4IGcs17IResponseCallbackEEE+0x2e8>
+  12eb14:      	add	r0, r5, #4
+  12eb18:      	ldrex	r1, [r0]
+  12eb1c:      	add	r1, r1, #1
+  12eb20:      	strex	r2, r1, [r0]
+  12eb24:      	cmp	r2, #0
+  12eb28:      	bne	#-24 <_ZN9AliAiLabs4AGUI10GcsManager10addRequestEiPNSt6__ndk110shared_ptrINS0_4IGcs17IResponseCallbackEEE+0x2d4>
+  12eb2c:      	ldr	r0, [pc, #524]
+  12eb30:      	add	r0, pc, r0
+  12eb34:      	mov	r1, #0
+  12eb38:      	stm	sp, {r0, r1}
+  12eb3c:      	mov	r0, #2
+  12eb40:      	mov	r1, r7
+  12eb44:      	mov	r2, #0
+  12eb48:      	bl	#-655348 <.plt+0x17c0>
+
+=== call site #47 ===
+  12efe0:      	mov	r5, r2
+  12efe4:      	mov	r6, r1
+  12efe8:      	bl	#-635340 <.plt+0x6a88>
+  12efec:      	mov	r7, r0
+  12eff0:      	mov	r0, r5
+  12eff4:      	bl	#-642324 <.plt+0x4f4c>
+  12eff8:      	mov	r3, r0
+  12effc:      	ldr	r0, [pc, #44]
+  12f000:      	mov	r1, #0
+  12f004:      	mov	r2, r4
+  12f008:      	add	r0, pc, r0
+  12f00c:      	stm	sp, {r0, r1}
+  12f010:      	mov	r0, #3
+  12f014:      	mov	r1, r6
+  12f018:      	bl	#-656580 <.plt+0x17c0>
+
+=== call site #48 ===
+  138640:      	mov	r6, r1
+  138644:      	bl	#-701036 <.plt+0x44>
+  138648:      	cmp	r0, #0
+  13864c:      	beq	#52 <_ZN9AliAiLabs4AGUI13NotifyManager8onNotifyEiPvii+0x64>
+  138650:      	mov	r3, r0
+  138654:      	ldr	r0, [pc, #52]
+  138658:      	ldr	r2, [r11, #8]
+  13865c:      	mov	r1, #0
+  138660:      	add	r0, pc, r0
+  138664:      	str	r7, [r3]
+  138668:      	str	r6, [r3, #4]
+  13866c:      	stm	sp, {r0, r1}
+  138670:      	mov	r0, #3
+  138674:      	mov	r1, r5
+  138678:      	bl	#-695076 <.plt+0x17c0>
+
+=== call site #49 ===
+00138744 _ZN9AliAiLabs4AGUI13NotifyManager20registerGlobalNotifyEPNS0_13IGlobalNotifyE:
+  138744:      	cmp	r1, #0
+  138748:      	bxeq	lr
+  13874c:      	push	{r4, r10, r11, lr}
+  138750:      	add	r11, sp, #8
+  138754:      	sub	sp, sp, #8
+  138758:      	mov	r4, r0
+  13875c:      	mov	r0, #0
+  138760:      	mov	r3, r1
+  138764:      	str	r0, [sp]
+  138768:      	str	r0, [sp, #4]
+  13876c:      	mov	r0, #1
+  138770:      	mov	r1, #0
+  138774:      	mov	r2, #0
+  138778:      	bl	#-695332 <.plt+0x17c0>
+
+=== call site #50 ===
+00138794 _ZN9AliAiLabs4AGUI13NotifyManager22unregisterGlobalNotifyEPNS0_13IGlobalNotifyE:
+  138794:      	cmp	r1, #0
+  138798:      	bxeq	lr
+  13879c:      	push	{r4, r10, r11, lr}
+  1387a0:      	add	r11, sp, #8
+  1387a4:      	sub	sp, sp, #8
+  1387a8:      	mov	r4, r0
+  1387ac:      	mov	r0, #0
+  1387b0:      	mov	r3, r1
+  1387b4:      	str	r0, [sp]
+  1387b8:      	str	r0, [sp, #4]
+  1387bc:      	mov	r0, #2
+  1387c0:      	mov	r1, #0
+  1387c4:      	mov	r2, #0
+  1387c8:      	bl	#-695412 <.plt+0x17c0>
+
+=== call site #51 ===
+  1398c8:      	str	r0, [sp, #8]
+  1398cc:      	mov	r0, #4
+  1398d0:      	str	r8, [sp, #12]
+  1398d4:      	bl	#-688724 <.plt+0x42ec>
+  1398d8:      	mov	r0, r10
+  1398dc:      	bl	#-677368 <.plt+0x6f50>
+  1398e0:      	mov	r0, r10
+  1398e4:      	bl	#-677364 <.plt+0x6f5c>
+  1398e8:      	mov	r0, #4
+  1398ec:      	mov	r1, r8
+  1398f0:      	mov	r2, #1
+  1398f4:      	mov	r3, #0
+  1398f8:      	str	r9, [sp]
+  1398fc:      	str	r9, [sp, #4]
+  139900:      	bl	#-699820 <.plt+0x17c0>
+
+=== call site #52 ===
+  139ba8:      	mov	r0, #68
+  139bac:      	vst1.8	{d16, d17}, [r1], r0
+  139bb0:      	mov	r0, r10
+  139bb4:      	str	r4, [r1]
+  139bb8:      	mov	r1, r5
+  139bbc:      	str	r4, [r5, #64]
+  139bc0:      	bl	#-678060 <.plt+0x6f80>
+  139bc4:      	ldr	r0, [pc, #424]
+  139bc8:      	mov	r1, r6
+  139bcc:      	mov	r2, r8
+  139bd0:      	mov	r3, r5
+  139bd4:      	add	r0, pc, r0
+  139bd8:      	stm	sp, {r0, r4}
+  139bdc:      	mov	r0, #5
+  139be0:      	bl	#-700556 <.plt+0x17c0>
+
+=== call site #53 ===
+  13a300:      	cmp	r4, r6
+  13a304:      	mov	r0, r4
+  13a308:      	bne	#-24 <_ZN9AliAiLabs4AGUI12AudioManager14playBufferListEv+0x574>
+  13a30c:      	mov	r0, r6
+  13a310:      	bl	#-708096 <.plt+0x17c>
+  13a314:      	mov	r0, r5
+  13a318:      	bl	#-708104 <.plt+0x17c>
+  13a31c:      	mov	r0, #0
+  13a320:      	mov	r1, #0
+  13a324:      	str	r0, [sp]
+  13a328:      	mov	r2, #0
+  13a32c:      	str	r0, [sp, #4]
+  13a330:      	mov	r0, #0
+  13a334:      	mov	r3, #0
+  13a338:      	bl	#-702436 <.plt+0x17c0>
+
+=== call site #54 ===
+  13a848:      	mov	r0, #4
+  13a84c:      	add	r1, pc, r1
+  13a850:      	bl	#-692688 <.plt+0x42ec>
+  13a854:      	ldr	r0, [r4, #60]
+  13a858:      	str	r5, [sp, #20]
+  13a85c:      	cmp	r0, r5
+  13a860:      	bne	#-856 <_ZN9AliAiLabs4AGUI12AudioManager14processTtsDataEv+0x38>
+  13a864:      	mov	r0, #0
+  13a868:      	mov	r1, #0
+  13a86c:      	str	r0, [sp]
+  13a870:      	mov	r2, #0
+  13a874:      	str	r0, [sp, #4]
+  13a878:      	mov	r0, #0
+  13a87c:      	mov	r3, #0
+  13a880:      	bl	#-703788 <.plt+0x17c0>
+
+=== call site #55 ===
+  13da78:      	strb	r0, [r6, #7]
+  13da7c:      	ldrb	r0, [r7, #6]
+  13da80:      	strb	r0, [r6, #6]
+  13da84:      	ldr	r0, [r7, #16]
+  13da88:      	str	r0, [r6, #16]
+  13da8c:      	ldr	r0, [r7, #60]
+  13da90:      	bl	#-702384 <.plt+0x4f4c>
+  13da94:      	str	r0, [r6, #60]
+  13da98:      	mov	r0, #2
+  13da9c:      	mov	r1, r5
+  13daa0:      	mov	r2, #0
+  13daa4:      	mov	r3, r6
+  13daa8:      	str	r8, [sp]
+  13daac:      	str	r8, [sp, #4]
+  13dab0:      	bl	#-716636 <.plt+0x17c0>
+
+=== call site #56 ===
+  13dafc:      	mov	r7, r2
+  13db00:      	mov	r6, r1
+  13db04:      	bl	#-722732 <.plt+0x44>
+  13db08:      	mov	r1, r7
+  13db0c:      	mov	r2, r5
+  13db10:      	mov	r4, r0
+  13db14:      	bl	#-722736 <.plt+0x50>
+  13db18:      	mov	r0, #0
+  13db1c:      	mov	r1, r6
+  13db20:      	str	r0, [sp]
+  13db24:      	mov	r2, r5
+  13db28:      	str	r0, [sp, #4]
+  13db2c:      	mov	r0, #3
+  13db30:      	mov	r3, r4
+  13db34:      	bl	#-716768 <.plt+0x17c0>
+
+=== call site #57 ===
+  13db48:      	pop	{r4, r5, r6, r7, r8, r10, r11, lr}
+  13db4c:      	bx	lr
+
+0013db50 _ZN9AliAiLabs4AGUI12AudioManager8onTtsEndEi:
+  13db50:      	push	{r4, r10, r11, lr}
+  13db54:      	add	r11, sp, #8
+  13db58:      	sub	sp, sp, #8
+  13db5c:      	mov	r4, r0
+  13db60:      	mov	r0, #0
+  13db64:      	str	r0, [sp]
+  13db68:      	mov	r2, #0
+  13db6c:      	str	r0, [sp, #4]
+  13db70:      	mov	r0, #4
+  13db74:      	mov	r3, #0
+  13db78:      	bl	#-716836 <.plt+0x17c0>
+
+=== call site #58 ===
+  13dcf4:      	ldr	r1, [r7, #8]
+  13dcf8:      	str	r0, [r7]
+  13dcfc:      	add	r0, r1, #1
+  13dd00:      	str	r0, [r7, #8]
+  13dd04:      	ldr	r5, [r5, #4]
+  13dd08:      	cmp	r10, r5
+  13dd0c:      	bne	#-80 <_ZN9AliAiLabs4AGUI12AudioManager4playEPNSt6__ndk14listIPNS0_9AudioInfoENS2_9allocatorIS5_EEEEh+0x134>
+  13dd10:      	mov	r0, #1
+  13dd14:      	mov	r1, #0
+  13dd18:      	mov	r2, #0
+  13dd1c:      	mov	r3, r6
+  13dd20:      	str	r9, [sp]
+  13dd24:      	mov	r5, #1
+  13dd28:      	str	r9, [sp, #4]
+  13dd2c:      	bl	#-717272 <.plt+0x17c0>
+
+=== call site #59 ===
+  13eea0:      	vst1.8	{d16, d17}, [r1], r0
+  13eea4:      	mov	r0, r10
+  13eea8:      	str	r5, [r1]
+  13eeac:      	mov	r1, r7
+  13eeb0:      	str	r5, [r7, #64]
+  13eeb4:      	bl	#-699296 <.plt+0x6f80>
+  13eeb8:      	ldr	r0, [pc, #1020]
+  13eebc:      	mov	r1, r4
+  13eec0:      	mov	r2, #5
+  13eec4:      	mov	r3, r7
+  13eec8:      	add	r0, pc, r0
+  13eecc:      	stm	sp, {r0, r5}
+  13eed0:      	mov	r0, #5
+  13eed4:      	ldr	r5, [r11, #-32]
+  13eed8:      	bl	#-721796 <.plt+0x17c0>
+
+=== call site #60 ===
+  14010c:      	mov	r2, #0
+  140110:      	mov	r3, #7
+  140114:      	bl	#-731696 <.plt+0x350>
+  140118:      	str	r0, [r4, #4]
+  14011c:      	mov	r0, r4
+  140120:      	mov	r1, r4
+  140124:      	bl	#-709272 <.plt+0x5af8>
+  140128:      	mov	r3, r0
+  14012c:      	mov	r0, #0
+  140130:      	str	r0, [sp]
+  140134:      	mov	r1, #0
+  140138:      	str	r0, [sp, #4]
+  14013c:      	mov	r0, #6
+  140140:      	mov	r2, #0
+  140144:      	bl	#-726512 <.plt+0x17c0>
+
+=== call site #61 ===
+  140188:      	mov	r2, #0
+  14018c:      	mov	r3, #7
+  140190:      	bl	#-731820 <.plt+0x350>
+  140194:      	str	r0, [r4, #4]
+  140198:      	mov	r0, r4
+  14019c:      	mov	r1, r4
+  1401a0:      	bl	#-709396 <.plt+0x5af8>
+  1401a4:      	mov	r3, r0
+  1401a8:      	mov	r0, #0
+  1401ac:      	str	r0, [sp]
+  1401b0:      	mov	r1, #0
+  1401b4:      	str	r0, [sp, #4]
+  1401b8:      	mov	r0, #6
+  1401bc:      	mov	r2, #0
+  1401c0:      	bl	#-726636 <.plt+0x17c0>
+
+=== call site #62 ===
+  140200:      	mov	r7, #0
+  140204:      	bl	#-731936 <.plt+0x350>
+  140208:      	mov	r6, r0
+  14020c:      	mov	r0, r4
+  140210:      	mov	r1, #0
+  140214:      	mvn	r2, #0
+  140218:      	mov	r3, #0
+  14021c:      	bl	#-726236 <.plt+0x19ac>
+  140220:      	mov	r3, r0
+  140224:      	mov	r0, #7
+  140228:      	mov	r1, r6
+  14022c:      	mov	r2, #0
+  140230:      	str	r7, [sp]
+  140234:      	str	r7, [sp, #4]
+  140238:      	bl	#-726756 <.plt+0x17c0>
+
+=== call site #63 ===
+  140278:      	mov	r7, #0
+  14027c:      	bl	#-732056 <.plt+0x350>
+  140280:      	mov	r6, r0
+  140284:      	mov	r0, r4
+  140288:      	mov	r1, #0
+  14028c:      	mvn	r2, #0
+  140290:      	mov	r3, #0
+  140294:      	bl	#-726356 <.plt+0x19ac>
+  140298:      	mov	r3, r0
+  14029c:      	mov	r0, #7
+  1402a0:      	mov	r1, r6
+  1402a4:      	mov	r2, #0
+  1402a8:      	str	r7, [sp]
+  1402ac:      	str	r7, [sp, #4]
+  1402b0:      	bl	#-726876 <.plt+0x17c0>
+
+=== call site #64 ===
+  1403c0:      	str	r6, [r4, #64]
+  1403c4:      	str	r6, [r1]
+  1403c8:      	mov	r0, r5
+  1403cc:      	mov	r1, r4
+  1403d0:      	mov	r2, r7
+  1403d4:      	mov	r3, #0
+  1403d8:      	bl	#-704708 <.plt+0x6f80>
+  1403dc:      	ldr	r1, [r4]
+  1403e0:      	ldr	r0, [pc, #160]
+  1403e4:      	add	r0, pc, r0
+  1403e8:      	stm	sp, {r0, r6}
+  1403ec:      	mov	r0, #5
+  1403f0:      	mov	r2, #5
+  1403f4:      	mov	r3, r4
+  1403f8:      	bl	#-727204 <.plt+0x17c0>
+
+=== call site #65 ===
+  1466e4:      	bl	#-754244 <.plt+0x110c>
+  1466e8:      	ldr	r0, [sp, #24]
+  1466ec:      	movw	r2, #16960
+  1466f0:      	ldr	r1, [sp, #28]
+  1466f4:      	movt	r2, #15
+  1466f8:      	mov	r3, #0
+  1466fc:      	mov	r5, #0
+  146700:      	bl	#-732720 <.plt+0x653c>
+  146704:      	mov	r2, r0
+  146708:      	mov	r0, #1
+  14670c:      	mov	r1, #1
+  146710:      	mov	r3, #0
+  146714:      	str	r5, [sp]
+  146718:      	str	r5, [sp, #4]
+  14671c:      	bl	#-752584 <.plt+0x17c0>
+
+=== call site #66 ===
+  146b7c:      	bl	#-755420 <.plt+0x110c>
+  146b80:      	ldr	r0, [sp, #24]
+  146b84:      	movw	r2, #16960
+  146b88:      	ldr	r1, [sp, #28]
+  146b8c:      	movt	r2, #15
+  146b90:      	mov	r3, #0
+  146b94:      	mov	r4, #0
+  146b98:      	bl	#-733896 <.plt+0x653c>
+  146b9c:      	mov	r2, r0
+  146ba0:      	mov	r0, #1
+  146ba4:      	mov	r1, r9
+  146ba8:      	mov	r3, #0
+  146bac:      	str	r4, [sp]
+  146bb0:      	str	r4, [sp, #4]
+  146bb4:      	bl	#-753760 <.plt+0x17c0>
+
+=== call site #67 ===
+  147420:      	bx	lr
+
+00147424 _ZN9AliAiLabs4AGUI8FocusMgr13onFocusChangeEi:
+  147424:      	push	{r4, r5, r6, r7, r8, r9, r11, lr}
+  147428:      	add	r11, sp, #24
+  14742c:      	sub	sp, sp, #24
+  147430:      	mov	r5, #0
+  147434:      	mov	r6, r0
+  147438:      	mov	r0, #0
+  14743c:      	mov	r2, #0
+  147440:      	mov	r3, #0
+  147444:      	mov	r8, r1
+  147448:      	str	r5, [sp]
+  14744c:      	str	r5, [sp, #4]
+  147450:      	bl	#-755964 <.plt+0x17c0>
+
+=== call site #68 ===
+  14781c:      	bl	#-745884 <.plt+0x42ec>
+  147820:      	cmp	r6, #9
+  147824:      	bne	#284 <_ZN9AliAiLabs4AGUI8FocusMgr8onNotifyEiPvii+0x18c>
+  147828:      	cmp	r7, #0
+  14782c:      	beq	#276 <_ZN9AliAiLabs4AGUI8FocusMgr8onNotifyEiPvii+0x18c>
+  147830:      	cmp	r5, #0
+  147834:      	beq	#40 <_ZN9AliAiLabs4AGUI8FocusMgr8onNotifyEiPvii+0xa8>
+  147838:      	mov	r0, #0
+  14783c:      	mov	r1, #0
+  147840:      	str	r0, [sp]
+  147844:      	mov	r2, #0
+  147848:      	str	r0, [sp, #4]
+  14784c:      	mov	r0, #1
+  147850:      	mov	r3, #0
+  147854:      	bl	#-756992 <.plt+0x17c0>
+
+=== call site #69 ===
+  14784c:      	mov	r0, #1
+  147850:      	mov	r3, #0
+  147854:      	bl	#-756992 <.plt+0x17c0>
+  147858:      	ldr	r6, [r0]
+  14785c:      	mov	r5, r0
+  147860:      	b	#64 <_ZN9AliAiLabs4AGUI8FocusMgr8onNotifyEiPvii+0xec>
+  147864:      	mov	r0, #0
+  147868:      	mov	r1, #1
+  14786c:      	str	r0, [sp]
+  147870:      	mov	r2, #0
+  147874:      	str	r0, [sp, #4]
+  147878:      	mov	r0, #1
+  14787c:      	mov	r3, #0
+  147880:      	ldr	r6, [r11, #8]
+  147884:      	bl	#-757040 <.plt+0x17c0>
+
+=== call site #70 ===
+  1479d0:      	bl	#-759088 <.plt+0x110c>
+  1479d4:      	ldr	r0, [sp, #24]
+  1479d8:      	movw	r2, #16960
+  1479dc:      	ldr	r1, [sp, #28]
+  1479e0:      	movt	r2, #15
+  1479e4:      	mov	r3, #0
+  1479e8:      	mov	r6, #0
+  1479ec:      	bl	#-737564 <.plt+0x653c>
+  1479f0:      	mov	r2, r0
+  1479f4:      	mov	r0, #1
+  1479f8:      	mov	r1, r5
+  1479fc:      	mov	r3, #0
+  147a00:      	str	r6, [sp]
+  147a04:      	str	r6, [sp, #4]
+  147a08:      	bl	#-757428 <.plt+0x17c0>
+
+=== call site #71 ===
+  14b8dc:      	mov	r1, r6
+  14b8e0:      	bl	#-773924 <.plt+0x1628>
+  14b8e4:      	str	r7, [r4, #28]
+  14b8e8:      	mov	r0, r7
+  14b8ec:      	mov	r1, r4
+  14b8f0:      	bl	#-773928 <.plt+0x1634>
+  14b8f4:      	ldr	r0, [pc, #456]
+  14b8f8:      	add	r0, pc, r0
+  14b8fc:      	mov	r1, #0
+  14b900:      	stm	sp, {r0, r1}
+  14b904:      	mov	r0, #0
+  14b908:      	mov	r1, #0
+  14b90c:      	mov	r2, #0
+  14b910:      	mov	r3, #0
+  14b914:      	bl	#-773568 <.plt+0x17c0>
+
+=== call site #72 ===
+  14bafc:      	beq	#8 <_ZN9AliAiLabs4AGUI12OrangeManger13sendDirectMsgEiiiiPvPFvPNS0_7MessageEEh+0x40>
+  14bb00:      	ldr	r0, [r5, #28]
+  14bb04:      	mov	r1, r6
+  14bb08:      	bl	#-755444 <.plt+0x6080>
+  14bb0c:      	ldr	r0, [pc, #64]
+  14bb10:      	cmp	r7, #0
+  14bb14:      	mov	r1, #0
+  14bb18:      	mov	r2, r8
+  14bb1c:      	add	r0, pc, r0
+  14bb20:      	mov	r3, r10
+  14bb24:      	movne	r0, r7
+  14bb28:      	stm	sp, {r0, r1}
+  14bb2c:      	mov	r0, r6
+  14bb30:      	mov	r1, r9
+  14bb34:      	bl	#-774112 <.plt+0x17c0>
+
+=== call site #73 ===
+  14e650:      	mov	r0, #0
+  14e654:      	mov	r1, #900
+  14e658:      	bl	#-773456 <.plt+0x4574>
+  14e65c:      	ldr	r1, [pc, #124]
+  14e660:      	bic	r0, r0, r0, asr #31
+  14e664:      	movw	r2, #60000
+  14e668:      	mov	r3, #1000
+  14e66c:      	add	r1, pc, r1
+  14e670:      	mla	r5, r0, r3, r2
+  14e674:      	mov	r0, #3
+  14e678:      	stm	sp, {r1, r8}
+  14e67c:      	mov	r1, #0
+  14e680:      	mov	r2, #0
+  14e684:      	mov	r3, #0
+  14e688:      	bl	#-785204 <.plt+0x17c0>
+
+=== call site #74 ===
+  14e6e4:      	push	{r4, r10, r11, lr}
+  14e6e8:      	add	r11, sp, #8
+  14e6ec:      	sub	sp, sp, #8
+  14e6f0:      	mov	r4, r0
+  14e6f4:      	mov	r0, r1
+  14e6f8:      	bl	#-771096 <.plt+0x4f4c>
+  14e6fc:      	mov	r3, r0
+  14e700:      	ldr	r0, [pc, #52]
+  14e704:      	mov	r1, #0
+  14e708:      	mov	r2, #0
+  14e70c:      	add	r0, pc, r0
+  14e710:      	stm	sp, {r0, r1}
+  14e714:      	mov	r0, #2
+  14e718:      	mov	r1, #0
+  14e71c:      	bl	#-785352 <.plt+0x17c0>
+
+=== call site #75 ===
+  14e774:      	push	{r4, r10, r11, lr}
+  14e778:      	add	r11, sp, #8
+  14e77c:      	sub	sp, sp, #8
+  14e780:      	mov	r4, r0
+  14e784:      	mov	r0, r1
+  14e788:      	bl	#-771240 <.plt+0x4f4c>
+  14e78c:      	mov	r3, r0
+  14e790:      	ldr	r0, [pc, #52]
+  14e794:      	mov	r1, #0
+  14e798:      	mov	r2, #0
+  14e79c:      	add	r0, pc, r0
+  14e7a0:      	stm	sp, {r0, r1}
+  14e7a4:      	mov	r0, #2
+  14e7a8:      	mov	r1, #0
+  14e7ac:      	bl	#-785496 <.plt+0x17c0>
+
+=== call site #76 ===
+  14e7e4:      	mov	r0, #0
+  14e7e8:      	mov	r1, #900
+  14e7ec:      	mov	r7, #0
+  14e7f0:      	bl	#-773864 <.plt+0x4574>
+  14e7f4:      	mov	r6, r0
+  14e7f8:      	ldr	r0, [pc, #72]
+  14e7fc:      	cmp	r4, #0
+  14e800:      	mov	r2, #0
+  14e804:      	add	r0, pc, r0
+  14e808:      	movwne	r4, #1
+  14e80c:      	stm	sp, {r0, r7}
+  14e810:      	mov	r0, #3
+  14e814:      	mov	r1, r4
+  14e818:      	mov	r3, #0
+  14e81c:      	bl	#-785608 <.plt+0x17c0>
+
+=== call site #77 ===
+  14e87c:      	mov	r0, #0
+  14e880:      	mov	r1, #900
+  14e884:      	mov	r7, #0
+  14e888:      	bl	#-774016 <.plt+0x4574>
+  14e88c:      	mov	r6, r0
+  14e890:      	ldr	r0, [pc, #72]
+  14e894:      	cmp	r4, #0
+  14e898:      	mov	r2, #0
+  14e89c:      	add	r0, pc, r0
+  14e8a0:      	movwne	r4, #1
+  14e8a4:      	stm	sp, {r0, r7}
+  14e8a8:      	mov	r0, #3
+  14e8ac:      	mov	r1, r4
+  14e8b0:      	mov	r3, #0
+  14e8b4:      	bl	#-785760 <.plt+0x17c0>
+
+=== call site #78 ===
+  14e910:      	ldr	r0, [r4, #28]
+  14e914:      	mvn	r1, #0
+  14e918:      	str	r1, [r4, #52]
+  14e91c:      	str	r1, [r4, #56]
+  14e920:      	mov	r1, #3
+  14e924:      	bl	#-767248 <.plt+0x6080>
+  14e928:      	ldr	r0, [pc, #276]
+  14e92c:      	mov	r1, #0
+  14e930:      	mov	r2, #0
+  14e934:      	mov	r3, #0
+  14e938:      	add	r0, pc, r0
+  14e93c:      	stm	sp, {r0, r1}
+  14e940:      	mov	r0, #3
+  14e944:      	mov	r1, #0
+  14e948:      	bl	#-785908 <.plt+0x17c0>
+
+=== call site #79 ===
+  14e9ec:      	add	r1, pc, r1
+  14e9f0:      	str	r5, [sp, #8]
+  14e9f4:      	bl	#-791336 <.plt+0x338>
+  14e9f8:      	ldr	r0, [sp, #8]
+  14e9fc:      	cmp	r0, #0
+  14ea00:      	beq	#52 <_ZN9AliAiLabs4AGUI12OrangeManger10onResponseENS0_4IGcs12ResponseCodeEiP11json_object+0x158>
+  14ea04:      	bl	#-771876 <.plt+0x4f4c>
+  14ea08:      	mov	r3, r0
+  14ea0c:      	ldr	r0, [pc, #80]
+  14ea10:      	add	r0, pc, r0
+  14ea14:      	stm	sp, {r0, r5}
+  14ea18:      	mov	r0, #5
+  14ea1c:      	mov	r1, #0
+  14ea20:      	mov	r2, #0
+  14ea24:      	bl	#-786128 <.plt+0x17c0>
+
+=== call site #80 ===
+  1544bc:      	bl	#-783004 <.plt+0x7e8c>
+  1544c0:      	mov	r0, r6
+  1544c4:      	bl	#-783000 <.plt+0x7e98>
+  1544c8:      	mov	r1, #0
+  1544cc:      	mov	r2, #0
+  1544d0:      	mov	r7, #0
+  1544d4:      	bl	#-809056 <.plt+0x18e0>
+  1544d8:      	ldr	r0, [pc, #132]
+  1544dc:      	mov	r1, #0
+  1544e0:      	mov	r2, #0
+  1544e4:      	mov	r3, r5
+  1544e8:      	add	r0, pc, r0
+  1544ec:      	stm	sp, {r0, r7}
+  1544f0:      	mov	r0, #0
+  1544f4:      	bl	#-809376 <.plt+0x17c0>
+
+=== call site #81 ===
+  154fcc:      	pop	{r4, r5, r6, r7, r8, r9, r10, r11, pc}
+  154fd0:      	ldr	r1, [pc, #332]
+  154fd4:      	add	r0, r9, #56
+  154fd8:      	add	r1, pc, r1
+  154fdc:      	b	#0 <_ZN9AliAiLabs4AGUI11TestCaseMgr9onHandlerEPNS0_7MessageE+0x788>
+  154fe0:      	mov	r1, r5
+  154fe4:      	bl	#-816256 <.plt+0x7d0>
+  154fe8:      	mov	r0, #0
+  154fec:      	mov	r1, #0
+  154ff0:      	str	r0, [sp]
+  154ff4:      	mov	r2, #0
+  154ff8:      	str	r0, [sp, #4]
+  154ffc:      	mov	r0, #1
+  155000:      	mov	r3, #0
+  155004:      	bl	#-812208 <.plt+0x17c0>
+
+=== call site #82 ===
+  155474:      	movw	r1, #10000
+  155478:      	bl	#-801648 <.plt+0x4574>
+  15547c:      	mov	r5, r0
+  155480:      	ldr	r0, [r9, #12]
+  155484:      	mov	r1, #1
+  155488:      	mov	r2, #0
+  15548c:      	mov	r4, #0
+  155490:      	bl	#-813084 <.plt+0x18e0>
+  155494:      	mov	r0, #1
+  155498:      	mov	r1, #0
+  15549c:      	mov	r2, #0
+  1554a0:      	mov	r3, #0
+  1554a4:      	str	r4, [sp]
+  1554a8:      	str	r4, [sp, #4]
+  1554ac:      	bl	#-813400 <.plt+0x17c0>
+
+=== call site #83 ===
+  157fc0:      	str	r0, [r4, #80]
+  157fc4:      	mov	r0, r4
+  157fc8:      	bl	#-797556 <.plt+0x80c0>
+  157fcc:      	mvn	r0, #0
+  157fd0:      	str	r0, [r4, #84]
+  157fd4:      	str	r0, [r4, #88]
+  157fd8:      	mov	r0, #0
+  157fdc:      	str	r0, [r4, #16]
+  157fe0:      	str	r0, [sp]
+  157fe4:      	mov	r1, #0
+  157fe8:      	str	r0, [sp, #4]
+  157fec:      	mov	r0, #0
+  157ff0:      	mov	r2, #0
+  157ff4:      	mov	r3, #0
+  157ff8:      	bl	#-824484 <.plt+0x17c0>
+
+=== call site #84 ===
+  158aa4:      	str	r7, [sp]
+  158aa8:      	add	r0, pc, r0
+  158aac:      	str	r0, [sp, #4]
+  158ab0:      	mov	r0, #1
+  158ab4:      	bl	#-816180 <.plt+0x42ec>
+  158ab8:      	sub	sp, r11, #24
+  158abc:      	pop	{r4, r5, r6, r7, r8, r9, r11, pc}
+  158ac0:      	mov	r0, #0
+  158ac4:      	mov	r1, #0
+  158ac8:      	str	r0, [sp]
+  158acc:      	mov	r2, #0
+  158ad0:      	str	r0, [sp, #4]
+  158ad4:      	mov	r0, #3
+  158ad8:      	mov	r3, #0
+  158adc:      	bl	#-827272 <.plt+0x17c0>
+
+=== call site #85 ===
+  15975c:      	str	r3, [sp, #8]
+  159760:      	mov	r3, r8
+  159764:      	str	r12, [sp, #12]
+  159768:      	blx	r7
+  15976c:      	cmn	r0, #1
+  159770:      	str	r0, [r4, #88]
+  159774:      	bgt	#76 <_ZN9AliAiLabs4AGUI10DataCenter10uploadDataEv+0x240>
+  159778:      	mov	r0, #0
+  15977c:      	mov	r1, #0
+  159780:      	str	r0, [sp]
+  159784:      	mov	r2, #0
+  159788:      	str	r0, [sp, #4]
+  15978c:      	mov	r0, #3
+  159790:      	mov	r3, #0
+  159794:      	bl	#-830528 <.plt+0x17c0>
+
+=== call site #86 ===
+  15a6dc:      	ldrb	r0, [sp, #56]
+  15a6e0:      	tst	r0, #1
+  15a6e4:      	beq	#4 <_ZN9AliAiLabs4AGUI10DataCenter9mergeDataEP11json_object+0xc88>
+  15a6e8:      	ldr	r0, [sp, #64]
+  15a6ec:      	bl	#-840156 <.plt+0x17c>
+  15a6f0:      	tst	r4, #255
+  15a6f4:      	beq	#40 <_ZN9AliAiLabs4AGUI10DataCenter9mergeDataEP11json_object+0xcbc>
+  15a6f8:      	mov	r0, #0
+  15a6fc:      	mov	r1, #0
+  15a700:      	str	r0, [sp]
+  15a704:      	mov	r2, #0
+  15a708:      	str	r0, [sp, #4]
+  15a70c:      	mov	r0, #3
+  15a710:      	mov	r3, #0
+  15a714:      	bl	#-834496 <.plt+0x17c0>
+
+=== call site #87 ===
+  15ab80:      	mov	r0, r6
+  15ab84:      	mov	r1, r8
+  15ab88:      	strb	r9, [r4]
+  15ab8c:      	strb	r5, [r8, #33]
+  15ab90:      	bl	#-808644 <.plt+0x8138>
+  15ab94:      	mov	r0, r6
+  15ab98:      	mov	r1, #0
+  15ab9c:      	bl	#-808740 <.plt+0x80e4>
+  15aba0:      	mov	r0, #3
+  15aba4:      	mov	r1, #0
+  15aba8:      	mov	r2, #0
+  15abac:      	mov	r3, #0
+  15abb0:      	str	r5, [sp]
+  15abb4:      	str	r5, [sp, #4]
+  15abb8:      	bl	#-835684 <.plt+0x17c0>
+
+=== call site #88 ===
+  15bb2c:      	mov	r5, #0
+  15bb30:      	add	r1, pc, r1
+  15bb34:      	str	r5, [sp, #28]
+  15bb38:      	bl	#-844908 <.plt+0x338>
+  15bb3c:      	ldr	r0, [sp, #28]
+  15bb40:      	cmp	r0, #0
+  15bb44:      	beq	#148 <_ZN9AliAiLabs4AGUI10DataCenter10onResponseENS0_4IGcs12ResponseCodeEiP11json_object+0x21c>
+  15bb48:      	bl	#-825448 <.plt+0x4f4c>
+  15bb4c:      	mov	r3, r0
+  15bb50:      	str	r5, [sp]
+  15bb54:      	str	r5, [sp, #4]
+  15bb58:      	mov	r0, #5
+  15bb5c:      	mov	r1, #1
+  15bb60:      	mov	r2, #0
+  15bb64:      	bl	#-839696 <.plt+0x17c0>
+
+=== call site #89 ===
+  15bb74:      	sub	sp, r11, #28
+  15bb78:      	pop	{r4, r5, r6, r7, r8, r9, r10, r11, pc}
+  15bb7c:      	mov	r0, #0
+  15bb80:      	str	r0, [sp]
+  15bb84:      	str	r0, [sp, #4]
+  15bb88:      	mov	r0, #2
+  15bb8c:      	b	#12 <_ZN9AliAiLabs4AGUI10DataCenter10onResponseENS0_4IGcs12ResponseCodeEiP11json_object+0x1dc>
+  15bb90:      	mov	r0, #0
+  15bb94:      	str	r0, [sp]
+  15bb98:      	str	r0, [sp, #4]
+  15bb9c:      	mov	r0, #1
+  15bba0:      	mov	r1, #0
+  15bba4:      	mov	r2, #0
+  15bba8:      	mov	r3, #0
+  15bbac:      	bl	#-839768 <.plt+0x17c0>
+
+=== call site #90 ===
+  15bcc8:      	mov	r0, r5
+  15bccc:      	add	r1, pc, r1
+  15bcd0:      	bl	#-844800 <.plt+0x53c>
+  15bcd4:      	cmp	r0, #0
+  15bcd8:      	beq	#48 <_ZN9AliAiLabs4AGUI10DataCenter8onRouterEPNS0_9NlpResultEPcS4_P11json_objectS6_+0xe4>
+  15bcdc:      	ldr	r0, [r11, #8]
+  15bce0:      	bl	#-825856 <.plt+0x4f4c>
+  15bce4:      	mov	r3, r0
+  15bce8:      	mov	r0, #0
+  15bcec:      	str	r0, [sp]
+  15bcf0:      	mov	r1, #2
+  15bcf4:      	str	r0, [sp, #4]
+  15bcf8:      	mov	r0, #5
+  15bcfc:      	mov	r2, #0
+  15bd00:      	bl	#-840108 <.plt+0x17c0>
+
+=== call site #91 ===
+  15be48:      	andeq	r8, r7, r11, lsr pc
+
+0015be4c _ZN9AliAiLabs4AGUI10DataCenter12clearAllDataEv:
+  15be4c:      	push	{r4, r10, r11, lr}
+  15be50:      	add	r11, sp, #8
+  15be54:      	sub	sp, sp, #8
+  15be58:      	mov	r4, r0
+  15be5c:      	mov	r0, #0
+  15be60:      	str	r0, [sp]
+  15be64:      	mov	r1, #0
+  15be68:      	str	r0, [sp, #4]
+  15be6c:      	mov	r0, #6
+  15be70:      	mov	r2, #0
+  15be74:      	mov	r3, #0
+  15be78:      	bl	#-840484 <.plt+0x17c0>
+
+=== call site #92 ===
+  167c00:      	str	r6, [sp, #4]
+  167c04:      	bl	#-877956 <.plt+0x42ec>
+  167c08:      	mov	r0, r5
+  167c0c:      	bl	#-860036 <.plt+0x88f4>
+  167c10:      	mov	r5, r0
+  167c14:      	mov	r1, #0
+  167c18:      	mov	r6, #0
+  167c1c:      	bl	#-870408 <.plt+0x6080>
+  167c20:      	mov	r0, #0
+  167c24:      	mov	r1, #0
+  167c28:      	mov	r2, #0
+  167c2c:      	mov	r3, #0
+  167c30:      	str	r6, [sp]
+  167c34:      	str	r6, [sp, #4]
+  167c38:      	bl	#-889060 <.plt+0x17c0>
+
+=== call site #93 ===
+  167f7c:      	mov	r1, r12
+  167f80:      	bl	#-878848 <.plt+0x42ec>
+  167f84:      	mov	r0, r4
+  167f88:      	bl	#-860928 <.plt+0x88f4>
+  167f8c:      	mov	r1, #0
+  167f90:      	mov	r4, r0
+  167f94:      	mov	r5, #0
+  167f98:      	bl	#-871300 <.plt+0x6080>
+  167f9c:      	mov	r0, #0
+  167fa0:      	mov	r1, #0
+  167fa4:      	mov	r2, #0
+  167fa8:      	mov	r3, #0
+  167fac:      	str	r5, [sp]
+  167fb0:      	str	r5, [sp, #4]
+  167fb4:      	bl	#-889952 <.plt+0x17c0>

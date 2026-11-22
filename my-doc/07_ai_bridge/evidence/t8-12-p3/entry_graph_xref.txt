@@ -1,0 +1,83 @@
+
+########## SessionManager11onNlpResult ##########
+rows=0 -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-12-p3\_t.txt
+# _ZN9AliAiLabs4AGUI14SessionManager11onNlpResultEiiPNS0_9NlpResultE  (plt annotation 0x5c90)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+
+
+########## SessionManager16onNlpResultInner ##########
+rows=1 -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-12-p3\_t.txt
+# _ZN9AliAiLabs4AGUI14SessionManager16onNlpResultInnerEiPNS0_9NlpResultE  (plt annotation 0x578c)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+0x10ffa4`t_ZN9AliAiLabs4AGUI13RouterManager10onResponseEiP11json_object`tldr [r7, #48]`tldr [r9, #140]`tmov r9`tmov r6
+
+
+########## SessionManager14onNlpResultEnd ##########
+rows=1 -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-12-p3\_t.txt
+# _ZN9AliAiLabs4AGUI14SessionManager14onNlpResultEndEiPNS0_9NlpResultEi  (plt annotation 0x6074)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+0x11c970`t_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE`tldr [r4, #4]`tmov r9`tmov r7`tmov r6
+
+
+########## SessionManager8exitTalk ##########
+rows=1 -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-12-p3\_t.txt
+# _ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih  (plt annotation 0x5d80)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+0x117c0c`t_ZN9AliAiLabs4AGUI15SessionDispatch8onStreamEiPKch`tldr [r7, #12]`tmov r8`tmov #0`tadd pc, r3
+
+
+########## SessionProxy11onNlpResult ##########
+rows=1 -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-12-p3\_t.txt
+# _ZN9AliAiLabs4AGUI12SessionProxy11onNlpResultEiiPNS0_9NlpResultE  (plt annotation 0x5a98)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+0x1149d0`t_ZN9AliAiLabs4AGUI14SessionManager11onNlpResultEiiPNS0_9NlpResultE`tldr [r10, #20]`tmov r4`tmov r6`tmov r8
+
+
+########## SessionProxy16onNlpResultInner ##########
+rows=1 -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-12-p3\_t.txt
+# _ZN9AliAiLabs4AGUI12SessionProxy16onNlpResultInnerEiPNS0_9NlpResultE  (plt annotation 0x5ab0)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+0x114a00`t_ZN9AliAiLabs4AGUI14SessionManager11onNlpResultEiiPNS0_9NlpResultE`tldr [r10, #20]`tmov r4`tmov r8`tmov r8
+
+
+########## SessionProxy18onSpecialNlpResult ##########
+rows=0 -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-12-p3\_t.txt
+# _ZN9AliAiLabs4AGUI12SessionProxy18onSpecialNlpResultEiPNS0_9NlpResultE  (plt annotation 0x5abc)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+
+
+########## SessionProxy10onExitTalk ##########
+rows=1 -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-12-p3\_t.txt
+# _ZN9AliAiLabs4AGUI12SessionProxy10onExitTalkEi  (plt annotation 0x5a5c)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+0x114654`t_ZN9AliAiLabs4AGUI14SessionManager10onExitTalkEi`tldr [r5, #20]`tmov r4`tmov #1`tmov #1
+
+
+########## SessionProxy12onPushResult ##########
+rows=0 -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-12-p3\_t.txt
+# _ZN9AliAiLabs4AGUI12SessionProxy12onPushResultEiPNS0_9NlpResultE  (plt annotation 0x5ad4)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+
+
+########## SessionDispatch10playAudios ##########
+rows=3 -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-12-p3\_t.txt
+# _ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh  (plt annotation 0x5dec)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+0x11899c`t_ZN9AliAiLabs4AGUI15SessionDispatch16onNlpResultInnerEiPNS0_9NlpResultE`tadd sp, #12`tmov #131072`tmov r4`tmov r5
+0x118a2c`t_ZN9AliAiLabs4AGUI15SessionDispatch15onPushNlpResultEiPNS0_9NlpResultE`tldr [r2, #56]`tmov #131072`tmov r9`tmov r10
+0x119200`t_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE`tstr [sp, #4]`tmov #65536`tmov r6`tmov r10
+
+
+########## AudioManager19processMediaCommand ##########
+rows=1 -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-12-p3\_t.txt
+# _ZN9AliAiLabs4AGUI12AudioManager19processMediaCommandEPNS0_9NlpResultEPNS0_10ReturnCodeERh  (plt annotation 0x5d8c)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+0x117db8`t_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh`tmov r5`tmov r4`tmov r7`tadd sp, #19
+
+
+########## AudioManager17preProcessCommand ##########
+rows=1 -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-12-p3\_t.txt
+# _ZN9AliAiLabs4AGUI12AudioManager17preProcessCommandEPNS0_12ProtocolDataEPcPNS0_10ReturnCodeE  (plt annotation 0x5d98)
+# addr | containing function | r0 (what) | r1 (arg1/sid) | r2 (arg2) | r3 (arg3)
+0x117f0c`t_ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh`tmov r5`tmov r4`tmov r7`tldr [r11, #8]
+

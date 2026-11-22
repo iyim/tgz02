@@ -1,0 +1,43 @@
+# annotated disassembly 0x137340..0x1373cc of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI9NlpResultC2Ev @ 0x137340 ====
+137340  00 10 a0 e3 mov     r1, #0
+137344  01 21 00 e3 movw    r2, #257
+137348  28 10 80 e5 str     r1, [r0, #40]
+13734c  50 00 c0 f2 vmov.i32 q8, #0x0
+137350  2c 10 80 e5 str     r1, [r0, #44]
+137354  20 10 80 e5 str     r1, [r0, #32]
+137358  b0 23 c0 e1 strh    r2, [r0, #48]
+13735c  60 10 80 e5 str     r1, [r0, #96]
+137360  64 10 80 e5 str     r1, [r0, #100]
+137364  68 10 80 e5 str     r1, [r0, #104]
+137368  54 20 9f e5 ldr     r2, [pc, #84]
+13736c  02 20 9f e7 ldr     r2, [pc, r2]
+137370  08 20 82 e2 add     r2, r2, #8
+137374  00 20 80 e5 str     r2, [r0]
+137378  00 20 e0 e3 mvn     r2, #0
+13737c  8c 10 80 e5 str     r1, [r0, #140]
+137380  90 20 80 e5 str     r2, [r0, #144]
+137384  94 10 80 e5 str     r1, [r0, #148]
+137388  0d 10 80 e2 add     r1, r0, #13
+13738c  0f 0a 41 f4 vst1.8  {d16, d17}, [r1]
+137390  04 10 80 e2 add     r1, r0, #4
+137394  8f 0a 41 f4 vst1.32 {d16, d17}, [r1]
+137398  50 10 80 e2 add     r1, r0, #80
+13739c  8f 0a 41 f4 vst1.32 {d16, d17}, [r1]
+1373a0  44 10 80 e2 add     r1, r0, #68
+1373a4  8f 0a 41 f4 vst1.32 {d16, d17}, [r1]
+1373a8  34 10 80 e2 add     r1, r0, #52
+1373ac  8f 0a 41 f4 vst1.32 {d16, d17}, [r1]
+1373b0  7c 10 80 e2 add     r1, r0, #124
+1373b4  8f 0a 41 f4 vst1.32 {d16, d17}, [r1]
+1373b8  6c 10 80 e2 add     r1, r0, #108
+1373bc  8f 0a 41 f4 vst1.32 {d16, d17}, [r1]
+1373c0  1e ff 2f e1 bx      lr  ; -> indirect via lr
+1373c4  38 82 0b 00 andeq   r8, r11, r8, lsr r2
+
+==== _ZN9AliAiLabs4AGUI9NlpResultD2Ev @ 0x1373c8 ====
+1373c8  30 48 2d e9 push    {r4, r5, r11, lr}

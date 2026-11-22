@@ -1,0 +1,9 @@
+# annotated disassembly 0x1189e0..0x1189ec of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI15SessionDispatch18onSpecialNlpResultEiPNS0_9NlpResultE @ 0x1189e0 ====
+1189e0  02 17 a0 e3 mov     r1, #524288
+1189e4  02 30 a0 e1 mov     r3, r2
+1189e8  90 ff ff ea b       #-448 <_ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE>  ; -> 0x118830 FUNC:_ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE
