@@ -142,6 +142,7 @@ static int ug_fast_ready(const ug_config *c, const char *text, const char **why)
     if (text == NULL || text[0] == '\0') return 0;
     if (ug_looks_incomplete(text)) return 0;
     if (!ir_classify(text, &ir)) return 0;
+    if (!ir.complete) return 0;          /* T7-05-R1：参数不完整的走慢路（AI 澄清） */
     switch (ir.intent) {
     case IR_VOLUME:     bit = T7B_ROUTE_VOLUME; break;
     case IR_WEATHER:    bit = T7B_ROUTE_WEATHER; break;

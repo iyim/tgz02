@@ -6,6 +6,7 @@
  */
 #include "native_marker.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -68,15 +69,25 @@ int nm_parse(const char *buf, size_t len, nm_marker *out)
     out->exp_ms = nm_int(buf, "exp_ms", 0);
     out->have_session = 0;
 
-    if (nm_str(buf, "session", sess, sizeof(sess)) == 0 && sess[0] != '\0') {
+    /* T7-05-R1：三种情况必须分开，否则窗口兜底会被一个坏字段打开。
+     *   1) 没有 "session" 字段      -> 兼容旧格式，走窗口兜底；
+     *   2) 有字段且是合法十进制正整数 -> 必须按 session 精确匹配；
+     *   3) 有字段但是空/非数字/带尾巴/溢出/<=0 -> 整个标记无效，拒绝放行。 */
+    if (strstr(buf, "\"session\":") != NULL) {
         char *end = NULL;
 
-        v = strtoll(sess, &end, 10);
-        /* 只接受纯数字 session：解析不出数字就当"没有 session"，走窗口兜底 */
-        if (end != sess && v > 0) {
-            out->session = v;
-            out->have_session = 1;
+        if (nm_str(buf, "session", sess, sizeof(sess)) != 0 || sess[0] == '\0') {
+            out->valid = 0;                 /* 字段存在但取不到值 */
+            return -1;
         }
+        errno = 0;
+        v = strtoll(sess, &end, 10);
+        if (errno == ERANGE || end == sess || *end != '\0' || v <= 0) {
+            out->valid = 0;                 /* 非数字 / 溢出 / 负数 / 有残留字符 */
+            return -1;
+        }
+        out->session = v;
+        out->have_session = 1;
     }
     (void)nm_str(buf, "intent", out->intent, sizeof(out->intent));
     (void)nm_str(buf, "event_id", ev, sizeof(ev));

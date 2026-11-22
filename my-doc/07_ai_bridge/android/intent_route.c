@@ -33,6 +33,8 @@ static void ir_set(ir_result *out, ir_intent it, const char *rule, const char *a
 {
     if (out == NULL) return;
     out->intent = it;
+    out->complete = 1;              /* 默认"可以执行"，只有明确证据才降级 */
+    out->note[0] = '\0';
     if (rule != NULL) {
         strncpy(out->rule, rule, sizeof(out->rule) - 1);
         out->rule[sizeof(out->rule) - 1] = '\0';
@@ -41,6 +43,28 @@ static void ir_set(ir_result *out, ir_intent it, const char *rule, const char *a
         strncpy(out->arg, arg, sizeof(out->arg) - 1);
         out->arg[sizeof(out->arg) - 1] = '\0';
     }
+}
+
+/* T7-05-R1：结尾是这些 = 数量/动作还没说完。
+ * "音量调到"/"音量调到百分之" 命中 volume，但拿去执行会让原厂按自己的理解
+ * 把音量设成 100（真机实测），所以这类结果 complete=0，转 AI 澄清。 */
+static const char *const IR_TAIL_DANGLING[] = {
+    "调到", "调成", "设成", "设为", "改到", "改成", "换成", "变成",
+    "百分之", "百分", "到", "为",
+    NULL
+};
+
+static int ir_tail_dangling(const char *n)
+{
+    size_t len = strlen(n);
+    int i;
+
+    for (i = 0; IR_TAIL_DANGLING[i] != NULL; i++) {
+        size_t klen = strlen(IR_TAIL_DANGLING[i]);
+
+        if (len >= klen && strcmp(n + (len - klen), IR_TAIL_DANGLING[i]) == 0) return 1;
+    }
+    return 0;
 }
 
 /* 取第一个数字串（归一化后的文本只保留 ASCII 数字）写成 "set:<n>" */
@@ -89,13 +113,16 @@ static int ir_cn_digit(const char *p)
  * 原实现按表顺序试，"百分之"后面没有数字时会落到后面的短触发词"到"，
  * 于是"音量调到百分之"（ASR 截断）被解析成 set:100 —— 用户没说要 100，原厂却把音量拉满。
  */
-static int ir_take_cn_number(const char *norm, char *arg, size_t cap)
+static int ir_take_cn_number(const char *norm, char *arg, size_t cap, int *ambiguous)
 {
     static const char *const trig[] = {
         "百分之", "调到", "调成", "设成", "设为", "到", NULL
     };
     const char *best = NULL;      /* 最靠右的触发词之后的位置 */
+    int best_is_pct = 0;          /* 该触发词是"百分之" */
     int ti;
+
+    if (ambiguous != NULL) *ambiguous = 0;
 
     for (ti = 0; trig[ti] != NULL; ti++) {
         const char *hit = strstr(norm, trig[ti]);
@@ -103,7 +130,10 @@ static int ir_take_cn_number(const char *norm, char *arg, size_t cap)
         while (hit != NULL) {
             const char *p = hit + strlen(trig[ti]);
 
-            if (best == NULL || p > best) best = p;
+            if (best == NULL || p > best) {
+                best = p;
+                best_is_pct = (strcmp(trig[ti], "百分之") == 0);
+            }
             hit = strstr(hit + strlen(trig[ti]), trig[ti]);
         }
     }
@@ -140,6 +170,23 @@ static int ir_take_cn_number(const char *norm, char *arg, size_t cap)
             }
         }
         if (!seen) return 0;
+        /* "百分之" 后面只剩一个字（二 / 三 / 十 除外）很可能是"二十"被截断，
+         * 无法判断用户到底要 2 还是 20 —— 这种交给 AI 澄清，绝不执行。 */
+        if (best_is_pct && ambiguous != NULL) {
+            size_t seg = (size_t)(p - best);
+
+
+            if (seg == 3) {
+                static const char *const single_cn[] = {
+                    "一", "二", "两", "三", "四", "五", "六", "七", "八", "九", NULL
+                };
+                int k;
+
+                for (k = 0; single_cn[k] != NULL; k++) {
+                    if (memcmp(best, single_cn[k], 3) == 0) { *ambiguous = 1; break; }
+                }
+            }
+        }
         total = section + (num < 0 ? 0 : num);
         if (total > 100) total = 100;
         if (total <= 0) return 0;
@@ -220,9 +267,17 @@ static int ir_match_volume(const char *n, ir_result *out)
         ir_set(out, IR_VOLUME, "volume.half", "half");
         return 1;
     }
-    if (ir_take_cn_number(n, arg, sizeof(arg))) {
-        ir_set(out, IR_VOLUME, "volume.set", arg);
-        return 1;
+    {
+        int amb = 0;
+
+        if (ir_take_cn_number(n, arg, sizeof(arg), &amb)) {
+            ir_set(out, IR_VOLUME, "volume.set", arg);
+            if (amb) {
+                out->complete = 0;
+                snprintf(out->note, sizeof(out->note), "ambiguous-qty");
+            }
+            return 1;
+        }
     }
     if (ir_has(n, "最大") || ir_has(n, "全开")) {
         ir_set(out, IR_VOLUME, "volume.max", "max");
@@ -450,21 +505,32 @@ static int ir_fold_digits(const char *in, char *out, size_t cap)
 int ir_classify_norm(const char *norm, ir_result *out)
 {
     ir_result tmp;
+    ir_result *r;
+    int hit;
 
     if (out != NULL) memset(out, 0, sizeof(*out));
     if (norm == NULL || norm[0] == '\0') return 0;
+    r = (out != NULL) ? out : &tmp;
 
     /* 顺序即优先级：打断 > 关屏 > 开屏 > 天气 > 时间 > 播放控制 > 音量 */
-    if (ir_match_stop(norm, out != NULL ? out : &tmp)) return 1;
-    if (ir_match_screen_off(norm, out != NULL ? out : &tmp)) return 1;
-    if (ir_match_screen_on(norm, out != NULL ? out : &tmp)) return 1;
-    if (ir_match_weather(norm, out != NULL ? out : &tmp)) return 1;
-    if (ir_match_time(norm, out != NULL ? out : &tmp)) return 1;
-    if (ir_match_media(norm, out != NULL ? out : &tmp)) return 1;
-    if (ir_match_volume(norm, out != NULL ? out : &tmp)) return 1;
-    return 0;
-}
+    hit = ir_match_stop(norm, r) ||
+          ir_match_screen_off(norm, r) ||
+          ir_match_screen_on(norm, r) ||
+          ir_match_weather(norm, r) ||
+          ir_match_time(norm, r) ||
+          ir_match_media(norm, r) ||
+          ir_match_volume(norm, r);
+    if (!hit) return 0;
 
+    /* T7-05-R1：命中意图 != 参数完整。
+     * 句子结尾还挂在数量/动作上（"音量调到"/"音量调到百分之"）时只标记"识别到了"，
+     * 不标记"可以执行"，由 Worker 转 AI 澄清。 */
+    if (r->complete && ir_tail_dangling(norm)) {
+        r->complete = 0;
+        if (r->note[0] == '\0') snprintf(r->note, sizeof(r->note), "dangling");
+    }
+    return 1;
+}
 int ir_classify(const char *text, ir_result *out)
 {
     char prepared[IR_TEXT_MAX];

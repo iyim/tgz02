@@ -29,6 +29,7 @@
 #define IR_TEXT_MAX    EF_TEXT_MAX
 #define IR_RULE_MAX    40
 #define IR_ARG_MAX     24
+#define IR_NOTE_MAX    16
 
 typedef enum {
     IR_NONE = 0,
@@ -45,6 +46,11 @@ typedef struct {
     ir_intent intent;             /* IR_NONE = 没有命中任何本地指令 */
     char      rule[IR_RULE_MAX];  /* 命中的规则名，写日志用，例如 volume.mute */
     char      arg[IR_ARG_MAX];    /* volume 的参数：up / down / set:30 / mute / unmute */
+    /* T7-05-R1：命中意图 ≠ 可以执行。"音量调到百分之"命中了 volume，但参数不完整，
+     * 拿去执行会让原厂按它自己的理解把音量设成 100。只有 complete=1 才允许
+     * 写放行标记、交给原厂执行；complete=0 的走 AI 澄清。 */
+    int       complete;           /* 1 = 参数/语义完整，可执行 */
+    char      note[IR_NOTE_MAX];  /* 不完整原因：dangling / ambiguous-qty / ... */
 } ir_result;
 
 /* 本地意图路由的位掩码（worker.conf 的 route_intents=volume,time,...）

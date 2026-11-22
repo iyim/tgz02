@@ -1228,26 +1228,38 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
     /* ---- T7-05 ①：完整 utterance 到手，先看能不能交给原厂 ---- */
     if (w->cfg.route_native && ir_classify(slot->text, &ir) &&
         route_intent_enabled(w, ir.intent)) {
-        /* 同一条指令被 ASR 二次识别（真机样本：先"…调到百分之"，13 s 后"…调到百分之二十"）
-         * 时不再执行第二次：两段文本是前缀关系且意图相同，用户说的是同一句话。
-         * 只认前缀关系，所以"调到十"之后再说"调到二十"不会被误吞。 */
-        if (w->last_native_text[0] != '\0' && w->last_native_intent == (int)ir.intent &&
+        /* T7-05-R1 ①：识别到意图 != 参数完整。
+         * "音量调到百分之" 这种（数量被 ASR 截断）不允许写放行标记，否则原厂会按
+         * 自己的理解把音量设成 100。改成交给模型澄清，并且**不**记入 last_native_text，
+         * 免得后面那句完整的指令被当成重复吞掉。 */
+        if (!ir.complete) {
+            w->st.route_incomplete_ai++;
+            snprintf(w->st.route_last, sizeof(w->st.route_last),
+                     "route=ai (incomplete %s note=%s) event=%s session=%s",
+                     ir_intent_name(ir.intent), ir.note[0] != '\0' ? ir.note : "-",
+                     slot->event_id, slot->session);
+            always("route=ai INCOMPLETE intent=%s rule=%s note=%s event=%s session=%s "
+                   "text_bytes=%d (parameters not complete; ask the model instead of "
+                   "executing a partial command)",
+                   ir_intent_name(ir.intent), ir.rule,
+                   ir.note[0] != '\0' ? ir.note : "-", slot->event_id, slot->session,
+                   (int)strlen(slot->text));
+        } else if (
+            /* T7-05-R1 ②：二次识别去重只在"完全同一句话 + 极短间隔"时生效。
+             * 原来的"前缀关系 + 同意图 + 15 s"会把用户主动说的
+             * "播放周杰伦" -> "播放周杰伦的新歌" 吞掉，也会把 13 s 后才到的
+             * 更完整识别结果吞掉，所以前缀规则整体删除。 */
+            w->last_native_text[0] != '\0' &&
             now_ms - w->last_native_ms >= 0 &&
-            now_ms - w->last_native_ms <= T7B_NATIVE_REEVAL_MS) {
-            size_t a = strlen(w->last_native_text);
-            size_t b = strlen(slot->text);
-
-            if ((a < b && strncmp(slot->text, w->last_native_text, a) == 0) ||
-                (b < a && strncmp(w->last_native_text, slot->text, b) == 0)) {
-                w->st.route_dup_dropped++;
-                always("route=native SKIP duplicate recognition: event=%s session=%s "
-                       "intent=%s (prev was %dB, now %dB, gap=%lldms)",
-                       slot->event_id, slot->session, ir_intent_name(ir.intent),
-                       (int)a, (int)b, now_ms - w->last_native_ms);
-                return 1;
-            }
-        }
-        if (route_publish(w, slot->session, slot->event_id, &ir) == 0) {
+            now_ms - w->last_native_ms <= T7B_NATIVE_DUP_MS &&
+            strcmp(w->last_native_text, slot->text) == 0) {
+            w->st.route_dup_dropped++;
+            always("route=native SKIP exact duplicate recognition: event=%s session=%s "
+                   "intent=%s (gap=%lldms, same text %dB)",
+                   slot->event_id, slot->session, ir_intent_name(ir.intent),
+                   now_ms - w->last_native_ms, (int)strlen(slot->text));
+            return 1;
+        } else if (route_publish(w, slot->session, slot->event_id, &ir) == 0) {
             w->st.route_native++;
             /* 记下这次真正执行的指令，用来识别同一句话的二次识别 */
             utf8_copy_trunc(w->last_native_text, sizeof(w->last_native_text), slot->text);
@@ -1278,13 +1290,14 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
                    slot->session, (int)strlen(slot->text), slot->merges, slot->held_ms,
                    w->st.route_seq);
             return 1;
+        } else {
+            /* ---- T7-05 ②：标记没写成功 -> 不能静默跳过 AI，改走模型 ---- */
+            w->st.route_fallback_ai++;
+            always("route=native FALLBACK to ai: intent=%s event=%s session=%s reason=%s "
+                   "(guard would drop the factory answer, so the model must answer)",
+                   ir_intent_name(ir.intent), slot->event_id, slot->session,
+                   w->st.route_publish_err[0] != '\0' ? w->st.route_publish_err : "publish failed");
         }
-        /* ---- T7-05 ②：标记没写成功 -> 不能静默跳过 AI，改走模型 ---- */
-        w->st.route_fallback_ai++;
-        always("route=native FALLBACK to ai: intent=%s event=%s session=%s reason=%s "
-               "(guard would drop the factory answer, so the model must answer)",
-               ir_intent_name(ir.intent), slot->event_id, slot->session,
-               w->st.route_publish_err[0] != '\0' ? w->st.route_publish_err : "publish failed");
     }
 
     memset(&w->pend, 0, sizeof(w->pend));

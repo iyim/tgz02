@@ -1,5 +1,5 @@
 ﻿# T7-05 host unit test log
-# host time: 2026-11-22 09:15:48
+# host time: 2026-11-22 09:54:47
 
 === build t7_05_gate_order_unit_test ===
 cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_05_gate_order_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_05_gate_order_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c
@@ -45,6 +45,28 @@ cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\sys
 
 === total: pass=37 fail=0 ===
 
+=== build t7_05r1_incomplete_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_05r1_incomplete_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_05r1_incomplete_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_05r1_incomplete_unit_test ===
+=== T7-05-R1 incomplete command / duplicate recognition ===
+
+[1] 不完整表达：识别到意图但不能执行
+
+[2] 其它完整说法仍然可执行
+
+[3] 不完整表达进不了快路，也不会被当成完整指令发布
+
+[4] 先不完整、后完整：两条都要能各自处理，不能被去重吞掉
+
+[5] 用户主动说的第二条指令不会被当成重复
+
+[6] 同一句话被 ASR 重复识别：文本完全一致，交给 Worker 的 3 s 规则
+
+[7] 完整指令的快路不受影响
+
+=== total: pass=52 fail=0 ===
+
 === build t7_05_native_marker_unit_test ===
 cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_05_native_marker_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_05_native_marker_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts\native_marker.c
 (no compiler output: 0 warning, 0 error)
@@ -65,7 +87,9 @@ cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\sys
 
 [7] consecutive markers: seq distinguishes them
 
-=== total: pass=39 fail=0 ===
+[8] session field present but malformed -> marker invalid (no window fallback)
 
-# total: pass=108 fail=0
+=== total: pass=67 fail=0 ===
+
+# total: pass=188 fail=0
 # result: OK

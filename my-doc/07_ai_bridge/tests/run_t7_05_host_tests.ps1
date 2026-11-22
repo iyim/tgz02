@@ -69,6 +69,12 @@ Build-And-Run "t7_05_route_negatives_unit_test" "t7_05_route_negatives_unit_test
     (Join-Path $Android "intent_route.c"),
     (Join-Path $Android "echo_filter.c"))
 
+Build-And-Run "t7_05r1_incomplete_unit_test"    "t7_05r1_incomplete_unit_test.c" @(
+    (Join-Path $Android "utterance_gate.c"),
+    (Join-Path $Android "intent_route.c"),
+    (Join-Path $Android "echo_filter.c"),
+    (Join-Path $Android "worker_util.c"))
+
 Build-And-Run "t7_05_native_marker_unit_test"   "t7_05_native_marker_unit_test.c" @(
     (Join-Path $HookDir "native_marker.c"))
 

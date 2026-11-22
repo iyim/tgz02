@@ -134,7 +134,8 @@ typedef struct {
     unsigned long long route_publish_ok;       /* 落盘 + 回读校验通过 */
     unsigned long long route_publish_fail;     /* 任一步失败（已回退 AI） */
     unsigned long long route_fallback_ai;      /* 标记写失败后改走模型的条数 */
-    unsigned long long route_dup_dropped;      /* ASR 二次识别被并入前一次的条数 */
+    unsigned long long route_dup_dropped;      /* 完全重复识别被丢弃的条数 */
+    unsigned long long route_incomplete_ai;    /* 命中意图但参数不完整 -> 转 AI 澄清的条数 */
     unsigned long long route_publish_retry;    /* 重试次数 */
     long long          route_seq;              /* 标记单调序号（守卫用它区分两条连续指令） */
     char               route_publish_err[128]; /* 最近一次失败原因 */

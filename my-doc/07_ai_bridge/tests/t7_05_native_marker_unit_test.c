@@ -70,9 +70,11 @@ int main(void)
 
     printf("\n[5] marker without session: window fallback only\n");
     {
+        /* 真正"没有 session 字段"的老格式才走窗口兜底；
+         * "session":"" 属于"字段存在但为空"，见 [8]，必须判无效。 */
         const char *nosess =
-            "{\"version\":2,\"seq\":3,\"wall_ms\":1000,\"exp_ms\":3000,"
-            "\"session\":\"\",\"event_id\":\"e\",\"intent\":\"time\"}\n";
+            "{\"version\":1,\"seq\":3,\"wall_ms\":1000,\"exp_ms\":3000,"
+            "\"event_id\":\"e\",\"intent\":\"time\"}\n";
 
         check(nm_parse(nosess, strlen(nosess), &m) == 0, "parse ok");
         check(m.have_session == 0, "no session");
@@ -125,6 +127,44 @@ int main(void)
         check(mb.seq == ma.seq + 1, "seq monotonic");
     }
 
+    printf("\n[8] session field present but malformed -> marker invalid (no window fallback)\n");
+    {
+        static const char *const bad[] = {
+            "{\"version\":2,\"seq\":1,\"exp_ms\":3000,\"session\":\"\",\"intent\":\"time\"}\n",
+            "{\"version\":2,\"seq\":1,\"exp_ms\":3000,\"session\":\"abc\",\"intent\":\"time\"}\n",
+            "{\"version\":2,\"seq\":1,\"exp_ms\":3000,\"session\":\"1969141x\",\"intent\":\"time\"}\n",
+            "{\"version\":2,\"seq\":1,\"exp_ms\":3000,\"session\":\"-5\",\"intent\":\"time\"}\n",
+            "{\"version\":2,\"seq\":1,\"exp_ms\":3000,\"session\":\"0\",\"intent\":\"time\"}\n",
+            "{\"version\":2,\"seq\":1,\"exp_ms\":3000,\"session\":\"999999999999999999999999\",\"intent\":\"time\"}\n",
+            NULL
+        };
+        int k;
+
+        for (k = 0; bad[k] != NULL; k++) {
+            nm_marker bm;
+
+            check(nm_parse(bad[k], strlen(bad[k]), &bm) == -1, "malformed session rejected");
+            memset(&st, 0, sizeof(st));
+            check(nm_decide(&bm, 424242, 2000, &st, &by_session) == 0,
+                  "malformed session never falls back to the window");
+            check(by_session == 0, "not by session");
+            check(st.hit_window == 0, "window fallback not used");
+        }
+        /* 没有任何 session 字段的老格式：仍然按窗口兼容 */
+        {
+            const char *old =
+                "{\"version\":1,\"seq\":1,\"wall_ms\":1000,\"exp_ms\":3000,"
+                "\"event_id\":\"e\",\"intent\":\"time\"}\n";
+            nm_marker om;
+
+            check(nm_parse(old, strlen(old), &om) == 0, "old format without session parses");
+            check(om.have_session == 0, "old format has no session");
+            memset(&st, 0, sizeof(st));
+            check(nm_decide(&om, 424242, 2000, &st, &by_session) == 1,
+                  "old format still allowed inside the window");
+            check(st.hit_window == 1, "window fallback counted");
+        }
+    }
     printf("\n=== total: pass=%d fail=%d ===\n", g_pass, g_fail);
     return (g_fail == 0) ? 0 : 1;
 }
