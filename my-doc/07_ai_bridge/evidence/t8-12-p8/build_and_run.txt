@@ -1,0 +1,27 @@
+T8-12.8 build and run log
+generated: 2026-11-22 22:42:56  host: Windows x86_64
+compiler: gcc.exe (tdm64-1) 10.3.0
+
+$ cd my-doc/07_ai_bridge/analysis/t8_12/p8
+$ gcc -O1 -Wall -Wextra -std=c99 -pthread -o t8_12_8_lifecycle_model.exe t8_12_8_lifecycle_model.c
+  (no output = no warnings)  exit=0
+$ gcc -O1 -Wall -Wextra -std=c99 -o t8_12_8_install_fsm.exe t8_12_8_install_fsm.c
+  (no output = no warnings)  exit=0
+
+$ ./t8_12_8_lifecycle_model.exe
+  RESULT: PASS (checks=69 fails=0)
+  exit=0
+
+$ ./t8_12_8_lifecycle_model.exe --race-control      # negative control, must FAIL
+  !!! NEGATIVE CONTROL MODE: clock ticks are intentionally lossy !!!
+    [FAIL] 时钟精确等于各线程推进量之和（12343 vs 13333）—— now 无丢失更新
+  RESULT: FAIL (checks=69 fails=1)
+  exit=1 (expected 1)
+
+$ ./t8_12_8_install_fsm.exe
+  RESULT: PASS (checks=231 fails=0)
+  exit=0
+
+ThreadSanitizer: NOT AVAILABLE on this host -> see tsan_unavailable.txt
+  gcc -fsanitize=thread => ld.exe: cannot find -ltsan (mingw-w64 ships no TSan runtime)
+  gcc -fsanitize=address => cannot find -lasan ; -fsanitize=undefined => cannot find -lubsan
