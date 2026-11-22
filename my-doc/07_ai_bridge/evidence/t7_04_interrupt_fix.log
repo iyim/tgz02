@@ -1,0 +1,26 @@
+﻿# T7-04 interrupt fix evidence (2026-11-22 08:39:29)
+## BEFORE: wake interrupted our TTS, executor replayed it (attempts 1->2->3)
+{"ts":"2026-11-22T08:36:19.599+0800","kind":"tts","event_id":"t6-10414-1969525-g49","tts_id":5246333,"outcome":"interrupted","dur_ms":2556,"attempts":2}
+{"ts":"2026-11-22T08:36:19.616+0800","kind":"retry","event_id":"t6-10414-1969525-g49","attempts":2,"outcome":"interrupted"}
+{"ts":"2026-11-22T08:36:21.658+0800","kind":"tts","event_id":"t6-10414-1969525-g49","tts_id":5246335,"outcome":"stopped","dur_ms":14,"attempts":3}
+
+## AFTER: interrupted is terminal (no retry), stop is honoured, stop goes native
+{"ts":"2026-11-22T08:38:49.179+0800","kind":"tts","event_id":"t6-10414-1969536-g51","tts_id":5246340,"outcome":"interrupted","dur_ms":7729,"attempts":1}
+{"ts":"2026-11-22T08:38:53.467+0800","kind":"stop_request"}
+[aiw] 08:38:53 tts stop requested (route=native intent=stop)
+[aiw] 08:38:53 route=native intent=stop rule=stop.keyword arg=stop event=t6-10414-1969541-g52 seq=53 session=1969541
+[aiw] 08:38:41 tts queued: event=t6-10414-1969536-g51 reply_bytes=177   (was 499 bytes before the brevity prompt)
+
+## hashes
+369b07ffc46bc8957ad79aa775d9a968ccf20a12793b126bd4ad2606bce35fa2  /data/local/tmp/t5_bridge/bin/ai_worker
+426abbcdba6880bfe76a913a485e494a2f8dbda0c3161992f98cdc2a361508cb  /data/local/tmp/t5_bridge/tts_exec.dex
+
+## journal tail
+{"ts":"2026-11-22T08:36:14.959+0800","kind":"tts","event_id":"t6-10414-1969525-g49","tts_id":5246329,"outcome":"interrupted","dur_ms":7108,"text_bytes":171,"attempts":1}
+{"ts":"2026-11-22T08:36:15.017+0800","kind":"retry","event_id":"t6-10414-1969525-g49","attempts":1,"outcome":"interrupted"}
+{"ts":"2026-11-22T08:36:19.599+0800","kind":"tts","event_id":"t6-10414-1969525-g49","tts_id":5246333,"outcome":"interrupted","dur_ms":2556,"text_bytes":171,"attempts":2}
+{"ts":"2026-11-22T08:36:19.616+0800","kind":"retry","event_id":"t6-10414-1969525-g49","attempts":2,"outcome":"interrupted"}
+{"ts":"2026-11-22T08:36:21.631+0800","kind":"stop_request"}
+{"ts":"2026-11-22T08:36:21.658+0800","kind":"tts","event_id":"t6-10414-1969525-g49","tts_id":5246335,"outcome":"stopped","dur_ms":14,"text_bytes":171,"attempts":3}
+{"ts":"2026-11-22T08:38:49.179+0800","kind":"tts","event_id":"t6-10414-1969536-g51","tts_id":5246340,"outcome":"interrupted","dur_ms":7729,"text_bytes":177,"attempts":1}
+{"ts":"2026-11-22T08:38:53.467+0800","kind":"stop_request"}

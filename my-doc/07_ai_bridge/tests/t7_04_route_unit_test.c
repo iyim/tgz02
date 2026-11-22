@@ -99,8 +99,8 @@ int main(void)
     expect_intent("把屏幕点亮", IR_SCREEN_ON, "");
 
     printf("\n[3b] media control (factory skill, must not be answered by the model)\n");
-    expect_intent("天猫精灵暂停播放", IR_MEDIA, "pause");
-    expect_intent("暂停", IR_MEDIA, "pause");
+    expect_intent("天猫精灵暂停播放", IR_STOP, "stop");
+    expect_intent("暂停", IR_STOP, "stop");
     expect_intent("继续播放", IR_MEDIA, "play");
     expect_intent("下一首", IR_MEDIA, "play");
     expect_intent("上一首", IR_MEDIA, "play");
@@ -108,6 +108,15 @@ int main(void)
     expect_intent("播一首周杰伦的歌", IR_MEDIA, "play");
     expect_intent("放首歌听听", IR_MEDIA, "play");
 
+    printf("\n[3c] stop / interrupt (must never reach the model)\n");
+    expect_intent("停止", IR_STOP, "stop");
+    expect_intent("天猫精灵停止", IR_STOP, "stop");
+    expect_intent("暂停", IR_STOP, "stop");
+    expect_intent("别说了", IR_STOP, "stop");
+    expect_intent("不用说了", IR_STOP, "stop");
+    expect_intent("安静", IR_STOP, "stop");
+    expect_intent("停一下", IR_STOP, "stop");
+    expect_intent("停止线是什么意思", IR_NONE, NULL);
     printf("\n[4] time\n");
     expect_intent("现在几点", IR_TIME, "");
     expect_intent("现在是什么时间", IR_TIME, "");

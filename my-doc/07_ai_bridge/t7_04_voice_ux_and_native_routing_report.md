@@ -394,3 +394,66 @@ host 单测相应扩到 **196 断言 0 失败**（新增 `[1b]` 中文数字与"
 
 产物 sha256 随之更新：`ai_worker 89e4d6e0bc6454d753fd555a8e1f08392fbdbf4294ed2a139d2d24b9871604a8`（守卫未变）。
 证据：`evidence/t7_04_hotfix_route_coverage.log`。
+
+---
+
+## 12. 第二处真人测试缺陷：打断无效、以及"暂停"被交给模型
+
+用户实测：问"郑州有什么好吃的"→ 回答很长 → 中途唤醒说"暂停"→ 播报没停、继续说完 → 说完又补一句"我暂停不了，请你自己操作音箱"。
+
+### 12.1 真机日志还原（`events.jsonl` + `ai_worker.log` + `tts/journal.jsonl`）
+
+```
+08:29:07 route=ai  … "天猫精灵郑州有什么好吃的"        reply_bytes=499   （≈15 秒语音）
+08:30:01 route=ai  … "天猫精灵停止"                    reply_bytes=147   ← 模型回答"我暂停不了"（就是用户听到的那句）
+08:30:08 route=native intent=media rule=media.pause     （"天猫精灵暂停"）
+
+tts/journal.jsonl:
+  08:30:04 … outcome=ok        （长回答播完）
+  08:30:04 … outcome=ok        （"我暂停不了" 那句随后开播）
+```
+
+三个独立缺陷叠加，才出现用户看到的现象：
+
+1. **"停止"落到了模型**：上一轮为防误判把裸"停止"从播放控制表里删掉了，于是"停止/别说了/安静"这类话没有意图可命中 → 送模型 → 模型只能回答"我停不了，你自己操作"。这就是用户听到的第二段话。
+2. **打断没有真正生效**：原厂唤醒确实打断了我们的播报（TTS 状态回 `interrupted`），但 TtsExec 把 `interrupted` 当成"可重试失败"→ 重新入队、2 秒后再播一遍（journal 里 `attempts=1 → 2 → 3`）。这就是"没停、还在继续说"。
+3. **回答太长**：499–653 字节（约 15–20 秒），给打断留下的时间窗太大。
+
+### 12.2 修复
+
+| # | 位置 | 改动 |
+|---|---|---|
+| 1 | `intent_route.c` | 新增 `stop` 意图（停止/停下/停一下/暂停/别说了/不用说了/安静/闭嘴/打住），否决词覆盖"停止线/停车/为什么"；`暂停` 从 media 移到 stop |
+| 2 | `ai_worker.c` | ① 命中 `stop` 时写 `tts/control/stop`（`tts_request_stop()`，幂等）；② **播报中来了任何新指令**先写 stop 打断（`interrupt_if_speaking()`，计数器 `interrupts`），再走正常路由 |
+| 3 | `tts_exec/TtsExec.java` | `interrupted` 改为**终态**（不重播）；`stopRequest` 生效后队列里剩下的项直接 `cancel`（journal 记 `kind=cancel`），不再"先播半秒再停" |
+| 4 | `deepseek_provider.h` | 提示词加"默认两三句话、尽量不超过 60 字，用户要求详细才展开"（`system prompt` 603→689 B） |
+| 5 | 设备 `worker.conf` | `max_tokens=300 → 200` |
+
+### 12.3 修复后的真机证据
+
+```
+[aiw] 08:38:41 tts queued: event=…-g51 reply_bytes=177        ← 回答变短（之前的同类问题是 499）
+tts/journal.jsonl:
+  08:38:49 … event_id=…-g51 tts_id=5246340 outcome=interrupted dur_ms=7729 attempts=1
+  08:38:53 … kind=stop_request
+[aiw] 08:38:53 tts stop requested (route=native intent=stop)
+[aiw] 08:38:53 route=native intent=stop rule=stop.keyword arg=stop event=…-g52 seq=53 session=1969541
+```
+
+关键点：`interrupted` 之后**没有 retry 行、没有 attempts=2**——被唤醒打断的回答不会再自己续上；
+"暂停"不再进入模型（没有对应的 `route=ai` / provider 调用）。
+
+产物：`ai_worker 369b07ffc46bc8957ad79aa775d9a968ccf20a12793b126bd4ad2606bce35fa2`、
+`tts_exec.dex 426abbcdba6880bfe76a913a485e494a2f8dbda0c3161992f98cdc2a361508cb`（守卫未变 `fc1d27f2…`）。
+
+### 12.4 仍然存在的边界
+
+- 原厂收到"暂停"后可能回一句（例如"暂不支持该操作"）。目前守卫按 `native_allow` 放行，所以用户会听到这句短回应；
+  若要求"打断时完全静默不出声"，下一步是在守卫里对 `intent=stop` 的会话直接 DROP（改动很小，等需求确认）。
+- 唤醒本身会打断播报（原厂行为），这是好的；但打断后如果用户什么都不说，就只剩静音，不会有"我还在听"的提示。
+
+### 12.5 过程教训
+
+两次真人反馈都指向同一件事：**我只用自己生成的短句验收，没有覆盖"用户会怎么打断、怎么说停"**。
+现在 host 单测里已经有 `[3c] stop / interrupt` 一组（含 `停止线是什么意思` 这种否决样本），
+并且 `interrupt_if_speaking` 的判定依赖 `play.public.json` 的真实状态，不再靠猜。

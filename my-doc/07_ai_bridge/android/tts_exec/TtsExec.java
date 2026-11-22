@@ -836,6 +836,23 @@ public final class TtsExec {
                 continue;
             }
             it.attempts = it.attempts + 1;
+            /* T7-04：已经有 stop 请求（用户插话/说"停"）→ 队列里剩下的项直接作废，
+             * 不再"先播一遍再停"（否则还能听到半秒残音），也不算失败。 */
+            if (stopRequest) {
+                nStopped++;
+                processed++;
+                journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"cancel\",\"event_id\":\""
+                        + esc(it.eventId) + "\",\"attempts\":" + it.attempts + "}");
+                out("event " + it.eventId + " cancelled (stop requested)");
+                if (!markDone(it)) {
+                    nDoneFailed++;
+                    writeState();
+                    continue;
+                }
+                if (!claimed.delete()) out("payload delete failed: " + claimed.getName());
+                writeState();
+                continue;
+            }
             /* T7-02：进入播报前先发布 playing，播完（成功/失败/超时）发布 idle。
              * 中间不需要轮询：playItem 本身阻塞到结束。 */
             pubState = "playing";
@@ -853,9 +870,12 @@ public final class TtsExec {
             nPlayed++;
             processed++;
 
-            if (outcome.equals("ok") || outcome.equals("stopped")) {
+            if (outcome.equals("ok") || outcome.equals("stopped") || outcome.equals("interrupted")) {
+                /* T7-04：interrupted 也是终态。它来自"用户唤醒/插话把播报打断"，
+                 * 重播一遍等于把用户刚打断的那段话又说回去（真机实测：唤醒后回答又续上）。 */
                 if (outcome.equals("ok")) nOk++;
-                else { nStopped++; stopRequest = false; }
+                else if (outcome.equals("stopped")) { nStopped++; stopRequest = false; }
+                else { nInterrupted++; stopRequest = false; }
                 if (!markDone(it)) {
                     /* done 标记没落盘：回答正文还在 inflight/，绝不删除；重启后重放（可能重复播一次） */
                     nDoneFailed++;
@@ -871,7 +891,6 @@ public final class TtsExec {
             } else {
                 /* timeout / error / interrupted / rejected / provider_error：不丢正文，回到队列重试 */
                 if (outcome.equals("timeout")) nTimeout++;
-                else if (outcome.equals("interrupted")) nInterrupted++;
                 else nError++;
 
                 boolean toFailed = it.attempts >= maxAttempts;

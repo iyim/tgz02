@@ -125,6 +125,8 @@ typedef struct {
     unsigned long long route_time;
     unsigned long long route_screen_on;
     unsigned long long route_media;
+    unsigned long long route_stop;
+    unsigned long long interrupts;             /* 播报中被新指令打断的次数 */
     char               route_last[96];         /* "route=native intent=time rule=time.keyword" */
     char               route_publish_file[T6B_PATH_MAX]; /* 给 TTS 守卫的原厂放行标记 */
 

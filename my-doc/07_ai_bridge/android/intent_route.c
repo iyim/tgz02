@@ -333,7 +333,7 @@ static int ir_match_screen_on(const char *n, ir_result *out)
 /* ---------------- 播放控制（原厂技能） ---------------- */
 
 static const char *const IR_MEDIA_HIT[] = {
-    "暂停", "继续播放", "接着放", "接着播", "停止播放", "静音播放",
+    "继续播放", "接着放", "接着播",
     "下一首", "上一首", "切歌", "换一首", "换首歌", "单曲循环", "随机播放",
     "播放音乐", "放首歌", "来首歌", "放音乐", "播放歌曲", "播放", "放一首", "播一首", "播首", "放首",
     "来一首", "唱一首", "听歌", "停止音乐", "关掉音乐", "音乐关掉", NULL
@@ -349,9 +349,32 @@ static int ir_match_media(const char *n, ir_result *out)
 {
     if (!ir_has_any(n, IR_MEDIA_HIT)) return 0;
     if (ir_has_any(n, IR_MEDIA_VETO)) return 0;
-    if (ir_has(n, "暂停")) { ir_set(out, IR_MEDIA, "media.pause", "pause"); return 1; }
+
     if (ir_has_any(n, IR_MEDIA_HIT)) { ir_set(out, IR_MEDIA, "media.play", "play"); return 1; }
     return 0;
+}
+
+/* ---------------- 打断播报 ---------------- */
+
+/* 用户想"现在别说了"。这类话绝不能让模型回答（模型只会说"我停不了，你自己操作"），
+ * 而且必须在 Worker 侧先把正在播的回答停掉（写 tts/control/stop）。 */
+static const char *const IR_STOP_HIT[] = {
+    "停止", "停下", "停一下", "先停", "暂停", "别说了", "别说", "不要说了",
+    "不用说了", "安静", "闭嘴", "打住", "停", NULL
+};
+
+static const char *const IR_STOP_VETO[] = {
+    /* "停止"出现在问句/解释里，不是要打断 */
+    "什么意思", "为什么", "怎么", "什么是", "停止线", "停车", "停靠", "不停",
+    NULL
+};
+
+static int ir_match_stop(const char *n, ir_result *out)
+{
+    if (!ir_has_any(n, IR_STOP_HIT)) return 0;
+    if (ir_has_any(n, IR_STOP_VETO)) return 0;
+    ir_set(out, IR_STOP, "stop.keyword", "stop");
+    return 1;
 }
 
 /* ---------------- 归一化与分类 ---------------- */
@@ -406,7 +429,8 @@ int ir_classify_norm(const char *norm, ir_result *out)
     if (out != NULL) memset(out, 0, sizeof(*out));
     if (norm == NULL || norm[0] == '\0') return 0;
 
-    /* 顺序即优先级：关屏 > 开屏 > 天气 > 时间 > 播放控制 > 音量 */
+    /* 顺序即优先级：打断 > 关屏 > 开屏 > 天气 > 时间 > 播放控制 > 音量 */
+    if (ir_match_stop(norm, out != NULL ? out : &tmp)) return 1;
     if (ir_match_screen_off(norm, out != NULL ? out : &tmp)) return 1;
     if (ir_match_screen_on(norm, out != NULL ? out : &tmp)) return 1;
     if (ir_match_weather(norm, out != NULL ? out : &tmp)) return 1;
@@ -439,6 +463,7 @@ const char *ir_intent_name(ir_intent it)
     case IR_TIME:       return "time";
     case IR_SCREEN_ON:  return "screen_on";
     case IR_MEDIA:      return "media";
+    case IR_STOP:       return "stop";
     case IR_NONE:
     default:            return "none";
     }
@@ -453,5 +478,6 @@ int ir_intent_from_name(const char *name)
     if (strcmp(name, "time") == 0) return IR_TIME;
     if (strcmp(name, "screen_on") == 0) return IR_SCREEN_ON;
     if (strcmp(name, "media") == 0) return IR_MEDIA;
+    if (strcmp(name, "stop") == 0) return IR_STOP;
     return IR_NONE;
 }

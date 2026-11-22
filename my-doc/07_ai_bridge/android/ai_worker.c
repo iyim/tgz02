@@ -1025,6 +1025,7 @@ static int route_intent_enabled(const t6b_worker *w, ir_intent it)
     case IR_SCREEN_OFF: bit = T7B_ROUTE_SCREEN_OFF; break;
     case IR_SCREEN_ON:  bit = T7B_ROUTE_SCREEN_ON; break;
     case IR_MEDIA:      bit = T7B_ROUTE_MEDIA; break;
+    case IR_STOP:       bit = T7B_ROUTE_STOP; break;
     case IR_TIME:       bit = T7B_ROUTE_TIME; break;
     default:            return 0;
     }
@@ -1220,6 +1221,57 @@ static void session_poll(t6b_worker *w, long long now_ms)
     }
 }
 
+/* 让 TTS 执行器立刻停播（并作废 queue/inflight 里还没播的项）。
+ * 机制是 T5-06D 就有的：TtsExec 每轮扫描 <tts_queue>/control/stop，见到就调原厂
+ * stopTts(-1) 并跳过后续项。这里只负责把"该停了"这件事写下去。 */
+static void tts_request_stop(t6b_worker *w, const char *why)
+{
+    char path[T6B_PATH_MAX];
+    int fd;
+
+    if (w->cfg.tts_queue[0] == '\0') return;
+    join_path(path, sizeof(path), w->cfg.tts_queue, "control/stop");
+    if (wu_file_size(path) >= 0) return;          /* 已经有未处理的 stop 请求，别重复写 */
+    fd = wu_open_wo(path);
+    if (fd < 0) {
+        always("tts stop request failed (%s): %s", why != NULL ? why : "-", path);
+        return;
+    }
+    if (wu_write_all(fd, why != NULL ? why : "stop", strlen(why != NULL ? why : "stop")) != 0) {
+        wu_close(fd);
+        wu_unlink(path);
+        always("tts stop request write failed: %s", path);
+        return;
+    }
+    wu_close(fd);
+    always("tts stop requested (%s)", why != NULL ? why : "-");
+}
+
+/* 播报中来了新的一句话：先打断当前播报（真人对话里用户插话优先），再正常走路由。 */
+static void interrupt_if_speaking(t6b_worker *w)
+{
+    int playing = 0;
+
+    if (w->cfg.tts_queue[0] == '\0') return;
+    if (w->cs.state == CS_SPEAKING) playing = 1;
+    if (!playing) {
+        char path[T6B_PATH_MAX];
+        char buf[768];
+        size_t len = 0;
+
+        join_path(path, sizeof(path), w->cfg.tts_queue, "play.public.json");
+        if (wu_read_file(path, buf, sizeof(buf), &len) == 0 &&
+            strstr(buf, "\"playing\"") != NULL) {
+            playing = 1;
+        }
+    }
+    if (!playing) return;
+    w->st.interrupts++;
+    always("interrupt: playback stopped for a new utterance (session_state=%s)",
+           cs_state_name(w->cs.state));
+    tts_request_stop(w, "new utterance");
+}
+
 static int worker_loop(t6b_worker *w, const char **exit_reason)
 {
     long long started = wu_now_ms();
@@ -1357,6 +1409,10 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                               ev.event_id, ev.seq, w->ef.last_reason_text);
                     }
                 }
+                /* T7-04：用户插话优先——播报中来了新指令，先停播再处理，
+                 * 否则"暂停/停止"只能排队等在长回答后面（实测就是这样）。 */
+                interrupt_if_speaking(w);
+
                 /* T7-04 功能二：本地意图优先路由。
                  * 命中原厂已有能力（音量/天气/关屏/开屏/时间）时：
                  *   1) 不请求模型（route=native），避免原厂与 AI 双重回答；
@@ -1373,10 +1429,15 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                         case IR_SCREEN_OFF: w->st.route_screen_off++; break;
                         case IR_SCREEN_ON:  w->st.route_screen_on++; break;
                         case IR_MEDIA:      w->st.route_media++; break;
+                        case IR_STOP:       w->st.route_stop++; break;
                         case IR_TIME:       w->st.route_time++; break;
                         default: break;
                         }
                         route_publish(w, &ev, &ir);
+                        if (ir.intent == IR_STOP) {
+                            /* 打断类：先把声音停掉，再让原厂回一句 */
+                            tts_request_stop(w, "route=native intent=stop");
+                        }
                         snprintf(w->st.route_last, sizeof(w->st.route_last),
                                  "route=native intent=%s rule=%s arg=%s session=%s",
                                  ir_intent_name(ir.intent), ir.rule, ir.arg, ev.session_id);
