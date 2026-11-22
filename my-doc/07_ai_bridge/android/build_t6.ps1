@@ -52,9 +52,12 @@ $Targets = @(
         name = "libtg_hook.so"
         out  = (Join-Path $Out "libtg_hook.so")
         args = @("-O2", "-Wall", "-Wextra", "-std=gnu99", "-fPIC", "-shared",
-                 "-I", $HookDir, "-o", (Join-Path $Out "libtg_hook.so"),
+                 "-I", $HookDir, "-I", $Here, "-o", (Join-Path $Out "libtg_hook.so"),
                  (Join-Path $HookDir "libtg_hook.c"),
                  (Join-Path $HookDir "tg_wire.c"),
+                 (Join-Path $Here "nlu_takeover.c"),
+                 (Join-Path $Here "intent_route.c"),
+                 (Join-Path $Here "echo_filter.c"),
                  "-llog")
     }
 )

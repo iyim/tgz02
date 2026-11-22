@@ -48,7 +48,8 @@ typedef pthread_mutex_t t8_to_mutex;
 typedef enum {
     T8_TO_PASS = 0,             /* 交给原厂：NLU 结果照常进 CDM，本地技能照常执行 */
     T8_TO_TAKE = 1,             /* 我方接管：该会话的 NLU 结果必须被丢弃（已登记） */
-    T8_TO_TAKE_UNREGISTERED = 2 /* 应当接管但**没能登记**（容量耗尽）：调用方必须按接管处理 */
+    T8_TO_TAKE_UNREGISTERED = 2,/* 应当接管但**没能登记**（容量耗尽）：调用方必须按接管处理 */
+    T8_TO_TAKE_FAILCLOSED = 3   /* 接管已开启但状态不可用/会话缺失：调用方必须按接管处理 */
 } t8_to_decision;
 
 typedef enum {
@@ -56,7 +57,9 @@ typedef enum {
     T8_TO_WHY_AI = 1,             /* 不是本地指令（IR_NONE） */
     T8_TO_WHY_AI_INCOMPLETE = 2,  /* 命中意图但参数不完整，交给 AI 澄清 */
     T8_TO_WHY_AI_INTENT_OFF = 3,  /* 命中了意图，但该意图当前未启用本地路由 */
-    T8_TO_WHY_OVERFLOW = 4        /* 应当接管，但槽位已满（容量耗尽） */
+    T8_TO_WHY_OVERFLOW = 4,       /* 应当接管，但槽位已满（容量耗尽） */
+    T8_TO_WHY_FAILCLOSED = 5,     /* 接管已开启，但锁/状态不可用（异常降级） */
+    T8_TO_WHY_NO_SESSION = 6      /* 接管已开启，但会话 id 缺失，无法定界 */
 } t8_to_why;
 
 typedef struct {
@@ -72,6 +75,9 @@ typedef struct {
 typedef struct {
     t8_to_mutex mutex;
     int         mutex_ready;
+    int         enabled;               /* 0 = 接管关闭（原厂行为完全不变），1 = 开启 */
+    int         init_error;            /* 1 = 曾经初始化失败（开启时锁不可用） */
+    long long   failclosed_until_ms;   /* > now 时处于 fail-closed 窗口（状态不可用/会话缺失） */
     t8_to_slot  slot[T8_TO_SLOTS];
     long long   degraded_until_ms;     /* > now 时处于 fail-closed 降级窗口 */
     unsigned long marked;              /* 判定为接管并**成功**登记的次数 */
@@ -82,11 +88,24 @@ typedef struct {
     unsigned long overflow;            /* 应当接管但槽位耗尽的次数（必须 > 0 时告警） */
     unsigned long degraded_passes;     /* 降级窗口内被 fail-closed 丢掉的未登记结果次数 */
     unsigned long reentrant_marks;     /* 同一会话被重复登记的次数（去重生效的证据） */
+    unsigned long failclosed_events;   /* 触发 fail-closed 的次数（状态不可用 / 会话缺失） */
+    unsigned long failclosed_passes;   /* fail-closed 窗口内被拦下的未登记结果次数 */
 } t8_to_state;
 
-/* 返回 0 = 初始化成功；-1 = 锁初始化失败（调用方必须停用接管，不许"裸跑"） */
+/* 返回 0 = 初始化成功；-1 = 锁初始化失败（接管开启时调用方必须按 fail-closed 处理） */
 int  t8_to_init(t8_to_state *st);
 void t8_to_destroy(t8_to_state *st);
+
+/*
+ * 开关（默认关闭）。关闭时所有入口保持原厂行为：
+ *   t8_to_on_final() 恒返回 T8_TO_PASS（不写任何状态），t8_to_should_drop() 恒返回 0。
+ * 开启后：
+ *   - 锁不可用（init 失败）-> on_final 返回 T8_TO_TAKE_FAILCLOSED、should_drop 恒返回 1，
+ *     并且**完全不触碰**共享状态（"无锁不访问"是硬规则）；
+ *   - 会话 id 缺失 -> 开 fail-closed 窗口并返回 T8_TO_TAKE_FAILCLOSED（不许静默放行）。
+ */
+int  t8_to_enabled_set(t8_to_state *st, int on);
+int  t8_to_enabled(const t8_to_state *st);
 
 /*
  * onStream(isFinished=1) 时调用：判定并登记。
@@ -114,8 +133,11 @@ int t8_to_active(t8_to_state *st, long long now_ms);
 /* 诊断快照（一次性取走所有计数，供状态文件使用） */
 typedef struct {
     int           active;
+    int           enabled;
+    int           init_error;
     int           overflow;
     int           degraded;
+    int           failclosed;
     unsigned long marked;
     unsigned long passed;
     unsigned long dropped;
@@ -124,6 +146,8 @@ typedef struct {
     unsigned long overflow_events;
     unsigned long degraded_passes;
     unsigned long reentrant_marks;
+    unsigned long failclosed_events;
+    unsigned long failclosed_passes;
 } t8_to_snapshot;
 
 void t8_to_snapshot_take(t8_to_state *st, long long now_ms, t8_to_snapshot *out);

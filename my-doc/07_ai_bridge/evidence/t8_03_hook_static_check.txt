@@ -1,0 +1,73 @@
+# T8-03 hook prototype static check (ARM32 libtg_hook.so from build_t6.ps1)
+# sha256: 34f5489dc75e2ed0b0f3cdbf4c9d95b124a5185a7d6dc6e1346f1c8590a0ef0a
+# stub word pool found at 0x3650 (12 words, source order reconstructed below)
+
+## 1) embedded stub words (literal pool 0x3650..)
+  0x3650: 0xe92d401f
+  0x3654: 0xe59f4014
+  0x3658: 0xe12fff34
+  0x365c: 0xe1a0c000
+  0x3660: 0xe8bd401f
+  0x3664: 0xe35c0000
+  0x3668: 0x1a000002
+  0x366c: 0xe59ff00c
+  0x3670: 0xe12fff1e
+  0x3674: 0xe3a00000
+
+## 2) source order emitted by build_nlu_stub_page (c[0]..c[11], addresses as placeholders)
+  c[0] = 0xe92d401f
+  c[1] = 0xe59f4014
+  c[2] = 0xe12fff34
+  c[3] = 0xe1a0c000
+  c[4] = 0xe8bd401f
+  c[5] = 0xe35c0000
+  c[6] = 0x1a000002
+  c[7] = 0xe59ff00c
+  c[8] = 0x11111111
+  c[9] = 0x00000000
+  c[10] = 0xe3a00000
+  c[11] = 0xe12fff1e
+  c[12] = trampoline address (runtime)
+
+## 3) disassembly of that exact word stream (== what the builder writes at runtime)
+  0: 1f 40 2d e9                  	push	{r0, r1, r2, r3, r4, lr}
+  4: 14 40 9f e5                  	ldr	r4, [pc, #20]
+  8: 34 ff 2f e1                  	blx	r4
+  c: 00 c0 a0 e1                  	mov	r12, r0
+  10: 1f 40 bd e8                  	pop	{r0, r1, r2, r3, r4, lr}
+  14: 00 00 5c e3                  	cmp	r12, #0
+  18: 02 00 00 1a                  	bne	#8 <g+0x28>
+  1c: 0c f0 9f e5                  	ldr	pc, [pc, #12]
+  20: 11 11 11 11                  	tstne	r1, r1, lsl r1
+  24: 00 00 00 00                  	andeq	r0, r0, r0
+  28: 00 00 a0 e3                  	mov	r0, #0
+  2c: 1e ff 2f e1                  	bx	lr
+
+## 4) 序言前提（hook 会把这两条原厂指令搬进 trampoline 重放）
+  TG_NLU_PRO_W0 = 0xE92D4FF0  (push {r4-r11, lr})   == 目标函数实测首字
+  TG_NLU_PRO_W1 = 0xE28DB01C  (add  r11, sp, #28)    == 目标函数实测次字
+  两条都不引用 PC -> 可以直接搬到 trampoline，无需重定位
+  入口 0x118ebc 为偶数 -> ARM 模式（Thumb 符号是奇数），4 字节对齐
+
+## 5) 8 字节入口补丁字面量（与 onStream 同一机制）
+  patch word[0] = 0xe51ff004  ldr pc, [pc, #-4]  (TG_PATCH_JUMP)
+  patch word[1] = 0x00000000  stub page 地址 (运行期写入)
+  TG_PATCH_JUMP 常量在库内的出现位置: 
+  （TG_PATCH_JUMP 由编译器用 movw/movt 立即数生成，不落字面量池：
+     340c: movw r8, #61444  (0xf004)
+     3410: movt r8, #58655  (0xe51f)  -> 0xe51ff004 = ldr pc, [pc, #-4]
+     4190/4194: onStream hook 里同一个常量，生产环境已工作多轮）
+
+## 6) 寄存器纪律（跳过路径）
+  stub 用 r4（callee-saved）做跳板 -> 必须 push/pop；用 r12（caller-saved 草稿）存判定 -> 不必保存
+  push {r0,r1,r2,r3,r4,lr} / pop {r0,r1,r2,r3,r4,lr}：参数与 lr 原样恢复，
+  lr 仍是调用者的返回地址（PLT 桩是跳转不改 lr），跳过路径 mov r0,#0; bx lr 直接回到调用者。
+  不放行时绝不执行原函数：也就不会破坏原函数自己的栈帧（它根本没建帧）。
+
+## 7) 集成证明：hook 库确实调用了接管 API（.rel.plt）
+  0000eeb0 R_ARM_JUMP_SLOT t8_to_init
+  0000eeb4 R_ARM_JUMP_SLOT t8_to_enabled_set
+  0000eec4 R_ARM_JUMP_SLOT t8_to_snapshot_take
+  0000eeec R_ARM_JUMP_SLOT t8_to_on_final
+  0000ef4c R_ARM_JUMP_SLOT t8_to_should_drop
+  （这五个符号只在 libtg_hook.c 的 nlu_* 代码里用到，出现 PLT 重定位即证明调用已接入）

@@ -53,6 +53,13 @@ static int stub_volume_apply(int percent, int mute, void *user)
     return 0;
 }
 
+/* 大多数用例都在"接管开启"的前提下跑；关闭态与初始化失败单独在 [G] 里验证 */
+static void init_on(t8_to_state *st)
+{
+    (void)t8_to_init(st);
+    (void)t8_to_enabled_set(st, 1);
+}
+
 static t8_to_decision simulate_session(t8_to_state *st, sim_ctx *sim, t8_skill_registry *reg,
                                        const char *session, const char *text, long long now_ms,
                                        int route_mask, int *dropped)
@@ -149,6 +156,7 @@ int main(void)
         for (i = 0; i < (int)(sizeof(cases)/sizeof(cases[0])); i++) {
             init_rc = t8_to_init(&st);
             check(init_rc == 0, "t8_to_init must succeed");
+            check(t8_to_enabled_set(&st, 1) == 0, "enabling takeover must succeed");
             memset(&ir, 0, sizeof(ir));
             (void)ir_classify(cases[i].text, &ir);
             why = T8_TO_WHY_NONE;
@@ -171,7 +179,7 @@ int main(void)
 
     printf("\n[A2] 参数不完整 / 意图未启用 / 全禁用\n");
     {
-        (void)t8_to_init(&st);
+        init_on(&st);
         memset(&ir, 0, sizeof(ir));
         (void)ir_classify("天猫精灵音量调到百分之", &ir);
         why = T8_TO_WHY_NONE;
@@ -184,7 +192,7 @@ int main(void)
         }
         t8_to_destroy(&st);
 
-        (void)t8_to_init(&st);
+        init_on(&st);
         why = T8_TO_WHY_NONE;
         {
             t8_to_decision d = t8_to_on_final(&st, "s-off", "天猫精灵现在几点", 1000,
@@ -194,7 +202,7 @@ int main(void)
         }
         t8_to_destroy(&st);
 
-        (void)t8_to_init(&st);
+        init_on(&st);
         why = T8_TO_WHY_NONE;
         {
             t8_to_decision d = t8_to_on_final(&st, "s-nomask", "天猫精灵音量调到五", 1000, 0, &why);
@@ -206,7 +214,7 @@ int main(void)
     /* ---------------- B) 丢弃语义 ---------------- */
     printf("\n[B] 丢弃语义\n");
     {
-        (void)t8_to_init(&st);
+        init_on(&st);
         (void)t8_to_on_final(&st, "s-ai", "天猫精灵给我讲一个笑话", 1000, mask, NULL);
         check(t8_to_should_drop(&st, "s-ai", 1500) == 1, "marked session must be dropped");
         check(t8_to_should_drop(&st, "s-ai", 1800) == 1, "drop must be idempotent (second NLU result)");
@@ -220,7 +228,7 @@ int main(void)
         t8_to_destroy(&st);
     }
     {
-        (void)t8_to_init(&st);
+        init_on(&st);
         (void)t8_to_on_final(&st, "s-end", "天猫精灵讲个笑话", 1000, mask, NULL);
         t8_to_on_session_end(&st, "s-end");
         check(t8_to_should_drop(&st, "s-end", 1200) == 0, "session end must clear the mark");
@@ -228,7 +236,7 @@ int main(void)
         t8_to_destroy(&st);
     }
     {
-        (void)t8_to_init(&st);
+        init_on(&st);
         (void)t8_to_on_final(&st, "s-reuse", "天猫精灵讲个笑话", 1000, mask, NULL);
         check(t8_to_active(&st, 1100) == 1, "one active mark expected");
         {
@@ -242,7 +250,7 @@ int main(void)
     }
     {
         /* 同一会话重复投递 final：只刷新 TTL，不占新槽位 */
-        (void)t8_to_init(&st);
+        init_on(&st);
         (void)t8_to_on_final(&st, "s-dup", "天猫精灵讲个笑话", 1000, mask, NULL);
         (void)t8_to_on_final(&st, "s-dup", "天猫精灵讲个笑话", 1100, mask, NULL);
         (void)t8_to_on_final(&st, "s-dup", "天猫精灵讲个笑话", 1200, mask, NULL);
@@ -349,7 +357,7 @@ int main(void)
         (void)t8_skill_register(&reg, T8_SK_VOLUME_SET, t8_skill_volume_exec, &vc);
         (void)t8_skill_register(&reg, T8_SK_TIME_QUERY, t8_skill_time_exec, NULL);
 
-        (void)t8_to_init(&st);
+        init_on(&st);
 
         (void)simulate_session(&st, &sim, &reg, "1968466", "天猫精灵现在几点", now, mask, &dropped);
         check(dropped == 0, "local command must NOT be dropped");
@@ -388,7 +396,7 @@ int main(void)
         t8_to_snapshot snap;
         long long t0 = 100000;
 
-        (void)t8_to_init(&st);
+        init_on(&st);
         for (i = 0; i < T8_TO_SLOTS; i++) {
             snprintf(sid, sizeof(sid), "cap-%d", i);
             check(t8_to_on_final(&st, sid, "天猫精灵给我讲一个笑话", t0 + i, mask, NULL) == T8_TO_TAKE,
@@ -450,7 +458,7 @@ int main(void)
         worker_arg args[THREADS];
         long long now;
 
-        (void)t8_to_init(&st);
+        init_on(&st);
         for (i = 0; i < THREADS; i++) {
             args[i].st = &st;
             args[i].tid = i;
@@ -481,7 +489,7 @@ int main(void)
         {
             dup_arg da;
             pthread_t th2[4];
-            (void)t8_to_init(&st);      /* 重新初始化：清空计数与槽位 */
+            init_on(&st);      /* 重新初始化：清空计数与槽位 */
             da.st = &st;
             da.sid = "same-session";
             da.iters = 200;
@@ -501,7 +509,7 @@ int main(void)
 
         /* 并发 TTL 回收：过期后并发查询不得返回"已登记" */
         {
-            (void)t8_to_init(&st);
+            init_on(&st);
             (void)t8_to_on_final(&st, "ttl-a", "天猫精灵讲个笑话", 1000, mask, NULL);
             now = 1000 + T8_TO_TTL_MS + 1;
             check(t8_to_purge(&st, now) == 1, "purge must reclaim the expired slot");
@@ -510,7 +518,7 @@ int main(void)
         }
 
         check(t8_to_init(NULL) == -1, "init(NULL) must report failure");
-        (void)t8_to_init(&st);
+        init_on(&st);
         t8_to_destroy(&st);
         check(st.mutex_ready == 0, "destroy must clear mutex_ready");
         /* 锁不可用时不允许"裸跑"：所有入口必须安全退化 */
@@ -519,6 +527,60 @@ int main(void)
         check(t8_to_should_drop(&st, "x", 1100) == 0, "without a live mutex nothing is dropped");
         check(t8_to_active(&st, 1100) == 0, "without a live mutex active is 0");
         check(t8_to_purge(&st, 1100) == 0, "without a live mutex purge is a no-op");
+    }
+
+    /* ---------------- G) 开关 / 初始化失败 / 会话缺失：fail-closed ---------------- */
+    printf("\n[G] 开关关闭 / 初始化失败 / 会话缺失\n");
+    {
+        t8_to_snapshot snap;
+
+        /* G1 开关关闭：行为必须与当前设备完全一致（不写任何状态） */
+        (void)t8_to_init(&st);
+        check(t8_to_enabled(&st) == 0, "default must be disabled");
+        check(t8_to_on_final(&st, "s", "天猫精灵给我讲一个笑话", 1000, mask, NULL) == T8_TO_PASS,
+              "disabled: an AI text must pass (factory behaviour unchanged)");
+        check(t8_to_should_drop(&st, "s", 1100) == 0, "disabled: nothing is dropped");
+        check(st.marked == 0 && st.passed == 0 && st.dropped == 0 && st.unknown == 0,
+              "disabled: no state touched (marked=%lu passed=%lu dropped=%lu unknown=%lu)",
+              st.marked, st.passed, st.dropped, st.unknown);
+        check(t8_to_enabled_set(&st, 1) == 0, "enable on a live mutex succeeds");
+        check(t8_to_on_final(&st, "s", "天猫精灵给我讲一个笑话", 1200, mask, NULL) == T8_TO_TAKE,
+              "enabled: the same text is taken over");
+        t8_to_destroy(&st);
+
+        /* G2 初始化失败但开关打开：必须 fail-closed（不许静默放行） */
+        memset(&st, 0, sizeof(st));            /* 模拟 mutex 不可用 */
+        check(t8_to_enabled_set(&st, 1) == -1, "enable without a mutex must report failure");
+        check(t8_to_enabled(&st) == 1, "switch stays on so the caller can see the failed state");
+        why = T8_TO_WHY_NONE;
+        check(t8_to_on_final(&st, "s", "天猫精灵给我讲一个笑话", 1000, mask, &why) == T8_TO_TAKE_FAILCLOSED,
+              "init failed + enabled: must fail-closed (got %d)",
+              (int)t8_to_on_final(&st, "s", "天猫精灵给我讲一个笑话", 1000, mask, NULL));
+        check(why == T8_TO_WHY_FAILCLOSED, "why should be failclosed, got %s", t8_to_why_name(why));
+        check(t8_to_should_drop(&st, "s", 1100) == 1, "init failed + enabled: known session blocked");
+        check(t8_to_should_drop(&st, "unknown", 1100) == 1, "init failed + enabled: unknown session blocked");
+        check(t8_to_enabled_set(&st, 0) == 0, "disable always succeeds (rollback path)");
+        check(t8_to_on_final(&st, "s", "天猫精灵给我讲一个笑话", 1200, mask, NULL) == T8_TO_PASS,
+              "disabled again: pass");
+        check(t8_to_should_drop(&st, "s", 1300) == 0, "disabled again: nothing dropped");
+
+        /* G3 会话 id 缺失：开 fail-closed 窗口，不许静默放行 */
+        init_on(&st);
+        why = T8_TO_WHY_NONE;
+        check(t8_to_on_final(&st, "", "天猫精灵给我讲一个笑话", 2000, mask, &why) == T8_TO_TAKE_FAILCLOSED,
+              "missing session id must fail-closed");
+        check(why == T8_TO_WHY_NO_SESSION, "why should be no-session, got %s", t8_to_why_name(why));
+        check(st.failclosed_events == 1UL, "failclosed_events = %lu", st.failclosed_events);
+        check(t8_to_should_drop(&st, "some-session", 2100) == 1,
+              "inside the fail-closed window even unknown sessions are blocked");
+        check(st.failclosed_passes == 1UL, "failclosed_passes = %lu", st.failclosed_passes);
+        check(t8_to_should_drop(&st, "some-session", 2000 + T8_TO_DEGRADED_MS + 1) == 0,
+              "after the window unknown sessions pass again");
+        t8_to_snapshot_take(&st, 2000 + T8_TO_DEGRADED_MS + 2, &snap);
+        check(snap.enabled == 1 && snap.failclosed == 0, "snapshot: enabled=%d failclosed=%d",
+              snap.enabled, snap.failclosed);
+        check(snap.failclosed_events == 1UL, "snapshot failclosed_events = %lu", snap.failclosed_events);
+        t8_to_destroy(&st);
     }
 
     printf("\nRESULT: pass=%d fail=%d\n", g_pass, g_fail);

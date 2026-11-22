@@ -15,9 +15,9 @@ TOOLCHAIN := $(NDK)/toolchains/llvm/prebuilt/$(HOST_TAG)
 CC        := $(TOOLCHAIN)/bin/armv7a-linux-androideabi26-clang
 READELF   := $(TOOLCHAIN)/bin/arm-linux-androideabi-readelf
 
-CFLAGS  := -O2 -Wall -Wextra -std=gnu99 -fPIC -shared
+CFLAGS  := -O2 -Wall -Wextra -std=gnu99 -fPIC -shared -I ..
 LDLIBS  := -llog
-SRC     := libtg_hook.c tg_wire.c
+SRC     := libtg_hook.c tg_wire.c ../nlu_takeover.c ../intent_route.c ../echo_filter.c
 HDR     := tg_wire.h
 
 all: libtg_hook.so

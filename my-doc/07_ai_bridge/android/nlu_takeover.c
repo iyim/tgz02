@@ -74,6 +74,9 @@ static int t8_purge_locked(t8_to_state *st, long long now_ms)
     if (st->degraded_until_ms != 0 && st->degraded_until_ms <= now_ms) {
         st->degraded_until_ms = 0;      /* 降级窗口自然结束 */
     }
+    if (st->failclosed_until_ms != 0 && st->failclosed_until_ms <= now_ms) {
+        st->failclosed_until_ms = 0;    /* fail-closed 窗口自然结束 */
+    }
     return n;
 }
 
@@ -128,6 +131,34 @@ void t8_to_destroy(t8_to_state *st)
     (void)pthread_mutex_destroy(&st->mutex);
 #endif
     st->mutex_ready = 0;
+    st->enabled = 0;
+}
+
+/*
+ * 开关：默认关闭。开启时如果锁没准备好，拒绝"假开启"（置 init_error），
+ * 之后 on_final 会返回 T8_TO_TAKE_FAILCLOSED、should_drop 恒返回 1 —— 也就是 fail-closed，
+ * 而不是悄悄按放行处理。
+ */
+int t8_to_enabled_set(t8_to_state *st, int on)
+{
+    if (st == NULL) return -1;
+    if (!on) {
+        st->enabled = 0;
+        return 0;
+    }
+    if (!st->mutex_ready) {
+        st->init_error = 1;
+        st->enabled = 1;            /* 仍记为"开启"：这样调用方会走 fail-closed 分支 */
+        return -1;
+    }
+    st->init_error = 0;
+    st->enabled = 1;
+    return 0;
+}
+
+int t8_to_enabled(const t8_to_state *st)
+{
+    return (st != NULL) ? st->enabled : 0;
 }
 
 t8_to_decision t8_to_on_final(t8_to_state *st, const char *session, const char *text,
@@ -141,8 +172,23 @@ t8_to_decision t8_to_on_final(t8_to_state *st, const char *session, const char *
     t8_to_decision decision = T8_TO_PASS;
 
     if (out_why != NULL) *out_why = T8_TO_WHY_NONE;
-    if (st == NULL || !st->mutex_ready) return T8_TO_PASS;   /* 锁不可用 -> 不接管（绝不裸跑） */
-    if (session == NULL || session[0] == '\0') return T8_TO_PASS;
+    if (st == NULL) return T8_TO_PASS;                       /* 根本没接上：不属于接管范围 */
+    if (!st->enabled) return T8_TO_PASS;                     /* 开关关闭：原厂行为完全不变 */
+    if (!st->mutex_ready) {
+        /* 锁不可用：**不碰共享状态**，直接 fail-closed（绝不静默放行） */
+        if (out_why != NULL) *out_why = T8_TO_WHY_FAILCLOSED;
+        return T8_TO_TAKE_FAILCLOSED;
+    }
+    if (session == NULL || session[0] == '\0') {
+        /* 会话 id 缺失：无法定界，开一个 fail-closed 窗口（后续未登记结果一律拦下） */
+        t8_lock(st);
+        (void)t8_purge_locked(st, now_ms);
+        st->failclosed_events++;
+        st->failclosed_until_ms = now_ms + T8_TO_DEGRADED_MS;
+        t8_unlock(st);
+        if (out_why != NULL) *out_why = T8_TO_WHY_NO_SESSION;
+        return T8_TO_TAKE_FAILCLOSED;
+    }
 
     memset(&ir, 0, sizeof(ir));
     hit = ir_classify(text, &ir);
@@ -204,11 +250,16 @@ int t8_to_should_drop(t8_to_state *st, const char *session, long long now_ms)
     t8_to_slot *s;
     int rc = 0;
 
-    if (st == NULL || !st->mutex_ready) return 0;
-    if (session == NULL || session[0] == '\0') return 0;
+    if (st == NULL) return 0;
+    if (!st->enabled) return 0;                 /* 开关关闭：原厂照常处理 */
+    if (!st->mutex_ready) return 1;             /* 状态不可用：fail-closed，且不访问共享状态 */
 
     t8_lock(st);
-    s = t8_find_locked(st, session);
+    if (session == NULL || session[0] == '\0') {
+        s = NULL;                               /* 会话缺失：走"未登记"分支（含两种窗口） */
+    } else {
+        s = t8_find_locked(st, session);
+    }
     if (s != NULL && s->deadline_ms <= now_ms) {
         t8_clear(s);
         st->expired++;
@@ -217,6 +268,10 @@ int t8_to_should_drop(t8_to_state *st, const char *session, long long now_ms)
     if (s != NULL) {
         s->drops++;
         st->dropped++;
+        rc = 1;
+    } else if (st->failclosed_until_ms > now_ms) {
+        /* 状态不可用/会话缺失后的窗口：未登记也不放行（fail-closed，计数与 capacity 降级分开） */
+        st->failclosed_passes++;
         rc = 1;
     } else if (st->degraded_until_ms > now_ms) {
         /* 容量耗尽后的窗口：未登记也不放行（fail-closed，计数可见） */
@@ -273,8 +328,11 @@ void t8_to_snapshot_take(t8_to_state *st, long long now_ms, t8_to_snapshot *out)
     t8_lock(st);
     (void)t8_purge_locked(st, now_ms);
     out->active = t8_active_locked(st, now_ms);
+    out->enabled = st->enabled;
+    out->init_error = st->init_error;
     out->overflow = (st->overflow > 0) ? 1 : 0;
     out->degraded = (st->degraded_until_ms > now_ms) ? 1 : 0;
+    out->failclosed = (st->failclosed_until_ms > now_ms) ? 1 : 0;
     out->marked = st->marked;
     out->passed = st->passed;
     out->dropped = st->dropped;
@@ -283,6 +341,8 @@ void t8_to_snapshot_take(t8_to_state *st, long long now_ms, t8_to_snapshot *out)
     out->overflow_events = st->overflow;
     out->degraded_passes = st->degraded_passes;
     out->reentrant_marks = st->reentrant_marks;
+    out->failclosed_events = st->failclosed_events;
+    out->failclosed_passes = st->failclosed_passes;
     t8_unlock(st);
 }
 
@@ -293,6 +353,8 @@ const char *t8_to_why_name(t8_to_why why)
     case T8_TO_WHY_AI_INCOMPLETE: return "ai-incomplete";
     case T8_TO_WHY_AI_INTENT_OFF: return "ai-intent-off";
     case T8_TO_WHY_OVERFLOW:      return "overflow";
+    case T8_TO_WHY_FAILCLOSED:    return "failclosed";
+    case T8_TO_WHY_NO_SESSION:    return "no-session";
     default:                      return "none";
     }
 }

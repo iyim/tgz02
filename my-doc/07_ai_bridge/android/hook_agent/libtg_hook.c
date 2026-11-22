@@ -53,8 +53,10 @@
 #include <sys/time.h>
 #include <sys/un.h>
 #include <poll.h>
+#include <stdlib.h>
 
 #include "tg_wire.h"
+#include "nlu_takeover.h"
 
 /* ------------------------------------------------------------------ 常量 */
 
@@ -409,6 +411,327 @@ int tg_hook_uninstall(void)
     return TG_OK;
 }
 
+/* ==================== T8-03：NLU/CDM 接管 hook（独立第二个点，默认关闭） ====================
+ *
+ * 目标：AliAiLabs::AGUI::SessionDispatch::onNlpResult(int sessionId, int type, NlpResult*)
+ *       libsmartbox.so 偏移 0x118ebc（ARM 模式；序言 push {r4-r11,lr} / add r11,sp,#28）
+ *
+ * 与上面 onStream 那个 hook 的唯一结构差别：这里必须能**跳过原函数**。
+ * 所以 stub 多一个条件分支（判定来自 C 回调的返回值）：
+ *     回调返回 0 -> 跳 trampoline（重放两条原厂指令 → 跳到 func+8，原函数完整执行）
+ *     回调返回非 0 -> 恢复寄存器后 mov r0,#0; bx lr（直接返回调用者，原函数不执行）
+ *
+ * 开关：环境变量 TG_NLU_TAKEOVER=1。默认关闭时本段代码不拦任何原厂调用
+ * （回调直接返回 0，等价于没装），设备行为与今天完全一致。
+ */
+#define TG_NLU_SYM      "_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE"
+#define TG_NLU_OFF      0x118ebcu
+#define TG_NLU_PRO_W0   0xE92D4FF0u     /* push {r4-r11, lr} */
+#define TG_NLU_PRO_W1   0xE28DB01Cu     /* add  r11, sp, #28 */
+#define TG_E_DISABLED   (-10)
+
+static volatile int g_nlu_state = TG_E_NOT_INSTALLED;
+static volatile int g_nlu_patched;
+static volatile int g_nlu_enabled;      /* 环境变量开关（nlu_boot 里只写一次） */
+static volatile int g_nlu_booted;
+static int          g_nlu_mask = 0x7F;  /* T7B_ROUTE_ALL */
+static uint32_t     g_nlu_func;
+static uint32_t     g_nlu_orig[2];
+static void        *g_nlu_page;
+static t8_to_state  g_to;
+
+/* Hook 级计数（只用原子加；不含任何文本内容） */
+static volatile unsigned long g_nlu_final_seen, g_nlu_final_pass, g_nlu_final_failclosed;
+static volatile unsigned long g_nlu_nlp_calls, g_nlu_nlp_skip, g_nlu_nlp_pass;
+
+static void nlu_boot(void)
+{
+    const char *v;
+    int rc;
+
+    if (__atomic_load_n(&g_nlu_booted, __ATOMIC_ACQUIRE)) return;
+
+    v = getenv("TG_NLU_ROUTE_MASK");
+    if (v != NULL && v[0] != '\0') {
+        long m = strtol(v, NULL, 0);
+        if (m > 0 && m <= 0x7F) g_nlu_mask = (int)m;
+    }
+    v = getenv("TG_NLU_TAKEOVER");
+    if (v != NULL && (v[0] == '1' || v[0] == 'y' || v[0] == 'Y')) {
+        rc = t8_to_init(&g_to);
+        (void)t8_to_enabled_set(&g_to, 1);
+        g_nlu_enabled = 1;
+        slog("nlu takeover: ENABLED (t8_to_init=%d ready=%d init_error=%d mask=0x%02x)",
+             rc, g_to.mutex_ready, g_to.init_error, g_nlu_mask);
+    } else {
+        g_nlu_enabled = 0;
+        slog("nlu takeover: disabled (default; factory behaviour unchanged)");
+    }
+    __atomic_store_n(&g_nlu_booted, 1, __ATOMIC_RELEASE);
+}
+
+static int nlu_want_enabled(void)
+{
+    nlu_boot();
+    return g_nlu_enabled;
+}
+
+/* onStream(isFinished=1) 时登记会话归属；开关关闭时什么都不做 */
+static void nlu_note_final(int sid, const char *text)
+{
+    char key[24];
+    t8_to_why why = T8_TO_WHY_NONE;
+    t8_to_decision d;
+
+    if (!nlu_want_enabled()) return;
+    INC(g_nlu_final_seen);
+    if (sid > 0) snprintf(key, sizeof(key), "%d", sid);
+    else key[0] = '\0';
+    d = t8_to_on_final(&g_to, key, text, wall_ms(), g_nlu_mask, &why);
+    if (d == T8_TO_PASS) INC(g_nlu_final_pass);
+    else if (d == T8_TO_TAKE_FAILCLOSED) INC(g_nlu_final_failclosed);
+    /* TAKE / TAKE_UNREGISTERED 的计数在模块内部（marked / overflow），这里不重复计 */
+}
+
+/*
+ * NLU 结果回调：返回 0 = 放行原函数（原厂 CDM 照常执行），1 = 跳过原函数。
+ * 只做一次查表 + 计数：无 I/O、无日志、无等待。
+ */
+static int tg_nlp_cb(void *self, int sid, int type, void *res)
+{
+    char key[24];
+    int drop;
+
+    (void)self;
+    (void)type;
+    (void)res;
+
+    if (!nlu_want_enabled()) return 0;
+    INC(g_nlu_nlp_calls);
+    if (sid > 0) snprintf(key, sizeof(key), "%d", sid);
+    else key[0] = '\0';
+    drop = t8_to_should_drop(&g_to, key, wall_ms());
+    if (drop) INC(g_nlu_nlp_skip); else INC(g_nlu_nlp_pass);
+    return drop ? 1 : 0;
+}
+
+/*
+ * stub 页布局（全部 ARM 指令；桩内不使用堆栈以外的资源）：
+ *   +0x00  E92D401F  push {r0,r1,r2,r3,r4,lr}   ; r4 是 callee-saved，必须保存
+ *   +0x04  E59F4014  ldr  r4, [pc, #20]         ; r4 = [+0x20] = 回调
+ *   +0x08  E12FFF34  blx  r4
+ *   +0x0C  E1A0C000  mov  r12, r0               ; r12 = caller-saved 草稿
+ *   +0x10  E8BD401F  pop  {r0,r1,r2,r3,r4,lr}   ; 原样恢复（含 lr = 调用者返回地址）
+ *   +0x14  E35C0000  cmp  r12, #0
+ *   +0x18  1A000002  bne  +0x28                 ; 跳过原函数
+ *   +0x1C  E59FF00C  ldr  pc, [pc, #12]         ; -> +0x30 trampoline
+ *   +0x20  <回调地址>
+ *   +0x24  <padding>
+ *   +0x28  E3A00000  mov  r0, #0                ; 跳过：返回 0（两个调用者都不读 r0）
+ *   +0x2C  E12FFF1E  bx   lr                    ; 直接返回调用者
+ *   +0x30  <trampoline 地址>
+ */
+static int build_nlu_stub_page(uint32_t func, int *err_out)
+{
+    uint32_t *c;
+    uint32_t *t;
+    int old;
+
+    if (g_nlu_page != NULL) return 0;
+
+    g_nlu_page = mmap(NULL, TG_STUB_PAGE, PROT_READ | PROT_WRITE,
+                      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (g_nlu_page == MAP_FAILED) {
+        g_nlu_page = NULL;
+        *err_out = TG_E_MMAP;
+        set_err("mmap(nlu stub) failed errno=%d", errno);
+        return -1;
+    }
+
+    c = (uint32_t *)g_nlu_page;
+    c[0]  = 0xE92D401Fu;                                        /* push {r0-r3,r4,lr} */
+    c[1]  = 0xE59F4014u;                                        /* ldr  r4,[pc,#20]   -> +0x20 */
+    c[2]  = 0xE12FFF34u;                                        /* blx  r4 */
+    c[3]  = 0xE1A0C000u;                                        /* mov  r12,r0 */
+    c[4]  = 0xE8BD401Fu;                                        /* pop  {r0-r3,r4,lr} */
+    c[5]  = 0xE35C0000u;                                        /* cmp  r12,#0 */
+    c[6]  = 0x1A000002u;                                        /* bne  +0x28 */
+    c[7]  = 0xE59FF00Cu;                                        /* ldr  pc,[pc,#12]   -> +0x30 */
+    c[8]  = (uint32_t)(uintptr_t)&tg_nlp_cb;                    /* +0x20 回调地址 */
+    c[9]  = 0u;                                                 /* +0x24 padding */
+    c[10] = 0xE3A00000u;                                        /* +0x28 mov r0,#0 */
+    c[11] = 0xE12FFF1Eu;                                        /* +0x2C bx  lr */
+    c[12] = (uint32_t)(uintptr_t)((char *)g_nlu_page + TG_TRAMP_OFF);   /* +0x30 */
+
+    t = (uint32_t *)((char *)g_nlu_page + TG_TRAMP_OFF);
+    t[0] = g_nlu_orig[0];
+    t[1] = g_nlu_orig[1];
+    t[2] = TG_PATCH_JUMP;
+    t[3] = func + 8u;
+
+    __builtin___clear_cache((char *)g_nlu_page, (char *)g_nlu_page + TG_STUB_PAGE);
+
+    old = page_prot((uintptr_t)g_nlu_page);
+    if (old != 7) {
+        mprotect(g_nlu_page, TG_STUB_PAGE, PROT_READ | PROT_EXEC);
+        if (mprotect(g_nlu_page, TG_STUB_PAGE, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
+            set_err("mprotect(nlu stub, RWX) failed errno=%d", errno);
+            *err_out = TG_E_PROT;
+            return -1;
+        }
+    }
+    if (mprotect(g_nlu_page, TG_STUB_PAGE, PROT_READ | PROT_EXEC) != 0) {
+        set_err("mprotect(nlu stub, RX) failed errno=%d", errno);
+        *err_out = TG_E_PROT;
+        return -1;
+    }
+    return 0;
+}
+
+static int nlu_resolve(void)
+{
+    mod_info m;
+    uint32_t addr = 0, value = 0;
+    int err;
+
+    memset(&m, 0, sizeof(m));
+    if (dl_iterate_phdr(mod_cb, &m) == 0 || !m.found) {
+        set_err("nlu: module %s is not loaded in this process", TG_MODULE);
+        return TG_E_MODULE;
+    }
+    err = mem_find_sym(m.base, TG_NLU_SYM, &addr, &value, g_err, sizeof(g_err));
+    if (err != TG_OK) {
+        slog("nlu prepare failed: %s", g_err);
+        return err;
+    }
+    if (value != TG_NLU_OFF) {
+        set_err("nlu symbol %s offset 0x%x != expected 0x%x", TG_NLU_SYM, value, TG_NLU_OFF);
+        return TG_E_OFFSET;
+    }
+    g_nlu_func = addr;
+    {
+        const uint32_t *p = (const uint32_t *)g_nlu_func;
+        g_nlu_orig[0] = p[0];
+        g_nlu_orig[1] = p[1];
+    }
+    if (g_nlu_orig[0] != TG_NLU_PRO_W0 || g_nlu_orig[1] != TG_NLU_PRO_W1) {
+        set_err("nlu prologue mismatch at %p: %08x %08x (want %08x %08x)",
+                (void *)g_nlu_func, g_nlu_orig[0], g_nlu_orig[1], TG_NLU_PRO_W0, TG_NLU_PRO_W1);
+        g_nlu_func = 0;
+        return TG_E_PROLOGUE;
+    }
+    return TG_OK;
+}
+
+int tg_nlu_prepare(void)
+{
+    int rc;
+
+    if (!nlu_want_enabled()) return TG_E_DISABLED;
+    if (g_nlu_func != 0) { g_nlu_state = TG_OK; return TG_OK; }
+    rc = nlu_resolve();
+    g_nlu_state = rc;
+    if (rc == TG_OK) {
+        slog("nlu hook prepared: func=0x%08x patch=[0x%08x,0x%08x)",
+             g_nlu_func, g_nlu_func, g_nlu_func + 8u);
+    }
+    return rc;
+}
+
+unsigned int tg_nlu_patch_lo(void) { return g_nlu_func; }
+unsigned int tg_nlu_patch_hi(void) { return (g_nlu_func != 0) ? (g_nlu_func + 8u) : 0u; }
+
+int tg_nlu_install(void)
+{
+    uint32_t *p;
+    uintptr_t page;
+    int old;
+    int err;
+
+    if (!nlu_want_enabled()) return TG_E_DISABLED;
+    if (g_nlu_patched) { g_nlu_state = TG_OK; return TG_OK; }
+    err = tg_nlu_prepare();
+    if (err != TG_OK) return err;
+
+    /* 入口一致性：必须还是原厂那两条指令（卸载→重装这条路上必然成立） */
+    p = (uint32_t *)g_nlu_func;
+    if (p[0] != g_nlu_orig[0] || p[1] != g_nlu_orig[1]) {
+        set_err("nlu entry not original at %p: %08x %08x", (void *)g_nlu_func, p[0], p[1]);
+        g_nlu_state = TG_E_PROLOGUE;
+        return TG_E_PROLOGUE;
+    }
+    if (build_nlu_stub_page(g_nlu_func, &err) != 0) {
+        g_nlu_state = err;
+        return err;
+    }
+
+    page = g_nlu_func & ~(uintptr_t)0xFFF;
+    old = page_prot(page);
+    if (mprotect((void *)page, 4096, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
+        set_err("nlu mprotect(func,RWX) failed errno=%d", errno);
+        g_nlu_state = TG_E_PROT;
+        return TG_E_PROT;
+    }
+    /* 与 onStream 同序：先写字面量、再写跳转 */
+    p[1] = (uint32_t)(uintptr_t)g_nlu_page;
+    __builtin___clear_cache((char *)p, (char *)p + 8);
+    p[0] = TG_PATCH_JUMP;
+    __builtin___clear_cache((char *)p, (char *)p + 8);
+    (void)mprotect((void *)page, 4096, old ? old : (PROT_READ | PROT_EXEC));
+
+    g_nlu_patched = 1;
+    g_nlu_state = TG_OK;
+    slog("nlu hook installed: func=0x%08x stub=0x%08x", g_nlu_func, (unsigned)(uintptr_t)g_nlu_page);
+    return TG_OK;
+}
+
+int tg_nlu_uninstall(void)
+{
+    uint32_t *p;
+    uintptr_t page;
+    int old;
+
+    if (!g_nlu_patched) return TG_OK;
+    p = (uint32_t *)g_nlu_func;
+    page = g_nlu_func & ~(uintptr_t)0xFFF;
+    old = page_prot(page);
+    if (mprotect((void *)page, 4096, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
+        set_err("nlu mprotect(func,RWX) failed on uninstall errno=%d", errno);
+        return TG_E_PROT;
+    }
+    p[0] = g_nlu_orig[0];
+    p[1] = g_nlu_orig[1];
+    __builtin___clear_cache((char *)p, (char *)p + 8);
+    (void)mprotect((void *)page, 4096, old ? old : (PROT_READ | PROT_EXEC));
+    g_nlu_patched = 0;
+    g_nlu_state = TG_OK;
+    slog("nlu hook uninstalled, original prologue restored (func=0x%08x)", g_nlu_func);
+    return TG_OK;
+}
+
+int tg_nlu_is_enabled(void) { return nlu_want_enabled(); }
+
+/* 一行诊断（不含文本、不含 API Key）：给 injector / status 打印 */
+void tg_nlu_stats(char *buf, size_t cap)
+{
+    t8_to_snapshot s;
+
+    if (buf == NULL || cap == 0) return;
+    memset(&s, 0, sizeof(s));
+    if (g_to.mutex_ready) {
+        t8_to_snapshot_take(&g_to, wall_ms(), &s);
+    }
+    snprintf(buf, cap,
+             "nlu enabled=%d init_error=%d active=%d marked=%lu passed=%lu dropped=%lu "
+             "unknown=%lu overflow=%lu degraded=%d failclosed=%d fc_events=%lu fc_passes=%lu "
+             "final_seen=%lu nlp_calls=%lu nlp_skip=%lu nlp_pass=%lu",
+             s.enabled, s.init_error, s.active, s.marked, s.passed, s.dropped,
+             s.unknown, s.overflow_events, s.degraded, s.failclosed,
+             s.failclosed_events, s.failclosed_passes,
+             GET(g_nlu_final_seen), GET(g_nlu_nlp_calls), GET(g_nlu_nlp_skip), GET(g_nlu_nlp_pass));
+}
+
+
 /* --------------------------------------------------------------- 队列 */
 
 typedef struct {
@@ -515,6 +838,10 @@ static void tg_onstream_cb(void *self, int sid, const char *text, unsigned int f
 
     INC(g_queued);
     (void)q_push(&it);
+
+    /* T8-03：同一条 final 顺手登记会话归属（开关关闭时 nlu_note_final 直接返回）。
+     * 只做一次规则判定 + 一次加锁写内存，不入队、不 I/O，不影响上面的转发路径。 */
+    nlu_note_final(sid, text);
 }
 
 /* ------------------------------------------------------------- UDS 发送 */

@@ -1,5 +1,5 @@
 ﻿# T8-02 host test log (takeover capacity + concurrency)
-# host time: 2026-11-22 18:16:36
+# host time: 2026-11-22 18:23:32
 
 === build t8_02_nlu_takeover_unit_test ===
 gcc -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_02_nlu_takeover_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_02_nlu_takeover_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_takeover.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c
@@ -31,7 +31,9 @@ slots=64 ttl_ms=30000 degraded_ms=5000
 [F] 并发（登记/查询/清理/TTL 回收/重复登记）
   mixed: threads=6 iters=400 marked=2400 dropped=2400 expired=0
 
-RESULT: pass=184 fail=0
+[G] 开关关闭 / 初始化失败 / 会话缺失
+
+RESULT: pass=211 fail=0
 exit : 0
 
-# result: OK (184 assertions, 0 warning, 0 error)
+# result: OK (211 assertions, 0 warning, 0 error)
