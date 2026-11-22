@@ -247,19 +247,29 @@ int ug_feed(ug_ctx *g, const char *session, const char *event_id,
 
     if (!g->have) {
         /* T7-05：快路放出去的文本还要挡住紧随其后的同 session 修订
-         * （"关闭屏幕" -> "关闭屏幕吧"），否则同一条指令会被执行两次。 */
+         * （"关闭屏幕" -> "关闭屏幕吧"），否则同一条指令会被执行两次。
+         * T7-05-R2：判据从"文本相等"改成"事件身份"：
+         *   - 同一条 final 又投递一次（event_id 相同）         -> 丢弃
+         *   - 文本是对方的严格前缀/被截断（长度不同，同一次识别的修订） -> 丢弃
+         *   - 文本完全相同但 event_id 不同（用户主动说了两遍）  -> 不丢，走下面的新指令路径 */
         if (g->cfg.fast_native && g->fast_text[0] != '\0' &&
             strcmp(g->fast_session, session != NULL ? session : "") == 0 &&
             now_ms - g->fast_ms <= (long long)g->cfg.debounce_ms * 2) {
+            int same_event = (event_id != NULL && event_id[0] != '\0' &&
+                              g->fast_event_id[0] != '\0' &&
+                              strcmp(g->fast_event_id, event_id) == 0);
+            int revision;
+
             ug_norm(text, nn, sizeof(nn));
             ug_norm(g->fast_text, nh, sizeof(nh));
-            if (nn[0] != '\0' &&
-                (strcmp(nn, nh) == 0 ||
-                 strncmp(nn, nh, strlen(nh)) == 0 ||
-                 strncmp(nh, nn, strlen(nn)) == 0)) {
+            revision = (nn[0] != '\0' && nh[0] != '\0' && strcmp(nn, nh) != 0 &&
+                        (strncmp(nn, nh, strlen(nh)) == 0 ||
+                         strncmp(nh, nn, strlen(nn)) == 0));
+            if (same_event || revision) {
                 g->dropped_dup++;
                 snprintf(g->last_detail, sizeof(g->last_detail),
-                         "dup of fast release event=%s age=%lldms",
+                         "%s of fast release event=%s age=%lldms",
+                         same_event ? "same final re-delivered" : "revision",
                          event_id != NULL ? event_id : "-", now_ms - g->fast_ms);
                 if (out != NULL) {
                     memset(out, 0, sizeof(*out));
@@ -281,6 +291,7 @@ int ug_feed(ug_ctx *g, const char *session, const char *event_id,
                          fast_intent[0] != '\0' ? fast_intent : "?");
                 ug_copy(g->fast_session, sizeof(g->fast_session), session);
                 ug_copy(g->fast_text, sizeof(g->fast_text), text);
+                ug_copy(g->fast_event_id, sizeof(g->fast_event_id), event_id);
                 g->fast_ms = now_ms;
                 if (out != NULL) {
                     memset(out, 0, sizeof(*out));
@@ -305,16 +316,41 @@ int ug_feed(ug_ctx *g, const char *session, const char *event_id,
     if (strcmp(g->session, session ? session : "") == 0) {
         /* ---- 同一 session：修订判定 ---- */
         if (strcmp(nn, nh) == 0) {
-            g->dropped_dup++;
-            snprintf(g->last_detail, sizeof(g->last_detail), "dup same session event=%s",
-                     event_id ? event_id : "-");
+            /* T7-05-R2：文本完全相同也要看事件身份。
+             *   同一条 final 又来一次（event_id 相同）        -> 丢弃（真重复投递）
+             *   文本相同但 event_id 不同（用户真的说了两遍）  -> 立刻放行这一条，
+             *     暂存里的那条仍然按超时放行，两条都执行 —— 宁多答一次也不吞用户的话。 */
+            int same_event = (event_id != NULL && event_id[0] != '\0' &&
+                              ((g->last_event_id[0] != '\0' &&
+                                strcmp(g->last_event_id, event_id) == 0) ||
+                               (g->event_id[0] != '\0' && strcmp(g->event_id, event_id) == 0)));
+
+            if (same_event) {
+                g->dropped_dup++;
+                snprintf(g->last_detail, sizeof(g->last_detail),
+                         "same final re-delivered session=%s event=%s",
+                         session ? session : "-", event_id ? event_id : "-");
+                if (out != NULL) {
+                    memset(out, 0, sizeof(*out));
+                    out->kind = UG_DROP;
+                    ug_copy(out->why, sizeof(out->why), "dup");
+                    ug_copy(out->text, sizeof(out->text), text);
+                }
+                return UG_DROP;
+            }
+            g->released++;
+            snprintf(g->last_detail, sizeof(g->last_detail),
+                     "repeat same text, new event=%s", event_id ? event_id : "-");
             if (out != NULL) {
                 memset(out, 0, sizeof(*out));
-                out->kind = UG_DROP;
-                ug_copy(out->why, sizeof(out->why), "dup");
+                out->kind = UG_RELEASE;
                 ug_copy(out->text, sizeof(out->text), text);
+                ug_copy(out->session, sizeof(out->session), session);
+                ug_copy(out->first_event_id, sizeof(out->first_event_id), event_id);
+                ug_copy(out->last_event_id, sizeof(out->last_event_id), event_id);
+                ug_copy(out->why, sizeof(out->why), "repeat");
             }
-            return UG_DROP;
+            return UG_RELEASE;
         }
         if (nh[0] != '\0' && strncmp(nn, nh, strlen(nh)) == 0) {
             /* 旧文本是新文本的前缀：新文本是更完整的修订 */

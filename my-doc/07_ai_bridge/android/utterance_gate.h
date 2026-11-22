@@ -74,9 +74,12 @@ typedef struct {
     int       merges;
 
     /* T7-05：快路刚放出去的完整指令（用来挡住紧随其后的同 session 修订，
-     * 否则"关闭屏幕" + "关闭屏幕吧"会被执行两次） */
+     * 否则"关闭屏幕" + "关闭屏幕吧"会被执行两次）。
+     * T7-05-R2：同时记下 event_id —— 只有"同一条 final 又投递一次"才算重复，
+     * 文本相同但 event_id 不同一律当作新指令。 */
     char      fast_session[UG_ID_MAX];
     char      fast_text[UG_TEXT_MAX];
+    char      fast_event_id[UG_ID_MAX];
     long long fast_ms;
 
     /* 观测（打进 Worker 状态文件） */

@@ -120,6 +120,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"screen_on\":%llu,\"media\":%llu,\"stop\":%llu,\"interrupts\":%llu,"
         "\"publish_ok\":%llu,\"publish_fail\":%llu,\"fallback_ai\":%llu,"
         "\"publish_retry\":%llu,\"seq\":%lld,\"dup_dropped\":%llu,\"incomplete_ai\":%llu,\"publish_err\":\"%s\","
+        "\"dup_same_event\":%llu,\"dup_same_report\":%llu,\"same_text_new_event\":%llu,"
         "\"last\":\"%s\",\"publish_file\":\"%s\"},"
         "\"gate\":{\"enabled\":%d,\"debounce_ms\":%d,\"max_hold_ms\":%d,"
         "\"cross_session\":%d,\"seen\":%llu,\"held\":%llu,\"released\":%llu,"
@@ -163,6 +164,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         st->route_publish_ok, st->route_publish_fail, st->route_fallback_ai,
         st->route_publish_retry, st->route_seq, st->route_dup_dropped, st->route_incomplete_ai,
         esc_publish_err,
+        st->route_dup_same_event, st->route_dup_same_report, st->route_same_text_new,
         esc_route_last, esc_route_file,
         st->gate_enabled, st->gate_debounce_ms, st->gate_max_hold_ms,
         st->gate_cross_session, st->gate_seen, st->gate_held, st->gate_released,

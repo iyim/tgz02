@@ -1,0 +1,101 @@
+﻿# T7-05 host unit test log
+# host time: 2026-11-22 11:21:30
+
+=== build t7_05_gate_order_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_05_gate_order_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_05_gate_order_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_05_gate_order_unit_test ===
+=== T7-05 gate-before-route order unit test ===
+
+[1] 帮我播放 + 周杰伦的歌 (cross session)
+
+[2] 音量调到 + 百分之十 (cross session)
+
+[3] 关闭屏幕 (single complete command, fast path)
+
+[4] 现在几点 (single complete command, fast path)
+
+[5] 明天 + 会下雨吗 (open-prefix fragment)
+
+[6] duplicate right after fast release is dropped
+
+[7] chat text still waits for the window (no double answer)
+
+[8] gate disabled = old behaviour (release at once)
+
+[9] 音量调到二十五 (complete volume command with cn number)
+
+=== total: pass=32 fail=0 ===
+
+=== build t7_05_route_negatives_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_05_route_negatives_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_05_route_negatives_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_05_route_negatives_unit_test ===
+=== T7-05 route false-positive / negative samples ===
+
+[1] 任务书点名的误判样本（必须走 AI）
+
+[2] 任务书点名的正样本（必须走原厂）
+
+[3] 中文数字/全角数字/百分比
+
+[4] 悬空谓词不产生完整意图（留给暂存门）
+
+[5] 意图到路由位的映射
+
+=== total: pass=37 fail=0 ===
+
+=== build t7_05r1_incomplete_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_05r1_incomplete_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_05r1_incomplete_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_05r1_incomplete_unit_test ===
+=== T7-05-R1 incomplete command / duplicate recognition ===
+
+[1] 不完整表达：识别到意图但不能执行
+
+[2] 其它完整说法仍然可执行
+
+[3] 不完整表达进不了快路，也不会被当成完整指令发布
+
+[4] 先不完整、后完整：两条都要能各自处理，不能被去重吞掉
+
+[5] 用户主动说的第二条指令不会被当成重复
+
+[6] 同一句话被 ASR 重复识别：文本完全一致，交给 Worker 的 3 s 规则
+
+[7] 完整指令的快路不受影响
+
+=== total: pass=52 fail=0 ===
+
+=== build t7_05_native_marker_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_05_native_marker_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_05_native_marker_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts\native_marker.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_05_native_marker_unit_test ===
+=== T7-05 native marker unit test ===
+
+[1] parse a normal marker
+
+[2] session match allows, session mismatch does not
+
+[3] expiry
+
+[4] unknown onTtsStart id (<=0) never matches by session
+
+[5] marker without session: window fallback only
+
+[6] failure injection: broken markers never allow
+
+[7] consecutive markers: seq distinguishes them
+
+[8] session field present but malformed -> marker invalid (no window fallback)
+
+=== total: pass=67 fail=0 ===
+
+=== build t7_05r2_dedupe_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_05r2_dedupe_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_05r2_dedupe_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t7_dup.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_05r2_dedupe_unit_test ===
+t7_05r2_dedupe: pass=37 fail=0
+
+# total: pass=225 fail=0
+# result: OK

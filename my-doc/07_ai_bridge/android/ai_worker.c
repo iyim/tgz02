@@ -18,6 +18,7 @@
 #include "echo_filter.h"
 #include "intent_route.h"
 #include "seq_gap.h"
+#include "t7_dup.h"
 #include "worker_conf.h"
 #include "worker_util.h"
 
@@ -78,10 +79,12 @@ typedef struct {
     unsigned long uttq_dropped;
     int          play_playing;            /* 最近一次读到的播报状态：1=playing */
     int          play_known;              /* 1 = 至少读到过一次播报状态 */
-    /* T7-05：最近一次真正执行过的 native 指令（用于识别 ASR 的二次识别） */
+    /* T7-05：最近一次真正执行过的 native 指令（仅用于状态展示） */
     char         last_native_text[T6B_ROUTE_TEXT_MAX];
     long long    last_native_ms;
     int          last_native_intent;
+    /* T7-05-R2：重复判定只看事件身份（event_id / session+seq+文本），不看时间窗 */
+    t7_dup       dedup;
 
     /* 待 Provider 成功的事件（失败期间一直保留，不读下一条） */
     t6b_event    pend;
@@ -334,6 +337,9 @@ static void publish_status(t6b_worker *w, const char *state)
     w->st.gate_cross_merged = w->ug.cross_merged;
     w->st.gate_dropped_dup = w->ug.dropped_dup;
     w->st.gate_restored = w->ug.restored;
+    w->st.route_dup_same_event = w->dedup.n_same_event;
+    w->st.route_dup_same_report = w->dedup.n_same_report;
+    w->st.route_same_text_new = w->dedup.n_same_text_new_event;
     if (w->ug.last_detail[0] != '\0') {
         snprintf(w->st.gate_last_detail, sizeof(w->st.gate_last_detail), "%s",
                  w->ug.last_detail);
@@ -1244,59 +1250,69 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
                    ir_intent_name(ir.intent), ir.rule,
                    ir.note[0] != '\0' ? ir.note : "-", slot->event_id, slot->session,
                    (int)strlen(slot->text));
-        } else if (
-            /* T7-05-R1 ②：二次识别去重只在"完全同一句话 + 极短间隔"时生效。
-             * 原来的"前缀关系 + 同意图 + 15 s"会把用户主动说的
-             * "播放周杰伦" -> "播放周杰伦的新歌" 吞掉，也会把 13 s 后才到的
-             * 更完整识别结果吞掉，所以前缀规则整体删除。 */
-            w->last_native_text[0] != '\0' &&
-            now_ms - w->last_native_ms >= 0 &&
-            now_ms - w->last_native_ms <= T7B_NATIVE_DUP_MS &&
-            strcmp(w->last_native_text, slot->text) == 0) {
-            w->st.route_dup_dropped++;
-            always("route=native SKIP exact duplicate recognition: event=%s session=%s "
-                   "intent=%s (gap=%lldms, same text %dB)",
-                   slot->event_id, slot->session, ir_intent_name(ir.intent),
-                   now_ms - w->last_native_ms, (int)strlen(slot->text));
-            return 1;
-        } else if (route_publish(w, slot->session, slot->event_id, &ir) == 0) {
-            w->st.route_native++;
-            /* 记下这次真正执行的指令，用来识别同一句话的二次识别 */
-            utf8_copy_trunc(w->last_native_text, sizeof(w->last_native_text), slot->text);
-            w->last_native_ms = now_ms;
-            w->last_native_intent = (int)ir.intent;
-            switch (ir.intent) {
-            case IR_VOLUME:     w->st.route_volume++; break;
-            case IR_WEATHER:    w->st.route_weather++; break;
-            case IR_SCREEN_OFF: w->st.route_screen_off++; break;
-            case IR_SCREEN_ON:  w->st.route_screen_on++; break;
-            case IR_MEDIA:      w->st.route_media++; break;
-            case IR_STOP:       w->st.route_stop++; break;
-            case IR_TIME:       w->st.route_time++; break;
-            default: break;
-            }
-            if (ir.intent == IR_STOP) {
-                /* 打断类：先把声音停掉，再让原厂回一句 */
-                tts_request_stop(w, "route=native intent=stop");
-            }
-            snprintf(w->st.route_last, sizeof(w->st.route_last),
-                     "route=native intent=%s rule=%s arg=%s session=%s seq=%lld",
-                     ir_intent_name(ir.intent), ir.rule, ir.arg, slot->session,
-                     w->st.route_seq);
-            always("route=native intent=%s rule=%s arg=%s event=%s seq=%lu session=%s "
-                   "text_bytes=%d merges=%d held_ms=%lld publish_seq=%lld "
-                   "(factory answers; AI worker does not)",
-                   ir_intent_name(ir.intent), ir.rule, ir.arg, slot->event_id, slot->seq,
-                   slot->session, (int)strlen(slot->text), slot->merges, slot->held_ms,
-                   w->st.route_seq);
-            return 1;
         } else {
-            /* ---- T7-05 ②：标记没写成功 -> 不能静默跳过 AI，改走模型 ---- */
-            w->st.route_fallback_ai++;
-            always("route=native FALLBACK to ai: intent=%s event=%s session=%s reason=%s "
-                   "(guard would drop the factory answer, so the model must answer)",
-                   ir_intent_name(ir.intent), slot->event_id, slot->session,
-                   w->st.route_publish_err[0] != '\0' ? w->st.route_publish_err : "publish failed");
+            /* T7-05-R2 ②：重复判定改成"事件身份"，不再用文本 + 时间窗。
+             * 真机 537 条 asr_final 全量统计：event_id 0 条重复、session 每次识别
+             * 一个、seq 单调。所以：
+             *   event_id 相同 / (session+seq+文本) 相同 -> 同一条 final 重复投递；
+             *   其余（含"文本一模一样但 event_id 不同"）一律执行。
+             * 这样"用户连说两遍调大音量"、"播放周杰伦" -> "播放周杰伦的新歌" 都不会
+             * 被吞；代价是原厂把同一句话重新识别成新 final 时会多答一次，报告里
+             * 明确写明了这个限制。 */
+            t7dup_key dk;
+            t7dup_verdict dv;
+
+            t7dup_key_set(&dk, slot->event_id, slot->session, slot->text, (long long)slot->seq);
+            dv = t7dup_check(&w->dedup, &dk);
+            if (dv != T7DUP_NEW) {
+                w->st.route_dup_dropped++;
+                always("route=native SKIP duplicate (%s): event=%s session=%s seq=%lu "
+                       "intent=%s text_bytes=%d",
+                       t7dup_verdict_name(dv), slot->event_id, slot->session, slot->seq,
+                       ir_intent_name(ir.intent), (int)strlen(slot->text));
+                t7dup_note(&w->dedup, &dk);
+                return 1;
+            }
+            if (route_publish(w, slot->session, slot->event_id, &ir) == 0) {
+                w->st.route_native++;
+                t7dup_note(&w->dedup, &dk);
+                /* 下面三个字段只用于状态展示（去重已改成事件身份判定） */
+                utf8_copy_trunc(w->last_native_text, sizeof(w->last_native_text), slot->text);
+                w->last_native_ms = now_ms;
+                w->last_native_intent = (int)ir.intent;
+                switch (ir.intent) {
+                case IR_VOLUME:     w->st.route_volume++; break;
+                case IR_WEATHER:    w->st.route_weather++; break;
+                case IR_SCREEN_OFF: w->st.route_screen_off++; break;
+                case IR_SCREEN_ON:  w->st.route_screen_on++; break;
+                case IR_MEDIA:      w->st.route_media++; break;
+                case IR_STOP:       w->st.route_stop++; break;
+                case IR_TIME:       w->st.route_time++; break;
+                default: break;
+                }
+                if (ir.intent == IR_STOP) {
+                    /* 打断类：先把声音停掉，再让原厂回一句 */
+                    tts_request_stop(w, "route=native intent=stop");
+                }
+                snprintf(w->st.route_last, sizeof(w->st.route_last),
+                         "route=native intent=%s rule=%s arg=%s session=%s seq=%lld",
+                         ir_intent_name(ir.intent), ir.rule, ir.arg, slot->session,
+                         w->st.route_seq);
+                always("route=native intent=%s rule=%s arg=%s event=%s seq=%lu session=%s "
+                       "text_bytes=%d merges=%d held_ms=%lld publish_seq=%lld "
+                       "(factory answers; AI worker does not)",
+                       ir_intent_name(ir.intent), ir.rule, ir.arg, slot->event_id, slot->seq,
+                       slot->session, (int)strlen(slot->text), slot->merges, slot->held_ms,
+                       w->st.route_seq);
+                return 1;
+            } else {
+                /* ---- T7-05 ②：标记没写成功 -> 不能静默跳过 AI，改走模型 ---- */
+                w->st.route_fallback_ai++;
+                always("route=native FALLBACK to ai: intent=%s event=%s session=%s reason=%s "
+                       "(guard would drop the factory answer, so the model must answer)",
+                       ir_intent_name(ir.intent), slot->event_id, slot->session,
+                       w->st.route_publish_err[0] != '\0' ? w->st.route_publish_err : "publish failed");
+            }
         }
     }
 
@@ -1925,6 +1941,7 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
     w.lock.fd = -1;
     t6b_state_init(&w.state);
     t6b_status_init(&w.st);
+    t7dup_init(&w.dedup);
     snprintf(w.st.tts_queue, sizeof(w.st.tts_queue), "%s", c->tts_queue);
     t6b_gap_init(&w.gaps);
 

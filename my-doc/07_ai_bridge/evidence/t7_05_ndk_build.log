@@ -1,5 +1,5 @@
 ﻿# T7-05 NDK build log (libtg_ttsguard native_marker + ai_worker gate-first routing)
-# time: 2026-11-22 09:46:43
+# time: 2026-11-22 11:21:14
 # ndk : D:\tgz02\OS\_analysis\tools\android-ndk-r21e
 # cc  : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd
 
@@ -61,10 +61,10 @@ Dynamic section at offset 0x3e5c contains 28 entries:
  0x6fffffff (VERNEEDNUM)                 2
  0x00000000 (NULL)                       0x0
 
-# cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_session.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c -ldl -llog
+# cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_session.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t7_dup.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c -ldl -llog
 (no compiler output: 0 warning, 0 error)
 exit: 0
-artifact: ai_worker  218672 B  sha256=5df4d8e62eafe20e3245b5ebd7a027388a477880cfa717c2a308e2613148eb65
+artifact: ai_worker  222832 B  sha256=3ff340096131350cff0d72032b4b0e8636b86ae54dcabc113e9dff62dc1df339
 # --- readelf -h ---
 ELF Header:
   Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
@@ -76,9 +76,9 @@ ELF Header:
   Type:                              DYN (Shared object file)
   Machine:                           ARM
   Version:                           0x1
-  Entry point address:               0x2060
+  Entry point address:               0x2070
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          217192 (bytes into file)
+  Start of section headers:          221352 (bytes into file)
   Flags:                             0x5000200, Version5 EABI, soft-float ABI
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)
@@ -88,16 +88,16 @@ ELF Header:
   Section header string table index: 36
 # --- readelf -d ---
 
-Dynamic section at offset 0x27d78 contains 29 entries:
+Dynamic section at offset 0x28d78 contains 29 entries:
   Tag        Type                         Name/Value
- 0x00000003 (PLTGOT)                     0x28ebc
+ 0x00000003 (PLTGOT)                     0x29ebc
  0x00000002 (PLTRELSZ)                   624 (bytes)
- 0x00000017 (JMPREL)                     0x1a28
+ 0x00000017 (JMPREL)                     0x1a40
  0x00000014 (PLTREL)                     REL
  0x00000011 (REL)                        0xb28
- 0x00000012 (RELSZ)                      3840 (bytes)
+ 0x00000012 (RELSZ)                      3864 (bytes)
  0x00000013 (RELENT)                     8 (bytes)
- 0x6ffffffa (RELCOUNT)                   476
+ 0x6ffffffa (RELCOUNT)                   479
  0x00000015 (DEBUG)                      0x0
  0x00000006 (SYMTAB)                     0x200
  0x0000000b (SYMENT)                     16 (bytes)
@@ -107,11 +107,11 @@ Dynamic section at offset 0x27d78 contains 29 entries:
  0x00000001 (NEEDED)                     Shared library: [libdl.so]
  0x00000001 (NEEDED)                     Shared library: [liblog.so]
  0x00000001 (NEEDED)                     Shared library: [libc.so]
- 0x00000020 (PREINIT_ARRAY)              0x28594
+ 0x00000020 (PREINIT_ARRAY)              0x29588
  0x00000021 (PREINIT_ARRAYSZ)            0x8
- 0x00000019 (INIT_ARRAY)                 0x2859c
+ 0x00000019 (INIT_ARRAY)                 0x29590
  0x0000001b (INIT_ARRAYSZ)               8 (bytes)
- 0x0000001a (FINI_ARRAY)                 0x285a4
+ 0x0000001a (FINI_ARRAY)                 0x29598
  0x0000001c (FINI_ARRAYSZ)               8 (bytes)
  0x0000001e (FLAGS)                      BIND_NOW
  0x6ffffffb (FLAGS_1)                    Flags: NOW

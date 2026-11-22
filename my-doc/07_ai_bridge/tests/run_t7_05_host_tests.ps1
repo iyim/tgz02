@@ -78,6 +78,13 @@ Build-And-Run "t7_05r1_incomplete_unit_test"    "t7_05r1_incomplete_unit_test.c"
 Build-And-Run "t7_05_native_marker_unit_test"   "t7_05_native_marker_unit_test.c" @(
     (Join-Path $HookDir "native_marker.c"))
 
+Build-And-Run "t7_05r2_dedupe_unit_test"        "t7_05r2_dedupe_unit_test.c" @(
+    (Join-Path $Android "t7_dup.c"),
+    (Join-Path $Android "utterance_gate.c"),
+    (Join-Path $Android "intent_route.c"),
+    (Join-Path $Android "echo_filter.c"),
+    (Join-Path $Android "worker_util.c"))
+
 Log "# total: pass=$TotalPass fail=$Fail"
 if ($Fail -ne 0) {
     Log "# result: FAIL"

@@ -1,5 +1,5 @@
 ﻿# T7-05 host unit test log
-# host time: 2026-11-22 09:54:47
+# host time: 2026-11-22 11:21:30
 
 === build t7_05_gate_order_unit_test ===
 cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_05_gate_order_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_05_gate_order_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c
@@ -91,5 +91,11 @@ cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\sys
 
 === total: pass=67 fail=0 ===
 
-# total: pass=188 fail=0
+=== build t7_05r2_dedupe_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_05r2_dedupe_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_05r2_dedupe_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t7_dup.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_05r2_dedupe_unit_test ===
+t7_05r2_dedupe: pass=37 fail=0
+
+# total: pass=225 fail=0
 # result: OK

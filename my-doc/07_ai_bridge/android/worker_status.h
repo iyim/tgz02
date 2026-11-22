@@ -134,7 +134,10 @@ typedef struct {
     unsigned long long route_publish_ok;       /* 落盘 + 回读校验通过 */
     unsigned long long route_publish_fail;     /* 任一步失败（已回退 AI） */
     unsigned long long route_fallback_ai;      /* 标记写失败后改走模型的条数 */
-    unsigned long long route_dup_dropped;      /* 完全重复识别被丢弃的条数 */
+    unsigned long long route_dup_dropped;      /* 事件身份判定为重复而丢弃的条数（T7-05-R2） */
+    unsigned long long route_dup_same_event;   /* 其中：event_id 相同 */
+    unsigned long long route_dup_same_report;  /* 其中：session+seq+文本 相同 */
+    unsigned long long route_same_text_new;    /* 文本相同但事件身份不同（按新指令执行） */
     unsigned long long route_incomplete_ai;    /* 命中意图但参数不完整 -> 转 AI 澄清的条数 */
     unsigned long long route_publish_retry;    /* 重试次数 */
     long long          route_seq;              /* 标记单调序号（守卫用它区分两条连续指令） */

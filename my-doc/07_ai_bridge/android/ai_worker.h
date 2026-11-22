@@ -41,7 +41,7 @@
 #define T6B_ROUTE_PUBLISH_NAME  "native_route.public.json"
 #define T6B_ROUTE_SLACK_MS      2000    /* T7-05：放行窗口收紧到 2 s（原 8000 太宽，会放过无关原厂回答） */
 #define T7B_PUBLISH_TRIES       3       /* T7-05：放行标记写盘的重试次数（全失败则回退 AI） */
-#define T7B_NATIVE_DUP_MS       3000    /* T7-05-R1：只对"完全同一句话"去重，窗口 3 s */
+/* T7-05-R2：原来的"文本相同 + 3 s 窗口"去重已删除，改为按事件身份判定，见 t7_dup.h */
 
 /* T7-04：本地意图路由的位掩码见 intent_route.h（T7B_ROUTE_*） */
 
