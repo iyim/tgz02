@@ -1,0 +1,132 @@
+
+D:\tgz02\OS\system\app\smartapp\lib\arm\libagutils.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+0002b528 AliAiLabs::AGUI::Message::obtain(int, int, int, void*, void (*)(AliAiLabs::AGUI::Message*), AliAiLabs::AGUI::HandlerCallback*):
+   2b528: f0 4f 2d e9                  	push	{r4, r5, r6, r7, r8, r9, r10, r11, lr}
+   2b52c: 1c b0 8d e2                  	add	r11, sp, #28
+   2b530: 04 d0 4d e2                  	sub	sp, sp, #4
+   2b534: 00 80 a0 e1                  	mov	r8, r0
+   2b538: c0 01 9f e5                  	ldr	r0, [pc, #448]
+   2b53c: 03 70 a0 e1                  	mov	r7, r3
+   2b540: 02 90 a0 e1                  	mov	r9, r2
+   2b544: 00 00 8f e0                  	add	r0, pc, r0
+   2b548: 01 a0 a0 e1                  	mov	r10, r1
+   2b54c: 04 50 80 e2                  	add	r5, r0, #4
+   2b550: 05 00 a0 e1                  	mov	r0, r5
+   2b554: bc b6 ff eb                  	bl	#-75024 <.plt+0x38>
+   2b558: a4 41 9f e5                  	ldr	r4, [pc, #420]
+   2b55c: 04 40 9f e7                  	ldr	r4, [pc, r4]
+   2b560: 00 00 54 e3                  	cmp	r4, #0
+   2b564: 2e 00 00 0a                  	beq	#184 <_ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE+0xfc>
+   2b568: 98 01 9f e5                  	ldr	r0, [pc, #408]
+   2b56c: 98 c1 9f e5                  	ldr	r12, [pc, #408]
+   2b570: 00 00 8f e0                  	add	r0, pc, r0
+   2b574: 94 21 9f e5                  	ldr	r2, [pc, #404]
+   2b578: 20 30 94 e5                  	ldr	r3, [r4, #32]
+   2b57c: 0c c0 8f e0                  	add	r12, pc, r12
+   2b580: 00 30 80 e5                  	str	r3, [r0]
+   2b584: 02 20 8f e0                  	add	r2, pc, r2
+   2b588: 84 31 9f e5                  	ldr	r3, [pc, #388]
+   2b58c: 03 30 9f e7                  	ldr	r3, [pc, r3]
+   2b590: 04 00 9c e5                  	ldr	r0, [r12, #4]
+   2b594: 01 30 43 e2                  	sub	r3, r3, #1
+   2b598: 00 30 82 e5                  	str	r3, [r2]
+   2b59c: 00 00 50 e3                  	cmp	r0, #0
+   2b5a0: 40 00 00 0a                  	beq	#256 <_ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE+0x180>
+   2b5a4: 04 60 8c e2                  	add	r6, r12, #4
+   2b5a8: 00 20 a0 e1                  	mov	r2, r0
+   2b5ac: 10 30 92 e5                  	ldr	r3, [r2, #16]
+   2b5b0: 14 10 92 e5                  	ldr	r1, [r2, #20]
+   2b5b4: 04 30 53 e0                  	subs	r3, r3, r4
+   2b5b8: 00 10 d1 e2                  	sbcs	r1, r1, #0
+   2b5bc: 00 10 a0 e3                  	mov	r1, #0
+   2b5c0: 01 10 00 33                  	movwlo	r1, #1
+   2b5c4: 00 00 51 e3                  	cmp	r1, #0
+   2b5c8: 02 10 a0 e1                  	mov	r1, r2
+   2b5cc: 02 60 a0 01                  	moveq	r6, r2
+   2b5d0: 04 10 81 12                  	addne	r1, r1, #4
+   2b5d4: 00 10 91 e5                  	ldr	r1, [r1]
+   2b5d8: 00 00 51 e3                  	cmp	r1, #0
+   2b5dc: 01 20 a0 e1                  	mov	r2, r1
+   2b5e0: f1 ff ff 1a                  	bne	#-60 <_ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE+0x84>
+   2b5e4: 04 10 8c e2                  	add	r1, r12, #4
+   2b5e8: 01 00 56 e1                  	cmp	r6, r1
+   2b5ec: 2d 00 00 0a                  	beq	#180 <_ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE+0x180>
+   2b5f0: d0 21 c6 e1                  	ldrd	r2, r3, [r6, #16]
+   2b5f4: 02 10 54 e0                  	subs	r1, r4, r2
+   2b5f8: 00 10 f3 e2                  	rscs	r1, r3, #0
+   2b5fc: 29 00 00 3a                  	blo	#164 <_ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE+0x180>
+   2b600: 04 30 96 e5                  	ldr	r3, [r6, #4]
+   2b604: 00 70 8d e5                  	str	r7, [sp]
+   2b608: 00 00 53 e3                  	cmp	r3, #0
+   2b60c: 0e 00 00 0a                  	beq	#56 <_ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE+0x124>
+   2b610: 03 20 a0 e1                  	mov	r2, r3
+   2b614: 00 30 93 e5                  	ldr	r3, [r3]
+   2b618: 00 00 53 e3                  	cmp	r3, #0
+   2b61c: fb ff ff 1a                  	bne	#-20 <_ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE+0xe8>
+   2b620: 14 00 00 ea                  	b	#80 <_ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE+0x150>
+   2b624: 28 00 a0 e3                  	mov	r0, #40
+   2b628: cc b6 ff eb                  	bl	#-74960 <.plt+0x14c>
+   2b62c: 00 40 a0 e1                  	mov	r4, r0
+   2b630: 00 00 a0 e3                  	mov	r0, #0
+   2b634: 50 00 c0 f2                  	vmov.i32	q8, #0x0
+   2b638: 20 00 84 e5                  	str	r0, [r4, #32]
+   2b63c: 24 00 84 e5                  	str	r0, [r4, #36]
+   2b640: 10 00 84 e2                  	add	r0, r4, #16
+   2b644: cf 0a 40 f4                  	vst1.64	{d16, d17}, [r0]
+   2b648: 16 00 00 ea                  	b	#88 <_ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE+0x180>
+   2b64c: 06 30 a0 e1                  	mov	r3, r6
+   2b650: 08 20 b3 e5                  	ldr	r2, [r3, #8]!
+   2b654: 00 10 92 e5                  	ldr	r1, [r2]
+   2b658: 06 00 51 e1                  	cmp	r1, r6
+   2b65c: 05 00 00 0a                  	beq	#20 <_ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE+0x150>
+   2b660: 00 10 93 e5                  	ldr	r1, [r3]
+   2b664: 01 30 a0 e1                  	mov	r3, r1
+   2b668: 08 20 b3 e5                  	ldr	r2, [r3, #8]!
+   2b66c: 00 70 92 e5                  	ldr	r7, [r2]
+   2b670: 01 00 57 e1                  	cmp	r7, r1
+   2b674: f9 ff ff 1a                  	bne	#-28 <_ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE+0x138>
+   2b678: 98 10 9f e5                  	ldr	r1, [pc, #152]
+   2b67c: 01 10 9f e7                  	ldr	r1, [pc, r1]
+   2b680: 06 00 51 e1                  	cmp	r1, r6
+   2b684: 00 20 8c 05                  	streq	r2, [r12]
+   2b688: 08 10 9c e5                  	ldr	r1, [r12, #8]
+   2b68c: 01 10 41 e2                  	sub	r1, r1, #1
+   2b690: 08 10 8c e5                  	str	r1, [r12, #8]
+   2b694: 06 10 a0 e1                  	mov	r1, r6
+   2b698: ca b7 ff eb                  	bl	#-73944 <.plt+0x5b4>
+   2b69c: 06 00 a0 e1                  	mov	r0, r6
+   2b6a0: 7b b6 ff eb                  	bl	#-75284 <.plt+0x80>
+   2b6a4: 00 70 9d e5                  	ldr	r7, [sp]
+   2b6a8: 05 00 a0 e1                  	mov	r0, r5
+   2b6ac: 6c b6 ff eb                  	bl	#-75344 <.plt+0x50>
+   2b6b0: 0c 00 9b e5                  	ldr	r0, [r11, #12]
+   2b6b4: 50 00 c0 f2                  	vmov.i32	q8, #0x0
+   2b6b8: 00 05 84 e8                  	stm	r4, {r8, r10}
+   2b6bc: 08 90 84 e5                  	str	r9, [r4, #8]
+   2b6c0: 0c 70 84 e5                  	str	r7, [r4, #12]
+   2b6c4: 10 00 84 e5                  	str	r0, [r4, #16]
+   2b6c8: 18 00 84 e2                  	add	r0, r4, #24
+   2b6cc: 08 10 9b e5                  	ldr	r1, [r11, #8]
+   2b6d0: 14 10 84 e5                  	str	r1, [r4, #20]
+   2b6d4: cf 0a 40 f4                  	vst1.64	{d16, d17}, [r0]
+   2b6d8: 04 00 a0 e1                  	mov	r0, r4
+   2b6dc: 1c d0 4b e2                  	sub	sp, r11, #28
+   2b6e0: f0 8f bd e8                  	pop	{r4, r5, r6, r7, r8, r9, r10, r11, pc}
+   2b6e4: 00 40 a0 e1                  	mov	r4, r0
+   2b6e8: 05 00 a0 e1                  	mov	r0, r5
+   2b6ec: 5c b6 ff eb                  	bl	#-75408 <.plt+0x50>
+   2b6f0: 04 00 a0 e1                  	mov	r0, r4
+   2b6f4: 5d b6 ff eb                  	bl	#-75404 <.plt+0x5c>
+   2b6f8: 2e c0 ff eb                  	bl	#-65352 <_ZN9AliAiLabs4AGUI5MutexD0Ev+0x38>
+   2b6fc: 2d c0 ff eb                  	bl	#-65356 <_ZN9AliAiLabs4AGUI5MutexD0Ev+0x38>
+   2b700: a4 1b 03 00                  	andeq	r1, r3, r4, lsr #23
+   2b704: a4 1b 03 00                  	andeq	r1, r3, r4, lsr #23
+   2b708: 90 1b 03 00                  	muleq	r3, r0, r11
+   2b70c: 78 1b 03 00                  	andeq	r1, r3, r8, ror r11
+   2b710: 80 1b 03 00                  	andeq	r1, r3, r0, lsl #23
+   2b714: 78 1b 03 00                  	andeq	r1, r3, r8, ror r11
+   2b718: 78 1a 03 00                  	andeq	r1, r3, r8, ror r10

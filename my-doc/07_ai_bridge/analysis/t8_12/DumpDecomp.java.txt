@@ -1,0 +1,71 @@
+// DumpDecomp.java -- T8-12 phase 2: decompile selected libsmartbox.so functions
+// ASCII only. Read-only: operates on an imported copy, never touches the original file.
+// @category T812
+import ghidra.app.script.GhidraScript;
+import ghidra.app.decompiler.DecompInterface;
+import ghidra.app.decompiler.DecompileResults;
+import ghidra.program.model.address.Address;
+import ghidra.program.model.listing.Function;
+
+public class DumpDecomp extends GhidraScript {
+
+    private static final String[][] TARGETS = {
+        { "11c238", "SessionProxy::onHandler" },
+        { "118ebc", "SessionDispatch::onNlpResult" },
+        { "11896c", "SessionDispatch::onNlpResultInner" },
+        { "1189ec", "SessionDispatch::onPushNlpResult" },
+        { "1189e0", "SessionDispatch::onSpecialNlpResult" },
+        { "117d40", "SessionDispatch::playAudios" },
+        { "118830", "SessionDispatch::onRouterDetailInfo" },
+        { "11489c", "SessionManager::onNlpResult" },
+        { "114b98", "SessionManager::onNlpResultInner_thunk" },
+        { "1110e4", "SessionManager::exitTalk" },
+        { "11353c", "SessionManager::onStream" },
+        { "11d5d0", "SessionProxy::onNlpResultInner_i_i_P" },
+        { "11d9f8", "SessionProxy::onNlpResultInner_i_P" },
+        { "11d9b4", "SessionProxy::onNlpResult" },
+        { "11d708", "SessionProxy::onStream" },
+        { "10fe3c", "RouterManager::onResponse" },
+        { "1566f0", "ContinuousDialogManager::onSpeakCommand" },
+        { "1199bc", "SessionDispatch::processCommand_shared_ptr" },
+        { "119ea0", "SessionDispatch::processCommand_const" }
+    };
+
+    public void run() throws Exception {
+        DecompInterface dec = new DecompInterface();
+        dec.toggleCCode(true);
+        dec.toggleSyntaxTree(true);
+        dec.openProgram(currentProgram);
+
+        println("### T8-12 phase2 decompilation dump");
+        println("### program: " + currentProgram.getName());
+        println("### imageBase: " + currentProgram.getImageBase());
+
+        for (String[] t : TARGETS) {
+            String hex = t[0];
+            String label = t[1];
+            println("");
+            println("================================================================================");
+            println("## " + label + "  @ 0x" + hex);
+            println("================================================================================");
+            Address addr = toAddr(hex);
+            Function f = getFunctionAt(addr);
+            if (f == null) {
+                println("!! no function at 0x" + hex);
+                continue;
+            }
+            println("-- entry 0x" + f.getEntryPoint() + "  name=" + f.getName()
+                    + "  size=" + f.getBody().getNumAddresses());
+            DecompileResults res = dec.decompileFunction(f, 120, monitor);
+            if (res == null || !res.decompileCompleted()) {
+                println("!! decompile failed: " + (res == null ? "null" : res.getErrorMessage()));
+                continue;
+            }
+            println(res.getDecompiledFunction().getC());
+        }
+
+        dec.dispose();
+        println("");
+        println("### END");
+    }
+}

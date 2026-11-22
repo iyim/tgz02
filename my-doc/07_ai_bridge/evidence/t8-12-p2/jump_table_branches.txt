@@ -1,0 +1,81 @@
+# T8-12 phase2: SessionProxy::onHandler jump table -> branch entries -> reachable PLT calls
+# function 0x11c238..0x11cd9c   table base 0x11c290   entries 8   (what = idx + 1)
+# dispatch: 0x11c278 sub r0,r8,#1 ; 0x11c27c cmp r0,#7 ; 0x11c280 bhi -> 0x11c5c0
+#           0x11c284 add r1,pc,#4 (=0x11c290) ; 0x11c288 ldr r0,[r1,r0,lsl #2] ; 0x11c28c add pc,r1,r0
+# NOTE: reachability is an over-approximation (both edges of every conditional branch are followed).
+
+=== what=1  idx=0  table[0x11c290] = 0x00000020  ->  branch 0x11c2b0
+  reachable instructions: 101
+  0x11c2f4  plt[2043] _ZN9AliAiLabs4AGUI12SessionProxy13getFilterTextEPcRNSt6__ndk112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEESA_
+  0x11c328  plt[2044] _ZN9AliAiLabs4AGUI15SessionDispatch8onStreamEiPKch
+  0x11c348  plt[505] _ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE
+  0x11c358  plt[2045] _ZN9AliAiLabs4AGUI14SessionManager10getTimeoutENS0_13IDeviceMirror13SessionStatusE
+  0x11c374  plt[1797] _ZN9AliAiLabs4AGUI7Handler11postMessageEPNS0_7MessageEhyh
+  0x11c9f8  plt[2028] _ZN9AliAiLabs4AGUI14SessionManager16getSessionStatusEv
+  0x11ca34  plt[1426] AgutilLog
+  0x11cbb0  plt[30] _ZdlPv
+  0x11cbd4  plt[2057] _ZN9AliAiLabs4AGUI7Handler13removeMessageEi
+  0x11cbe4  plt[2046] _ZN9AliAiLabs4AGUI14SessionManager16setSessionStatusEiNS0_13IDeviceMirror13SessionStatusE
+  0x11cbf8  plt[1891] _ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE
+  0x11cc04  plt[2057] _ZN9AliAiLabs4AGUI7Handler13removeMessageEi
+
+=== what=2  idx=1  table[0x11c294] = 0x00000364  ->  branch 0x11c5f4
+  reachable instructions: 119
+  0x11c624  plt[1426] AgutilLog
+  0x11c634  plt[2046] _ZN9AliAiLabs4AGUI14SessionManager16setSessionStatusEiNS0_13IDeviceMirror13SessionStatusE
+  0x11c640  plt[2052] _ZN9AliAiLabs4AGUI15SessionDispatch11onStartTalkEi
+  0x11c658  plt[165] _ZNSt6__ndk112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6assignEPKc
+  0x11c670  plt[165] _ZNSt6__ndk112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6assignEPKc
+  0x11c678  plt[1944] _ZN9AliAiLabs4AGUI19IInputDeviceManager13getWakeupTypeEi
+  0x11c6a0  plt[505] _ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE
+  0x11c6b0  plt[2045] _ZN9AliAiLabs4AGUI14SessionManager10getTimeoutENS0_13IDeviceMirror13SessionStatusE
+  0x11c6c8  plt[1797] _ZN9AliAiLabs4AGUI7Handler11postMessageEPNS0_7MessageEhyh
+  0x11c6cc  plt[188] _ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+  0x11c6e4  plt[1432] _ZN9AliAiLabs4AGUI19IInputDeviceManager12getInputTypeEi
+  0x11c6f4  plt[1743] _ZN9AliAiLabs4AGUI18InputDeviceManager14getInputDeviceENS0_19IInputDeviceManager15InputDeviceTypeE
+  0x11c75c  plt[29] _ZNSt6__ndk119__shared_weak_count14__release_weakEv
+  0x11c7a8  plt[29] _ZNSt6__ndk119__shared_weak_count14__release_weakEv
+  0x11c7b8  plt[1862] _ZN9AliAiLabs4AGUI11InputDevice19getFeedBackListenerEv
+
+=== what=3  idx=2  table[0x11c298] = 0x00000530  ->  branch 0x11c7c0
+  reachable instructions: 40
+  0x11c7f0  plt[1426] AgutilLog
+  0x11c800  plt[2046] _ZN9AliAiLabs4AGUI14SessionManager16setSessionStatusEiNS0_13IDeviceMirror13SessionStatusE
+  0x11c80c  plt[2053] _ZN9AliAiLabs4AGUI15SessionDispatch10onStopTalkEi
+  0x11c82c  plt[505] _ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE
+  0x11c83c  plt[2045] _ZN9AliAiLabs4AGUI14SessionManager10getTimeoutENS0_13IDeviceMirror13SessionStatusE
+  0x11c854  plt[1797] _ZN9AliAiLabs4AGUI7Handler11postMessageEPNS0_7MessageEhyh
+
+=== what=4  idx=3  table[0x11c29c] = 0x000005d0  ->  branch 0x11c860
+  reachable instructions: 7
+
+=== what=5  idx=4  table[0x11c2a0] = 0x000005e8  ->  branch 0x11c878
+  reachable instructions: 151
+  0x11c404  plt[1426] AgutilLog
+  0x11c924  plt[1426] AgutilLog
+  0x11cae4  plt[1426] AgutilLog
+  0x11caf8  plt[2046] _ZN9AliAiLabs4AGUI14SessionManager16setSessionStatusEiNS0_13IDeviceMirror13SessionStatusE
+  0x11cb1c  plt[2043] _ZN9AliAiLabs4AGUI12SessionProxy13getFilterTextEPcRNSt6__ndk112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEESA_
+  0x11cb50  plt[2044] _ZN9AliAiLabs4AGUI15SessionDispatch8onStreamEiPKch
+  0x11cb70  plt[505] _ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE
+  0x11cb80  plt[2045] _ZN9AliAiLabs4AGUI14SessionManager10getTimeoutENS0_13IDeviceMirror13SessionStatusE
+  0x11cb9c  plt[1797] _ZN9AliAiLabs4AGUI7Handler11postMessageEPNS0_7MessageEhyh
+  0x11cbb0  plt[30] _ZdlPv
+  0x11cc2c  plt[165] _ZNSt6__ndk112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6assignEPKc
+
+=== what=6  idx=5  table[0x11c2a4] = 0x0000069c  ->  branch 0x11c92c
+  reachable instructions: 8
+
+=== what=7  idx=6  table[0x11c2a8] = 0x000006b8  ->  branch 0x11c948
+  reachable instructions: 31
+  0x11c404  plt[1426] AgutilLog
+  0x11c95c  plt[2055] _ZN9AliAiLabs4AGUI12SessionProxy16onNlpResultInnerEiiPNS0_9NlpResultE
+  0x11c970  plt[2056] _ZN9AliAiLabs4AGUI14SessionManager14onNlpResultEndEiPNS0_9NlpResultEi
+
+=== what=8  idx=7  table[0x11c2ac] = 0x00000724  ->  branch 0x11c9b4
+  reachable instructions: 20
+  0x11c404  plt[1426] AgutilLog
+  0x11c9c0  plt[2007] _ZN9AliAiLabs4AGUI14SessionManager19setSessionTtsStatusEiNS0_13IDeviceMirror13SessionStatusE
+
+=== EXTRA ROOT 0x11c37c  (dispatch target used when what-1 > 7, or a shared tail)
+  reachable instructions: 8

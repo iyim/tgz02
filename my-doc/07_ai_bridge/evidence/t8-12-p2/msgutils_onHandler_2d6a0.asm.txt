@@ -1,0 +1,17 @@
+
+D:\tgz02\OS\system\app\smartapp\lib\arm\libagutils.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+0002d6a0 AliAiLabs::AGUI::Handler::onHandler(AliAiLabs::AGUI::Message*):
+   2d6a0: 00 20 a0 e1                  	mov	r2, r0
+   2d6a4: 10 00 91 e5                  	ldr	r0, [r1, #16]
+   2d6a8: 00 00 50 e3                  	cmp	r0, #0
+   2d6ac: 04 00 92 05                  	ldreq	r0, [r2, #4]
+   2d6b0: 00 00 50 03                  	cmpeq	r0, #0
+   2d6b4: 02 00 00 0a                  	beq	#8 <_ZN9AliAiLabs4AGUI7Handler9onHandlerEPNS0_7MessageE+0x24>
+   2d6b8: 00 20 90 e5                  	ldr	r2, [r0]
+   2d6bc: 00 20 92 e5                  	ldr	r2, [r2]
+   2d6c0: 12 ff 2f e1                  	bx	r2
+   2d6c4: 1e ff 2f e1                  	bx	lr

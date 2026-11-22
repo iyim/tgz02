@@ -1,0 +1,30 @@
+
+D:\tgz02\OS\system\app\smartapp\lib\arm\libagutils.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+0002d2f4 AliAiLabs::AGUI::Handler::postMessage(AliAiLabs::AGUI::Message*):
+   2d2f4: 10 4c 2d e9                  	push	{r4, r10, r11, lr}
+   2d2f8: 08 b0 8d e2                  	add	r11, sp, #8
+   2d2fc: 01 40 a0 e1                  	mov	r4, r1
+   2d300: 00 10 a0 e1                  	mov	r1, r0
+   2d304: 00 00 a0 e3                  	mov	r0, #0
+   2d308: 00 00 54 e3                  	cmp	r4, #0
+   2d30c: 0e 00 00 0a                  	beq	#56 <_ZN9AliAiLabs4AGUI7Handler11postMessageEPNS0_7MessageE+0x58>
+   2d310: 24 10 84 e5                  	str	r1, [r4, #36]
+   2d314: 08 00 91 e5                  	ldr	r0, [r1, #8]
+   2d318: 00 00 50 e3                  	cmp	r0, #0
+   2d31c: 07 00 00 0a                  	beq	#28 <_ZN9AliAiLabs4AGUI7Handler11postMessageEPNS0_7MessageE+0x4c>
+   2d320: 04 10 a0 e1                  	mov	r1, r4
+   2d324: 00 20 a0 e3                  	mov	r2, #0
+   2d328: 00 30 a0 e3                  	mov	r3, #0
+   2d32c: 92 b1 ff eb                  	bl	#-80312 <.plt+0x968>
+   2d330: 00 10 a0 e1                  	mov	r1, r0
+   2d334: 01 00 a0 e3                  	mov	r0, #1
+   2d338: 00 00 51 e3                  	cmp	r1, #0
+   2d33c: 10 8c bd 18                  	popne	{r4, r10, r11, pc}
+   2d340: 04 00 a0 e1                  	mov	r0, r4
+   2d344: 80 b1 ff eb                  	bl	#-80384 <.plt+0x938>
+   2d348: 00 00 a0 e3                  	mov	r0, #0
+   2d34c: 10 8c bd e8                  	pop	{r4, r10, r11, pc}
