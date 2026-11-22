@@ -1,5 +1,5 @@
 ﻿# T8-06 host test log (CAS switch + page-protection restore)
-# host time: 2026-11-22 19:02:18
+# host time: 2026-11-22 19:44:51
 
 === build t8_06_switch_test ===
 gcc -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_06_switch_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_06_switch_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_switch.c
@@ -10,8 +10,8 @@ PASS t8_06_switch_test: 0 warning / 0 error
 T8-06 switch test (production nlu_switch.c, single atomic state word)
 
 [A] 8 workers (install/uninstall/on/off) x 60000 rounds + 2 observers
-  ops: install=120000 uninstall=120000 on=120000 off=120000 refused_on=59268
-  observations=148681 violations=0 bad_mode=0
+  ops: install=120000 uninstall=120000 on=120000 off=120000 refused_on=71709
+  observations=158143 violations=0 bad_mode=0
 
 [B] uninstall racing with enable, 20000 rounds
   final states: illegal=0 (installed&&takeover)=0

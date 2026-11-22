@@ -1,5 +1,5 @@
 ﻿# T8-02 host test log (takeover capacity + concurrency)
-# host time: 2026-11-22 18:23:32
+# host time: 2026-11-22 19:44:34
 
 === build t8_02_nlu_takeover_unit_test ===
 gcc -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_02_nlu_takeover_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_02_nlu_takeover_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_takeover.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c

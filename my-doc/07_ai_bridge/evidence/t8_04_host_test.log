@@ -1,5 +1,5 @@
 ﻿# T8-04 host test log (boot-once gate)
-# host time: 2026-11-22 18:35:06
+# host time: 2026-11-22 19:44:39
 
 === build t8_04_boot_once_test ===
 gcc -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_04_boot_once_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_04_boot_once_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_takeover.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c

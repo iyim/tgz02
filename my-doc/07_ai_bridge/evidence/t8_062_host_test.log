@@ -1,5 +1,5 @@
 ﻿# T8-06.2 host test log (T6 entry page protection + NLU stub page)
-# host time: 2026-11-22 19:18:16
+# host time: 2026-11-22 19:45:11
 
 === extract production functions from hook_agent/libtg_hook.c ===
   ok  page_prot()              31 lines

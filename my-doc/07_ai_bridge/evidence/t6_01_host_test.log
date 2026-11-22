@@ -56,3 +56,61 @@ T6-01 wire compatibility unit test
   PASS  tg_hdr_decode rejects REQ frame
 
 result: 46 passed, 0 failed
+
+# run: D:\tgz02\OS\system\my-doc\07_ai_bridge\out\t6_wire_unit_test.exe
+T6-01 wire compatibility unit test
+[1] FNV-1a32 identical to bridge
+  PASS  crc vector 0 (0x811c9dc5)
+  PASS  crc vector 1 (0x8439ade1)
+  PASS  crc vector 2 (0x8b9e4511)
+  PASS  crc vector 3 (0x86938da3)
+[2] frame packing identical to tgb_proto
+  PASS  empty body
+  PASS    frame bytes identical to tgb_proto
+  PASS  ascii body
+  PASS    frame bytes identical to tgb_proto
+  PASS  ascii event body built
+  PASS  event body
+  PASS    frame bytes identical to tgb_proto
+  PASS  cjk event body built
+  PASS  cjk event body
+  PASS    frame bytes identical to tgb_proto
+[3] body accepted by the bridge parser
+  PASS  build_body returns a length
+  PASS  parse == TGB_E_OK
+  PASS  event_id round-trip
+  PASS  session_id round-trip
+  PASS  pid round-trip
+  PASS  is_final == true
+  PASS  text_bytes == 27 (9 CJK chars)
+  PASS  received_at_ms round-trip
+  PASS  build_body with quote/backslash
+  PASS  quote/backslash: parse == TGB_E_OK
+  PASS  quote/backslash: text round-trip
+  PASS  build_body with control char
+  PASS  control char is rejected by the bridge (text_control/bad_utf8)
+        bridge verdict: text_has_control
+[4] 511-byte text limit matches the bridge
+  PASS  511-byte text body built
+  PASS  511 bytes accepted
+  PASS  512-byte text body built
+  PASS  512 bytes rejected as text_too_long
+[5] UTF-8 validation
+  PASS  ascii
+  PASS  CJK 3-byte sequences
+  PASS  overlong C0 80 rejected
+  PASS  surrogate ED A0 80 rejected
+  PASS  truncated sequence rejected
+  PASS  > U+10FFFF rejected
+  PASS  U+1F600 emoji accepted
+[6] ACK decode
+  PASS  bridge-side ACK frame built
+  PASS  tg_hdr_decode accepts ACK frame
+  PASS  ack header fields
+  PASS  field ack
+  PASS  field status
+  PASS  field code
+  PASS  REQ frame built
+  PASS  tg_hdr_decode rejects REQ frame
+
+result: 46 passed, 0 failed

@@ -1,5 +1,5 @@
 ﻿# T8-06.1 host test log (page_prot / nlu_pp_unprotect behaviour)
-# host time: 2026-11-22 19:18:18
+# host time: 2026-11-22 19:45:14
 
 === extract production functions from hook_agent/libtg_hook.c ===
 extracted: page_prot=31 lines, nlu_pp_unprotect=39 lines, nlu_pp_reprotect=26 lines -> D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_061_prod_snippet.inc

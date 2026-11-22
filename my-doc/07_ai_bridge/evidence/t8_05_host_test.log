@@ -1,5 +1,5 @@
 ﻿# T8-05 host test log (switch + patch transaction)
-# host time: 2026-11-22 18:49:47
+# host time: 2026-11-22 19:44:44
 
 === build t8_05_switch_test ===
 gcc -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_05_switch_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_05_switch_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_switch.c
@@ -61,7 +61,7 @@ T8-05 patch test (production nlu_patch.c)
 [I] reentrant install is refused, outer transaction still succeeds
 
 [J] machine-code record and formatting
-  snapshot: np{state=idle err=ok installs=1 skips=0 install_fails=0 refusals=0 uninstalls=1 uninstall_fails=0 restores=0 restore_fails=0 busy=0 before=[e92d4ff0 e28db01c] after=[e51ff004 7f001234] uninst=[e92d4ff0 e28db01c] now=[e92d4ff0 e28db01c]}
+  snapshot: np{state=idle err=ok installs=1 skips=0 install_fails=0 refusals=0 uninstalls=1 uninstall_fails=0 restores=0 restore_fails=0 busy=0 prot_ok=2 prot_fails=0 before=[e92d4ff0 e28db01c] after=[e51ff004 7f001234] uninst=[e92d4ff0 e28db01c] now=[e92d4ff0 e28db01c]}
 
 RESULT: pass=109 fail=0
 exit : 0
