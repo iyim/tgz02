@@ -758,18 +758,35 @@ static void scenario_concurrent(void)
         g_fail_create_at, ncreated, create_ok);
 
     if (!create_ok) {
-        /* 部分成功：必须先把已成功创建的线程全部 join 完，才允许销毁 mutex */
+        /* 部分成功：必须先把已成功创建的线程全部 join 完，才允许销毁 mutex。
+         * 这里用可注入的 t_join，因为"部分创建 + join 也失败"才是真正的组合故障。 */
+        int expect_complete = (g_fail_join_at < 0 && g_join_abandon_at < 0);
         for (i = 0; i < ncreated; i++)
-            if (pthread_join(th[i], NULL) == 0) njoined++;
-        chk(njoined == ncreated,
-            "create 部分失败后，已成功创建的 %d 个线程全部 join 完成（njoined=%d）", ncreated, njoined);
-        chk(njoined == ncreated, "确认没有线程仍在运行，mutex 才可以被销毁");
+            if (t_join(th[i], i) == 0) njoined++;
+        chk((njoined == ncreated) == expect_complete,
+            "create 部分失败后，已创建线程的 join 结果符合预期（njoined=%d/%d，join-fail=%d，abandon=%d）",
+            njoined, ncreated, g_fail_join_at, g_join_abandon_at);
+
+        if (njoined != ncreated) {
+            /* 组合故障：有人被创建过，但退出状态无法确认。
+             * 不销毁 mutex、不读计数器、不 free 线程可能仍引用的内存，立即退出。 */
+            chk(counters_snapshot(st, w, ncreated, 0, &s) == -1,
+                "join 不完整时拒绝读取共享计数器");
+            chk(g_mutex_destroyed == 0, "join 不完整时不得销毁 mutex");
+            chk(g_destroy_after_all_join == 0, "join 不完整时没有发生任何销毁动作");
+            printf("  [INFO] 部分创建 + join 失败：线程退出状态无法确认\n");
+            printf("RESULT: INCOMPLETE (checks=%d fails=%d) —— 部分创建后的线程退出状态无法确认\n",
+                   checks, fails);
+            g_incomplete = 1;
+            hard_exit(2);            /* 不 return：后面任何场景都不允许再跑 */
+        }
+
         pthread_mutex_destroy(&st->mu);
         g_mutex_destroyed = 1;
-        g_destroy_after_all_join = (njoined == ncreated);
+        g_destroy_after_all_join = 1;
         chk(g_destroy_after_all_join, "mutex 只在所有已创建线程 join 之后才销毁");
         chk(counters_snapshot(st, w, ncreated, 0, &s) == -1,
-            "部分创建时拒绝读取共享计数器（测试不完整，不做统计断言）");
+            "部分创建场景仍不执行完整统计（测试不完整）");
         g_incomplete = 1;
         return;                      /* 不 free：进程即将以 INCOMPLETE 结束 */
     }

@@ -79,8 +79,8 @@ static const unsigned long TRAMP[NPTS] = { 0x7000A000UL, 0x7000A080UL, 0x7000A10
 #define PATCH_JMP 0xE51FF004UL      /* ldr pc,[pc,#-4] */
 
 typedef enum {
-    ST_IDLE = 0, ST_PRECHECK, ST_FROZEN, ST_INSTALLING,
-    ST_ROLLING_BACK, ST_DONE, ST_FAILED, ST_ROLLBACK_FAILED, ST_RECOVERED
+    ST_IDLE = 0, ST_PRECHECK, ST_FROZEN, ST_POSTFREEZE_VERIFY, ST_INSTALLING,
+    ST_ROLLING_BACK, ST_DONE, ST_FAILED, ST_ROLLBACK_FAILED, ST_RECOVERED, ST_ABORTED
 } st_t;
 
 static const char *st_name(st_t s)
@@ -95,9 +95,14 @@ static const char *st_name(st_t s)
     case ST_FAILED: return "FAILED";
     case ST_ROLLBACK_FAILED: return "ROLLBACK_FAILED";
     case ST_RECOVERED: return "RECOVERED";
+    case ST_ABORTED: return "ABORTED";
+    case ST_POSTFREEZE_VERIFY: return "POSTFREEZE_VERIFY";
     }
     return "?";
 }
+
+#define NTH      4                 /* target threads; per-thread state is a bit */
+#define TH_BIT(i) (1u << (i))
 
 /* ---------------- verdict ---------------- */
 
@@ -107,7 +112,8 @@ typedef enum {
     V_INSTALL_FAILED,
     V_ROLLBACK_FAILED,
     V_RESUME_FAILED,
-    V_ROLLBACK_AND_RESUME_FAILED
+    V_ROLLBACK_AND_RESUME_FAILED,
+    V_ENTRY_CHANGED_BY_OTHERS
 } verdict_t;
 
 static const char *v_name(verdict_t v)
@@ -119,6 +125,7 @@ static const char *v_name(verdict_t v)
     case V_ROLLBACK_FAILED: return "ROLLBACK_FAILED";
     case V_RESUME_FAILED: return "RESUME_FAILED";
     case V_ROLLBACK_AND_RESUME_FAILED: return "ROLLBACK_AND_RESUME_FAILED";
+    case V_ENTRY_CHANGED_BY_OTHERS: return "ENTRY_CHANGED_BY_OTHERS";
     }
     return "?";
 }
@@ -127,13 +134,15 @@ static const char *v_name(verdict_t v)
 
 typedef struct {
     int precheck_bad[NPTS];        /* entry already patched / bytes not as expected */
-    int freeze_fail;               /* attach/stop failed before any thread was frozen */
-    int freeze_partial_fail;       /* some threads frozen, then attach failed       */
-    int pc_in_range[NPTS];         /* a stopped PC sits inside entry i             */
-    int resume_fail;               /* threads could not be resumed                 */
-    int fail_install[NPTS][NW];    /* this word store does not happen              */
-    int fail_readback[NPTS][NW];   /* readback of this word reports mismatch       */
-    int fail_restore[NPTS][NW];    /* this restore store does not happen           */
+    unsigned target_mask;          /* thread set to stop (0 = all NTH threads)    */
+    int freeze_fail_at;            /* attach of thread n fails (-1 = never)       */
+    int resume_fail_at;            /* resume of thread n fails (-1 = never)       */
+    int pc_in_range[NPTS];         /* a stopped PC sits inside entry i            */
+    int external_write_after_freeze[NPTS]; /* a foreign writer rewrites entry i   */
+    unsigned long external_w0, external_w1;/* the bytes that foreign writer left  */
+    int fail_install[NPTS][NW];    /* this word store does not happen             */
+    int fail_readback[NPTS][NW];   /* readback of this word reports mismatch      */
+    int fail_restore[NPTS][NW];    /* this restore store does not happen          */
 } faults_t;
 
 /* ---------------- simulated target memory ---------------- */
@@ -152,13 +161,16 @@ typedef struct {
     int verify_final_fail;
     int half_installed_reported_success;
     int rollback_attempts, recover_attempts;
-    /* freeze / resume lifecycle */
+    /* per-thread freeze / resume lifecycle */
+    unsigned target_mask, frozen_mask, resumed_mask, resume_failed_mask;
     int freeze_count, resume_count;
-    int froze;                            /* 1 = at least one thread was stopped */
-    int resume_fail_hits;                 /* how often the resume path really failed */
+    int freeze_fail_hits, resume_fail_hits;
+    int postfreeze_checks, postfreeze_mismatch;   /* mismatch = entry index or -1 */
+    int external_touched;
+    unsigned long external_w0, external_w1;       /* bytes the foreign writer left */
     int order_violation;
     long ev;                              /* monotonic event counter            */
-    long ev_freeze, ev_pc_check, ev_first_store, ev_group_readback;
+    long ev_freeze, ev_postfreeze_verify, ev_pc_check, ev_first_store, ev_group_readback;
     long ev_rollback_done, ev_resume;
 } world_t;
 
@@ -188,12 +200,15 @@ static void w_init(world_t *w, faults_t f)
     }
     w->f = f;
     w->state = ST_IDLE;
+    w->postfreeze_mismatch = -1;
 }
 
 static faults_t no_fault(void)
 {
     faults_t f;
     memset(&f, 0, sizeof(f));
+    f.freeze_fail_at = -1;
+    f.resume_fail_at = -1;
     return f;
 }
 
@@ -290,29 +305,68 @@ static void restore_point(world_t *w, int i)
 
 /* ---------------- state machine ---------------- */
 
-/* Freeze every target thread. Exactly one call per attempt is allowed: a
- * per-entry freeze would leave windows between points. */
-static int freeze_threads(world_t *w)
+/* Freeze the target thread set, thread by thread. Exactly one call per attempt:
+ * a per-entry freeze would leave windows between points. */
+static int freeze_all(world_t *w)
 {
-    if (w->freeze_count != 0) { w->order_violation++; return -1; }  /* freeze twice */
+    int i;
+    if (w->freeze_count != 0) { w->order_violation++; return -1; }
     w->freeze_count++;
     w->ev_freeze = step(w);
-    if (w->f.freeze_fail) return -1;            /* nothing was stopped */
-    w->froze = 1;
-    if (w->f.freeze_partial_fail) return -1;    /* some threads stopped, attach failed */
+    w->target_mask = w->f.target_mask ? w->f.target_mask : ((1u << NTH) - 1u);
+    for (i = 0; i < NTH; i++) {
+        if (!(w->target_mask & TH_BIT(i))) continue;
+        if (w->f.freeze_fail_at == i) { w->freeze_fail_hits++; return -1; }
+        w->frozen_mask |= TH_BIT(i);        /* thread i really is stopped now */
+    }
+    /* A foreign writer can still touch an entry between the precheck and the
+     * moment the threads are actually stopped. Model that here: after the
+     * freeze, before any of our stores. */
+    for (i = 0; i < NPTS; i++) {
+        if (!w->f.external_write_after_freeze[i]) continue;
+        w->mem[i][0] = w->f.external_w0;
+        w->mem[i][1] = w->f.external_w1;
+        w->external_w0 = w->f.external_w0;
+        w->external_w1 = w->f.external_w1;
+        w->external_touched = 1;
+    }
     return 0;
 }
 
-/* Resume every target thread. Must happen exactly once whenever anything was
- * frozen, and after the entries are in their final state. */
-static int resume_threads(world_t *w)
+/* Re-read the entries AFTER the freeze and immediately before the first store.
+ * The precheck alone cannot rule out a writer that ran in between. */
+static int verify_after_freeze(world_t *w)
 {
-    if (!w->froze) return 0;                    /* nothing to resume */
+    int i;
+    w->state = ST_POSTFREEZE_VERIFY;
+    w->ev_postfreeze_verify = step(w);
+    for (i = 0; i < NPTS; i++) {
+        w->postfreeze_checks++;
+        if (!fully_orig(w, i)) { w->postfreeze_mismatch = i; return -1; }
+    }
+    return 0;
+}
+
+/* Resume the threads that were actually frozen, one by one. Best effort: a
+ * failing thread does not stop the others, but it is remembered by bit. */
+static int resume_all(world_t *w)
+{
+    int i, rc = 0;
+    if (w->frozen_mask == 0) return 0;                 /* nothing was stopped */
     if (w->resume_count != 0) { w->order_violation++; return -1; }
     w->resume_count++;
     w->ev_resume = step(w);
-    if (w->f.resume_fail) { w->resume_fail_hits++; return -1; }
-    return 0;
+    for (i = 0; i < NTH; i++) {
+        if (!(w->frozen_mask & TH_BIT(i))) continue;   /* only frozen threads */
+        if (w->f.resume_fail_at == i) {
+            w->resume_failed_mask |= TH_BIT(i);
+            w->resume_fail_hits++;
+            rc = -1;
+            continue;
+        }
+        w->resumed_mask |= TH_BIT(i);
+    }
+    return rc;
 }
 
 static int rollback(world_t *w)
@@ -334,24 +388,29 @@ static int rollback(world_t *w)
     return -1;
 }
 
-static void decide_verdict(world_t *w, int install_ok, int resume_ok)
+static void decide_verdict(world_t *w, int install_ok, int aborted_external)
 {
-    if (!install_ok && w->state == ST_ROLLBACK_FAILED) {
+    int resume_ok = (w->resume_failed_mask == 0);
+    if (w->state == ST_ROLLBACK_FAILED) {
         w->verdict = resume_ok ? V_ROLLBACK_FAILED : V_ROLLBACK_AND_RESUME_FAILED;
     } else if (!resume_ok) {
-        /* the entries may be correct, but the threads are still frozen:
+        /* the entries may be correct, but some thread is still stopped:
          * this must never be reported as success */
         w->verdict = V_RESUME_FAILED;
-    } else if (!install_ok) {
-        w->verdict = V_INSTALL_FAILED;
-    } else {
+    } else if (install_ok) {
         w->verdict = V_SUCCESS;
+    } else if (aborted_external) {
+        /* we wrote nothing; the entry no longer holds our expected prologue and
+         * the foreign bytes are left exactly as they are */
+        w->verdict = V_ENTRY_CHANGED_BY_OTHERS;
+    } else {
+        w->verdict = V_INSTALL_FAILED;
     }
 }
 
 static int install_all(world_t *w)
 {
-    int i, install_ok = 1, resume_ok;
+    int i, install_ok = 1;
 
     w->state = ST_PRECHECK;
     for (i = 0; i < NPTS; i++) {
@@ -365,21 +424,29 @@ static int install_all(world_t *w)
         }
     }
 
-    if (freeze_threads(w) != 0) {                    /* must come before the PC check */
-        (void)resume_threads(w);                     /* resume whatever was stopped */
+    if (freeze_all(w) != 0) {                        /* thread-by-thread stop */
+        (void)resume_all(w);                         /* resume whatever was stopped */
         w->state = ST_FAILED;
-        decide_verdict(w, 0, w->f.resume_fail ? 0 : 1);
+        decide_verdict(w, 0, 0);
         return -1;
     }
     w->state = ST_FROZEN;
 
-    /* Only meaningful now: the threads are stopped, so their PCs cannot move. */
+    /* (1) byte re-verification after the freeze, before anything is written */
+    if (verify_after_freeze(w) != 0) {
+        (void)resume_all(w);
+        w->state = ST_ABORTED;
+        decide_verdict(w, 0, 1);                     /* NO rollback: keep foreign bytes */
+        return -1;
+    }
+
+    /* (2) only now is the stopped-PC check meaningful */
     w->ev_pc_check = step(w);
     for (i = 0; i < NPTS; i++) {
         if (w->f.pc_in_range[i]) {
-            (void)resume_threads(w);
+            (void)resume_all(w);
             w->state = ST_FAILED;
-            decide_verdict(w, 0, w->f.resume_fail ? 0 : 1);
+            decide_verdict(w, 0, 0);
             return -1;
         }
     }
@@ -400,10 +467,12 @@ static int install_all(world_t *w)
     if (!install_ok) (void)rollback(w);
 
     /* threads are resumed exactly once, after the entries reached a final state */
-    resume_ok = (resume_threads(w) == 0);
+    (void)resume_all(w);
     if (install_ok) w->state = ST_DONE;
-    decide_verdict(w, install_ok, resume_ok);
-    return install_ok ? 0 : -1;
+    decide_verdict(w, install_ok, 0);
+    /* 0 means "the transaction really succeeded", i.e. V_SUCCESS only. A resume
+     * failure leaves threads stopped, so it must not return 0. */
+    return (w->verdict == V_SUCCESS) ? 0 : -1;
 }
 
 /* Retry the rollback. Only legal from ROLLBACK_FAILED; the caller is expected
@@ -423,8 +492,7 @@ static int install_recover(world_t *w)
     w->state = ST_RECOVERED;
     /* entries are clean now; the resume outcome is unchanged and still decides
      * whether this may be reported as a plain install failure */
-    w->verdict = (w->verdict == V_ROLLBACK_AND_RESUME_FAILED)
-                 ? V_RESUME_FAILED : V_INSTALL_FAILED;
+    w->verdict = (w->resume_failed_mask != 0) ? V_RESUME_FAILED : V_INSTALL_FAILED;
     return 0;
 }
 
@@ -448,12 +516,49 @@ static void check_invariants(world_t *w, const char *tag)
         tag, w->freeze_count, w->resume_count);
     chk(w->order_violation == 0, "[%s] I6 no repeated freeze/resume (%d violations)",
         tag, w->order_violation);
-    if (w->froze && w->verdict != V_NONE)
+
+    /* I9: per-thread accounting. "at least one thread frozen" is NOT
+     * "all target threads frozen". */
+    chk((w->frozen_mask & ~w->target_mask) == 0,
+        "[%s] I9 frozen set is a subset of the target set (target=%#x frozen=%#x)",
+        tag, w->target_mask, w->frozen_mask);
+    chk((w->resumed_mask & ~w->frozen_mask) == 0,
+        "[%s] I9 only frozen threads were resumed (frozen=%#x resumed=%#x)",
+        tag, w->frozen_mask, w->resumed_mask);
+    chk((w->resume_failed_mask & ~w->frozen_mask) == 0,
+        "[%s] I9 resume failures are a subset of the frozen set (frozen=%#x failed=%#x)",
+        tag, w->frozen_mask, w->resume_failed_mask);
+    chk((w->resumed_mask & w->resume_failed_mask) == 0,
+        "[%s] I9 a thread is either resumed or failed, never both (%#x)",
+        tag, w->resumed_mask & w->resume_failed_mask);
+    if (w->freeze_count == 1)
+        chk(__builtin_popcount(w->frozen_mask) == (w->f.target_mask ? __builtin_popcount(w->f.target_mask) : NTH)
+            || w->freeze_fail_hits > 0,
+            "[%s] I9 all target threads frozen unless a freeze fault was injected (frozen=%#x fail=%d)",
+            tag, w->frozen_mask, w->freeze_fail_hits);
+    if (w->frozen_mask && w->resume_count == 1)
+        chk((w->resumed_mask | w->resume_failed_mask) == w->frozen_mask,
+            "[%s] I9 every frozen thread is accounted for on resume (frozen=%#x ok=%#x failed=%#x)",
+            tag, w->frozen_mask, w->resumed_mask, w->resume_failed_mask);
+    if (w->frozen_mask && w->verdict != V_NONE)
         chk(w->resume_count == 1, "[%s] I6 anything frozen was resumed exactly once (%d)",
             tag, w->resume_count);
 
-    /* I7: ordering evidence - freeze before the first store, group readback and
-     * rollback before resume */
+    /* I7: ordering evidence - freeze before the post-freeze re-verification,
+     * that re-verification before the first store, group readback and rollback
+     * before resume */
+    if (w->ev_postfreeze_verify && w->ev_freeze)
+        chk(w->ev_freeze < w->ev_postfreeze_verify,
+            "[%s] I7 freeze(%ld) happened before the post-freeze re-verification(%ld)",
+            tag, w->ev_freeze, w->ev_postfreeze_verify);
+    if (w->ev_postfreeze_verify && w->ev_first_store)
+        chk(w->ev_postfreeze_verify < w->ev_first_store,
+            "[%s] I7 re-verification(%ld) happened before the first word store(%ld)",
+            tag, w->ev_postfreeze_verify, w->ev_first_store);
+    if (w->ev_postfreeze_verify && w->ev_pc_check)
+        chk(w->ev_postfreeze_verify < w->ev_pc_check,
+            "[%s] I7 re-verification(%ld) happened before the stopped-PC check(%ld)",
+            tag, w->ev_postfreeze_verify, w->ev_pc_check);
     if (w->ev_first_store && w->ev_freeze)
         chk(w->ev_freeze < w->ev_first_store,
             "[%s] I7 freeze(%ld) happened before the first word store(%ld)",
@@ -477,6 +582,9 @@ static void check_invariants(world_t *w, const char *tag)
         chk(!any_mixed(w), "[%s] I1 SUCCESS => no entry mixes patched and original words", tag);
         chk(w->resume_count == 1, "[%s] I1 SUCCESS => threads were resumed", tag);
         chk(w->freeze_count == 1, "[%s] I1 SUCCESS => threads were frozen first", tag);
+        chk(w->resumed_mask == w->target_mask,
+            "[%s] I1 SUCCESS => every target thread was resumed (target=%#x resumed=%#x)",
+            tag, w->target_mask, w->resumed_mask);
     } else {
         chk(w->verdict != V_SUCCESS, "[%s] I2 a failure never yields SUCCESS (%s)",
             tag, v_name(w->verdict));
@@ -486,11 +594,14 @@ static void check_invariants(world_t *w, const char *tag)
             tag, v_name(w->verdict));
     if (w->verdict == V_RESUME_FAILED) {
         /* resume failure is independent of the entries: they may be fully
-         * installed or fully rolled back, but the threads are still frozen */
+         * installed or fully rolled back, but a thread is still stopped */
         if (w->state == ST_DONE)
             chk(allp, "[%s] I3 RESUME_FAILED after a completed install => entries patched", tag);
+        else if (w->state == ST_ABORTED)
+            chk(!allo, "[%s] I3 RESUME_FAILED after an external-change abort => foreign bytes kept", tag);
         else
             chk(allo, "[%s] I3 RESUME_FAILED after a clean rollback => entries original", tag);
+        chk(w->resume_failed_mask != 0, "[%s] I3 RESUME_FAILED => the failed set is not empty", tag);
     }
     if (w->verdict == V_ROLLBACK_FAILED || w->verdict == V_ROLLBACK_AND_RESUME_FAILED) {
         chk(!allo, "[%s] I4 %s => at least one entry is provably not original",
@@ -499,7 +610,28 @@ static void check_invariants(world_t *w, const char *tag)
             "[%s] I4 a failed rollback is not reported as a plain install failure", tag);
         chk(w->state != ST_DONE, "[%s] I4 a failed rollback is never reported as DONE", tag);
     }
-    if (w->f.resume_fail && w->freeze_count)
+    /* I10: an abort caused by a foreign writer must not write, must not roll
+     * back over those bytes, and must keep them verbatim */
+    if (w->verdict == V_ENTRY_CHANGED_BY_OTHERS) {
+        chk(w->word_writes == 0,
+            "[%s] I10 aborted => zero word stores were attempted (%d)", tag, w->word_writes);
+        chk(w->postfreeze_mismatch >= 0,
+            "[%s] I10 aborted => the post-freeze re-verification found entry %d",
+            tag, w->postfreeze_mismatch);
+        chk(w->restore_writes == 0,
+            "[%s] I10 aborted => no old snapshot was written back (%d restore stores)",
+            tag, w->restore_writes);
+        {
+            int pres = 1;
+            for (i = 0; i < NPTS; i++)
+                if (w->f.external_write_after_freeze[i] &&
+                    (w->mem[i][0] != w->external_w0 || w->mem[i][1] != w->external_w1)) pres = 0;
+            chk(pres, "[%s] I10 aborted => the foreign bytes are preserved verbatim", tag);
+        }
+        chk(w->state == ST_ABORTED, "[%s] I10 aborted => state ABORTED (%s)",
+            tag, st_name(w->state));
+    }
+    if (w->f.resume_fail_at >= 0 && w->freeze_count)
         chk(w->verdict == V_RESUME_FAILED || w->verdict == V_ROLLBACK_AND_RESUME_FAILED,
             "[%s] I8 resume failure has its own verdict, never SUCCESS/INSTALL_FAILED (%s)",
             tag, v_name(w->verdict));
@@ -548,7 +680,7 @@ int main(void)
     }
 
     printf("[S1f] freeze failure (attach failed before any thread was stopped)\n");
-    f = no_fault(); f.freeze_fail = 1;
+    f = no_fault(); f.freeze_fail_at = 0;          /* thread 0 cannot be stopped */
     w_init(&w, f);
     k = install_all(&w);
     chk(k != 0, "install_all returns non-zero");
@@ -556,19 +688,19 @@ int main(void)
         st_name(w.state));
     chk(w.word_writes == 0, "zero word stores were attempted (%d)", w.word_writes);
     chk(all_orig(&w), "all entries still original");
-    chk(w.freeze_count == 1 && w.froze == 0, "freeze attempted once, nothing stopped (froze=%d)", w.froze);
+    chk(w.freeze_count == 1 && w.frozen_mask == 0, "freeze attempted once, nothing stopped (frozen=%#x)", w.frozen_mask);
     chk(w.resume_count == 0, "nothing to resume (resume_count=%d)", w.resume_count);
     chk(w.verdict == V_INSTALL_FAILED, "verdict INSTALL_FAILED (%s)", v_name(w.verdict));
     check_invariants(&w, "S1f");
     printf("\n");
 
     printf("[S1q] freeze partially succeeds, then attach fails\n");
-    f = no_fault(); f.freeze_partial_fail = 1;
+    f = no_fault(); f.freeze_fail_at = 2;          /* threads 0,1 stopped, then failure */
     w_init(&w, f);
     k = install_all(&w);
     chk(k != 0, "install_all returns non-zero");
     chk(w.word_writes == 0, "zero word stores were attempted (%d)", w.word_writes);
-    chk(w.froze == 1, "some threads were stopped before the failure (froze=1)");
+    chk(w.frozen_mask == (TH_BIT(0) | TH_BIT(1)), "threads 0 and 1 were stopped before the failure (frozen=%#x)", w.frozen_mask);
     chk(w.resume_count == 1, "the partially frozen threads were resumed exactly once (%d)",
         w.resume_count);
     chk(w.verdict == V_INSTALL_FAILED, "verdict INSTALL_FAILED, not SUCCESS (%s)", v_name(w.verdict));
@@ -781,10 +913,10 @@ int main(void)
      * The entries are correct, but the threads may still be frozen: the verdict
      * must say so and must never be SUCCESS. */
     printf("[S10] install succeeds, resume fails\n");
-    f = no_fault(); f.resume_fail = 1;
+    f = no_fault(); f.resume_fail_at = 0;          /* thread 0 cannot be resumed */
     w_init(&w, f);
     k = install_all(&w);
-    chk(k == 0, "install_all returns 0: the entries really are installed");
+    chk(k != 0, "install_all returns non-zero: a resume failure is never a success");
     chk(w.state == ST_DONE, "install FSM reached DONE (%s)", st_name(w.state));
     chk(any_mixed(&w) == 0 && all_orig(&w) == 0,
         "all 3 entries are patched, not mixed and not original");
@@ -800,7 +932,7 @@ int main(void)
     f = no_fault();
     f.fail_install[1][1] = 1;
     f.fail_restore[0][0] = 1;
-    f.resume_fail = 1;
+    f.resume_fail_at = 0;
     w_init(&w, f);
     k = install_all(&w);
     chk(k != 0, "install_all returns non-zero");
@@ -844,6 +976,176 @@ int main(void)
         }
         chk(bad == 0, "all %d install faults frozen once, resumed once, never SUCCESS (bad=%d)",
             cases, bad);
+    }
+    printf("\n");
+
+    /* S13: a foreign writer changes an entry between the precheck and the
+     * freeze. The post-freeze re-verification must catch it, we must write
+     * nothing, and the foreign bytes must survive untouched. */
+    for (i = 0; i < NPTS; i++) {
+        printf("[S13.%d] entry %d is rewritten by someone else right after the freeze\n", i, i);
+        f = no_fault();
+        f.external_write_after_freeze[i] = 1;
+        f.external_w0 = 0xE1A00000UL;      /* nop: clearly not our prologue */
+        f.external_w1 = 0xE1A01001UL;
+        w_init(&w, f);
+        k = install_all(&w);
+        chk(k != 0, "install_all returns non-zero");
+        chk(w.postfreeze_checks == i + 1,
+            "entries 0..%d were re-read, stopping at the mismatch (%d reads)",
+            i, w.postfreeze_checks);
+        chk(w.postfreeze_mismatch == i, "the mismatch was detected at entry %d (%d)",
+            i, w.postfreeze_mismatch);
+        chk(w.word_writes == 0, "no patch word was written at all (%d)", w.word_writes);
+        chk(w.mem[i][0] == f.external_w0 && w.mem[i][1] == f.external_w1,
+            "the foreign bytes are still there (0x%08lX | 0x%08lX)", w.mem[i][0], w.mem[i][1]);
+        chk(w.restore_writes == 0, "no stale snapshot was written back (%d restore stores)",
+            w.restore_writes);
+        chk(w.state == ST_ABORTED, "state ABORTED (%s)", st_name(w.state));
+        chk(w.verdict == V_ENTRY_CHANGED_BY_OTHERS,
+            "verdict ENTRY_CHANGED_BY_OTHERS (%s)", v_name(w.verdict));
+        chk(w.verdict != V_SUCCESS, "never SUCCESS");
+        chk(w.frozen_mask == ((1u << NTH) - 1u), "all target threads were frozen (%#x)", w.frozen_mask);
+        chk(w.resumed_mask == w.frozen_mask,
+            "every frozen thread was resumed (frozen=%#x resumed=%#x)", w.frozen_mask, w.resumed_mask);
+        chk(w.resume_count == 1, "resumed exactly once (%d)", w.resume_count);
+        chk(w.ev_postfreeze_verify && w.ev_first_store == 0,
+            "re-verification ran (%ld) and no store event was ever recorded (%ld)",
+            w.ev_postfreeze_verify, w.ev_first_store);
+        check_invariants(&w, "S13");
+        printf("\n");
+    }
+
+    printf("[S13r] entry 1 rewritten after the freeze AND thread 2 cannot be resumed\n");
+    f = no_fault();
+    f.external_write_after_freeze[1] = 1;
+    f.external_w0 = 0xE1A00000UL;
+    f.external_w1 = 0xE1A01001UL;
+    f.resume_fail_at = 2;
+    w_init(&w, f);
+    k = install_all(&w);
+    chk(k != 0, "install_all returns non-zero");
+    chk(w.word_writes == 0, "no patch word was written (%d)", w.word_writes);
+    chk(w.mem[1][0] == f.external_w0 && w.mem[1][1] == f.external_w1,
+        "the foreign bytes survive even when the resume fails");
+    chk(w.resume_failed_mask == TH_BIT(2), "exactly thread 2 is left stopped (failed=%#x)",
+        w.resume_failed_mask);
+    chk(w.resumed_mask == (w.frozen_mask & ~TH_BIT(2)),
+        "the other frozen threads were resumed (frozen=%#x resumed=%#x)",
+        w.frozen_mask, w.resumed_mask);
+    chk(w.verdict == V_RESUME_FAILED,
+        "verdict RESUME_FAILED because a thread is still stopped (%s)", v_name(w.verdict));
+    chk(w.verdict != V_ENTRY_CHANGED_BY_OTHERS && w.verdict != V_SUCCESS,
+        "the resume failure takes precedence over the external-change verdict");
+    check_invariants(&w, "S13r");
+    printf("\n");
+
+    /* S14: per-thread freeze / resume matrix. "at least one thread frozen" is
+     * never treated as "all threads frozen". */
+    printf("[S14.0] all target threads frozen, all resumed\n");
+    w_init(&w, no_fault());
+    k = install_all(&w);
+    chk(k == 0, "install_all returns 0");
+    chk(w.target_mask == ((1u << NTH) - 1u), "target set holds all %d threads (%#x)",
+        NTH, w.target_mask);
+    chk(w.frozen_mask == w.target_mask, "all target threads frozen (%#x)", w.frozen_mask);
+    chk(w.resumed_mask == w.frozen_mask, "all frozen threads resumed (%#x)", w.resumed_mask);
+    chk(w.resume_failed_mask == 0, "nothing failed to resume (%#x)", w.resume_failed_mask);
+    chk(w.verdict == V_SUCCESS, "verdict SUCCESS (%s)", v_name(w.verdict));
+    check_invariants(&w, "S14.0");
+    printf("\n");
+
+    for (i = 1; i < NTH; i++) {
+        printf("[S14.1.%d] freeze fails at thread %d; the %d already-frozen threads must all resume\n",
+               i, i, i);
+        f = no_fault(); f.freeze_fail_at = i;
+        w_init(&w, f);
+        k = install_all(&w);
+        chk(k != 0, "install_all returns non-zero");
+        chk(w.frozen_mask == (((1u << i) - 1u) & w.target_mask),
+            "exactly the first %d threads are frozen (frozen=%#x)", i, w.frozen_mask);
+        chk(w.frozen_mask != w.target_mask, "a partial freeze is NOT reported as a full freeze");
+        chk(w.resumed_mask == w.frozen_mask,
+            "all frozen threads were resumed (frozen=%#x resumed=%#x)", w.frozen_mask, w.resumed_mask);
+        chk(w.resume_failed_mask == 0, "no resume failure (%#x)", w.resume_failed_mask);
+        chk(w.word_writes == 0, "no word was written (%d)", w.word_writes);
+        chk(w.verdict == V_INSTALL_FAILED, "verdict INSTALL_FAILED (%s)", v_name(w.verdict));
+        check_invariants(&w, "S14.1");
+        printf("\n");
+    }
+
+    printf("[S14.2] freeze fails at thread 2 AND resuming thread 0 fails\n");
+    f = no_fault(); f.freeze_fail_at = 2; f.resume_fail_at = 0;
+    w_init(&w, f);
+    k = install_all(&w);
+    chk(k != 0, "install_all returns non-zero");
+    chk(w.frozen_mask == (TH_BIT(0) | TH_BIT(1)), "threads 0,1 were frozen (%#x)", w.frozen_mask);
+    chk(w.resumed_mask == TH_BIT(1), "only thread 1 was resumed (%#x)", w.resumed_mask);
+    chk(w.resume_failed_mask == TH_BIT(0), "thread 0 is left stopped (%#x)", w.resume_failed_mask);
+    chk((w.resumed_mask | w.resume_failed_mask) == w.frozen_mask,
+        "every frozen thread is accounted for exactly once");
+    chk(w.verdict == V_RESUME_FAILED, "verdict RESUME_FAILED (%s)", v_name(w.verdict));
+    chk(w.verdict != V_INSTALL_FAILED && w.verdict != V_SUCCESS,
+        "a leftover stopped thread is neither INSTALL_FAILED nor SUCCESS");
+    check_invariants(&w, "S14.2");
+    printf("\n");
+
+    printf("[S14.3] all frozen, resuming thread 1 fails\n");
+    f = no_fault(); f.resume_fail_at = 1;
+    w_init(&w, f);
+    k = install_all(&w);
+    chk(k != 0, "install_all returns non-zero (resume did not complete)");
+    chk(w.frozen_mask == w.target_mask, "all target threads were frozen (%#x)", w.frozen_mask);
+    chk(w.resumed_mask == (w.target_mask & ~TH_BIT(1)),
+        "the other three were resumed (%#x)", w.resumed_mask);
+    chk(w.resume_failed_mask == TH_BIT(1), "exactly thread 1 is left stopped (%#x)",
+        w.resume_failed_mask);
+    chk(w.verdict == V_RESUME_FAILED, "verdict RESUME_FAILED (%s)", v_name(w.verdict));
+    check_invariants(&w, "S14.3");
+    printf("\n");
+
+    printf("[S14.4] install fails, rollback succeeds, then every frozen thread is resumed\n");
+    f = no_fault(); f.fail_install[1][1] = 1;
+    w_init(&w, f);
+    k = install_all(&w);
+    chk(k != 0, "install_all returns non-zero");
+    chk(w.state == ST_FAILED, "state FAILED (%s)", st_name(w.state));
+    chk(w.resumed_mask == w.frozen_mask && w.resumed_mask == w.target_mask,
+        "all frozen threads resumed after a clean rollback (frozen=%#x resumed=%#x)",
+        w.frozen_mask, w.resumed_mask);
+    chk(w.verdict == V_INSTALL_FAILED, "verdict INSTALL_FAILED (%s)", v_name(w.verdict));
+    check_invariants(&w, "S14.4");
+    printf("\n");
+
+    printf("[S14.5] install fails, rollback fails, then every frozen thread is still resumed\n");
+    f = no_fault(); f.fail_install[1][1] = 1; f.fail_restore[0][0] = 1;
+    w_init(&w, f);
+    k = install_all(&w);
+    chk(k != 0, "install_all returns non-zero");
+    chk(w.state == ST_ROLLBACK_FAILED, "state ROLLBACK_FAILED (%s)", st_name(w.state));
+    chk(w.resumed_mask == w.frozen_mask,
+        "a failed rollback never leaves the threads frozen (frozen=%#x resumed=%#x)",
+        w.frozen_mask, w.resumed_mask);
+    chk(w.verdict == V_ROLLBACK_FAILED, "verdict ROLLBACK_FAILED (%s)", v_name(w.verdict));
+    check_invariants(&w, "S14.5");
+    printf("\n");
+
+    printf("[S14.6] sweep: no per-thread resume failure can ever look like success\n");
+    {
+        int ri, cases = 0, bad = 0;
+        for (ri = 0; ri < NTH; ri++) {
+            f = no_fault(); f.resume_fail_at = ri;
+            w_init(&w, f);
+            (void)install_all(&w);
+            cases++;
+            if (w.verdict == V_SUCCESS || w.verdict == V_INSTALL_FAILED) bad++;
+            if (w.resume_failed_mask != TH_BIT(ri)) bad++;
+            if ((w.resumed_mask | w.resume_failed_mask) != w.frozen_mask) bad++;
+            if (w.resume_count != 1) bad++;
+        }
+        chk(bad == 0,
+            "all %d single-thread resume failures: verdict not SUCCESS/INSTALL_FAILED, "
+            "failed set exact, frozen set fully accounted (bad=%d)", cases, bad);
     }
     printf("\n");
 

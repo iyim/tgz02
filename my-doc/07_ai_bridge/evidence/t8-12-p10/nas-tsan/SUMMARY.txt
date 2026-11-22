@@ -1,0 +1,7 @@
+BUILD PASS
+plain_normal RESULT: PASS (checks=71 fails=0)
+tsan_normal  RESULT: PASS (checks=71 fails=0)
+fsm_normal   RESULT: PASS (checks=1157 fails=0)
+fsm_tsan     RESULT: PASS (checks=1157 fails=0)
+tsan_normal races=0
+tsan_race_true races=1
