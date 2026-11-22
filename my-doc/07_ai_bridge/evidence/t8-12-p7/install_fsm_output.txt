@@ -1,0 +1,119 @@
+=== T8-12.7 R16 three-point install transaction model ===
+
+[S0] no fault: all three points must be installed
+  [PASS] install_all returns 0
+  [PASS] S0: final state DONE
+  [PASS] S0: all three points carry the patch
+  [PASS] S0: no half-install reported as success
+
+[S1.0] precheck failure at point 0
+  [PASS] install_all returns non-zero
+  [PASS] [S1.0] precheck failure at point 0: final state is not DONE (FAILED)
+  [PASS] [S1.0] precheck failure at point 0: all three entries byte-identical to original prologue
+  [PASS] [S1.0] precheck failure at point 0: all applied flags cleared
+  [PASS] [S1.0] precheck failure at point 0: no half-install reported as success
+
+[S1.1] precheck failure at point 1
+  [PASS] install_all returns non-zero
+  [PASS] [S1.1] precheck failure at point 1: final state is not DONE (FAILED)
+  [PASS] [S1.1] precheck failure at point 1: all three entries byte-identical to original prologue
+  [PASS] [S1.1] precheck failure at point 1: all applied flags cleared
+  [PASS] [S1.1] precheck failure at point 1: no half-install reported as success
+
+[S1.2] precheck failure at point 2
+  [PASS] install_all returns non-zero
+  [PASS] [S1.2] precheck failure at point 2: final state is not DONE (FAILED)
+  [PASS] [S1.2] precheck failure at point 2: all three entries byte-identical to original prologue
+  [PASS] [S1.2] precheck failure at point 2: all applied flags cleared
+  [PASS] [S1.2] precheck failure at point 2: no half-install reported as success
+
+[S2] freeze failure
+  [PASS] install_all returns non-zero
+  [PASS] S2: final state is not DONE (FAILED)
+  [PASS] S2: all three entries byte-identical to original prologue
+  [PASS] S2: all applied flags cleared
+  [PASS] S2: no half-install reported as success
+
+[S3.0] PC inside point 0 range (no safe window)
+  [PASS] install_all returns non-zero
+  [PASS] [S3.0] PC inside point 0 range (no safe window): final state is not DONE (FAILED)
+  [PASS] [S3.0] PC inside point 0 range (no safe window): all three entries byte-identical to original prologue
+  [PASS] [S3.0] PC inside point 0 range (no safe window): all applied flags cleared
+  [PASS] [S3.0] PC inside point 0 range (no safe window): no half-install reported as success
+
+[S3.1] PC inside point 1 range (no safe window)
+  [PASS] install_all returns non-zero
+  [PASS] [S3.1] PC inside point 1 range (no safe window): final state is not DONE (FAILED)
+  [PASS] [S3.1] PC inside point 1 range (no safe window): all three entries byte-identical to original prologue
+  [PASS] [S3.1] PC inside point 1 range (no safe window): all applied flags cleared
+  [PASS] [S3.1] PC inside point 1 range (no safe window): no half-install reported as success
+
+[S3.2] PC inside point 2 range (no safe window)
+  [PASS] install_all returns non-zero
+  [PASS] [S3.2] PC inside point 2 range (no safe window): final state is not DONE (FAILED)
+  [PASS] [S3.2] PC inside point 2 range (no safe window): all three entries byte-identical to original prologue
+  [PASS] [S3.2] PC inside point 2 range (no safe window): all applied flags cleared
+  [PASS] [S3.2] PC inside point 2 range (no safe window): no half-install reported as success
+
+[S4.0] write failure at point 0 (earlier points must roll back)
+  [PASS] install_all returns non-zero
+  [PASS] [S4.0] write failure at point 0 (earlier points must roll back): final state is not DONE (FAILED)
+  [PASS] [S4.0] write failure at point 0 (earlier points must roll back): all three entries byte-identical to original prologue
+  [PASS] [S4.0] write failure at point 0 (earlier points must roll back): all applied flags cleared
+  [PASS] [S4.0] write failure at point 0 (earlier points must roll back): no half-install reported as success
+
+[S4.1] write failure at point 1 (earlier points must roll back)
+  [PASS] install_all returns non-zero
+  [PASS] [S4.1] write failure at point 1 (earlier points must roll back): final state is not DONE (FAILED)
+  [PASS] [S4.1] write failure at point 1 (earlier points must roll back): all three entries byte-identical to original prologue
+  [PASS] [S4.1] write failure at point 1 (earlier points must roll back): all applied flags cleared
+  [PASS] [S4.1] write failure at point 1 (earlier points must roll back): no half-install reported as success
+
+[S4.2] write failure at point 2 (earlier points must roll back)
+  [PASS] install_all returns non-zero
+  [PASS] [S4.2] write failure at point 2 (earlier points must roll back): final state is not DONE (FAILED)
+  [PASS] [S4.2] write failure at point 2 (earlier points must roll back): all three entries byte-identical to original prologue
+  [PASS] [S4.2] write failure at point 2 (earlier points must roll back): all applied flags cleared
+  [PASS] [S4.2] write failure at point 2 (earlier points must roll back): no half-install reported as success
+
+[S5.0] readback mismatch at point 0
+  [PASS] install_all returns non-zero
+  [PASS] [S5.0] readback mismatch at point 0: final state is not DONE (FAILED)
+  [PASS] [S5.0] readback mismatch at point 0: all three entries byte-identical to original prologue
+  [PASS] [S5.0] readback mismatch at point 0: all applied flags cleared
+  [PASS] [S5.0] readback mismatch at point 0: no half-install reported as success
+
+[S5.1] readback mismatch at point 1
+  [PASS] install_all returns non-zero
+  [PASS] [S5.1] readback mismatch at point 1: final state is not DONE (FAILED)
+  [PASS] [S5.1] readback mismatch at point 1: all three entries byte-identical to original prologue
+  [PASS] [S5.1] readback mismatch at point 1: all applied flags cleared
+  [PASS] [S5.1] readback mismatch at point 1: no half-install reported as success
+
+[S5.2] readback mismatch at point 2
+  [PASS] install_all returns non-zero
+  [PASS] [S5.2] readback mismatch at point 2: final state is not DONE (FAILED)
+  [PASS] [S5.2] readback mismatch at point 2: all three entries byte-identical to original prologue
+  [PASS] [S5.2] readback mismatch at point 2: all applied flags cleared
+  [PASS] [S5.2] readback mismatch at point 2: no half-install reported as success
+
+[S6.0] write failure at last point + rollback of point 0 also fails
+  [PASS] install_all returns non-zero
+  [PASS] final state ROLLBACK_FAILED (ROLLBACK_FAILED)
+  [PASS] never reports DONE
+  [PASS] no half-install reported as success
+  [PASS] failed-to-restore point keeps applied=1 (retryable)
+
+[S6.1] write failure at last point + rollback of point 1 also fails
+  [PASS] install_all returns non-zero
+  [PASS] final state ROLLBACK_FAILED (ROLLBACK_FAILED)
+  [PASS] never reports DONE
+  [PASS] no half-install reported as success
+  [PASS] failed-to-restore point keeps applied=1 (retryable)
+
+[S7] rollback requested for a point never applied: must be a no-op, state FAILED
+  [PASS] install_all returns non-zero
+  [PASS] final state FAILED (FAILED)
+  [PASS] never-applied point keeps applied=0
+
+RESULT: PASS (checks=82 fails=0)

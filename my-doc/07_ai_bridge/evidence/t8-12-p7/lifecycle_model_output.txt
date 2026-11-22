@@ -1,0 +1,49 @@
+=== T8-12.7 R13/R14 lifecycle model (host build) ===
+
+[A1] 提前处理：结果在收尾之前被处理（队列延迟 2500ms）
+  [PASS] GRACE : 早到结果命中（与队列延迟无关）
+  [PASS] EPOCH : 早到结果命中
+[A2] 晚到 delta=2500ms（大于 2 秒宽限）
+  [PASS] GRACE : delta>2s 时漏拦（放行给原厂）——2 秒假设被证伪
+  [PASS] EPOCH : 仍然命中（收尾不参与过期决策）
+[A3] 晚到 delta=100ms（小于 2 秒宽限）
+  [PASS] GRACE : delta<2s 时命中（只在阈值内有效）
+  [PASS] EPOCH : 同样命中
+[A4] 提前处理：队列延迟 8000ms（远超 2s）
+  [PASS] GRACE : 早到结果仍命中
+  [PASS] EPOCH : 早到结果仍命中
+
+[B1] 空 key（session 缺失）多次触发，窗口按 key 绑定
+  [PASS] 空 key 第 1 次仍 fail-closed
+  [PASS] 空 key 第 2 次仍 fail-closed
+  [PASS] 空 key 第 3 次仍 fail-closed
+  [PASS] 空 key 第 4 次仍 fail-closed
+  [PASS] 空 key 第 5 次仍 fail-closed
+  [PASS] 空 key 的窗口不误伤具体会话 "555"
+
+[B2] 64 槽耗尽
+  [PASS] 溢出会话被 fail-closed 拦下
+  [PASS] 已有会话仍按登记拦截（不受溢出影响）
+  [PASS] 无关未登记会话不被误拦
+
+[B3] 同 sid 快速复用：收尾 -> 3s 后新一轮（AI）
+  [PASS] 第一轮登记后命中
+  [PASS] 收尾 3s 后、新一轮登记前：仍命中（不因收尾丢拦）
+  [PASS] 新一轮登记后仍命中（新代次接管）
+  [PASS] 新一轮是本地指令 -> 清槽，云侧结果放行
+
+[B4] TTL 到界与重新登记
+  [PASS] TTL 到期后放行（唯一的时间判据就是 TTL）
+  [PASS] 到期后重新登记可再次接管（不残留旧窗口）
+
+[B5] mutex 不可用：必须 fail-closed
+  [PASS] 已登记会话也拦（不碰共享状态）
+  [PASS] 空 key 也拦
+  [PASS] 未登记也拦（fail-closed 不退化）
+
+[C1] 4 线程并发登记/收尾/查询/空 key
+  [PASS] 并发期间没有任何非法判定值
+  [PASS] 并发产生了登记(5571)与命中(1487)两个方向的计数
+  [PASS] 并发覆盖了收尾路径(16000 次)
+
+RESULT: PASS (checks=29 fails=0)
