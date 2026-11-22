@@ -269,3 +269,44 @@ su -c 'sh /data/local/tmp/t7/run_t7_04.sh rollback'       # 再还原 T7-03 的 
 `native_allow`：守卫读 Worker 写的放行标记，`sessionId` 命中或仍在 `exp_ms` 有效期内就放行原厂回答
 （日志 `onTtsStart ALLOW ... by=native_session intent=volume`）。这样"原厂基础指令的回答"
 与"原厂对普通对话的抢答"在守卫里被区分开，守卫不再是"无条件屏蔽所有原厂回答"。
+
+## 暂存门先于路由 / 放行标记可靠性（T7-05）
+
+顺序变了（这是 T7-05 的核心）：
+
+```
+asr_final -> 回声过滤 -> ug_feed()/ug_poll()（修订 + 悬空合并）
+        -> 完整 utterance 入 uttq -> uttq_pop_to_pend()：这里才 ir_classify()
+        -> 命中 route=native（写放行标记），否则建 pend 走模型
+```
+
+好处：ASR 把一句话拆成两条 final 时，不会再用半句话做路由决策；一条完整指令只判定一次。
+完整本地指令走"快路"（`ug_fast_ready`），不等 450 ms 窗口；聊天文本仍等满窗口以合并修订。
+
+`route_publish()` 现在返回结果：open/write/fsync/fchmod/rename/chmod+stat/回读校验任一步失败，
+重试 3 次后**回退到 AI 回答**（日志 `route=native FALLBACK to ai`），不会出现"两边都没有回答"。
+
+守卫侧的判定抽到 `hook_tts/native_marker.c`（纯逻辑、host 可测）：
+
+| 条件 | 结果 |
+|---|---|
+| 标记无效 / 缺 `exp_ms` | 不放行 |
+| `now > exp_ms` | 不放行 |
+| sessionId == 标记 session | 放行（`native_session`） |
+| 标记里没有 session | 窗口内放行（`native_window`） |
+| session 对不上 | 不放行（`native_miss`）——T7-04 是无条件放行 |
+
+构建与主机测试：
+
+```
+powershell -ExecutionPolicy Bypass -File build_t7_05.ps1      # ARM32，0 warning 才算过
+powershell -ExecutionPolicy Bypass -File ..\tests\run_t7_05_host_tests.ps1   # 108 断言
+```
+
+设备侧生命周期（T7-05 版，回滚基线是 T7-04）：
+
+```
+su -c 'sh /data/local/tmp/t7/run_t7_05.sh guard-start'
+su -c 'sh /data/local/tmp/t7/run_t7_05.sh guard-status'
+su -c 'sh /data/local/tmp/t7/run_t7_05.sh rollback'
+```
