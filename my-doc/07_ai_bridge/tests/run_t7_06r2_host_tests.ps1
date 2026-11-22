@@ -228,6 +228,8 @@ if ($faultBuilt) {
 
     $marker = Join-Path $sc "dead_letter.fault.json"
     if (Test-Path $marker) { Pass "e2e C: fault marker written" } else { Fail "e2e C: fault marker missing" }
+    if ([int]$stC.dead_letter.marker_state -eq 1) { Pass "e2e C: status marker_state == WRITTEN(1) (cross-restart protection armed)" }
+    else { Fail "e2e C: status marker_state == $($stC.dead_letter.marker_state)" }
     $dlC = @(Get-Content (Join-Path $sc "dead_letter.jsonl") | Where-Object { $_.Trim().Length -gt 0 })
     if ($dlC.Count -eq 2) { Pass "e2e C: exactly 2 records (seed + one unrolled-back write, no duplicate)" }
     else { Fail "e2e C: expected 2 records, got $($dlC.Count)" }
@@ -254,6 +256,129 @@ if ($faultBuilt) {
     else { Fail "e2e D: record count changed to $($dlD.Count)" }
     if ($outD -match 'refusing to append') { Pass "e2e D: restart refused to append (marker honoured)" }
     else { Fail "e2e D: restart did not report the refusal" }
+}
+
+# ---------- 4c) T7-10: fault marker reliability (write / read / normal) ----------
+Log ""
+Log "=== e2e marker-reliability: marker write failure, marker read failure, marker present ==="
+$mk = Join-Path $E2e "mk"
+Remove-Item -Recurse -Force $mk -ErrorAction SilentlyContinue
+foreach ($d in @("probe_absent", "probe_match", "probe_foreign", "probe_unreadable",
+                 "probe_empty", "probe_garbage", "write_ok", "write_fail_open",
+                 "write_fail_rename")) {
+    New-Item -ItemType Directory -Force (Join-Path $mk $d) | Out-Null
+}
+$u8 = New-Object Text.UTF8Encoding($false)
+[IO.File]::WriteAllText((Join-Path $mk "probe_match\dead_letter.fault.json"),
+    '{"ts":1,"event_id":"e-mk","seq":7}' + "`n", $u8)
+[IO.File]::WriteAllText((Join-Path $mk "probe_foreign\dead_letter.fault.json"),
+    '{"ts":1,"event_id":"other-9","seq":3}' + "`n", $u8)
+[IO.File]::WriteAllText((Join-Path $mk "probe_empty\dead_letter.fault.json"), "", $u8)
+[IO.File]::WriteAllText((Join-Path $mk "probe_garbage\dead_letter.fault.json"),
+    "hello, not a marker" + "`n", $u8)
+# pathological fixtures (no code needed): the marker path is a directory -> cannot be read;
+# the .tmp path is a directory -> cannot be opened. Exactly what an unhealthy filesystem does.
+New-Item -ItemType Directory -Force (Join-Path $mk "probe_unreadable\dead_letter.fault.json") | Out-Null
+New-Item -ItemType Directory -Force (Join-Path $mk "write_fail_open\dead_letter.fault.json.tmp") | Out-Null
+New-Item -ItemType Directory -Force (Join-Path $mk "write_fail_rename\dead_letter.fault.json") | Out-Null
+
+if ($faultBuilt) {
+    Log ("run  : " + $FaultExe + " --marker-selftest " + $mk)
+    $selOut = & $FaultExe --marker-selftest $mk 2>&1 | Out-String
+    $selRc = $LASTEXITCODE
+    Log ("exit : " + $selRc)
+    ($selOut.TrimEnd() -split "`r?`n") | ForEach-Object { Log $_ }
+    if ($selRc -eq 0) { Pass "marker selftest: exit 0 (write / read / normal all as specified)" }
+    else { Fail "marker selftest: exit $selRc" }
+    if ($selOut -match 'pass=(\d+) fail=0') { Pass ("marker selftest: " + $Matches[1] + " assertions, 0 failing") }
+    else { Fail "marker selftest: failing assertions" }
+
+    # E) rollback failure AND the marker cannot be written -> latch stays, protection reported as ABSENT
+    $we = Join-Path $E2e "e_work"; $se = Join-Path $E2e "e_state"
+    New-Item -ItemType Directory -Force $we | Out-Null
+    New-Item -ItemType Directory -Force $se | Out-Null
+    [IO.File]::WriteAllText((Join-Path $se "dead_letter.jsonl"), $seedLine + "`n", $u8)
+    New-Item -ItemType Directory -Force (Join-Path $se "dead_letter.fault.json.tmp") | Out-Null
+    [IO.File]::WriteAllLines((Join-Path $we "events.jsonl"), @((New-Event 1 "e-e1" "rollback")), $u8)
+    $wargsE = @("--work-dir", $we, "--state-dir", $se, "--provider", "mock",
+                "--mock-fail-from", "1", "--provider-retry-max", "1",
+                "--provider-backoff-ms", "1", "--provider-backoff-max-ms", "5",
+                "--state-sync-every", "1", "--poll-ms", "10", "--status-every-ms", "100",
+                "--max-runtime-ms", "3000")
+    $env:T6B_DL_TEST_FAULT = "fsync_fail"
+    $env:T6B_DL_TEST_FAULT2 = "trunc_fail"
+    Log ("run  : " + $FaultExe + " " + ($wargsE -join " ") + "  [marker .tmp path is a directory]")
+    $outE = & $FaultExe @wargsE 2>&1 | Out-String
+    Log ("exit : " + $LASTEXITCODE)
+    ($outE.TrimEnd() -split "`r?`n" | Select-Object -Last 12) | ForEach-Object { Log $_ }
+    Remove-Item Env:\T6B_DL_TEST_FAULT -ErrorAction SilentlyContinue
+    Remove-Item Env:\T6B_DL_TEST_FAULT2 -ErrorAction SilentlyContinue
+    $stE = Get-Content (Join-Path $se "ai_worker_status.json") -Raw | ConvertFrom-Json
+    if ([int]$stE.dead_letter.failed -eq 1) { Pass "e2e E: status.dead_letter.failed == 1" }
+    else { Fail "e2e E: status.dead_letter.failed == $($stE.dead_letter.failed)" }
+    if ([int]$stE.dead_letter.marker_state -eq 2) { Pass "e2e E: marker_state == WRITE_FAILED(2) (protection not established)" }
+    else { Fail "e2e E: marker_state == $($stE.dead_letter.marker_state)" }
+    if ([int]$stE.dead_letter.marker_stage -eq 1) { Pass "e2e E: marker_stage == OPEN(1)" }
+    else { Fail "e2e E: marker_stage == $($stE.dead_letter.marker_stage)" }
+    if ([int]$stE.counters.dead_letters -eq 0) { Pass "e2e E: no dead letter counted as skipped" }
+    else { Fail "e2e E: counters.dead_letters == $($stE.counters.dead_letters)" }
+    $csE = Get-Content (Join-Path $se "consumer_state.json") -Raw | ConvertFrom-Json
+    if ([int]$csE.processed_total -eq 0 -and $csE.last_event_id -eq "") {
+        Pass "e2e E: offset not advanced"
+    } else { Fail "e2e E: consumer_state shows progress ($($csE.processed_total)/'$($csE.last_event_id)')" }
+    if ($stE.pending_event_id -eq "e-e1") { Pass "e2e E: event stays pending" }
+    else { Fail "e2e E: pending_event_id == '$($stE.pending_event_id)'" }
+    $dlE = @(Get-Content (Join-Path $se "dead_letter.jsonl") | Where-Object { $_.Trim().Length -gt 0 })
+    if ($dlE.Count -eq 2) { Pass "e2e E: still 2 records (no extra append after the marker failed)" }
+    else { Fail "e2e E: expected 2 records, got $($dlE.Count)" }
+    if ($outE -match 'FAULT MARKER WRITE FAILED') { Pass "e2e E: log reports the marker write failure" }
+    else { Fail "e2e E: no FAULT MARKER WRITE FAILED line" }
+    if ($outE -match 'cross-restart protection NOT established') {
+        Pass "e2e E: log states the cross-restart protection was not established"
+    } else { Fail "e2e E: protection status not reported" }
+    if ($outE -match 'persistent fault \(dead_letter_failed\) latched') {
+        Pass "e2e E: worker still latched the persistent fault"
+    } else { Fail "e2e E: worker did not latch" }
+    if (Test-Path (Join-Path $se "dead_letter.fault.json")) {
+        Fail "e2e E: a fake marker file appeared although the write failed"
+    } else { Pass "e2e E: no fake marker file (the failure is not disguised as success)" }
+
+    # F) marker exists but cannot be read -> refuse to append at all, never treat it as "no marker"
+    $wf = Join-Path $E2e "f_work"; $sf = Join-Path $E2e "f_state"
+    New-Item -ItemType Directory -Force $wf | Out-Null
+    New-Item -ItemType Directory -Force $sf | Out-Null
+    [IO.File]::WriteAllText((Join-Path $sf "dead_letter.jsonl"), $seedLine + "`n", $u8)
+    New-Item -ItemType Directory -Force (Join-Path $sf "dead_letter.fault.json") | Out-Null
+    [IO.File]::WriteAllLines((Join-Path $wf "events.jsonl"), @((New-Event 1 "e-f1" "tell me a joke")), $u8)
+    $wargsF = @("--work-dir", $wf, "--state-dir", $sf, "--provider", "mock",
+                "--mock-fail-from", "1", "--provider-retry-max", "1",
+                "--provider-backoff-ms", "1", "--provider-backoff-max-ms", "5",
+                "--state-sync-every", "1", "--poll-ms", "10", "--status-every-ms", "100",
+                "--max-runtime-ms", "3000")
+    Log ("run  : " + $FaultExe + " " + ($wargsF -join " ") + "  [marker path is a directory]")
+    $outF = & $FaultExe @wargsF 2>&1 | Out-String
+    Log ("exit : " + $LASTEXITCODE)
+    ($outF.TrimEnd() -split "`r?`n" | Select-Object -Last 10) | ForEach-Object { Log $_ }
+    $stF = Get-Content (Join-Path $sf "ai_worker_status.json") -Raw | ConvertFrom-Json
+    if ([int]$stF.dead_letter.failed -eq 1) { Pass "e2e F: status.dead_letter.failed == 1" }
+    else { Fail "e2e F: status.dead_letter.failed == $($stF.dead_letter.failed)" }
+    if ([int]$stF.dead_letter.marker_state -eq 3) { Pass "e2e F: marker_state == UNREADABLE(3)" }
+    else { Fail "e2e F: marker_state == $($stF.dead_letter.marker_state)" }
+    if ([int]$stF.counters.dead_letters -eq 0) { Pass "e2e F: nothing was appended or skipped" }
+    else { Fail "e2e F: counters.dead_letters == $($stF.counters.dead_letters)" }
+    $dlF = @(Get-Content (Join-Path $sf "dead_letter.jsonl") | Where-Object { $_.Trim().Length -gt 0 })
+    if ($dlF.Count -eq 1) { Pass "e2e F: dead_letter.jsonl unchanged (1 seed record, no append)" }
+    else { Fail "e2e F: expected 1 record, got $($dlF.Count)" }
+    $csF = Get-Content (Join-Path $sf "consumer_state.json") -Raw | ConvertFrom-Json
+    if ([int]$csF.processed_total -eq 0 -and $csF.last_event_id -eq "") {
+        Pass "e2e F: offset not advanced"
+    } else { Fail "e2e F: consumer_state shows progress ($($csF.processed_total)/'$($csF.last_event_id)')" }
+    if ($stF.pending_event_id -eq "e-f1") { Pass "e2e F: event stays pending" }
+    else { Fail "e2e F: pending_event_id == '$($stF.pending_event_id)'" }
+    if ($outF -match 'CANNOT BE CONFIRMED') { Pass "e2e F: log says the marker cannot be confirmed" }
+    else { Fail "e2e F: no CANNOT BE CONFIRMED line" }
+    if ($outF -match 'append refused') { Pass "e2e F: append was refused" }
+    else { Fail "e2e F: append refusal not reported" }
 }
 
 # ---------- 5) parser test (json.loads) + concurrency ----------

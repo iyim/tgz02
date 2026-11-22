@@ -1,5 +1,5 @@
 ﻿# T7-06-R2 / T7-08 host test log (dead letter JSON + persistence)
-# host time: 2026-11-22 16:49:52
+# host time: 2026-11-22 17:21:17
 
 === build t7_06r2_dead_letter_unit_test ===
 (no compiler output: 0 warning, 0 error)
@@ -16,16 +16,16 @@ exit : 0
 === e2e A: provider always fails -> dead letter + offset advances ===
 run  : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\a_work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\a_state --provider mock --mock-fail-from 1 --provider-retry-max 1 --provider-backoff-ms 1 --provider-backoff-max-ms 5 --state-sync-every 1 --poll-ms 10 --status-every-ms 100 --max-runtime-ms 6000
 exit : 0
-[aiw] 2026-11-22T16:50:06 dead-letter: event e-a1 skipped after 4 attempts (); pipeline continues
-[aiw] 2026-11-22T16:50:06 route=ai event=e-a2 seq=3 session=1000 merges=0 held_ms=125 why=separate text_bytes=6 session_state=PROCESSING
-[aiw] 2026-11-22T16:50:06 event id=e-a2 stuck after 1 attempts (mock failure at call 5)
-[aiw] 2026-11-22T16:50:06 dead-letter: event e-a2 skipped after 4 attempts (); pipeline continues
-[aiw] 2026-11-22T16:50:06 route=ai event=e-a3 seq=0 session=1000 merges=0 held_ms=454 why=timeout text_bytes=5 session_state=PROCESSING
-[aiw] 2026-11-22T16:50:06 event id=e-a3 stuck after 1 attempts (mock failure at call 9)
-[aiw] 2026-11-22T16:50:06 dead-letter: event e-a3 skipped after 4 attempts (); pipeline continues
-[aiw] 2026-11-22T16:50:12 exit reason=max_runtime processed=3 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=9 offset=709 state_saves=4 state_errors=0
-[aiw] 2026-11-22T16:50:12 file identity: reason=first_open offset=709 prefix_hash=f9e8a0b9fde54be6 resets=0 legacy_rescans=0 replacements=0 truncations=0
-[aiw] 2026-11-22T16:50:12 provider summary: name=mock calls=12 (no network)
+[aiw] 2026-11-22T17:21:29 dead-letter: event e-a1 skipped after 4 attempts (); pipeline continues
+[aiw] 2026-11-22T17:21:29 route=ai event=e-a2 seq=3 session=1000 merges=0 held_ms=109 why=separate text_bytes=6 session_state=PROCESSING
+[aiw] 2026-11-22T17:21:29 event id=e-a2 stuck after 1 attempts (mock failure at call 5)
+[aiw] 2026-11-22T17:21:30 dead-letter: event e-a2 skipped after 4 attempts (); pipeline continues
+[aiw] 2026-11-22T17:21:30 route=ai event=e-a3 seq=0 session=1000 merges=0 held_ms=453 why=timeout text_bytes=5 session_state=PROCESSING
+[aiw] 2026-11-22T17:21:30 event id=e-a3 stuck after 1 attempts (mock failure at call 9)
+[aiw] 2026-11-22T17:21:30 dead-letter: event e-a3 skipped after 4 attempts (); pipeline continues
+[aiw] 2026-11-22T17:21:35 exit reason=max_runtime processed=3 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=9 offset=709 state_saves=4 state_errors=0
+[aiw] 2026-11-22T17:21:35 file identity: reason=first_open offset=709 prefix_hash=f9e8a0b9fde54be6 resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-22T17:21:35 provider summary: name=mock calls=12 (no network)
 PASS e2e A: 3 dead letters (one per event)
 PASS e2e A: status counters.dead_letters == 3
 PASS e2e A: pipeline continued (events_processed >= 3)
@@ -35,14 +35,14 @@ PASS e2e A: last_event_id == e-a3
 === e2e B: dead letter file unwritable -> offset must NOT advance ===
 run  : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state --provider mock --mock-fail-from 1 --provider-retry-max 1 --provider-backoff-ms 1 --provider-backoff-max-ms 5 --state-sync-every 1 --poll-ms 10 --status-every-ms 100 --max-runtime-ms 2000
 exit : 0
-[aiw] 2026-11-22T16:50:14 dead-letter: append(D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state/dead_letter.jsonl) failed io_stage=7 errno=13; event e-b1 stays pending (rolled back to pre_len=0, offset NOT advanced)
-[aiw] 2026-11-22T16:50:14 dead-letter: append(D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state/dead_letter.jsonl) failed io_stage=7 errno=13; event e-b1 stays pending (rolled back to pre_len=0, offset NOT advanced)
-[aiw] 2026-11-22T16:50:14 dead-letter: append(D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state/dead_letter.jsonl) failed io_stage=7 errno=13; event e-b1 stays pending (rolled back to pre_len=0, offset NOT advanced)
-[aiw] 2026-11-22T16:50:14 dead-letter: append(D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state/dead_letter.jsonl) failed io_stage=7 errno=13; event e-b1 stays pending (rolled back to pre_len=0, offset NOT advanced)
-[aiw] 2026-11-22T16:50:14 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=49 offset=243 state_saves=2 state_errors=0
-[aiw] 2026-11-22T16:50:14 file identity: reason=first_open offset=243 prefix_hash=75e21c6d9e2cf306 resets=0 legacy_rescans=0 replacements=0 truncations=0
-[aiw] 2026-11-22T16:50:14 WARNING: event id=e-b1 was still unprocessed at exit (49 attempts, offset kept at 243)
-[aiw] 2026-11-22T16:50:14 provider summary: name=mock calls=49 (no network)
+[aiw] 2026-11-22T17:21:38 dead-letter: append(D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state/dead_letter.jsonl) failed io_stage=7 errno=13; event e-b1 stays pending (rolled back to pre_len=0, offset NOT advanced)
+[aiw] 2026-11-22T17:21:38 dead-letter: append(D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state/dead_letter.jsonl) failed io_stage=7 errno=13; event e-b1 stays pending (rolled back to pre_len=0, offset NOT advanced)
+[aiw] 2026-11-22T17:21:38 dead-letter: append(D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state/dead_letter.jsonl) failed io_stage=7 errno=13; event e-b1 stays pending (rolled back to pre_len=0, offset NOT advanced)
+[aiw] 2026-11-22T17:21:38 dead-letter: append(D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state/dead_letter.jsonl) failed io_stage=7 errno=13; event e-b1 stays pending (rolled back to pre_len=0, offset NOT advanced)
+[aiw] 2026-11-22T17:21:38 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=49 offset=243 state_saves=2 state_errors=0
+[aiw] 2026-11-22T17:21:38 file identity: reason=first_open offset=243 prefix_hash=75e21c6d9e2cf306 resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-22T17:21:38 WARNING: event id=e-b1 was still unprocessed at exit (49 attempts, offset kept at 243)
+[aiw] 2026-11-22T17:21:38 provider summary: name=mock calls=49 (no network)
 PASS e2e B: event stays pending (offset not advanced)
 PASS e2e B: events_processed == 0
 PASS e2e B: consumer_state.processed_total == 0 (no commit)
@@ -55,18 +55,18 @@ PASS e2e B: provider kept retrying instead of skipping
 exit : 0
 run  : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.faultmodel.exe --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\c_work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\c_state --provider mock --mock-fail-from 1 --provider-retry-max 1 --provider-backoff-ms 1 --provider-backoff-max-ms 5 --state-sync-every 1 --poll-ms 10 --status-every-ms 100 --max-runtime-ms 3000  [T6B_DL_TEST_FAULT=fsync_fail FAULT2=trunc_fail]
 exit : 0
-[aiw] 2026-11-22T16:50:25 gate: enabled=1 debounce=450ms max_hold=2500ms cross_session=1(1200ms) sim=80% hold_file=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\c_state/utterance_hold.json
-[aiw] 2026-11-22T16:50:25 session: enabled=1 timeout=12000ms (follow-up window after playback)
-[aiw] 2026-11-22T16:50:25 no consumer state yet (first run); scanning events from offset 0
-[aiw] 2026-11-22T16:50:25 start pid=47044 events=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\c_work/events.jsonl state=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\c_state/consumer_state.json provider=mock offset=0 (mock only, no network)
-[aiw] 2026-11-22T16:50:26 route=ai event=e-c1 seq=0 session=1000 merges=0 held_ms=453 why=timeout text_bytes=8 session_state=PROCESSING
-[aiw] 2026-11-22T16:50:26 event id=e-c1 stuck after 1 attempts (mock failure at call 1)
-[aiw] 2026-11-22T16:50:26 dead-letter: ROLLBACK FAILED for event e-c1 (seq=0 attempts=4) io_stage=2 io_errno=5 rollback_stage=4 rollback_errno=5 file=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\c_state/dead_letter.jsonl pre_len=121 cur_len=232(cur_len_valid=1) -> persistent fault state; offset NOT advanced, append NOT retried
-[aiw] 2026-11-22T16:50:26 worker: persistent fault (dead_letter_failed) latched for event e-c1 seq=0; no further dead-letter append and no offset advance until the fault marker is resolved
-[aiw] 2026-11-22T16:50:28 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=3 offset=239 state_saves=2 state_errors=0
-[aiw] 2026-11-22T16:50:28 file identity: reason=first_open offset=239 prefix_hash=262610d572266d3a resets=0 legacy_rescans=0 replacements=0 truncations=0
-[aiw] 2026-11-22T16:50:28 WARNING: event id=e-c1 was still unprocessed at exit (4 attempts, offset kept at 239)
-[aiw] 2026-11-22T16:50:28 provider summary: name=mock calls=4 (no network)
+[aiw] 2026-11-22T17:21:47 session: enabled=1 timeout=12000ms (follow-up window after playback)
+[aiw] 2026-11-22T17:21:47 no consumer state yet (first run); scanning events from offset 0
+[aiw] 2026-11-22T17:21:47 start pid=51584 events=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\c_work/events.jsonl state=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\c_state/consumer_state.json provider=mock offset=0 (mock only, no network)
+[aiw] 2026-11-22T17:21:47 route=ai event=e-c1 seq=0 session=1000 merges=0 held_ms=454 why=timeout text_bytes=8 session_state=PROCESSING
+[aiw] 2026-11-22T17:21:47 event id=e-c1 stuck after 1 attempts (mock failure at call 1)
+[aiw] 2026-11-22T17:21:47 dead-letter: ROLLBACK FAILED for event e-c1 (seq=0 attempts=4) io_stage=2 io_errno=5 rollback_stage=4 rollback_errno=5 file=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\c_state/dead_letter.jsonl pre_len=121 cur_len=232(cur_len_valid=1) -> persistent fault state; offset NOT advanced, append NOT retried
+[aiw] 2026-11-22T17:21:47 dead-letter: fault marker written for event e-c1 at D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\c_state -> cross-restart protection ARMED (a restart will refuse to append it again)
+[aiw] 2026-11-22T17:21:47 worker: persistent fault (dead_letter_failed) latched for event e-c1 seq=0; no further dead-letter append and no offset advance until the fault marker is resolved
+[aiw] 2026-11-22T17:21:50 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=3 offset=239 state_saves=2 state_errors=0
+[aiw] 2026-11-22T17:21:50 file identity: reason=first_open offset=239 prefix_hash=262610d572266d3a resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-22T17:21:50 WARNING: event id=e-c1 was still unprocessed at exit (4 attempts, offset kept at 239)
+[aiw] 2026-11-22T17:21:50 provider summary: name=mock calls=4 (no network)
 PASS e2e C: state == stopped (latch judged by dead_letter.failed)
 PASS e2e C: status.dead_letter.failed == 1
 PASS e2e C: fault event_id recorded
@@ -78,21 +78,89 @@ PASS e2e C: events_processed == 0
 PASS e2e C: offset not advanced (processed_total=0, no last_event_id)
 PASS e2e C: event stays pending
 PASS e2e C: fault marker written
+PASS e2e C: status marker_state == WRITTEN(1) (cross-restart protection armed)
 PASS e2e C: exactly 2 records (seed + one unrolled-back write, no duplicate)
 PASS e2e C: log carries the full rollback-failure site
 PASS e2e C: worker latched the persistent fault state
 === e2e D: restart with the marker present must refuse to append again ===
 exit : 0
-[aiw] 2026-11-22T16:50:29 route=ai event=e-c1 seq=0 session=1000 merges=0 held_ms=453 why=timeout text_bytes=8 session_state=PROCESSING
-[aiw] 2026-11-22T16:50:29 event id=e-c1 stuck after 1 attempts (mock failure at call 1)
-[aiw] 2026-11-22T16:50:29 dead-letter: refusing to append event e-c1 again: unresolved fault marker (D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\c_state/dead_letter.fault.json) from a previous rollback failure
-[aiw] 2026-11-22T16:50:29 worker: persistent fault (dead_letter_failed) latched for event e-c1 seq=0; no further dead-letter append and no offset advance until the fault marker is resolved
-[aiw] 2026-11-22T16:50:32 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=3 offset=239 state_saves=2 state_errors=0
-[aiw] 2026-11-22T16:50:32 file identity: reason=first_open offset=239 prefix_hash=262610d572266d3a resets=0 legacy_rescans=0 replacements=0 truncations=0
-[aiw] 2026-11-22T16:50:32 WARNING: event id=e-c1 was still unprocessed at exit (4 attempts, offset kept at 239)
-[aiw] 2026-11-22T16:50:32 provider summary: name=mock calls=4 (no network)
+[aiw] 2026-11-22T17:21:51 route=ai event=e-c1 seq=0 session=1000 merges=0 held_ms=453 why=timeout text_bytes=8 session_state=PROCESSING
+[aiw] 2026-11-22T17:21:51 event id=e-c1 stuck after 1 attempts (mock failure at call 1)
+[aiw] 2026-11-22T17:21:51 dead-letter: refusing to append event e-c1 again: unresolved fault marker (D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\c_state/dead_letter.fault.json) from a previous rollback failure
+[aiw] 2026-11-22T17:21:51 worker: persistent fault (dead_letter_failed) latched for event e-c1 seq=0; no further dead-letter append and no offset advance until the fault marker is resolved
+[aiw] 2026-11-22T17:21:53 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=3 offset=239 state_saves=2 state_errors=0
+[aiw] 2026-11-22T17:21:53 file identity: reason=first_open offset=239 prefix_hash=262610d572266d3a resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-22T17:21:53 WARNING: event id=e-c1 was still unprocessed at exit (4 attempts, offset kept at 239)
+[aiw] 2026-11-22T17:21:53 provider summary: name=mock calls=4 (no network)
 PASS e2e D: still 2 records after restart (no duplicate append)
 PASS e2e D: restart refused to append (marker honoured)
+
+=== e2e marker-reliability: marker write failure, marker read failure, marker present ===
+run  : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.faultmodel.exe --marker-selftest D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\mk
+exit : 0
+=== T7-10 fault marker selftest (root=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\mk) ===
+[marker] probe probe_absent     ->  0 (expect  0) stage=none errno=0 len=-1 OK
+[marker] probe probe_match      ->  1 (expect  1) stage=none errno=0 len=35 OK
+[marker] probe probe_foreign    ->  0 (expect  0) stage=none errno=0 len=38 OK
+[marker] probe probe_unreadable -> -1 (expect -1) stage=open errno=0 len=0 OK
+[marker] probe probe_empty      -> -1 (expect -1) stage=none errno=0 len=0 OK
+[marker] probe probe_garbage    -> -1 (expect -1) stage=none errno=0 len=20 OK
+[marker] write write_ok         ->  0 (expect  0) stage=none errno=0 len=208
+[marker]   expect success/stage=none ... OK
+[marker]   round-trip probe -> 1 (expect 1, MATCH) ... OK
+[marker] write write_fail_open  -> -1 (expect -1) stage=open errno=13 len=0
+[marker]   expect failure/stage=open ... OK
+[marker]   no fake marker file left ... OK
+[marker] write write_fail_rename -> -1 (expect -1) stage=rename errno=0 len=0
+[marker]   expect failure/stage=rename ... OK
+RESULT: marker selftest pass=11 fail=0
+PASS marker selftest: exit 0 (write / read / normal all as specified)
+PASS marker selftest: 11 assertions, 0 failing
+run  : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.faultmodel.exe --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\e_work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\e_state --provider mock --mock-fail-from 1 --provider-retry-max 1 --provider-backoff-ms 1 --provider-backoff-max-ms 5 --state-sync-every 1 --poll-ms 10 --status-every-ms 100 --max-runtime-ms 3000  [marker .tmp path is a directory]
+exit : 0
+[aiw] 2026-11-22T17:21:54 session: enabled=1 timeout=12000ms (follow-up window after playback)
+[aiw] 2026-11-22T17:21:54 no consumer state yet (first run); scanning events from offset 0
+[aiw] 2026-11-22T17:21:54 start pid=42344 events=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\e_work/events.jsonl state=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\e_state/consumer_state.json provider=mock offset=0 (mock only, no network)
+[aiw] 2026-11-22T17:21:54 route=ai event=e-e1 seq=0 session=1000 merges=0 held_ms=453 why=timeout text_bytes=8 session_state=PROCESSING
+[aiw] 2026-11-22T17:21:54 event id=e-e1 stuck after 1 attempts (mock failure at call 1)
+[aiw] 2026-11-22T17:21:54 dead-letter: ROLLBACK FAILED for event e-e1 (seq=0 attempts=4) io_stage=2 io_errno=5 rollback_stage=4 rollback_errno=5 file=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\e_state/dead_letter.jsonl pre_len=121 cur_len=232(cur_len_valid=1) -> persistent fault state; offset NOT advanced, append NOT retried
+[aiw] 2026-11-22T17:21:54 dead-letter: FAULT MARKER WRITE FAILED for event e-e1 (stage=open errno=13 path=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\e_state) -> cross-restart protection NOT established. This process stays latched (no further append, no offset advance); a restart would lose the guard, so create/repair the marker by hand before restarting
+[aiw] 2026-11-22T17:21:54 worker: persistent fault (dead_letter_failed) latched for event e-e1 seq=0; no further dead-letter append and no offset advance until the fault marker is resolved
+[aiw] 2026-11-22T17:21:57 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=3 offset=239 state_saves=2 state_errors=0
+[aiw] 2026-11-22T17:21:57 file identity: reason=first_open offset=239 prefix_hash=6ec9c300ecc17bd0 resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-22T17:21:57 WARNING: event id=e-e1 was still unprocessed at exit (4 attempts, offset kept at 239)
+[aiw] 2026-11-22T17:21:57 provider summary: name=mock calls=4 (no network)
+PASS e2e E: status.dead_letter.failed == 1
+PASS e2e E: marker_state == WRITE_FAILED(2) (protection not established)
+PASS e2e E: marker_stage == OPEN(1)
+PASS e2e E: no dead letter counted as skipped
+PASS e2e E: offset not advanced
+PASS e2e E: event stays pending
+PASS e2e E: still 2 records (no extra append after the marker failed)
+PASS e2e E: log reports the marker write failure
+PASS e2e E: log states the cross-restart protection was not established
+PASS e2e E: worker still latched the persistent fault
+PASS e2e E: no fake marker file (the failure is not disguised as success)
+run  : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.faultmodel.exe --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\f_work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\f_state --provider mock --mock-fail-from 1 --provider-retry-max 1 --provider-backoff-ms 1 --provider-backoff-max-ms 5 --state-sync-every 1 --poll-ms 10 --status-every-ms 100 --max-runtime-ms 3000  [marker path is a directory]
+exit : 0
+[aiw] 2026-11-22T17:21:57 no consumer state yet (first run); scanning events from offset 0
+[aiw] 2026-11-22T17:21:57 start pid=16956 events=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\f_work/events.jsonl state=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\f_state/consumer_state.json provider=mock offset=0 (mock only, no network)
+[aiw] 2026-11-22T17:21:57 route=ai event=e-f1 seq=0 session=1000 merges=0 held_ms=453 why=timeout text_bytes=14 session_state=PROCESSING
+[aiw] 2026-11-22T17:21:57 event id=e-f1 stuck after 1 attempts (mock failure at call 1)
+[aiw] 2026-11-22T17:21:58 dead-letter: fault marker exists but CANNOT BE CONFIRMED (stage=open errno=0 len=0) -> treated as a fault: append refused, offset NOT advanced, event e-f1 stays pending; repair or remove the marker by hand (it is never deleted automatically)
+[aiw] 2026-11-22T17:21:58 worker: persistent fault (dead_letter_failed) latched for event e-f1 seq=0; no further dead-letter append and no offset advance until the fault marker is resolved
+[aiw] 2026-11-22T17:22:00 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=3 offset=247 state_saves=2 state_errors=0
+[aiw] 2026-11-22T17:22:00 file identity: reason=first_open offset=247 prefix_hash=518c95cd34d1dbc2 resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-22T17:22:00 WARNING: event id=e-f1 was still unprocessed at exit (4 attempts, offset kept at 247)
+[aiw] 2026-11-22T17:22:00 provider summary: name=mock calls=4 (no network)
+PASS e2e F: status.dead_letter.failed == 1
+PASS e2e F: marker_state == UNREADABLE(3)
+PASS e2e F: nothing was appended or skipped
+PASS e2e F: dead_letter.jsonl unchanged (1 seed record, no append)
+PASS e2e F: offset not advanced
+PASS e2e F: event stays pending
+PASS e2e F: log says the marker cannot be confirmed
+PASS e2e F: append was refused
 
 === parser test (json.loads on every line + 6x100 concurrent appends) ===
 PASS samples/wallclock: is a JSON object

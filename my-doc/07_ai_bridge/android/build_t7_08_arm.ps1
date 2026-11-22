@@ -82,12 +82,16 @@ if ($dyn -notmatch 'NEEDED.*libc\.so')         { throw "does not NEED libc.so" }
 
 $sym = (& $ReadElf -sW $Obj 2>&1 | Out-String)
 $hasDl = ($sym -match 't6b_dl_format') -and ($sym -match 't6b_dl_append')
-$leaked = ($sym -match 't6b_dl_test_fault') -or ($sym -match 'dl_test_env_init')
+$leaked = ($sym -match 't6b_dl_test_fault') -or ($sym -match 'dl_test_env_init') -or ($sym -match 'dl_mk_selftest')
+$strs = (& $ReadElf -p .rodata $Obj 2>&1 | Out-String)
+$strLeak = $strs -match 'marker-selftest'
 Log ("# symbols present: t6b_dl_format/t6b_dl_append = " + $hasDl)
 if ($leaked) { Log "# fault-injection symbols: PRESENT (BAD)" }
 else         { Log "# fault-injection symbols: absent (expected in a production build)" }
+Log ("# T7-10 marker test entry string '--marker-selftest': " + ($(if ($strLeak) { "PRESENT (BAD)" } else { "absent (expected)" })))
 if (-not $hasDl) { throw "dead_letter symbols missing from ARM artifact" }
 if ($leaked)     { throw "test hooks leaked into the production ARM build" }
+if ($strLeak)    { throw "T7-10 marker selftest entry leaked into the production ARM build" }
 
 if ($script:Warnings -ne 0) {
     Log ("# result: FAIL (" + $script:Warnings + " warning line(s))")

@@ -1,0 +1,67 @@
+﻿# T7-08 ARM32 build log (ai_worker + dead_letter.c, armeabi-v7a / API 26)
+# time: 2026-11-22 17:22:35
+# ndk : D:\tgz02\OS\_analysis\tools\android-ndk-r21e
+# cc  : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd
+# out : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.t7_08
+# cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker.t7_08 D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_session.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t7_dup.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\dead_letter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c -ldl -llog
+(no compiler output: 0 warning, 0 error)
+exit: 0
+artifact: ai_worker.t7_08  232092 B  sha256=dea66765495113a72b160d9167d5349fae098acdb5e24d99fba8899aa151bc37
+# --- readelf -h ---
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              DYN (Shared object file)
+  Machine:                           ARM
+  Version:                           0x1
+  Entry point address:               0x2070
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          230612 (bytes into file)
+  Flags:                             0x5000200, Version5 EABI, soft-float ABI
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         9
+  Size of section headers:           40 (bytes)
+  Number of section headers:         37
+  Section header string table index: 36
+# --- readelf -d ---
+
+Dynamic section at offset 0x2ad78 contains 29 entries:
+  Tag        Type                         Name/Value
+ 0x00000003 (PLTGOT)                     0x2bebc
+ 0x00000002 (PLTRELSZ)                   624 (bytes)
+ 0x00000017 (JMPREL)                     0x1a40
+ 0x00000014 (PLTREL)                     REL
+ 0x00000011 (REL)                        0xb28
+ 0x00000012 (RELSZ)                      3864 (bytes)
+ 0x00000013 (RELENT)                     8 (bytes)
+ 0x6ffffffa (RELCOUNT)                   479
+ 0x00000015 (DEBUG)                      0x0
+ 0x00000006 (SYMTAB)                     0x200
+ 0x0000000b (SYMENT)                     16 (bytes)
+ 0x00000005 (STRTAB)                     0x720
+ 0x0000000a (STRSZ)                      763 (bytes)
+ 0x6ffffef5 (GNU_HASH)                   0xa1c
+ 0x00000001 (NEEDED)                     Shared library: [libdl.so]
+ 0x00000001 (NEEDED)                     Shared library: [liblog.so]
+ 0x00000001 (NEEDED)                     Shared library: [libc.so]
+ 0x00000020 (PREINIT_ARRAY)              0x2b588
+ 0x00000021 (PREINIT_ARRAYSZ)            0x8
+ 0x00000019 (INIT_ARRAY)                 0x2b590
+ 0x0000001b (INIT_ARRAYSZ)               8 (bytes)
+ 0x0000001a (FINI_ARRAY)                 0x2b598
+ 0x0000001c (FINI_ARRAYSZ)               8 (bytes)
+ 0x0000001e (FLAGS)                      BIND_NOW
+ 0x6ffffffb (FLAGS_1)                    Flags: NOW
+ 0x6ffffff0 (VERSYM)                     0xa34
+ 0x6ffffffe (VERNEED)                    0xad8
+ 0x6fffffff (VERNEEDNUM)                 2
+ 0x00000000 (NULL)                       0x0
+# symbols present: t6b_dl_format/t6b_dl_append = True
+# fault-injection symbols: absent (expected in a production build)
+# T7-10 marker test entry string '--marker-selftest': absent (expected)
+# result: OK (0 warning, 0 error; ELF32/ARM/PIE; NEEDED libc; no test hooks)

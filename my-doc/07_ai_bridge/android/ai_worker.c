@@ -445,32 +445,118 @@ static void dl_fault_marker_path(const t6b_worker *w, char *out, size_t cap)
              (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT);
 }
 
-/* 故障标记里是否记着这个 event_id（读过一次就够，不做缓存：一条事件只查一次） */
-static int dl_marker_blocks(const t6b_worker *w)
+/* ---- T7-10：故障标记必须"要么确定写下，要么明确报错" -------------------------
+ * T7-09 留下的两个洞：
+ *   1) 标记写入是 void 函数，write/fsync/close/rename 四步的失败全被 (void) 吞掉 ——
+ *      "跨重启保护"可能根本不存在，而状态文件看起来一切正常；
+ *   2) 读标记失败被当成"标记不存在" —— 把"读不出来"当成"没问题"，重启后可能对同一个
+ *      尾部状态不确定的死信文件再追加一次，把不确定变成确定的损坏。
+ *
+ * 现在只允许两种结论：确定的"有/没有"，或者"不知道"。不知道一律按故障处理：
+ * 不追加、不推进 offset、进 dead_letter_failed，等人工处理（绝不自动删标记）。
+ */
+#define T6B_MARKER_ABSENT   0      /* 明确没有标记 */
+#define T6B_MARKER_MATCH    1      /* 存在、可读、记的正是当前 event_id */
+#define T6B_MARKER_UNKNOWN (-1)    /* 存在但读不出/内容异常/无法确认 -> 当故障 */
+
+#define T6B_MARKER_STAGE_NONE   0
+#define T6B_MARKER_STAGE_OPEN   1
+#define T6B_MARKER_STAGE_WRITE  2
+#define T6B_MARKER_STAGE_FSYNC  3
+#define T6B_MARKER_STAGE_CLOSE  4
+#define T6B_MARKER_STAGE_RENAME 5
+
+/* 状态文件里回报"跨重启保护到底有没有建立" */
+#define T6B_MARKER_STATE_NONE         0   /* 本轮未涉及标记 */
+#define T6B_MARKER_STATE_WRITTEN      1   /* 标记已完整落盘：保护已建立 */
+#define T6B_MARKER_STATE_WRITE_FAILED 2   /* 标记没写成功：保护未建立（进程内闩锁仍有效） */
+#define T6B_MARKER_STATE_UNREADABLE   3   /* 标记存在但无法确认：按故障处理 */
+#define T6B_MARKER_STATE_PRESENT      4   /* 标记存在且匹配：拒绝追加 */
+
+typedef struct t6b_marker_out {
+    int       stage;        /* T6B_MARKER_STAGE_* */
+    int       io_errno;     /* 平台未提供时为 0 */
+    long long len;          /* 标记文件长度；stat 失败为 -1 */
+} t6b_marker_out;
+
+static const char *dl_marker_stage_name(int stage)
+{
+    switch (stage) {
+    case T6B_MARKER_STAGE_OPEN:   return "open";
+    case T6B_MARKER_STAGE_WRITE:  return "write";
+    case T6B_MARKER_STAGE_FSYNC:  return "fsync";
+    case T6B_MARKER_STAGE_CLOSE:  return "close";
+    case T6B_MARKER_STAGE_RENAME: return "rename";
+    default:                      return "none";
+    }
+}
+
+/*
+ * 读故障标记，三态返回：
+ *    0 = 明确不存在（stat 报 ENOENT）
+ *    1 = 存在且匹配当前 event_id
+ *   -1 = 存在但读不出来 / 空文件 / 内容异常 / 读不全 / stat 失败原因不明
+ * 只有"确实不存在"才允许 0；任何无法确认的情况都必须 -1（不许当成没标记）。
+ */
+static int dl_marker_probe(const t6b_worker *w, t6b_marker_out *mo)
 {
     char path[T6B_PATH_MAX];
     char buf[1024];
-    size_t len = 0;
     char needle[T6B_ID_MAX + 32];
+    size_t len = 0;
+    long long sz;
+    int err;
 
+    if (mo != NULL) { mo->stage = T6B_MARKER_STAGE_NONE; mo->io_errno = 0; mo->len = 0; }
     dl_fault_marker_path(w, path, sizeof(path));
-    if (wu_file_size(path) <= 0) return 0;
-    if (wu_read_file(path, buf, sizeof(buf), &len) != 0 || len == 0) return 0;
+
+    errno = 0;
+    sz = wu_file_size(path);
+    err = errno;
+    if (mo != NULL) mo->len = sz;
+    if (sz < 0) {
+        /* 只有"确实不存在"才算没有标记；其它 stat 失败原因不明，一律不能当成不存在 */
+        if (err == 0 || err == ENOENT) return T6B_MARKER_ABSENT;
+        if (mo != NULL) { mo->stage = T6B_MARKER_STAGE_OPEN; mo->io_errno = err; }
+        return T6B_MARKER_UNKNOWN;
+    }
+
+    errno = 0;
+    if (wu_read_file(path, buf, sizeof(buf), &len) != 0) {
+        /* 存在但读不出来（权限 / 是目录 / IO 错误）：不知道内容 = 故障 */
+        if (mo != NULL) { mo->stage = T6B_MARKER_STAGE_OPEN; mo->io_errno = errno; }
+        return T6B_MARKER_UNKNOWN;
+    }
+    if (len == 0) return T6B_MARKER_UNKNOWN;              /* 存在但是空文件：内容异常 */
+    if ((long long)len < sz) return T6B_MARKER_UNKNOWN;   /* 太大读不全：无法确认 */
 
     /* event_id 的字符集由 reader 限定为 [A-Za-z0-9._:-]，直接按原样匹配是安全的 */
     snprintf(needle, sizeof(needle), "\"event_id\":\"%s\"", w->pend.event_id);
-    return (strstr(buf, needle) != NULL) ? 1 : 0;
+    if (strstr(buf, needle) != NULL) return T6B_MARKER_MATCH;
+    /* 能读、但连 event_id 字段都没有：不是我们写的标记，内容异常 */
+    if (strstr(buf, "\"event_id\":\"") == NULL) return T6B_MARKER_UNKNOWN;
+    /* 格式正常、记的是别的事件：对当前事件"明确不阻塞" */
+    return T6B_MARKER_ABSENT;
 }
 
-/* 写出持久化故障标记：先写 .tmp 再 rename，读到的永远是完整内容 */
-static void dl_write_fault_marker(t6b_worker *w, const char *dl_path, const t6b_dl_out *o)
+/*
+ * 写持久化故障标记：先写 .tmp 再 rename，读到的永远是完整内容。
+ * 返回 0  = write/fsync/close/rename 四步全成功，跨重启保护已建立；
+ * 返回 -1 = 某一步失败，mo 里带失败步骤与 errno；调用方必须按"保护未建立"上报，
+ *           绝不能假装标记已经成功。
+ * close 失败时不做 rename：数据虽然很可能已经 fsync 到盘，但我们不去声称这一点。
+ */
+static int dl_fault_marker_write(t6b_worker *w, const char *dl_path,
+                                 const t6b_dl_out *o, t6b_marker_out *mo)
 {
     char path[T6B_PATH_MAX];
     char tmp[T6B_PATH_MAX + 8];
     char body[1024];
     int fd;
     int n;
+    int err;
 
+    if (mo != NULL) { mo->stage = T6B_MARKER_STAGE_NONE; mo->io_errno = 0; mo->len = 0; }
     dl_fault_marker_path(w, path, sizeof(path));
     snprintf(tmp, sizeof(tmp), "%s.tmp", path);
     n = snprintf(body, sizeof(body),
@@ -483,14 +569,50 @@ static void dl_write_fault_marker(t6b_worker *w, const char *dl_path, const t6b_
                  dl_path, o->io_stage, o->io_errno,
                  o->rollback_stage, o->rollback_errno,
                  o->pre_len, o->cur_len, o->cur_len_valid);
-    if (n <= 0 || (size_t)n >= sizeof(body)) return;
+    if (n <= 0 || (size_t)n >= sizeof(body)) {
+        if (mo != NULL) { mo->stage = T6B_MARKER_STAGE_WRITE; mo->io_errno = EINVAL; }
+        return -1;
+    }
 
+    errno = 0;
     fd = wu_open_wo(tmp);
-    if (fd < 0) return;
-    if (wu_write_all(fd, body, (size_t)n) != 0) { (void)wu_close(fd); return; }
-    (void)wu_fsync(fd);
-    (void)wu_close(fd);
-    (void)wu_rename_replace(tmp, path);
+    if (fd < 0) {
+        err = errno;
+        if (mo != NULL) { mo->stage = T6B_MARKER_STAGE_OPEN; mo->io_errno = err; }
+        return -1;
+    }
+    errno = 0;
+    if (wu_write_all(fd, body, (size_t)n) != 0) {
+        err = errno;
+        (void)wu_close(fd);
+        (void)wu_unlink(tmp);
+        if (mo != NULL) { mo->stage = T6B_MARKER_STAGE_WRITE; mo->io_errno = err; }
+        return -1;
+    }
+    errno = 0;
+    if (wu_fsync(fd) != 0) {
+        err = errno;
+        (void)wu_close(fd);
+        (void)wu_unlink(tmp);
+        if (mo != NULL) { mo->stage = T6B_MARKER_STAGE_FSYNC; mo->io_errno = err; }
+        return -1;
+    }
+    errno = 0;
+    if (wu_close(fd) != 0) {
+        err = errno;
+        (void)wu_unlink(tmp);
+        if (mo != NULL) { mo->stage = T6B_MARKER_STAGE_CLOSE; mo->io_errno = err; }
+        return -1;
+    }
+    errno = 0;
+    if (wu_rename_replace(tmp, path) != 0) {
+        err = errno;
+        (void)wu_unlink(tmp);
+        if (mo != NULL) { mo->stage = T6B_MARKER_STAGE_RENAME; mo->io_errno = err; }
+        return -1;
+    }
+    if (mo != NULL) { mo->stage = T6B_MARKER_STAGE_NONE; mo->io_errno = 0; mo->len = (long long)n; }
+    return 0;
 }
 
 static int dead_letter_event(t6b_worker *w)
@@ -499,20 +621,41 @@ static int dead_letter_event(t6b_worker *w)
     char line[T6B_DL_LINE_MAX];
     t6b_dl_rec rec;
     t6b_dl_out dl;
+    t6b_marker_out mk;
     size_t n;
+    int mrc;
     int rc;
 
     snprintf(path, sizeof(path), "%s/dead_letter.jsonl",
              (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT);
 
-    /* 上一次已经写残过一次：这一次绝不再追加（跨重启也生效） */
-    if (dl_marker_blocks(w)) {
+    /* T7-10：先三态判断故障标记。只有"明确不存在"才允许继续追加；
+     * "存在且匹配"拒绝追加；"存在但无法确认"同样拒绝（读失败 ≠ 没有标记）。 */
+    memset(&mk, 0, sizeof(mk));
+    mrc = dl_marker_probe(w, &mk);
+    if (mrc != T6B_MARKER_ABSENT) {
         snprintf(w->st.dl_event_id, sizeof(w->st.dl_event_id), "%s", w->pend.event_id);
         w->st.dead_letter_failed = 1;
+        w->st.dl_marker_stage = mk.stage;
+        w->st.dl_marker_errno = mk.io_errno;
         snprintf(w->st.state, sizeof(w->st.state), "dead_letter_failed");
-        always("dead-letter: refusing to append event %s again: unresolved fault marker "
-               "(%s/dead_letter.fault.json) from a previous rollback failure",
-               w->pend.event_id, (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT);
+        if (mrc == T6B_MARKER_MATCH) {
+            w->st.dl_marker_state = T6B_MARKER_STATE_PRESENT;
+            always("dead-letter: refusing to append event %s again: unresolved fault marker "
+                   "(%s/dead_letter.fault.json) from a previous rollback failure",
+                   w->pend.event_id, (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT);
+        } else {
+            w->st.dl_marker_state = T6B_MARKER_STATE_UNREADABLE;
+            t6b_status_note_error(&w->st,
+                                  "dead-letter fault marker exists but cannot be confirmed "
+                                  "(stage=%s errno=%d len=%lld)",
+                                  dl_marker_stage_name(mk.stage), mk.io_errno, mk.len);
+            always("dead-letter: fault marker exists but CANNOT BE CONFIRMED "
+                   "(stage=%s errno=%d len=%lld) -> treated as a fault: append refused, "
+                   "offset NOT advanced, event %s stays pending; repair or remove the marker "
+                   "by hand (it is never deleted automatically)",
+                   dl_marker_stage_name(mk.stage), mk.io_errno, mk.len, w->pend.event_id);
+        }
         return -5;
     }
 
@@ -562,7 +705,28 @@ static int dead_letter_event(t6b_worker *w)
                w->pend.event_id, w->pend.seq, w->pend_attempts,
                dl.io_stage, dl.io_errno, dl.rollback_stage, dl.rollback_errno,
                path, dl.pre_len, dl.cur_len, dl.cur_len_valid);
-        dl_write_fault_marker(w, path, &dl);
+        if (dl_fault_marker_write(w, path, &dl, &mk) == 0) {
+            w->st.dl_marker_state = T6B_MARKER_STATE_WRITTEN;
+            always("dead-letter: fault marker written for event %s at %s "
+                   "-> cross-restart protection ARMED (a restart will refuse to append it again)",
+                   w->pend.event_id,
+                   (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT);
+        } else {
+            /* T7-10：写不进去就明说 —— 进程内闩锁仍然有效，但跨重启保护没建立 */
+            w->st.dl_marker_state = T6B_MARKER_STATE_WRITE_FAILED;
+            w->st.dl_marker_stage = mk.stage;
+            w->st.dl_marker_errno = mk.io_errno;
+            t6b_status_note_error(&w->st,
+                                  "dead-letter fault marker write failed (stage=%s errno=%d): "
+                                  "cross-restart protection NOT established",
+                                  dl_marker_stage_name(mk.stage), mk.io_errno);
+            always("dead-letter: FAULT MARKER WRITE FAILED for event %s (stage=%s errno=%d path=%s) "
+                   "-> cross-restart protection NOT established. This process stays latched "
+                   "(no further append, no offset advance); a restart would lose the guard, so "
+                   "create/repair the marker by hand before restarting",
+                   w->pend.event_id, dl_marker_stage_name(mk.stage), mk.io_errno,
+                   (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT);
+        }
         return -5;
     }
 
@@ -588,6 +752,100 @@ static int dead_letter_event(t6b_worker *w)
            w->pend.event_id, w->pend_attempts, w->ds.last_class);
     return 0;
 }
+
+#if defined(T6B_DL_TESTING) && defined(T6B_DL_TEST_ENV)
+/*
+ * T7-10 主机自检：故障标记可靠性（只在测试构建里存在，生产 ELF 无此符号）。
+ * 用法：ai_worker.faultmodel.exe --marker-selftest <fixture_root>
+ * 每个用例一个子目录，由测试脚本预先造好（含病理样本，例如把标记本身做成目录来模拟
+ * "存在但读不出来"）。这里只做断言并打印，不创建目录、不碰设备。
+ */
+static int dl_mk_selftest(const char *root)
+{
+    static t6b_worker sw;
+    static t6b_marker_out mk;
+    static t6b_dl_out dl;
+    static const struct { const char *dir; int expect; } probe_cases[] = {
+        { "probe_absent",     T6B_MARKER_ABSENT  },
+        { "probe_match",      T6B_MARKER_MATCH   },
+        { "probe_foreign",    T6B_MARKER_ABSENT  },
+        { "probe_unreadable", T6B_MARKER_UNKNOWN },
+        { "probe_empty",      T6B_MARKER_UNKNOWN },
+        { "probe_garbage",    T6B_MARKER_UNKNOWN }
+    };
+    static const struct { const char *dir; int stage; } write_cases[] = {
+        { "write_ok",          T6B_MARKER_STAGE_NONE   },
+        { "write_fail_open",   T6B_MARKER_STAGE_OPEN   },
+        { "write_fail_rename", T6B_MARKER_STAGE_RENAME }
+    };
+    char path[T6B_PATH_MAX];
+    int pass = 0;
+    int failn = 0;
+    int rc;
+    int i;
+
+    memset(&sw, 0, sizeof(sw));
+    memset(&dl, 0, sizeof(dl));
+    dl.io_stage = 2;              /* T6B_DL_STAGE_FSYNC */
+    dl.io_errno = 5;
+    dl.rollback_stage = 4;        /* T6B_DL_STAGE_TRUNC */
+    dl.rollback_errno = 5;
+    dl.pre_len = 99;
+    dl.cur_len = 123;
+    dl.cur_len_valid = 1;
+    snprintf(sw.pend.event_id, sizeof(sw.pend.event_id), "%s", "e-mk");
+    sw.pend.seq = 7;
+    sw.pend_attempts = 4;
+
+    printf("=== T7-10 fault marker selftest (root=%s) ===\n", root);
+
+    /* [1] 读取三态 */
+    for (i = 0; i < (int)(sizeof(probe_cases) / sizeof(probe_cases[0])); i++) {
+        snprintf(sw.cfg.state_dir, sizeof(sw.cfg.state_dir), "%s/%s", root, probe_cases[i].dir);
+        memset(&mk, 0, sizeof(mk));
+        rc = dl_marker_probe(&sw, &mk);
+        printf("[marker] probe %-16s -> %2d (expect %2d) stage=%s errno=%d len=%lld %s\n",
+               probe_cases[i].dir, rc, probe_cases[i].expect,
+               dl_marker_stage_name(mk.stage), mk.io_errno, mk.len,
+               (rc == probe_cases[i].expect) ? "OK" : "MISMATCH");
+        if (rc == probe_cases[i].expect) pass++; else failn++;
+    }
+
+    /* [2] 写入：成功必须能读回来（round trip），失败必须报出失败步骤且不留假标记 */
+    for (i = 0; i < (int)(sizeof(write_cases) / sizeof(write_cases[0])); i++) {
+        snprintf(sw.cfg.state_dir, sizeof(sw.cfg.state_dir), "%s/%s", root, write_cases[i].dir);
+        memset(&mk, 0, sizeof(mk));
+        rc = dl_fault_marker_write(&sw, "dead_letter.jsonl", &dl, &mk);
+        printf("[marker] write %-16s -> %2d (expect %2d) stage=%s errno=%d len=%lld\n",
+               write_cases[i].dir, rc, (write_cases[i].stage == T6B_MARKER_STAGE_NONE) ? 0 : -1,
+               dl_marker_stage_name(mk.stage), mk.io_errno, mk.len);
+        if (write_cases[i].stage == T6B_MARKER_STAGE_NONE) {
+            int ok = (rc == 0);
+            printf("[marker]   expect success/stage=none ... %s\n", ok ? "OK" : "MISMATCH");
+            if (ok) pass++; else failn++;
+            memset(&mk, 0, sizeof(mk));
+            rc = dl_marker_probe(&sw, &mk);
+            printf("[marker]   round-trip probe -> %d (expect %d, MATCH) ... %s\n",
+                   rc, T6B_MARKER_MATCH, (rc == T6B_MARKER_MATCH) ? "OK" : "MISMATCH");
+            if (rc == T6B_MARKER_MATCH) pass++; else failn++;
+        } else {
+            int ok = (rc == -1 && mk.stage == write_cases[i].stage);
+            printf("[marker]   expect failure/stage=%s ... %s\n",
+                   dl_marker_stage_name(write_cases[i].stage), ok ? "OK" : "MISMATCH");
+            if (ok) pass++; else failn++;
+            dl_fault_marker_path(&sw, path, sizeof(path));
+            if (write_cases[i].stage == T6B_MARKER_STAGE_OPEN) {
+                int absent = (wu_file_size(path) < 0);
+                printf("[marker]   no fake marker file left ... %s\n", absent ? "OK" : "MISMATCH");
+                if (absent) pass++; else failn++;
+            }
+        }
+    }
+
+    printf("RESULT: marker selftest pass=%d fail=%d\n", pass, failn);
+    return (failn == 0) ? 0 : 1;
+}
+#endif
 
 /* ---------------- 事件提交（Provider 成功之后） ---------------- */
 
@@ -2635,6 +2893,13 @@ int main(int argc, char **argv)
 
         if (strcmp(a, "--help") == 0 || strcmp(a, "-h") == 0) { usage(); return 0; }
         else if (strcmp(a, "--verbose") == 0) { cfg.verbose = 1; continue; }
+#if defined(T6B_DL_TESTING) && defined(T6B_DL_TEST_ENV)
+        /* T7-10：测试构建专属入口（生产构建里这一整段都不存在，连字符串都没有） */
+        else if (strcmp(a, "--marker-selftest") == 0) {
+            if (need_str(argc, argv, i, &v)) goto bad;
+            return dl_mk_selftest(v);
+        }
+#endif
 
         if (strcmp(a, "--work-dir") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.work_dir, sizeof(cfg.work_dir), "%s", v); i++; }
         else if (strcmp(a, "--state-dir") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.state_dir, sizeof(cfg.state_dir), "%s", v); i++; }

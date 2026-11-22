@@ -112,7 +112,9 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         /* T7-09：死信回滚失败现场（只在 dead_letter_failed=1 时有意义） */
         "\"dead_letter\":{\"failed\":%d,\"event_id\":\"%s\",\"io_stage\":%d,\"io_errno\":%d,"
         "\"rollback_stage\":%d,\"rollback_errno\":%d,\"pre_len\":%lld,\"cur_len\":%lld,"
-        "\"cur_len_valid\":%d},"
+        "\"cur_len_valid\":%d,"
+        /* T7-10：标记状态（2 = 跨重启保护未建立，现场必须先处理再重启） */
+        "\"marker_state\":%d,\"marker_stage\":%d,\"marker_errno\":%d},"
         "\"tts_queue\":\"%s\","
         "\"context\":{\"enabled\":%d,\"max_messages\":%d,\"messages\":%d,\"turns\":%d,"
         "\"load_state\":%d,\"saves\":%llu,\"save_errors\":%llu,\"evicted\":%llu,"
@@ -161,6 +163,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         st->dead_letter_failed, esc_dl_event, st->dl_io_stage, st->dl_io_errno,
         st->dl_rollback_stage, st->dl_rollback_errno, st->dl_pre_len, st->dl_cur_len,
         st->dl_cur_len_valid,
+        st->dl_marker_state, st->dl_marker_stage, st->dl_marker_errno,
         esc_ttsq,
         st->context_enabled, st->context_max_messages, st->context_messages,
         st->context_turns, st->context_load_state, st->context_saves,

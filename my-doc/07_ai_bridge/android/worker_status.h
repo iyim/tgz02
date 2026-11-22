@@ -91,6 +91,11 @@ typedef struct {
     long long          dl_cur_len;           /* 出错时的文件长度（dl_cur_len_valid=0 表示读不到） */
     int                dl_cur_len_valid;
     char               dl_event_id[T6B_ID_MAX + 1];
+    /* T7-10：故障标记本身的可靠性（标记没写成功 = 跨重启保护未建立，必须能看见） */
+    int                dl_marker_state;      /* T6B_MARKER_STATE_*（0=none 1=written 2=write_failed
+                                              * 3=unreadable 4=present_match） */
+    int                dl_marker_stage;      /* 标记写入失败在哪一步（T6B_MARKER_STAGE_*） */
+    int                dl_marker_errno;      /* 平台未提供时为 0 */
 
     /* 状态落盘（P1-3） */
     int                state_persist_failed;   /* 1 = 上次落盘失败，已停止推进消费 */
