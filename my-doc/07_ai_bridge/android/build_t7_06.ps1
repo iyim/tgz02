@@ -1,10 +1,9 @@
-# build_t7_06.ps1 -- T7-06 build (read-only _WakeUpInfo_ snapshot hook)
+﻿# build_t7_06.ps1 -- T7-06 build (read-only _WakeUpInfo_ snapshot hook)
 #
 #   powershell -ExecutionPolicy Bypass -File build_t7_06.ps1
 #
 # Artifacts:
-#   out/libtg_wakeinfo.so   SessionManager::onStartTalk 只读观测（ARM32 / armeabi-v7a / API 26）
-#
+#   out/libtg_wakeinfo.so   SessionManager::onStartTalk 鍙瑙傛祴锛圓RM32 / armeabi-v7a / API 26锛?#
 # Fixed flags -O2 -Wall -Wextra, no -Wno-*; any "warning:" line fails the build.
 param(
     [string]$LogName = "t7_06_ndk_build.log"
@@ -35,7 +34,7 @@ function Log([string]$s) {
     Write-Host $s
 }
 
-$Src = Join-Path $Here "hook_wake\libtg_wakeinfo.c"
+$Src = @((Join-Path $Here "hook_wake\libtg_wakeinfo.c"), (Join-Path $Here "hook_wake\wake_queue.c"), (Join-Path $Here "hook_wake\wake_store.c"))
 $Obj = Join-Path $Out "libtg_wakeinfo.so"
 
 Log "# T7-06 NDK build log (libtg_wakeinfo: read-only _WakeUpInfo_ snapshot)"
@@ -44,9 +43,7 @@ Log "# ndk : $Ndk"
 Log "# cc  : $Cc"
 Log ""
 
-$args = @("-O2", "-Wall", "-Wextra", "-fPIC", "-shared",
-          "-I", $Here,
-          "-o", $Obj, $Src, "-llog")
+$args = @("-O2", "-Wall", "-Wextra", "-fPIC", "-shared", "-I", $Here, "-o", $Obj) + $Src + @("-llog")
 Log ("# cmd : " + $Cc + " " + ($args -join " "))
 $buildOut = & $Cc @args 2>&1 | Out-String
 $rc = $LASTEXITCODE
@@ -93,3 +90,5 @@ Write-Host ""
 Write-Host ("log      : {0}" -f $Log)
 Write-Host ("artifact : {0}" -f $Obj)
 exit 0
+
+

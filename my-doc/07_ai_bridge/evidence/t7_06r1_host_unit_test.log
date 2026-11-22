@@ -1,0 +1,18 @@
+﻿# T7-06-R1 host unit test log
+# host time: 2026-11-22 12:05:25
+
+=== build t7_06r1_wake_queue_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_wake -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_06r1_wake_queue_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_06r1_wake_queue_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_wake\wake_queue.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_06r1_wake_queue_unit_test ===
+stress: attempts=80000 accepted=30182 dropped=49818 popped=30182 max_depth=32 bad_content=0 bad_order=0
+t7_06r1_wake_queue: pass=17 fail=0
+
+=== build t7_06r1_wake_store_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_wake -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_06r1_wake_store_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_06r1_wake_store_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_wake\wake_store.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_06r1_wake_store_unit_test ===
+t7_06r1_wake_store: pass=14 fail=0
+
+# total: pass=31 fail=0
+# result: OK

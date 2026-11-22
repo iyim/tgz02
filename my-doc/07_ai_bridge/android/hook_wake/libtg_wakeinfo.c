@@ -1,26 +1,25 @@
 /*
- * libtg_wakeinfo.c -- T7-06 第一步：只读采集原厂 _WakeUpInfo_ 快照（ARM32 / Android 8.1）
+ * libtg_wakeinfo.c -- T7-06-R1：只读采集原厂 _WakeUpInfo_（回调轻量化 + 后台线程）
  *
- * 目标（任务书 T7-05-R2 第四节）：
- *   在 AliAiLabs::AGUI::SessionManager::onStartTalk(typeA, typeB, _WakeUpInfo_*, _WakeUpEventRet_*)
- *   上装**只读** inline hook，把 _WakeUpInfo_ 的 0x00..0x5c 原始字节、调用上下文和
- *   指针字段的安全读取结果写到独立日志，供"字段布局 / 字符串所有权"分析使用。
+ * Hook 点：AliAiLabs::AGUI::SessionManager::onStartTalk(typeA, typeB, _WakeUpInfo_*, _WakeUpEventRet_*)
+ *   - 符号从 dynsym 解析（不用硬编码偏移），序言 E92D4FF0 E28DB01C 逐字校验
  *
- * 本库刻意只做采集：
- *   - 不写原厂内存（除了自己装 hook 的那 8 字节入口），不改参数，不改返回值，
- *     不调用任何原厂函数（连 startTalk 都不调）；
- *   - 指针字段只记录地址 + 用"写管道再读回"的方式安全读取（内核遇到不可读页时
- *     返回已读字节数，进程不会收到 SIGSEGV），不假设任何指针一定有效；
- *   - 日志写 /data/local/tmp/t7/wake/ 下，与 ASR 的 events.jsonl 完全分开。
+ * T7-06 第一版的问题（本轮修）：
+ *   1) 回调里直接 pipe 探测指针 + JSON 编码 + open/write + 写状态文件 —— 跑在原厂语音线程上，
+ *      这些都是阻塞操作；
+ *   2) 为了绕开权限，把目录开到 0777、文件 0666。
  *
- * 为什么用符号而不是偏移：
- *   偏移（0x111364）来自反汇编，换固件就失效；dynsym 里有
- *   _ZN9AliAiLabs4AGUI14SessionManager11onStartTalkE... 这个符号，用它更稳，
- *   同时把解析到的实际偏移打进日志，和反汇编结论对照。
+ * 现在的分工：
+ *   回调（原厂语音线程）：取参数 -> process_vm_readv 安全拷 0x60 字节 -> 计时 -> 入固定队列 -> 返回。
+ *                        没有文件操作、没有 pipe、没有 JSON、没有等待。
+ *   后台线程：出队 -> 指针安全探测 -> JSON 编码 -> 追加写 -> 每秒刷新状态 -> 退出前把队列刷完。
  *
- * 失败策略：prepare/install 任何一步失败都返回错误码并让 Injector 报出来；
- * hook 本身只做 memcpy/日志，回调里不做任何可能抛异常的事。原厂函数无论回调
- * 结果如何都按原参数执行（stub 结束就是 jmp trampoline）。
+ * 权限：编译期就知道 :core 的 uid 是 1000(system)，但代码里不写死 —— 用 getuid()，目录
+ * 由本进程以自身 UID 创建（0700），文件 0600；遇到别人留下的宽松文件，先 chmod 收紧，
+ * 收紧不了就改名归档再新建（决策在 wake_store.c，可在主机单测）。root 因为 DAC 豁免仍可读/归档。
+ *
+ * 安全：不写 CDM、不改参数、不改返回值、不调用任何原厂函数；stub 结束无条件跳 trampoline，
+ * 即使快照失败原厂也照原参数执行。
  */
 #define _GNU_SOURCE 1
 
@@ -40,27 +39,33 @@
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
+#include <sys/uio.h>
 #include <time.h>
 #include <unistd.h>
+
+#include "wake_queue.h"
+#include "wake_store.h"
 
 #define TG_LOG_TAG   "tg_wakeinfo"
 #define TG_MODULE    "libsmartbox.so"
 
-/* onStartTalk 的 ARM 序言（实测：f0 4f 2d e9 1c b0 8d e2 = E92D4FF0 E28DB01C）。
- * prepare 阶段会逐字比对；不一致就拒绝安装，避免打到别的函数上。 */
 static const uint32_t PRO_ON_START[2] = { 0xE92D4FF0u, 0xE28DB01Cu };
 #define SYM_ON_START \
     "_ZN9AliAiLabs4AGUI14SessionManager11onStartTalkENS0_19IInputDeviceManager15InputDeviceTypeES3_PNS2_12_WakeUpInfo_EPNS2_16_WakeUpEventRet_E"
 
-#define WI_DUMP_BYTES   0x60        /* 0x00..0x5c：任务书要求的范围 */
+#define WI_DUMP_BYTES   0x60
 #define WI_STUB_PAGE    4096
 #define WI_PROBE_BYTES  64
 #define WI_TEXT_MAX     48
 #define WI_LINE_MAX     2048
 
-#define WI_DIR          "/data/local/tmp/t7/wake"
-#define WI_LOG          WI_DIR "/wakeinfo.jsonl"
-#define WI_STATUS       WI_DIR "/wakeinfo.status"
+#define WI_DIR_PRIMARY  "/data/data/com.alibaba.ailabs.genie.smartapp/files/wake"
+#define WI_DIR_FALLBACK "/data/local/tmp/t7/wake"
+#define WI_NAME_LOG     "wakeinfo.jsonl"
+#define WI_NAME_STATUS  "wakeinfo.status"
+
+#define WI_THREAD_TICK_MS 10
+#define WI_STATUS_EVERY   100   /* 每次 tick 计数，100 * 10ms = 1s */
 
 enum {
     WI_OK = 0,
@@ -68,15 +73,17 @@ enum {
     WI_E_SYMBOL = -4,
     WI_E_PROLOGUE = -5,
     WI_E_MMAP = -6,
-    WI_E_PROT = -7
+    WI_E_PROT = -7,
+    WI_E_THREAD = -8,
+    WI_E_STORE = -9
 };
 
 typedef struct {
     const char *name;
     const char *sym;
-    uint32_t    func;        /* 运行时地址 */
-    uint32_t    orig[2];     /* 被替换的两条指令 */
-    uint32_t    pro[2];      /* 期望序言 */
+    uint32_t    func;
+    uint32_t    orig[2];
+    uint32_t    pro[2];
     uint32_t    stub;
     uint32_t    tramp;
     int         hooked;
@@ -89,14 +96,37 @@ static int       g_state = WI_OK;
 static int       g_patched;
 static char      g_err[192];
 
-static volatile unsigned long g_c_calls;
-static volatile unsigned long g_c_unreadable;
-static volatile unsigned long g_c_null;
-static volatile unsigned long g_c_badtype;
-static volatile unsigned long g_c_probe_ok;
+/* 采集落点（install 时确定） */
+static char      g_dir[192];
+static int       g_uid;
+static int       g_dir_mode;      /* 实际生效的目录权限（用于状态展示） */
+static int       g_file_mode;
+
+/* 队列与计数 */
+static wq        g_q;
+static volatile int g_run;
+static pthread_t g_thread;
+static int       g_thread_started;
+static volatile int g_thread_exited;
+static volatile unsigned long g_seq;
+
+static volatile unsigned long g_cb_count;
+static volatile unsigned long g_cb_last_us;
+static volatile unsigned long g_cb_max_us;
+static volatile unsigned long long g_cb_sum_us;
+static volatile unsigned long g_sent;
+static volatile unsigned long g_write_errors;
+static volatile unsigned long g_vm_ok;
+static volatile unsigned long g_vm_fail;
+
+static volatile int g_vm_readv_ok = 1;   /* process_vm_readv 是否可用 */
+static int g_fd = -1;
+static char g_path_log[256];
+static char g_path_status[256];
 
 #define GET(x) __atomic_load_n(&(x), __ATOMIC_RELAXED)
 #define INC(x) __atomic_add_fetch(&(x), 1ul, __ATOMIC_RELAXED)
+#define ADDU(x, v) __atomic_add_fetch(&(x), (v), __ATOMIC_RELAXED)
 
 static void slog(const char *fmt, ...)
 {
@@ -120,37 +150,187 @@ static void set_err(const char *fmt, ...)
     g_err[sizeof(g_err) - 1] = '\0';
 }
 
-/* ---------------- 安全读取（写管道再读回，绝不解引用未知指针） ----------------
- * 内核在 copy_from_user 阶段遇到不可读页时会把"已经拷好的那部分"交给管道，
- * write() 返回实际字节数，本进程不会收到 SIGSEGV。所以这是"安全读取结果"的来源。 */
-static int safe_read(void *dst, const void *src, size_t n)
+static long long mono_us(void)
 {
-    int fds[2];
-    ssize_t w;
-    size_t off = 0;
+    struct timespec ts;
 
-    if (src == NULL || dst == NULL || n == 0) return -1;
-    if (pipe(fds) != 0) return -1;
-    w = write(fds[1], src, n);
-    if (w <= 0) {
-        close(fds[1]);
-        close(fds[0]);
-        return (w == 0) ? 0 : -1;
-    }
-    while (off < (size_t)w) {
-        ssize_t r = read(fds[0], (char *)dst + off, (size_t)w - off);
-        if (r <= 0) break;
-        off += (size_t)r;
-    }
-    close(fds[1]);
-    close(fds[0]);
-    return (int)off;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (long long)ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
 }
 
-/* JSON 字符串转义。
- * 注意（T7-06 第一版踩过）：JSON 没有 \xNN 这个转义，而且任意内存里的 0x80+ 字节
- * 不一定是合法 UTF-8。所以控制字符和 0x80+ 一律写成 \u00NN（按 latin-1 码点保真），
- * 这样每一行都是合法 JSON，字节值也没有丢。 */
+/* 墙钟毫秒：日志里要能和 events.jsonl 的 received_at_ms 直接对照 */
+static long long wall_ms(void)
+{
+    struct timespec ts;
+
+    clock_gettime(CLOCK_REALTIME, &ts);
+    return (long long)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+}
+
+/* ---------------- 采集落点与权限 ---------------- */
+
+static void fill_stat(const char *p, ws_stat *st)
+{
+    struct stat sb;
+
+    memset(st, 0, sizeof(*st));
+    if (stat(p, &sb) != 0) return;
+    st->exists = 1;
+    st->uid = (int)sb.st_uid;
+    st->mode = (unsigned)(sb.st_mode & 0777);
+    st->can_chmod = (sb.st_uid == (uid_t)g_uid);
+}
+
+/* 让落点目录变成"本进程所有 + 0700"；返回 0 成功 */
+static int ensure_dir_private(const char *dir)
+{
+    ws_stat st;
+    ws_action act;
+    char aside[256];
+    mode_t old_mask;
+
+    fill_stat(dir, &st);
+    act = ws_plan_dir(&st, g_uid);
+
+    if (act == WS_ACT_MOVE_ASIDE) {
+        snprintf(aside, sizeof(aside), "%s.foreign.%d", dir, (int)getpid());
+        if (rename(dir, aside) != 0) {
+            /* 父目录不可写（例如 /data/local/tmp/t7 不够放）—— 只能报错让上层换落点 */
+            set_err("dir %s owned by uid %d mode %04o cannot be moved aside: %s",
+                    dir, st.uid, st.mode, strerror(errno));
+            return -1;
+        }
+        slog("moved aside foreign dir %s (uid=%d mode=%04o) -> %s", dir, st.uid, st.mode, aside);
+        act = WS_ACT_CREATE;
+    }
+
+    if (act == WS_ACT_CREATE) {
+        old_mask = umask(0077);          /* 创建瞬间就不给别人权限 */
+        if (mkdir(dir, WS_DIR_MODE) != 0 && errno != EEXIST) {
+            umask(old_mask);
+            set_err("mkdir %s failed: %s", dir, strerror(errno));
+            return -1;
+        }
+        umask(old_mask);
+    }
+
+    if (chmod(dir, WS_DIR_MODE) != 0) {
+        set_err("chmod %s 0700 failed: %s", dir, strerror(errno));
+        return -1;
+    }
+    {
+        struct stat sb;
+        if (stat(dir, &sb) != 0 || sb.st_uid != (uid_t)g_uid || (sb.st_mode & 0777) != WS_DIR_MODE) {
+            set_err("dir %s not private after fix (uid=%d mode=%04o)", dir,
+                    (int)sb.st_uid, (unsigned)(sb.st_mode & 0777));
+            return -1;
+        }
+        g_dir_mode = (int)(sb.st_mode & 0777);
+    }
+    return 0;
+}
+
+/* 打开私有日志文件；遇到别人的 / 过宽的文件按 wake_store 决策处理 */
+static int open_private_log(const char *dir, const char *name, char *out, size_t outlen, int *mode_out)
+{
+    char path[256];
+    ws_stat st;
+    ws_action act;
+    char aside[320];
+    int fd;
+
+    snprintf(path, sizeof(path), "%s/%s", dir, name);
+    fill_stat(path, &st);
+    act = ws_plan_file(&st, g_uid);
+
+    if (act == WS_ACT_MOVE_ASIDE) {
+        snprintf(aside, sizeof(aside), "%s.foreign.%d", path, (int)getpid());
+        if (rename(path, aside) != 0) {
+            set_err("file %s owned by uid %d mode %04o cannot be moved aside: %s",
+                    path, st.uid, st.mode, strerror(errno));
+            return -1;
+        }
+        slog("moved aside foreign file %s (uid=%d mode=%04o) -> %s", path, st.uid, st.mode, aside);
+        act = WS_ACT_CREATE;
+    } else if (act == WS_ACT_CHMOD) {
+        if (chmod(path, WS_FILE_MODE) != 0) {
+            set_err("chmod %s 0600 failed: %s", path, strerror(errno));
+            return -1;
+        }
+        slog("tightened %s from %04o to 0600", path, st.mode);
+    }
+
+    {
+        mode_t old_mask = umask(0177);
+        fd = open(path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, WS_FILE_MODE);
+        umask(old_mask);
+    }
+    if (fd < 0) {
+        set_err("open %s failed: %s", path, strerror(errno));
+        return -1;
+    }
+    if (fchmod(fd, WS_FILE_MODE) != 0) {
+        close(fd);
+        set_err("fchmod %s 0600 failed: %s", path, strerror(errno));
+        return -1;
+    }
+    {
+        struct stat sb;
+        if (fstat(fd, &sb) != 0) {
+            close(fd);
+            set_err("fstat %s failed", path);
+            return -1;
+        }
+        if ((sb.st_mode & 0777) != WS_FILE_MODE) {
+            close(fd);
+            set_err("%s mode=%04o after chmod (want 0600)", path, (unsigned)(sb.st_mode & 0777));
+            return -1;
+        }
+        if (mode_out != NULL) *mode_out = (int)(sb.st_mode & 0777);
+    }
+    snprintf(out, outlen, "%s", path);
+    return fd;
+}
+
+static int pick_dir(void)
+{
+    if (ensure_dir_private(WI_DIR_PRIMARY) == 0) {
+        snprintf(g_dir, sizeof(g_dir), "%s", WI_DIR_PRIMARY);
+        return 0;
+    }
+    slog("primary dir unusable (%s); falling back to %s", g_err, WI_DIR_FALLBACK);
+    if (ensure_dir_private(WI_DIR_FALLBACK) == 0) {
+        snprintf(g_dir, sizeof(g_dir), "%s", WI_DIR_FALLBACK);
+        return 0;
+    }
+    return -1;
+}
+
+/* ---------------- 安全读取（回调里用 process_vm_readv，不阻塞、不 pipe） ---------------- */
+static int safe_read_self(void *dst, const void *src, size_t n)
+{
+    struct iovec local, remote;
+    ssize_t r;
+
+    if (src == NULL || dst == NULL || n == 0) return -1;
+    if (!GET(g_vm_readv_ok)) return -2;
+
+    local.iov_base = dst;
+    local.iov_len = n;
+    remote.iov_base = (void *)src;
+    remote.iov_len = n;
+    r = syscall(SYS_process_vm_readv, (pid_t)getpid(), &local, 1ul, &remote, 1ul, 0ul);
+    if (r < 0) {
+        if (errno == ENOSYS) {
+            __atomic_store_n(&g_vm_readv_ok, 0, __ATOMIC_RELAXED);
+            slog("process_vm_readv unavailable (ENOSYS); snapshots disabled");
+        }
+        return -1;
+    }
+    return (int)r;
+}
+
+/* ---------------- JSON ---------------- */
 static size_t jesc(char *dst, size_t cap, const char *src, size_t n)
 {
     size_t o = 0;
@@ -162,6 +342,7 @@ static size_t jesc(char *dst, size_t cap, const char *src, size_t n)
         if (c == '"' || c == '\\') { dst[o++] = '\\'; dst[o++] = (char)c; }
         else if (c >= 0x20 && c < 0x7f) dst[o++] = (char)c;
         else {
+            /* JSON 没有 \xNN；0x80+ 也不一定是合法 UTF-8，一律按 latin-1 码点转 \u00NN */
             dst[o++] = '\\';
             dst[o++] = 'u';
             dst[o++] = '0';
@@ -186,24 +367,41 @@ static int printable_ratio(const unsigned char *p, int n)
     return (n > 0) ? (ok * 100 / n) : 0;
 }
 
-/* ---------------- 快照 ---------------- */
+/* ---------------- 后台线程 ---------------- */
 static void comm_of(pid_t tid, char *dst, size_t cap)
 {
     char path[64];
     int fd;
+    ssize_t n;
 
     dst[0] = '\0';
     snprintf(path, sizeof(path), "/proc/self/task/%d/comm", (int)tid);
     fd = open(path, O_RDONLY | O_CLOEXEC);
     if (fd < 0) return;
-    {
-        ssize_t n = read(fd, dst, cap - 1);
-        if (n > 0) {
-            while (n > 0 && (dst[n - 1] == '\n' || dst[n - 1] == '\r')) n--;
-            dst[n] = '\0';
-        }
+    n = read(fd, dst, cap - 1);
+    if (n > 0) {
+        while (n > 0 && (dst[n - 1] == '\n' || dst[n - 1] == '\r')) n--;
+        dst[n] = '\0';
     }
     close(fd);
+}
+
+/* tid -> comm 缓存：回调里不读 /proc，后台线程按需解析一次 */
+#define WI_COMM_CACHE 8
+static struct { int tid; char comm[16]; } g_comm_cache[WI_COMM_CACHE];
+static int g_comm_used;
+
+static const char *comm_cached(int tid)
+{
+    int i, slot;
+
+    for (i = 0; i < g_comm_used; i++) {
+        if (g_comm_cache[i].tid == tid) return g_comm_cache[i].comm;
+    }
+    slot = (g_comm_used < WI_COMM_CACHE) ? g_comm_used++ : (g_comm_used - 1);
+    g_comm_cache[slot].tid = tid;
+    comm_of(tid, g_comm_cache[slot].comm, sizeof(g_comm_cache[slot].comm));
+    return g_comm_cache[slot].comm;
 }
 
 static void write_all(int fd, const char *buf, size_t n)
@@ -212,115 +410,182 @@ static void write_all(int fd, const char *buf, size_t n)
 
     while (off < n) {
         ssize_t w = write(fd, buf + off, n - off);
-        if (w <= 0) return;
+        if (w <= 0) { INC(g_write_errors); return; }
         off += (size_t)w;
     }
 }
 
-static void write_status(unsigned long seq)
+static void write_status(void)
 {
-    char buf[256];
-    int fd;
-    int n;
+    char buf[512];
+    int fd, n;
+    unsigned long long depth = wq_depth(&g_q);
+    unsigned long cb_n = GET(g_cb_count);
+    unsigned long cb_avg = (cb_n > 0) ? (unsigned long)(GET(g_cb_sum_us) / cb_n) : 0;
 
+    if (g_path_status[0] == '\0') return;
     n = snprintf(buf, sizeof(buf),
-                 "calls=%lu unreadable=%lu null_api=%lu bad_wake_type=%lu probe_ok=%lu "
-                 "seq=%lu hooked=%d\n",
-                 GET(g_c_calls), GET(g_c_unreadable), GET(g_c_null), GET(g_c_badtype),
-                 GET(g_c_probe_ok), seq, g_patched ? 1 : 0);
-    fd = open(WI_STATUS, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
-    if (fd < 0) return;
-    write_all(fd, buf, (size_t)n);
+                 "seq=%lu calls=%lu queued=%lu sent=%lu depth=%llu max_depth=%llu dropped=%llu "
+                 "write_errors=%lu cb_us_last=%lu cb_us_max=%lu cb_us_avg=%lu "
+                 "vm_ok=%lu vm_fail=%lu threaded=%d thread_exited=%d uid=%d dir_mode=%04o "
+                 "file_mode=%04o dir=%s\n",
+                 GET(g_seq), cb_n, (unsigned long)wq_depth(&g_q), GET(g_sent), depth,
+                 wq_max_depth(&g_q), wq_dropped(&g_q), GET(g_write_errors),
+                 GET(g_cb_last_us), GET(g_cb_max_us), cb_avg,
+                 GET(g_vm_ok), GET(g_vm_fail), g_thread_started, GET(g_thread_exited),
+                 g_uid, g_dir_mode, g_file_mode, g_dir);
+
+    fd = open(g_path_status, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, WS_FILE_MODE);
+    if (fd < 0) { INC(g_write_errors); return; }
+    fchmod(fd, WS_FILE_MODE);
+    write_all(fd, buf, strlen(buf));
     close(fd);
 }
 
-/* 回调：r[0..3] = 压栈的 r0..r3，即 (this, typeA, typeB, info) */
-static void cb_on_start(uint32_t *r)
+static void emit_item(const wq_item *it)
 {
-    uint32_t this_p = r[0], typeA = r[1], typeB = r[2];
-    const void *info = (const void *)(uintptr_t)r[3];
     unsigned char raw[WI_DUMP_BYTES];
     char line[WI_LINE_MAX];
-    char comm[32];
     char probes[900];
     char rawtxt[WI_DUMP_BYTES * 3 + 8];
-    struct timespec ts;
-    pid_t tid = (pid_t)syscall(SYS_gettid);
-    unsigned long seq;
-    int n = -1;
+    const char *comm = comm_cached(it->tid);
     int wake_type = -1;
-    int i, po = 0;
+    int i, po = 0, n = it->bytes;
 
-    seq = INC(g_c_calls);
-    clock_gettime(CLOCK_REALTIME, &ts);
-    comm_of(tid, comm, sizeof(comm));
+    memcpy(raw, it->raw, sizeof(raw));
+    if (n > 0 && n >= 4) memcpy(&wake_type, raw, 4);
 
-    if (info == NULL) {
-        INC(g_c_null);
-    } else {
-        n = safe_read(raw, info, sizeof(raw));
-        if (n <= 0) INC(g_c_unreadable);
-        else if (n >= 4) memcpy(&wake_type, raw, 4);
-    }
-
-    /* raw 十六进制（不可读的尾部用 .. 表示） */
     po = 0;
     for (i = 0; i < WI_DUMP_BYTES; i++) {
-        if (i < n) {
-            po += snprintf(rawtxt + po, sizeof(rawtxt) - (size_t)po, "%02x", raw[i]);
-        } else {
-            po += snprintf(rawtxt + po, sizeof(rawtxt) - (size_t)po, "..");
-        }
+        if (i < n) po += snprintf(rawtxt + po, sizeof(rawtxt) - (size_t)po, "%02x", raw[i]);
+        else       po += snprintf(rawtxt + po, sizeof(rawtxt) - (size_t)po, "..");
     }
     rawtxt[po] = '\0';
 
-    /* 指针候选：只对看起来像用户空间地址、4 字节对齐的字做安全读取 */
     probes[0] = '\0';
     if (n >= 4) {
         int written = 0;
         for (i = 0; i + 4 <= (n < WI_DUMP_BYTES ? n : WI_DUMP_BYTES); i += 4) {
             uint32_t v;
             unsigned char pb[WI_PROBE_BYTES];
-            char text[WI_TEXT_MAX * 4 + 8];
-            int pn;
+            char text[WI_TEXT_MAX * 6 + 8];
+            char part[WI_TEXT_MAX * 6 + 64];
+            int pn, plen;
 
             memcpy(&v, raw + i, 4);
             if (v < 0x10000u || v >= 0xc0000000u || (v & 3u) != 0) continue;
-            pn = safe_read(pb, (const void *)(uintptr_t)v, sizeof(pb));
+            pn = safe_read_self(pb, (const void *)(uintptr_t)v, sizeof(pb));
             if (pn <= 0) continue;
             if (printable_ratio(pb, pn < 24 ? pn : 24) < 60) continue;
             jesc(text, sizeof(text), (const char *)pb, (size_t)(pn < WI_TEXT_MAX ? pn : WI_TEXT_MAX));
-            written += snprintf(probes + written, sizeof(probes) - (size_t)written,
-                                "%s\"0x%02x:0x%08x:%d:%s\"", written > 0 ? "," : "",
-                                i, v, pn, text);
-            INC(g_c_probe_ok);
-            if (written > (int)sizeof(probes) - 200) break;
+            /* 先整条渲染到 part，再决定能不能放进 probes：
+             * 绝不能让 snprintf 在 "\u00NN" 中间截断（那样这一行就不是合法 JSON 了）。 */
+            plen = snprintf(part, sizeof(part), "%s\"0x%02x:0x%08x:%d:%s\"",
+                            written > 0 ? "," : "", i, v, pn, text);
+            if (plen < 0 || plen >= (int)sizeof(part)) break;
+            if (written + plen + 2 >= (int)sizeof(probes)) break;
+            memcpy(probes + written, part, (size_t)plen);
+            written += plen;
+            probes[written] = '\0';
         }
     }
-    if (probes[0] == '\0') snprintf(probes, sizeof(probes), "");
-
-    if (wake_type < 0 || wake_type > 0x11) INC(g_c_badtype);
-
-    snprintf(line, sizeof(line),
-             "{\"seq\":%lu,\"t_ms\":%lld,\"pid\":%d,\"tid\":%d,\"comm\":\"%s\","
-             "\"this\":\"0x%08x\",\"typeA\":%d,\"typeB\":%d,\"info\":\"0x%08x\","
-             "\"info_null\":%d,\"bytes\":%d,\"wake_type\":%d,\"raw\":\"%s\","
-             "\"probes\":[%s]}",
-             seq, (long long)ts.tv_sec * 1000 + ts.tv_nsec / 1000000,
-             (int)getpid(), (int)tid, comm, this_p, (int)typeA, (int)typeB,
-             (uint32_t)(uintptr_t)info, info == NULL ? 1 : 0, n, wake_type, rawtxt, probes);
 
     {
-        int fd = open(WI_LOG, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
-        if (fd >= 0) {
-            write_all(fd, line, strlen(line));
-            write_all(fd, "\n", 1);
-            close(fd);
+        int n_line = snprintf(line, sizeof(line),
+                 "{\"seq\":%u,\"t_ms\":%lld,\"pid\":%d,\"tid\":%d,\"comm\":\"%s\","
+                 "\"this\":\"0x%08x\",\"typeA\":%d,\"typeB\":%d,\"info\":\"0x%08x\","
+                 "\"info_null\":%d,\"bytes\":%d,\"wake_type\":%d,\"cb_us\":%u,\"raw\":\"%s\","
+                 "\"probes\":[%s]}",
+                 it->seq, it->t_ms, it->pid, it->tid, comm[0] ? comm : "?",
+                 it->args[0], (int)it->args[1], (int)it->args[2], it->args[3],
+                 it->args[3] == 0 ? 1 : 0, n, wake_type, it->cb_us, rawtxt, probes);
+        if (n_line < 0 || n_line >= (int)sizeof(line)) {
+            /* 兜底：去掉 probes 再渲染一次，宁可少字段也不写半行 JSON */
+            snprintf(line, sizeof(line),
+                     "{\"seq\":%u,\"t_ms\":%lld,\"pid\":%d,\"tid\":%d,\"comm\":\"%s\","
+                     "\"this\":\"0x%08x\",\"typeA\":%d,\"typeB\":%d,\"info\":\"0x%08x\","
+                     "\"info_null\":%d,\"bytes\":%d,\"wake_type\":%d,\"cb_us\":%u,\"raw\":\"%s\","
+                     "\"probes\":[]}",
+                     it->seq, it->t_ms, it->pid, it->tid, comm[0] ? comm : "?",
+                     it->args[0], (int)it->args[1], (int)it->args[2], it->args[3],
+                     it->args[3] == 0 ? 1 : 0, n, wake_type, it->cb_us, rawtxt);
+            INC(g_write_errors);
         }
     }
-    write_status(seq);
-    slog("onStartTalk#%lu tid=%d comm=%s typeA=%d typeB=%d info=%p wake_type=%d bytes=%d",
-         seq, (int)tid, comm, (int)typeA, (int)typeB, info, wake_type, n);
+
+    if (g_fd >= 0) {
+        write_all(g_fd, line, strlen(line));
+        write_all(g_fd, "\n", 1);
+        INC(g_sent);
+    }
+}
+
+static void *wi_thread(void *arg)
+{
+    wq_item it;
+    int tick = 0;
+
+    (void)arg;
+    while (GET(g_run)) {
+        while (wq_pop(&g_q, &it)) emit_item(&it);
+        if (++tick >= WI_STATUS_EVERY) { tick = 0; write_status(); }
+        {
+            struct timespec ts;
+            ts.tv_sec = 0;
+            ts.tv_nsec = (long)WI_THREAD_TICK_MS * 1000000L;
+            nanosleep(&ts, NULL);
+        }
+    }
+    /* 退出前把队列里剩下的刷完（有界：最多 WQ_CAP 条） */
+    while (wq_pop(&g_q, &it)) emit_item(&it);
+    write_status();
+    __atomic_store_n(&g_thread_exited, 1, __ATOMIC_RELEASE);
+    slog("wakeinfo writer thread exiting (sent=%lu dropped=%llu)", GET(g_sent), wq_dropped(&g_q));
+    return NULL;
+}
+
+/* ---------------- 回调（原厂语音线程，必须极短） ---------------- */
+static void cb_on_start(uint32_t *r)
+{
+    wq_item it;
+    long long t0;
+    const void *info;
+
+    t0 = mono_us();
+    memset(&it, 0, sizeof(it));
+    it.seq = (unsigned)INC(g_seq);
+    it.pid = (int)getpid();
+    it.tid = (int)syscall(SYS_gettid);
+    it.args[0] = r[0];
+    it.args[1] = r[1];
+    it.args[2] = r[2];
+    it.args[3] = r[3];
+    info = (const void *)(uintptr_t)r[3];
+
+    if (info != NULL && (((uintptr_t)info & 3u) == 0)) {
+        int n = safe_read_self(it.raw, info, sizeof(it.raw));
+        if (n > 0) { it.bytes = n; INC(g_vm_ok); }
+        else       { it.bytes = 0; INC(g_vm_fail); }
+    } else {
+        it.bytes = 0;
+        INC(g_vm_fail);
+    }
+        it.t_ms = wall_ms();
+    it.cb_us = (unsigned)(mono_us() - t0);
+    {
+        unsigned long us = it.cb_us;
+        INC(g_cb_count);
+        __atomic_store_n(&g_cb_last_us, it.cb_us, __ATOMIC_RELAXED);
+        ADDU(g_cb_sum_us, (unsigned long long)us);
+        {
+            unsigned long mx = GET(g_cb_max_us);
+            while (us > mx &&
+                   !__atomic_compare_exchange_n(&g_cb_max_us, &mx, us, 0,
+                                                __ATOMIC_RELAXED, __ATOMIC_RELAXED)) {
+            }
+        }
+    }
+    (void)wq_push(&g_q, &it);
 }
 
 /* ---------------- ELF 解析（与 T6-01/T7-02 同一套做法） ---------------- */
@@ -434,8 +699,6 @@ static int build_stub_page(void)
     g_hook.tramp = (uint32_t)(uintptr_t)g_stub_page + 0x400;
     s = (uint32_t *)(uintptr_t)g_hook.stub;
 
-    /* push {r0,r1,r2,r3,r4,lr} / mov r0, sp / ldr r1,[pc,#0x10] / blx r1 /
-     * pop {r0,r1,r2,r3,r4,lr} / ldr pc,[pc,#-4] -> trampoline */
     s[0] = 0xE92D401Fu;
     s[1] = 0xE1A0000Du;
     s[2] = 0xE59F1010u;
@@ -479,36 +742,77 @@ static int install_one(wi_hook *h)
         return WI_E_PROT;
     }
     p = (uint32_t *)(uintptr_t)h->func;
-    p[0] = 0xE51FF004u;                 /* ldr pc, [pc, #-4] */
+    p[0] = 0xE51FF004u;
     p[1] = h->stub;
     __builtin___clear_cache((char *)h->func, (char *)(h->func + 8));
     h->hooked = 1;
     return 0;
 }
 
-static void restore_one(wi_hook *h)
+/* 写回原厂两条指令，并**回读校验**。
+ * T7-06-R1 现场教训：之前的实现 page_rwx 失败就静默 return，uninstall 仍然报成功，
+ * 结果入口还指着我们的 stub（下一次 install 直接 prologue 不符）。卸载不能伪报成功。 */
+static int restore_one(wi_hook *h)
 {
     uint32_t *p;
 
-    if (!h->hooked) return;
-    if (page_rwx(h->func) != 0) return;
+    if (h == NULL) return 0;
+    if (!h->hooked) return 0;
+    if (page_rwx(h->func) != 0) {
+        set_err("%s: mprotect(%08x) failed errno=%d", h->name, h->func, errno);
+        return -1;
+    }
     p = (uint32_t *)(uintptr_t)h->func;
     p[0] = h->orig[0];
     p[1] = h->orig[1];
     __builtin___clear_cache((char *)h->func, (char *)(h->func + 8));
+    if (p[0] != h->orig[0] || p[1] != h->orig[1]) {
+        set_err("%s: restore read-back %08x %08x != %08x %08x", h->name,
+                p[0], p[1], h->orig[0], h->orig[1]);
+        return -1;
+    }
     h->hooked = 0;
+    return 0;
 }
 
-/* ---------------- 导出 ABI（与 Injector 约定一致） ---------------- */
+/* 入口处是否还是我们的 patch（GROUND TRUTH；不看 g_patched 这个标志位） */
+static int entry_patched(void)
+{
+    const uint32_t *p;
+
+    if (g_hook.func == 0 || !g_hook.hooked) return 0;
+    p = (const uint32_t *)(uintptr_t)g_hook.func;
+    return (p[0] == 0xE51FF004u && p[1] == g_hook.stub) ? 1 : 0;
+}
+
+/* ---------------- 导出 ABI ---------------- */
 int tg_hook_prepare(void)
 {
     wi_mod m;
     uint32_t v;
 
-    mkdir("/data/local/tmp/t7", 0755);
-    mkdir(WI_DIR, 0755);
-
     if (g_state != WI_OK) return g_state;
+
+    g_uid = (int)getuid();
+    wq_init(&g_q);
+    if (pick_dir() != 0) {
+        g_state = WI_E_STORE;
+        return g_state;
+    }
+    g_fd = open_private_log(g_dir, WI_NAME_LOG, g_path_log, sizeof(g_path_log), &g_file_mode);
+    if (g_fd < 0) {
+        g_state = WI_E_STORE;
+        return g_state;
+    }
+    {
+        int smode = 0;
+        int sfd = open_private_log(g_dir, WI_NAME_STATUS, g_path_status, sizeof(g_path_status), &smode);
+        if (sfd >= 0) close(sfd);
+        else slog("status file open failed: %s", g_err);
+    }
+    slog("store ready: dir=%s uid=%d dir_mode=%04o file_mode=%04o", g_dir, g_uid,
+         g_dir_mode, g_file_mode);
+
     memset(&m, 0, sizeof(m));
     dl_iterate_phdr(mod_cb, &m);
     if (!m.found) {
@@ -524,8 +828,27 @@ int tg_hook_prepare(void)
         return g_state;
     }
     g_hook.func = v;
-    g_hook.orig[0] = *(const uint32_t *)(uintptr_t)(v + 0);
-    g_hook.orig[1] = *(const uint32_t *)(uintptr_t)(v + 4);
+    {
+        const uint32_t *cp = (const uint32_t *)(uintptr_t)v;
+        uint32_t c0 = cp[0], c1 = cp[1];
+
+        /* 若上一次 uninstall 没还原成功（入口还指着我们的 stub），先用仍在内存里的
+         * 原始字节自愈，否则接下来 install 会因为 "prologue 不符" 被拒绝。 */
+        if (g_hook.hooked && c0 == 0xE51FF004u && c1 == g_hook.stub && g_hook.orig[0] != 0) {
+            if (page_rwx(v) == 0) {
+                uint32_t *wp = (uint32_t *)(uintptr_t)v;
+                wp[0] = g_hook.orig[0];
+                wp[1] = g_hook.orig[1];
+                __builtin___clear_cache((char *)v, (char *)(v + 8));
+                slog("recovered stale patch at %08x before reinstall", v);
+                c0 = wp[0];
+                c1 = wp[1];
+                g_hook.hooked = 0;
+            }
+        }
+        g_hook.orig[0] = c0;
+        g_hook.orig[1] = c1;
+    }
     g_hook.pro[0] = PRO_ON_START[0];
     g_hook.pro[1] = PRO_ON_START[1];
     slog("resolved %s @ %08x (offset 0x%x) prologue %08x %08x", g_hook.name, v,
@@ -533,8 +856,7 @@ int tg_hook_prepare(void)
     return WI_OK;
 }
 
-/* Injector 用 lo/hi 组成"被改写的字节区间" [lo, hi)，并在停线程期间对该区间做校验。
- * 本库只有一个 hook、只改入口 8 字节，所以 hi = func + 8（Injector 要求 hi > lo）。 */
+/* Injector 用 lo/hi 组成被改写的字节区间 [lo, hi)，单 hook 只改入口 8 字节。 */
 int tg_hook_patch_lo(void) { return (int)g_hook.func; }
 int tg_hook_patch_hi(void) { return (int)(g_hook.func + 8); }
 
@@ -546,40 +868,102 @@ int tg_hook_install(void)
     if (g_patched) return WI_OK;
     rc = build_stub_page();
     if (rc != 0) { g_state = rc; return rc; }
+
+    /* 先把后台线程拉起来：装 hook 之前就位，避免首批快照没人收 */
+    __atomic_store_n(&g_run, 1, __ATOMIC_RELEASE);
+    if (pthread_create(&g_thread, NULL, wi_thread, NULL) != 0) {
+        __atomic_store_n(&g_run, 0, __ATOMIC_RELEASE);
+        set_err("pthread_create failed");
+        g_state = WI_E_THREAD;
+        return g_state;
+    }
+    g_thread_started = 1;
+
     rc = install_one(&g_hook);
-    if (rc != 0) { g_state = rc; return rc; }
+    if (rc != 0) {
+        __atomic_store_n(&g_run, 0, __ATOMIC_RELEASE);
+        pthread_join(g_thread, NULL);
+        g_thread_started = 0;
+        g_state = rc;
+        return rc;
+    }
     g_patched = 1;
-    slog("hooked %s @ %08x stub=%08x tramp=%08x (read-only snapshot)",
-         g_hook.name, g_hook.func, g_hook.stub, g_hook.tramp);
-    write_status(0);
+    slog("hooked %s @ %08x stub=%08x tramp=%08x (queue=%d, writer thread up)",
+         g_hook.name, g_hook.func, g_hook.stub, g_hook.tramp, WQ_CAP);
+    write_status();
     return WI_OK;
 }
 
+/*
+ * 停止接收新快照 -> 让后台线程把队列刷完并退出。
+ *
+ * 注意：Injector 执行 uninstall 时会把其它线程都挂起，这时候 pthread_join 会一直等下去
+ * （被挂起的线程没法跑）。所以这里只做**有界等待**（最多 200 ms），超时就 detach，
+ * 让它在恢复运行后自己退出；状态里的 thread_exited 会如实反映结果。
+ */
 int tg_hook_uninstall(void)
 {
-    restore_one(&g_hook);
+    int i;
+    int rc;
+
+    rc = restore_one(&g_hook);         /* 先停入口，保证不再有新快照 */
+    if (rc != 0) {
+        /* 还原失败：保持 hooked=1 如实上报，绝不伪报 "uninstalled" */
+        slog("uninstall FAILED: %s", g_err);
+        write_status();
+        return WI_E_PROT;
+    }
     g_patched = 0;
+    __atomic_store_n(&g_run, 0, __ATOMIC_RELEASE);
+
+    if (g_thread_started) {
+        for (i = 0; i < 200; i++) {
+            if (__atomic_load_n(&g_thread_exited, __ATOMIC_ACQUIRE)) break;
+            {
+                struct timespec ts;
+                ts.tv_sec = 0;
+                ts.tv_nsec = 1000000L;
+                nanosleep(&ts, NULL);
+            }
+        }
+        if (__atomic_load_n(&g_thread_exited, __ATOMIC_ACQUIRE)) {
+            pthread_join(g_thread, NULL);
+            slog("writer thread joined (sent=%lu)", GET(g_sent));
+        } else {
+            pthread_detach(g_thread);
+            slog("writer thread still running at uninstall; detached (will flush and exit)");
+        }
+        g_thread_started = 0;
+    }
+    write_status();
+    if (g_fd >= 0) { close(g_fd); g_fd = -1; }
     return WI_OK;
 }
 
 int tg_hook_status(void) { return g_state; }
 const char *tg_hook_last_error(void) { return g_err; }
 int tg_hook_is_initialized(void) { return (g_state == WI_OK) ? 1 : 0; }
-int tg_hook_hooked(void) { return g_patched ? 1 : 0; }
+int tg_hook_hooked(void) { return entry_patched() ? 1 : 0; }
 
 const char *tg_hook_stats(void)
 {
-    static char buf[320];
+    static char buf[430];
+    unsigned long cb_n = GET(g_cb_count);
+    unsigned long cb_avg = (cb_n > 0) ? (unsigned long)(GET(g_cb_sum_us) / cb_n) : 0;
 
     snprintf(buf, sizeof(buf),
-             "state=%d hooked=%d calls=%lu unreadable=%lu null_api=%lu bad_wake_type=%lu "
-             "probe_ok=%lu func=%08x",
-             g_state, g_patched ? 1 : 0, GET(g_c_calls), GET(g_c_unreadable),
-             GET(g_c_null), GET(g_c_badtype), GET(g_c_probe_ok), g_hook.func);
+             "state=%d hooked=%d calls=%lu queued=%lu sent=%lu depth=%llu max_depth=%llu "
+             "dropped=%llu write_errors=%lu cb_us_last=%lu cb_us_max=%lu cb_us_avg=%lu "
+             "vm_ok=%lu vm_fail=%lu thread=%d exited=%d uid=%d dir=%s func=%08x",
+             g_state, g_patched ? 1 : 0, cb_n, (unsigned long)wq_depth(&g_q), GET(g_sent),
+             wq_depth(&g_q), wq_max_depth(&g_q), wq_dropped(&g_q), GET(g_write_errors),
+             GET(g_cb_last_us), GET(g_cb_max_us), cb_avg, GET(g_vm_ok), GET(g_vm_fail),
+             g_thread_started, GET(g_thread_exited), g_uid, g_dir, g_hook.func);
     return buf;
 }
 
 __attribute__((constructor)) static void wi_ctor(void)
 {
-    slog("libtg_wakeinfo.so loaded (pid=%d); waiting for tg_hook_install()", (int)getpid());
+    slog("libtg_wakeinfo.so loaded (pid=%d uid=%d); waiting for tg_hook_install()",
+         (int)getpid(), (int)getuid());
 }

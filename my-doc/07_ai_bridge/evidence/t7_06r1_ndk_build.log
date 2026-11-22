@@ -1,0 +1,85 @@
+﻿# T7-06 NDK build log (libtg_wakeinfo: read-only _WakeUpInfo_ snapshot)
+# time: 2026-11-22 12:37:02
+# ndk : D:\tgz02\OS\_analysis\tools\android-ndk-r21e
+# cc  : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd
+
+# cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -fPIC -shared -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\libtg_wakeinfo.so D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_wake\libtg_wakeinfo.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_wake\wake_queue.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_wake\wake_store.c -llog
+(no compiler output: 0 warning, 0 error)
+exit: 0
+artifact: libtg_wakeinfo.so  71892 B  sha256=001b27d13b80e295d0e77b768757e41e8286ec23a4297c21184ada18895d5781
+# --- readelf -h ---
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              DYN (Shared object file)
+  Machine:                           ARM
+  Version:                           0x1
+  Entry point address:               0x0
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          70452 (bytes into file)
+  Flags:                             0x5000200, Version5 EABI, soft-float ABI
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         8
+  Size of section headers:           40 (bytes)
+  Number of section headers:         36
+  Section header string table index: 35
+# --- readelf -d ---
+
+Dynamic section at offset 0x6d84 contains 28 entries:
+  Tag        Type                         Name/Value
+ 0x00000003 (PLTGOT)                     0x7ea8
+ 0x00000002 (PLTRELSZ)                   664 (bytes)
+ 0x00000017 (JMPREL)                     0x1620
+ 0x00000014 (PLTREL)                     REL
+ 0x00000011 (REL)                        0x15b8
+ 0x00000012 (RELSZ)                      104 (bytes)
+ 0x00000013 (RELENT)                     8 (bytes)
+ 0x6ffffffa (RELCOUNT)                   8
+ 0x00000006 (SYMTAB)                     0x1cc
+ 0x0000000b (SYMENT)                     16 (bytes)
+ 0x00000005 (STRTAB)                     0x9ac
+ 0x0000000a (STRSZ)                      2060 (bytes)
+ 0x6ffffef5 (GNU_HASH)                   0x11b8
+ 0x00000001 (NEEDED)                     Shared library: [liblog.so]
+ 0x00000001 (NEEDED)                     Shared library: [libdl.so]
+ 0x00000001 (NEEDED)                     Shared library: [libc.so]
+ 0x0000001a (FINI_ARRAY)                 0x7d78
+ 0x0000001c (FINI_ARRAYSZ)               8 (bytes)
+ 0x00000019 (INIT_ARRAY)                 0x7d80
+ 0x0000001b (INIT_ARRAYSZ)               4 (bytes)
+ 0x0000001e (FLAGS)                      BIND_NOW
+ 0x6ffffffb (FLAGS_1)                    Flags: NOW
+ 0x6ffffff0 (VERSYM)                     0x1450
+ 0x6ffffffc (VERDEF)                     0x154c
+ 0x6ffffffd (VERDEFNUM)                  1
+ 0x6ffffffe (VERNEED)                    0x1568
+ 0x6fffffff (VERNEEDNUM)                 2
+ 0x00000000 (NULL)                       0x0
+# --- exported tg_hook_* ---
+    54: 00003208   504 FUNC    GLOBAL DEFAULT   11 tg_hook_stats
+    57: 00001d10  1584 FUNC    GLOBAL DEFAULT   11 tg_hook_prepare
+    63: 0000317c    16 FUNC    GLOBAL DEFAULT   11 tg_hook_status
+    82: 00002780   912 FUNC    GLOBAL DEFAULT   11 tg_hook_install
+    83: 00002f44   568 FUNC    GLOBAL DEFAULT   11 tg_hook_uninstall
+    86: 0000318c    16 FUNC    GLOBAL DEFAULT   11 tg_hook_last_error
+    97: 000031b4    84 FUNC    GLOBAL DEFAULT   11 tg_hook_hooked
+   106: 00002768    24 FUNC    GLOBAL DEFAULT   11 tg_hook_patch_hi
+   114: 00002754    20 FUNC    GLOBAL DEFAULT   11 tg_hook_patch_lo
+   119: 0000319c    24 FUNC    GLOBAL DEFAULT   11 tg_hook_is_initialized
+    94: 00009888   430 OBJECT  LOCAL  DEFAULT   21 tg_hook_stats.buf
+   205: 000031b4    84 FUNC    GLOBAL DEFAULT   11 tg_hook_hooked
+   206: 00002780   912 FUNC    GLOBAL DEFAULT   11 tg_hook_install
+   207: 0000319c    24 FUNC    GLOBAL DEFAULT   11 tg_hook_is_initialized
+   208: 0000318c    16 FUNC    GLOBAL DEFAULT   11 tg_hook_last_error
+   209: 00002768    24 FUNC    GLOBAL DEFAULT   11 tg_hook_patch_hi
+   210: 00002754    20 FUNC    GLOBAL DEFAULT   11 tg_hook_patch_lo
+   211: 00001d10  1584 FUNC    GLOBAL DEFAULT   11 tg_hook_prepare
+   212: 00003208   504 FUNC    GLOBAL DEFAULT   11 tg_hook_stats
+   213: 0000317c    16 FUNC    GLOBAL DEFAULT   11 tg_hook_status
+   214: 00002f44   568 FUNC    GLOBAL DEFAULT   11 tg_hook_uninstall
+# result: OK (0 warning, 0 error, ELF32/ARM, dynamically linked)
