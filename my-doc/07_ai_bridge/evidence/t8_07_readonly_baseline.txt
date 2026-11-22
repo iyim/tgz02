@@ -1,0 +1,102 @@
+# T8-07 phase-A read-only baseline (no injection, no ptrace write, no config change)
+# host time: 2026-11-22 19:29:55
+
+### device
+$ adb shell "getprop ro.product.model; getprop ro.build.version.release; getprop ro.build.version.sdk; getenforce"
+AILABS_S1L
+6.1.8-RS-20221104.1459
+27
+Permissive
+
+### processes
+$ adb shell "ps -A -o PID,PPID,ARGS | grep -E 'genie.smartapp|ai_worker|tg_supervisor|tts_supervisor' | grep -v grep"
+  279     1 tg_supervisor --pidfile /data/local/tmp/t6/tg_supervisor.pid --log /data/local/tmp/t6/supervisor.log
+  913   281 com.alibaba.ailabs.genie.smartapp
+ 1237   281 com.alibaba.ailabs.genie.smartapp:business
+ 3468     1 ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts
+ 4685     1 tg_supervisor --injector /data/local/tmp/t6/tg_injector --so /data/local/tmp/t7/libtg_ttsguard.so --name com.alibaba.ailabs.genie.smartapp:core --pidfile /data/local/tmp/t7/ttsguard.sup.pid --log /data/local/tmp/t7/ttsguard.sup.log
+ 8342   281 com.alibaba.ailabs.genie.smartapp:core
+17253     1 sh /data/local/tmp/t5_bridge/tts_supervisor.sh
+
+### core maps (root, read-only)
+$ adb shell "su -c 'cat /proc/8342/maps' | grep -E 'libsmartbox|libtg_hook|libtg_ttsguard'"
+938f6000-938fa000 r-xp 00000000 b3:16 86583      /data/local/tmp/t7/libtg_ttsguard.so
+938fa000-938fb000 r--p 00003000 b3:16 86583      /data/local/tmp/t7/libtg_ttsguard.so
+9655e000-96563000 r-xp 00000000 b3:16 78644      /data/local/tmp/t6/libtg_hook.so
+96563000-96564000 r--p 00004000 b3:16 78644      /data/local/tmp/t6/libtg_hook.so
+96564000-96565000 rw-p 00005000 b3:16 78644      /data/local/tmp/t6/libtg_hook.so
+97d05000-97e18000 r-xp 00000000 b3:13 485        /system/app/smartapp/lib/arm/libsmartbox.so
+97e18000-97e19000 r-xp 00113000 b3:13 485        /system/app/smartapp/lib/arm/libsmartbox.so
+97e19000-97e24000 r-xp 00114000 b3:13 485        /system/app/smartapp/lib/arm/libsmartbox.so
+97e24000-97e25000 r-xp 0011f000 b3:13 485        /system/app/smartapp/lib/arm/libsmartbox.so
+97e25000-97ef0000 r-xp 00120000 b3:13 485        /system/app/smartapp/lib/arm/libsmartbox.so
+97ef0000-97ef8000 r--p 001ea000 b3:13 485        /system/app/smartapp/lib/arm/libsmartbox.so
+97ef8000-97efa000 rw-p 001f2000 b3:13 485        /system/app/smartapp/lib/arm/libsmartbox.so
+
+### on-disk factory prologues
+$ adb shell "su -c 'dd if=/system/app/smartapp/lib/arm/libsmartbox.so bs=1 skip=1127740 count=8 2>/dev/null | od -An -tx4; dd if=/system/app/smartapp/lib/arm/libsmartbox.so bs=1 skip=1150652 count=8 2>/dev/null | od -An -tx4'"
+    e92d4ff0    e28db01c
+    e92d4ff0    e28db01c
+
+### deployed artifacts
+$ adb shell "su -c 'ls -l /data/local/tmp/t6/libtg_hook.so /data/local/tmp/t6/tg_injector /data/local/tmp/t7/libtg_ttsguard.so'"
+-rwxr-xr-x 1 root  root  27384 2026-11-21 16:22 /data/local/tmp/t6/libtg_hook.so
+-rwxr-xr-x 1 root  root  71884 2026-11-21 16:22 /data/local/tmp/t6/tg_injector
+-rw-r--r-- 1 shell shell 23008 2026-11-22 11:16 /data/local/tmp/t7/libtg_ttsguard.so
+
+### artifact hashes
+$ adb shell "su -c 'sha256sum /data/local/tmp/t6/libtg_hook.so /data/local/tmp/t6/tg_injector /data/local/tmp/t7/libtg_ttsguard.so'"
+b838a731392938b0038355c3ee42af7870e6db4d4b35ef0c78d2dc36c07e67b6  /data/local/tmp/t6/libtg_hook.so
+4d13af84d4c04898f7dd59668e5a38354c4a4b6a202a7b1477ef077323e9f677  /data/local/tmp/t6/tg_injector
+6d989d8d3ea4e89491dd5348c1b1e70a965b62626fc01acf062e2d8dd983b842  /data/local/tmp/t7/libtg_ttsguard.so
+
+### live entry bytes: not readable without attaching
+$ adb shell "su -c 'dd if=/proc/8342/mem bs=1 skip=2549167420 count=8'"
+dd: /proc/8342/mem: I/O error   (0+0 records in)
+# -> reading another process's code bytes needs PTRACE_MODE_ATTACH;
+#    phase A therefore verifies the FACTORY bytes from the on-disk .so (above),
+#    and the CURRENT (possibly patched) bytes only via a ptrace attach (not read-only).
+
+### deployed library: which NLU exports exist?
+$ adb pull /data/local/tmp/t6/libtg_hook.so -> _analysis/tmp/deployed_libtg_hook.so
+$ nm --defined-only deployed_libtg_hook.so | grep tg_
+00002eb8 t tg_ctor
+000030c4 T tg_fnv1a32
+000030f8 T tg_frame_pack
+000031d8 T tg_hdr_decode
+00002c84 T tg_hook_hooked
+00001bb0 T tg_hook_install
+00002c6c T tg_hook_is_initialized
+00002c5c T tg_hook_last_error
+00001b98 T tg_hook_patch_hi
+00001b88 T tg_hook_patch_lo
+000015e4 T tg_hook_prepare
+00002c9c T tg_hook_stats
+00002c4c T tg_hook_status
+00000f60 T tg_hook_uninstall
+00003268 T tg_json_escape
+0000334c T tg_json_str_field
+00001294 t tg_onstream_cb
+00003774 T tg_utf8_ok
+# -> NO tg_nlu_* symbol: this deployed library predates T8-05, so every
+#    --nlu-* command would exit 18 ("libtg_hook.so has no tg_nlu_* exports").
+
+### deployed injector: which subcommands exist?
+$ adb pull /data/local/tmp/t6/tg_injector -> _analysis/tmp/deployed_tg_injector
+$ llvm-strings deployed_tg_injector | grep -E 'usage: |nlu'
+usage: %s [--pid N | --name PROC] --so /path/libtg_hook.so [--check|--uninstall] [--fault NAME] [--verbose]
+# -> the deployed injector has NO --nlu-* option: it is the T6 build.
+
+### worker / bridge health files (read-only)
+$ adb shell cat /data/local/tmp/t5_bridge/work/bridge_status.json
+{"state":"running","pid":2586,"sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","events_stored":47,"duplicates":0,"rejected":0,"frames":47,"clients":1,"clients_accepted":1,"clients_closed":0,"client_aborts":0,"client_overflow":0,"frame_errors":0,"store_errors":0,"replay_lines":540,"bad_lines":0,"truncated_bytes":0,"dedup_size":587,"dedup_evicted":0,"store_failed":false,"updated_at":"2026-11-22T19:30:44"}
+
+$ adb shell su -c 'tail -3 /data/local/tmp/t6/supervisor.log'
+inj| [inject] RESULT ok pid=8342 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-22 13:24:27.041 sup: inject end: pid=8342 exit=0 hooked=1 elapsed=211ms ok
+
+$ adb shell su -c 'tail -3 /data/local/tmp/t7/ttsguard.sup.log'
+inj| [inject] detached (target thread resumed)
+2026-11-22 17:15:46.903 sup: check done: pid=8342 exit=0 hooked=1 state=hooked
+2026-11-22 17:15:46.903 sup: already hooked: pid=8342 (state=1); skip install
