@@ -1,0 +1,14 @@
+=== uname
+Linux t8-12-9-tsan 6.18.18.c1126-trim #1126 SMP PREEMPT_DYNAMIC Wed Sep 16 02:05:34 UTC 2026 x86_64 GNU/Linux
+=== arch
+x86_64
+=== cpus
+12
+=== os
+PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+=== date
+Sun Nov 22 15:22:55 UTC 2026
+=== mirror
+URIs: http://mirrors.aliyun.com/debian
+URIs: http://mirrors.aliyun.com/debian-security

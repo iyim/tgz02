@@ -1,0 +1,99 @@
+T8-12.9  ThreadSanitizer run on the NAS (Linux) - environment, commands, results
+=============================================================================
+
+Why here: the Windows host toolchain (TDM-GCC 10.3.0 / mingw-w64) ships no
+sanitizer runtime at all (`ld.exe: cannot find -ltsan`), and this box has no
+WSL distro, no clang, no container runtime (see ../t8-12-p8/tsan_unavailable.txt).
+The user's NAS is a Linux machine, so the TSan run was done there.
+
+Where:   /vol2/1000/t8_12_9_tsan/  on the NAS (dedicated folder, created for this)
+         v3 = first complete run (still had the stack-frame bug, see below)
+         v4 = final run, this directory's contents
+Reach:   docker container (debian:bookworm-slim) with the folder bind-mounted
+         at /work.  Nothing was installed on the NAS host itself.
+Collect: read back over SSH (scp); the fnOS CLI deliberately redacts the
+         `file download-url` URI, so the file API could not be used for reads.
+
+Environment (nas-tsan/host.txt, gcc_version.txt)
+------------------------------------------------
+kernel   Linux 6.18.18.c1126-trim #1126 SMP PREEMPT_DYNAMIC x86_64
+distro   Debian GNU/Linux 12 (bookworm)
+cpus     12
+gcc      gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+libtsan  /usr/lib/x86_64-linux-gnu/libtsan.so.2 -> libtsan.so.2.0.0 (7991864 bytes)
+time     Sun Nov 22 15:19:23 UTC 2026
+
+Commands (exactly as executed inside the container)
+---------------------------------------------------
+  gcc -O1 -Wall -Wextra -std=c99 -pthread -o model_plain t8_12_9_lifecycle_model.c
+  gcc -O1 -Wall -Wextra -std=c99          -o fsm_plain   t8_12_9_install_fsm.c
+  gcc -fsanitize=thread -g -O1 -std=c99 -pthread -o model_tsan t8_12_9_lifecycle_model.c
+  gcc -fsanitize=thread -g -O1 -std=c99          -o fsm_tsan   t8_12_9_install_fsm.c
+  export TSAN_OPTIONS="halt_on_error=0 exitcode=66 history_size=4"
+  ./model_tsan                    > tsan_normal.txt
+  ./model_tsan --race-true        > tsan_race_true.txt        # positive control
+  ./model_tsan --race-control     > tsan_race_control.txt
+  ./model_tsan --create-fail 2    > tsan_create_fail.txt
+  ./model_tsan --join-fail 1      > tsan_join_fail.txt
+  ./model_tsan --join-abandon 1   > tsan_join_abandon.txt
+  ./fsm_tsan                      > fsm_tsan_run.txt
+  (same six runs again with model_plain / fsm_plain)
+
+Results
+-------
+file                     RESULT                            exit  TSan race warnings
+tsan_normal              PASS (checks=71  fails=0)         0     0
+tsan_race_true           PASS (checks=71  fails=0)         66    1     <- TSan works
+tsan_race_control        FAIL (checks=71  fails=1)         1     0
+tsan_create_fail         INCOMPLETE (checks=60 fails=0)    2     0
+tsan_join_fail           INCOMPLETE (checks=59 fails=0)    2     0
+tsan_join_abandon        INCOMPLETE (checks=59 fails=0)    2     0
+fsm_tsan_run             PASS (checks=551 fails=0)         0     0
+
+plain_normal             PASS (checks=71  fails=0)         0
+plain_race_true          FAIL (checks=71  fails=1)         1     (lost updates only)
+plain_race_control       FAIL (checks=71  fails=1)         1     (lost updates only)
+plain_create_fail        INCOMPLETE (checks=60 fails=0)    2
+plain_join_fail          INCOMPLETE (checks=59 fails=0)    2
+plain_join_abandon       INCOMPLETE (checks=59 fails=0)    2
+fsm_normal               PASS (checks=551 fails=0)         0
+
+How to read the two controls
+----------------------------
+* tsan_race_true is the control that proves the tool is alive.  It adds one
+  deliberately unsynchronised store (`s->now = s->now + 1` from four threads).
+  TSan answered with exactly one report:
+
+    WARNING: ThreadSanitizer: data race (pid=193)
+      Read of size 8 at 0x7b8800000008 by thread T1 (mutexes: write M2):
+        #0 alloc_locked  t8_12_9_lifecycle_model.c:229
+        #1 on_final      t8_12_9_lifecycle_model.c:299
+        #2 worker        t8_12_9_lifecycle_model.c:638
+      Previous write of size 8 at 0x7b8800000008 by thread T2:
+        #0 clock_tick_worker  t8_12_9_lifecycle_model.c:197
+        #1 worker             t8_12_9_lifecycle_model.c:658
+
+  Therefore "0 warnings" in tsan_normal is falsifiable, not vacuous.
+
+* tsan_race_control splits one atomic increment into read + write-back, both
+  still under the mutex.  It loses updates but is NOT a data race, so TSan
+  correctly reports 0.  That is the whole point: the count identity is a
+  different oracle (logical lost updates) from TSan (unsynchronised accesses),
+  and a lost-update control cannot substitute for either.
+
+Bug found during this run and fixed
+-----------------------------------
+v3_join_abandon_before_fix.txt is the pre-fix log: `--join-abandon` printed
+INCOMPLETE and then died with SIGSEGV (EXIT=139, core dumped).  Cause: the four
+worker structs lived in `scenario_concurrent`'s stack frame, the abandoned
+threads kept incrementing their own counters, and the frame was reused after the
+function returned -> writes into a dead frame.  Fix: `static worker_t w[4]`
+(and the state was already heap-allocated).  v4 exits 2 on both platforms.
+
+Scope limits
+------------
+* TSan validates the *host model* of the session table, not libsmartbox.so on
+  the ARM32 device.  No Android/ARM32 TSan run was attempted and none of this
+  is a device result.
+* The on-change production code is still unchanged: the model is the only thing
+  instrumented here.

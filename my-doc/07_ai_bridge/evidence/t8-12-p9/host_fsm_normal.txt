@@ -1,0 +1,613 @@
+=== T8-12.9 three-point install transaction + freeze/resume lifecycle ===
+
+[S0] no fault
+      points: SessionDispatch::onNlpResult | SessionDispatch::onNlpResultInner | SessionDispatch::onPushNlpResult
+  [PASS] install_all returns 0
+  [PASS] final state DONE (DONE)
+  [PASS] verdict SUCCESS (SUCCESS)
+  [PASS] exactly 6 word stores (2 per point), got 6
+  [PASS] per-point and group readback both ran (12 word reads)
+  [PASS] froze once and resumed once (freeze=1 resume=1)
+  [PASS] point 0 patched and applied
+  [PASS] point 1 patched and applied
+  [PASS] point 2 patched and applied
+  [PASS] [S0] I5 half-install reported as success count is 0
+  [PASS] [S0] I6 freeze happened at most once (1)
+  [PASS] [S0] I6 resume happened at most once (1)
+  [PASS] [S0] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S0] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S0] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S0] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S0] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S0] I7 group readback(4) happened before resume(5)
+  [PASS] [S0] I1 SUCCESS => all 3 entries read back as patched
+  [PASS] [S0] I1 SUCCESS => no entry mixes patched and original words
+  [PASS] [S0] I1 SUCCESS => threads were resumed
+  [PASS] [S0] I1 SUCCESS => threads were frozen first
+
+[S1.0] precheck: entry 0 does not hold the expected original bytes
+  [PASS] install_all returns non-zero
+  [PASS] state stays PRECHECK (PRECHECK)
+  [PASS] zero word stores were attempted (0)
+  [PASS] all entries still original
+  [PASS] [S1] I5 half-install reported as success count is 0
+  [PASS] [S1] I6 freeze happened at most once (0)
+  [PASS] [S1] I6 resume happened at most once (0)
+  [PASS] [S1] I6 resume never precedes freeze (freeze=0 resume=0)
+  [PASS] [S1] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S1] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S1] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S1.1] precheck: entry 1 does not hold the expected original bytes
+  [PASS] install_all returns non-zero
+  [PASS] state stays PRECHECK (PRECHECK)
+  [PASS] zero word stores were attempted (0)
+  [PASS] all entries still original
+  [PASS] [S1] I5 half-install reported as success count is 0
+  [PASS] [S1] I6 freeze happened at most once (0)
+  [PASS] [S1] I6 resume happened at most once (0)
+  [PASS] [S1] I6 resume never precedes freeze (freeze=0 resume=0)
+  [PASS] [S1] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S1] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S1] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S1.2] precheck: entry 2 does not hold the expected original bytes
+  [PASS] install_all returns non-zero
+  [PASS] state stays PRECHECK (PRECHECK)
+  [PASS] zero word stores were attempted (0)
+  [PASS] all entries still original
+  [PASS] [S1] I5 half-install reported as success count is 0
+  [PASS] [S1] I6 freeze happened at most once (0)
+  [PASS] [S1] I6 resume happened at most once (0)
+  [PASS] [S1] I6 resume never precedes freeze (freeze=0 resume=0)
+  [PASS] [S1] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S1] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S1] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S1f] freeze failure (attach failed before any thread was stopped)
+  [PASS] install_all returns non-zero
+  [PASS] final state FAILED, precheck passed and freeze then failed (FAILED)
+  [PASS] zero word stores were attempted (0)
+  [PASS] all entries still original
+  [PASS] freeze attempted once, nothing stopped (froze=0)
+  [PASS] nothing to resume (resume_count=0)
+  [PASS] verdict INSTALL_FAILED (INSTALL_FAILED)
+  [PASS] [S1f] I5 half-install reported as success count is 0
+  [PASS] [S1f] I6 freeze happened at most once (1)
+  [PASS] [S1f] I6 resume happened at most once (0)
+  [PASS] [S1f] I6 resume never precedes freeze (freeze=1 resume=0)
+  [PASS] [S1f] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S1f] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S1f] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S1q] freeze partially succeeds, then attach fails
+  [PASS] install_all returns non-zero
+  [PASS] zero word stores were attempted (0)
+  [PASS] some threads were stopped before the failure (froze=1)
+  [PASS] the partially frozen threads were resumed exactly once (1)
+  [PASS] verdict INSTALL_FAILED, not SUCCESS (INSTALL_FAILED)
+  [PASS] all entries still original
+  [PASS] [S1q] I5 half-install reported as success count is 0
+  [PASS] [S1q] I6 freeze happened at most once (1)
+  [PASS] [S1q] I6 resume happened at most once (1)
+  [PASS] [S1q] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S1q] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S1q] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S1q] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S1q] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S1p.0] frozen, and a stopped PC sits inside entry 0
+  [PASS] install_all returns non-zero
+  [PASS] zero word stores were attempted (0)
+  [PASS] all entries still original
+  [PASS] frozen once, resumed once (freeze=1 resume=1)
+  [PASS] verdict INSTALL_FAILED (INSTALL_FAILED)
+  [PASS] [S1p] I5 half-install reported as success count is 0
+  [PASS] [S1p] I6 freeze happened at most once (1)
+  [PASS] [S1p] I6 resume happened at most once (1)
+  [PASS] [S1p] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S1p] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S1p] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S1p] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S1p] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S1p] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S1p.1] frozen, and a stopped PC sits inside entry 1
+  [PASS] install_all returns non-zero
+  [PASS] zero word stores were attempted (0)
+  [PASS] all entries still original
+  [PASS] frozen once, resumed once (freeze=1 resume=1)
+  [PASS] verdict INSTALL_FAILED (INSTALL_FAILED)
+  [PASS] [S1p] I5 half-install reported as success count is 0
+  [PASS] [S1p] I6 freeze happened at most once (1)
+  [PASS] [S1p] I6 resume happened at most once (1)
+  [PASS] [S1p] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S1p] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S1p] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S1p] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S1p] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S1p] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S1p.2] frozen, and a stopped PC sits inside entry 2
+  [PASS] install_all returns non-zero
+  [PASS] zero word stores were attempted (0)
+  [PASS] all entries still original
+  [PASS] frozen once, resumed once (freeze=1 resume=1)
+  [PASS] verdict INSTALL_FAILED (INSTALL_FAILED)
+  [PASS] [S1p] I5 half-install reported as success count is 0
+  [PASS] [S1p] I6 freeze happened at most once (1)
+  [PASS] [S1p] I6 resume happened at most once (1)
+  [PASS] [S1p] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S1p] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S1p] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S1p] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S1p] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S1p] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S2.0] word 0 store at point 0 fails (nothing written at that point)
+  [PASS] install_all returns non-zero
+  [PASS] final state FAILED (FAILED)
+  [PASS] point 0 untouched (word 0 never written)
+  [PASS] every entry restored to the original bytes
+  [PASS] applied[0] stays 0
+  [PASS] [S2] I5 half-install reported as success count is 0
+  [PASS] [S2] I6 freeze happened at most once (1)
+  [PASS] [S2] I6 resume happened at most once (1)
+  [PASS] [S2] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S2] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S2] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S2] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S2] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S2] I7 rollback finished(4) before resume(5)
+  [PASS] [S2] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S2] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S2.1] word 0 store at point 1 fails (nothing written at that point)
+  [PASS] install_all returns non-zero
+  [PASS] final state FAILED (FAILED)
+  [PASS] point 1 untouched (word 0 never written)
+  [PASS] every entry restored to the original bytes
+  [PASS] applied[1] stays 0
+  [PASS] [S2] I5 half-install reported as success count is 0
+  [PASS] [S2] I6 freeze happened at most once (1)
+  [PASS] [S2] I6 resume happened at most once (1)
+  [PASS] [S2] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S2] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S2] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S2] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S2] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S2] I7 rollback finished(4) before resume(5)
+  [PASS] [S2] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S2] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S2.2] word 0 store at point 2 fails (nothing written at that point)
+  [PASS] install_all returns non-zero
+  [PASS] final state FAILED (FAILED)
+  [PASS] point 2 untouched (word 0 never written)
+  [PASS] every entry restored to the original bytes
+  [PASS] applied[2] stays 0
+  [PASS] [S2] I5 half-install reported as success count is 0
+  [PASS] [S2] I6 freeze happened at most once (1)
+  [PASS] [S2] I6 resume happened at most once (1)
+  [PASS] [S2] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S2] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S2] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S2] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S2] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S2] I7 rollback finished(4) before resume(5)
+  [PASS] [S2] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S2] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S3.0] word 0 OK, word 1 store at point 0 fails -> partial patch
+  [PASS] install_all returns non-zero
+  [PASS] applied[0] is still 0 (the flag never got set)
+  [PASS] at rollback entry point 0 really was half written (0xE51FF004 | 0xE28DB01C)
+  [PASS] rollback did NOT skip the half-written point (restore_writes=2, needed >= 2)
+  [PASS] final state FAILED (FAILED)
+  [PASS] all 6 words are byte-identical to the original after rollback
+  [PASS] [S3] I5 half-install reported as success count is 0
+  [PASS] [S3] I6 freeze happened at most once (1)
+  [PASS] [S3] I6 resume happened at most once (1)
+  [PASS] [S3] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S3] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S3] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S3] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S3] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S3] I7 rollback finished(4) before resume(5)
+  [PASS] [S3] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S3] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S3.1] word 0 OK, word 1 store at point 1 fails -> partial patch
+  [PASS] install_all returns non-zero
+  [PASS] applied[1] is still 0 (the flag never got set)
+  [PASS] at rollback entry point 1 really was half written (0xE51FF004 | 0xE28DB010)
+  [PASS] rollback did NOT skip the half-written point (restore_writes=4, needed >= 4)
+  [PASS] final state FAILED (FAILED)
+  [PASS] all 6 words are byte-identical to the original after rollback
+  [PASS] [S3] I5 half-install reported as success count is 0
+  [PASS] [S3] I6 freeze happened at most once (1)
+  [PASS] [S3] I6 resume happened at most once (1)
+  [PASS] [S3] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S3] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S3] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S3] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S3] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S3] I7 rollback finished(4) before resume(5)
+  [PASS] [S3] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S3] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S3.2] word 0 OK, word 1 store at point 2 fails -> partial patch
+  [PASS] install_all returns non-zero
+  [PASS] applied[2] is still 0 (the flag never got set)
+  [PASS] at rollback entry point 2 really was half written (0xE51FF004 | 0xE28DB01C)
+  [PASS] rollback did NOT skip the half-written point (restore_writes=6, needed >= 6)
+  [PASS] final state FAILED (FAILED)
+  [PASS] all 6 words are byte-identical to the original after rollback
+  [PASS] [S3] I5 half-install reported as success count is 0
+  [PASS] [S3] I6 freeze happened at most once (1)
+  [PASS] [S3] I6 resume happened at most once (1)
+  [PASS] [S3] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S3] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S3] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S3] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S3] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S3] I7 rollback finished(4) before resume(5)
+  [PASS] [S3] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S3] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S4.0] readback of point 0 reports word 1 mismatched
+  [PASS] install_all returns non-zero
+  [PASS] final state FAILED (FAILED)
+  [PASS] the mismatch was detected by readback (rb_fail=1)
+  [PASS] point 0 never counted as applied
+  [PASS] all entries restored after the readback triggered rollback
+  [PASS] [S4] I5 half-install reported as success count is 0
+  [PASS] [S4] I6 freeze happened at most once (1)
+  [PASS] [S4] I6 resume happened at most once (1)
+  [PASS] [S4] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S4] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S4] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S4] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S4] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S4] I7 rollback finished(4) before resume(5)
+  [PASS] [S4] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S4] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S4.1] readback of point 1 reports word 1 mismatched
+  [PASS] install_all returns non-zero
+  [PASS] final state FAILED (FAILED)
+  [PASS] the mismatch was detected by readback (rb_fail=1)
+  [PASS] point 1 never counted as applied
+  [PASS] all entries restored after the readback triggered rollback
+  [PASS] [S4] I5 half-install reported as success count is 0
+  [PASS] [S4] I6 freeze happened at most once (1)
+  [PASS] [S4] I6 resume happened at most once (1)
+  [PASS] [S4] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S4] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S4] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S4] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S4] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S4] I7 rollback finished(4) before resume(5)
+  [PASS] [S4] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S4] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S4.2] readback of point 2 reports word 1 mismatched
+  [PASS] install_all returns non-zero
+  [PASS] final state FAILED (FAILED)
+  [PASS] the mismatch was detected by readback (rb_fail=1)
+  [PASS] point 2 never counted as applied
+  [PASS] all entries restored after the readback triggered rollback
+  [PASS] [S4] I5 half-install reported as success count is 0
+  [PASS] [S4] I6 freeze happened at most once (1)
+  [PASS] [S4] I6 resume happened at most once (1)
+  [PASS] [S4] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S4] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S4] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S4] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S4] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S4] I7 rollback finished(4) before resume(5)
+  [PASS] [S4] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S4] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S5.0] install ok at 0..1, word 1 store at point 2 fails; restore of point 0 word 1 also fails
+  [PASS] install_all returns non-zero
+  [PASS] final state ROLLBACK_FAILED (ROLLBACK_FAILED)
+  [PASS] never reports DONE
+  [PASS] point 0 is flagged pending (restore_pending=1)
+  [PASS] point 0 is provably not original (E92D4FF0 | 7000A000)
+  [PASS] [S5] I5 half-install reported as success count is 0
+  [PASS] [S5] I6 freeze happened at most once (1)
+  [PASS] [S5] I6 resume happened at most once (1)
+  [PASS] [S5] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S5] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S5] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S5] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S5] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S5] I7 rollback finished(4) before resume(5)
+  [PASS] [S5] I2 a failure never yields SUCCESS (ROLLBACK_FAILED)
+  [PASS] [S5] I4 ROLLBACK_FAILED => at least one entry is provably not original
+  [PASS] [S5] I4 a failed rollback is not reported as a plain install failure
+  [PASS] [S5] I4 a failed rollback is never reported as DONE
+  [PASS] recovery attempt with the fault still present fails
+  [PASS] state remains ROLLBACK_FAILED (ROLLBACK_FAILED)
+  [PASS] one recovery attempt was made (1)
+  [PASS] second recovery attempt succeeds
+  [PASS] final state RECOVERED (RECOVERED)
+  [PASS] all 6 words byte-identical to the original after recovery
+  [PASS] applied[] cleared from the actual bytes, not kept on trust
+  [PASS] [S5r] I5 half-install reported as success count is 0
+  [PASS] [S5r] I6 freeze happened at most once (1)
+  [PASS] [S5r] I6 resume happened at most once (1)
+  [PASS] [S5r] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S5r] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S5r] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S5r] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S5r] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S5r] I7 rollback finished(4) before resume(5)
+  [PASS] [S5r] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S5r] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+  [PASS] recovery from RECOVERED is rejected (invalid transition)
+  [PASS] [S5x] I5 half-install reported as success count is 0
+  [PASS] [S5x] I6 freeze happened at most once (1)
+  [PASS] [S5x] I6 resume happened at most once (1)
+  [PASS] [S5x] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S5x] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S5x] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S5x] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S5x] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S5x] I7 rollback finished(4) before resume(5)
+  [PASS] [S5x] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S5x] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S5.1] install ok at 0..1, word 1 store at point 2 fails; restore of point 1 word 1 also fails
+  [PASS] install_all returns non-zero
+  [PASS] final state ROLLBACK_FAILED (ROLLBACK_FAILED)
+  [PASS] never reports DONE
+  [PASS] point 1 is flagged pending (restore_pending=1)
+  [PASS] point 1 is provably not original (E92D48F0 | 7000A080)
+  [PASS] [S5] I5 half-install reported as success count is 0
+  [PASS] [S5] I6 freeze happened at most once (1)
+  [PASS] [S5] I6 resume happened at most once (1)
+  [PASS] [S5] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S5] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S5] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S5] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S5] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S5] I7 rollback finished(4) before resume(5)
+  [PASS] [S5] I2 a failure never yields SUCCESS (ROLLBACK_FAILED)
+  [PASS] [S5] I4 ROLLBACK_FAILED => at least one entry is provably not original
+  [PASS] [S5] I4 a failed rollback is not reported as a plain install failure
+  [PASS] [S5] I4 a failed rollback is never reported as DONE
+  [PASS] recovery attempt with the fault still present fails
+  [PASS] state remains ROLLBACK_FAILED (ROLLBACK_FAILED)
+  [PASS] one recovery attempt was made (1)
+  [PASS] second recovery attempt succeeds
+  [PASS] final state RECOVERED (RECOVERED)
+  [PASS] all 6 words byte-identical to the original after recovery
+  [PASS] applied[] cleared from the actual bytes, not kept on trust
+  [PASS] [S5r] I5 half-install reported as success count is 0
+  [PASS] [S5r] I6 freeze happened at most once (1)
+  [PASS] [S5r] I6 resume happened at most once (1)
+  [PASS] [S5r] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S5r] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S5r] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S5r] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S5r] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S5r] I7 rollback finished(4) before resume(5)
+  [PASS] [S5r] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S5r] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+  [PASS] recovery from RECOVERED is rejected (invalid transition)
+  [PASS] [S5x] I5 half-install reported as success count is 0
+  [PASS] [S5x] I6 freeze happened at most once (1)
+  [PASS] [S5x] I6 resume happened at most once (1)
+  [PASS] [S5x] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S5x] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S5x] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S5x] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S5x] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S5x] I7 rollback finished(4) before resume(5)
+  [PASS] [S5x] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S5x] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S5b] restore word 1 of point 2 fails, but that word was never changed
+  [PASS] install_all returns non-zero
+  [PASS] a restore store did fail (restore_fail=1)
+  [PASS] point 2 is not flagged pending: its bytes are original
+  [PASS] all 6 words byte-identical to the original
+  [PASS] state FAILED, not ROLLBACK_FAILED (FAILED)
+  [PASS] recovery is refused because nothing is pending
+  [PASS] [S5b] I5 half-install reported as success count is 0
+  [PASS] [S5b] I6 freeze happened at most once (1)
+  [PASS] [S5b] I6 resume happened at most once (1)
+  [PASS] [S5b] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S5b] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S5b] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S5b] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S5b] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S5b] I7 rollback finished(4) before resume(5)
+  [PASS] [S5b] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S5b] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S6.0] restore word 0 of point 0 fails
+  [PASS] install_all returns non-zero
+  [PASS] final state ROLLBACK_FAILED (ROLLBACK_FAILED)
+  [PASS] point 0 word 0 is still the jump opcode (0xE51FF004)
+  [PASS] point 0 is provably not original
+  [PASS] [S6] I5 half-install reported as success count is 0
+  [PASS] [S6] I6 freeze happened at most once (1)
+  [PASS] [S6] I6 resume happened at most once (1)
+  [PASS] [S6] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S6] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S6] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S6] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S6] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S6] I7 rollback finished(4) before resume(5)
+  [PASS] [S6] I2 a failure never yields SUCCESS (ROLLBACK_FAILED)
+  [PASS] [S6] I4 ROLLBACK_FAILED => at least one entry is provably not original
+  [PASS] [S6] I4 a failed rollback is not reported as a plain install failure
+  [PASS] [S6] I4 a failed rollback is never reported as DONE
+  [PASS] recovery after clearing the fault succeeds
+  [PASS] final state RECOVERED (RECOVERED)
+  [PASS] all 6 words byte-identical to the original
+  [PASS] [S6r] I5 half-install reported as success count is 0
+  [PASS] [S6r] I6 freeze happened at most once (1)
+  [PASS] [S6r] I6 resume happened at most once (1)
+  [PASS] [S6r] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S6r] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S6r] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S6r] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S6r] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S6r] I7 rollback finished(4) before resume(5)
+  [PASS] [S6r] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S6r] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S6.1] restore word 0 of point 1 fails
+  [PASS] install_all returns non-zero
+  [PASS] final state ROLLBACK_FAILED (ROLLBACK_FAILED)
+  [PASS] point 1 word 0 is still the jump opcode (0xE51FF004)
+  [PASS] point 1 is provably not original
+  [PASS] [S6] I5 half-install reported as success count is 0
+  [PASS] [S6] I6 freeze happened at most once (1)
+  [PASS] [S6] I6 resume happened at most once (1)
+  [PASS] [S6] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S6] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S6] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S6] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S6] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S6] I7 rollback finished(4) before resume(5)
+  [PASS] [S6] I2 a failure never yields SUCCESS (ROLLBACK_FAILED)
+  [PASS] [S6] I4 ROLLBACK_FAILED => at least one entry is provably not original
+  [PASS] [S6] I4 a failed rollback is not reported as a plain install failure
+  [PASS] [S6] I4 a failed rollback is never reported as DONE
+  [PASS] recovery after clearing the fault succeeds
+  [PASS] final state RECOVERED (RECOVERED)
+  [PASS] all 6 words byte-identical to the original
+  [PASS] [S6r] I5 half-install reported as success count is 0
+  [PASS] [S6r] I6 freeze happened at most once (1)
+  [PASS] [S6r] I6 resume happened at most once (1)
+  [PASS] [S6r] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S6r] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S6r] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S6r] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S6r] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S6r] I7 rollback finished(4) before resume(5)
+  [PASS] [S6r] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S6r] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S7] install word 1 at point 1 fails AND restore word 0 at point 0 fails
+  [PASS] install_all returns non-zero
+  [PASS] final state ROLLBACK_FAILED (ROLLBACK_FAILED)
+  [PASS] point 1 was half written when rollback started
+  [PASS] point 0 word 0 could not be restored
+  [PASS] the set of entries is provably not fully original
+  [PASS] [S7] I5 half-install reported as success count is 0
+  [PASS] [S7] I6 freeze happened at most once (1)
+  [PASS] [S7] I6 resume happened at most once (1)
+  [PASS] [S7] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S7] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S7] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S7] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S7] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S7] I7 rollback finished(4) before resume(5)
+  [PASS] [S7] I2 a failure never yields SUCCESS (ROLLBACK_FAILED)
+  [PASS] [S7] I4 ROLLBACK_FAILED => at least one entry is provably not original
+  [PASS] [S7] I4 a failed rollback is not reported as a plain install failure
+  [PASS] [S7] I4 a failed rollback is never reported as DONE
+  [PASS] recovery clears the last fault
+  [PASS] RECOVERED with all 6 words original
+  [PASS] [S7r] I5 half-install reported as success count is 0
+  [PASS] [S7r] I6 freeze happened at most once (1)
+  [PASS] [S7r] I6 resume happened at most once (1)
+  [PASS] [S7r] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S7r] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S7r] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S7r] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S7r] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S7r] I7 rollback finished(4) before resume(5)
+  [PASS] [S7r] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S7r] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S8] failure at point 2 word 1: only points 0..2 that need it are restored
+  [PASS] install_all returns non-zero
+  [PASS] exactly 6 restore word stores (3 half/fully patched points x 2 words), got 6
+  [PASS] no restore store failed (0)
+  [PASS] all entries original
+  [PASS] [S8] I5 half-install reported as success count is 0
+  [PASS] [S8] I6 freeze happened at most once (1)
+  [PASS] [S8] I6 resume happened at most once (1)
+  [PASS] [S8] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S8] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S8] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S8] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S8] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S8] I7 rollback finished(4) before resume(5)
+  [PASS] [S8] I2 a failure never yields SUCCESS (INSTALL_FAILED)
+  [PASS] [S8] I3 INSTALL_FAILED => all 6 words byte-identical to the original
+
+[S9] sweep: no injected single-word fault ever yields DONE
+  [PASS] all 9 single-fault installs never reported DONE nor left a patch behind (bad=0)
+
+[S10] install succeeds, resume fails
+  [PASS] install_all returns 0: the entries really are installed
+  [PASS] install FSM reached DONE (DONE)
+  [PASS] all 3 entries are patched, not mixed and not original
+  [PASS] verdict RESUME_FAILED (RESUME_FAILED)
+  [PASS] a failure to resume is never reported as SUCCESS
+  [PASS] resume was attempted exactly once (1)
+  [PASS] the resume path really failed once (1)
+  [PASS] [S10] I5 half-install reported as success count is 0
+  [PASS] [S10] I6 freeze happened at most once (1)
+  [PASS] [S10] I6 resume happened at most once (1)
+  [PASS] [S10] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S10] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S10] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S10] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S10] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S10] I7 group readback(4) happened before resume(5)
+  [PASS] [S10] I2 a failure never yields SUCCESS (RESUME_FAILED)
+  [PASS] [S10] I3 RESUME_FAILED after a completed install => entries patched
+  [PASS] [S10] I8 resume failure has its own verdict, never SUCCESS/INSTALL_FAILED (RESUME_FAILED)
+
+[S11] install fails, rollback fails, resume fails
+  [PASS] install_all returns non-zero
+  [PASS] install FSM state ROLLBACK_FAILED (ROLLBACK_FAILED)
+  [PASS] verdict ROLLBACK_AND_RESUME_FAILED (ROLLBACK_AND_RESUME_FAILED)
+  [PASS] a failed rollback plus a failed resume is neither INSTALL_FAILED nor SUCCESS
+  [PASS] froze once, tried to resume once (freeze=1 resume=1)
+  [PASS] at least one entry is still dirty
+  [PASS] [S11] I5 half-install reported as success count is 0
+  [PASS] [S11] I6 freeze happened at most once (1)
+  [PASS] [S11] I6 resume happened at most once (1)
+  [PASS] [S11] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S11] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S11] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S11] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S11] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S11] I7 rollback finished(4) before resume(5)
+  [PASS] [S11] I2 a failure never yields SUCCESS (ROLLBACK_AND_RESUME_FAILED)
+  [PASS] [S11] I4 ROLLBACK_AND_RESUME_FAILED => at least one entry is provably not original
+  [PASS] [S11] I4 a failed rollback is not reported as a plain install failure
+  [PASS] [S11] I4 a failed rollback is never reported as DONE
+  [PASS] [S11] I8 resume failure has its own verdict, never SUCCESS/INSTALL_FAILED (ROLLBACK_AND_RESUME_FAILED)
+  [PASS] recovery after the restore fault is cleared succeeds
+  [PASS] state RECOVERED (RECOVERED)
+  [PASS] all 6 words original after recovery
+  [PASS] verdict still RESUME_FAILED after recovery: the threads are still frozen (RESUME_FAILED)
+  [PASS] recovery did not freeze or resume anything again (freeze=1 resume=1)
+  [PASS] [S11r] I5 half-install reported as success count is 0
+  [PASS] [S11r] I6 freeze happened at most once (1)
+  [PASS] [S11r] I6 resume happened at most once (1)
+  [PASS] [S11r] I6 resume never precedes freeze (freeze=1 resume=1)
+  [PASS] [S11r] I6 no repeated freeze/resume (0 violations)
+  [PASS] [S11r] I6 anything frozen was resumed exactly once (1)
+  [PASS] [S11r] I7 freeze(1) happened before the first word store(3)
+  [PASS] [S11r] I7 freeze(1) happened before the stopped-PC check(2)
+  [PASS] [S11r] I7 rollback finished(4) before resume(5)
+  [PASS] [S11r] I2 a failure never yields SUCCESS (RESUME_FAILED)
+  [PASS] [S11r] I3 RESUME_FAILED after a clean rollback => entries original
+  [PASS] [S11r] I8 resume failure has its own verdict, never SUCCESS/INSTALL_FAILED (RESUME_FAILED)
+
+[S12] sweep: every single-word install fault keeps freeze/resume counts at 1/1
+  [PASS] all 6 install faults frozen once, resumed once, never SUCCESS (bad=0)
+
+RESULT: PASS (checks=551 fails=0)
