@@ -7,7 +7,8 @@
 - 本轮结论先说：**功能一（System Prompt）、功能二（本地指令路由）、功能五（TTS 守卫生命周期）
   已完成并在真机验收；功能四（半句话/暂停）在 Worker 侧可做的部分已实现并验收，
   但"第二半句根本没被原厂识别"这一层是原厂端点行为，未动任何原厂参数；
-  功能三（免唤醒连续追问）受原厂服务端开关限制，状态机与配置已就位，原生续听未做到（§5）。**
+  功能三（免唤醒连续追问）**未实现**：状态机与配置已就位，原生续听未接上；原因是原厂的续听入口
+  要求一份由云端下发的 `_WakeUpInfo_` 和 `CDM[0x70]` 标记（§5.2、§5.4 给出反汇编证据与下一步方案 D）。**
 
 ---
 
@@ -210,8 +211,58 @@ status.session: {"state":"IDLE","turns":0,"followups":0,"opened":0,"closed":1,
 | A（推荐先做） | 只读 hook `ContinuousDialogManager::onSpeakCommand`，抓一次**云端回答**时的 json，确认续听字段名与取值 | 只读、不调用，风险低 |
 | B | 若字段可自行构造：在我们的 TTS 前调用 `GenieApi::setFullDuplexDialogRenewDuration(N)`（导出符号、单参数）观察 `UpdateContext` 是否变成 `duplexDialogRenew:N` | 中（改原厂参数语义，需先做唤醒回归） |
 | C | 重放唤醒事件（`WakeupEngineWrapper::onWakeupEvent`） | 高：T7-03 事故路径，必须"唤醒成功回调之后再装 hook"并每次验唤醒 |
+| D（本轮新增，见 §5.4） | 快照 `_WakeUpInfo_` 后直接调 `IInputDeviceManager->vtable[8](type, wakeInfo)`（原厂 `startFullDuplexDialog` 里的那一行），绕开 `CDM` | 中高：不碰 `[0x70]`、不触发原厂 `free`，但字段布局错就是 T7-03 那种 SIGSEGV |
 
 本轮**没有**用"每轮重新播唤醒词"冒充连续对话；上面每一条真人记录都标注了是否说了唤醒词。
+
+### 5.4 续听的真实前置条件（本轮补做的反汇编取证）
+
+证据：`_analysis/t702/dec_dialog3.txt`（`libsmartbox.so` 反汇编，Ghidra），导出符号表 `_analysis/t702/dynsym.txt`。
+
+`ContinuousDialogManager::startFullDuplexDialog()` @`0x1665e8`（244 字节）完整行为：
+
+```
+if (this[0x70] != 0) {                                  ← 唯一的本地闸门：没有"待续听"标记就直接 return
+  mgr  = *(IMmiCore::getInstance()->vtable + 0x10)();   ← IInputDeviceManager 实现
+  type = IInputDeviceManager::getInputType(*(this + 4)); /* this+4 = sessionId */
+  (*mgr->vtable[8])(mgr, type, this + 8);               ← 就是原厂 startTalk(type, _WakeUpInfo_*)
+  TimerManager::timerManagerEvent(..., 3); TimerManager::timerManagerEvent(..., 2);
+  resetWakupInfo(this); this[0x60] = 1; *(this + 4) = -1; this[0x70] = 0;
+}
+```
+
+三条新结论（§5.2 当时没有）：
+
+1. **`_WakeUpInfo_` 内嵌在 `CDM + 8`**，不是全局对象；续听时传的是 `this + 8` 这个地址。
+2. **`resetWakupInfo()` @`0x166500` 会把这份 wakeInfo 拆掉**：`free(this+0xc)`、`free(this+0x10)`、
+   `free(this+0x38/0x3c/0x40/0x44)`，然后 `*(this+8) = 0xffffffff`。说明里面的字符串指针是**堆上 owned** 的。
+   我们在外部手搓一份塞进 `CDM+8`，随后会被原厂 `free` → 崩溃风险落在"所有权"上，不在"能不能调用"上。
+3. **没有导出的 setter**：`ContinuousDialogManager` 的全部导出符号只有
+   `onSpeakCommand / onNotify / startFullDuplexDialog / resetWakupInfo / visionOpenCallback / packageCheckCallback / ctor|dtor`。
+   `[0x70]` 在两个函数里只被**读和清零**（`dec_dialog3.txt:17/34/98`），唯一写入方是云端下发的那条链
+   （`onSpeakCommand` 写 `this+4 = sessionId`、`this+8 = wakeupType`）。
+
+另外，原厂还有一条**不经过 `[0x70]`** 的续听调用，在 `onNotify` 的 `param_1 == 0x11 && param_3 == 0xc` 分支（`dec_dialog3.txt:69`）：
+
+```
+if (*(this + 4) == param_4) { this[0x60] = 0; return; }          ← 同一个 sessionId 直接忽略
+else  type = getInputType(*(this+4)); (*mgr->vtable[8])(mgr, type, this + 8);   ← 不同 session 就续听
+```
+
+`param_1 == 0x44e` 那条分支才走 `startFullDuplexDialog`，且带 5000 ms 去重窗口（`CDM+0x78/0x7c`）
+和 `SessionManager::fullDuplexDialogCurPageInBlackList()` 前置判断。
+
+**方案 D 的做法**（绕开 `CDM`，只复刻原厂自己做的那一次调用）：
+
+1. 在 `SessionManager::onStartTalk(sessionId, …, _WakeUpInfo_*, …)` 之前**只读**快照 `_WakeUpInfo_`，
+   字符串自己 `strdup` 一份（所有权留在我们这边）；
+2. 回答播完：`mgr = *(*(IMmiCore::getInstance())->vtable+0x10)()`、`type = IInputDeviceManager::getInputType(sessionId)`；
+3. `mgr->vtable[8](mgr, type, &our_copy)` —— 与 `startFullDuplexDialog` 里那一行逐字相同，
+   但不碰 `CDM`、不写 `[0x70]`、不触发任何 `free`。
+
+上机前必须先把 `_WakeUpInfo_` 的字段布局钉死（目前已知 `+0x00` int、`+0x04/+0x08` 指针、
+`+0x30/+0x34` 布尔、整体跨度 ≤ `0x58`，由 `resetWakupInfo` 的清零顺序反推），
+并且第一次只做"快照 + 打印布局"，不做调用——布局错就是 T7-03 那种 SIGSEGV。
 
 ---
 
@@ -283,7 +334,7 @@ RESULT: PASS
 | P4 | 守卫放行原厂基础指令 | `native_allowed=2`；普通对话原厂回答 `dropped` 6 次 |
 | P5 | 半句（悬空句窗口） | `held_ms=1241`，无提前提交 |
 | P6 | 跨 session 合并 | `merges=1`、`text_bytes=27`，一条指令只请求一次 |
-| P7 | 免唤醒追问 | **未成立**：无事件（原厂不开会话，见 §5.2） |
+| P7 | 免唤醒追问 | **未成立**：无事件（原厂不开会话，见 §5.2；续听真实入口见 §5.4） |
 | P8 | 播报回声 | `dropped_echo=2`、`kept_in_window=5` |
 | P9 | 会话状态机 | `WAIT_NEXT → CLOSED(timeout) → IDLE` |
 
@@ -291,7 +342,7 @@ RESULT: PASS
 
 1. **真人现场语音**：本轮所有语音都是"录好的真人/合成片段经 PC 扬声器播放"（与 T5/T7 前几轮同一套方法），
    没有现场真人对着设备说话；
-2. **免唤醒连续三轮**：未成立（原厂限制），只有状态机与配置；
+2. **免唤醒连续三轮**：未实现（原厂限制），只有状态机与配置；反汇编得到的真实入口与可行方案见 §5.4；
 3. **"停顿 0.5 s / 1 s 再说完整指令"的整句完整率**：本轮只验证了"停顿后第二半句不在事件流里"，
    没有做参数对照实验（按约定不动 `localASRPauseTime`/`pauseTime`）；
 4. **守卫在 `:core` 重启后自动重装**：本轮只验证了 supervisor 在跑时 `hooked=1`，
