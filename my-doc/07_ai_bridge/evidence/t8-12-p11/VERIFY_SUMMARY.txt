@@ -1,0 +1,18 @@
+=== exit codes
+run1_full_run MAIN_RC=0
+run2_gate_failure GATE_SIM_RC=2
+run3_build_failure BUILD_SIM_RC=1
+
+=== status files
+run1 STATUS: TEST PASS
+run2 STATUS: INCOMPLETE: see SUMMARY.txt (a required PASS or control condition did not hold)
+run3 STATUS: BUILD FAILED: gcc model_plain
+
+=== run2 failing gate items (proof the gate really fired)
+FAIL  B tsan_race_true has >=1 TSan report
+FAIL  B tsan_race_true EXIT=66
+
+=== run3 build log tail
+  917 | this is deliberately not valid C;
+      |         ^~~~~~~~~~~~
+/work/sim_build_src/t8_12_9_lifecycle_model.c:917:9: error: unknown type name 'deliberately'

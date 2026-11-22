@@ -1,0 +1,1 @@
+run3_build_failure BUILD_SIM_RC=1

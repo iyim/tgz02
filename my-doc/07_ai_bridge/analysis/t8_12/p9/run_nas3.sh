@@ -1,12 +1,15 @@
 #!/bin/sh
-# T8-12.10  Concurrency verification on the NAS (Linux) with ThreadSanitizer.
+# T8-12.11  Concurrency verification on the NAS (Linux) with ThreadSanitizer.
 #
-# Hardened build/run driver:
+# Hardened build/run driver with an explicit acceptance gate:
 #   * every previous artefact in the output directory is removed first
 #   * each gcc invocation is checked and aborts the whole run on failure
 #   * a binary may only be executed if it exists AND is newer than the build
 #     marker, so a stale binary from an earlier attempt can never be run
-#   * the final status is an explicit BUILD PASS / TEST PASS / INCOMPLETE line
+#   * every required result, exit code and TSan race count is checked one by
+#     one; a single unmet condition turns the whole run into INCOMPLETE
+#   * the shell exit code always matches the status line:
+#       0 = TEST PASS      2 = INCOMPLETE      1 = BUILD FAILED
 #
 # Layout: sources in /work, all output in /work/v5.
 set -u
@@ -14,20 +17,26 @@ SRC=/work
 D=/work/v5
 
 log() { echo "[$(date -u +%H:%M:%S)] $*"; }
-finish() {                       # finish <status-line>
-    printf '%s\n' "$1" > "$D/STATUS.txt"
-    printf '%s\n' "$1" > "$D/DONE.txt"
+
+# finish <status-line> <exit-code>
+finish() {
+    status=$1
+    rc=$2
+    printf '%s\n' "$status" > "$D/STATUS.txt"
+    printf '%s\n' "$status" > "$D/DONE.txt"
     chmod -R a+rX "$D" 2>/dev/null
-    log "$1"
-    exit 0
+    log "$status"
+    exit "$rc"
 }
-build_fail() {                   # build_fail <reason>
+
+build_fail() {                   # build_fail <reason>   -> exit 1
     printf 'BUILD FAILED: %s\n' "$1" > "$D/STATUS.txt"
     printf 'BUILD FAILED: %s\n' "$1" > "$D/DONE.txt"
     chmod -R a+rX "$D" 2>/dev/null
     log "BUILD FAILED: $1"
     exit 1
 }
+
 need_fresh() {                   # need_fresh <binary>
     [ -x "$1" ] || build_fail "$1 missing"
     [ "$1" -nt "$D/.build_start" ] || build_fail "$1 is older than this build (stale binary)"
@@ -145,28 +154,117 @@ if grep -q "unexpected memory mapping" tsan_normal.txt 2>/dev/null; then
   echo "SETARCH_EXIT=$?" >> tsan_normal_setarch.txt
 fi
 
-# ---- verdict ---------------------------------------------------------------
+# ---- acceptance gate -------------------------------------------------------
+total=0
+fails=0
+GATE=""
+
+ok()  { total=$((total+1)); GATE="$GATE
+PASS  $1"; }
+bad() { total=$((total+1)); fails=$((fails+1)); GATE="$GATE
+FAIL  $1"; }
+
+# must <label> <predicate...>
+must() { label=$1; shift; if "$@" >/dev/null 2>&1; then ok "$label"; else bad "$label"; fi }
+
+require_file()   { [ -s "$1" ]; }
+require_result() { grep -q "^$2" "$1"; }                 # $2 is a RESULT prefix
+require_exit()   { grep -q "^EXIT=$2\$" "$1"; }
+require_races()  { grep -q "^TSAN_RACE_WARNINGS=$2\$" "$1"; }
+require_no_pass(){ ! grep -q '^RESULT: PASS' "$1"; }
+require_races_gt0() {
+    n=$(grep -h '^TSAN_RACE_WARNINGS=' "$1" 2>/dev/null | cut -d= -f2)
+    [ -n "${n:-}" ] && [ "${n}" -gt 0 ]
+}
+
+RES_LIFE_PASS='RESULT: PASS (checks=71 fails=0)'
+RES_FSM_PASS='RESULT: PASS (checks=1157 fails=0)'
+RES_LIFE_FAIL='RESULT: FAIL (checks=71 fails=1)'
+RES_INCOMPLETE='RESULT: INCOMPLETE'
+
+ALL_LOGS="plain_normal plain_race_control plain_race_true
+plain_create_fail plain_create_fail_join_fail plain_create_fail_join_abandon
+plain_join_fail plain_join_abandon fsm_normal
+tsan_normal tsan_race_true tsan_race_control
+tsan_create_fail tsan_create_fail_join_fail tsan_create_fail_join_abandon
+tsan_join_fail tsan_join_abandon fsm_tsan_run"
+
+# D. every required log must exist
+for f in $ALL_LOGS; do
+    must "D file present: $f.txt" require_file "$f.txt"
+done
+
+# A. the four normal runs
+must "A plain_normal RESULT PASS"        require_result plain_normal.txt  "$RES_LIFE_PASS"
+must "A plain_normal EXIT=0"             require_exit   plain_normal.txt  0
+must "A tsan_normal RESULT PASS"         require_result tsan_normal.txt   "$RES_LIFE_PASS"
+must "A tsan_normal EXIT=0"              require_exit   tsan_normal.txt   0
+must "A tsan_normal races=0"             require_races  tsan_normal.txt   0
+must "A fsm_normal RESULT PASS"          require_result fsm_normal.txt    "$RES_FSM_PASS"
+must "A fsm_normal EXIT=0"               require_exit   fsm_normal.txt    0
+must "A fsm_tsan_run RESULT PASS"        require_result fsm_tsan_run.txt  "$RES_FSM_PASS"
+must "A fsm_tsan_run EXIT=0"             require_exit   fsm_tsan_run.txt  0
+must "A fsm_tsan_run races=0"            require_races  fsm_tsan_run.txt  0
+
+# B. negative controls must really behave like controls
+must "B plain_race_control RESULT FAIL"  require_result plain_race_control.txt "$RES_LIFE_FAIL"
+must "B plain_race_control EXIT=1"       require_exit   plain_race_control.txt 1
+must "B tsan_race_control RESULT FAIL"   require_result tsan_race_control.txt  "$RES_LIFE_FAIL"
+must "B tsan_race_control EXIT=1"        require_exit   tsan_race_control.txt  1
+must "B tsan_race_control races=0"       require_races  tsan_race_control.txt  0
+must "B tsan_race_true has >=1 TSan report" require_races_gt0 tsan_race_true.txt
+must "B tsan_race_true EXIT=66"          require_exit   tsan_race_true.txt  66
+
+# C. the five INCOMPLETE modes, in both builds
+for m in create_fail create_fail_join_fail create_fail_join_abandon join_fail join_abandon; do
+    must "C plain_$m RESULT INCOMPLETE"  require_result "plain_$m.txt" "$RES_INCOMPLETE"
+    must "C plain_$m EXIT=2"             require_exit   "plain_$m.txt" 2
+    must "C plain_$m has no RESULT PASS" require_no_pass "plain_$m.txt"
+    must "C tsan_$m RESULT INCOMPLETE"   require_result "tsan_$m.txt"  "$RES_INCOMPLETE"
+    must "C tsan_$m EXIT=2"              require_exit   "tsan_$m.txt"  2
+    must "C tsan_$m has no RESULT PASS"  require_no_pass "tsan_$m.txt"
+done
+
+# ---- SUMMARY ---------------------------------------------------------------
+show() {                          # show <name> <file>
+    res=$(grep -h '^RESULT:' "$2" 2>/dev/null | head -1)
+    ex=$(grep -h '^EXIT=' "$2" 2>/dev/null | head -1 | cut -d= -f2)
+    ra=$(grep -h '^TSAN_RACE_WARNINGS=' "$2" 2>/dev/null | head -1 | cut -d= -f2)
+    printf '%-34s %-44s EXIT=%-3s RACES=%s\n' "$1" "${res:-MISSING}" "${ex:-?}" "${ra:--}"
+}
+
 {
   echo "BUILD PASS"
-  for x in plain_normal tsan_normal; do
-    printf '%-12s ' "$x"
-    grep -h '^RESULT:' "$x.txt" 2>/dev/null || echo "RESULT: MISSING"
+  echo
+  echo "--- A: normal runs"
+  show plain_normal       plain_normal.txt
+  show tsan_normal        tsan_normal.txt
+  show fsm_normal         fsm_normal.txt
+  show fsm_tsan_run       fsm_tsan_run.txt
+  echo
+  echo "--- B: negative controls"
+  show plain_race_control plain_race_control.txt
+  show tsan_race_control  tsan_race_control.txt
+  show tsan_race_true     tsan_race_true.txt
+  echo
+  echo "--- C: INCOMPLETE modes (plain / TSan)"
+  for m in create_fail create_fail_join_fail create_fail_join_abandon join_fail join_abandon; do
+      show "plain_$m" "plain_$m.txt"
+      show "tsan_$m"  "tsan_$m.txt"
   done
-  printf 'fsm_normal   '; grep -h '^RESULT:' fsm_normal.txt 2>/dev/null || echo "RESULT: MISSING"
-  printf 'fsm_tsan     '; grep -h '^RESULT:' fsm_tsan_run.txt 2>/dev/null || echo "RESULT: MISSING"
-  printf 'tsan_normal races='
-  grep -h '^TSAN_RACE_WARNINGS=' tsan_normal.txt 2>/dev/null | cut -d= -f2
-  printf 'tsan_race_true races='
-  grep -h '^TSAN_RACE_WARNINGS=' tsan_race_true.txt 2>/dev/null | cut -d= -f2
+  echo
+  echo "--- D: gate items ($total total, $fails failed)"
+  echo "$GATE" | sed '/^$/d'
+  echo
+  if [ "$fails" -eq 0 ]; then
+      echo "GATE: PASS ($total/$total items)"
+  else
+      echo "GATE: FAIL ($fails of $total items)"
+  fi
 } > SUMMARY.txt 2>&1
 
-if grep -q '^RESULT: PASS (checks=71 fails=0)' plain_normal.txt \
-   && grep -q '^RESULT: PASS (checks=1157 fails=0)' fsm_normal.txt \
-   && grep -q '^RESULT: PASS (checks=71 fails=0)' tsan_normal.txt \
-   && grep -q '^RESULT: PASS (checks=1157 fails=0)' fsm_tsan_run.txt \
-   && grep -q '^TSAN_RACE_WARNINGS=0$' tsan_normal.txt \
-   && grep -qv '^TSAN_RACE_WARNINGS=0$' tsan_race_true.txt; then
-  finish "TEST PASS"
+if [ "$fails" -eq 0 ]; then
+    finish "TEST PASS" 0
 else
-  finish "INCOMPLETE: see SUMMARY.txt (a required PASS or control condition did not hold)"
+    finish "INCOMPLETE: see SUMMARY.txt (a required PASS or control condition did not hold)" 2
 fi
