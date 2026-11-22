@@ -51,10 +51,14 @@ Java 层关键类（vdex 提取，全名 `com/alibaba/ailabs/genie/assistant/sdk
 `libsmartbox.so` 的 sha256 前缀 `f6e3c3543ff6da5b…` —— 与 T6 Hook 记录的模块指纹一致
 （Hook 的 `TG_SYM_OFF 0x11353c` 就是本文件的 `SessionManager::onStream`）。
 
-> 说明：`:core` 常驻判断来自一次 `/proc/8342/maps` 快照（空闲态）。
+> 说明：`:core` 常驻判断来自一次 `/proc/8342/maps` **空闲态**快照。
 > **本地引擎三件套（libaceAsr / libmodel.bin / libconfigure.bin）零映射**，
-> 而云端通道需要的 websockets / ssl / crypto / gcs / httpdns 全部命中 —— 这是本轮
-> "本地还是云端"判断的核心证据，见 `02_callchain.md` §4 与 `03_feasibility.md` §3。
+> 而云端通道需要的 websockets / ssl / crypto / gcs / httpdns 全部命中。
+>
+> 这两条**只说明"空闲态没有加载本地引擎"**，不能反推"识别时也没加载" ——
+> `LocalASRManager::loadleLocalEngine(bool)` / `shouldEnableLocalASR(const WakeupInfo&)`
+> 的存在说明它可以是**按需加载**的。真正的通道归属要靠"识别瞬间"的观测，见
+> `03_feasibility.md` §3.2 与 `T7-08_CHANNEL_OBSERVATION.md`。
 
 ## 3. 运行配置（原厂 `shared_prefs/runtime.xml`，只读）
 

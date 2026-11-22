@@ -10,6 +10,10 @@
 > `"duplexDialogRenew": 0`，`ContinuousDialogManager` 收到 notify 后不会再自己开一次
 > `onListenStarted`。
 
+**适用范围（T7-08 明确）**：这句结论只针对**原厂平台会话层**（`SessionManager` +
+`ContinuousDialogManager` + `EOUDetector`）。它**不覆盖**"自己按住引擎级 ASR 会话"
+（`LocalASRManager::start/feed`）这条路 —— 那条路要另外验证，见 `03_feasibility.md` §6。
+
 Worker 侧的 `conv_session` 因此**只是一台状态机**（`IDLE / ACTIVE / PROCESSING / SPEAKING /
 WAIT_NEXT / CLOSED`），负责：会话生命周期与 12 s 超时、把"这一句是追问还是新会话"记进日志和状态文件。
 它**不持有麦克风、不驱动原厂 Native**。
@@ -76,6 +80,11 @@ WAIT_NEXT / CLOSED`），负责：会话生命周期与 12 s 超时、把"这一
 这条路的前提是能稳定 `dlopen` + 构造 `AGSpeechConfig`（见 `03_feasibility.md` §4），
 属于**下一轮的实验**，本轮不做。
 
+**口径提醒（T7-08 修正）**：`duplexDialogRenew = 0` 证明的是
+**当前原厂"平台会话"没有续期**；它**不能**推出
+"引擎级会话（`LocalASRManager::start/feed`）永远无法独立维持录音" —— 两者不是同一层，
+而且引擎级这条路本轮根本没有验证过。别把一条服务端开关当成对全部实现方式的判决。
+
 ## 6. 现有 TTS Guard 是否支持播报期间打断？
 
 **不支持，而且它不需要支持。** 事实：
@@ -95,6 +104,7 @@ WAIT_NEXT / CLOSED`），负责：会话生命周期与 12 s 超时、把"这一
 
 ## 7. 一句话总结
 
-> 连续对话卡在**原厂会话续期**这一层（服务端 `duplexDialogRenew` + EOU 停录），
+> 连续对话卡在**原厂平台会话续期**这一层（服务端 `duplexDialogRenew` + EOU 停录），
 > 不在 Worker，也不在 TTS Guard。
-> 想绕开它只有两条路：等服务端下发续期，或者自己按住引擎级 ASR 会话（需要先完成本地引擎的独立化）。
+> 绕过它有两条路：等服务端下发续期，或者自己按住**引擎级** ASR 会话
+> （后者需要先完成本地引擎的独立化，而且与"平台会话能否续期"是两个独立的问题）。

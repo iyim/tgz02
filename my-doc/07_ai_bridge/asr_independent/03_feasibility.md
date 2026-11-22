@@ -8,9 +8,9 @@
 | 问题 | 结论 | 主要证据 |
 |---|---|---|
 | 1. 原厂 ASR 的真实组成 | 两套引擎 + 一套工厂：`CloudASRManager`（WSS 云端）与 `LocalASRManager`→`TGEngineAdapter`→`AILabs::TGLEngine`（本地），由 `ALISpeechComponentManager` 按 `kSCKey*` 装配 | `01_components.md` §2/§4 |
-| 2. 能否提取 SO 独立调用 | **能，但不是"拿来就能用"**：本地引擎是纯计算库（只依赖 libace/libaceNlu/libm/libdl/libc），可是需要模型/配置/词表资源与一组未知的配置结构 | `DT_NEEDED` 无网络库；`libmodel.bin.so` / `libconfigure.bin.so` / `assets/asr_bg.zip` / `fuzzylexicon.bin` |
-| 3. 是否必须保留原厂 `:core` | **取文本不需要**（可以自己 dlopen 本地引擎）；**要复用唤醒 + VAD + 云端通道则需要**（它们由 `:core` 的 87 个线程与配置驱动） | `maps`；`ps -T` |
-| 4. 是否必须保留原厂会话管理 | **要"免唤醒续听"就必须**；单纯识别一轮不需要 | `EOUDetector` / `onEouEvent` / `duplexDialogRenew=0`（`04_continuity.md`） |
+| 2. 能否提取 SO 独立调用 | **静态分析显示"具备可行性"，尚未验证"可以独立运行"**：本地引擎是纯计算库（动态依赖 `libace.so` / `libaceNlu.so` / libm / libdl / libc，无网络库），结构上具备被外部进程加载的条件；但"真的能跑起来并产出文本"**没有任何实测证据**（本轮禁止调用）。仍缺模型/配置/词表资源的装配方式与一组未知配置结构 | `DT_NEEDED`；`libmodel.bin.so` / `libconfigure.bin.so` / `assets/asr_bg.zip` / `fuzzylexicon.bin` |
+| 3. 是否必须保留原厂 `:core` | **取文本很可能不需要**（前提是本地引擎能被独立加载并跑通——未验证）；**要复用唤醒 + VAD + 云端通道则需要**（它们由 `:core` 的线程与配置驱动） | `maps`；`ps -T` |
+| 4. 是否必须保留原厂会话管理 | **"免唤醒续听"目前必须**（服务端 `duplexDialogRenew` 决定原厂会话是否续期）；**"单轮识别"不需要**。注意二者是两件事：引擎级会话（`LocalASRManager::start/feed`）与平台会话（`SessionManager` + EOU 裁决）不是同一层，见 §7 | `04_continuity.md` |
 | 5. 能否保留原厂 ASR、替换原厂 NLU/CDM | **能，而且现在就是这么干的**：T6 Hook 钉在 `onStream`（ASR 之后、NLU 之前） | `02_callchain.md` §4/§5 |
 | 6. 连续对话卡在哪一层 | 卡在**原厂会话续期**（服务端开关 `duplexDialogRenew`）+ EOU 停录，不在 Worker | `04_continuity.md` |
 | 7. 死信 JSON | 已修，46 + 87 条断言 + 两组端到端全绿 | `05_dead_letter_fix.md` |
@@ -64,32 +64,31 @@ Java: com.alibaba.ailabs.genie.assistant.sdk.asr.ASRClient/ASRManager
 
 ## 3. 本地推理还是云端识别？
 
-**两套都实装了，当前设备上常驻的是云端通道。**
+**结论：两套通道都实装且都"活着"；当前设备空闲态常驻的是云端通道的支撑库。
+"某一次 Final 由哪条通道产生"本轮仍未确认（见 §3.2 的证据缺口）。**
 
-| 判据 | 观测 | 指向 |
+### 3.1 已确认的事实
+
+| 判据 | 观测 | 能推出什么 |
 |---|---|---|
-| 云端端点字符串 | `libsmartbox.so` 内有 `wss://asr-aicloud.alibaba.com:443` | 云端存在 |
-| 云端支撑库常驻 | `libwebsockets/libssl/libcrypto/libnghttp2_ali/libgcs_ali/libhttpdns/libcurl` 在 `:core` 里都有映射 | 云端在跑 |
-| 本地引擎库常驻 | `libaceAsr.so` / `libmodel.bin.so` / `libconfigure.bin.so` 在 `:core` 里 **0 条映射** | 本地引擎当前没加载 |
-| 本地引擎能力 | `AILabs::TGLEngine` + `BeamSearch::FeedBPE` + FBank/MFCC + `libaceNlu`，纯计算无网络依赖 | 本地能力是真的 |
-| 配置开关 | `localASR=true` 且 `asrOnGW=true`（两个都开） | 允许双通道 |
-| 加载策略 | `LocalASRManager::shouldEnableLocalASR(const WakeupInfo&)` + `loadleLocalEngine(bool)` | 按唤醒信息决定是否加载 |
+| 云端端点字符串 | `libsmartbox.so` 内有 `wss://asr-aicloud.alibaba.com:443` | 云端识别通道**存在** |
+| 云端支撑库常驻 | `libwebsockets/libssl/libcrypto/libnghttp2_ali/libgcs_ali/libhttpdns/libcurl` 在 `:core` 里都有映射 | 云端通道**已装配**（不等于每次识别都走它） |
+| 本地引擎库 | `libaceAsr.so` / `libmodel.bin.so` / `libconfigure.bin.so` **空闲态零映射** | 只能说明**空闲态没加载**；`LocalASRManager::loadleLocalEngine()` / `shouldEnableLocalASR()` 说明可以按需加载，因此**不能**据此断言识别时也没加载 |
+| 本地引擎能力 | `AILabs::TGLEngine` + `BeamSearch::FeedBPE` + FBank/MFCC，另有独立的 `libaceNlu.so` | 本地**有**一套完整的解码能力（是否启用是另一回事） |
+| 配置开关 | `localASR=true` 且 `asrOnGW=true`（两个都开） | 框架允许**两条通道并存** |
+| `onStream` 签名 | `(…, u_char isFinished, u_char isOffline, u_char needNlp)` | 结果层**区分**本地/云端，但**当前 Hook 没有把 `isOffline` 记录下来** |
 
-严格表述：**"Final 文本由云端产生"这句话本轮没有直接证明**（需要一次真实识别时的 maps/netstat 对照，
-本轮按约束没做）。可以确认的是：① 云端通道的全部支撑库常驻、端点字符串在；② 本地引擎三件套在空闲态
-一条映射都没有；③ 框架同时保留两条通道，并在 `onStream` 的 `isOffline` 参数上区分它们。
+### 3.2 证据缺口（明确写出来）
 
-要一次性钉死这一点，下一轮做这个只读观测即可（不改任何东西）：
+1. 我方 Hook 只取 `text` 与 `isFinished`，事件里**没有** `is_offline` 字段
+   （`work/events.jsonl` 实测字段清单里确实没有）；
+2. 因此**现有历史事件无法统计本地/云端占比**；
+3. 空闲态 maps 不能替代"识别瞬间的 maps"；
+4. 443 连接数只能说明有 TLS 流量，**不能**证明那就是 ASR（同一个 uid 还有心跳/技能/日志上报）。
 
-```sh
-# 说话前
-su -c 'grep -E "libaceAsr|libmodel.bin" /proc/$(pidof com.alibaba.ailabs.genie.smartapp:core)/maps | wc -l'
-su -c 'cat /proc/net/tcp6 | grep -c ":01BB"'          # 443 连接数
-# 说一句话（用户自己说，我们不动设备）
-# 识别结束后立刻重复上面两条，并抓 logcat -d -s AliAiLabs:V tgl:V
-```
-
-若识别瞬间 `libaceAsr` 出现映射 → 走了本地；若 443 连接建立且 maps 无变化 → 走了云端。
+补这个缺口的办法两选一（都要下一轮批准）：
+- **只读**：识别瞬间采样 `maps` + 网络计数 + 工厂 logcat（`asr_watch.sh` 就是干这个的）；
+- **改 Hook**：在事件里加 `is_offline` 字段（本轮禁止部署新 Hook，不做）。
 
 ## 4. 能不能独立喂 PCM、自己开会话、拿到 Final？
 
@@ -97,17 +96,20 @@ su -c 'cat /proc/net/tcp6 | grep -c ":01BB"'          # 443 连接数
 
 ### 4.1 直接调用本地引擎（最彻底，代价最高）
 
-前置条件（全部已确认存在，但都用不了"直接"）：
+前置条件（都"存在"，但没有一项等于"已验证可独立运行"）：
 
 | 需要 | 现状 |
 |---|---|
-| 引擎库 | `libaceAsr.so`（+ `libace.so`、`libaceNlu.so`），`system_file` 0644，SELinux 当前 **Permissive**，root 进程可 `dlopen` 绝对路径 |
-| 模型 / 配置 | `libmodel.bin.so`、`libconfigure.bin.so`（用 .so 封装的裸数据），`assets/asr_bg.zip`、`assets/fuzzylexicon.bin` |
-| 依赖库 | `libc++_shared.so`、`libagpal.so`（同目录） |
+| 引擎库 | `libaceAsr.so`，`system_file` 0644，SELinux 当前 **Permissive**，root 进程**理论上**可 `dlopen` 绝对路径（未实测） |
+| 动态依赖 | `libaceAsr.so` 的 `DT_NEEDED` 明确包含 **`libaceNlu.so`** 与 `libace.so`（见 `../evidence/t7_07_dtneeded.txt`）。这是**链接期依赖**：加载 `libaceAsr.so` 就必须能解析 `libaceNlu.so`。**但它不代表识别流程必须执行原厂 NLU** —— 依赖一个库和调用它的 NLU 接口是两回事；现有证据（`onStream` 早于 `onNlpResult`）说明文本在 NLU 之前就已经产出 |
+| 模型 / 配置 | `libmodel.bin.so`、`libconfigure.bin.so`（用 .so 封装的裸数据），`assets/asr_bg.zip`、`assets/fuzzylexicon.bin`。**它们的加载约定（谁读、什么格式、放哪）尚未确认** |
+| 其它依赖库 | `libc++_shared.so`、`libagpal.so`（同目录） |
 | 配置结构 | `AGSpeechConfig`、`AGLocalASRStartInfo`、`AGEOUConfig`、`AGLocalASRResult`、`AGLocalASRListener` —— **无符号定义、无头文件，需要逆向出字段布局** |
-| 资源装配 | `kSCKeyAceLib / kSCKeyAsrLib / kSCKeyAsrRes` 的具体取值（当前由 Java 层或 smartbox 注入，本轮未定位到赋值点） |
+| 资源装配 | `kSCKeyAceLib / kSCKeyAsrLib / kSCKeyAsrRes` 的具体取值（本轮未定位到赋值点） |
 
-未知量集中在 **结构体布局** 与 **资源键取值**。这两项都是"读代码能解、但要花时间"的活，不是不可解。
+未知量集中在 **结构体布局**、**资源键取值**、**模型加载约定** 三处。
+结论口径：**这是"静态分析支持、工程上可尝试"的方向，不是"已经验证可以独立运行"**。
+在没有一次成功的独立调用之前，任何"可以直接调用"的说法都只能算假设。
 
 ### 4.2 复用 `libagspeech.so` 的组件工厂（推荐的中路）
 
@@ -121,7 +123,7 @@ su -c 'cat /proc/net/tcp6 | grep -c ":01BB"'          # 443 连接数
 `SessionManager::onStartTalk` + `onStream`。文本直接到手，代价是必须让原厂把这一轮跑完
 （含唤醒、VAD、EOU 停录）。
 
-**可行性判断**：三条路都通，难度从左到右递减；风险从左到右同样递减。
+**可行性判断**：4.1 / 4.2 是"结构上成立、未经实测"的两条路；4.3 是本轮正在生产使用的路。
 本轮不建议立刻做 4.1，因为它需要新的设备端实验（结构体 dump / dlopen 试验），与"保护现有链路"冲突。
 
 ## 5. 三个方案
@@ -154,7 +156,25 @@ su -c 'cat /proc/net/tcp6 | grep -c ":01BB"'          # 443 连接数
 | 拦路石 | ① `onStartTalk` 之后的 EOU/停录仍由原厂 `EOUDetector` 决定；② 续期开关 `duplexDialogRenew` 来自服务端（`04_continuity.md`）；③ 上一轮实测 `startFullDuplexDialog` 的返回值被忽略，不能作为可靠入口 |
 | 建议 | 先做**只读探针**：在 `onStartTalk` / `onStopTalk` / `onEouEvent` 上各加一个观测点，确认"谁在什么时候关麦"，再决定是否自己驱动 `LocalASRManager::start` 走方案 A 的 4.2 变体 |
 
-## 6. 本轮不做的事（明确记录）
+## 6. 两件必须分开的事：单轮 ASR 独立化 ≠ 连续对话会话管理
+
+这两件事经常被混成一句"能不能不用原厂"，但它们的依赖完全不同：
+
+| 目标 | 依赖的层 | 是否能独立 | 当前证据 |
+|---|---|---|---|
+| **单轮**：给定一段 PCM → 得到文本 | 引擎层（`TGLEngine` 本地 / `CloudASRManager` 云端） | **结构上可以**（本地引擎无网络依赖、可用 dlopen 加载）；**尚未实测** | 静态分析（`02_callchain.md`、`../evidence/t7_07_*`） |
+| **单轮**：喊唤醒词 → 说一句 → 得到文本 | 引擎层 **+** KWS（`libwakeup_*`）**+** VAD（`libvad_*`）**+** 会话开启（`SessionManager::onStartTalk`） | 需要原厂（方案 B）或自己重做前三层 | 真机已验证（生产中） |
+| **多轮**：说完一句不喊唤醒词继续说 | 上面全部 **+** 平台会话续期（`duplexDialogRenew`、`EOUDetector`、`ContinuousDialogManager`） | **目前不能**（续期开关来自服务端） | `04_continuity.md` 现场日志 |
+
+由此得到两条口径，写清楚免得被误读：
+
+1. `duplexDialogRenew = 0` 证明的是**当前原厂平台会话没有续期**；
+   它**不能**推出"引擎级会话永远无法独立维持录音"——引擎级（`LocalASRManager::start` + `feed`）
+   是另一层的东西，只是本轮既没有验证它，也没有调用它。
+2. 反过来，"本地引擎可以独立跑"（若将来验证成立）**也不等于**"连续对话就解决了"：
+   录音什么时候停、下一句什么时候开始听，仍然由平台会话层裁决。
+
+## 7. 本轮不做的事（明确记录）
 
 - 没有 `dlopen` 任何原厂库；
 - 没有调用 `onStartTalk` / `onStopTalk` / `startFullDuplexDialog` / `LocalASRManager::start`；

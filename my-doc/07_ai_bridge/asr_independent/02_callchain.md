@@ -94,14 +94,14 @@
 | `sym` | `TGEngineAdapter::{init,startLocalASR(AGLocalASRStartInfo const&),feedLocalASR,stopLocalASR,onLocalASRResult,setLocalASRListener}` |
 | `sym` | `TGEngineAdapterHook::{onASRResult,onNLUResult,onVADStatus,onWakeupPCMData,onWakeupStatus}` |
 | `sym` | `AILabs::TGLEngine::{InitBeamSearch,FeedPCM,FeedFBank}`、`BeamSearch::FeedBPE`、`DictHandler`、`AceLMHandler`、`AILabs::parm::xFBank`（MFCC/FBank 特征） |
-| `dt_needed` | `libaceAsr.so → libace.so + libaceNlu.so`（纯计算，**不依赖任何网络库**） |
+| `dt_needed` | `libaceAsr.so → libace.so + **libaceNlu.so**`（纯计算，**不依赖任何网络库**）。这是**链接期依赖**：加载 libaceAsr 必须能解析 libaceNlu；但它**不代表识别流程必须执行原厂 NLU** —— 文本在 `onStream` 就已产出，`onNlpResult` 在其后 |
 | 资源 | `libmodel.bin.so`(3.2 MB) / `libconfigure.bin.so`(836 KB) / `assets/asr_bg.zip` / `assets/fuzzylexicon.bin` |
 | `cfg` | `localASR=true` |
-| `maps` | **`libaceAsr.so` / `libmodel.bin.so` / `libconfigure.bin.so` 在 `:core` 里零映射** |
+| `maps` | `libaceAsr.so` / `libmodel.bin.so` / `libconfigure.bin.so` 在 `:core` 的**空闲态快照**里零映射（可能是按需加载，见 `03_feasibility.md` §3.2） |
 
-结论：本地引擎是**完整可用的本地解码器**（特征提取 + beam search + LM + BPE 词表），但当前空闲态没有加载。
-`LocalASRManager::loadleLocalEngine(bool)` + `shouldEnableLocalASR(const WakeupInfo&)` 的存在说明它
-**按唤醒信息（场景/网络/机型）决定是否加载**。
+结论：本地引擎**具备完整的本地解码能力**（特征提取 + beam search + LM + BPE 词表），
+但**空闲态没有加载**；`LocalASRManager::loadleLocalEngine(bool)` + `shouldEnableLocalASR(const WakeupInfo&)`
+说明它可以按唤醒信息（场景/网络/机型）**按需加载**。因此"空闲态零映射"**不能**得出"识别时不加载"。
 
 ## 4. 两路汇聚点：`SessionManager::onStream`
 
@@ -115,7 +115,8 @@ AliAiLabs::AGUI::SessionManager::onStream(int sid, char const* text,
 
 - 符号：`_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh`，`libsmartbox.so` 偏移 `0x11353c`
   （ARM，前两条指令 `E92D4FF0 / E28DB01C`，与 `hook` 源码注释一致）。
-- **`isOffline` 这个参数本身就是"本地/云端两路合一"的铁证**：同一个回调既收云端结果也收本地结果。
+- **`isOffline` 这个参数说明结果层区分"本地结果 / 云端结果"**，两路文本都从这个回调流出
+  （注意：参数存在 = 框架有这个维度；**不等于**我们已知它每次取什么值 —— 当前 Hook 没有记录它）。
 - 由此回答问题"**T6 Hook 截获的是哪个层级**"：
   - 不是引擎内部（不是 `TGLEngine::FeedPCM`，也不是 WebSocket 解包）；
   - 不是 JNI/Java 层（`ASRClient` / `ASRManager` 那一层在 `smartapp` 主进程侧）；
