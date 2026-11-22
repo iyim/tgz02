@@ -432,24 +432,36 @@ int tg_hook_uninstall(void)
 
 static volatile int g_nlu_state = TG_E_NOT_INSTALLED;
 static volatile int g_nlu_patched;
-static volatile int g_nlu_enabled;      /* 环境变量开关（nlu_boot 里只写一次） */
-static volatile int g_nlu_booted;
+static volatile int g_nlu_enabled;      /* 环境变量开关（nlu_boot_once 里写一次） */
+static volatile int g_nlu_boot_done;    /* 1 = 一次性初始化已经结束（仅用于诊断） */
+static volatile int g_nlu_init_failed;  /* 1 = 初始化失败（此时接管必须 fail-closed） */
 static int          g_nlu_mask = 0x7F;  /* T7B_ROUTE_ALL */
 static uint32_t     g_nlu_func;
 static uint32_t     g_nlu_orig[2];
 static void        *g_nlu_page;
 static t8_to_state  g_to;
 
+/*
+ * T8-04：一次性初始化闸门。
+ *   - 用 pthread_once（bionic 自带、ARM32 上就是一次原子 load + 分支）：**严格只执行一次**，
+ *     后到的线程在 winner 完成前阻塞在 pthread_once 里，不会看到"初始化到一半"的 g_to；
+ *   - 因此不会重复 pthread_mutex_init（那会毁掉已持有的锁）；
+ *   - 初始化失败**不重试**：g_nlu_init_failed=1、g_to.mutex_ready=0，
+ *     t8_to_enabled_set(&g_to,1) 返回 -1，之后 on_final 走 T8_TO_TAKE_FAILCLOSED、
+ *     should_drop 恒返回 1 —— fail-closed，绝不会静默放行；
+ *   - 初始化体只做 getenv/strtol/一次 mutex_init/一次 slog，微秒级，
+ *     回调里等到的只有这一个短临界，没有嵌套锁、没有 I/O 等待。
+ */
+static pthread_once_t g_nlu_once = PTHREAD_ONCE_INIT;
+
 /* Hook 级计数（只用原子加；不含任何文本内容） */
 static volatile unsigned long g_nlu_final_seen, g_nlu_final_pass, g_nlu_final_failclosed;
 static volatile unsigned long g_nlu_nlp_calls, g_nlu_nlp_skip, g_nlu_nlp_pass;
 
-static void nlu_boot(void)
+static void nlu_boot_once(void)
 {
     const char *v;
     int rc;
-
-    if (__atomic_load_n(&g_nlu_booted, __ATOMIC_ACQUIRE)) return;
 
     v = getenv("TG_NLU_ROUTE_MASK");
     if (v != NULL && v[0] != '\0') {
@@ -459,21 +471,23 @@ static void nlu_boot(void)
     v = getenv("TG_NLU_TAKEOVER");
     if (v != NULL && (v[0] == '1' || v[0] == 'y' || v[0] == 'Y')) {
         rc = t8_to_init(&g_to);
-        (void)t8_to_enabled_set(&g_to, 1);
+        if (rc != 0) g_nlu_init_failed = 1;
+        (void)t8_to_enabled_set(&g_to, 1);      /* 锁不可用时返回 -1，但开关记为开 -> fail-closed */
         g_nlu_enabled = 1;
-        slog("nlu takeover: ENABLED (t8_to_init=%d ready=%d init_error=%d mask=0x%02x)",
-             rc, g_to.mutex_ready, g_to.init_error, g_nlu_mask);
+        slog("nlu takeover: ENABLED (t8_to_init=%d ready=%d init_error=%d failed=%d mask=0x%02x)",
+             rc, g_to.mutex_ready, g_to.init_error, g_nlu_init_failed, g_nlu_mask);
     } else {
         g_nlu_enabled = 0;
         slog("nlu takeover: disabled (default; factory behaviour unchanged)");
     }
-    __atomic_store_n(&g_nlu_booted, 1, __ATOMIC_RELEASE);
+    /* 放行顺序：先确保 enabled/init 状态可见，再宣布 boot 完成（诊断用） */
+    __atomic_store_n(&g_nlu_boot_done, 1, __ATOMIC_RELEASE);
 }
 
 static int nlu_want_enabled(void)
 {
-    nlu_boot();
-    return g_nlu_enabled;
+    (void)pthread_once(&g_nlu_once, nlu_boot_once);
+    return __atomic_load_n(&g_nlu_enabled, __ATOMIC_ACQUIRE);
 }
 
 /* onStream(isFinished=1) 时登记会话归属；开关关闭时什么都不做 */
@@ -717,15 +731,18 @@ void tg_nlu_stats(char *buf, size_t cap)
     t8_to_snapshot s;
 
     if (buf == NULL || cap == 0) return;
+    (void)nlu_want_enabled();          /* 保证开关/初始化状态已经就位（pthread_once，只跑一次） */
     memset(&s, 0, sizeof(s));
     if (g_to.mutex_ready) {
         t8_to_snapshot_take(&g_to, wall_ms(), &s);
     }
     snprintf(buf, cap,
-             "nlu enabled=%d init_error=%d active=%d marked=%lu passed=%lu dropped=%lu "
-             "unknown=%lu overflow=%lu degraded=%d failclosed=%d fc_events=%lu fc_passes=%lu "
-             "final_seen=%lu nlp_calls=%lu nlp_skip=%lu nlp_pass=%lu",
-             s.enabled, s.init_error, s.active, s.marked, s.passed, s.dropped,
+             "nlu enabled=%d init_error=%d boot_done=%d init_failed=%d active=%d marked=%lu "
+             "passed=%lu dropped=%lu unknown=%lu overflow=%lu degraded=%d failclosed=%d "
+             "fc_events=%lu fc_passes=%lu final_seen=%lu nlp_calls=%lu nlp_skip=%lu nlp_pass=%lu",
+             s.enabled, s.init_error,
+             GET(g_nlu_boot_done), GET(g_nlu_init_failed),
+             s.active, s.marked, s.passed, s.dropped,
              s.unknown, s.overflow_events, s.degraded, s.failclosed,
              s.failclosed_events, s.failclosed_passes,
              GET(g_nlu_final_seen), GET(g_nlu_nlp_calls), GET(g_nlu_nlp_skip), GET(g_nlu_nlp_pass));

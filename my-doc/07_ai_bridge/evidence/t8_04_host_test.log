@@ -1,0 +1,34 @@
+﻿# T8-04 host test log (boot-once gate)
+# host time: 2026-11-22 18:35:06
+
+=== build t8_04_boot_once_test ===
+gcc -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_04_boot_once_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_04_boot_once_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_takeover.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c
+(no compiler output: 0 warning, 0 error)
+exit : 0
+
+=== run t8_04_boot_once_test ===
+=== T8-04 boot-once gate test (pthread_once) ===
+
+[A] 8 threads x 300 iterations, first call races (init artificially slowed to 120 ms)
+  init_runs=1 early_entries=0 wrong_decisions=0
+
+[B] hot path after boot does not re-enter the init body
+  init_runs still = 1 after 1000 hot calls
+
+[C] init failure stays fail-closed (no retry, no silent pass)
+  want=1
+  enabled=1 mutex_ready=0 enabled_set=-1 init_error=1
+  init_runs=1 (no retry); 100x2 calls all fail-closed
+
+RESULT: pass=421 fail=0
+exit : 0
+PASS boot-once test: 421 assertions
+
+=== source assertions (libtg_hook.c) ===
+PASS nlu boot gate is a pthread_once_t with PTHREAD_ONCE_INIT
+PASS nlu_want_enabled() goes through pthread_once(&g_nlu_once, nlu_boot_once)
+PASS old volatile double-checked gate is gone
+PASS init failure is recorded (g_nlu_init_failed)
+PASS enabled is set even when init fails (fail-closed path)
+
+# result: OK (boot-once + source assertions)
