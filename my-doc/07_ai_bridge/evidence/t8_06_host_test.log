@@ -1,0 +1,154 @@
+﻿# T8-06 host test log (CAS switch + page-protection restore)
+# host time: 2026-11-22 19:02:18
+
+=== build t8_06_switch_test ===
+gcc -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_06_switch_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_06_switch_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_switch.c
+(no compiler output: 0 warning, 0 error)
+PASS t8_06_switch_test: 0 warning / 0 error
+
+=== run t8_06_switch_test ===
+T8-06 switch test (production nlu_switch.c, single atomic state word)
+
+[A] 8 workers (install/uninstall/on/off) x 60000 rounds + 2 observers
+  ops: install=120000 uninstall=120000 on=120000 off=120000 refused_on=59268
+  observations=148681 violations=0 bad_mode=0
+
+[B] uninstall racing with enable, 20000 rounds
+  final states: illegal=0 (installed&&takeover)=0
+
+[C] disable -> callback decision is PASS again
+
+[D] counters and defensive mode check
+
+RESULT: pass=39 fail=0
+exit : 0
+PASS t8_06_switch_test: 39 assertions, 0 failures
+
+=== build t8_06_reprotect_test ===
+gcc -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_06_reprotect_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_06_reprotect_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_patch.c
+(no compiler output: 0 warning, 0 error)
+PASS t8_06_reprotect_test: 0 warning / 0 error
+
+=== run t8_06_reprotect_test ===
+T8-06 page-protection restore test (production nlu_patch.c)
+
+[A] restore succeeds
+
+[B] install: machine code written, protection restore fails
+
+[C] second call retries the restore and succeeds
+
+[D] restore keeps failing
+
+[E] uninstall: entry restored, protection restore fails
+
+[E2] retry after the entry is already original
+
+[F] sweep: a transaction whose restore failed never returns NP_OK
+
+[G] snapshot / textual surface
+  snapshot: np{state=patched err=reprotect installs=0 skips=0 install_fails=1 refusals=0 uninstalls=0 uninstall_fails=0 restores=0 restore_fails=0 busy=0 prot_ok=0 prot_fails=1 before=[e92d4ff0 e28db01c] after=[e51ff004 7f001234] uninst=[00000000 00000000] now=[e51ff004 7f001234]}
+
+RESULT: pass=61 fail=0
+exit : 0
+PASS t8_06_reprotect_test: 61 assertions, 0 failures
+
+=== build t8_05_switch_test ===
+gcc -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_05_switch_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_05_switch_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_switch.c
+(no compiler output: 0 warning, 0 error)
+PASS t8_05_switch_test: 0 warning / 0 error
+
+=== run t8_05_switch_test ===
+T8-05 switch test (production nlu_switch.c)
+
+[A] default state and truth table
+
+[B] enable before install must be refused
+
+[C] installing the patch must not enable takeover
+
+[D] explicit enable, then immediate disable
+
+[E] fail-closed while takeover is on
+
+[F] uninstall forces takeover off
+
+[G] 4 togglers + 4 readers x 200000 rounds on one nls_state
+  sets_on=800000 sets_off=800000 reads=800000 bad=0
+
+[H] argument handling
+
+RESULT: pass=54 fail=0
+exit : 0
+PASS t8_05_switch_test: 54 assertions, 0 failures
+
+=== build t8_05_patch_test ===
+gcc -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_05_patch_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_05_patch_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_patch.c
+(no compiler output: 0 warning, 0 error)
+PASS t8_05_patch_test: 0 warning / 0 error
+
+=== run t8_05_patch_test ===
+T8-05 patch test (production nlu_patch.c)
+
+[A] refuse to patch without a frozen world
+
+[B] transactional install
+
+[B2] idempotent second install
+
+[C] transactional uninstall
+
+[C2] uninstall when nothing is patched
+
+[D] foreign bytes at the entry: refuse both directions
+
+[E] abort paths that must not write
+
+[F] partial write, rollback succeeds
+
+[G] partial write, rollback also fails -> never report success
+
+[H] uninstall failures must be reported, not papered over
+
+[I] reentrant install is refused, outer transaction still succeeds
+
+[J] machine-code record and formatting
+  snapshot: np{state=idle err=ok installs=1 skips=0 install_fails=0 refusals=0 uninstalls=1 uninstall_fails=0 restores=0 restore_fails=0 busy=0 prot_ok=2 prot_fails=0 before=[e92d4ff0 e28db01c] after=[e51ff004 7f001234] uninst=[e92d4ff0 e28db01c] now=[e92d4ff0 e28db01c]}
+
+RESULT: pass=109 fail=0
+exit : 0
+PASS t8_05_patch_test: 109 assertions, 0 failures
+
+=== source assertions (nlu_switch.h / nlu_switch.c) ===
+PASS switch state is one atomic word
+PASS both bits are defined on the same word
+PASS no separate installed/takeover fields (two-variable design is gone)
+PASS state changes are linearised with CAS
+PASS uninstall clears both bits in one CAS
+PASS nls_mode has the defensive installed check before DECIDE
+
+=== source assertions (hook_agent/libtg_hook.c) ===
+PASS control mutex is statically initialised (no init failure path)
+PASS control lock uses trylock with bounded retries (no unbounded wait)
+PASS every control entry point takes the lock (>=5 call sites)
+PASS every locked path unlocks (>=5 unlock sites)
+PASS uninstall order: disable takeover -> restore entry -> mark uninstalled
+PASS table-init failure returns TG_E_NOT_READY (not a normal enable)
+PASS switch and session-table states are cross-checked inside the lock
+PASS nlu_pp_reprotect returns an error code
+PASS mprotect restore failure is reported with page/prot/errno
+PASS export present: tg_nlu_prot_state
+PASS export present: tg_nlu_prot_restore
+PASS export present: tg_nlu_prot_text
+PASS prot retry calls the same production restore function
+
+=== source assertions (nlu_patch.c / nlu_patch.h) ===
+PASS reprotect hook now returns int (failure is reportable)
+PASS NP_E_REPROTECT defined
+PASS np_err_name maps NP_E_REPROTECT
+PASS both transactions report the restore failure (install + uninstall)
+PASS restore failure forces NP_E_REPROTECT and marks prot_dirty
+PASS pending restore is retried on the next transaction
+PASS uninstall distinguishes 'entry restored' from 'protection failed'
+
+# result: OK (4 suites + source assertions)

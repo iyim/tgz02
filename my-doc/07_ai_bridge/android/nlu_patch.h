@@ -63,6 +63,7 @@
 #define NP_E_NOT_PATCHED (-8)   /* 卸载时入口本来就是原厂（没什么可恢复） */
 #define NP_E_BUSY        (-9)   /* 重入 / 并发事务 */
 #define NP_E_PROT        (-10)  /* 去写保护失败 */
+#define NP_E_REPROTECT   (-11)  /* 恢复写保护失败：入口机器码可能已正确，但页面仍是 RWX */
 
 typedef struct {
     uint32_t *entry;            /* 目标入口（2 个 32 位指令字） */
@@ -76,7 +77,7 @@ typedef struct {
     void (*thaw)(void *ud);
     void (*flush)(void *ud, uint32_t *p, int nwords);
     int  (*unprotect)(void *ud, const char *what, char *err, size_t cap);  /* 0 = 可写 */
-    void (*reprotect)(void *ud);
+    int  (*reprotect)(void *ud, char *err, size_t cap);                    /* 0 = 已恢复 */
     /*
      * 测试注入：只写一个字就返回失败，用来证明"失败必须回滚且不能残留半截补丁"。
      * 生产上为 NULL（直接 entry[idx] = w）。
@@ -87,6 +88,12 @@ typedef struct {
     volatile int state;
     volatile int error;         /* 上一次事务的返回值（NP_OK/NP_E_*） */
     volatile int lock;          /* 事务互斥（重入检测） */
+    /*
+     * T8-06：上一次事务的"页面保护恢复未确认"标记。
+     * 置位后下一次进入事务（哪怕是幂等跳过 / 已经是原厂）都会再尝试恢复一次，
+     * 因为"机器码对了但页面还开着写权限"这件事不能靠下一次安装的成功来掩盖。
+     */
+    volatile int prot_dirty;
     uint32_t code_before[NP_WORDS];      /* 安装前实测机器码 */
     uint32_t code_after[NP_WORDS];       /* 安装后实测机器码 */
     uint32_t code_uninstall[NP_WORDS];   /* 卸载后实测机器码 */
@@ -94,7 +101,8 @@ typedef struct {
     unsigned long installs, install_skips, install_fails, install_refusals;
     unsigned long uninstalls, uninstall_fails;
     unsigned long restores, restore_fails, busy_hits;
-    char last_error[192];
+    unsigned long reprotect_ok, reprotect_fails;   /* 代码页保护恢复的确认/失败次数 */
+    char last_error[320];       /* 必须能同时放下"原操作结果 + 机器码 + 保护恢复失败原因" */
 } np_patch;
 
 /* 初始化：entry/expect/patch 必须由调用方给出（本模块不解析符号、不分配内存） */

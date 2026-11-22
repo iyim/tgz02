@@ -1,0 +1,191 @@
+﻿# T8-06 disassembly / symbol check (ARM32, armv7a-linux-androideabi26-clang -O2)
+# host time: 2026-11-22 19:02:51
+# artifact: libtg_hook.so sha256=50e533620a72afb18ee6743f47476e62377716c9cd385532aa554b19b4c37eaf
+
+## 1) T8-06 exports
+00008fa4 T nls_init
+00008fd8 T nls_installed
+000091a8 T nls_mode
+000091dc T nls_mode_name
+0000918c T nls_note_init_failure
+00009028 T nls_set_installed
+000090c8 T nls_set_takeover
+00008ff4 T nls_takeover
+00009204 T np_err_name
+00009378 T np_init
+0000946c T np_install
+00009430 T np_installed
+000092fc T np_sample
+0000a61c T np_snapshot
+00009454 T np_state
+00009230 T np_state_name
+00009d48 T np_uninstall
+00009258 T np_words
+00004c48 T tg_nlu_prot_restore
+00004984 T tg_nlu_prot_state
+00004b1c T tg_nlu_prot_text
+
+## 2) control-lock imports (trylock = bounded wait, no unbounded lock)
+         U pthread_attr_destroy
+         U pthread_attr_init
+         U pthread_attr_setstacksize
+         U pthread_cond_signal
+         U pthread_cond_timedwait
+         U pthread_create
+         U pthread_mutex_destroy
+         U pthread_mutex_init
+         U pthread_mutex_lock
+         U pthread_mutex_trylock
+         U pthread_mutex_unlock
+         U pthread_once
+
+## 3) nls_* : CAS loop present (ldrex/strex + dmb)
+--- nls_set_installed ---
+    9040:	dmb	ish
+    904c:	clrex
+    9058:	dmb	ish
+    9068:	ldrex	r3, [r0]
+    9078:	dmb	ish
+    907c:	strex	r2, lr, [r0]
+    9088:	ldrex	r3, [r0]
+    90ac:	ldrex	r0, [r2]
+    90b4:	strex	r1, r0, [r2]
+--- nls_set_takeover ---
+    90e0:	dmb	ish
+    90f4:	clrex
+    9100:	dmb	ish
+    9124:	ldrex	r3, [r0]
+    9130:	dmb	ish
+    9134:	strex	r2, lr, [r0]
+    9140:	ldrex	r3, [r0]
+    9174:	ldrex	r2, [r1]
+    917c:	strex	r3, r2, [r1]
+--- nls_mode ---
+    91bc:	dmb	ish
+
+## 4) np_install / np_uninstall: NP_E_REPROTECT (-11 -> mvn #10) and hook calls
+--- np_install ---
+    9478:	cmp	r0, #0
+    949c:	cmp	r1, #0
+    94b8:	cmp	r3, #0
+    94c0:	cmp	r1, #0
+    951c:	cmp	r0, #0
+    95b4:	cmp	r8, #0
+    95bc:	cmp	r0, #0
+    9604:	blx	r8
+    9608:	cmp	r0, #0
+    9634:	cmp	r0, #0
+    96cc:	cmp	r3, #0
+    96ec:	blx	r3
+    96f0:	cmp	r0, #0
+    9704:	cmp	r0, #0
+    9738:	cmp	r0, #0
+    9758:	mvn	r5, #10
+    975c:	cmp	r9, #0
+    976c:	cmp	r5, #0
+    9780:	blx	r1
+    9784:	cmp	r5, #0
+    97c0:	cmp	r0, #0
+    981c:	cmp	r7, #0
+    983c:	blx	r7
+    9840:	cmp	r0, #0
+    985c:	cmp	r2, #0
+    98cc:	cmp	r7, #0
+    98e4:	blx	r7
+    98e8:	cmp	r0, #0
+    9918:	cmp	r3, #0
+    992c:	blx	r3
+    9938:	cmp	r7, #0
+    9950:	blx	r7
+    9954:	cmp	r0, #0
+    9990:	cmp	r3, #0
+    99bc:	cmp	r3, #0
+    99d0:	blx	r3
+    99d8:	cmp	r0, #0
+    9ad8:	cmp	r7, #0
+    9af0:	blx	r7
+    9af4:	cmp	r0, #0
+    9b20:	cmp	r3, #0
+    9b34:	blx	r3
+    9b40:	cmp	r7, #0
+    9b58:	blx	r7
+    9b5c:	cmp	r0, #0
+    9b90:	cmp	r3, #0
+    9ba4:	blx	r3
+    9bac:	cmp	r0, #0
+    9c28:	cmp	r6, #0
+    9c30:	cmp	r6, #0
+    9c6c:	cmp	r6, #0
+--- np_uninstall ---
+    9d54:	cmp	r0, #0
+    9d78:	cmp	r1, #0
+    9d94:	cmp	r3, #0
+    9d9c:	cmp	r1, #0
+    9de8:	cmp	r0, #0
+    9e68:	cmp	r0, #0
+    9e70:	cmp	r6, #0
+    9ec0:	blx	r3
+    9ec4:	cmp	r0, #0
+    9ee4:	cmp	r0, #0
+    9f2c:	cmp	r3, #0
+    9f44:	blx	r3
+    9f48:	cmp	r0, #0
+    9f5c:	cmp	r0, #0
+    9fd8:	cmp	r2, #0
+    a000:	mvn	r5, #10
+    a008:	cmp	r7, #0
+    a020:	cmp	r5, #0
+    a050:	blx	r1
+    a068:	cmp	r0, #0
+    a0f4:	cmp	r6, #0
+    a114:	blx	r6
+    a118:	cmp	r0, #0
+    a134:	cmp	r2, #0
+    a15c:	cmp	r6, #0
+    a174:	blx	r6
+    a178:	cmp	r0, #0
+    a1a8:	cmp	r3, #0
+    a1bc:	blx	r3
+    a1c8:	cmp	r6, #0
+    a1e0:	blx	r6
+    a1e4:	cmp	r0, #0
+    a220:	cmp	r3, #0
+    a24c:	cmp	r3, #0
+    a260:	blx	r3
+    a26c:	cmp	r0, #0
+    a2d0:	cmp	r6, #0
+    a2e8:	blx	r6
+    a2ec:	cmp	r0, #0
+    a318:	cmp	r3, #0
+    a32c:	blx	r3
+    a338:	cmp	r6, #0
+    a350:	blx	r6
+    a354:	cmp	r0, #0
+    a388:	cmp	r3, #0
+    a39c:	blx	r3
+    a3a4:	cmp	r0, #0
+    a40c:	cmp	r0, #0
+    a454:	cmp	r8, #0
+
+## 5) uninstall ordering inside tg_nlu_uninstall (nls_set_takeover(0) before np_uninstall)
+# call order as emitted:
+    40f4:	bl	2e7c <pthread_once@plt>
+    4100:	bl	2e94 <pthread_mutex_trylock@plt>
+    4174:	bl	408c <nlu_err_set>
+    41c0:	bl	408c <nlu_err_set>
+    41d4:	bl	36ac <slog>
+    41ec:	bl	2ef4 <nls_set_takeover@plt>
+    41fc:	bl	2f00 <t8_to_enabled_set@plt>
+    4210:	bl	2f30 <np_uninstall@plt>
+    421c:	bl	2edc <np_installed@plt>
+    424c:	bl	2ee8 <nls_set_installed@plt>
+    4268:	bl	408c <nlu_err_set>
+    427c:	bl	36ac <slog>
+    429c:	bl	2eb8 <pthread_mutex_unlock@plt>
+    42ac:	bl	2ee8 <nls_set_installed@plt>
+    42cc:	bl	408c <nlu_err_set>
+    42ec:	bl	2eb8 <pthread_mutex_unlock@plt>
+    4300:	bl	2ee8 <nls_set_installed@plt>
+    4354:	bl	408c <nlu_err_set>
+    4368:	bl	36ac <slog>
+    4388:	bl	2eb8 <pthread_mutex_unlock@plt>

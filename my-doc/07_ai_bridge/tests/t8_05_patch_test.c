@@ -90,7 +90,14 @@ static int h_unprotect(void *ud, const char *what, char *err, size_t cap)
     return 0;
 }
 
-static void h_reprotect(void *ud) { (void)ud; g_reprot_calls++; }
+static int h_reprotect(void *ud, char *err, size_t cap)
+{
+    (void)ud;
+    (void)err;
+    (void)cap;
+    g_reprot_calls++;
+    return 0;      /* T8-06: reprotect 现在有返回值；本套件只验证成功路径 */
+}
 
 static int h_write(void *ud, uint32_t *p, int idx, uint32_t w)
 {

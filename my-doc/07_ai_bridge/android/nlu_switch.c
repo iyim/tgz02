@@ -1,23 +1,25 @@
-/*
- * nlu_switch.c -- T8-05：接管开关与安装状态的判定实现（无锁、纯原子读写）
- *
- * 编译环境两处共用：ARM32（Android 8.1 / clang）与 Windows 主机（TDM-GCC），
- * 所以这里只依赖 <stddef.h> 与 __atomic_* 内建，不用 pthread、不用 stdio。
- */
 #include "nlu_switch.h"
 
-#define ALOAD(p)      __atomic_load_n((p), __ATOMIC_ACQUIRE)
-#define ASTORE(p, v)  __atomic_store_n((p), (v), __ATOMIC_RELEASE)
-#define ARLOAD(p)     __atomic_load_n((p), __ATOMIC_RELAXED)
-#define ARSTORE(p, v) __atomic_store_n((p), (v), __ATOMIC_RELAXED)
-#define AINC(p)       __atomic_fetch_add((p), 1UL, __ATOMIC_RELAXED)
+#define ALOAD(p) \
+    __atomic_load_n((p), __ATOMIC_ACQUIRE)
+
+#define ACAS(p, oldv, newv) \
+    __atomic_compare_exchange_n((p), &(oldv), (newv), 0, \
+                                __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)
+
+#define ARSTORE(p, v) \
+    __atomic_store_n((p), (v), __ATOMIC_RELAXED)
+
+#define AINC(p) \
+    __atomic_fetch_add((p), 1UL, __ATOMIC_RELAXED)
 
 void nls_init(nls_state *s)
 {
     if (s == NULL) return;
-    ARSTORE(&s->installed, 0);
-    ARSTORE(&s->takeover, 0);
+
+    __atomic_store_n(&s->state, 0u, __ATOMIC_RELEASE);
     ARSTORE(&s->init_failed, 0);
+
     ARSTORE(&s->sets_on, 0UL);
     ARSTORE(&s->sets_off, 0UL);
     ARSTORE(&s->refused_on, 0UL);
@@ -28,62 +30,116 @@ void nls_init(nls_state *s)
 
 int nls_installed(const nls_state *s)
 {
-    return (s != NULL) ? ALOAD(&s->installed) : 0;
+    if (s == NULL) return 0;
+
+    return (ALOAD(&s->state) & NLS_BIT_INSTALLED) ? 1 : 0;
 }
 
 int nls_takeover(const nls_state *s)
 {
     if (s == NULL) return 0;
-    AINC(&((nls_state *)s)->reads);      /* 诊断计数：切换确实被读到过 */
-    return ALOAD(&s->takeover);
+
+    AINC(&((nls_state *)s)->reads);
+
+    return (ALOAD(&s->state) & NLS_BIT_TAKEOVER) ? 1 : 0;
 }
 
+/*
+ * 安装：
+ * 只设置 INSTALLED 位，不得隐式开启 TAKEOVER。
+ *
+ * 卸载：
+ * 单次 CAS 同时清除 INSTALLED 和 TAKEOVER。
+ * 不存在 installed=0 && takeover=1 的中间状态。
+ */
 int nls_set_installed(nls_state *s, int installed)
 {
+    unsigned int oldv;
+    unsigned int newv;
+
     if (s == NULL) return NLS_E_ARG;
-    if (installed) {
-        AINC(&s->install_marks);
-        ASTORE(&s->installed, 1);
-    } else {
-        AINC(&s->uninstall_marks);
-        /* 先关接管再标未安装：任何时刻读到的组合都不会是"没补丁却在接管" */
-        ASTORE(&s->takeover, 0);
-        ASTORE(&s->installed, 0);
+
+    oldv = ALOAD(&s->state);
+
+    for (;;) {
+        if (installed) {
+            newv = oldv | NLS_BIT_INSTALLED;
+        } else {
+            newv = oldv & ~(NLS_BIT_INSTALLED | NLS_BIT_TAKEOVER);
+        }
+
+        if (ACAS(&s->state, oldv, newv)) break;
     }
+
+    if (installed) AINC(&s->install_marks);
+    else AINC(&s->uninstall_marks);
+
     return NLS_OK;
 }
 
+/*
+ * 开启：
+ * CAS 时同时检查 INSTALLED。
+ *
+ * 关闭：
+ * CAS 清除 TAKEOVER。
+ *
+ * 并发 install/uninstall/on/off 全部通过同一个状态字线性化。
+ */
 int nls_set_takeover(nls_state *s, int on)
 {
+    unsigned int oldv;
+    unsigned int newv;
+
     if (s == NULL) return NLS_E_ARG;
-    if (!on) {
-        AINC(&s->sets_off);
-        ASTORE(&s->takeover, 0);
-        return NLS_OK;
+
+    oldv = ALOAD(&s->state);
+
+    for (;;) {
+        if (on) {
+            if (!(oldv & NLS_BIT_INSTALLED)) {
+                AINC(&s->refused_on);
+                return NLS_E_UNSAFE;
+            }
+
+            newv = oldv | NLS_BIT_TAKEOVER;
+        } else {
+            newv = oldv & ~NLS_BIT_TAKEOVER;
+        }
+
+        if (ACAS(&s->state, oldv, newv)) break;
     }
-    if (!ALOAD(&s->installed)) {
-        /* 没有入口补丁就没有回调：此时"开启"只能是假象，明确拒绝并保持关闭 */
-        AINC(&s->refused_on);
-        ASTORE(&s->takeover, 0);
-        return NLS_E_UNSAFE;
-    }
-    AINC(&s->sets_on);
-    ASTORE(&s->takeover, 1);
+
+    if (on) AINC(&s->sets_on);
+    else AINC(&s->sets_off);
+
     return NLS_OK;
 }
 
 void nls_note_init_failure(nls_state *s, int failed)
 {
     if (s == NULL) return;
-    ASTORE(&s->init_failed, failed ? 1 : 0);
+
+    __atomic_store_n(&s->init_failed, failed ? 1 : 0,
+                     __ATOMIC_RELEASE);
 }
 
 int nls_mode(const nls_state *s, int ready)
 {
+    unsigned int state;
+
     if (s == NULL) return NLS_PASS;
-    if (!ALOAD(&s->takeover)) return NLS_PASS;
-    /* 接管开着但会话表不可用：绝不放行（fail-closed），也不去碰那张表 */
+
+    /* 一次读取完整状态，禁止分两次读取 installed/takeover */
+    state = ALOAD(&s->state);
+
+    if (!(state & NLS_BIT_TAKEOVER)) return NLS_PASS;
+
+    /* 防御性检查：不允许非法组合进入 DECIDE */
+    if (!(state & NLS_BIT_INSTALLED)) return NLS_PASS;
+
     if (!ready) return NLS_FAILCLOSED;
+
     return NLS_DECIDE;
 }
 

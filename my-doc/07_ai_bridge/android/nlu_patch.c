@@ -52,6 +52,7 @@ const char *np_err_name(int e)
     case NP_E_NOT_PATCHED: return "not_patched";
     case NP_E_BUSY:        return "busy";
     case NP_E_PROT:        return "prot";
+    case NP_E_REPROTECT:   return "reprotect";
     default:               return "?";
     }
 }
@@ -277,7 +278,34 @@ rollback:
     }
 
 done:
-    if (unprotected && p->reprotect != NULL) p->reprotect(p->ud);
+    /*
+     * 页面保护恢复必须检查返回值：恢复成功才允许返回原有结果。
+     * 恢复失败时**不再写入口、不做"强行回滚"** —— 当前页权限状态未经确认可写，
+     * 任何额外的写入都可能建立在错误假设上。这里只如实上报：
+     *   原操作结果 + 真实入口机器码 + 保护恢复失败原因（页面可能仍是 RWX）。
+     */
+    if (p->reprotect != NULL && (unprotected || p->prot_dirty)) {
+        char perr[96];
+        char keep[192];
+        int base = rc;
+
+        perr[0] = '\0';
+        memcpy(keep, p->last_error, sizeof(keep));
+        keep[sizeof(keep) - 1] = '\0';
+        if (p->reprotect(p->ud, perr, sizeof(perr)) != 0) {
+            p->reprotect_fails++;
+            p->prot_dirty = 1;
+            rc = NP_E_REPROTECT;
+            np_seterr(p, "%s; page protection restore FAILED: %s "
+                         "(entry machine code %08x %08x, page may still be RWX)",
+                      (keep[0] != '\0') ? keep : np_err_name(base),
+                      (perr[0] != '\0') ? perr : "no detail",
+                      (unsigned)p->code_now[0], (unsigned)p->code_now[1]);
+        } else {
+            p->reprotect_ok++;
+            p->prot_dirty = 0;
+        }
+    }
     if (frozen && p->thaw != NULL) p->thaw(p->ud);
     if (rc == NP_OK) {
         if (skipped) p->install_skips++;
@@ -399,7 +427,31 @@ int np_uninstall(np_patch *p, int world_frozen)
     }
 
 done:
-    if (unprotected && p->reprotect != NULL) p->reprotect(p->ud);
+    /* 同 np_install：保护恢复失败必须单独上报，不得混进"卸载成功" */
+    if (p->reprotect != NULL && (unprotected || p->prot_dirty)) {
+        char perr[96];
+        char keep[192];
+        int base = rc;
+        int entry_restored = (np_state(p) == NP_ST_IDLE) ? 1 : 0;
+
+        perr[0] = '\0';
+        memcpy(keep, p->last_error, sizeof(keep));
+        keep[sizeof(keep) - 1] = '\0';
+        if (p->reprotect(p->ud, perr, sizeof(perr)) != 0) {
+            p->reprotect_fails++;
+            p->prot_dirty = 1;
+            rc = NP_E_REPROTECT;
+            np_seterr(p, "%s; page protection restore FAILED: %s "
+                         "(entry %s: machine code %08x %08x, page may still be RWX)",
+                      (keep[0] != '\0') ? keep : np_err_name(base),
+                      (perr[0] != '\0') ? perr : "no detail",
+                      entry_restored ? "IS restored to the original prologue" : "is NOT the original prologue",
+                      (unsigned)p->code_now[0], (unsigned)p->code_now[1]);
+        } else {
+            p->reprotect_ok++;
+            p->prot_dirty = 0;
+        }
+    }
     if (frozen && p->thaw != NULL) p->thaw(p->ud);
     if (rc == NP_OK) p->uninstalls++;
     else if (rc != NP_E_NOT_PATCHED) p->uninstall_fails++;
@@ -426,9 +478,11 @@ void np_snapshot(np_patch *p, char *buf, size_t cap)
     snprintf(buf, cap,
              "np{state=%s err=%s installs=%lu skips=%lu install_fails=%lu refusals=%lu "
              "uninstalls=%lu uninstall_fails=%lu restores=%lu restore_fails=%lu busy=%lu "
+             "prot_ok=%lu prot_fails=%lu "
              "before=[%s] after=[%s] uninst=[%s] now=[%s]}",
              np_state_name(st), np_err_name(__atomic_load_n(&p->error, __ATOMIC_ACQUIRE)),
              p->installs, p->install_skips, p->install_fails, p->install_refusals,
              p->uninstalls, p->uninstall_fails, p->restores, p->restore_fails, p->busy_hits,
+             p->reprotect_ok, p->reprotect_fails,
              b4, af, un, nw);
 }
