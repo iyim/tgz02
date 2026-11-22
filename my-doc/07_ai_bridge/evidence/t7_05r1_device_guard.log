@@ -1,0 +1,20 @@
+﻿[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t7/libtg_ttsguard.so check_only=1
+[inject] so_size=23008 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=30430 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t7/libtg_ttsguard.so)
+[inject] attached tid=30430 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xaf5ae000 stack=0xaf5b6000 trap=0xaf5bd000 gadget=0xb1574a6c
+[inject] dlopen=0xafde00ad (libdl.so)
+[inject] dlsym=0xafde00bf (libdl.so)
+[inject] dlerror=0xafde00b7 (libdl.so)
+[inject] path_written=0xaf5ae100 len=37
+[inject] dlopen ok handle=0xa82ed5ab flags=0x6
+[inject] dlsym ok install=0x8e6b1f60 prepare=0x8e6b17d0 status=0x8e6b290c
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x94cdf110,0x94cdfb04)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 play=1 start=1 func_play=94cdfafc func_start=94cdf110 play_seen=4 ours=4 not_ours=0 start_seen=12 allowed=4 dropped=5 hit_id=4 hit_text=0 empty=0 native_allowed=3 native_session=3 native_window=0 native_miss=0 native_reads=8 native_expired=5 native_bad=0 native_seq=1 native_file=/data/local/tmp/t5_bri
+[inject] RESULT check pid=30430 hooked=1
+[inject] detached (target thread resumed)

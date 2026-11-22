@@ -1,0 +1,34 @@
+﻿T7-05-R1 rollback verification (TG-Z02, 2026-11-22 09:52-09:53)
+===============================================================
+Command: su -c "/data/local/tmp/t7/run_t7_05.sh rollback"
+
+--- run 1 (before worker detection was fixed) ---
+uninstall pid=30430 [inject] detached (target thread resumed)
+check pid=30430 hooked=0
+guard uninstalled: hooked=0 on every :core
+guard-stop done (asr supervisor left untouched: 15812 )
+ok   worker sha=b3c8dde4cd6d6c0b035689ae6f50fbf92630c35e2de7cd519abd1d2cac1e4ed3
+ok   conf sha=82481c539df297b86ecf9dab8c0b5a0afdc3a9a623f43455ed0208516d8dad1e
+ok   guard sha=fc1d27f2357b5a3390035207f4fb8c70fe3c7403dca3335e56d55f8429ab67b4
+FAIL worker not running        <-- awk 不存在导致检测失败（真 bug，已修）
+core pid=30430  (guard not injected after rollback)
+rollback: FAIL
+
+--- run 2 (after replacing awk with /proc cmdline detection) ---
+uninstall pid=30430 [inject] detached after error (target thread resumed) exit=18
+check pid=30430
+guard uninstalled: hooked=0 on every :core
+guard-stop done (asr supervisor left untouched: 15812 )
+ok   worker sha=b3c8dde4cd6d6c0b035689ae6f50fbf92630c35e2de7cd519abd1d2cac1e4ed3
+ok   conf sha=82481c539df297b86ecf9dab8c0b5a0afdc3a9a623f43455ed0208516d8dad1e
+ok   guard sha=fc1d27f2357b5a3390035207f4fb8c70fe3c7403dca3335e56d55f8429ab67b4
+ok   worker running
+core pid=30430  (guard not injected after rollback)
+rollback: PASS
+
+Notes:
+* 三个产物全部恢复到 T7-04 的 sha256（worker / conf / guard.so），逐项打印 ok。
+* 守卫注入被卸载（hooked=0），rollback 后不再注入。
+* T6-01 的 ASR hook supervisor（pid 15812）全程未被触碰。
+* 回滚后 selfcheck 也再次通过（三个备份 sha 与脚本常量一致）。
+* 回滚完成后已重新部署 T7-05-R1（worker 5df4d8e6 / guard 6d989d8d），设备可用。
