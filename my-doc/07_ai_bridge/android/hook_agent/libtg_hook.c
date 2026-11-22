@@ -275,23 +275,38 @@ static int mem_find_sym(uintptr_t base, const char *want, uint32_t *out_addr,
 
 /* ------------------------------------------------------------- 代码页权限 */
 
-/* 从 /proc/self/maps 取某页当前的保护位（1=r 2=w 4=x）；查不到返回 7 */
+/* 从 /proc/self/maps 取某页当前的保护位（PROT_READ/PROT_WRITE/PROT_EXEC 组合）；
+ * 打不开文件或查不到该页返回 -1（"未知"必须是显式错误，不能伪装成某种权限） */
 static int page_prot(uintptr_t page)
 {
-    FILE *f = fopen("/proc/self/maps", "r");
+    FILE *f;
     char line[512];
 
-    if (f == NULL) return 7;
+    f = fopen("/proc/self/maps", "r");
+    if (f == NULL) return -1;
+
     while (fgets(line, sizeof(line), f) != NULL) {
-        unsigned long s = 0, e = 0;
+        unsigned long s = 0;
+        unsigned long e = 0;
         char perms[8] = {0};
-        if (sscanf(line, "%lx-%lx %7s", &s, &e, perms) != 3) continue;
-        if (page < s || page >= e) continue;
+        int prot;
+
+        if (sscanf(line, "%lx-%lx %7s", &s, &e, perms) != 3)
+            continue;
+
+        if (page < s || page >= e)
+            continue;
+
+        prot = (perms[0] == 'r' ? PROT_READ : 0) |
+               (perms[1] == 'w' ? PROT_WRITE : 0) |
+               (perms[2] == 'x' ? PROT_EXEC : 0);
+
         fclose(f);
-        return (perms[0] == 'r' ? 1 : 0) | (perms[1] == 'w' ? 2 : 0) | (perms[2] == 'x' ? 4 : 0);
+        return prot;
     }
+
     fclose(f);
-    return 7;
+    return -1;
 }
 
 /* --------------------------------------------------------------- Hook 本体 */
@@ -810,20 +825,43 @@ unsigned int tg_nlu_patch_hi(void) { return (g_nlu_func != 0) ? (g_nlu_func + 8u
 
 /* ---- 宿主侧钩子：指令页写保护与指令缓存刷新（由 nlu_patch 的事务调用） ---- */
 
-static int nlu_pp_unprotect(void *ud, const char *what, char *err, size_t cap)
+static int nlu_pp_unprotect(void *ud, const char *what,
+                            char *err, size_t cap)
 {
     uintptr_t page = (uintptr_t)g_nlu_func & ~(uintptr_t)0xFFF;
+    int original_prot;
 
     (void)ud;
-    if (!g_nlu_prot_valid) {            /* 只记第一次的原始保护位：后面再读会读到 RWX */
-        g_nlu_orig_prot = page_prot(page);
+
+    if (!g_nlu_prot_valid) {
+        original_prot = page_prot(page);
+
+        if (original_prot < 0 ||
+            (original_prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC)) != 0) {
+            if (err && cap) {
+                snprintf(err, cap,
+                         "cannot determine original page protection "
+                         "(page=0x%08x); refusing to change protection",
+                         (unsigned)page);
+            }
+            return -1;
+        }
+
+        g_nlu_orig_prot = original_prot;
         g_nlu_prot_valid = 1;
     }
-    if (mprotect((void *)page, 4096, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
-        snprintf(err, cap, "mprotect(%s, page=0x%08x, RWX) failed errno=%d",
-                 what, (unsigned)page, errno);
+
+    if (mprotect((void *)page, 4096,
+                 PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
+        if (err && cap) {
+            snprintf(err, cap,
+                     "mprotect(%s, page=0x%08x, RWX) failed errno=%d",
+                     what ? what : "unknown",
+                     (unsigned)page, errno);
+        }
         return -1;
     }
+
     return 0;
 }
 

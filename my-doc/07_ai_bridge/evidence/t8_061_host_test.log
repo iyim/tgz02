@@ -1,0 +1,77 @@
+﻿# T8-06.1 host test log (page_prot / nlu_pp_unprotect behaviour)
+# host time: 2026-11-22 19:08:19
+
+=== extract production functions from hook_agent/libtg_hook.c ===
+extracted: page_prot=31 lines, nlu_pp_unprotect=39 lines, nlu_pp_reprotect=26 lines -> D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_061_prod_snippet.inc
+PASS production functions extracted verbatim (no hand-written copy)
+
+=== build t8_061_page_prot_test ===
+gcc -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\tests -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_061_page_prot_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_061_page_prot_test.c
+(no compiler output: 0 warning, 0 error)
+PASS t8_061_page_prot_test: 0 warning / 0 error
+
+=== run t8_061_page_prot_test ===
+T8-06.1 page_prot / nlu_pp_unprotect / nlu_pp_reprotect behaviour test
+(production functions extracted verbatim from hook_agent/libtg_hook.c)
+
+[A] page_prot() reads /proc/self/maps correctly
+
+[A2] line selection
+
+[A3] unknown page / unreadable maps must be -1, never a fake prot
+
+[A4] every permission combination stays inside 0..7
+
+[B] nlu_pp_unprotect(): success path records the real original prot
+
+[B2] a second call reuses the cached baseline (no re-read)
+
+[C] unknown original protection must be refused, not assumed
+
+[C2] maps unreadable (the T8-06 P1 case)
+
+[C3] after a refusal the next attempt can still succeed
+
+[C4] mprotect failure inside a known baseline
+
+[C5] what == NULL and a legitimately writable page
+
+[D] nlu_pp_reprotect(): restore the recorded permission
+
+[D2] a page that really was RWX must be restored as RWX
+
+[D3] no baseline -> refuse, do not guess
+
+[D4] restore failure is reported with page/prot/errno
+
+[D5] NULL buffer must not crash
+
+RESULT: pass=73 fail=0
+exit : 0
+PASS t8_061_page_prot_test: 73 assertions, 0 failures
+
+=== source assertions (only as a complement to the behaviour test) ===
+PASS page_prot(): unknown page / unreadable maps -> -1 (old 'return 7' is gone)
+PASS nlu_pp_unprotect(): refuses to change protection when the baseline is unknown
+PASS baseline is marked valid only after the query succeeded
+
+=== regression suites ===
+  RESULT: pass=39 fail=0
+PASS t8_06_switch_test: 39 assertions, 0 failures
+  [B] install: machine code written, protection restore fails
+  [D] restore keeps failing
+  [E] uninstall: entry restored, protection restore fails
+  [F] sweep: a transaction whose restore failed never returns NP_OK
+    snapshot: np{state=patched err=reprotect installs=0 skips=0 install_fails=1 refusals=0 uninstalls=0 uninstall_fails=0 restores=0 restore_fails=0 busy=0 prot_ok=0 prot_fails=1 before=[e92d4ff0 e28db01c] after=[e51ff004 7f001234] uninst=[00000000 00000000] now=[e51ff004 7f001234]}
+  RESULT: pass=61 fail=0
+PASS t8_06_reprotect_test: 61 assertions, 0 failures
+  [E] fail-closed while takeover is on
+  RESULT: pass=54 fail=0
+PASS t8_05_switch_test: 54 assertions, 0 failures
+  [G] partial write, rollback also fails -> never report success
+  [H] uninstall failures must be reported, not papered over
+    snapshot: np{state=idle err=ok installs=1 skips=0 install_fails=0 refusals=0 uninstalls=1 uninstall_fails=0 restores=0 restore_fails=0 busy=0 prot_ok=2 prot_fails=0 before=[e92d4ff0 e28db01c] after=[e51ff004 7f001234] uninst=[e92d4ff0 e28db01c] now=[e92d4ff0 e28db01c]}
+  RESULT: pass=109 fail=0
+PASS t8_05_patch_test: 109 assertions, 0 failures
+
+# result: OK (T8-06.1 behaviour test + 4 regression suites)
