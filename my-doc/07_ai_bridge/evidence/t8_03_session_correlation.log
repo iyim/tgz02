@@ -1,0 +1,472 @@
+--------- beginning of system
+--------- beginning of main
+11-22 18:28:44.506  8342  8405 D WakeupManager: completeRequstWakeupInfo,61:wakeup word is 天猫精灵,pinyin is tian mao jing ling
+11-22 18:28:44.506  8342  8405 D WakeupManager: completeRequstWakeupInfo,76:active wakeup
+11-22 18:28:44.507  8342  8410 D WakeupManager: completeRequstWakeupInfo,110:wakeup event is valid, no need of completion
+11-22 18:28:44.512  8342  8410 D SessionManager: JNI_AILABS SessionManager.cpp:onStartTalk:255 [8410] sessionId = 1968506, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-22 18:28:44.512  8342  8374 W SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:81 [8374] start talk sessionId = 1968506
+11-22 18:28:44.512  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 1, preStatus = 6, sessionId = 1968506, preSessionId = 1968497
+11-22 18:28:44.512  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968506  status = 1
+11-22 18:28:44.514  8342  8422 W AudioManager: Use of stream types is deprecated for operations other than volume control
+11-22 18:28:44.514  8342  8422 W AudioManager: See the documentation of requestAudioFocus() for what to use instead with android.media.AudioAttributes to qualify your playback use case
+11-22 18:28:44.520  8342  8410 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [8410] sending, requestId = 2428, eventNs = AliGenie.Microphone, eventName =Active
+11-22 18:28:44.523  8342  8410 D SessionManager: JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [8410] foreground info, packageName = app.orchard.tv, className = app.orchard.tv.MainActivity, pkg = 
+11-22 18:28:44.523  8342  8410 W SessionManager: JNI_AILABS SessionManager.cpp:onGetClientContext:1438 [8410] no context
+11-22 18:28:44.527  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [8374] set status: notify status=1, session=1968506
+11-22 18:28:44.537  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [8374] sessionId = 1968506
+11-22 18:28:44.537  8342  8374 W SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:253 [8374] get systemContext sessionId = 1968506
+11-22 18:28:44.537  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [8374] onGetSystemContext sessionId = 1968506  mSystemContextCallback = 0x929d68c0
+11-22 18:28:44.550  8342  8401 D AudioManager: JNI_AILABS AudioManager.cpp:onPlayStatusChange:1025 [8401] pid:3148155, audioType:0, status:play, status:0, progress:0, feedback:0, callbackId:NULL
+11-22 18:28:44.554  8342  8422 W AudioManager: Use of stream types is deprecated for operations other than volume control
+11-22 18:28:44.554  8342  8422 W AudioManager: See the documentation of requestAudioFocus() for what to use instead with android.media.AudioAttributes to qualify your playback use case
+11-22 18:28:44.589  8342  8410 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [8410] sending, requestId = 1968506, eventNs = AliGenie.Microphone, eventName =ListenStarted
+11-22 18:28:44.590  8342  8410 W SessionManager: JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [8410] send startListened sessionId = 1968506
+11-22 18:28:44.677  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =1010, arg1 =1  arg2=0, size = 1
+11-22 18:28:44.677  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =1010, arg1 =1  arg2=0
+11-22 18:28:44.678  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =11, arg1 =0  arg2=3148155, size = 1
+11-22 18:28:44.680  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =11, arg1 =0  arg2=3148155
+11-22 18:28:44.767  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968506, commandDomain =AliGenie.Text  type =3
+11-22 18:28:44.768  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968506, text = 天, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:44.775  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968506, txt = 天, isFinished = 0, feedback = 1
+11-22 18:28:44.775  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 1, sessionId = 1968506, preSessionId = 1968506
+11-22 18:28:44.775  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968506  status = 2
+11-22 18:28:44.775  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [8374] set status: notify status=2, session=1968506
+11-22 18:28:44.788  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968506, commandDomain =AliGenie.Text  type =3
+11-22 18:28:44.789  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968506, text = 天猫精, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:44.789  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968506, txt = 天猫精, isFinished = 0, feedback = 1
+11-22 18:28:44.789  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 2, sessionId = 1968506, preSessionId = 1968506
+11-22 18:28:44.893  8342  8401 D AudioManager: JNI_AILABS AudioManager.cpp:onPlayStatusChange:1025 [8401] pid:3148155, audioType:0, status:complete, status:12, progress:0, feedback:0, callbackId:NULL
+11-22 18:28:44.893  8342  8401 D AudioManager: JNI_AILABS AudioManager.cpp:onPlayStatusChange:1069 [8401] group empty, pid:3148155, size:1
+11-22 18:28:44.893  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =11, arg1 =12  arg2=3148155, size = 1
+11-22 18:28:44.900  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =11, arg1 =12  arg2=3148155
+11-22 18:28:44.900  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =17, arg1 =12  arg2=3148155, size = 1
+11-22 18:28:44.901  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =17, arg1 =12  arg2=3148155
+11-22 18:28:44.969  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968506, commandDomain =AliGenie.Text  type =3
+11-22 18:28:44.969  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968506, text = 天猫精灵, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:44.969  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968506, txt = 天猫精灵, isFinished = 0, feedback = 1
+11-22 18:28:44.969  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 2, sessionId = 1968506, preSessionId = 1968506
+11-22 18:28:46.576  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968506, commandDomain =AliGenie.Text  type =3
+11-22 18:28:46.576  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968506, text = 天猫精灵郑州, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:46.577  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968506, txt = 天猫精灵郑州, isFinished = 0, feedback = 1
+11-22 18:28:46.577  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 2, sessionId = 1968506, preSessionId = 1968506
+11-22 18:28:46.578  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStream:206 [8374] sessionId = 1968506, isFinished = 0, text = 郑州
+11-22 18:28:46.726  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968506, commandDomain =AliGenie.Text  type =3
+11-22 18:28:46.726  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968506, text = 天猫精灵郑州有什, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:46.726  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968506, txt = 天猫精灵郑州有什, isFinished = 0, feedback = 1
+11-22 18:28:46.726  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 2, sessionId = 1968506, preSessionId = 1968506
+11-22 18:28:46.728  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStream:206 [8374] sessionId = 1968506, isFinished = 0, text = 郑州有什
+11-22 18:28:47.008  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968506, commandDomain =AliGenie.Text  type =3
+11-22 18:28:47.008  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968506, text = 天猫精灵郑州有什么, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:47.008  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968506, txt = 天猫精灵郑州有什么, isFinished = 0, feedback = 1
+11-22 18:28:47.008  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 2, sessionId = 1968506, preSessionId = 1968506
+11-22 18:28:47.009  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStream:206 [8374] sessionId = 1968506, isFinished = 0, text = 郑州有什么
+11-22 18:28:47.197  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968506, commandDomain =AliGenie.Text  type =3
+11-22 18:28:47.197  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968506, text = 天猫精灵郑州有什么好玩, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:47.197  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968506, txt = 天猫精灵郑州有什么好玩, isFinished = 0, feedback = 1
+11-22 18:28:47.197  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 2, sessionId = 1968506, preSessionId = 1968506
+11-22 18:28:47.198  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStream:206 [8374] sessionId = 1968506, isFinished = 0, text = 郑州有什么好玩
+11-22 18:28:47.490  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968506, commandDomain =AliGenie.Text  type =3
+11-22 18:28:47.490  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968506, text = 天猫精灵郑州有什么好玩的, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:47.490  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968506, txt = 天猫精灵郑州有什么好玩的, isFinished = 0, feedback = 1
+11-22 18:28:47.490  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 2, sessionId = 1968506, preSessionId = 1968506
+11-22 18:28:47.491  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStream:206 [8374] sessionId = 1968506, isFinished = 0, text = 郑州有什么好玩的
+11-22 18:28:47.687  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968506, commandDomain =AliGenie.Microphone  type =1
+11-22 18:28:47.687  8342  8433 W RouterManager: JNI_AILABS RouterManager.cpp:onAsrStopListen:266 [8433] stop listen, feedBackListener = 1, payLoad = { "recordId": "f8a763e6cbfd11221828445070050934", "vadDelayInMillis": 0, "vadSource": "unknow", "vadFrameSeq": 482 }
+11-22 18:28:47.709  8342  8410 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:697 [8410] onStopTalk, mStopTalkReason = 0, reason = normal
+11-22 18:28:47.709  8342  8410 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:749 [8410] on stop talk, session=1968506
+11-22 18:28:47.709  8342  8410 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:786 [8410] on stop talk, send end frame, sessionId = 1968506
+11-22 18:28:47.709  8342  8410 E SessionManager: size = 1122, offset = 1174, max_size = 1022
+11-22 18:28:47.709  8342  8410 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:842 [8410] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "f8a763e6cbfd11221828445070050934", "wakeupWord": "tian mao jing ling", "doa": "{\"param_arr\":[102.500000,0.445435,97.500000,0.434456,92.500000,0.120109],\"score_arr\":[13884026,13884791,13887041,13890629,13895316,13900771,13906575,13912234,13917175,13920779,13922385,13921325,13916941,13908631,13895879,13878292,13855627,13827833,13795052,13757638,13716138,13671276,13623918,13575022,13525599,13476651,13429146,13383960,13341871,13303534,13269479,13240122,13215771,13196646,13182895,13174612,13171846,102.500000]}", "confidence": 0.93375998735427856, "listenDuration": 4932, "voiceDuration": 4932, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visionInfomation": "", "voiceInfomation": "" }, "extensionContext": { "commonSelectContext": { "version": 2, "
+11-22 18:28:47.709  8342  8374 W SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:161 [8374] stop talk sessionId = 1968506
+11-22 18:28:47.709  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 3, preStatus = 2, sessionId = 1968506, preSessionId = 1968506
+11-22 18:28:47.709  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968506  status = 3
+11-22 18:28:47.709  8342  8410 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [8410] sending, requestId = 2429, eventNs = AliGenie.Microphone, eventName =Inactive
+11-22 18:28:47.709  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [8374] set status: notify status=3, session=1968506
+11-22 18:28:47.710  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStopTalk:170 [8374] sessionId = 1968506
+11-22 18:28:47.734  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968506, commandDomain =AliGenie.Text  type =3
+11-22 18:28:47.734  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968506, text = 天猫精灵郑州有什么好玩的, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:47.734  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968506, txt = 天猫精灵郑州有什么好玩的, isFinished = 1, feedback = 1
+11-22 18:28:47.734  8342  8374 W SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:143 [8374] stream finish sessionId = 1968506, text = 天猫精灵郑州有什么好玩的
+11-22 18:28:47.735  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 4, preStatus = 3, sessionId = 1968506, preSessionId = 1968506
+11-22 18:28:47.735  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968506  status = 4
+11-22 18:28:47.735  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [8374] set status: notify status=4, session=1968506
+11-22 18:28:47.735  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStream:206 [8374] sessionId = 1968506, isFinished = 1, text = 郑州有什么好玩的
+11-22 18:28:48.293  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968506, commandDomain =AliGenie.Screen  type =2
+11-22 18:28:48.293  8342  8433 W ProtocolParser: JNI_AILABS ProtocolParser.cpp:parserScreenCommand:608 [8433] type = 2,commandName= Render 
+11-22 18:28:48.294  8342  8433 W ProtocolParser: JNI_AILABS ProtocolParser.cpp:parserScreenCommand:670 [8433] type = 2,commandName= Render url = waft://com.alibaba.genie.waft/tpl
+11-22 18:28:48.294  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968506, commandDomain =AliGenie.Speaker  type =4
+11-22 18:28:48.294  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:203 [8433] NAMESAPCE_SPEAKER alarmMock2 =NULL
+11-22 18:28:48.294  8342  8433 W ProtocolParser: JNI_AILABS ProtocolParser.cpp:parserSpeakerCommand:549 [8433] stream to text = { "needVoice": true, "expectSpeech": false, "format": "mp3", "needLight": true, "text": "郑州是中国优秀旅游城市   。拥有历史人文景观众多，自然山水资源丰富。 有世界文化遗产2处15项(天地之中历史建筑群、大运河)、有“天下第一名刹”禅宗祖庭少林寺；有闻名全球的少林功夫；有首批世界地质公园中岳嵩山；有海内外华人的精神家园轩辕黄帝故里；有我国现存最早的天文观星台；有最古老的道教庙宇中岳庙；有中国四大书院之一的嵩阳书院等众多旅游胜地。", "type": "stream" }
+11-22 18:28:48.318  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.319  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.319  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.322  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.322  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.323  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.323  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.323  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.323  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.324  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.324  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.326  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.326  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.328  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.328  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.328  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.329  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.331  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.335  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.335  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.336  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.336  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.337  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.338  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.338  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.338  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.338  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.339  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.340  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.341  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.341  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.341  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.341  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.342  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.342  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.343  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.346  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.357  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.358  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.360  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.360  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.367  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.367  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.367  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.368  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.377  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.378  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.385  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.385  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.387  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.388  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.388  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.393  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.393  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:48.397  8342  8433 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsEnd:220 [8433] sessionId = 1968506
+11-22 18:28:48.399  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:4
+11-22 18:28:50.012  8342  8472 W TtsManager: JNI_AILABS TtsManager.cpp:playTts:295 [8472] isInterrupted, sessionId = 0
+11-22 18:28:50.012  8342  8472 D AudioManager: JNI_AILABS AudioManager.cpp:stopTts:908 [8472] stopTts id = -1
+11-22 18:28:50.014  8342  8472 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [8472] sending, requestId = 5245310, eventNs = AliGenie.Speaker, eventName =TextToSpeech
+11-22 18:28:50.015  8342  8472 W TtsManager: JNI_AILABS TtsManager.cpp:playTts:388 [8472] tts = 郑州可以去少林寺看功夫，逛逛河南博物院，晚上到二七广场吃点小吃。想听哪处的详细介绍？, asrLogId = NULL
+11-22 18:28:50.072  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 5245310, commandDomain =AliGenie.Speaker  type =4
+11-22 18:28:50.072  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:203 [8433] NAMESAPCE_SPEAKER alarmMock2 =NULL
+11-22 18:28:50.072  8342  8433 W ProtocolParser: JNI_AILABS ProtocolParser.cpp:parserSpeakerCommand:549 [8433] stream to text = { "needVoice": true, "expectSpeech": false, "needLight": true, "text": "郑州可以去少林寺看功夫，逛逛河南博物院，晚上到二七广场吃点小吃。想听哪处的详细介绍？", "type": "stream", "ttsConfig": { "voiceNeedMix": false, "voiceAttachment": "01" }, "needFeedback": false }
+11-22 18:28:50.072  8342  8433 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsStart:141 [8433] sessionId = 5245310, isStreaming = 1, tts = 郑州可以去少林寺看功夫，逛逛河南博物院，晚上到二七广场吃点小吃。想听哪处的详细介绍？
+11-22 18:28:50.073  8342  8433 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsStart:152 [8433] TTS_TIME receive command with stream, report TtsStreamCmdReceived.
+11-22 18:28:50.074  8342  8433 D RouterManager: JNI_AILABS RouterManager.cpp:onResponse:356 [8433] requestId = 5245310, flag = 5, result={ "attachmentCount": 1, "bizGroup": "S1L", "bizType": "AILABS", "commandType": "response", "commands": [ { "commandDomain": "AliGenie.Speaker", "commandId": "E4Fnz2sMTCuHiPmZeSbOI3d0r8vMJaQE", "commandName": "Speak", "payload": { "needVoice": true, "expectSpeech": false, "needLight": true, "text": "郑州可以去少林寺看功夫，逛逛河南博物院，晚上到二七广场吃点小吃。想听哪处的详细介绍？", "type": "stream", "ttsConfig": { "voiceNeedMix": false, "voiceAttachment": "01" }, "needFeedback": false } } ], "isLast": true, "requestId": "4c79228d62980dbfb7e31d45bc782dc85245310", "sessionId": "2d752760-0c4b-4842-a509-c6aab6ee91a3", "timestamp": "2026-11-22 18:28:50.152", "timestampReceived": "2026-11-22 18:28:50.116", "traceId": "2167552b17953433301113493d0f95", "userMemberId": "nomatch", "uuid": "D43FF6C7974EE00254D667233E2AB2D5", "version": "3.0" }
+11-22 18:28:50.074  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:playAudios:242 [8374] after processMediaCommand hasTts:0, ttsFlag:1
+11-22 18:28:50.074  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:playAudios:245 [8374] flag = 5
+11-22 18:28:50.075  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:play:697 [8374] play is coming
+11-22 18:28:50.075  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =4, arg1 =5245310  arg2=0, size = 1
+11-22 18:28:50.076  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =4, arg1 =5245310  arg2=0
+11-22 18:28:50.076  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:1
+11-22 18:28:50.076  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:182 [8376] isForward:0, audioSessionId:5245310, previousSessionId:1968497
+11-22 18:28:50.076  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:playBufferList:477 [8376] countMap size:2, sessionId:5245310, count:1
+11-22 18:28:50.082  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:playTTS:1280 [8376] stream:5245310, needSuspend:1
+11-22 18:28:50.083  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:2
+11-22 18:28:50.083  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:213 [8376] mTtsIdList size:1, id:5245310
+11-22 18:28:50.083  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968497, type:4
+11-22 18:28:50.083  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.085  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.099  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.100  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.100  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.101  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.102  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.102  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.102  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.102  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.104  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.104  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.104  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.104  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.104  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.104  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.104  8342  8433 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsData:205 [8433] TTS_TIME receive stream data actually.
+11-22 18:28:50.104  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.110  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.113  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.114  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.115  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.115  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.115  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.117  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:3
+11-22 18:28:50.117  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:clearOutdatedData:326 [8376] remove outdated data, id:1968506, type:4
+11-22 18:28:50.118  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:suspend:1454 [8376] suspend
+11-22 18:28:50.118  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:processTtsStart:561 [8376] Tts start, id:5245310, text:郑州可以去少林寺看功夫，逛逛河南博物院，晚上到二七广场吃点小吃。想听哪处的详细介绍？, pcExt:{ "forcePlay": false }, feedback:0, needSuspend:1, sessionFlag:5 wakeupType:(null)
+11-22 18:28:50.118  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:0, type:0
+11-22 18:28:50.118  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.119  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.119  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.119  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.119  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.119  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.120  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =1011, arg1 =5  arg2=0, size = 1
+11-22 18:28:50.120  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =1011, arg1 =5  arg2=0
+11-22 18:28:50.128  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.128  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.128  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.128  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.130  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.131  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.134  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.134  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.139  8342  8401 D AudioManager: JNI_AILABS AudioManager.cpp:onPlayStatusChange:1025 [8401] pid:5245310, audioType:1, status:play, status:0, progress:0, feedback:0, callbackId:NULL
+11-22 18:28:50.139  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =10, arg1 =0  arg2=5245310, size = 1
+11-22 18:28:50.140  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =10, arg1 =0  arg2=5245310
+11-22 18:28:50.141  8342  8422 W AudioManager: Use of stream types is deprecated for operations other than volume control
+11-22 18:28:50.141  8342  8422 W AudioManager: See the documentation of requestAudioFocus() for what to use instead with android.media.AudioAttributes to qualify your playback use case
+11-22 18:28:50.143  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.143  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.144  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.144  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.146  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.146  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.154  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.154  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.158  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.158  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.161  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.161  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.171  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.171  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.177  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.177  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.193  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.193  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.195  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.195  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.200  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.200  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.210  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.211  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.214  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.214  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.214  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.214  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.218  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.218  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.237  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.237  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.267  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.267  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.267  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.267  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.268  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.269  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.269  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:2048, type:1
+11-22 18:28:50.269  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:50.269  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:1920, type:1
+11-22 18:28:50.270  8342  8433 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsEnd:220 [8433] sessionId = 5245310
+11-22 18:28:50.270  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:4
+11-22 18:28:50.270  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:5245310, len:0, type:2
+11-22 18:28:50.270  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:processTtsData:391 [8376] tts is finished
+11-22 18:28:50.271  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:0
+11-22 18:28:52.735  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 6, preStatus = 4, sessionId = 1968506, preSessionId = 1968506
+11-22 18:28:52.736  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968506  status = 6
+11-22 18:28:52.736  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [8374] set status: notify status=6, session=1968506
+11-22 18:28:52.736  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNlpResult:416 [8374] sessionId = 1968506, code = 3, data= 0
+11-22 18:28:52.745  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNlpResult:481 [8374] returnCode = 0
+11-22 18:28:52.745  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:playAudios:242 [8374] after processMediaCommand hasTts:0, ttsFlag:0
+11-22 18:28:52.745  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:playAudios:245 [8374] flag = 1
+11-22 18:28:52.745  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:play:689 [8374] has nothing to play, delayProcess:0
+11-22 18:28:52.746  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNlpResult:494 [8374] returnCode = 0, data return = 0
+11-22 18:28:52.746  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionTtsStatus:1049 [8374] session=1968506, status = 6, tts status = 7
+11-22 18:28:52.746  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968506  status = 7
+11-22 18:28:52.747  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:exitTalk:1176 [8374] exit talk, input session=1968506, real session=1968506 exit=0
+11-22 18:28:53.266  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 6, preStatus = 6, sessionId = 1968506, preSessionId = 1968506
+11-22 18:28:55.026  8342  8405 D WakeupManager: completeRequstWakeupInfo,61:wakeup word is 天猫精灵,pinyin is tian mao jing ling
+11-22 18:28:55.026  8342  8405 D WakeupManager: completeRequstWakeupInfo,76:active wakeup
+11-22 18:28:55.032  8342  8410 D WakeupManager: completeRequstWakeupInfo,110:wakeup event is valid, no need of completion
+11-22 18:28:55.040  8342  8410 D SessionManager: JNI_AILABS SessionManager.cpp:onStartTalk:255 [8410] sessionId = 1968511, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-22 18:28:55.040  8342  8374 W SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:81 [8374] start talk sessionId = 1968511
+11-22 18:28:55.040  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 1, preStatus = 6, sessionId = 1968511, preSessionId = 1968506
+11-22 18:28:55.040  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968511  status = 1
+11-22 18:28:55.042  8342  8422 W AudioManager: Use of stream types is deprecated for operations other than volume control
+11-22 18:28:55.042  8342  8422 W AudioManager: See the documentation of requestAudioFocus() for what to use instead with android.media.AudioAttributes to qualify your playback use case
+11-22 18:28:55.043  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [8374] set status: notify status=1, session=1968511
+11-22 18:28:55.044  8342  8401 D AudioManager: JNI_AILABS AudioManager.cpp:onPlayStatusChange:1025 [8401] pid:5245310, audioType:1, status:interupt, status:11, progress:0, feedback:0, callbackId:NULL
+11-22 18:28:55.044  8342  8401 D AudioManager: JNI_AILABS AudioManager.cpp:onPlayStatusChange:1069 [8401] group empty, pid:5245310, size:1
+11-22 18:28:55.047  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [8374] sessionId = 1968511
+11-22 18:28:55.048  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =1010, arg1 =1  arg2=0, size = 1
+11-22 18:28:55.048  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =1010, arg1 =1  arg2=0
+11-22 18:28:55.048  8342  8374 W SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:253 [8374] get systemContext sessionId = 1968511
+11-22 18:28:55.048  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [8374] onGetSystemContext sessionId = 1968511  mSystemContextCallback = 0x929d68c0
+11-22 18:28:55.050  8342  8410 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [8410] sending, requestId = 2433, eventNs = AliGenie.Microphone, eventName =Active
+11-22 18:28:55.085  8342  8410 D SessionManager: JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [8410] foreground info, packageName = app.orchard.tv, className = app.orchard.tv.MainActivity, pkg = 
+11-22 18:28:55.085  8342  8410 W SessionManager: JNI_AILABS SessionManager.cpp:onGetClientContext:1438 [8410] no context
+11-22 18:28:55.098  8342  8410 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [8410] sending, requestId = 1968511, eventNs = AliGenie.Microphone, eventName =ListenStarted
+11-22 18:28:55.110  8342  8410 W SessionManager: JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [8410] send startListened sessionId = 1968511
+11-22 18:28:55.328  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =10, arg1 =11  arg2=5245310, size = 1
+11-22 18:28:55.329  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =10, arg1 =11  arg2=5245310
+11-22 18:28:55.329  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =17, arg1 =11  arg2=5245310, size = 1
+11-22 18:28:55.330  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =17, arg1 =11  arg2=5245310
+11-22 18:28:55.443  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968511, commandDomain =AliGenie.Text  type =3
+11-22 18:28:55.443  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968511, text = 天猫精, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:55.444  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968511, txt = 天猫精, isFinished = 0, feedback = 1
+11-22 18:28:55.444  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 1, sessionId = 1968511, preSessionId = 1968511
+11-22 18:28:55.444  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968511  status = 2
+11-22 18:28:55.444  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [8374] set status: notify status=2, session=1968511
+11-22 18:28:55.454  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968511, commandDomain =AliGenie.Text  type =3
+11-22 18:28:55.454  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968511, text = 天猫精灵, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:55.455  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968511, txt = 天猫精灵, isFinished = 0, feedback = 1
+11-22 18:28:55.455  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 2, sessionId = 1968511, preSessionId = 1968511
+11-22 18:28:55.524  8342  8401 D AudioManager: JNI_AILABS AudioManager.cpp:onPlayStatusChange:1025 [8401] pid:3148160, audioType:0, status:play, status:0, progress:0, feedback:0, callbackId:NULL
+11-22 18:28:55.526  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =11, arg1 =0  arg2=3148160, size = 1
+11-22 18:28:55.526  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =11, arg1 =0  arg2=3148160
+11-22 18:28:55.527  8342  8422 W AudioManager: Use of stream types is deprecated for operations other than volume control
+11-22 18:28:55.527  8342  8422 W AudioManager: See the documentation of requestAudioFocus() for what to use instead with android.media.AudioAttributes to qualify your playback use case
+11-22 18:28:55.974  8342  8401 D AudioManager: JNI_AILABS AudioManager.cpp:onPlayStatusChange:1025 [8401] pid:3148160, audioType:0, status:complete, status:12, progress:0, feedback:0, callbackId:NULL
+11-22 18:28:55.974  8342  8401 D AudioManager: JNI_AILABS AudioManager.cpp:onPlayStatusChange:1069 [8401] group empty, pid:3148160, size:1
+11-22 18:28:55.975  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =11, arg1 =12  arg2=3148160, size = 1
+11-22 18:28:55.976  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =11, arg1 =12  arg2=3148160
+11-22 18:28:55.976  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =17, arg1 =12  arg2=3148160, size = 1
+11-22 18:28:55.976  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =17, arg1 =12  arg2=3148160
+11-22 18:28:56.779  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968511, commandDomain =AliGenie.Text  type =3
+11-22 18:28:56.779  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968511, text = 天猫精灵现在, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:56.779  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968511, txt = 天猫精灵现在, isFinished = 0, feedback = 1
+11-22 18:28:56.779  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 2, sessionId = 1968511, preSessionId = 1968511
+11-22 18:28:56.780  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStream:206 [8374] sessionId = 1968511, isFinished = 0, text = 现在
+11-22 18:28:57.025  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968511, commandDomain =AliGenie.Text  type =3
+11-22 18:28:57.025  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968511, text = 天猫精灵现在几, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:57.025  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968511, txt = 天猫精灵现在几, isFinished = 0, feedback = 1
+11-22 18:28:57.025  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 2, sessionId = 1968511, preSessionId = 1968511
+11-22 18:28:57.026  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStream:206 [8374] sessionId = 1968511, isFinished = 0, text = 现在几
+11-22 18:28:57.252  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968511, commandDomain =AliGenie.Text  type =3
+11-22 18:28:57.252  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968511, text = 天猫精灵现在几点了, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:57.255  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968511, txt = 天猫精灵现在几点了, isFinished = 0, feedback = 1
+11-22 18:28:57.255  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 2, preStatus = 2, sessionId = 1968511, preSessionId = 1968511
+11-22 18:28:57.256  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStream:206 [8374] sessionId = 1968511, isFinished = 0, text = 现在几点了
+11-22 18:28:57.517  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968511, commandDomain =AliGenie.Microphone  type =1
+11-22 18:28:57.517  8342  8433 W RouterManager: JNI_AILABS RouterManager.cpp:onAsrStopListen:266 [8433] stop listen, feedBackListener = 1, payLoad = { "recordId": "f8a763e6cbfd11221828550260051053", "vadDelayInMillis": 0, "vadSource": "unknow", "vadFrameSeq": 407 }
+11-22 18:28:57.538  8342  8410 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:697 [8410] onStopTalk, mStopTalkReason = 0, reason = normal
+11-22 18:28:57.538  8342  8410 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:749 [8410] on stop talk, session=1968511
+11-22 18:28:57.538  8342  8410 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:786 [8410] on stop talk, send end frame, sessionId = 1968511
+11-22 18:28:57.539  8342  8410 E SessionManager: size = 1763, offset = 1815, max_size = 1022
+11-22 18:28:57.539  8342  8410 D SessionManager: JNI_AILABS SessionManager.cpp:onStopTalk:842 [8410] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "f8a763e6cbfd11221828550260051053", "wakeupWord": "tian mao jing ling", "doa": "{\"param_arr\":[107.500000,0.813165,102.500000,0.168328,97.500000,0.018507],\"score_arr\":[13388495,13389323,13391761,13395663,13400792,13406820,13413340,13419871,13425866,13430741,13433884,13434675,13432524,13426887,13417297,13403396,13384956,13361901,13334317,13302470,13266785,13227839,13186348,13143118,13099020,13054945,13011777,12970350,12931427,12895680,12863683,12835910,12812733,12794440,12781236,12773261,12770595,107.500000]}", "confidence": 0.97392398118972778, "listenDuration": 4260, "voiceDuration": 4260, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visionInfomation": "", "voiceInfomation": "" }, "extensionContext": { "commonSelectContext": { "version": 2, 
+11-22 18:28:57.539  8342  8374 W SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:161 [8374] stop talk sessionId = 1968511
+11-22 18:28:57.539  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 3, preStatus = 2, sessionId = 1968511, preSessionId = 1968511
+11-22 18:28:57.539  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968511  status = 3
+11-22 18:28:57.539  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [8374] set status: notify status=3, session=1968511
+11-22 18:28:57.540  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStopTalk:170 [8374] sessionId = 1968511
+11-22 18:28:57.541  8342  8410 W GcsManager: JNI_AILABS GcsManager.cpp:send:293 [8410] sending, requestId = 2434, eventNs = AliGenie.Microphone, eventName =Inactive
+11-22 18:28:57.563  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968511, commandDomain =AliGenie.Text  type =3
+11-22 18:28:57.563  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onStream:641 [8433] sessionId = 1968511, text = 天猫精灵现在几点了, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-22 18:28:57.564  8342  8374 D SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:136 [8374]  online text stream, sessionId = 1968511, txt = 天猫精灵现在几点了, isFinished = 1, feedback = 1
+11-22 18:28:57.564  8342  8374 W SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:143 [8374] stream finish sessionId = 1968511, text = 天猫精灵现在几点了
+11-22 18:28:57.564  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 4, preStatus = 3, sessionId = 1968511, preSessionId = 1968511
+11-22 18:28:57.564  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968511  status = 4
+11-22 18:28:57.564  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [8374] set status: notify status=4, session=1968511
+11-22 18:28:57.565  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onStream:206 [8374] sessionId = 1968511, isFinished = 1, text = 现在几点了
+11-22 18:28:57.846  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968511, commandDomain =AliGenie.Speaker  type =4
+11-22 18:28:57.846  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:203 [8433] NAMESAPCE_SPEAKER alarmMock2 =NULL
+11-22 18:28:57.846  8342  8433 W ProtocolParser: JNI_AILABS ProtocolParser.cpp:parserSpeakerCommand:549 [8433] stream to text = { "extension": "{\"index\":1,\"messageId\":\"1e13f39525654a0bb5b36fc2550de88f\",\"hasNext\":false}", "needVoice": true, "expectSpeech": false, "format": "mp3", "needLight": true, "text": "现在是晚上六点二十八分。", "type": "stream" }
+11-22 18:28:57.846  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968511, commandDomain =AliGenie.Screen  type =2
+11-22 18:28:57.847  8342  8433 W ProtocolParser: JNI_AILABS ProtocolParser.cpp:parserScreenCommand:608 [8433] type = 2,commandName= Render 
+11-22 18:28:57.847  8342  8433 W ProtocolParser: JNI_AILABS ProtocolParser.cpp:parserScreenCommand:670 [8433] type = 2,commandName= Render url = NULL
+11-22 18:28:57.847  8342  8433 D ProtocolParser: JNI_AILABS ProtocolParser.cpp:onParser:169 [8433] sessionId = 1968511, commandDomain =AliGenie.Screen  type =2
+11-22 18:28:57.847  8342  8433 W ProtocolParser: JNI_AILABS ProtocolParser.cpp:parserScreenCommand:608 [8433] type = 2,commandName= Render 
+11-22 18:28:57.847  8342  8433 W ProtocolParser: JNI_AILABS ProtocolParser.cpp:parserScreenCommand:670 [8433] type = 2,commandName= Render url = waft://com.alibaba.genie.waft/tpl
+11-22 18:28:57.848  8342  8433 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsStart:141 [8433] sessionId = 1968511, isStreaming = 1, tts = 现在是晚上六点二十八分。
+11-22 18:28:57.848  8342  8433 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsStart:152 [8433] TTS_TIME receive command with stream, report TtsStreamCmdReceived.
+11-22 18:28:57.848  8342  8433 D SessionManager: JNI_AILABS SessionManager.cpp:onNlpResult:895 [8433] on nlp result, code = 0 , sessionId = 1968511, data = 1
+11-22 18:28:57.887  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 5, preStatus = 4, sessionId = 1968511, preSessionId = 1968511
+11-22 18:28:57.887  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968511  status = 5
+11-22 18:28:57.887  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [8374] set status: notify status=5, session=1968511
+11-22 18:28:57.887  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNlpResult:416 [8374] sessionId = 1968511, code = 0, data= 1
+11-22 18:28:57.888  8342  8433 E RouterManager: size = 4175, offset = 4226, max_size = 1022
+11-22 18:28:57.888  8342  8433 D RouterManager: JNI_AILABS RouterManager.cpp:onResponse:356 [8433] requestId = 1968511, flag = 1, result={ "asrLogId": "f8a763e6cbfd11221828550260051053", "attachmentCount": 1, "bizGroup": "S1L", "bizType": "AILABS", "commandType": "response", "commands": [ { "commandDomain": "AliGenie.Speaker", "commandId": "jckjakx9zd7q99nfil801qtzh81pf1xr", "commandName": "Speak", "payload": { "extension": "{\"index\":1,\"messageId\":\"1e13f39525654a0bb5b36fc2550de88f\",\"hasNext\":false}", "needVoice": true, "expectSpeech": false, "format": "mp3", "needLight": true, "text": "现在是晚上六点二十八分。", "type": "stream" } }, { "commandDomain": "AliGenie.Screen", "commandId": "4glaztfmjhdezo58gvkdcpdv02l3mqgo", "commandName": "Render", "payload": { "pageType": "chat.baike.page", "data": { "index": 1, "messageId": "1e13f39525654a0bb5b36fc2550de88f", "hasNext": false, "text": "现在是晚上六点二十八分。", "dialogId": "44343346463643375f313633303137373338363435353837383137305f7ffffe5dfd32b65b" } } }, { "commandDomain":
+11-22 18:28:57.888  8342  8433 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsData:205 [8433] TTS_TIME receive stream data actually.
+11-22 18:28:57.888  8342  8433 D TtsManager: JNI_AILABS TtsManager.cpp:onTtsEnd:220 [8433] sessionId = 1968511
+11-22 18:28:57.889  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:57.889  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:57.889  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:57.889  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:57.889  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:57.889  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:3
+11-22 18:28:57.892  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:4
+11-22 18:28:57.895  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNlpResult:481 [8374] returnCode = 0
+11-22 18:28:57.896  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:playAudios:242 [8374] after processMediaCommand hasTts:1, ttsFlag:1
+11-22 18:28:57.896  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:playAudios:245 [8374] flag = 1
+11-22 18:28:57.896  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:play:697 [8374] play is coming
+11-22 18:28:57.896  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNlpResult:494 [8374] returnCode = 0, data return = 0
+11-22 18:28:57.897  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:exitTalk:1176 [8374] exit talk, input session=1968511, real session=1968511 exit=0
+11-22 18:28:57.898  8342  8374 W SessionProxy: JNI_AILABS SessionProxy.cpp:onHandler:179 [8374] nlp result sessionId = 1968511, code = 0, nlpResult = 1
+11-22 18:28:57.898  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:1
+11-22 18:28:57.899  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:182 [8376] isForward:1, audioSessionId:1968511, previousSessionId:5245310
+11-22 18:28:57.902  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:suspend:1454 [8376] suspend
+11-22 18:28:57.903  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:playBufferList:477 [8376] countMap size:2, sessionId:1968511, count:1
+11-22 18:28:57.903  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:playTTS:1280 [8376] stream:1968511, needSuspend:1
+11-22 18:28:57.907  8342  8422 W AudioManager: Use of stream types is deprecated for operations other than volume control
+11-22 18:28:57.907  8342  8422 W AudioManager: See the documentation of requestAudioFocus() for what to use instead with android.media.AudioAttributes to qualify your playback use case
+11-22 18:28:57.916  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:2
+11-22 18:28:57.916  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:213 [8376] mTtsIdList size:1, id:1968511
+11-22 18:28:57.916  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:processTtsStart:561 [8376] Tts start, id:1968511, text:现在是晚上六点二十八分。, pcExt:{ "forcePlay": false, "payloadExt": "{\"index\":1,\"messageId\":\"1e13f39525654a0bb5b36fc2550de88f\",\"hasNext\":false}" }, feedback:0, needSuspend:1, sessionFlag:1 wakeupType:(null)
+11-22 18:28:57.916  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:1968511, len:0, type:0
+11-22 18:28:57.936  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =1011, arg1 =1  arg2=0, size = 1
+11-22 18:28:57.940  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =1011, arg1 =1  arg2=0
+11-22 18:28:57.942  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:1968511, len:2048, type:1
+11-22 18:28:57.942  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:1968511, len:2048, type:1
+11-22 18:28:57.950  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:1968511, len:2048, type:1
+11-22 18:28:57.950  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:1968511, len:2048, type:1
+11-22 18:28:57.950  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:1968511, len:448, type:1
+11-22 18:28:57.950  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:sendTTsData:1121 [8376] sendTtsData, id:1968511, len:0, type:2
+11-22 18:28:57.953  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:processTtsData:391 [8376] tts is finished
+11-22 18:28:57.953  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:0
+11-22 18:28:57.979  8342  8401 D AudioManager: JNI_AILABS AudioManager.cpp:onPlayStatusChange:1025 [8401] pid:1968511, audioType:1, status:play, status:0, progress:0, feedback:0, callbackId:NULL
+11-22 18:28:57.980  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =10, arg1 =0  arg2=1968511, size = 1
+11-22 18:28:58.006  8342  8422 W AudioManager: Use of stream types is deprecated for operations other than volume control
+11-22 18:28:58.006  8342  8422 W AudioManager: See the documentation of requestAudioFocus() for what to use instead with android.media.AudioAttributes to qualify your playback use case
+11-22 18:28:58.054  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =10, arg1 =0  arg2=1968511
+11-22 18:28:58.426  8342  8374 W SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [8374] status = 6, preStatus = 5, sessionId = 1968511, preSessionId = 1968511
+11-22 18:28:58.427  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968511  status = 6
+11-22 18:28:58.427  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [8374] set status: notify status=6, session=1968511
+11-22 18:28:59.190  8342  8342 D SessionManager: JNI_AILABS SessionManager.cpp:fullDuplexDialogPageChangeToBlackList:1031 [8342] full duplex dialog, page change to: com.alibaba.genie.waft/com.alibaba.genie.waft.ui.tpl.WaftTplActivity
+11-22 18:28:59.195  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =1102, arg1 =0  arg2=0, size = 1
+11-22 18:28:59.196  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =1102, arg1 =0  arg2=0
+11-22 18:28:59.196  8342  8410 D WakeupManager: useWakeupWords,241:begin ...
+11-22 18:28:59.196  8342  8410 D WakeupManager: useWakeupWords,268:use 下一首
+11-22 18:28:59.196  8342  8410 D WakeupManager: useWakeupWords,268:use 你好天猫
+11-22 18:28:59.196  8342  8410 D WakeupManager: useWakeupWords,268:use 关闭
+11-22 18:28:59.197  8342  8410 D WakeupManager: useWakeupWords,268:use 声音大一点
+11-22 18:28:59.197  8342  8410 D WakeupManager: useWakeupWords,268:use 声音小一点
+11-22 18:28:59.197  8342  8410 D WakeupManager: useWakeupWords,268:use 天猫精灵
+11-22 18:28:59.197  8342  8410 D WakeupManager: useWakeupWords,268:use 打开
+11-22 18:28:59.197  8342  8410 D WakeupManager: useWakeupWords,268:use 精灵暂停
+11-22 18:28:59.197  8342  8410 D WakeupManager: useWakeupWords,268:use 精灵退出
+11-22 18:28:59.197  8342  8410 D WakeupManager: useWakeupWords,271: 9 global wakeup words
+11-22 18:28:59.197  8342  8410 D WakeupManager: useWakeupWords,288: 9 wakeup words total
+11-22 18:29:00.247  8342  8401 D AudioManager: JNI_AILABS AudioManager.cpp:onPlayStatusChange:1025 [8401] pid:1968511, audioType:1, status:complete, status:12, progress:0, feedback:0, callbackId:NULL
+11-22 18:29:00.248  8342  8401 D AudioManager: JNI_AILABS AudioManager.cpp:onPlayStatusChange:1069 [8401] group empty, pid:1968511, size:1
+11-22 18:29:00.249  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =10, arg1 =12  arg2=1968511, size = 1
+11-22 18:29:00.250  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =10, arg1 =12  arg2=1968511
+11-22 18:29:00.268  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:setSessionTtsStatus:1049 [8374] session=1968511, status = 6, tts status = 7
+11-22 18:29:00.268  8342  8374 D AudioManager: JNI_AILABS AudioManager.cpp:onStatusChange:1437 [8374] sessionId = 1968511  status = 7
+11-22 18:29:00.269  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =17, arg1 =12  arg2=1968511, size = 1
+11-22 18:29:00.269  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =17, arg1 =12  arg2=1968511
+11-22 18:29:02.029  8342  8374 D SessionManager: JNI_AILABS SessionManager.cpp:onGetMediaPolicy:1593 [8374] get policy, policy=0, packageName=com.alibaba.genie.waft
+11-22 18:29:02.030  8342  8374 W SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:726 [8374] type =1010, arg1 =0  arg2=0, size = 1
+11-22 18:29:02.031  8342  8374 D SessionDispatch: JNI_AILABS SessionDispatch.cpp:onNotify:732 [8374] uimanager type =1010, arg1 =0  arg2=0
+11-22 18:29:02.953  8342  8376 D AudioManager: JNI_AILABS AudioManager.cpp:onHandler:170 [8376] what:4

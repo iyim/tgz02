@@ -7,7 +7,7 @@
 | 问题 | 回答 |
 |---|---|
 | 初始化失败是否还会导致 AI 会话误放行？ | **不会**（fail-closed，且不访问共享状态） |
-| sessionId 是否已确认一致？ | 静态到 `Message->arg1`；**动态同一性仍待一次真实语音**（方法已备好，零注入） |
+| sessionId 是否已确认一致？ | **已证实**（真机 18:28 会话 1968511：`onStartTalk` = `onStream` = `onNlpResult` = `events.session_id` 四方一致）；AI 对话会话（1968506）本窗口内没有 `onNlpResult` 行 → 聊天是否经过该函数待设备验证用计数确认 |
 | ARM32 Hook 原型是否完成静态核对？ | **完成**（stub 12 字、序言、补丁字面量、寄存器纪律、PLT 集成） |
 | 是否达到申请设备验证的条件？ | **达到**（sessionId 那条在设备窗口顺带确认） |
 
@@ -57,4 +57,16 @@ libtg_hook.so    : 0 warning, 0 error   (97 100 B, ELF32/ARM, shared)
 - 未部署新 `libtg_hook.so`、未注入、未重启 `:core`/设备；设备仍跑旧库旧 Worker。
 - 未改原厂配置、Worker 路由、TTS Guard；未重新研究 ASR。
 - 未重复跑死信历史测试与 T8-01/T8-02 的整套历史套件（只跑合并后的单测）。
-- sessionId 动态一致性待设备窗口（已备好只读方法）。
+- sessionId 动态一致性已在 18:28 的真机会话里确认（见 §7 与 `rebuild` 后的 `evidence/t8_03_session_correlation.md`）。
+
+## 7. 真机只读关联（18:28，未注入/未改配置/未重启）
+
+| 会话 | 类型 | `onStartTalk` | `onStream`(final) | `onNlpResult` | `events.json_id` | worker |
+|---|---|---|---|---|---|---|
+| 1968506 | AI 对话（识别为「天猫精灵郑州有什么好玩的」） | 1968506 | 1968506，`isOffline = 0` | **未出现** | 1968506 | `route=ai` → deepseek 200 1401ms |
+| 1968511 | 本地指令（「天猫精灵现在几点了」） | 1968511 | 1968511，`isOffline = 0` | **`code = 0 , sessionId = 1968511, data = 1`** | 1968511 | `route=native intent=time` |
+
+结论：`onNlpResult` 第一个参数**就是** ASR session id（1968511 四方对齐，直接证据，不再依赖推断）。
+遗留一项：AI 对话会话本窗口内没有 `on nlp result` 行（走 `commandDomain =AliGenie.Text type = 3` 分支），
+设备验证时用 `tg_nlu_stats()` 的 `nlp_calls/nlp_skip` 判断聊天是否也经过 `SessionDispatch::onNlpResult`；
+若不经过，第二个拦截点补在 `RouterManager::onResponse`（`0x10fe3c`）。

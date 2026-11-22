@@ -149,3 +149,26 @@ adb shell su -c 'sh /data/local/tmp/t6/run_supervisor.sh stop'
 - 未重新调查 ASR，未重复 T8-01/T8-02 的整套测试（只跑了合并后的单测）。
 - sessionId 的动态一致性仍是**待确认**；本轮只保证"有一条可一次跑完的只读观测方法"。
 - 注入器接口（`tg_nlu_install` 的调用 + 第二个补丁区间）属于设备窗口的改动，本轮只给出契约。
+
+## 9. sessionId 只读关联结果（2026-11-22 18:28，真机）
+
+原始记录与完整链路：`../evidence/t8_03_session_correlation.md`。
+
+**已证实**（会话 1968511，本地指令「现在几点了」三方对齐）：
+
+```
+18:28:55.040 SessionManager.cpp:onStartTalk:255   sessionId = 1968511
+18:28:57.563 SessionManager.cpp:onStream:641      sessionId = 1968511, text = 天猫精灵现在几点了, isFinished = 1
+18:28:57.848 SessionManager.cpp:onNlpResult:895   on nlp result, code = 0 , sessionId = 1968511, data = 1
+events.jsonl: session_id = "1968511"     ai_worker: route=native intent=time
+```
+
+→ `onNlpResult` 的第一个参数**就是** ASR session id（与 Hook 记录的 `session_id` 一致）。
+
+**仍未证实**（会话 1968506，AI 对话）：该会话在过滤窗口内没有 `on nlp result` 行，它走的是
+`ProtocolParser: commandDomain =AliGenie.Text type = 3` 分支；`onStream` 与 `events.json_id` 一致（1968506），
+但"聊天也经过 `SessionDispatch::onNlpResult`"这条没有直接日志。
+
+**对接管方案的影响**：设备验证时用 `tg_nlu_stats()` 的 `nlp_calls/nlp_skip` 判定 —— 若聊天时
+`nlp_calls` 不动，说明聊天不经过该函数，第二个拦截点必须补在 `RouterManager::onResponse`
+（`0x10fe3c`）。这是本轮唯一需要带进设备验证的开放项。

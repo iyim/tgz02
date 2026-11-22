@@ -1,0 +1,100 @@
+[aiw] 2026-11-22T14:02:41 lock acquired; previous owner pid=3315 no longer holding it
+[aiw] 2026-11-22T14:02:41 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-22T14:02:41 system prompt: 689 bytes, placed at messages[0] (role=system, outside context eviction)
+[aiw] 2026-11-22T14:02:41 echo filter: enabled=1 no_command=1 window=+1200/-1500ms sim=60% state_file=/data/local/tmp/t5_bridge/tts/play.public.json
+[aiw] 2026-11-22T14:02:41 route: enabled=1 intents=0x7f (volume=1 weather=1 screen_off=1 time=1 screen_on=1 media=1) publish_file=/data/local/tmp/t5_bridge/work/native_route.public.json
+[aiw] 2026-11-22T14:02:41 gate: enabled=1 debounce=450ms max_hold=2500ms cross_session=1(1200ms) sim=80% hold_file=/data/local/tmp/t5_bridge/ai_worker/utterance_hold.json
+[aiw] 2026-11-22T14:02:41 session: enabled=1 timeout=12000ms (follow-up window after playback)
+[aiw] 2026-11-22T14:02:41 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+[aiw] 2026-11-22T14:02:41 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+[aiw] 2026-11-22T14:02:41 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+[aiw] 2026-11-22T14:02:41 start pid=3468 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5_bridge/ai_worker/consumer_state.json provider=deepseek offset=173975 (network enabled)
+[aiw] 2026-11-22T14:02:47 route=ai event=t6-8342-CONFTEST-1795327367-g2 seq=0 session=900002 merges=0 held_ms=626 why=timeout text_bytes=18 session_state=PROCESSING
+[aiw] 2026-11-22T14:02:47 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T14:02:49 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1520ms resp_bytes=764 reply_bytes=126 event=t6-8342-CONFTEST-1795327367-g2
+[aiw] 2026-11-22T14:02:49 request shape: event=t6-8342-CONFTEST-1795327367-g2 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-22T14:02:49 provider reply: event=t6-8342-CONFTEST-1795327367-g2 provider=deepseek req_msgs=7 history_msgs=6 latency=1520ms reply_bytes=126
+[aiw] 2026-11-22T14:02:49 tts queued: event=t6-8342-CONFTEST-1795327367-g2 reply_bytes=126 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-22T14:02:49 context commit: event=t6-8342-CONFTEST-1795327367-g2 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-22T14:02:49 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T14:03:01 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-22T14:04:54 seq gap pid=8342 missing=23 range=[2,24] (recorded, NOT fabricated)
+[aiw] 2026-11-22T14:04:54 route=native intent=time rule=time.keyword arg= event=t6-8342-1968345-g25 seq=25 session=1968345 text_bytes=24 merges=0 held_ms=0 publish_seq=1 (factory answers; AI worker does not)
+[aiw] 2026-11-22T14:05:24 route=native intent=time rule=time.keyword arg= event=t6-8342-1968349-g26 seq=26 session=1968349 text_bytes=27 merges=0 held_ms=0 publish_seq=2 (factory answers; AI worker does not)
+[aiw] 2026-11-22T14:06:03 route=ai event=t6-8342-1968357-g27 seq=0 session=1968357 merges=0 held_ms=619 why=timeout text_bytes=30 session_state=PROCESSING
+[aiw] 2026-11-22T14:06:03 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T14:06:05 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1747ms resp_bytes=906 reply_bytes=132 event=t6-8342-1968357-g27
+[aiw] 2026-11-22T14:06:05 request shape: event=t6-8342-1968357-g27 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-22T14:06:05 provider reply: event=t6-8342-1968357-g27 provider=deepseek req_msgs=7 history_msgs=6 latency=1747ms reply_bytes=132
+[aiw] 2026-11-22T14:06:05 tts queued: event=t6-8342-1968357-g27 reply_bytes=132 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-22T14:06:05 context commit: event=t6-8342-1968357-g27 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-22T14:06:05 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T14:06:17 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-22T14:07:41 route=native intent=volume rule=volume.set arg=set:50 event=t6-8342-1968363-g28 seq=28 session=1968363 text_bytes=39 merges=0 held_ms=0 publish_seq=3 (factory answers; AI worker does not)
+[aiw] 2026-11-22T14:07:49 route=native intent=volume rule=volume.set arg=set:25 event=t6-8342-1968377-g29 seq=29 session=1968377 text_bytes=42 merges=0 held_ms=0 publish_seq=4 (factory answers; AI worker does not)
+[aiw] 2026-11-22T14:07:59 route=ai event=t6-8342-1968391-g30 seq=0 session=1968391 merges=0 held_ms=638 why=timeout text_bytes=36 session_state=PROCESSING
+[aiw] 2026-11-22T14:07:59 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T14:08:01 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1975ms resp_bytes=985 reply_bytes=161 event=t6-8342-1968391-g30
+[aiw] 2026-11-22T14:08:01 request shape: event=t6-8342-1968391-g30 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-22T14:08:01 provider reply: event=t6-8342-1968391-g30 provider=deepseek req_msgs=7 history_msgs=6 latency=1975ms reply_bytes=161
+[aiw] 2026-11-22T14:08:01 tts queued: event=t6-8342-1968391-g30 reply_bytes=161 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-22T14:08:01 context commit: event=t6-8342-1968391-g30 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-22T14:08:01 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T14:08:13 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-22T14:18:07 route=native intent=time rule=time.keyword arg= event=t6-8342-1968396-g31 seq=31 session=1968396 text_bytes=27 merges=0 held_ms=0 publish_seq=5 (factory answers; AI worker does not)
+[aiw] 2026-11-22T14:18:15 route=ai event=t6-8342-1968400-g32 seq=0 session=1968400 merges=0 held_ms=641 why=timeout text_bytes=27 session_state=PROCESSING
+[aiw] 2026-11-22T14:18:15 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T14:18:18 deepseek ok: model=deepseek-flash http=200 curl=0 latency=3105ms resp_bytes=1329 reply_bytes=135 event=t6-8342-1968400-g32
+[aiw] 2026-11-22T14:18:18 request shape: event=t6-8342-1968400-g32 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-22T14:18:18 provider reply: event=t6-8342-1968400-g32 provider=deepseek req_msgs=7 history_msgs=6 latency=3105ms reply_bytes=135
+[aiw] 2026-11-22T14:18:19 tts queued: event=t6-8342-1968400-g32 reply_bytes=135 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-22T14:18:19 context commit: event=t6-8342-1968400-g32 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-22T14:18:29 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T14:18:41 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-22T14:21:16 route=native intent=screen_off rule=screen.keyword arg= event=t6-8342-1968405-g33 seq=33 session=1968405 text_bytes=24 merges=0 held_ms=0 publish_seq=6 (factory answers; AI worker does not)
+[aiw] 2026-11-22T15:48:15 route=ai event=t6-8342-1968418-g34 seq=0 session=1968418 merges=0 held_ms=630 why=timeout text_bytes=18 session_state=PROCESSING
+[aiw] 2026-11-22T15:48:15 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T15:48:16 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1501ms resp_bytes=671 reply_bytes=42 event=t6-8342-1968418-g34
+[aiw] 2026-11-22T15:48:16 request shape: event=t6-8342-1968418-g34 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-22T15:48:16 provider reply: event=t6-8342-1968418-g34 provider=deepseek req_msgs=7 history_msgs=6 latency=1501ms reply_bytes=42
+[aiw] 2026-11-22T15:48:16 tts queued: event=t6-8342-1968418-g34 reply_bytes=42 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-22T15:48:16 context commit: event=t6-8342-1968418-g34 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-22T15:48:16 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T15:48:29 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-22T16:09:16 route=native intent=media rule=media.play arg=play event=t6-8342-1968425-g35 seq=35 session=1968425 text_bytes=36 merges=0 held_ms=0 publish_seq=7 (factory answers; AI worker does not)
+[aiw] 2026-11-22T16:09:34 route=native intent=media rule=media.play arg=play event=t6-8342-1968432-g36 seq=36 session=1968432 text_bytes=36 merges=0 held_ms=0 publish_seq=8 (factory answers; AI worker does not)
+[aiw] 2026-11-22T16:10:01 tts stop requested (route=native intent=stop)
+[aiw] 2026-11-22T16:10:01 route=native intent=stop rule=stop.keyword arg=stop event=t6-8342-1968439-g37 seq=0 session=1968439 text_bytes=24 merges=0 held_ms=1232 publish_seq=9 (factory answers; AI worker does not)
+[aiw] 2026-11-22T16:49:31 route=ai event=t6-8342-1968450-g38 seq=0 session=1968450 merges=0 held_ms=641 why=timeout text_bytes=33 session_state=PROCESSING
+[aiw] 2026-11-22T16:49:31 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T16:49:48 deepseek ok: model=deepseek-flash http=200 curl=0 latency=17856ms resp_bytes=1810 reply_bytes=132 event=t6-8342-1968450-g38
+[aiw] 2026-11-22T16:49:48 request shape: event=t6-8342-1968450-g38 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-22T16:49:48 provider reply: event=t6-8342-1968450-g38 provider=deepseek req_msgs=7 history_msgs=6 latency=17856ms reply_bytes=132
+[aiw] 2026-11-22T16:49:48 tts queued: event=t6-8342-1968450-g38 reply_bytes=132 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-22T16:49:48 context commit: event=t6-8342-1968450-g38 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-22T16:49:57 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T16:50:09 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-22T17:50:52 echo filter: drop event=t6-8342-1968462-g39 seq=39 reason=drop_no_command (no command content after wake/filler strip (norm=12 rest=0)) text_bytes=12
+[aiw] 2026-11-22T17:52:40 route=native intent=time rule=time.keyword arg= event=t6-8342-1968466-g40 seq=40 session=1968466 text_bytes=24 merges=0 held_ms=0 publish_seq=10 (factory answers; AI worker does not)
+[aiw] 2026-11-22T17:52:47 route=native intent=volume rule=volume.set arg=set:5 event=t6-8342-1968470-g41 seq=41 session=1968470 text_bytes=27 merges=0 held_ms=0 publish_seq=11 (factory answers; AI worker does not)
+[aiw] 2026-11-22T17:52:54 route=ai event=t6-8342-1968484-g42 seq=0 session=1968484 merges=0 held_ms=609 why=timeout text_bytes=33 session_state=PROCESSING
+[aiw] 2026-11-22T17:52:54 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T17:52:57 deepseek ok: model=deepseek-flash http=200 curl=0 latency=3598ms resp_bytes=1923 reply_bytes=93 event=t6-8342-1968484-g42
+[aiw] 2026-11-22T17:52:57 request shape: event=t6-8342-1968484-g42 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-22T17:52:57 provider reply: event=t6-8342-1968484-g42 provider=deepseek req_msgs=7 history_msgs=6 latency=3598ms reply_bytes=93
+[aiw] 2026-11-22T17:52:57 tts queued: event=t6-8342-1968484-g42 reply_bytes=93 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-22T17:52:57 context commit: event=t6-8342-1968484-g42 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-22T17:52:57 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T17:53:03 tts stop requested (route=native intent=stop)
+[aiw] 2026-11-22T17:53:03 route=native intent=stop rule=stop.keyword arg=stop event=t6-8342-1968497-g43 seq=43 session=1968497 text_bytes=18 merges=0 held_ms=0 publish_seq=12 (factory answers; AI worker does not)
+[aiw] 2026-11-22T17:53:10 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-22T18:28:48 route=ai event=t6-8342-1968506-g44 seq=0 session=1968506 merges=0 held_ms=625 why=timeout text_bytes=36 session_state=PROCESSING
+[aiw] 2026-11-22T18:28:48 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T18:28:49 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1401ms resp_bytes=774 reply_bytes=126 event=t6-8342-1968506-g44
+[aiw] 2026-11-22T18:28:49 request shape: event=t6-8342-1968506-g44 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-22T18:28:49 provider reply: event=t6-8342-1968506-g44 provider=deepseek req_msgs=7 history_msgs=6 latency=1401ms reply_bytes=126
+[aiw] 2026-11-22T18:28:49 tts queued: event=t6-8342-1968506-g44 reply_bytes=126 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-22T18:28:49 context commit: event=t6-8342-1968506-g44 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-22T18:28:49 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-22T18:28:57 route=native intent=time rule=time.keyword arg= event=t6-8342-1968511-g45 seq=45 session=1968511 text_bytes=27 merges=0 held_ms=0 publish_seq=13 (factory answers; AI worker does not)
+[aiw] 2026-11-22T18:29:02 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
