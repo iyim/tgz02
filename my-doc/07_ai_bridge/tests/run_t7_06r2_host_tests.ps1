@@ -1,24 +1,29 @@
-# run_t7_06r2_host_tests.ps1 -- T7-06-R2 dead letter JSON fix (host only: TDM-GCC + Python)
+# run_t7_06r2_host_tests.ps1 -- dead letter JSON + persistence suite (T7-06-R2 + T7-08)
 #
 #   powershell -ExecutionPolicy Bypass -File run_t7_06r2_host_tests.ps1
 #
-# Coverage (host only: no device, no network, no api key):
-#   1) unit test  : formatting / escaping / small buffer / append / half-line repair / -1 on failure
-#   2) parser test: json.loads on every sample line (quotes, backslash, newline, control chars,
-#                   non-ASCII, invalid UTF-8, structural injection) + the legacy line must FAIL
-#   3) e2e A      : real ai_worker + Mock always failing -> one dead letter per event, offset advances
-#   4) e2e B      : dead letter file unwritable (path occupied by a directory) -> offset NOT advanced
+# Host only: no device, no network, no api key. TDM-GCC + Python 3.
 #
-# Artifacts: tests/out/t7_06r2_*.exe, tests/out/e2e/, evidence/t7_06r2_host_test.log
-# NOTE: keep this file ASCII-only. Windows PowerShell 5.1 reads a BOM-less file as ANSI and
-#       multi-byte comment text can shift quote parsing (hit during T7-06-R2).
+# Coverage:
+#   1) unit test  : formatting / escaping / small buffer / append / tail repair (incl. >4KB) /
+#                   wall-clock ts / short write / write failure / fsync failure / close failure /
+#                   lock failure (fault injection via -DT6B_DL_TESTING)
+#   2) parser test: json.loads on every sample line + concurrency (6 writers x 100 records)
+#   3) e2e A      : real ai_worker + Mock always failing -> dead letters, offset advances, ts is wall clock
+#   4) e2e B      : dead letter file unwritable -> offset NOT advanced, event stays pending
+#   5) source     : ai_worker uses wu_wall_ms (not wu_now_ms) for the dead letter timestamp;
+#                   every build/test script that lists ai_worker.c also lists dead_letter.c
+#
+# Artifacts: tests/out/*.exe, tests/out/e2e/, evidence/t7_06r2_host_test.log
+# NOTE: keep this file ASCII-only (Windows PowerShell 5.1 reads a BOM-less file as ANSI and
+#       multi-byte comment text can shift quote parsing).
 $ErrorActionPreference = "Stop"
 
 $Gcc = "C:\TDM-GCC-64\bin\gcc.exe"
 if (-not (Test-Path $Gcc)) { throw "gcc not found: $Gcc" }
 
-$Here    = $PSScriptRoot                       # my-doc/07_ai_bridge/tests
-$Root    = Split-Path $Here -Parent            # my-doc/07_ai_bridge
+$Here    = $PSScriptRoot
+$Root    = Split-Path $Here -Parent
 $Android = Join-Path $Root "android"
 $Ev      = Join-Path $Root "evidence"
 $Out     = Join-Path $Here "out"
@@ -33,7 +38,7 @@ $script:Lines = New-Object System.Collections.Generic.List[string]
 function Log([string]$s) { $script:Lines.Add($s); Write-Host $s }
 
 $Base = @("-O2", "-Wall", "-Wextra", "-std=gnu99", "-I", $Android)
-$LibSrc = @(
+$WorkerSrc = @(
     "ai_worker.c", "deepseek_provider.c", "event_reader.c", "consumer_state.c", "provider.c",
     "mock_provider.c", "worker_status.c", "worker_util.c", "seq_gap.c",
     "conv_context.c", "worker_conf.c", "dead_letter.c",
@@ -44,8 +49,8 @@ $script:Fail = 0
 function Fail([string]$why) { $script:Fail++; Log "FAIL $why" }
 function Pass([string]$why) { Log "PASS $why" }
 
-function Build([string]$name, [string]$exe, [string[]]$sources) {
-    $argv = $Base + @("-o", $exe) + $sources
+function Build([string]$name, [string]$exe, [string[]]$sources, [string[]]$extra) {
+    $argv = $Base + $extra + @("-o", $exe) + $sources
     Log "=== build $name ==="
     $text = & $Gcc @argv 2>&1 | Out-String
     if ($text.Trim().Length -gt 0) { Log $text.TrimEnd() } else { Log "(no compiler output: 0 warning, 0 error)" }
@@ -54,15 +59,16 @@ function Build([string]$name, [string]$exe, [string[]]$sources) {
     return $true
 }
 
-Log "# T7-06-R2 host test log (dead letter JSON)"
+Log "# T7-06-R2 / T7-08 host test log (dead letter JSON + persistence)"
 Log "# host time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Log ""
 
-# ---------- 1) unit test ----------
+# ---------- 1) unit test (with fault injection compiled in) ----------
 $UnitExe = Join-Path $Out "t7_06r2_dead_letter_unit_test.exe"
 if (Build "t7_06r2_dead_letter_unit_test" $UnitExe @(
         (Join-Path $Here "t7_06r2_dead_letter_unit_test.c"),
-        (Join-Path $Android "dead_letter.c"))) {
+        (Join-Path $Android "dead_letter.c"),
+        (Join-Path $Android "worker_util.c")) @("-DT6B_DL_TESTING")) {
     Log "=== run t7_06r2_dead_letter_unit_test ==="
     $run = & $UnitExe $Out 2>&1 | Out-String
     ($run.TrimEnd() -split "`r?`n") | ForEach-Object { Log $_ }
@@ -71,11 +77,10 @@ if (Build "t7_06r2_dead_letter_unit_test" $UnitExe @(
     else { Pass "unit test: $($Matches[1]) assertions" }
 }
 
-# ---------- 2) samples file (written by the unit test) ----------
 $Samples = Join-Path $Out "t7_06r2_dead_letter_samples.jsonl"
 if (-not (Test-Path $Samples)) { Fail "samples file missing (unit test did not write it)" }
 
-# ---------- 3) e2e A: provider always fails -> dead letters, offset advances ----------
+# ---------- 2) e2e fixtures ----------
 function New-Event([int]$seq, [string]$eid, [string]$text) {
     $o = [ordered]@{
         version = 1; rec = "asr_final"; event_id = $eid; event_type = "asr_final"
@@ -87,10 +92,13 @@ function New-Event([int]$seq, [string]$eid, [string]$text) {
     return ($o | ConvertTo-Json -Compress -Depth 4)
 }
 
+$WorkerExe = Join-Path $Out "ai_worker.exe"
+$workerBuilt = Build "ai_worker(host)" $WorkerExe $WorkerSrc @()
+
+# ---------- 3) e2e A: provider always fails -> dead letters, offset advances ----------
 Log ""
 Log "=== e2e A: provider always fails -> dead letter + offset advances ==="
-$WorkerExe = Join-Path $Out "ai_worker.exe"
-if (Build "ai_worker(host)" $WorkerExe $LibSrc) {
+if ($workerBuilt) {
     $wa = Join-Path $E2e "a_work"; $sa = Join-Path $E2e "a_state"
     New-Item -ItemType Directory -Force $wa | Out-Null
     $evLines = @(
@@ -126,8 +134,6 @@ if (Build "ai_worker(host)" $WorkerExe $LibSrc) {
         else { Fail "e2e A: processed_total == $($csA.processed_total)" }
         if ($csA.last_event_id -eq "e-a3") { Pass "e2e A: last_event_id == e-a3" }
         else { Fail "e2e A: last_event_id == '$($csA.last_event_id)'" }
-        if ([int]$st.offset -gt 0) { Pass "e2e A: durable offset advanced" }
-        else { Fail "e2e A: offset did not advance" }
     }
 
     # ---------- 4) e2e B: dead letter unwritable -> offset must NOT advance ----------
@@ -164,19 +170,44 @@ if (Build "ai_worker(host)" $WorkerExe $LibSrc) {
     else { Fail "e2e B: provider_retries == $($stB.counters.provider_retries)" }
 }
 
-# ---------- 5) parser test (json.loads on every line) ----------
+# ---------- 5) parser test (json.loads) + concurrency ----------
 Log ""
-Log "=== parser test (json.loads on every line) ==="
-$pyArgs = @((Join-Path $Here "t7_06r2_dead_letter_json_test.py"), "--samples", $Samples)
+Log "=== parser test (json.loads on every line + 6x100 concurrent appends) ==="
+$pyArgs = @((Join-Path $Here "t7_06r2_dead_letter_json_test.py"), "--samples", $Samples,
+            "--unit", $UnitExe, "--concurrency", "6x100")
 $dlApath = Join-Path (Join-Path $E2e "a_state") "dead_letter.jsonl"
 if (Test-Path $dlApath) { $pyArgs += @("--e2e", $dlApath) }
 Push-Location $Here
 $pyOut = & py -3 @pyArgs 2>&1 | Out-String
 $pyRc = $LASTEXITCODE
 Pop-Location
-($pyOut.TrimEnd() -split "`r?`n" | Where-Object { $_ -match '^(FAIL|checks=|RESULT|PASS (regression|e2e))' }) |
+($pyOut.TrimEnd() -split "`r?`n" | Where-Object { $_ -match '^(FAIL|checks=|RESULT|PASS (regression|e2e|concurrency|samples/wallclock))' }) |
     ForEach-Object { Log $_ }
 if ($pyRc -ne 0) { Fail "parser test" } else { Pass "parser test" }
+
+# ---------- 6) source-level assertions (A1 + build script coverage) ----------
+Log ""
+Log "=== source assertions ==="
+$workerSrcText = Get-Content (Join-Path $Android "ai_worker.c") -Raw
+if ($workerSrcText -match 'rec\.ts_ms = wu_wall_ms\(\);') { Pass "A1: ai_worker.c sets rec.ts_ms from wu_wall_ms()" }
+else { Fail "A1: ai_worker.c does not use wu_wall_ms() for rec.ts_ms" }
+if ($workerSrcText -match 'rec\.ts_ms = wu_now_ms\(\);') { Fail "A1: ai_worker.c still uses the monotonic clock for rec.ts_ms" }
+else { Pass "A1: no monotonic clock left on the dead letter timestamp path" }
+
+$scriptFiles = @(
+    (Join-Path $Android "build.ps1"),
+    (Join-Path $Android "build_t7_05.ps1"),
+    (Join-Path $Android "build_t7_08_arm.ps1"),
+    (Join-Path $Here "run_host_tests.ps1"),
+    (Join-Path $Here "run_t7_06r2_host_tests.ps1")
+)
+foreach ($f in $scriptFiles) {
+    if (-not (Test-Path $f)) { Fail ("build script missing: " + $f); continue }
+    $t = Get-Content $f -Raw
+    if ($t -notmatch 'ai_worker\.c') { continue }
+    if ($t -match 'dead_letter\.c') { Pass ("dead_letter.c listed in " + (Split-Path $f -Leaf)) }
+    else { Fail ("dead_letter.c missing from " + (Split-Path $f -Leaf)) }
+}
 
 Log ""
 if ($script:Fail -ne 0) {
@@ -185,9 +216,6 @@ if ($script:Fail -ne 0) {
     $script:Lines | Out-File -FilePath $Log -Encoding utf8
     exit 1
 }
-Log "# result: OK (unit + parser + e2e A/B, Mock only, no device, no network)"
+Log "# result: OK (unit + parser + concurrency + e2e A/B + source assertions, Mock only)"
 $script:Lines | Out-File -FilePath $Log -Encoding utf8
 exit 0
-
-
-

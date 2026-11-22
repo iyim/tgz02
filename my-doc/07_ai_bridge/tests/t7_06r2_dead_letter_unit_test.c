@@ -1,26 +1,31 @@
 /*
- * t7_06r2_dead_letter_unit_test.c -- T7-06-R2 死信 JSON 序列化 + 追加写的主机测试
+ * t7_06r2_dead_letter_unit_test.c -- 死信 JSON 序列化 + 持久化追加的主机测试
  *
- * 缺陷背景：T7-06-R1 的 dead_letter_event() 会把整行 JSON 里的所有 '"' 换成 '\''，
- * 于是 dead_letter.jsonl 里每一行都不是合法 JSON（连结构引号都被压掉了）。
+ * 覆盖三轮修的东西：
+ *   T7-06-R1 缺陷：整行引号被换成单引号 -> 不是合法 JSON；
+ *   T7-06-R2 修复：严格转义 / 一行一条 / 缓冲区不足拒绝 / 半行修复 / 失败回滚；
+ *   T7-08 补丁（本文件的重点）：
+ *     A1 ts 必须是墙钟（Epoch ms），不是单调时钟；
+ *     A2 尾部修复无 4 KB 上限，超长半行要能截掉，且绝不"补换行扶正"；
+ *     A3 追加写有排他锁 + 单次 write + 短写续写 + 失败回滚（并发由 python 侧验证）；
+ *     A4 fsync 成功而 close 失败 = 已持久化（返回 0，只告警），不得重复追加。
  *
- * 这个测试只做两件事：
- *   1) 逐字节断言 t6b_dl_format() 的输出（引号 / 反斜杠 / 换行 / 制表 / 控制字符 /
- *      非 ASCII / 非法 UTF-8 / 缓冲区不足）；
- *   2) 断言 t6b_dl_append() 的落盘语义（一行一条、行尾 '\n'、半行修复、失败返回 -1）。
+ * 故障注入靠编译宏 T6B_DL_TESTING（生产构建不定义，相关代码不参与编译）。
  *
- * 另外把测试用的样例行写到 <out>/t7_06r2_dead_letter_samples.jsonl，
- * 由 t7_06r2_dead_letter_json_test.py 用标准解析器（json.loads）逐行验证 ——
- * "能被标准 JSON 解析器独立解析"这一条必须由真正的解析器来判。
- *
- * 用法：t7_06r2_dead_letter_unit_test.exe [输出目录]
+ * 用法：
+ *   t7_06r2_dead_letter_unit_test.exe <outdir>                      正常自测
+ *   t7_06r2_dead_letter_unit_test.exe appendloop <file> <n> <tag>   并发写压力（供 python 调用）
  */
 #include "dead_letter.h"
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <time.h>
+
+#include "worker_util.h"         /* 只为 A1：wu_wall_ms() 的语义对照 */
 
 #ifdef _WIN32
 #  include <direct.h>
@@ -49,7 +54,6 @@ static void eq(const char *what, const char *got, const char *want)
     printf("FAIL %s\n  got : %s\n  want: %s\n", what, got, want);
 }
 
-/* 构造一行；返回长度，0 = 放不下 */
 static size_t fmt(char *dst, size_t cap, long long ts, const char *eid, size_t eidlen,
                   unsigned long seq, int attempts, const char *cls, size_t clslen,
                   int errbytes)
@@ -68,26 +72,43 @@ static size_t fmt(char *dst, size_t cap, long long ts, const char *eid, size_t e
     return t6b_dl_format(dst, cap, &r);
 }
 
-static void read_all(const char *path, char *buf, size_t cap, size_t *outlen)
+static size_t read_all(const char *path, char *buf, size_t cap)
 {
     FILE *f = fopen(path, "rb");
-    size_t n = 0;
+    size_t n;
 
-    if (f == NULL) { buf[0] = '\0'; if (outlen) *outlen = 0; return; }
+    if (f == NULL) { buf[0] = '\0'; return 0; }
     n = fread(buf, 1, cap - 1, f);
     fclose(f);
     buf[n] = '\0';
-    if (outlen) *outlen = n;
+    return n;
 }
 
 static void write_raw(const char *path, const char *data, size_t len)
 {
     FILE *f = fopen(path, "wb");
     size_t n;
+
     if (f == NULL) return;
     n = fwrite(data, 1, len, f);
     (void)n;
     fclose(f);
+}
+
+static long long file_size(const char *path)
+{
+    struct stat st;
+    if (stat(path, &st) != 0) return -1;
+    return (long long)st.st_size;
+}
+
+static int count_lines(const char *buf, size_t len)
+{
+    size_t i;
+    int n = 0;
+
+    for (i = 0; i < len; i++) if (buf[i] == '\n') n++;
+    return n;
 }
 
 /* 收集样例行，交给 Python 解析器验证 */
@@ -103,6 +124,25 @@ static void keep(const char *line, size_t len)
     g_samples_count++;
 }
 
+/* 并发写压力模式：由 python 起多个进程同时追加，验证排他锁确实不让行与行互相插入 */
+static int append_loop(const char *path, int count, const char *tag)
+{
+    char line[T6B_DL_LINE_MAX];
+    size_t n;
+    int i;
+
+    for (i = 0; i < count; i++) {
+        char eid[64];
+        t6b_dl_out o;
+        snprintf(eid, sizeof(eid), "%s-%04d", tag, i);
+        n = fmt(line, sizeof(line), 1700000000000LL + i, eid, (size_t)-1, (unsigned long)i,
+                1, "http_503", (size_t)-1, 7);
+        if (n == 0) return 2;
+        if (t6b_dl_append(path, line, n, &o) != 0) return 3;
+    }
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
     const char *outdir = (argc > 1) ? argv[1] : ".";
@@ -110,12 +150,15 @@ int main(int argc, char **argv)
     char tmp[512];
     char line[T6B_DL_LINE_MAX];
     char another[T6B_DL_LINE_MAX];
-    char back[4096];
+    static char back[262144];
     char want[T6B_DL_LINE_MAX];
     size_t n, n2, blen;
-    long long repaired = 0;
+    t6b_dl_out out;
 
-    printf("=== T7-06-R2 dead letter JSON unit test ===\n");
+    if (argc > 4 && strcmp(argv[1], "appendloop") == 0)
+        return append_loop(argv[2], atoi(argv[3]), argv[4]);
+
+    printf("=== dead letter JSON unit test (T7-06-R2 + T7-08) ===\n");
 
     /* ---------- 1. 普通记录：字段名、顺序、数值原样 ---------- */
     n = fmt(line, sizeof(line), 1700000000000LL, "t5b-4242-f000-g1", (size_t)-1,
@@ -224,7 +267,23 @@ int main(int argc, char **argv)
     }
     ok(t6b_dl_format(NULL, 32, NULL) == 0, "cap: null out -> 0");
 
-    /* ---------- 9. 追加写：一行一条、行尾 '\n' ---------- */
+    /* ---------- 9. A1：ts 必须是墙钟（Epoch ms） ---------- */
+    {
+        long long w = wu_wall_ms();
+        long long sys = (long long)time(NULL) * 1000LL;
+        long long diff = (w > sys) ? (w - sys) : (sys - w);
+        char tsbuf[64];
+
+        ok(diff < 5000, "A1: wu_wall_ms() is within 5 s of system Epoch time");
+        ok(w > 1600000000000LL, "A1: wall ms is an Epoch value (> 2020-09), not a boot counter");
+
+        n = fmt(line, sizeof(line), w, "wall-clock", (size_t)-1, 1, 1, "http_503", (size_t)-1, 4);
+        snprintf(tsbuf, sizeof(tsbuf), "\"ts\":%lld", w);
+        ok(strstr(line, tsbuf) != NULL, "A1: formatted ts uses the wall-clock value verbatim");
+        keep(line, n);
+    }
+
+    /* ---------- 10. 追加写：一行一条、行尾 '\n' ---------- */
     snprintf(tmp, sizeof(tmp), "%s/_dl_tmp", outdir);
     (void)MKDIR(tmp);
     snprintf(path, sizeof(path), "%s/dead_letter.jsonl", tmp);
@@ -232,28 +291,28 @@ int main(int argc, char **argv)
 
     n = fmt(line, sizeof(line), 10, "e-1", (size_t)-1, 1, 1, "http_503", (size_t)-1, 3);
     n2 = fmt(another, sizeof(another), 11, "e-2", (size_t)-1, 2, 1, "http_503", (size_t)-1, 3);
-    ok(t6b_dl_append(path, line, n, &repaired) == 0, "append: first line ok");
-    ok(repaired == 0, "append: nothing repaired on a fresh file");
-    ok(t6b_dl_append(path, another, n2, &repaired) == 0, "append: second line ok");
-    read_all(path, back, sizeof(back), &blen);
+    ok(t6b_dl_append(path, line, n, &out) == 0, "append: first line ok");
+    ok(out.repaired_bytes == 0, "append: nothing repaired on a fresh file");
+    ok(out.close_failed == 0, "append: no close warning on a normal run");
+    ok(t6b_dl_append(path, another, n2, &out) == 0, "append: second line ok");
+    blen = read_all(path, back, sizeof(back));
     ok(blen == n + n2, "append: both lines present, byte-exact length");
     ok(blen > 0 && back[blen - 1] == '\n', "append: file ends with newline");
     ok(strncmp(back, line, n) == 0 && strncmp(back + n, another, n2) == 0,
        "append: lines in order, no rewriting");
 
-    /* ---------- 10. 半行修复：崩溃留下的残行不许粘到新记录上 ---------- */
+    /* ---------- 11. 半行修复：崩溃留下的残行不许粘到新记录上 ---------- */
     {
         static const char partial[] = "{\"ts\":9,\"event_id\":\"broken";
         write_raw(path, partial, sizeof(partial) - 1);
-        repaired = 0;
-        ok(t6b_dl_append(path, line, n, &repaired) == 0, "repair: append after partial line ok");
-        ok(repaired == (long long)(sizeof(partial) - 1), "repair: partial bytes truncated");
-        read_all(path, back, sizeof(back), &blen);
+        ok(t6b_dl_append(path, line, n, &out) == 0, "repair: append after partial line ok");
+        ok(out.repaired_bytes == (long long)(sizeof(partial) - 1), "repair: partial bytes truncated");
+        blen = read_all(path, back, sizeof(back));
         ok(blen == n, "repair: file contains exactly the new record");
         ok(strncmp(back, line, n) == 0, "repair: record intact");
     }
 
-    /* ---------- 11. 完整行 + 半行：只丢半行，前面的记录保留 ---------- */
+    /* ---------- 12. 完整行 + 半行：只丢半行，前面的记录保留 ---------- */
     {
         static const char tailpart[] = "{\"ts\":12,\"half";
         char seed[512];
@@ -263,25 +322,127 @@ int main(int argc, char **argv)
         memcpy(seed + seedlen, tailpart, sizeof(tailpart) - 1);
         seedlen += sizeof(tailpart) - 1;
         write_raw(path, seed, seedlen);
-        repaired = 0;
-        ok(t6b_dl_append(path, another, n2, &repaired) == 0, "repair2: append ok");
-        ok(repaired == (long long)(sizeof(tailpart) - 1), "repair2: only the half line dropped");
-        read_all(path, back, sizeof(back), &blen);
+        ok(t6b_dl_append(path, another, n2, &out) == 0, "repair2: append ok");
+        ok(out.repaired_bytes == (long long)(sizeof(tailpart) - 1), "repair2: only the half line dropped");
+        blen = read_all(path, back, sizeof(back));
         ok(blen == n + n2, "repair2: good line + new line only");
         ok(strncmp(back, line, n) == 0, "repair2: previous record untouched");
         ok(strncmp(back + n, another, n2) == 0, "repair2: new record intact");
     }
 
-    /* ---------- 12. 落盘失败：返回 -1（调用方据此不推进 offset） ---------- */
+    /* ---------- 13. A2：超过 4 KB 的超长半行也要修掉 ---------- */
+    {
+        size_t huge = 12000;          /* 远大于旧实现的 4096 窗口 */
+        char *big = (char *)malloc(huge + 1);
+
+        ok(big != NULL, "A2: alloc for the oversize tail");
+        if (big != NULL) {
+            memset(big, 'x', huge);   /* 没有换行、也没有合法 JSON */
+            big[huge] = '\0';
+            /* 先放一条完整记录，再接一段 12 KB 的无换行垃圾 */
+            {
+                char seed[512];
+                size_t seedlen = (size_t)snprintf(seed, sizeof(seed), "%s", line);
+                char *both = (char *)malloc(seedlen + huge + 1);
+                ok(both != NULL, "A2: alloc for combined fixture");
+                if (both != NULL) {
+                    memcpy(both, seed, seedlen);
+                    memcpy(both + seedlen, big, huge);
+                    write_raw(path, both, seedlen + huge);
+                    free(both);
+                }
+            }
+            ok(t6b_dl_append(path, another, n2, &out) == 0, "A2: append after 12 KB junk ok");
+            ok(out.repaired_bytes == (long long)huge, "A2: all 12000 junk bytes truncated");
+            blen = read_all(path, back, sizeof(back));
+            ok(blen == n + n2, "A2: kept record + new record, nothing else");
+            ok(strncmp(back, line, n) == 0, "A2: the complete record survived");
+            ok(count_lines(back, blen) == 2, "A2: exactly two lines");
+            free(big);
+        }
+    }
+
+    /* ---------- 14. A2：整个文件都没有换行 -> 视为全损坏，清空 ---------- */
+    {
+        static const char junk[] = "this-file-has-no-newline-at-all-0123456789";
+        write_raw(path, junk, sizeof(junk) - 1);
+        ok(t6b_dl_append(path, line, n, &out) == 0, "A2b: append into a fully broken file ok");
+        ok(out.repaired_bytes == (long long)(sizeof(junk) - 1), "A2b: whole junk removed");
+        blen = read_all(path, back, sizeof(back));
+        ok(blen == n, "A2b: only the new record remains");
+        ok(strncmp(back, line, n) == 0, "A2b: new record intact");
+    }
+
+    /* ---------- 15. 落盘失败：返回 -1（调用方据此不推进 offset） ---------- */
     snprintf(path, sizeof(path), "%s/no_such_dir/dead_letter.jsonl", tmp);
     ok(t6b_dl_append(path, line, n, NULL) == -1, "append: missing dir -> -1");
-    snprintf(path, sizeof(path), "%s", tmp);      /* 目录本身当文件写 */
+    snprintf(path, sizeof(path), "%s", tmp);      /* 目录本身当文件 */
     ok(t6b_dl_append(path, line, n, NULL) == -1, "append: path is a directory -> -1");
     ok(t6b_dl_append(NULL, line, n, NULL) == -1, "append: null path -> -1");
     ok(t6b_dl_append(tmp, NULL, 0, NULL) == -1, "append: empty line -> -1");
+    {
+        static const char noterm[] = "abcde";   /* 缺行尾：必须是完整的一行才收 */
+        snprintf(path, sizeof(path), "%s/_dl_tmp/noterm.jsonl", outdir);
+        (void)UNLINK(path);
+        ok(t6b_dl_append(path, noterm, sizeof(noterm) - 1, NULL) == -1,
+           "append: line without trailing newline -> -1");
+        ok(file_size(path) <= 0, "append: rejected line left no file content");
+    }
 
-    /* ---------- 13. 每次格式化都是独立一行：累计样例行 ---------- */
-    ok(g_samples_count >= 6, "samples: adversarial lines collected for the JSON parser");
+    /* ---------- 16. A3/A4：故障注入 ---------- */
+    snprintf(tmp, sizeof(tmp), "%s/_dl_tmp", outdir);
+    snprintf(path, sizeof(path), "%s/fault.jsonl", tmp);
+    (void)UNLINK(path);
+
+    /* 16.1 短写：第一次只写一半，第二次写完 -> 记录完整 */
+    t6b_dl_test_fault_set(T6B_DL_FAULT_WRITE_SHORT);
+    ok(t6b_dl_append(path, line, n, &out) == 0, "A3: short write is continued, not lost");
+    ok(t6b_dl_test_fault_peek() == T6B_DL_FAULT_NONE, "A3: injected fault consumed once");
+    blen = read_all(path, back, sizeof(back));
+    ok(blen == n, "A3: short write produced exactly one complete line");
+    ok(strncmp(back, line, n) == 0, "A3: short write content byte-exact");
+
+    /* 16.2 write 直接失败 -> -1 且文件回滚到写前长度 */
+    {
+        long long before = file_size(path);
+        t6b_dl_test_fault_set(T6B_DL_FAULT_WRITE_FAIL);
+        ok(t6b_dl_append(path, another, n2, &out) == -1, "A3: write failure -> -1");
+        ok(file_size(path) == before, "A3: write failure rolled back to the previous length");
+        blen = read_all(path, back, sizeof(back));
+        ok(blen == n && strncmp(back, line, n) == 0, "A3: previous record untouched after rollback");
+    }
+
+    /* 16.3 fsync 失败 -> -1 且回滚 */
+    {
+        long long before = file_size(path);
+        t6b_dl_test_fault_set(T6B_DL_FAULT_FSYNC_FAIL);
+        ok(t6b_dl_append(path, another, n2, &out) == -1, "A4: fsync failure -> -1 (not durable)");
+        ok(file_size(path) == before, "A4: fsync failure rolled back");
+    }
+
+    /* 16.4 fsync 成功、close 失败 -> 0（数据已持久化），只报警一次，不重复追加 */
+    {
+        long long before = file_size(path);
+        t6b_dl_test_fault_set(T6B_DL_FAULT_CLOSE_FAIL);
+        ok(t6b_dl_append(path, another, n2, &out) == 0,
+           "A4: close failure after fsync is NOT a write failure");
+        ok(out.close_failed == 1, "A4: close failure reported in out.close_failed");
+        ok(file_size(path) == before + (long long)n2, "A4: record is on disk exactly once");
+        blen = read_all(path, back, sizeof(back));
+        ok(count_lines(back, blen) == 2, "A4: no duplicate line from the close-failure path");
+        ok(strncmp(back + n, another, n2) == 0, "A4: appended record byte-exact");
+    }
+
+    /* 16.5 加锁失败 -> -1，不写，也不破坏文件 */
+    {
+        long long before = file_size(path);
+        t6b_dl_test_fault_set(T6B_DL_FAULT_LOCK_FAIL);
+        ok(t6b_dl_append(path, line, n, &out) == -1, "A3: lock failure -> -1");
+        ok(file_size(path) == before, "A3: lock failure leaves the file untouched");
+    }
+
+    /* ---------- 17. 样例行齐了 ---------- */
+    ok(g_samples_count >= 8, "samples: adversarial lines collected for the JSON parser");
 
     snprintf(want, sizeof(want), "%s/t7_06r2_dead_letter_samples.jsonl", outdir);
     write_raw(want, g_samples, g_samples_len);

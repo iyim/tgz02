@@ -419,12 +419,18 @@ static void gap_report(t6b_worker *w, const t6b_event *ev)
 static int commit_event(t6b_worker *w);
 
 /*
- * T7-06-R2 修复：原实现把整行里所有双引号替换成单引号（连 JSON 结构引号一起压掉），
- * 写出来的是 {'ts':...} 这种非法 JSON。现在格式化与落盘都在 dead_letter.c 里，
- * 输出严格 JSON Lines（一个记录一行、行尾 '\n'、字符串完整转义）。
+ * 死信（dead letter）：把"已经放弃的事件"落成一行 JSON Lines，然后提交偏移跳过它。
+ *
+ * 历史：T7-06-R1 把整行引号换成单引号（不是合法 JSON）；T7-06-R2 把序列化与落盘
+ * 抽到 dead_letter.c 并用严格转义重写。T7-08 按现场复核补齐三件事：
+ *   - ts 用 **墙钟**（wu_wall_ms，Unix Epoch 毫秒）：死信是给人看的，跨重启要能排序对时；
+ *     单调时钟只留给超时/退避（wu_now_ms），两者不混用；
+ *   - 尾部修复不再有 4 KB 上限，也不会"补一个换行"把非法半行扶正（详见 dead_letter.c）；
+ *   - 落盘成功但 close 报错时**不当作失败**：fsync 已经把数据写进设备，
+ *     close 的错误只是 fd 层面的报告，重试只会造成重复死信。
  *
  * 顺序仍然是"写 → fsync → 提交 offset"：
- *   - t6b_dl_append 返回非 0（含回滚）= 这一条没落盘 → 直接返回 -1，调用方不推进 offset；
+ *   - t6b_dl_append 返回非 0（含已回滚）= 这一条没落盘 → 返回 -1，调用方不推进 offset；
  *   - 落盘成功后才 commit_event()；commit 失败按原有语义返回 -2（前缀指纹未推进）。
  */
 static int dead_letter_event(t6b_worker *w)
@@ -432,14 +438,14 @@ static int dead_letter_event(t6b_worker *w)
     char path[T6B_PATH_MAX];
     char line[T6B_DL_LINE_MAX];
     t6b_dl_rec rec;
+    t6b_dl_out dl;
     size_t n;
-    long long repaired = 0;
 
     snprintf(path, sizeof(path), "%s/dead_letter.jsonl",
              (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT);
 
     memset(&rec, 0, sizeof(rec));
-    rec.ts_ms = wu_now_ms();
+    rec.ts_ms = wu_wall_ms();                 /* T7-08：墙钟（Epoch ms），不是 CLOCK_MONOTONIC */
     rec.event_id = w->pend.event_id;
     rec.event_id_len = strlen(w->pend.event_id);
     rec.seq = w->pend.seq;
@@ -456,14 +462,18 @@ static int dead_letter_event(t6b_worker *w)
         return -1;
     }
 
-    if (t6b_dl_append(path, line, n, &repaired) != 0) {
+    if (t6b_dl_append(path, line, n, &dl) != 0) {
         always("dead-letter: append(%s) failed errno=%d; event %s stays pending (offset NOT advanced)",
                path, errno, w->pend.event_id);
         return -1;
     }
-    if (repaired > 0)
-        always("dead-letter: repaired %lld trailing byte(s) left by a previous run in %s",
-               repaired, path);
+    if (dl.repaired_bytes > 0)
+        always("dead-letter: repaired %lld trailing byte(s) of an incomplete record in %s",
+               dl.repaired_bytes, path);
+    if (dl.close_failed)
+        always("dead-letter: record for event %s is durable (fsync ok) but close() failed errno=%d; "
+               "NOT retried (offset advances)",
+               w->pend.event_id, dl.close_errno);
 
     if (commit_event(w) != 0) return -2;
     always("dead-letter: event %s skipped after %d attempts (%s); pipeline continues",
