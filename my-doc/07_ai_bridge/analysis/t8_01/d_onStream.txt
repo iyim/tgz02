@@ -1,0 +1,186 @@
+﻿
+libsmartbox.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+0011353c AliAiLabs::AGUI::SessionManager::onStream(int, char const*, unsigned char, unsigned char, unsigned char, unsigned char):
+  11353c: f0 4f 2d e9                  	push	{r4, r5, r6, r7, r8, r9, r10, r11, lr}
+  113540: 1c b0 8d e2                  	add	r11, sp, #28
+  113544: 2c d0 4d e2                  	sub	sp, sp, #44
+  113548: 00 60 a0 e1                  	mov	r6, r0
+  11354c: 40 00 90 e5                  	ldr	r0, [r0, #64]
+  113550: 01 90 a0 e1                  	mov	r9, r1
+  113554: 01 00 50 e1                  	cmp	r0, r1
+  113558: 66 00 00 1a                  	bne	#408 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x1bc>
+  11355c: 02 80 a0 e1                  	mov	r8, r2
+  113560: 00 00 52 e3                  	cmp	r2, #0
+  113564: 79 00 00 0a                  	beq	#484 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x214>
+  113568: 0c c0 9b e5                  	ldr	r12, [r11, #12]
+  11356c: 03 a0 a0 e1                  	mov	r10, r3
+  113570: 10 40 9b e5                  	ldr	r4, [r11, #16]
+  113574: 00 00 5c e3                  	cmp	r12, #0
+  113578: 0b 00 00 1a                  	bne	#44 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x70>
+  11357c: 84 10 96 e5                  	ldr	r1, [r6, #132]
+  113580: 0a 30 a0 e1                  	mov	r3, r10
+  113584: 14 00 96 e5                  	ldr	r0, [r6, #20]
+  113588: 0c 50 a0 e1                  	mov	r5, r12
+  11358c: 5c 22 9f e5                  	ldr	r2, [pc, #604]
+  113590: 01 00 51 e3                  	cmp	r1, #1
+  113594: 09 10 a0 e1                  	mov	r1, r9
+  113598: 00 40 8d e5                  	str	r4, [sp]
+  11359c: 02 20 8f e0                  	add	r2, pc, r2
+  1135a0: 08 20 a0 11                  	movne	r2, r8
+  1135a4: f5 fd fd eb                  	bl	#-526380 <.plt+0x59e4>
+  1135a8: 05 c0 a0 e1                  	mov	r12, r5
+  1135ac: 40 02 9f e5                  	ldr	r0, [pc, #576]
+  1135b0: 08 50 9b e5                  	ldr	r5, [r11, #8]
+  1135b4: 00 00 9f e7                  	ldr	r0, [pc, r0]
+  1135b8: 00 00 d0 e5                  	ldrb	r0, [r0]
+  1135bc: 00 00 50 e3                  	cmp	r0, #0
+  1135c0: 10 00 00 0a                  	beq	#64 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0xcc>
+  1135c4: 2c 12 9f e5                  	ldr	r1, [pc, #556]
+  1135c8: 81 72 00 e3                  	movw	r7, #641
+  1135cc: 28 22 9f e5                  	ldr	r2, [pc, #552]
+  1135d0: 28 32 9f e5                  	ldr	r3, [pc, #552]
+  1135d4: 01 10 8f e0                  	add	r1, pc, r1
+  1135d8: 24 02 9f e5                  	ldr	r0, [pc, #548]
+  1135dc: 02 20 8f e0                  	add	r2, pc, r2
+  1135e0: 03 30 8f e0                  	add	r3, pc, r3
+  1135e4: 00 70 8d e5                  	str	r7, [sp]
+  1135e8: 00 00 8f e0                  	add	r0, pc, r0
+  1135ec: 01 02 8d e9                  	stmib	sp, {r0, r9}
+  1135f0: 14 00 8d e2                  	add	r0, sp, #20
+  1135f4: 0c 80 8d e5                  	str	r8, [sp, #12]
+  1135f8: 10 a0 8d e5                  	str	r10, [sp, #16]
+  1135fc: 30 10 80 e8                  	stm	r0, {r4, r5, r12}
+  113600: 04 00 a0 e3                  	mov	r0, #4
+  113604: 1f f8 fd eb                  	bl	#-532356 <.plt+0x42ec>
+  113608: 00 00 55 e3                  	cmp	r5, #0
+  11360c: 06 00 00 0a                  	beq	#24 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0xf0>
+  113610: 44 00 96 e5                  	ldr	r0, [r6, #68]
+  113614: 01 00 50 e3                  	cmp	r0, #1
+  113618: 03 00 00 1a                  	bne	#12 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0xf0>
+  11361c: 14 00 96 e5                  	ldr	r0, [r6, #20]
+  113620: 09 10 a0 e1                  	mov	r1, r9
+  113624: 08 20 a0 e1                  	mov	r2, r8
+  113628: d7 fd fd eb                  	bl	#-526500 <.plt+0x59f0>
+  11362c: 00 70 a0 e3                  	mov	r7, #0
+  113630: 00 00 54 e3                  	cmp	r4, #0
+  113634: 58 00 00 1a                  	bne	#352 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x260>
+  113638: 7c 40 96 e5                  	ldr	r4, [r6, #124]
+  11363c: 9f fd fd eb                  	bl	#-526724 <.plt+0x5924>
+  113640: 03 04 8d e8                  	stm	sp, {r0, r1, r10}
+  113644: 04 00 a0 e1                  	mov	r0, r4
+  113648: 09 10 a0 e1                  	mov	r1, r9
+  11364c: 08 20 a0 e1                  	mov	r2, r8
+  113650: d0 fd fd eb                  	bl	#-526528 <.plt+0x59fc>
+  113654: 00 00 5a e3                  	cmp	r10, #0
+  113658: 4f 00 00 0a                  	beq	#316 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x260>
+  11365c: 87 e9 fd eb                  	bl	#-547300 <.plt+0x8e4>
+  113660: 00 10 90 e5                  	ldr	r1, [r0]
+  113664: 50 10 91 e5                  	ldr	r1, [r1, #80]
+  113668: 31 ff 2f e1                  	blx	r1
+  11366c: 20 40 8d e2                  	add	r4, sp, #32
+  113670: 00 a0 a0 e1                  	mov	r10, r0
+  113674: 06 10 a0 e1                  	mov	r1, r6
+  113678: 09 20 a0 e1                  	mov	r2, r9
+  11367c: 04 00 a0 e1                  	mov	r0, r4
+  113680: 67 fd fd eb                  	bl	#-526948 <.plt+0x5888>
+  113684: 7c 00 96 e5                  	ldr	r0, [r6, #124]
+  113688: 28 10 9d e5                  	ldr	r1, [sp, #40]
+  11368c: 38 60 80 e2                  	add	r6, r0, #56
+  113690: 4c 00 96 e8                  	ldm	r6, {r2, r3, r6}
+  113694: 44 00 90 e5                  	ldr	r0, [r0, #68]
+  113698: 20 50 dd e5                  	ldrb	r5, [sp, #32]
+  11369c: 4c 00 8d e8                  	stm	sp, {r2, r3, r6}
+  1136a0: 01 00 15 e3                  	tst	r5, #1
+  1136a4: 01 10 84 03                  	orreq	r1, r4, #1
+  1136a8: 0c 00 8d e5                  	str	r0, [sp, #12]
+  1136ac: 08 20 a0 e1                  	mov	r2, r8
+  1136b0: 08 00 9b e5                  	ldr	r0, [r11, #8]
+  1136b4: 10 0f 6f e1                  	clz	r0, r0
+  1136b8: a0 32 a0 e1                  	lsr	r3, r0, #5
+  1136bc: 0a 00 a0 e1                  	mov	r0, r10
+  1136c0: b7 fd fd eb                  	bl	#-526628 <.plt+0x5a08>
+  1136c4: 6b fd fd eb                  	bl	#-526932 <.plt+0x58dc>
+  1136c8: 00 00 50 e3                  	cmp	r0, #0
+  1136cc: 03 00 00 0a                  	beq	#12 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x1a4>
+  1136d0: 65 fd fd eb                  	bl	#-526956 <.plt+0x58d0>
+  1136d4: 09 10 a0 e1                  	mov	r1, r9
+  1136d8: 08 20 a0 e1                  	mov	r2, r8
+  1136dc: b3 fd fd eb                  	bl	#-526644 <.plt+0x5a14>
+  1136e0: 20 00 dd e5                  	ldrb	r0, [sp, #32]
+  1136e4: 01 00 10 e3                  	tst	r0, #1
+  1136e8: 2b 00 00 0a                  	beq	#172 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x260>
+  1136ec: 28 00 9d e5                  	ldr	r0, [sp, #40]
+  1136f0: 88 e7 fd eb                  	bl	#-549344 <.plt+0x17c>
+  1136f4: 28 00 00 ea                  	b	#160 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x260>
+  1136f8: c8 10 9f e5                  	ldr	r1, [pc, #200]
+  1136fc: 27 7e a0 e3                  	mov	r7, #624
+  113700: c4 20 9f e5                  	ldr	r2, [pc, #196]
+  113704: c4 30 9f e5                  	ldr	r3, [pc, #196]
+  113708: 01 10 8f e0                  	add	r1, pc, r1
+  11370c: c0 50 9f e5                  	ldr	r5, [pc, #192]
+  113710: 02 20 8f e0                  	add	r2, pc, r2
+  113714: 03 30 8f e0                  	add	r3, pc, r3
+  113718: 08 00 8d e5                  	str	r0, [sp, #8]
+  11371c: 01 00 a0 e3                  	mov	r0, #1
+  113720: 05 50 8f e0                  	add	r5, pc, r5
+  113724: 00 70 8d e5                  	str	r7, [sp]
+  113728: 04 50 8d e5                  	str	r5, [sp, #4]
+  11372c: 0c 90 8d e5                  	str	r9, [sp, #12]
+  113730: d4 f7 fd eb                  	bl	#-532656 <.plt+0x42ec>
+  113734: 40 30 96 e5                  	ldr	r3, [r6, #64]
+  113738: 06 00 a0 e3                  	mov	r0, #6
+  11373c: 94 10 9f e5                  	ldr	r1, [pc, #148]
+  113740: 05 20 a0 e1                  	mov	r2, r5
+  113744: 00 90 8d e5                  	str	r9, [sp]
+  113748: 01 10 8f e0                  	add	r1, pc, r1
+  11374c: 10 00 00 ea                  	b	#64 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x258>
+  113750: 84 10 9f e5                  	ldr	r1, [pc, #132]
+  113754: 76 02 00 e3                  	movw	r0, #630
+  113758: 80 20 9f e5                  	ldr	r2, [pc, #128]
+  11375c: 80 30 9f e5                  	ldr	r3, [pc, #128]
+  113760: 01 10 8f e0                  	add	r1, pc, r1
+  113764: 7c 50 9f e5                  	ldr	r5, [pc, #124]
+  113768: 02 20 8f e0                  	add	r2, pc, r2
+  11376c: 03 30 8f e0                  	add	r3, pc, r3
+  113770: 05 50 8f e0                  	add	r5, pc, r5
+  113774: 21 02 8d e8                  	stm	sp, {r0, r5, r9}
+  113778: 01 00 a0 e3                  	mov	r0, #1
+  11377c: c1 f7 fd eb                  	bl	#-532732 <.plt+0x42ec>
+  113780: 64 10 9f e5                  	ldr	r1, [pc, #100]
+  113784: 06 00 a0 e3                  	mov	r0, #6
+  113788: 05 20 a0 e1                  	mov	r2, r5
+  11378c: 09 30 a0 e1                  	mov	r3, r9
+  113790: 01 10 8f e0                  	add	r1, pc, r1
+  113794: 3d fd fd eb                  	bl	#-527116 <.plt+0x58f4>
+  113798: 00 70 e0 e3                  	mvn	r7, #0
+  11379c: 07 00 a0 e1                  	mov	r0, r7
+  1137a0: 1c d0 4b e2                  	sub	sp, r11, #28
+  1137a4: f0 8f bd e8                  	pop	{r4, r5, r6, r7, r8, r9, r10, r11, pc}
+  1137a8: 00 40 a0 e1                  	mov	r4, r0
+  1137ac: 20 00 dd e5                  	ldrb	r0, [sp, #32]
+  1137b0: 01 00 10 e3                  	tst	r0, #1
+  1137b4: 01 00 00 0a                  	beq	#4 <_ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh+0x284>
+  1137b8: 28 00 9d e5                  	ldr	r0, [sp, #40]
+  1137bc: 55 e7 fd eb                  	bl	#-549548 <.plt+0x17c>
+  1137c0: 04 00 a0 e1                  	mov	r0, r4
+  1137c4: 59 e7 fd eb                  	bl	#-549532 <.plt+0x194>
+  1137c8: 51 ab 0b 00                  	andeq	r10, r11, r1, asr r11
+  1137cc: 58 ab 0b 00                  	andeq	r10, r11, r8, asr r11
+  1137d0: 9e af 0b 00                  	muleq	r11, lr, pc
+  1137d4: 9b af 0b 00                  	muleq	r11, r11, pc
+  1137d8: a9 af 0b 00                  	andeq	r10, r11, r9, lsr #31
+  1137dc: f9 aa 0b 00                  	strdeq	r10, r11, [r11], -r9
+  1137e0: 00 ab 0b 00                  	andeq	r10, r11, r0, lsl #22
+  1137e4: 46 af 0b 00                  	andeq	r10, r11, r6, asr #30
+  1137e8: 88 af 0b 00                  	andeq	r10, r11, r8, lsl #31
+  1137ec: 8d af 0b 00                  	andeq	r10, r11, sp, lsl #31
+  1137f0: b9 be 0a 00                  	strheq	r11, [r10], -r9
+  1137f4: 50 be 0d 00                  	andeq	r11, sp, r0, asr lr
+  1137f8: 85 ac 0b 00                  	andeq	r10, r11, r5, lsl #25
+  1137fc: 8c ac 0b 00                  	andeq	r10, r11, r12, lsl #25
+  113800: d2 b0 0b 00                  	ldrdeq	r11, r12, [r11], -r2
+  113804: 3c b1 0b 00                  	andeq	r11, r11, r12, lsr r1

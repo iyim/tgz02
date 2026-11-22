@@ -1,0 +1,177 @@
+# T8-01 libsmartbox.so static evidence extract (ARM32, 2 047 772 bytes)
+# target : /system/app/smartapp/lib/arm/libsmartbox.so
+# sha256 : f6e3c3543ff6da5b59bf60b884b6ce4332897c75aa6b89b8dccc0c266df80940
+# method : readelf -sW / -rW (.dynsym 5653 entries, .rel.plt in PLT order) + llvm-objdump -d
+#          PLT0 = 0x8d39c, stub base = 0x8d3b0, 12 bytes per stub, stub k <-> .rel.plt[k]
+
+## key symbols (address / size)
+2364: 0011353c   716 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI14SessionManager8onStreamEiPKchhhh
+1650: 0011489c   764 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI14SessionManager11onNlpResultEiiPNS0_9NlpResultE
+3080: 00114b98     8 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI14SessionManager16onNlpResultInnerEiPNS0_9NlpResultE
+3308: 001110e4   268 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih
+1821: 00117a78   628 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI15SessionDispatch8onStreamEiPKch
+2348: 00118ebc  1952 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE
+3840: 00118830   316 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE
+3114: 00117d40   748 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh
+5184: 0010fe3c  1424 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI13RouterManager10onResponseEiP11json_object
+4906: 001103cc    52 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI13RouterManager12onTextStreamEiPKchP11json_object
+4722: 0010f8d0   768 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI13RouterManager9getRouterEPcS2_RNSt6__ndk14listINS3_10shared_ptrINS0_7IRouter15IRouterListenerEEENS3_9allocatorIS8_EEEERNS4_IiNS9_IiEEEE
+1135: 0012febc   264 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI10GcsManager8onResultEihhPKai
+1085: 0011d9b4    68 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI12SessionProxy11onNlpResultEiiPNS0_9NlpResultE
+482: 0011d7d4   104 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI12SessionProxy17onSendTextRequestEiPKc
+1063: 0013ea20   728 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI12AudioManager19processMediaCommandEPNS0_9NlpResultEPNS0_10ReturnCodeERh
+
+## callees of SessionManager::onStream  (0x11353c .. 0x113808)
+  1135a4: _ZN9AliAiLabs4AGUI12SessionProxy8onStreamEiPKchh
+  113604: AgutilLog
+  113628: _ZN9AliAiLabs4AGUI12SessionProxy17onSendTextRequestEiPKc
+  11363c: _ZN9AliAiLabs4AGUI9Timestamp10getNowTimeEv
+  113650: _ZN9AliAiLabs4AGUI15PerformanceData11setTextTimeEiPKcxh
+  11365c: _ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+  113680: _ZN9AliAiLabs4AGUI14SessionManager8getLogIdEi
+  1136c0: _ZN9AliAiLabs4AGUI9UtManager13sendAsrResultEPKcS3_hxx
+  1136c4: _ZN9AliAiLabs4AGUI15AutoTestManager12isTestEnableEv
+  1136d0: _ZN9AliAiLabs4AGUI15AutoTestManager11getInstanceEv
+  1136dc: _ZN9AliAiLabs4AGUI15AutoTestManager12insertAsrMapEiPKc
+  1136f0: _ZdlPv
+  113730: AgutilLog
+  11377c: AgutilLog
+  113794: _ZN9AliAiLabs4AGUI14SessionManager10sendTraceEENS0_15SessionUTType_TEPKcS4_z
+  1137bc: _ZdlPv
+  1137c4: _Unwind_Resume
+
+## callees of SessionProxy::onStream  (0x11d708 .. 0x11d7d4)
+  11d760: _ZN9AliAiLabs4AGUI8StrUtils6strDupEPKciii
+  11d774: _ZN9AliAiLabs4AGUI8StrUtils7isEmptyEPKc
+  11d7b8: _ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE
+  11d7c4: _ZN9AliAiLabs4AGUI7Handler11postMessageEPNS0_7MessageE
+
+## callees of SessionProxy::onSendTextRequest  (0x11d7d4 .. 0x11d83c)
+  11d7fc: _ZN9AliAiLabs4AGUI8StrUtils6strDupEPKciii
+  11d820: _ZN9AliAiLabs4AGUI7Message6obtainEiiiPvPFvPS1_EPNS0_15HandlerCallbackE
+
+## callees of SessionDispatch::onStream  (0x117a78 .. 0x117cec)
+  117aa0: _ZNK9AliAiLabs4AGUI13AppClientInfo20getAppClientCallbackEv
+  117aac: _ZNK9AliAiLabs4AGUI13AppClientInfo11getIsShowUIEv
+  117b18: AgutilLog
+  117b68: AgutilLog
+  117b90: _ZNK9AliAiLabs4AGUI13AppClientInfo10getAsrModeEv
+  117bfc: AgutilLog
+  117c0c: _ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih
+  117c58: _ZNSt6__ndk119__shared_weak_count14__release_weakEv
+  117cac: _ZNSt6__ndk119__shared_weak_count14__release_weakEv
+  117cb4: _Unwind_Resume
+
+## callees of RouterManager::onResponse  (0x10fe3c .. 0x1103cc)
+  10fe70: _ZN9AliAiLabs4AGUI10GcsManager10onResponseEiP11json_objecth
+  10feb8: AgutilLog
+  10fedc: _ZN9AliAiLabs4AGUI14ProtocolParser8onParserEiP11json_object
+  10ff74: json_object_to_json_string
+  10ff84: json_object_to_json_string
+  10ffa4: _ZN9AliAiLabs4AGUI14SessionManager16onNlpResultInnerEiPNS0_9NlpResultE
+  10fff8: json_tokener_parse_2
+  110004: _ZN9AliAiLabs4AGUI10ITtsClient15TtsResponseInfoC1Ev
+  11001c: _ZN9AliAiLabs4AGUI10JsonHelper13getJsonStringEP11json_objectPKcS5_i
+  110038: _ZN9AliAiLabs4AGUI10JsonHelper13getJsonStringEP11json_objectPKcS5_i
+  110054: _ZN9AliAiLabs4AGUI10JsonHelper13getJsonStringEP11json_objectPKcS5_i
+  11006c: _ZN9AliAiLabs4AGUI10JsonHelper10getJsonIntEP11json_objectPKci
+  110084: _ZN9AliAiLabs4AGUI10JsonHelper14getJsonBooleanEP11json_objectPKch
+  11009c: _ZN9AliAiLabs4AGUI10JsonHelper14getJsonBooleanEP11json_objectPKch
+  1100b4: _ZN9AliAiLabs4AGUI10JsonHelper14getJsonBooleanEP11json_objectPKch
+  1100d0: _ZN9AliAiLabs4AGUI10JsonHelper13getJsonStringEP11json_objectPKcS5_i
+  1100e8: _ZN9AliAiLabs4AGUI10JsonHelper14getJsonBooleanEP11json_objectPKch
+  110104: _ZN9AliAiLabs4AGUI10JsonHelper13getJsonStringEP11json_objectPKcS5_i
+  11011c: _ZN9AliAiLabs4AGUI8StrUtils6strDupEPKciii
+  110134: _ZN9AliAiLabs4AGUI8StrUtils6strDupEPKciii
+  11014c: _ZN9AliAiLabs4AGUI8StrUtils6strDupEPKciii
+  110164: _ZN9AliAiLabs4AGUI8StrUtils6strDupEPKciii
+  1101b4: _ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+  1101b8: _ZN9AliAiLabs4AGUI6MmiCtx26getContinuousDialogManagerEv
+  1101c8: _ZN9AliAiLabs4AGUI23ContinuousDialogManager14onSpeakCommandEiP11json_objecth
+  1101d0: _ZN9AliAiLabs4AGUI10ITtsClient15TtsResponseInfoD1Ev
+  110238: AgutilLog
+  110250: _ZN9AliAiLabs4AGUI14ProtocolParser7getItemEP11json_objectii
+  110268: json_object_object_get_ex
+  1102b8: _ZN9AliAiLabs4AGUI14SessionManager18onSpecialNlpResultEiPNS0_9NlpResultE
+  1102c4: _ZN9AliAiLabs4AGUI9UtManager18sendServerResponseEP11json_object
+  1102e0: json_object_to_json_string
+  1102f0: json_object_to_json_string
+  110338: AgutilLog
+  11034c: _ZN9AliAiLabs4AGUI10ITtsClient15TtsResponseInfoD1Ev
+  110354: _Unwind_Resume
+
+## callees of SessionDispatch::onNlpResult  (0x118ebc .. 0x11965c)
+  118f1c: AgutilLog
+  118f48: _Znwj
+  118f50: _ZN9AliAiLabs4AGUI9NlpResultC1Ev
+  118f94: _ZN9AliAiLabs4AGUI15SessionDispatch17getForegroundInfoEiPNSt6__ndk110shared_ptrINS0_17AppForegroundInfoEEEPNS3_INS0_13AppClientInfoEEEPNS3_INS0_15IMultiUIManager10IUIManagerEEE
+  118fa0: _ZN14ServiceManager10getServiceEPKc
+  118ffc: _ZdlPv
+  119014: _ZNK9AliAiLabs4AGUI13AppClientInfo11getIsShowUIEv
+  11905c: AgutilLog
+  1190d0: _ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+  119120: AgutilLog
+  1191a4: AgutilLog
+  1191b8: _Znwj
+  1191c0: _ZN9AliAiLabs4AGUI9NlpResultC1Ev
+  1191d8: _ZN9AliAiLabs4AGUI15SessionDispatch18onRouterDetailInfoEiiPNS0_9NlpResultE
+  119200: _ZN9AliAiLabs4AGUI15SessionDispatch10playAudiosEiiPNS0_9NlpResultEPNS0_10ReturnCodeEPh
+  119260: AgutilLog
+  1192c8: AgutilLog
+  119318: _ZN9AliAiLabs4AGUI12ProtocolData20getProtocolDataExtraEv
+  119340: _ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+  119344: _ZN9AliAiLabs4AGUI6MmiCtx26getContinuousDialogManagerEv
+  119358: _ZN9AliAiLabs4AGUI23ContinuousDialogManager14onSpeakCommandEiP11json_objecth
+  119380: free@LIBC
+  119390: _ZNSt6__ndk16__treeINS_12basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEENS_4lessIS6_EENS4_IS6_EEE7destroyEPNS_11__tree_nodeIS6_PvEE
+  119430: _ZNSt6__ndk119__shared_weak_count14__release_weakEv
+  119438: _ZdlPv
+  11947c: _ZN9AliAiLabs4AGUI14SessionManager19setSessionTtsStatusEiNS0_13IDeviceMirror13SessionStatusE
+  119498: _ZN9AliAiLabs4AGUI8StrUtils7isEmptyEPKc
+  1194c4: _ZN9AliAiLabs4AGUI15SessionDispatch14processCommandEiPNS0_12ProtocolDataEPcPKcPi
+  1194f4: _ZN9AliAiLabs4AGUI15SessionDispatch14processCommandEiPNS0_12ProtocolDataEPcRNSt6__ndk110shared_ptrINS0_13AppClientInfoEEEPi
+  119520: _ZN9AliAiLabs4AGUI13ClientManager17getBackgroundAppsERNSt6__ndk14listINS2_10shared_ptrINS0_13AppClientInfoEEENS2_9allocatorIS6_EEEEPNS0_18IAppClientCallbackE
+  119550: _ZN9AliAiLabs4AGUI15SessionDispatch14processCommandEiPNS0_12ProtocolDataEPcRNSt6__ndk110shared_ptrINS0_13AppClientInfoEEEPi
+  1195a8: AgutilLog
+  1195d8: _ZdlPv
+  1195e0: _Unwind_Resume
+
+## callees of SessionDispatch::onRouterDetailInfo  (0x118830 .. 0x11896c)
+  118930: AgutilLog
+
+## callees of SessionDispatch::playAudios  (0x117d40 .. 0x11802c)
+  117d58: _ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv
+  117db8: _ZN9AliAiLabs4AGUI12AudioManager19processMediaCommandEPNS0_9NlpResultEPNS0_10ReturnCodeERh
+  117e20: AgutilLog
+  117e64: AgutilLog
+  117ee8: AgutilLog
+  117f0c: _ZN9AliAiLabs4AGUI12AudioManager17preProcessCommandEPNS0_12ProtocolDataEPcPNS0_10ReturnCodeE
+  117f1c: free@LIBC
+  117f90: _ZN9AliAiLabs4AGUI8StrUtils5equalEPKcS3_
+  117fa8: _ZN9AliAiLabs4AGUI8StrUtils5equalEPKcS3_
+
+## callers (reverse PLT lookup)
+
+  symbol : _ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE
+  plt idx: 1891  stub: 0x92c54  annotation: .plt+0x58b8
+    caller: AliAiLabs::AGUI::SessionManager::exitTalk(int, unsigned char)
+    ->  111134: c6 06 fe eb                  	bl	#-517352 <.plt+0x58b8>
+    caller: AliAiLabs::AGUI::SessionProxy::onHandler(AliAiLabs::AGUI::Message*)
+    ->  11cbf8: 15 d8 fd eb                  	bl	#-565164 <.plt+0x58b8>
+
+  symbol : _ZN9AliAiLabs4AGUI15SessionDispatch8onStreamEiPKch
+  plt idx: 2044  stub: 0x93380  annotation: .plt+0x5fe4
+    caller: AliAiLabs::AGUI::SessionProxy::onHandler(AliAiLabs::AGUI::Message*)
+    ->  11c328: 14 dc fd eb                  	bl	#-561072 <.plt+0x5fe4>
+    caller: AliAiLabs::AGUI::SessionProxy::onHandler(AliAiLabs::AGUI::Message*)
+    ->  11cb50: 0a da fd eb                  	bl	#-563160 <.plt+0x5fe4>
+
+  symbol : _ZN9AliAiLabs4AGUI13RouterManager10onResponseEiP11json_object
+  plt idx: 2288  stub: 0x93ef0  annotation: .plt+0x6b54
+    caller: AliAiLabs::AGUI::GcsManager::onResult(int, unsigned char, unsigned char, signed char const*, int)
+    ->  12ff9c: d3 8f fd eb                  	bl	#-639156 <.plt+0x6b54>
+
+  symbol : _ZN9AliAiLabs4AGUI14SessionManager16onNlpResultInnerEiPNS0_9NlpResultE
+  plt idx: 1866  stub: 0x92b28  annotation: .plt+0x578c
+    caller: AliAiLabs::AGUI::RouterManager::onResponse(int, json_object*)
+    ->  10ffa4: df 0a fe eb                  	bl	#-513156 <.plt+0x578c>
