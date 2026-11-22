@@ -1,0 +1,95 @@
+BUILD PASS
+
+--- A: normal runs
+plain_normal                       RESULT: PASS (checks=71 fails=0)             EXIT=0   RACES=-
+tsan_normal                        RESULT: PASS (checks=71 fails=0)             EXIT=0   RACES=0
+fsm_normal                         RESULT: PASS (checks=1157 fails=0)           EXIT=0   RACES=-
+fsm_tsan_run                       RESULT: PASS (checks=1157 fails=0)           EXIT=0   RACES=0
+
+--- B: negative controls
+plain_race_control                 RESULT: FAIL (checks=71 fails=1)             EXIT=1   RACES=-
+tsan_race_control                  RESULT: FAIL (checks=71 fails=1)             EXIT=1   RACES=0
+tsan_race_true                     RESULT: PASS (checks=71 fails=0)             EXIT=0   RACES=0
+
+--- C: INCOMPLETE modes (plain / TSan)
+plain_create_fail                  RESULT: INCOMPLETE (checks=59 fails=0) —— 线程生命周期无法确认，测试不完整 EXIT=2   RACES=-
+tsan_create_fail                   RESULT: INCOMPLETE (checks=59 fails=0) —— 线程生命周期无法确认，测试不完整 EXIT=2   RACES=0
+plain_create_fail_join_fail        RESULT: INCOMPLETE (checks=60 fails=0) —— 部分创建后的线程退出状态无法确认 EXIT=2   RACES=-
+tsan_create_fail_join_fail         RESULT: INCOMPLETE (checks=60 fails=0) —— 部分创建后的线程退出状态无法确认 EXIT=2   RACES=0
+plain_create_fail_join_abandon     RESULT: INCOMPLETE (checks=60 fails=0) —— 部分创建后的线程退出状态无法确认 EXIT=2   RACES=-
+tsan_create_fail_join_abandon      RESULT: INCOMPLETE (checks=60 fails=0) —— 部分创建后的线程退出状态无法确认 EXIT=2   RACES=0
+plain_join_fail                    RESULT: INCOMPLETE (checks=59 fails=0) —— 线程生命周期无法确认，测试不完整 EXIT=2   RACES=-
+tsan_join_fail                     RESULT: INCOMPLETE (checks=59 fails=0) —— 线程生命周期无法确认，测试不完整 EXIT=2   RACES=0
+plain_join_abandon                 RESULT: INCOMPLETE (checks=59 fails=0) —— 线程生命周期无法确认，测试不完整 EXIT=2   RACES=-
+tsan_join_abandon                  RESULT: INCOMPLETE (checks=59 fails=0) —— 线程生命周期无法确认，测试不完整 EXIT=2   RACES=0
+
+--- D: gate items (66 total, 2 failed)
+PASS  D file present: plain_normal.txt
+PASS  D file present: plain_race_control.txt
+PASS  D file present: plain_race_true.txt
+PASS  D file present: plain_create_fail.txt
+PASS  D file present: plain_create_fail_join_fail.txt
+PASS  D file present: plain_create_fail_join_abandon.txt
+PASS  D file present: plain_join_fail.txt
+PASS  D file present: plain_join_abandon.txt
+PASS  D file present: fsm_normal.txt
+PASS  D file present: tsan_normal.txt
+PASS  D file present: tsan_race_true.txt
+PASS  D file present: tsan_race_control.txt
+PASS  D file present: tsan_create_fail.txt
+PASS  D file present: tsan_create_fail_join_fail.txt
+PASS  D file present: tsan_create_fail_join_abandon.txt
+PASS  D file present: tsan_join_fail.txt
+PASS  D file present: tsan_join_abandon.txt
+PASS  D file present: fsm_tsan_run.txt
+PASS  A plain_normal RESULT PASS
+PASS  A plain_normal EXIT=0
+PASS  A tsan_normal RESULT PASS
+PASS  A tsan_normal EXIT=0
+PASS  A tsan_normal races=0
+PASS  A fsm_normal RESULT PASS
+PASS  A fsm_normal EXIT=0
+PASS  A fsm_tsan_run RESULT PASS
+PASS  A fsm_tsan_run EXIT=0
+PASS  A fsm_tsan_run races=0
+PASS  B plain_race_control RESULT FAIL
+PASS  B plain_race_control EXIT=1
+PASS  B tsan_race_control RESULT FAIL
+PASS  B tsan_race_control EXIT=1
+PASS  B tsan_race_control races=0
+PASS  B tsan_race_true RESULT PASS
+FAIL  B tsan_race_true has >=1 TSan report
+FAIL  B tsan_race_true EXIT=66
+PASS  C plain_create_fail RESULT INCOMPLETE
+PASS  C plain_create_fail EXIT=2
+PASS  C plain_create_fail has no RESULT PASS
+PASS  C tsan_create_fail RESULT INCOMPLETE
+PASS  C tsan_create_fail EXIT=2
+PASS  C tsan_create_fail has no RESULT PASS
+PASS  C plain_create_fail_join_fail RESULT INCOMPLETE
+PASS  C plain_create_fail_join_fail EXIT=2
+PASS  C plain_create_fail_join_fail has no RESULT PASS
+PASS  C tsan_create_fail_join_fail RESULT INCOMPLETE
+PASS  C tsan_create_fail_join_fail EXIT=2
+PASS  C tsan_create_fail_join_fail has no RESULT PASS
+PASS  C plain_create_fail_join_abandon RESULT INCOMPLETE
+PASS  C plain_create_fail_join_abandon EXIT=2
+PASS  C plain_create_fail_join_abandon has no RESULT PASS
+PASS  C tsan_create_fail_join_abandon RESULT INCOMPLETE
+PASS  C tsan_create_fail_join_abandon EXIT=2
+PASS  C tsan_create_fail_join_abandon has no RESULT PASS
+PASS  C plain_join_fail RESULT INCOMPLETE
+PASS  C plain_join_fail EXIT=2
+PASS  C plain_join_fail has no RESULT PASS
+PASS  C tsan_join_fail RESULT INCOMPLETE
+PASS  C tsan_join_fail EXIT=2
+PASS  C tsan_join_fail has no RESULT PASS
+PASS  C plain_join_abandon RESULT INCOMPLETE
+PASS  C plain_join_abandon EXIT=2
+PASS  C plain_join_abandon has no RESULT PASS
+PASS  C tsan_join_abandon RESULT INCOMPLETE
+PASS  C tsan_join_abandon EXIT=2
+PASS  C tsan_join_abandon has no RESULT PASS
+
+GATE: FAIL (2 of 66 items)
+FAIL  injected extra failure row

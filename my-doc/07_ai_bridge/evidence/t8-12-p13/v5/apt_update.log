@@ -1,0 +1,9 @@
+Get:1 http://mirrors.aliyun.com/debian bookworm InRelease [151 kB]
+Get:2 http://mirrors.aliyun.com/debian bookworm-updates InRelease [55.4 kB]
+Get:3 http://mirrors.aliyun.com/debian-security bookworm-security InRelease [34.8 kB]
+Get:4 http://mirrors.aliyun.com/debian bookworm/main amd64 Packages [8790 kB]
+Get:5 http://mirrors.aliyun.com/debian bookworm-updates/main amd64 Packages [6924 B]
+Get:6 http://mirrors.aliyun.com/debian-security bookworm-security/main amd64 Packages [379 kB]
+Fetched 9417 kB in 1s (6490 kB/s)
+Reading package lists...
+APT_UPDATE_EXIT=0

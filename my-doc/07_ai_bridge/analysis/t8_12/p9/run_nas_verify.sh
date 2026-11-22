@@ -4,8 +4,10 @@
 # Runs four independent invocations of run_nas3.sh and then *checks* that each
 # one behaved exactly as expected. The driver has its own verdict:
 #
-#   VERIFY PASS -> exit 0      every expectation held, and the self-check proved
-#                              it can reject a simulation that silently passed
+#   VERIFY PASS -> exit 0      every expectation held, the failed-row count is
+#                              exact, and the self-check proved it can reject a
+#                              simulation that silently passed or whose SUMMARY
+#                              gained/lost a FAIL row
 #   VERIFY FAIL -> exit 2      at least one expectation did not hold
 #
 #   1. the real full run                     -> TEST PASS             exit 0
@@ -23,8 +25,12 @@
 #   4. build-failure simulation (copy)        -> BUILD FAILED           exit 1
 #      the copy compiles a deliberately broken source.
 #
-# plus a negative self-test: the same checks are run against a "simulation that
-# silently passed" and must fail, proving the driver is not a rubber stamp.
+# plus four negative probes, each fed to the very same --selfcheck-only assertions:
+#   * a simulation that silently passed          -> must fail (exit 2)
+#   * run2 SUMMARY with an extra FAIL row        -> must fail (exit 2)
+#   * run3 SUMMARY with an extra FAIL row        -> must fail (exit 2)
+#   * run3 SUMMARY missing its expected FAIL row -> must fail (exit 2)
+# so neither "extra failure slipped in" nor "expected failure vanished" can pass.
 #
 # Usage:  sh run_nas_verify.sh                  # full run + self-check
 #         sh run_nas_verify.sh --selfcheck-only <v> <gate> <gate2> <build> <rc1> <rc2> <rc3> <rc4>
@@ -43,6 +49,12 @@ NEG_DIR=/work/negtest/sim_gate
 status_is()     { [ "$(cat "$1" 2>/dev/null)" = "$2" ]; }
 status_prefix() { case "$(cat "$1" 2>/dev/null)" in "$2"*) return 0 ;; *) return 1 ;; esac; }
 grep_has()      { grep -q -- "$2" "$1"; }
+
+# number of failed gate rows must be exactly N: "no extra failure slipped in"
+fail_rows_eq() {
+    actual=$(grep -c '^FAIL  ' "$1" 2>/dev/null || true)
+    [ -n "$actual" ] && [ "$actual" -eq "$2" ]
+}
 
 SELF=""
 self_fails=0
@@ -74,6 +86,10 @@ run_selfcheck() {   # uses V_DIR G_DIR G2_DIR B_DIR rc1 rc2 rc3 rc4
        grep_has "$G_DIR/SUMMARY.txt" "FAIL  B tsan_race_true EXIT=66"
     ck "run2 evaluates the new item 'B tsan_race_true RESULT PASS'" \
        grep_has "$G_DIR/SUMMARY.txt" "PASS  B tsan_race_true RESULT PASS"
+    ck "run2 has exactly 2 failed gate rows" \
+       fail_rows_eq "$G_DIR/SUMMARY.txt" 2
+    ck "run2 gate summary says exactly 2 failures" \
+       grep_has "$G_DIR/SUMMARY.txt" "GATE: FAIL (2 of 66 items)"
     # 3) positive control whose assertions failed but whose race count is > 0:
     #    the NEW gate item must be the one that fires
     ck "run3 exit code = 2"                              test "$rc3" = 2
@@ -82,6 +98,10 @@ run_selfcheck() {   # uses V_DIR G_DIR G2_DIR B_DIR rc1 rc2 rc3 rc4
        grep_has "$G2_DIR/SUMMARY.txt" "FAIL  B tsan_race_true RESULT PASS"
     ck "run3 keeps 'PASS  B tsan_race_true has >=1 TSan report'" \
        grep_has "$G2_DIR/SUMMARY.txt" "PASS  B tsan_race_true has >=1 TSan report"
+    ck "run3 has exactly 1 failed gate row" \
+       fail_rows_eq "$G2_DIR/SUMMARY.txt" 1
+    ck "run3 gate summary says exactly 1 failure" \
+       grep_has "$G2_DIR/SUMMARY.txt" "GATE: FAIL (1 of 66 items)"
     # 4) build failure: stop at the compiler
     ck "run4 exit code = 1"                              test "$rc4" = 1
     ck "run4 STATUS.txt = 'BUILD FAILED: gcc model_plain'" \
@@ -163,6 +183,44 @@ neg_rc=$?
 printf 'run5_negative_selftest NEG_SELFTEST_RC=%s\n' "$neg_rc" > /work/rc_run5.txt
 log "run 5 exit=$neg_rc"
 
+# ---- 6b. negative injections for the failure-count check -------------------
+# Each case feeds a doctored SUMMARY to the very same --selfcheck-only assertions, so the
+# count constraint is proven to have teeth (not just hand-grepped).
+log "run 6: negative injection - run2 SUMMARY with one extra FAIL row"
+rm -rf /work/neg2
+mkdir -p /work/neg2/g
+cp "$G_DIR/STATUS.txt"  /work/neg2/g/STATUS.txt
+cp "$G_DIR/SUMMARY.txt" /work/neg2/g/SUMMARY.txt
+printf 'FAIL  injected extra failure row\n' >> /work/neg2/g/SUMMARY.txt
+sh /work/run_nas_verify.sh --selfcheck-only \
+   "$V_DIR" /work/neg2/g "$G2_DIR" "$B_DIR" 0 2 2 1 > /work/neg2_stdout.txt 2>&1
+neg2_rc=$?
+printf 'run6_run2_extra_fail NEG2_RC=%s\n' "$neg2_rc" > /work/rc_run6.txt
+log "run 6 exit=$neg2_rc"
+
+log "run 7: negative injection - run3 SUMMARY with one extra FAIL row"
+rm -rf /work/neg2b
+mkdir -p /work/neg2b/g2
+cp "$G2_DIR/STATUS.txt"  /work/neg2b/g2/STATUS.txt
+cp "$G2_DIR/SUMMARY.txt" /work/neg2b/g2/SUMMARY.txt
+printf 'FAIL  injected extra failure row\n' >> /work/neg2b/g2/SUMMARY.txt
+sh /work/run_nas_verify.sh --selfcheck-only \
+   "$V_DIR" "$G_DIR" /work/neg2b/g2 "$B_DIR" 0 2 2 1 > /work/neg2b_stdout.txt 2>&1
+neg2b_rc=$?
+printf 'run7_run3_extra_fail NEG2B_RC=%s\n' "$neg2b_rc" > /work/rc_run7.txt
+log "run 7 exit=$neg2b_rc"
+
+log "run 8: negative injection - run3 SUMMARY with the expected FAIL row removed"
+rm -rf /work/neg2c
+mkdir -p /work/neg2c/g2
+cp "$G2_DIR/STATUS.txt" /work/neg2c/g2/STATUS.txt
+grep -v '^FAIL  B tsan_race_true RESULT PASS$' "$G2_DIR/SUMMARY.txt" > /work/neg2c/g2/SUMMARY.txt
+sh /work/run_nas_verify.sh --selfcheck-only \
+   "$V_DIR" "$G_DIR" /work/neg2c/g2 "$B_DIR" 0 2 2 1 > /work/neg2c_stdout.txt 2>&1
+neg2c_rc=$?
+printf 'run8_run3_missing_fail NEG2C_RC=%s\n' "$neg2c_rc" > /work/rc_run8.txt
+log "run 8 exit=$neg2c_rc"
+
 # ---- 7. verdict ------------------------------------------------------------
 fails_total=$main_self_fails
 extra=""
@@ -172,10 +230,35 @@ else
     extra="FAIL  the self-check accepted a broken simulation (exit $neg_rc, expected 2)"
     fails_total=$((fails_total+1))
 fi
+if [ "$neg2_rc" -eq 2 ]; then
+    extra="$extra
+PASS  the count check rejects run2 SUMMARY with an extra FAIL row (exit 2)"
+else
+    extra="$extra
+FAIL  the count check accepted an extra FAIL row in run2 (exit $neg2_rc, expected 2)"
+    fails_total=$((fails_total+1))
+fi
+if [ "$neg2b_rc" -eq 2 ]; then
+    extra="$extra
+PASS  the count check rejects run3 SUMMARY with an extra FAIL row (exit 2)"
+else
+    extra="$extra
+FAIL  the count check accepted an extra FAIL row in run3 (exit $neg2b_rc, expected 2)"
+    fails_total=$((fails_total+1))
+fi
+if [ "$neg2c_rc" -eq 2 ]; then
+    extra="$extra
+PASS  the count check rejects run3 SUMMARY missing its FAIL row (exit 2)"
+else
+    extra="$extra
+FAIL  the count check accepted a run3 SUMMARY without its FAIL row (exit $neg2c_rc, expected 2)"
+    fails_total=$((fails_total+1))
+fi
 
 {
   echo "=== exit codes"
-  cat /work/rc_run1.txt /work/rc_run2.txt /work/rc_run3.txt /work/rc_run4.txt /work/rc_run5.txt
+  cat /work/rc_run1.txt /work/rc_run2.txt /work/rc_run3.txt /work/rc_run4.txt /work/rc_run5.txt \
+      /work/rc_run6.txt /work/rc_run7.txt /work/rc_run8.txt
   echo
   echo "=== status files"
   printf 'run1 STATUS: '; cat "$V_DIR/STATUS.txt" 2>/dev/null || echo MISSING
@@ -201,6 +284,12 @@ fi
   echo
   echo "=== negative self-test raw result (must FAIL: exit 2)"
   cat /work/negtest_stdout.txt 2>/dev/null
+  echo
+  echo "=== failure-count injections (each must FAIL: exit 2)"
+  for n in neg2 neg2b neg2c; do
+      printf -- '--- %s\n' "$n"
+      cat "/work/${n}_stdout.txt" 2>/dev/null
+  done
   echo
   if [ "$fails_total" -eq 0 ]; then
       echo "VERIFY PASS"

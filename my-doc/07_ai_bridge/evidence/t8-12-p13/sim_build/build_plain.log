@@ -1,0 +1,7 @@
+/work/sim_build_src/t8_12_9_lifecycle_model.c:917:1: error: unknown type name 'this'
+  917 | this is deliberately not valid C;
+      | ^~~~
+/work/sim_build_src/t8_12_9_lifecycle_model.c:917:9: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'deliberately'
+  917 | this is deliberately not valid C;
+      |         ^~~~~~~~~~~~
+/work/sim_build_src/t8_12_9_lifecycle_model.c:917:9: error: unknown type name 'deliberately'

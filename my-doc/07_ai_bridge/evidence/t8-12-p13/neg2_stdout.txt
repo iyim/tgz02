@@ -1,0 +1,19 @@
+PASS  run1 exit code = 0
+PASS  run1 STATUS.txt = TEST PASS
+PASS  run1 SUMMARY.txt has 'GATE: PASS (66/66 items)'
+PASS  run2 exit code = 2
+PASS  run2 STATUS.txt starts with INCOMPLETE:
+PASS  run2 gate row 'FAIL  B tsan_race_true has >=1 TSan report'
+PASS  run2 gate row 'FAIL  B tsan_race_true EXIT=66'
+PASS  run2 evaluates the new item 'B tsan_race_true RESULT PASS'
+FAIL  run2 has exactly 2 failed gate rows
+PASS  run2 gate summary says exactly 2 failures
+PASS  run3 exit code = 2
+PASS  run3 STATUS.txt starts with INCOMPLETE:
+PASS  run3 gate row 'FAIL  B tsan_race_true RESULT PASS'
+PASS  run3 keeps 'PASS  B tsan_race_true has >=1 TSan report'
+PASS  run3 has exactly 1 failed gate row
+PASS  run3 gate summary says exactly 1 failure
+PASS  run4 exit code = 1
+PASS  run4 STATUS.txt = 'BUILD FAILED: gcc model_plain'
+PASS  run4 build log contains a compiler error

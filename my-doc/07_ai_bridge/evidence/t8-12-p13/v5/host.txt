@@ -1,0 +1,20 @@
+=== uname
+Linux t8-12-13-verify 6.18.18.c1126-trim #1126 SMP PREEMPT_DYNAMIC Wed Sep 16 02:05:34 UTC 2026 x86_64 GNU/Linux
+=== arch
+x86_64
+=== cpus
+12
+=== os
+PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+=== date
+Sun Nov 22 23:48:39 UTC 2026
+=== gcc
+=== tsan
+37dd480eec9275fdb4c3de3c37e02e61c54c94c8cbf881ff5420138298fe30d7  /work/t8_12_9_lifecycle_model.c
+7a82c9ab3d6a42e7ab684e587792790a4e3c1da307eb4c693bd78e46c7cf351f  /work/t8_12_9_install_fsm.c
+1bfff081b59cab30f8224f2139ae1830b70ba915adada5330f75d1982a7e9440  /work/run_nas3.sh
+f039e8a13ce328f6100cee86b89d4c5efa292f40af0d77833ed5706e5fb77de2  model_plain
+878f86d972e176ace1e865b90f45873cf3fe9bfb36a09121cdfad1db8102cef2  fsm_plain
+212172b26a8707e611213545fd13d40290a5fb32c7a2fff143f7ff256fecb1de  model_tsan
+1d913673a157837b586c03fc73c38e9496fa4613a21d9e93b32d81813d5cba4a  fsm_tsan

@@ -1,0 +1,140 @@
+=== exit codes
+run1_full_run MAIN_RC=0
+run2_gate_failure GATE_SIM_RC=2
+run3_assertion_failure GATE_SIM2_RC=2
+run4_build_failure BUILD_SIM_RC=1
+run5_negative_selftest NEG_SELFTEST_RC=2
+run6_run2_extra_fail NEG2_RC=2
+run7_run3_extra_fail NEG2B_RC=2
+run8_run3_missing_fail NEG2C_RC=2
+
+=== status files
+run1 STATUS: TEST PASS
+run2 STATUS: INCOMPLETE: see SUMMARY.txt (a required PASS or control condition did not hold)
+run3 STATUS: INCOMPLETE: see SUMMARY.txt (a required PASS or control condition did not hold)
+run4 STATUS: BUILD FAILED: gcc model_plain
+
+=== run1 gate line
+GATE: PASS (66/66 items)
+
+=== run2 failing gate items (positive control without --race-true)
+FAIL  B tsan_race_true has >=1 TSan report
+FAIL  B tsan_race_true EXIT=66
+
+=== run3 failing gate items (assertions failed AND races>0)
+FAIL  B tsan_race_true RESULT PASS
+
+=== run4 build log tail
+  917 | this is deliberately not valid C;
+      |         ^~~~~~~~~~~~
+/work/sim_build_src/t8_12_9_lifecycle_model.c:917:9: error: unknown type name 'deliberately'
+
+=== self-check
+PASS  run1 exit code = 0
+PASS  run1 STATUS.txt = TEST PASS
+PASS  run1 SUMMARY.txt has 'GATE: PASS (66/66 items)'
+PASS  run2 exit code = 2
+PASS  run2 STATUS.txt starts with INCOMPLETE:
+PASS  run2 gate row 'FAIL  B tsan_race_true has >=1 TSan report'
+PASS  run2 gate row 'FAIL  B tsan_race_true EXIT=66'
+PASS  run2 evaluates the new item 'B tsan_race_true RESULT PASS'
+PASS  run2 has exactly 2 failed gate rows
+PASS  run2 gate summary says exactly 2 failures
+PASS  run3 exit code = 2
+PASS  run3 STATUS.txt starts with INCOMPLETE:
+PASS  run3 gate row 'FAIL  B tsan_race_true RESULT PASS'
+PASS  run3 keeps 'PASS  B tsan_race_true has >=1 TSan report'
+PASS  run3 has exactly 1 failed gate row
+PASS  run3 gate summary says exactly 1 failure
+PASS  run4 exit code = 1
+PASS  run4 STATUS.txt = 'BUILD FAILED: gcc model_plain'
+PASS  run4 build log contains a compiler error
+PASS  the self-check rejects a simulation that silently passed (exit 2)
+PASS  the count check rejects run2 SUMMARY with an extra FAIL row (exit 2)
+PASS  the count check rejects run3 SUMMARY with an extra FAIL row (exit 2)
+PASS  the count check rejects run3 SUMMARY missing its FAIL row (exit 2)
+
+=== negative self-test raw result (must FAIL: exit 2)
+PASS  run1 exit code = 0
+PASS  run1 STATUS.txt = TEST PASS
+PASS  run1 SUMMARY.txt has 'GATE: PASS (66/66 items)'
+FAIL  run2 exit code = 2
+FAIL  run2 STATUS.txt starts with INCOMPLETE:
+FAIL  run2 gate row 'FAIL  B tsan_race_true has >=1 TSan report'
+FAIL  run2 gate row 'FAIL  B tsan_race_true EXIT=66'
+PASS  run2 evaluates the new item 'B tsan_race_true RESULT PASS'
+FAIL  run2 has exactly 2 failed gate rows
+FAIL  run2 gate summary says exactly 2 failures
+PASS  run3 exit code = 2
+PASS  run3 STATUS.txt starts with INCOMPLETE:
+PASS  run3 gate row 'FAIL  B tsan_race_true RESULT PASS'
+PASS  run3 keeps 'PASS  B tsan_race_true has >=1 TSan report'
+PASS  run3 has exactly 1 failed gate row
+PASS  run3 gate summary says exactly 1 failure
+PASS  run4 exit code = 1
+PASS  run4 STATUS.txt = 'BUILD FAILED: gcc model_plain'
+PASS  run4 build log contains a compiler error
+
+=== failure-count injections (each must FAIL: exit 2)
+--- neg2
+PASS  run1 exit code = 0
+PASS  run1 STATUS.txt = TEST PASS
+PASS  run1 SUMMARY.txt has 'GATE: PASS (66/66 items)'
+PASS  run2 exit code = 2
+PASS  run2 STATUS.txt starts with INCOMPLETE:
+PASS  run2 gate row 'FAIL  B tsan_race_true has >=1 TSan report'
+PASS  run2 gate row 'FAIL  B tsan_race_true EXIT=66'
+PASS  run2 evaluates the new item 'B tsan_race_true RESULT PASS'
+FAIL  run2 has exactly 2 failed gate rows
+PASS  run2 gate summary says exactly 2 failures
+PASS  run3 exit code = 2
+PASS  run3 STATUS.txt starts with INCOMPLETE:
+PASS  run3 gate row 'FAIL  B tsan_race_true RESULT PASS'
+PASS  run3 keeps 'PASS  B tsan_race_true has >=1 TSan report'
+PASS  run3 has exactly 1 failed gate row
+PASS  run3 gate summary says exactly 1 failure
+PASS  run4 exit code = 1
+PASS  run4 STATUS.txt = 'BUILD FAILED: gcc model_plain'
+PASS  run4 build log contains a compiler error
+--- neg2b
+PASS  run1 exit code = 0
+PASS  run1 STATUS.txt = TEST PASS
+PASS  run1 SUMMARY.txt has 'GATE: PASS (66/66 items)'
+PASS  run2 exit code = 2
+PASS  run2 STATUS.txt starts with INCOMPLETE:
+PASS  run2 gate row 'FAIL  B tsan_race_true has >=1 TSan report'
+PASS  run2 gate row 'FAIL  B tsan_race_true EXIT=66'
+PASS  run2 evaluates the new item 'B tsan_race_true RESULT PASS'
+PASS  run2 has exactly 2 failed gate rows
+PASS  run2 gate summary says exactly 2 failures
+PASS  run3 exit code = 2
+PASS  run3 STATUS.txt starts with INCOMPLETE:
+PASS  run3 gate row 'FAIL  B tsan_race_true RESULT PASS'
+PASS  run3 keeps 'PASS  B tsan_race_true has >=1 TSan report'
+FAIL  run3 has exactly 1 failed gate row
+PASS  run3 gate summary says exactly 1 failure
+PASS  run4 exit code = 1
+PASS  run4 STATUS.txt = 'BUILD FAILED: gcc model_plain'
+PASS  run4 build log contains a compiler error
+--- neg2c
+PASS  run1 exit code = 0
+PASS  run1 STATUS.txt = TEST PASS
+PASS  run1 SUMMARY.txt has 'GATE: PASS (66/66 items)'
+PASS  run2 exit code = 2
+PASS  run2 STATUS.txt starts with INCOMPLETE:
+PASS  run2 gate row 'FAIL  B tsan_race_true has >=1 TSan report'
+PASS  run2 gate row 'FAIL  B tsan_race_true EXIT=66'
+PASS  run2 evaluates the new item 'B tsan_race_true RESULT PASS'
+PASS  run2 has exactly 2 failed gate rows
+PASS  run2 gate summary says exactly 2 failures
+PASS  run3 exit code = 2
+PASS  run3 STATUS.txt starts with INCOMPLETE:
+FAIL  run3 gate row 'FAIL  B tsan_race_true RESULT PASS'
+PASS  run3 keeps 'PASS  B tsan_race_true has >=1 TSan report'
+FAIL  run3 has exactly 1 failed gate row
+PASS  run3 gate summary says exactly 1 failure
+PASS  run4 exit code = 1
+PASS  run4 STATUS.txt = 'BUILD FAILED: gcc model_plain'
+PASS  run4 build log contains a compiler error
+
+VERIFY PASS

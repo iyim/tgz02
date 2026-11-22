@@ -1,0 +1,1 @@
+run3_assertion_failure GATE_SIM2_RC=2
