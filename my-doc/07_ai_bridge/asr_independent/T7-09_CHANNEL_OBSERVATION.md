@@ -104,3 +104,14 @@
 
 > B2 只跑了约 4 分钟就被停机，段内同样没有任何语音事件。按"未观察 ≠ 未发生"的口径，
 > 这段数据只作为"工具能连续跑"的存在性证据，不进任何归因结论。
+
+## 8. 归因已完成（T7-11）
+
+用户在设备旁边做了集中真实语音观测（2026-11-22 17:48–17:53），结论见
+`T7-11_VOICE_OBSERVATION.md`：**ASR 走云端**（5 会话 / 29 条 `onStream` 全 `isOffline = 0`、
+每会话一条 `AliGenie.Microphone/ListenStarted` 云端帧、本地 ASR 三件套 515 采样零加载），
+本地只负责唤醒（`XEGNLocalEngine/xengine`）与常驻 VAD（`libvad_api`）。
+
+同时记录一次**无效窗口**：17:48 那次说话时前台是 `app.orchard.tv`，`UnconvWakeupManager` 每 1.6 s
+报 `feed when not started`，唤醒引擎未启动，语音没有进入识别 —— 这种情况下不能写"未观察到"，
+要写"确实没发生"。
