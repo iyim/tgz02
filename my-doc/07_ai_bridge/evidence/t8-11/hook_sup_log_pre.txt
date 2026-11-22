@@ -1,0 +1,36 @@
+2026-11-22 20:09:57.861 sup: start pid=31289 target=com.alibaba.ailabs.genie.smartapp:core injector=/data/local/tmp/t8/tg_injector agent=/data/local/tmp/t8/libtg_hook.so interval=500ms retry=2000ms max=60000ms
+2026-11-22 20:09:57.869 sup: pidfile=/data/local/tmp/t8/tg_supervisor.pid acquired (single instance)
+2026-11-22 20:09:57.883 sup: target found: pid=30807 starttime=2467080 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-22 20:09:57.886 sup: target ready: pid=30807 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t8/libtg_hook.so check_only=1
+inj| [inject] so_size=120608 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=30807 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-22 20:09:57.954 sup: check done: pid=30807 exit=0 hooked=-1 state=unknown
+2026-11-22 20:09:57.954 sup: inject begin: pid=30807 attempt=1 injector=/data/local/tmp/t8/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t8/libtg_hook.so check_only=0
+inj| [inject] so_size=120608 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=30807 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=30807 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xacaae000 stack=0xacab6000 trap=0xacabd000 gadget=0xb4dada6c
+inj| [inject] dlopen=0xb46df0ad (libdl.so)
+inj| [inject] dlsym=0xb46df0bf (libdl.so)
+inj| [inject] dlerror=0xb46df0b7 (libdl.so)
+inj| [inject] path_written=0xacaae100 len=33
+inj| [inject] dlopen ok handle=0xc2e591bb flags=0x2
+inj| [inject] dlsym ok install=0x955a7090 prepare=0x955a6e38 status=0x955a8438
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x97adb53c,0x97adb544)
+inj| [inject] paused 77 other threads (exec tid=30807); [0x97adb53c,0x97adb544) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+inj| [inject] RESULT ok pid=30807 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-22 20:09:58.160 sup: inject end: pid=30807 exit=0 hooked=1 elapsed=205ms ok

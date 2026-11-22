@@ -1,0 +1,28 @@
+[2026-11-22 20:19:10.687] plan = D:\tgz02\OS\_analysis\t506d\stim_cal3\s01_wake.wav:9000,D:\tgz02\OS\_analysis\t506d\stim_cal3\s01_wake.wav:9000,D:\tgz02\OS\_analysis\t506d\stim_cal3\s01_wake.wav:9000,D:\tgz02\OS\_analysis\t506d\stim_cal3\s01_wake.wav:9000,D:\tgz02\OS\_analysis\t506d\stim_cal3\s01_wake.wav:9000,D:\tgz02\OS\_analysis\t506d\stim_cal3\s01_wake.wav:5000
+[2026-11-22 20:19:10.703] volume = 1
+[2026-11-22 20:19:10.708] lead-in 1000 ms
+[2026-11-22 20:19:11.819] open  s01_wake.wav (38852 B)
+[2026-11-22 20:19:12.107] ready s01_wake.wav dur=0.880s
+[2026-11-22 20:19:13.194] done  s01_wake.wav elapsed=1.08s vol=1
+[2026-11-22 20:19:13.195] gap   9000 ms
+[2026-11-22 20:19:22.199] open  s01_wake.wav (38852 B)
+[2026-11-22 20:19:22.324] ready s01_wake.wav dur=0.880s
+[2026-11-22 20:19:23.419] done  s01_wake.wav elapsed=1.09s vol=1
+[2026-11-22 20:19:23.420] gap   9000 ms
+[2026-11-22 20:19:32.427] open  s01_wake.wav (38852 B)
+[2026-11-22 20:19:32.551] ready s01_wake.wav dur=0.880s
+[2026-11-22 20:19:33.653] done  s01_wake.wav elapsed=1.10s vol=1
+[2026-11-22 20:19:33.654] gap   9000 ms
+[2026-11-22 20:19:42.661] open  s01_wake.wav (38852 B)
+[2026-11-22 20:19:42.787] ready s01_wake.wav dur=0.880s
+[2026-11-22 20:19:43.881] done  s01_wake.wav elapsed=1.09s vol=1
+[2026-11-22 20:19:43.882] gap   9000 ms
+[2026-11-22 20:19:52.899] open  s01_wake.wav (38852 B)
+[2026-11-22 20:19:53.038] ready s01_wake.wav dur=0.880s
+[2026-11-22 20:19:54.140] done  s01_wake.wav elapsed=1.10s vol=1
+[2026-11-22 20:19:54.140] gap   9000 ms
+[2026-11-22 20:20:03.147] open  s01_wake.wav (38852 B)
+[2026-11-22 20:20:03.269] ready s01_wake.wav dur=0.880s
+[2026-11-22 20:20:04.370] done  s01_wake.wav elapsed=1.10s vol=1
+[2026-11-22 20:20:04.370] gap   5000 ms
+[2026-11-22 20:20:09.384] PLAY_END

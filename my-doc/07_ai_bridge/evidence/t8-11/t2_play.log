@@ -1,0 +1,16 @@
+[2026-11-22 20:20:53.732] plan = D:\tgz02\OS\_analysis\t506d\stim_cal3\s01_wake.wav:3000,D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-11\cmd_vol40.wav:200,D:\tgz02\OS\_analysis\t701\silence.wav:4000
+[2026-11-22 20:20:53.749] volume = 1
+[2026-11-22 20:20:53.756] lead-in 1000 ms
+[2026-11-22 20:20:54.861] open  s01_wake.wav (38852 B)
+[2026-11-22 20:20:55.157] ready s01_wake.wav dur=0.880s
+[2026-11-22 20:20:56.292] done  s01_wake.wav elapsed=1.13s vol=1
+[2026-11-22 20:20:56.292] gap   3000 ms
+[2026-11-22 20:20:59.307] open  cmd_vol40.wav (118396 B)
+[2026-11-22 20:20:59.434] ready cmd_vol40.wav dur=2.684s
+[2026-11-22 20:21:02.248] done  cmd_vol40.wav elapsed=2.81s vol=1
+[2026-11-22 20:21:02.249] gap   200 ms
+[2026-11-22 20:21:02.464] open  silence.wav (52964 B)
+[2026-11-22 20:21:02.590] ready silence.wav dur=1.200s
+[2026-11-22 20:21:03.955] done  silence.wav elapsed=1.36s vol=1
+[2026-11-22 20:21:03.955] gap   4000 ms
+[2026-11-22 20:21:07.964] PLAY_END
