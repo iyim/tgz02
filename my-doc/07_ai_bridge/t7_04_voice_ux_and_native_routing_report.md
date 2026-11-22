@@ -457,3 +457,16 @@ tts/journal.jsonl:
 两次真人反馈都指向同一件事：**我只用自己生成的短句验收，没有覆盖"用户会怎么打断、怎么说停"**。
 现在 host 单测里已经有 `[3c] stop / interrupt` 一组（含 `停止线是什么意思` 这种否决样本），
 并且 `interrupt_if_speaking` 的判定依赖 `play.public.json` 的真实状态，不再靠猜。
+
+### 12.6 修复过程中又踩到并修掉的一个自伤
+
+给"队列剩余项直接 cancel"加了之后，stop 标记在**队列为空**时（用户说"停"但当时已经没在播）
+不会被清掉，导致**下一条正常回答一进队列就被 cancel**（真机 `08:40:22 kind=cancel`，用户会听到"没声音"）。
+修法：`drainOnce()` 在队列为空时、以及每轮 drain 结束时都清 `stopRequest/stopId`。
+验证：`08:42:56 ok dur_ms=13849`、`08:43:45 ok dur_ms=10354` 连续两条回答正常播完，stop 标记不再残留。
+
+另外把回答再压了一档：提示词"通常不超过 40 字"、`max_tokens 200 → 120`，
+实测回答从 499 B（≈15-20 s）降到 153–207 B（≈10-14 s）。设备 TTS 语速偏慢，10 s 左右是目前的下限。
+
+最终产物：`ai_worker b3c8dde4cd6d6c0b035689ae6f50fbf92630c35e2de7cd519abd1d2cac1e4ed3`、
+`tts_exec.dex c947fa09d975bfc454493e00b118f21162c370718ffe9c98df4cad109dd2b2a8`。

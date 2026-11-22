@@ -813,7 +813,13 @@ public final class TtsExec {
      */
     static int drainOnce() {
         ArrayList<File> items = listItems(queueDir);
-        if (items.isEmpty()) return 0;
+        if (items.isEmpty()) {
+            /* T7-04：队列空时把 stop 标记清掉。否则"没东西可停"的那一次请求会一直挂着，
+             * 下一条回答一进队列就被 cancel（真机踩到过）。 */
+            stopRequest = false;
+            stopId = -1;
+            return 0;
+        }
         int processed = 0;
         for (File f : items) {
             File claimed = new File(inflightDir, f.getName());
@@ -924,6 +930,9 @@ public final class TtsExec {
             }
             writeState();
         }
+        /* T7-04：这一轮已经把该作废的都作废了，清掉标记，别影响下一轮新回答。 */
+        stopRequest = false;
+        stopId = -1;
         return processed;
     }
 
