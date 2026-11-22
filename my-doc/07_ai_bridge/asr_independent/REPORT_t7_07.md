@@ -180,5 +180,11 @@ NLU 是它的下游（`onNlpResult` / `onPushResult`）。我们正是靠这一�
 
 ## 八、提交
 
-本轮提交（先代码+文档，再补 SHA）：见下一条提交 `docs(ai-bridge): record T7-07 commit SHA`。
-所有新增文件都在 `my-doc/07_ai_bridge/` 下，未建分支、未开 PR、未做任何历史重写。
+| SHA | 内容 |
+|---|---|
+| `e0d44fec` | `fix(ai-bridge): 死信改为严格 JSON Lines（转义 + 原子追加 + 半行修复）` —— 11 files，含 `dead_letter.c/.h`、三个测试、`evidence/t7_06r2_host_test.log` |
+| `ec504f62` | `docs(ai-bridge): T7-07 原厂 ASR 独立化调查（只读）+ 连续对话现状` —— 14 files，含本目录 8 份文档与 6 份 `t7_07_*` 证据 |
+
+基线 `987c948d` → 本轮 `ec504f62`，直接提交 `main`（`987c948d..ec504f62`），未建分支、未开 PR、未做任何历史重写。
+所有新增文件都在 `my-doc/07_ai_bridge/` 下；`secret/deepseek_api_key` 未提交。
+
