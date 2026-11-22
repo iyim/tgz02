@@ -386,5 +386,13 @@ su -c 'sh /data/local/tmp/t7/run_t7_05.sh rollback'
    聊天侧仍可能出现"同一句话两个回答"，需要真人样本确认出现频率；
 2. 用例 G 的两段没有真正合并（`merges=0`）：1200 ms 间隔下第二次 final 往往还没产生，
    合并窗口与原厂端点时序的关系需要 §6.2 的对照实验来定；
-3. 多路 `tg_supervisor` 需要人工收敛（本轮发现 3 个实例，已 kill 到 1 个；
-   `run_t7_05.sh guard-start` 只清 pidfile 里的那个，跨代残留仍会存在）。
+3. 上一轮遗留的守卫 supervisor（pid `27260`）与本轮新建的（`15395`）同时存在过，
+   已清理成 1 个。注意设备上常有**两个** `tg_supervisor`，但 `--so` 不同：
+   一个是 T6-01 的 ASR hook（pidfile `t6/tg_supervisor.pid`），一个是 TTS 守卫
+   （pidfile `t7/ttsguard.sup.pid`）——按 pidfile 判活会误报，本轮把 `run_t7_05.sh`
+   改成用 `/proc/<pid>/cmdline` 识别"注入守卫的那个"，并且判活不再用 `kill -0`
+   （SELinux 下 root 对别的域 `kill -0` 返回 EPERM，会让 `guard-status` 谎报 stopped）。
+4. `/proc/<core_pid>/maps` 在本固件上对普通读取一律 EPERM，
+   `guard-status` 里 `guard=mapped:unknown` 属正常；判断是否注入要看
+   `tg_injector --check` 的 `hooked=1`（当前 `hooked=1`，`native_allowed=7
+   native_session=7 native_window=0 native_miss=0`）。

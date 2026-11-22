@@ -35,11 +35,27 @@ core_pids() {
     done
 }
 
+# T7-05：SELinux 下 root 对别的域 kill -0 也会 EPERM，判活只看 /proc。
+alive() { [ -d "/proc/$1" ]; }
+
+# 只认"注入守卫"的 supervisor：另一个 tg_supervisor 属于 T6-01 ASR hook
+# （pidfile /data/local/tmp/t6/tg_supervisor.pid），不能一起杀。
+guard_sup_pids() {
+    for d in /proc/[0-9]*; do
+        pid=${d#/proc/}
+        [ -r "$d/cmdline" ] || continue
+        cmd=$(tr '\0' ' ' 2>/dev/null < "$d/cmdline")
+        case "$cmd" in
+            *tg_supervisor*libtg_ttsguard*) echo "$pid" ;;
+        esac
+    done
+}
+
 kill_pidfile() {
     f=$1; name=$2
     [ -f "$f" ] || return 0
     p=$(cat "$f" 2>/dev/null)
-    if [ -n "$p" ] && kill -0 "$p" 2>/dev/null; then
+    if [ -n "$p" ] && alive "$p"; then
         kill "$p" 2>/dev/null
         log "stop $name pid=$p"
         sleep 1
@@ -47,9 +63,21 @@ kill_pidfile() {
     rm -f "$f"
 }
 
+kill_guard_sups() {
+    for p in $(guard_sup_pids); do
+        kill "$p" 2>/dev/null
+        log "stop guard supervisor pid=$p"
+    done
+    sleep 1
+    for p in $(guard_sup_pids); do
+        kill -9 "$p" 2>/dev/null
+    done
+}
+
 guard_start() {
     kill_pidfile "$WATCHPID" watch
-    kill_pidfile "$SUPPID" supervisor
+    kill_guard_sups
+    rm -f "$SUPPID"
     setsid "$SUP" --injector "$INJ" --so "$SO" --name "$NAME" \
         --pidfile "$SUPPID" --log "$SUPLOG" </dev/null >/dev/null 2>&1 &
     echo $! > "$SUPPID"
@@ -75,10 +103,15 @@ guard_stop() {
 }
 
 guard_status() {
-    if [ -f "$SUPPID" ] && kill -0 "$(cat "$SUPPID")" 2>/dev/null; then
-        echo "supervisor=running pid=$(cat "$SUPPID")"
+    guar=$(guard_sup_pids)
+    if [ -n "$guar" ]; then
+        for g in $guar; do
+            echo "supervisor=running pid=$g"
+            echo "$g" > "$SUPPID"
+        done
     else
         echo "supervisor=stopped"
+        rm -f "$SUPPID"
     fi
     if [ -f "$WATCHPID" ]; then echo "watch=file-present pid=$(cat "$WATCHPID" 2>/dev/null)"; else echo "watch=stopped"; fi
     pids=$(core_pids)
@@ -87,7 +120,7 @@ guard_status() {
         if grep -q 'libtg_ttsguard' "/proc/$p/maps" 2>/dev/null; then
             echo "pid=$p guard=mapped:yes"
         else
-            echo "pid=$p guard=mapped:no"
+            echo "pid=$p guard=mapped=unknown(kernel hides /proc/$p/maps)"
         fi
         "$INJ" --pid "$p" --so "$SO" --check 2>&1 | grep -E 'hooked|stats'
     done
@@ -115,11 +148,6 @@ rollback() {
     chmod 755 "$T5/bin/ai_worker"
     cp "$T5/backup_t7_05/worker.conf.t7_04" "$T5/ai_worker/worker.conf"
     chmod 600 "$T5/ai_worker/worker.conf"
-    if [ -f "$T7/backup_t7_05/libtg_ttsguard.t7_04.so" ]; then
-        cp "$T7/backup_t7_05/libtg_ttsguard.t7_04.so" "$SO"
-        chmod 644 "$SO"
-        log "rollback: guard .so restored to T7-04 build"
-    fi
     sh "$T5/run_ai_worker.sh" start-deepseek >/dev/null 2>&1
     log "rollback: guard stopped, worker restored to T7-04 build + config"
     echo "rollback done: guard stopped, worker restored (T7-04 binary + conf), worker restarted"
