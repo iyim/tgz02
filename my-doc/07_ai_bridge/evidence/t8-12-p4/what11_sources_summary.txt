@@ -1,0 +1,77 @@
+# T8-12.4  all upstream sources of what=11 (complete in-library cross reference)
+# libsmartbox.so sha256 F6E3C3543FF6DA5B59BF60B884B6CE4332897C75AA6B89B8DCCC0C266DF80940
+# method: PLT-stub decoding (analysis/t8_12/plt_map.ps1) + counting of "<.plt+N>" annotations
+#         in the full disassembly, plus grep for absolute-address direct calls.
+
+## 0. the only producer of what=11
+   93 Message::obtain call sites were tabulated (evidence/t8-12-p3/msg_obtain_table.txt).
+   Exactly ONE passes what (r0) = 11:
+
+      11da28:  bl Message::obtain
+               inside SessionProxy::onNlpResultInner(int, NlpResult*)   @ 0x11d9f8
+
+   So "who can create a what=11 message" reduces to "who calls 0x11d9f8".
+
+## 1. callers of SessionProxy::onNlpResultInner(int,res) 0x11d9f8
+   PLT stub 0x92e4c (ann 0x5ab0): 2 call sites, both enumerated:
+
+      114a00:  bl  <plt+0x5ab0>   inside SessionManager::onNlpResult(int,int,NlpResult*) 0x11489c
+      114b9c:  b   <plt+0x5ab0>   inside SessionManager::onNlpResultInner(int,NlpResult*) 0x114b98  (tail)
+
+   direct calls (bl to absolute 0x11d9f8): 0
+
+## 2. callers of SessionManager::onNlpResultInner 0x114b98
+   PLT stub 0x92b28 (ann 0x578c): 1 call site
+
+      10ffa4:  bl  <plt+0x578c>   inside RouterManager::onResponse(int,json_object*) 0x10fe3c
+
+   direct calls: 0
+
+## 3. callers of RouterManager::onResponse 0x10fe3c
+   PLT stub 0x93ef0 (ann 0x6b54): 1 call site
+
+      12ff9c:  bl  <plt+0x6b54>   inside GcsManager::onResult(int,char,char,char const*,int) 0x12febc
+
+   direct calls: 0
+
+## 4. the two independent triggers, as disassembly shows them
+
+   (A) SessionManager::onNlpResult 0x11489c  -- gated
+       1148bc  cmp   r0, r1              ; this->[64] (active sid) vs arg sid
+       1148c0  bne   0x1149dc            ; mismatch -> D path
+       1149dc  cmp   r8, #0              ; r8 = res
+       1149e0  beq   <log+return>        ; res == NULL -> nothing
+       1149e8  bl    ProtocolData::isTtsStreaming()
+       1149f0  beq   <log+return>        ; not TTS stream -> nothing
+       114a00  bl    SessionProxy::onNlpResultInner(sid, res)     -> what=11
+       => trigger A = (sid mismatch) AND (res->isTtsStreaming() == true)
+
+   (B) GcsManager::onResult 0x12febc -> RouterManager::onResponse 0x10fe3c  -- NOT gated
+       12fed4  cmp   r2, #0
+       12fed8  beq   0x12ff00            ; r2 == 0 -> non-TTS-stream branch (the one below)
+       12fef4  bl    RouterManager::onTtsStream(...)              ; TTS stream branch
+       12ff18  bl    json_tokener_parse_2
+       12ff88  bl    MmiCtx::getId(char*)
+       12ff9c  bl    RouterManager::onResponse(id, json)
+       10fedc  bl    ProtocolParser::onParser(id, json)            ; builds NlpResult (mov r0,#152 @0x132c84)
+       10ff8c  ldr   r1, [r9, #140]      ; sid  <- field [+140] of the parsed result
+       10ff90  cmp   r10, #5
+       10ff98  cmpne r10, #3             ; r10 = (id >> 20) & 0xF
+       10ff9c  bne   <other branches>
+       10ffa0  mov   r2, r9              ; res  = parsed NlpResult*
+       10ffa4  bl    SessionManager::onNlpResultInner(sid, res)   -> what=11
+       => trigger B has NO sid comparison and NO isTtsStreaming test.
+
+## 5. out-of-library importers
+   823 .so under /system were scanned for the 9 mangled names (evidence/t8-12-p4/all_so_symbol_scan.txt).
+   Only libsmartbox.so and libagmmi.so contain them, and in both they are DEFINITIONS.
+   No .so imports them as UND.  Therefore there is no static evidence of a third-party importer,
+   but there IS a second full copy of the chain (libagmmi), see libagmmi_duplicate_symbols.txt.
+
+## 6. conclusion
+   what=11 has at least two independent triggers:
+     A: SessionManager::onNlpResult, sid mismatch + isTtsStreaming
+     B: GCS network response -> RouterManager::onResponse -> onNlpResultInner (unconditional)
+   Therefore the phase-3 statement "what=11 is only delivered when sid mismatches and the result
+   is a TTS stream" is REFUTED.  Trigger A's conditions must not be generalised to the whole
+   what=11 population.

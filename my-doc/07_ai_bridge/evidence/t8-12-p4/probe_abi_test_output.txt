@@ -1,0 +1,29 @@
+=== T8-12.4 probe stub ARM32 ABI test (Unicorn 2.1.4) ===
+stub binary: D:\tgz02\OS\system\my-doc\07_ai_bridge\probe_abi\probe_stub.bin (68 bytes)
+
+[case 1] 合成序言 push {r4,lr} / mov r4,r0；回调写垃圾
+  [PASS] 回调被调用 1 次（实际 1）
+  [PASS] r0 = site = 10，实际 10
+  [PASS] r1 = a0 = 0xA0，实际 0xA0
+  [PASS] r2 = a1 = 0xA1，实际 0xA1
+  [PASS] r3 = a2 = 0xA2，实际 0xA2
+  [PASS] [sp+0] = a3 = 0xA3，实际 0xA3
+  [PASS] [sp+4] = caller_lr = 0x40000，实际 0x40000
+  [PASS] 回调入口 SP = 入口SP-32 = 0x2FEE0，实际 0x2FEE0
+  [PASS] 回调入口 SP 8 字节对齐
+  [PASS] 返回后 SP 复原 = 0x2FF00，实际 0x2FF00
+  [PASS] r4 未被破坏 = 0x44444444，实际 0x44444444
+  [PASS] 返回值 = 806（两个序言指令 + 4 条加法），实际 806
+  [PASS] PC 停在调用者返回地址
+
+[case 2] 真实序言 push {r4-r11,lr} / add r11,sp,#28（libsmartbox 0x117d40）
+  [PASS] 重放后的 r11-sp = 28（证明被搬运的序言按原 SP 生效），实际 28
+  [PASS] 返回后 SP 复原
+  [PASS] r4/r11 复原（r4=0x44444444 r11=0xBBBBBBBB）
+
+[case 3] 连续 1000 次调用：SP 无累积偏移、回调次数一致
+  [PASS] 1000 次返回值全部正确
+  [PASS] 1000 次 SP 恒等于 0x2FF00（去重后 1 个值）
+  [PASS] 回调累计 1001 次（1 + 1000），实际 1001
+
+RESULT: PASS  (5 组断言全部通过)

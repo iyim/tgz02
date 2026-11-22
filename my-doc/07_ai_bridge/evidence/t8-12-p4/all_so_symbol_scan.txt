@@ -1,0 +1,53 @@
+# T8-12.4  full .so symbol scan (in-library + importer detection)
+# goal: is there any module OUTSIDE libsmartbox that imports these entry points?
+# method: raw byte search for the mangled name in every .so under /system,
+#         then readelf --dyn-syms to classify DEF (.text) vs UND.
+# scanned .so = 823
+
+== SessionManager16onNlpResultInnerEiPNS0_9NlpResultE
+   REF  \app\smartapp\lib\arm\libagmmi.so
+   REF  \app\smartapp\lib\arm\libsmartbox.so
+
+== SessionProxy16onNlpResultInnerEiPNS0_9NlpResultE
+   REF  \app\smartapp\lib\arm\libagmmi.so
+   REF  \app\smartapp\lib\arm\libsmartbox.so
+
+== SessionManager11onNlpResultEiiPNS0_9NlpResultE
+   REF  \app\smartapp\lib\arm\libagmmi.so
+   REF  \app\smartapp\lib\arm\libsmartbox.so
+
+== SessionManager18onSpecialNlpResultEiPNS0_9NlpResultE
+   REF  \app\smartapp\lib\arm\libagmmi.so
+   REF  \app\smartapp\lib\arm\libsmartbox.so
+
+== SessionProxy12onPushResultEiPNS0_9NlpResultE
+   REF  \app\smartapp\lib\arm\libagmmi.so
+   REF  \app\smartapp\lib\arm\libsmartbox.so
+
+== SessionManager8exitTalkEih
+   REF  \app\smartapp\lib\arm\libagmmi.so
+   REF  \app\smartapp\lib\arm\libsmartbox.so
+
+== SessionDispatch16onNlpResultInnerEiPNS0_9NlpResultE
+   REF  \app\smartapp\lib\arm\libagmmi.so
+   REF  \app\smartapp\lib\arm\libsmartbox.so
+
+== SessionDispatch15onPushNlpResultEiPNS0_9NlpResultE
+   REF  \app\smartapp\lib\arm\libagmmi.so
+   REF  \app\smartapp\lib\arm\libsmartbox.so
+
+== SessionDispatch11onNlpResultEiiPNS0_9NlpResultE
+   REF  \app\smartapp\lib\arm\libagmmi.so
+   REF  \app\smartapp\lib\arm\libsmartbox.so
+   REF  \my-doc\07_ai_bridge\android\out\libtg_hook.so
+
+## classification (readelf --dyn-syms)
+   libsmartbox.so : all of the above are DEF
+   libagmmi.so    : all of the above are DEF  (second full copy, see libagmmi_duplicate_symbols.txt)
+   any other .so  : no occurrence at all -> no UND importer exists in /system
+
+## conclusion
+   Static locality is confirmed: no third-party module can call these entries, because none
+   imports them. The only "outside the analyzed copy" source is the second copy inside
+   libagmmi.so, which carries the identical chain.
+   A dlopen+dlsym from JNI code cannot be excluded statically; that remains unproven (U11).

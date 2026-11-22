@@ -1,0 +1,81 @@
+# T8-12.4 probe candidate install points: entry bytes and trampoline plan
+# lib: libsmartbox.so sha256 F6E3C3543FF6DA5B59BF60B884B6CE4332897C75AA6B89B8DCCC0C266DF80940
+# source: llvm-objdump -d, read instruction by instruction
+
+## [1] SessionProxy::onHandler
+   ELF vaddr      : 0x11c238
+   size           : 2924 B  (end 0x11cda4)
+   patch cover    : 8 B (2 instructions)
+   [vaddr+0]      : 0xE92D4BF0   (original #1, trampoline must replay)
+   [vaddr+4]      : 0xE28DB018   (original #2, trampoline must replay)
+   [vaddr+8]      : 0xE24DD030   (trampoline jump-back point func+8)
+   patched        : 0xE51FF004 ldr pc,[pc,#-4] ; <stub addr>
+   restored       : 0xE92D4BF0 0xE28DB018  (byte-identical readback)
+   site id        : 10
+   PC-relative in first 8 B: NO (push / add r11,sp,#N only)
+
+## [2] SessionDispatch::onNlpResultInner
+   ELF vaddr      : 0x11896c
+   size           : 116 B  (end 0x1189e0)
+   patch cover    : 8 B (2 instructions)
+   [vaddr+0]      : 0xE92D48F0   (original #1, trampoline must replay)
+   [vaddr+4]      : 0xE28DB010   (original #2, trampoline must replay)
+   [vaddr+8]      : 0xE24DD010   (trampoline jump-back point func+8)
+   patched        : 0xE51FF004 ldr pc,[pc,#-4] ; <stub addr>
+   restored       : 0xE92D48F0 0xE28DB010  (byte-identical readback)
+   site id        : 20
+   PC-relative in first 8 B: NO (push / add r11,sp,#N only)
+
+## [3] SessionDispatch::onPushNlpResult
+   ELF vaddr      : 0x1189ec
+   size           : 1072 B  (end 0x118e1c)
+   patch cover    : 8 B (2 instructions)
+   [vaddr+0]      : 0xE92D4FF0   (original #1, trampoline must replay)
+   [vaddr+4]      : 0xE28DB01C   (original #2, trampoline must replay)
+   [vaddr+8]      : 0xE24DD024   (trampoline jump-back point func+8)
+   patched        : 0xE51FF004 ldr pc,[pc,#-4] ; <stub addr>
+   restored       : 0xE92D4FF0 0xE28DB01C  (byte-identical readback)
+   site id        : 21
+   PC-relative in first 8 B: NO (push / add r11,sp,#N only)
+
+## [4] SessionDispatch::onRouterDetailInfo
+   ELF vaddr      : 0x118830
+   size           : 316 B  (end 0x11896c)
+   patch cover    : 8 B (2 instructions)
+   [vaddr+0]      : 0xE92D4FF0   (original #1, trampoline must replay)
+   [vaddr+4]      : 0xE28DB01C   (original #2, trampoline must replay)
+   [vaddr+8]      : 0xE24DD01C   (trampoline jump-back point func+8)
+   patched        : 0xE51FF004 ldr pc,[pc,#-4] ; <stub addr>
+   restored       : 0xE92D4FF0 0xE28DB01C  (byte-identical readback)
+   site id        : 30
+   PC-relative in first 8 B: NO (push / add r11,sp,#N only)
+
+## [5] SessionDispatch::playAudios
+   ELF vaddr      : 0x117d40
+   size           : 748 B  (end 0x11802c)
+   patch cover    : 8 B (2 instructions)
+   [vaddr+0]      : 0xE92D4FF0   (original #1, trampoline must replay)
+   [vaddr+4]      : 0xE28DB01C   (original #2, trampoline must replay)
+   [vaddr+8]      : 0xE24DD014   (trampoline jump-back point func+8)
+   patched        : 0xE51FF004 ldr pc,[pc,#-4] ; <stub addr>
+   restored       : 0xE92D4FF0 0xE28DB01C  (byte-identical readback)
+   site id        : 40
+   PC-relative in first 8 B: NO (push / add r11,sp,#N only)
+
+## [6] SessionManager::exitTalk
+   ELF vaddr      : 0x1110e4
+   size           : 268 B  (end 0x1111f0)
+   patch cover    : 8 B (2 instructions)
+   [vaddr+0]      : 0xE92D4DF0   (original #1, trampoline must replay)
+   [vaddr+4]      : 0xE28DB018   (original #2, trampoline must replay)
+   [vaddr+8]      : 0xE24DD018   (trampoline jump-back point func+8)
+   patched        : 0xE51FF004 ldr pc,[pc,#-4] ; <stub addr>
+   restored       : 0xE92D4DF0 0xE28DB018  (byte-identical readback)
+   site id        : 50
+   PC-relative in first 8 B: NO (push / add r11,sp,#N only)
+
+# runtime address = load base of libsmartbox + vaddr
+#   base (1): lowest executable mapping of libsmartbox.so in /proc/<pid>/maps minus that segment p_vaddr
+#   base (2): dladdr(dlsym(RTLD_DEFAULT, "<any exported symbol>"))->dli_fbase
+# NOTE: libagmmi.so defines the same symbol set (see libagmmi_duplicate_symbols.txt).
+#       dlsym returns the winner copy; always derive base from the dlsym result, never hardcode.

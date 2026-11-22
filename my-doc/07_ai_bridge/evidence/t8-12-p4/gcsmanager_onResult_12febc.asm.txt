@@ -1,0 +1,72 @@
+# annotated disassembly 0x12febc..0x12ffc4 of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI10GcsManager8onResultEihhPKai @ 0x12febc ====
+12febc  30 48 2d e9 push    {r4, r5, r11, lr}
+12fec0  08 b0 8d e2 add     r11, sp, #8
+12fec4  08 d0 4d e2 sub     sp, sp, #8
+12fec8  03 50 a0 e1 mov     r5, r3
+12fecc  08 30 9b e5 ldr     r3, [r11, #8]
+12fed0  00 40 a0 e1 mov     r4, r0
+12fed4  00 00 52 e3 cmp     r2, #0
+12fed8  08 00 00 0a beq     #32 <_ZN9AliAiLabs4AGUI10GcsManager8onResultEihhPKai+0x44>
+12fedc  00 00 51 e3 cmp     r1, #0
+12fee0  18 00 94 e5 ldr     r0, [r4, #24]
+12fee4  48 10 94 d5 ldrle   r1, [r4, #72]
+12fee8  0c 20 9b e5 ldr     r2, [r11, #12]
+12feec  00 20 8d e5 str     r2, [sp]
+12fef0  05 20 a0 e1 mov     r2, r5
+12fef4  f7 8f fd eb bl      #-639012 <.plt+0x6b3c>  ; -> 0x93ed8 PLT:_ZN9AliAiLabs4AGUI13RouterManager11onTtsStreamEihPKai
+12fef8  08 d0 4b e2 sub     sp, r11, #8
+12fefc  30 88 bd e8 pop     {r4, r5, r11, pc}
+12ff00  a8 10 9f e5 ldr     r1, [pc, #168]
+12ff04  03 00 a0 e1 mov     r0, r3
+12ff08  a4 20 9f e5 ldr     r2, [pc, #164]
+12ff0c  69 32 00 e3 movw    r3, #617
+12ff10  01 10 8f e0 add     r1, pc, r1
+12ff14  02 20 8f e0 add     r2, pc, r2
+12ff18  f8 79 fd eb bl      #-661536 <.plt+0x1364>  ; -> 0x8e700 PLT:json_tokener_parse_2
+12ff1c  00 00 50 e3 cmp     r0, #0
+12ff20  0f 00 00 0a beq     #60 <_ZN9AliAiLabs4AGUI10GcsManager8onResultEihhPKai+0xa8>
+12ff24  8c 10 9f e5 ldr     r1, [pc, #140]
+12ff28  00 20 a0 e3 mov     r2, #0
+12ff2c  00 50 a0 e1 mov     r5, r0
+12ff30  01 10 8f e0 add     r1, pc, r1
+12ff34  e3 75 fd eb bl      #-665716 <.plt+0x32c>  ; -> 0x8d6c8 PLT:_ZN9AliAiLabs4AGUI10JsonHelper15getJsonStringExEP11json_objectPKcS5_
+12ff38  7c 10 9f e5 ldr     r1, [pc, #124]
+12ff3c  01 10 8f e0 add     r1, pc, r1
+12ff40  64 76 fd eb bl      #-665200 <.plt+0x53c>  ; -> 0x8d8d8 PLT:_ZN9AliAiLabs4AGUI8StrUtils5equalEPKcS3_
+12ff44  00 00 50 e3 cmp     r0, #0
+12ff48  07 00 00 0a beq     #28 <_ZN9AliAiLabs4AGUI10GcsManager8onResultEihhPKai+0xb0>
+12ff4c  00 00 a0 e3 mov     r0, #0
+12ff50  00 10 a0 e3 mov     r1, #0
+12ff54  00 20 a0 e3 mov     r2, #0
+12ff58  02 30 a0 e3 mov     r3, #2
+12ff5c  e2 75 fd eb bl      #-665720 <.plt+0x350>  ; -> 0x8d6ec PLT:_ZN9AliAiLabs4AGUI8ClientId5getIdEiiii
+12ff60  09 00 00 ea b       #36 <_ZN9AliAiLabs4AGUI10GcsManager8onResultEihhPKai+0xd0>  ; -> 0x12ff8c FUNC:_ZN9AliAiLabs4AGUI10GcsManager8onResultEihhPKai+0xd0
+12ff64  08 d0 4b e2 sub     sp, r11, #8
+12ff68  30 88 bd e8 pop     {r4, r5, r11, pc}
+12ff6c  4c 10 9f e5 ldr     r1, [pc, #76]
+12ff70  05 00 a0 e1 mov     r0, r5
+12ff74  00 20 a0 e3 mov     r2, #0
+12ff78  01 10 8f e0 add     r1, pc, r1
+12ff7c  d1 75 fd eb bl      #-665788 <.plt+0x32c>  ; -> 0x8d6c8 PLT:_ZN9AliAiLabs4AGUI10JsonHelper15getJsonStringExEP11json_objectPKcS5_
+12ff80  00 10 a0 e1 mov     r1, r0
+12ff84  1c 00 94 e5 ldr     r0, [r4, #28]
+12ff88  d5 8f fd eb bl      #-639148 <.plt+0x6b48>  ; -> 0x93ee4 PLT:_ZN9AliAiLabs4AGUI6MmiCtx5getIdEPc
+12ff8c  00 10 a0 e1 mov     r1, r0
+12ff90  18 00 94 e5 ldr     r0, [r4, #24]
+12ff94  05 20 a0 e1 mov     r2, r5
+12ff98  48 10 84 e5 str     r1, [r4, #72]
+12ff9c  d3 8f fd eb bl      #-639156 <.plt+0x6b54>  ; -> 0x93ef0 PLT:_ZN9AliAiLabs4AGUI13RouterManager10onResponseEiP11json_object
+12ffa0  05 00 a0 e1 mov     r0, r5
+12ffa4  08 d0 4b e2 sub     sp, r11, #8
+12ffa8  30 48 bd e8 pop     {r4, r5, r11, lr}
+12ffac  a4 75 fd ea b       #-665968 <.plt+0x2a8>  ; -> 0x8d644 PLT:json_object_put
+12ffb0  e0 0c 0a 00 andeq   r0, r10, r0, ror #25
+12ffb4  49 10 0a 00 andeq   r1, r10, r9, asr #32
+12ffb8  36 10 0a 00 andeq   r1, r10, r6, lsr r0
+12ffbc  36 10 0a 00 andeq   r1, r10, r6, lsr r0
+12ffc0  ff 0f 0a 00 strdeq  r0, r1, [r10], -pc

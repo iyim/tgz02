@@ -10,8 +10,15 @@ param(
 # through, and resolve that GOT address against the .rel.plt offset column.
 # This makes no assumption about stub spacing or ordering.
 
-$PltStart = 0x8d39c
-$PltEnd   = 0x97a80
+# .plt 的地址与长度从 readelf -SW 读取（不硬编码）
+$secLine = (& $Readelf -SW $So 2>$null) | Where-Object { $_ -match '\.plt\s+PROGBITS' } | Select-Object -First 1
+if ($null -eq $secLine) { throw "cannot locate .plt section in $So" }
+if ($secLine -notmatch '\.plt\s+PROGBITS\s+([0-9a-f]{8})\s+([0-9a-f]{6,8})\s+([0-9a-f]{6,8})') {
+  throw "cannot parse .plt section header: $secLine"
+}
+$PltStart = [Convert]::ToInt32($matches[1], 16)
+$PltEnd   = $PltStart + [Convert]::ToInt32($matches[3], 16)
+Write-Output ("plt section: 0x{0:x} .. 0x{1:x}" -f $PltStart, $PltEnd)
 
 # --- GOT address -> imported symbol, from .rel.plt ---
 $relLines = & $Readelf -rW $So 2>$null

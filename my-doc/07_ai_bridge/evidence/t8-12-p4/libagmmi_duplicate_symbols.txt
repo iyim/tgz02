@@ -1,0 +1,39 @@
+# T8-12.4  duplicate definitions in libsmartbox.so and libagmmi.so
+# evidence: readelf --dyn-syms shows the same mangled name as DEF (.text) in BOTH libraries
+# libsmartbox.so sha256 F6E3C3543FF6DA5B59BF60B884B6CE4332897C75AA6B89B8DCCC0C266DF80940
+# libagmmi.so    sha256 65062E2D95A6055D0786EF20C3201737B65975B6D16AD0EA8987746A23F05B78
+
+symbol                                                       libsmartbox   libagmmi   size(agmmi)
+SessionManager::onNlpResultInner(int,NlpResult*)          0x114b98      0x600b4    8
+SessionManager::onNlpResult(int,int,NlpResult*)           0x11489c      0x5fdb8    764
+SessionManager::onSpecialNlpResult(int,NlpResult*)        0x114ba0      0x600bc    8
+SessionProxy::onNlpResultInner(int,NlpResult*)            0x11d9f8      0x69198    76
+SessionProxy::onNlpResultInner(int,int,NlpResult*)        0x11d5d0      0x68d70    184
+SessionProxy::onSpecialNlpResult(int,NlpResult*)          0x11da44      0x691e4    76
+SessionDispatch::onNlpResult(int,int,NlpResult*)          0x118ebc      0x64624    1952
+SessionDispatch::onNlpResultInner(int,NlpResult*)         0x11896c      0x640d4    116
+SessionDispatch::onPushNlpResult(int,NlpResult*)          0x1189ec      0x64154    1072
+SessionDispatch::onSpecialNlpResult(int,NlpResult*)       0x1189e0      0x64148    12
+SessionDispatch::playAudios(...)                          0x117d40      0x634a8    748
+SessionManager::exitTalk(int,uchar)                       0x1110e4      0x5c7fc    268
+RouterManager::onResponse(int,json_object*)               0x10fe3c      0x5b45c    1424
+
+## cross reference inside libagmmi (counted through PLT annotations, same method as libsmartbox)
+   SessionManager::onNlpResultInner stub = 0x433fc (ann 0x1814): 1 call site
+      0x5b5c4  inside RouterManager::onResponse 0x5b45c   -> SAME chain as libsmartbox
+   SessionProxy::onNlpResultInner(2arg) stub = 0x43768 (ann 0x1b80): 2 call sites
+      0x5ff1c  inside SessionManager::onNlpResult 0x5fdb8   (D path)
+      0x600b8  inside SessionManager::onNlpResultInner 0x600b4  (tail branch)
+   Message::obtain stub = 0x42b5c (ann 0xf74): 91 call sites in libagmmi
+      what=11 producer in this copy: 0x691c8 inside SessionProxy::onNlpResultInner 0x69198
+   => libagmmi carries a structurally identical copy of the whole cloud-result chain.
+
+## consequence
+   1) Both libs export the same GLOBAL DEFAULT symbols, so the dynamic linker binds exactly one
+      implementation per symbol. A patch must be placed on the address returned by
+      dlsym(RTLD_DEFAULT, ...) and never on a hardcoded "libsmartbox base + vaddr".
+   2) Whichever copy wins, the what=11 chain exists inside it, so the bypass conclusion does not
+      depend on resolving the interposition question.
+   3) The static analysis in this and the previous phases used libsmartbox's addresses; if the
+      device's :core actually runs libagmmi's copy, every vaddr in this audit is off by a constant
+      per function and must be re-derived from dlsym. Recorded as U10 / R21.
