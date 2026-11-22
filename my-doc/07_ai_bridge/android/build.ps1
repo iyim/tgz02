@@ -43,7 +43,7 @@ function Log([string]$text) {
 $Lib = @(
     "event_reader.c", "consumer_state.c", "provider.c",
     "mock_provider.c", "deepseek_provider.c", "worker_status.c", "worker_util.c", "seq_gap.c",
-    "conv_context.c", "worker_conf.c"
+    "conv_context.c", "worker_conf.c", "dead_letter.c"
 ) | ForEach-Object { Join-Path $Here $_ }
 
 $Targets = @(

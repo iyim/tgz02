@@ -1,0 +1,75 @@
+﻿# T7-06-R2 host test log (dead letter JSON)
+# host time: 2026-11-22 16:02:03
+
+=== build t7_06r2_dead_letter_unit_test ===
+(no compiler output: 0 warning, 0 error)
+exit : 0
+=== run t7_06r2_dead_letter_unit_test ===
+=== T7-06-R2 dead letter JSON unit test ===
+samples: 7 line(s) -> D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out/t7_06r2_dead_letter_samples.jsonl
+pass=46 fail=0
+PASS unit test: 46 assertions
+
+=== e2e A: provider always fails -> dead letter + offset advances ===
+=== build ai_worker(host) ===
+(no compiler output: 0 warning, 0 error)
+exit : 0
+run  : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\a_work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\a_state --provider mock --mock-fail-from 1 --provider-retry-max 1 --provider-backoff-ms 1 --provider-backoff-max-ms 5 --state-sync-every 1 --poll-ms 10 --status-every-ms 100 --max-runtime-ms 6000
+exit : 0
+[aiw] 2026-11-22T16:02:16 dead-letter: event e-a1 skipped after 4 attempts (); pipeline continues
+[aiw] 2026-11-22T16:02:16 route=ai event=e-a2 seq=3 session=1000 merges=0 held_ms=94 why=separate text_bytes=6 session_state=PROCESSING
+[aiw] 2026-11-22T16:02:16 event id=e-a2 stuck after 1 attempts (mock failure at call 5)
+[aiw] 2026-11-22T16:02:16 dead-letter: event e-a2 skipped after 4 attempts (); pipeline continues
+[aiw] 2026-11-22T16:02:17 route=ai event=e-a3 seq=0 session=1000 merges=0 held_ms=453 why=timeout text_bytes=5 session_state=PROCESSING
+[aiw] 2026-11-22T16:02:17 event id=e-a3 stuck after 1 attempts (mock failure at call 9)
+[aiw] 2026-11-22T16:02:17 dead-letter: event e-a3 skipped after 4 attempts (); pipeline continues
+[aiw] 2026-11-22T16:02:22 exit reason=max_runtime processed=3 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=9 offset=709 state_saves=4 state_errors=0
+[aiw] 2026-11-22T16:02:22 file identity: reason=first_open offset=709 prefix_hash=f9e8a0b9fde54be6 resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-22T16:02:22 provider summary: name=mock calls=12 (no network)
+PASS e2e A: 3 dead letters (one per event)
+PASS e2e A: status counters.dead_letters == 3
+PASS e2e A: pipeline continued (events_processed >= 3)
+PASS e2e A: consumer_state.processed_total == 3
+PASS e2e A: last_event_id == e-a3
+PASS e2e A: durable offset advanced
+
+=== e2e B: dead letter file unwritable -> offset must NOT advance ===
+run  : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state --provider mock --mock-fail-from 1 --provider-retry-max 1 --provider-backoff-ms 1 --provider-backoff-max-ms 5 --state-sync-every 1 --poll-ms 10 --status-every-ms 100 --max-runtime-ms 2000
+exit : 0
+[aiw] 2026-11-22T16:02:24 dead-letter: append(D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state/dead_letter.jsonl) failed errno=13; event e-b1 stays pending (offset NOT advanced)
+[aiw] 2026-11-22T16:02:24 dead-letter: append(D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state/dead_letter.jsonl) failed errno=13; event e-b1 stays pending (offset NOT advanced)
+[aiw] 2026-11-22T16:02:24 dead-letter: append(D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state/dead_letter.jsonl) failed errno=13; event e-b1 stays pending (offset NOT advanced)
+[aiw] 2026-11-22T16:02:24 dead-letter: append(D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\e2e\b_state/dead_letter.jsonl) failed errno=13; event e-b1 stays pending (offset NOT advanced)
+[aiw] 2026-11-22T16:02:24 exit reason=max_runtime processed=0 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=49 offset=243 state_saves=2 state_errors=0
+[aiw] 2026-11-22T16:02:24 file identity: reason=first_open offset=243 prefix_hash=75e21c6d9e2cf306 resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-22T16:02:24 WARNING: event id=e-b1 was still unprocessed at exit (49 attempts, offset kept at 243)
+[aiw] 2026-11-22T16:02:24 provider summary: name=mock calls=49 (no network)
+PASS e2e B: event stays pending (offset not advanced)
+PASS e2e B: events_processed == 0
+PASS e2e B: consumer_state.processed_total == 0 (no commit)
+PASS e2e B: no last_event_id recorded (nothing committed)
+PASS e2e B: provider kept retrying instead of skipping
+
+=== parser test (json.loads on every line) ===
+PASS regression: legacy quote-mangled line is NOT valid JSON
+PASS e2e: at least one dead letter written
+PASS e2e/1: exact key set
+PASS e2e/1: event_id present
+PASS e2e/1: event_id charset
+PASS e2e/1: invalid_utf8 == 0
+PASS e2e/1: attempts >= 1
+PASS e2e/2: exact key set
+PASS e2e/2: event_id present
+PASS e2e/2: event_id charset
+PASS e2e/2: invalid_utf8 == 0
+PASS e2e/2: attempts >= 1
+PASS e2e/3: exact key set
+PASS e2e/3: event_id present
+PASS e2e/3: event_id charset
+PASS e2e/3: invalid_utf8 == 0
+PASS e2e/3: attempts >= 1
+checks=87 fail=0
+RESULT: PASS
+PASS parser test
+
+# result: OK (unit + parser + e2e A/B, Mock only, no device, no network)

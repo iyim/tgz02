@@ -15,6 +15,7 @@
  */
 #include "ai_worker.h"
 #include "consumer_state.h"
+#include "dead_letter.h"
 #include "echo_filter.h"
 #include "intent_route.h"
 #include "seq_gap.h"
@@ -417,38 +418,53 @@ static void gap_report(t6b_worker *w, const t6b_event *ev)
 
 static int commit_event(t6b_worker *w);
 
+/*
+ * T7-06-R2 修复：原实现把整行里所有双引号替换成单引号（连 JSON 结构引号一起压掉），
+ * 写出来的是 {'ts':...} 这种非法 JSON。现在格式化与落盘都在 dead_letter.c 里，
+ * 输出严格 JSON Lines（一个记录一行、行尾 '\n'、字符串完整转义）。
+ *
+ * 顺序仍然是"写 → fsync → 提交 offset"：
+ *   - t6b_dl_append 返回非 0（含回滚）= 这一条没落盘 → 直接返回 -1，调用方不推进 offset；
+ *   - 落盘成功后才 commit_event()；commit 失败按原有语义返回 -2（前缀指纹未推进）。
+ */
 static int dead_letter_event(t6b_worker *w)
 {
     char path[T6B_PATH_MAX];
-    char line[1024];
-    int fd;
-    size_t o = 0, i;
+    char line[T6B_DL_LINE_MAX];
+    t6b_dl_rec rec;
+    size_t n;
+    long long repaired = 0;
 
     snprintf(path, sizeof(path), "%s/dead_letter.jsonl",
              (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT);
-    o = (size_t)snprintf(line, sizeof(line),
-                         "{\"ts\":%lld,\"event_id\":\"%s\",\"seq\":%lu,\"attempts\":%d,"
-                         "\"error_class\":\"%s\",\"error_bytes\":%d}\n",
-                         wu_now_ms(), w->pend.event_id, w->pend.seq, w->pend_attempts,
-                         w->ds.last_class, (int)strlen(w->pend_error));
-    if (o >= sizeof(line)) o = sizeof(line) - 2;
-    for (i = 0; i < o; i++) {
-        if (line[i] == '"' && i > 0) { /* 不做完整转义，只把引号压掉，保证一行一条合法 JSON */
-            line[i] = '\'';
-        }
+
+    memset(&rec, 0, sizeof(rec));
+    rec.ts_ms = wu_now_ms();
+    rec.event_id = w->pend.event_id;
+    rec.event_id_len = strlen(w->pend.event_id);
+    rec.seq = w->pend.seq;
+    rec.attempts = w->pend_attempts;
+    rec.error_class = w->ds.last_class;
+    rec.error_class_len = strlen(w->ds.last_class);
+    rec.error_bytes = (int)strlen(w->pend_error);
+
+    n = t6b_dl_format(line, sizeof(line), &rec);
+    if (n == 0) {
+        /* 格式化放不下：宁可不落盘也不写坏行（不推进 offset，继续重试） */
+        always("dead-letter: record for event %s does not fit in %d bytes; stays pending",
+               w->pend.event_id, (int)sizeof(line));
+        return -1;
     }
-    fd = wu_open_append(path);
-    if (fd < 0) {
-        always("dead-letter: open(%s) failed errno=%d; event %s stays pending",
+
+    if (t6b_dl_append(path, line, n, &repaired) != 0) {
+        always("dead-letter: append(%s) failed errno=%d; event %s stays pending (offset NOT advanced)",
                path, errno, w->pend.event_id);
         return -1;
     }
-    if (wu_write_all(fd, line, o) != 0) {
-        (void)wu_close(fd);
-        always("dead-letter: short write for event %s", w->pend.event_id);
-        return -1;
-    }
-    (void)wu_close(fd);
+    if (repaired > 0)
+        always("dead-letter: repaired %lld trailing byte(s) left by a previous run in %s",
+               repaired, path);
+
     if (commit_event(w) != 0) return -2;
     always("dead-letter: event %s skipped after %d attempts (%s); pipeline continues",
            w->pend.event_id, w->pend_attempts, w->ds.last_class);

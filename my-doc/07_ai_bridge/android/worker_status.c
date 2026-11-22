@@ -104,7 +104,9 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"provider_ok\":%llu,\"provider_err\":%llu,\"provider_timeout\":%llu,"
         "\"provider_retries\":%llu,\"stuck_attempts\":%llu,"
         "\"provider_stuck\":%d,\"state_persist_failed\":%d,"
-        "\"tts_queued\":%llu,\"tts_skipped\":%llu,\"tts_enqueue_failed\":%llu},"
+        "\"tts_queued\":%llu,\"tts_skipped\":%llu,\"tts_enqueue_failed\":%llu,"
+        /* T7-06-R2：死信条数（被跳过的事件数），triage 直接可读 */
+        "\"dead_letters\":%llu},"
         "\"tts_queue\":\"%s\","
         "\"context\":{\"enabled\":%d,\"max_messages\":%d,\"messages\":%d,\"turns\":%d,"
         "\"load_state\":%d,\"saves\":%llu,\"save_errors\":%llu,\"evicted\":%llu,"
@@ -148,7 +150,8 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         st->provider_ok, st->provider_err, st->provider_timeout,
         st->provider_retries, st->stuck_attempts,
         st->provider_stuck, st->state_persist_failed,
-        st->tts_queued, st->tts_skipped, st->tts_enqueue_failed, esc_ttsq,
+        st->tts_queued, st->tts_skipped, st->tts_enqueue_failed,
+        st->dead_lettered, esc_ttsq,
         st->context_enabled, st->context_max_messages, st->context_messages,
         st->context_turns, st->context_load_state, st->context_saves,
         st->context_save_errors, st->context_evicted, esc_ctxfile,
