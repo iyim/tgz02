@@ -34,7 +34,7 @@
 
 ```
 libtg_ttsguard.so  fc1d27f2357b5a3390035207f4fb8c70fe3c7403dca3335e56d55f8429ab67b4
-ai_worker          9cb7e4e1b7a23663347d010fd0bab472eb71485fb37f69eb704d108238b626ab
+ai_worker          89e4d6e0bc6454d753fd555a8e1f08392fbdbf4294ed2a139d2d24b9871604a8
 ```
 
 ---
@@ -258,11 +258,11 @@ native_allowed=2 native_reads=8 native_expired=6
 host（`tests/run_t7_04_host_tests.ps1`，0 网络 0 真机，`evidence/t7_04_host_unit_test.log`）：
 
 ```
-t7_04_route_unit_test    SUMMARY: pass=93 fail=0
+t7_04_route_unit_test    SUMMARY: pass=126 fail=0
 t7_04_gate_unit_test     SUMMARY: pass=45 fail=0
 t7_04_session_unit_test  SUMMARY: pass=25 fail=0
 worker compile check     intent_route/utterance_gate/conv_session/worker_conf/worker_status/ai_worker : 0 warning
-SUMMARY pass=163 fail=0
+SUMMARY pass=196 fail=0
 RESULT: PASS
 ```
 
@@ -272,7 +272,7 @@ RESULT: PASS
 
 | # | 项目 | 结果 |
 |---|---|---|
-| P0 | 部署对账（worker sha256 `9cb7e4e1…`、guard `fc1d27f2…`、备份三件套） | OK |
+| P0 | 部署对账（worker sha256 `89e4d6e0…`、guard `fc1d27f2…`、备份三件套） | OK |
 | P1 | 唤醒（wake.wav + 2 s + 指令） | 正常，`onStartTalk`/`asr_final` 均有 |
 | P2 | 音量调大 | `route=native intent=volume`，原厂播报"现在是47"，音量 37→47，AI 0 次请求 |
 | P2 | 天气 | `route=native intent=weather`，原厂回答 |
@@ -348,10 +348,49 @@ a36acc7af2320989f8df0241ab197d3cc30d45ff48e28ea9027ece7482eb6dd3  libtg_ttsguard
 ### 10.3 当前设备状态（本轮结束时）
 
 ```
-:core pid 10414   libtg_ttsguard hooked=1 (allowed=20 dropped=6 native_allowed=2)
+:core pid 10414   libtg_ttsguard hooked=1 (play_seen=25 ours=25 allowed=25 dropped=8 native_allowed=10)
                   libtg_hook (T6-01) 在位；libtg_dialog 未加载
 supervisor pid 27260 (唯一)   watch=stopped
-ai_worker pid 30654  route enabled intents=0x1f  gate enabled(450/2500/1200)  session 12000ms
+ai_worker pid 3160   route enabled intents=0x3f (含 media)  gate enabled(450/2500/1200)  session 12000ms
 TTS executor 正常运行，play.public.json playing/idle 正常
 唤醒：本轮 8 次唤醒全部成功（onStartTalk → asr_final），无 SIGSEGV/SIGABRT/am_proc_died
 ```
+
+---
+
+## 11. 首轮路由覆盖不足（用户实测反馈）与修复
+
+首轮交付后用户实测反馈"本地指令路由不管用"。查 `events.jsonl` 直接看到两个漏判（同一份真机 ASR 原文）：
+
+```
+# 08:17  （修复前）
+{"text":"天猫精灵音量调到百分之十"}  ->  route=ai      # 送去模型；原厂回答被守卫 drop，用户听到的是模型的话
+{"text":"天猫精灵暂停播放"}          ->  route=ai      # 播放控制也是原厂技能，同样被模型抢答
+
+# 08:26  （修复后）
+{"text":"天猫精灵音量调到百分之十"}  ->  route=native intent=volume rule=volume.set arg=set:10
+                                        factory: onTtsStart sessionId=1969432 tts="马上为您设置音量，现在是10"
+{"text":"天猫精灵暂停播放"}          ->  route=native intent=media  rule=media.pause arg=pause
+```
+
+三处根因，都已修：
+
+1. **中文数字没解析**：`音量调到百分之十` 里没有 ASCII 数字，而规则只认 `set:<ascii>` 和"调大/调小"，
+   于是"音量"命中但没有动作词 → 落回大模型。现在支持 `百分之N` / `调到N` / `调到十五` / `设成最大` / `一半`，
+   并且**只有数量语境**（`百分之/调到/调成/设成/设为/到` 之后）才解析中文数字 ——
+   否则"调大一点"里的"一"会被误当成 1（host 单测就抓到了这个回归）。
+2. **音量动作词表太窄**：只有"调大/调小/开到"。现在"音量/声音 + 任一动作词（调/设/改/到/百分/最大/一半/加/减/高/低/开/关/响/轻/静）"
+   都算音量指令，方向交给原厂解析；`volume.adjust` 作为兜底规则出现在日志里。
+3. **播放控制整类漏了**：暂停/继续/下一首/切歌/播放音乐等属于原厂技能，模型既播不了也会抢答。
+   新增 `media` 意图（`media.pause` / `media.play`），并加了否决词（推荐/有什么/哪首/好听/怎么/为什么/播放器），
+   避免"推荐几首歌"这种要建议的请求被当成播放控制。
+
+host 单测相应扩到 **196 断言 0 失败**（新增 `[1b]` 中文数字与"音量调到百分之十"等真实 ASR 原句、`[3b]` 播放控制正例、
+`推荐几首歌/播放器怎么用` 反例）。
+
+**这一轮暴露的流程问题也记下来**：首轮真机验收里我只用了自己生成的"音量调大一点 / 关闭屏幕 / 现在几点"等短句，
+没覆盖"用户实际会怎么说"（`百分之十`、`暂停播放`），也没有把"同一句话在修复前后分别 route=ai / route=native"作为验收断言。
+新版本的验收做法是：**把真机日志里出现过的每条 ASR 原文都回填进 host 单测**（现在表里已有 6 条来自设备的原句）。
+
+产物 sha256 随之更新：`ai_worker 89e4d6e0bc6454d753fd555a8e1f08392fbdbf4294ed2a139d2d24b9871604a8`（守卫未变）。
+证据：`evidence/t7_04_hotfix_route_coverage.log`。

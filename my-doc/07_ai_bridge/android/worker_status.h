@@ -124,6 +124,7 @@ typedef struct {
     unsigned long long route_screen_off;
     unsigned long long route_time;
     unsigned long long route_screen_on;
+    unsigned long long route_media;
     char               route_last[96];         /* "route=native intent=time rule=time.keyword" */
     char               route_publish_file[T6B_PATH_MAX]; /* 给 TTS 守卫的原厂放行标记 */
 

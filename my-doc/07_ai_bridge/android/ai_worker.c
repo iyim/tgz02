@@ -1024,6 +1024,7 @@ static int route_intent_enabled(const t6b_worker *w, ir_intent it)
     case IR_WEATHER:    bit = T7B_ROUTE_WEATHER; break;
     case IR_SCREEN_OFF: bit = T7B_ROUTE_SCREEN_OFF; break;
     case IR_SCREEN_ON:  bit = T7B_ROUTE_SCREEN_ON; break;
+    case IR_MEDIA:      bit = T7B_ROUTE_MEDIA; break;
     case IR_TIME:       bit = T7B_ROUTE_TIME; break;
     default:            return 0;
     }
@@ -1371,6 +1372,7 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                         case IR_WEATHER:    w->st.route_weather++; break;
                         case IR_SCREEN_OFF: w->st.route_screen_off++; break;
                         case IR_SCREEN_ON:  w->st.route_screen_on++; break;
+                        case IR_MEDIA:      w->st.route_media++; break;
                         case IR_TIME:       w->st.route_time++; break;
                         default: break;
                         }
@@ -1863,13 +1865,14 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
                  cs_state_name(w.cs.state));
 
         always("route: enabled=%d intents=0x%02x (volume=%d weather=%d screen_off=%d "
-               "time=%d screen_on=%d) publish_file=%s",
+               "time=%d screen_on=%d media=%d) publish_file=%s",
                c->route_native, c->route_intents,
                (c->route_intents & T7B_ROUTE_VOLUME) ? 1 : 0,
                (c->route_intents & T7B_ROUTE_WEATHER) ? 1 : 0,
                (c->route_intents & T7B_ROUTE_SCREEN_OFF) ? 1 : 0,
                (c->route_intents & T7B_ROUTE_TIME) ? 1 : 0,
                (c->route_intents & T7B_ROUTE_SCREEN_ON) ? 1 : 0,
+               (c->route_intents & T7B_ROUTE_MEDIA) ? 1 : 0,
                w.route_publish_path[0] != '\0' ? w.route_publish_path : "(disabled)");
         always("gate: enabled=%d debounce=%dms max_hold=%dms cross_session=%d(%dms) sim=%d%% "
                "hold_file=%s",

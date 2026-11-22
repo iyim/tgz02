@@ -1,5 +1,5 @@
 ﻿# T7-04 host unit test log
-# host time: 2026-11-22 08:12:07
+# host time: 2026-11-22 08:25:33
 
 === build t7_04_route_unit_test ===
 cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_04_route_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_04_route_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c
@@ -9,9 +9,13 @@ cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\sys
 
 [1] volume
 
+[1b] volume, Chinese numerals and 百分之 (real ASR strings)
+
 [2] weather
 
 [3] screen off / on
+
+[3b] media control (factory skill, must not be answered by the model)
 
 [4] time
 
@@ -19,7 +23,7 @@ cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\sys
 
 [6] names / helpers
 
-SUMMARY: pass=93 fail=0
+SUMMARY: pass=126 fail=0
 RESULT: PASS
 
 === build t7_04_gate_unit_test ===
@@ -84,5 +88,5 @@ worker_conf.c : 0 warning
 worker_status.c : 0 warning
 ai_worker.c : 0 warning
 
-SUMMARY pass=163 fail=0
+SUMMARY pass=196 fail=0
 RESULT: PASS

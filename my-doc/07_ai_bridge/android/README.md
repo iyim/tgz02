@@ -232,7 +232,7 @@ libtg_ttsguard.so 与 libtg_dialog.so 各起一个实例；:core 一出现就注
 
 ```ini
 route_native=1                     # 0 = 全部走大模型（回退到 T7-03 行为）
-route_intents=volume,weather,screen_off,screen_on,time
+route_intents=volume,weather,screen_off,screen_on,time,media
 gate=1
 gate_debounce_ms=450
 gate_max_hold_ms=2500

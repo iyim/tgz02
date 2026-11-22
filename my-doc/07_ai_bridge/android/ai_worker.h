@@ -47,7 +47,8 @@
 #define T7B_ROUTE_SCREEN_OFF 0x04
 #define T7B_ROUTE_TIME       0x08
 #define T7B_ROUTE_SCREEN_ON  0x10
-#define T7B_ROUTE_ALL        0x1F
+#define T7B_ROUTE_MEDIA      0x20
+#define T7B_ROUTE_ALL        0x3F
 
 typedef struct {
     char        work_dir[T6B_PATH_MAX];      /* events.jsonl 所在目录（只读） */

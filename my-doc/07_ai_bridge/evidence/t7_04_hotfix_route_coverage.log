@@ -1,0 +1,28 @@
+﻿# T7-04 hotfix evidence (routing coverage for 音量调到百分之N / 播放控制)
+# collected 2026-11-22 08:26:49
+
+## BEFORE (T7-04 first cut, 08:17): same ASR text went to the model and the factory answer was dropped
+{"event_id":"t6-10414-1969303-g29","session_id":"1969303","text":"天猫精灵音量调到百分之十"}
+  -> route=ai event=…-g29 … (model answered; factory answer dropped by the guard)
+
+## AFTER (fixed rules, 08:26)
+{"event_id":"t6-10414-1969432-g39","session_id":"1969432","text":"天猫精灵音量调到百分之十"}
+  -> route=native intent=volume rule=volume.set arg=set:10 event=…-g39 session=1969432
+  -> factory: TtsManager onTtsStart sessionId = 1969432, tts = "马上为您设置音量，现在是10"
+{"event_id":"t6-10414-1969446-g40","session_id":"1969446","text":"天猫精灵暂停播放"}
+  -> route=native intent=media rule=media.pause arg=pause event=…-g40 session=1969446
+
+## guard stats after the fix (native answers are allowed, chat answers still dropped)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 play=1 start=1 func_play=95465afc func_start=95465110 play_seen=25 ours=25 not_ours=0 start_seen=43 allowed=25 dropped=8 hit_id=25 hit_text=0 empty=0 native_allowed=10 native_reads=18 native_expired=8 native_file=/data/local/tmp/t5_bridge/work/native_route.public.json
+[inject] RESULT check pid=10414 hooked=1
+
+## worker status route block
+"route":{"enabled":1
+"native":3
+"ai":0
+"volume":1
+"weather":1
+"time":0
+"screen_on":0
+"media":1

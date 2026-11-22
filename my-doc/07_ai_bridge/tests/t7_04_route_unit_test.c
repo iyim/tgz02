@@ -66,8 +66,18 @@ int main(void)
     expect_intent("静音", IR_VOLUME, "mute");
     expect_intent("取消静音", IR_VOLUME, "unmute");
     expect_intent("恢复声音", IR_VOLUME, "unmute");
-    expect_intent("天猫精灵，把音量开到最大", IR_VOLUME, "up");
+    expect_intent("天猫精灵，把音量开到最大", IR_VOLUME, "max");
     expect_intent("音量", IR_VOLUME, "");
+
+    printf("\n[1b] volume, Chinese numerals and 百分之 (real ASR strings)\n");
+    expect_intent("天猫精灵音量调到百分之十", IR_VOLUME, "set:10");
+    expect_intent("音量调到百分之三十", IR_VOLUME, "set:30");
+    expect_intent("音量调到十五", IR_VOLUME, "set:15");
+    expect_intent("声音调到五十", IR_VOLUME, "set:50");
+    expect_intent("音量设成最大", IR_VOLUME, "max");
+    expect_intent("音量最小", IR_VOLUME, "min");
+    expect_intent("声音给到一半", IR_VOLUME, "half");
+    expect_intent("音量给我调一下", IR_VOLUME, "");
 
     printf("\n[2] weather\n");
     expect_intent("查一下天气", IR_WEATHER, "");
@@ -88,6 +98,16 @@ int main(void)
     expect_intent("打开屏幕", IR_SCREEN_ON, "");
     expect_intent("把屏幕点亮", IR_SCREEN_ON, "");
 
+    printf("\n[3b] media control (factory skill, must not be answered by the model)\n");
+    expect_intent("天猫精灵暂停播放", IR_MEDIA, "pause");
+    expect_intent("暂停", IR_MEDIA, "pause");
+    expect_intent("继续播放", IR_MEDIA, "play");
+    expect_intent("下一首", IR_MEDIA, "play");
+    expect_intent("上一首", IR_MEDIA, "play");
+    expect_intent("切歌", IR_MEDIA, "play");
+    expect_intent("播一首周杰伦的歌", IR_MEDIA, "play");
+    expect_intent("放首歌听听", IR_MEDIA, "play");
+
     printf("\n[4] time\n");
     expect_intent("现在几点", IR_TIME, "");
     expect_intent("现在是什么时间", IR_TIME, "");
@@ -103,7 +123,6 @@ int main(void)
     expect_intent("东京有什么好玩的", IR_NONE, NULL);
     expect_intent("推荐一部科幻电影", IR_NONE, NULL);
     expect_intent("帮我定个闹钟", IR_NONE, NULL);
-    expect_intent("播一首周杰伦的歌", IR_NONE, NULL);
     expect_intent("屏幕亮度调高一点", IR_NONE, NULL);      /* 亮度 != 关屏 */
     expect_intent("把屏幕调暗一点", IR_NONE, NULL);
     expect_intent("我的生日是几号", IR_NONE, NULL);        /* 问日期 != 问时间 */
@@ -111,6 +130,8 @@ int main(void)
     expect_intent("这个声音真好听", IR_NONE, NULL);
     expect_intent("快递几号到", IR_NONE, NULL);
     expect_intent("天气之子好看吗", IR_NONE, NULL);        /* 作品名 */
+    expect_intent("推荐几首歌", IR_NONE, NULL);            /* 要建议 != 要控制播放 */
+    expect_intent("播放器怎么用", IR_NONE, NULL);
     expect_intent("", IR_NONE, NULL);
 
     printf("\n[6] names / helpers\n");

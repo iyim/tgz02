@@ -115,7 +115,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"last_gap_from\":%lu,\"last_gap_to\":%lu,"
         "\"route\":{\"enabled\":%d,\"intents\":%d,\"native\":%llu,\"ai\":%llu,"
         "\"volume\":%llu,\"weather\":%llu,\"screen_off\":%llu,\"time\":%llu,"
-        "\"screen_on\":%llu,"
+        "\"screen_on\":%llu,\"media\":%llu,"
         "\"last\":\"%s\",\"publish_file\":\"%s\"},"
         "\"gate\":{\"enabled\":%d,\"debounce_ms\":%d,\"max_hold_ms\":%d,"
         "\"cross_session\":%d,\"seen\":%llu,\"held\":%llu,\"released\":%llu,"
@@ -155,7 +155,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         st->last_gap_from, st->last_gap_to,
         st->route_enabled, st->route_intents, st->route_native, st->route_ai,
         st->route_volume, st->route_weather, st->route_screen_off, st->route_time,
-        st->route_screen_on,
+        st->route_screen_on, st->route_media,
         esc_route_last, esc_route_file,
         st->gate_enabled, st->gate_debounce_ms, st->gate_max_hold_ms,
         st->gate_cross_session, st->gate_seen, st->gate_held, st->gate_released,

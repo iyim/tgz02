@@ -36,7 +36,8 @@ typedef enum {
     IR_WEATHER = 2,
     IR_SCREEN_OFF = 3,
     IR_TIME = 4,
-    IR_SCREEN_ON = 5     /* 任务书要求"至少"四类；开屏同属原厂屏幕能力，顺手一起管 */
+    IR_SCREEN_ON = 5,    /* 任务书要求"至少"四类；开屏同属原厂屏幕能力，顺手一起管 */
+    IR_MEDIA = 6         /* 播放控制（暂停/继续/下一首…）：原厂技能本来就管，不该让模型抢答 */
 } ir_intent;
 
 typedef struct {

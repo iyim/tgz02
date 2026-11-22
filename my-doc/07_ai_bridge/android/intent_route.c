@@ -66,6 +66,78 @@ static int ir_take_number(const char *norm, char *arg, size_t cap)
     return 1;
 }
 
+/* 中文数字（零..九）：UTF-8 比较，不能用字符常量（汉字是多字节） */
+static int ir_cn_digit(const char *p)
+{
+    static const char *const digit_cn[] = {
+        "零", "〇", "一", "二", "两", "三", "四", "五", "六", "七", "八", "九", NULL
+    };
+    static const int digit_val[] = { 0, 0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9 };
+    int i;
+
+    for (i = 0; digit_cn[i] != NULL; i++) {
+        if (memcmp(p, digit_cn[i], 3) == 0) return digit_val[i];
+    }
+    return -1;
+}
+/*
+ * 中文数字：只有"数量语境"才解析 —— 出现 百分之 / 调到 / 调成 / 设成 / 设为 之后才是数值，
+ * 否则"调大一点""小一点"里的"一"会被误当成 1。
+ * 支持 0..100：十 / 十五 / 二十五 / 三十 / 一百 / 一百五（一百五 => 150 超范围，按 100 处理）。
+ */
+static int ir_take_cn_number(const char *norm, char *arg, size_t cap)
+{
+    static const char *const trig[] = {
+        "百分之", "调到", "调成", "调到", "设成", "设为", "到", NULL
+    };
+    int ti;
+
+    for (ti = 0; trig[ti] != NULL; ti++) {
+        const char *hit = strstr(norm, trig[ti]);
+
+        while (hit != NULL) {
+            const char *p = hit + strlen(trig[ti]);
+            int section = 0, num = -1, seen = 0, total;
+
+            while (*p != '\0') {
+                const unsigned char *b = (const unsigned char *)p;
+
+                if (b[0] < 0xE0) break;                    /* 数字段结束 */
+                if (memcmp(p, "百", 3) == 0) {
+                    section += (num <= 0 ? 1 : num) * 100;
+                    num = -1;
+                    seen = 1;
+                    p += 3;
+                    continue;
+                }
+                if (memcmp(p, "十", 3) == 0) {
+                    section += (num <= 0 ? 1 : num) * 10;
+                    num = -1;
+                    seen = 1;
+                    p += 3;
+                    continue;
+                }
+                {
+                    int d = ir_cn_digit(p);
+                    if (d < 0) break;
+                    num = d;
+                    seen = 1;
+                    p += 3;
+                }
+            }
+            if (seen) {
+                total = section + (num < 0 ? 0 : num);
+                if (total > 100) total = 100;
+                if (total > 0) {
+                    if (snprintf(arg, cap, "set:%d", total) < 0) return 0;
+                    return 1;
+                }
+            }
+            hit = strstr(hit + 3, trig[ti]);
+        }
+    }
+    return 0;
+}
 /* ---------------- 音量 ---------------- */
 
 static const char *const IR_VOL_HIT[] = {
@@ -102,6 +174,13 @@ static const char *const IR_VOL_DOWN[] = {
     "音量低", "声音减", NULL
 };
 
+/* 只要出现"音量/声音"再加任何一个动作词，就说明用户在操作音量（具体方向交给原厂解析）。
+ * 这一条是为了覆盖"音量调到百分之十""声音给到一半""音量设成最大"这类说法。 */
+static const char *const IR_VOL_ACTION[] = {
+    "调", "设", "改", "到", "百分", "最大", "最小", "一半", "加", "减",
+    "大", "小", "高", "低", "关", "开", "响", "轻", "静", NULL
+};
+
 static int ir_match_volume(const char *n, ir_result *out)
 {
     char arg[IR_ARG_MAX];
@@ -124,6 +203,22 @@ static int ir_match_volume(const char *n, ir_result *out)
         ir_set(out, IR_VOLUME, "volume.set", arg);
         return 1;
     }
+    if (ir_has(n, "一半")) {
+        ir_set(out, IR_VOLUME, "volume.half", "half");
+        return 1;
+    }
+    if (ir_take_cn_number(n, arg, sizeof(arg))) {
+        ir_set(out, IR_VOLUME, "volume.set", arg);
+        return 1;
+    }
+    if (ir_has(n, "最大") || ir_has(n, "全开")) {
+        ir_set(out, IR_VOLUME, "volume.max", "max");
+        return 1;
+    }
+    if (ir_has(n, "最小")) {
+        ir_set(out, IR_VOLUME, "volume.min", "min");
+        return 1;
+    }
     if (ir_has_any(n, IR_VOL_UP)) {
         ir_set(out, IR_VOLUME, "volume.up", "up");
         return 1;
@@ -135,6 +230,11 @@ static int ir_match_volume(const char *n, ir_result *out)
     /* 只说了"音量"两个字：原厂会追问，我们也交给原厂，不让模型猜 */
     if (strcmp(n, "音量") == 0 || strcmp(n, "声音") == 0) {
         ir_set(out, IR_VOLUME, "volume.bare", "");
+        return 1;
+    }
+    /* 还有"音量 + 动作词"的其它口语（"音量给我调一下"）：仍然交给原厂 */
+    if (ir_has_any(n, IR_VOL_ACTION)) {
+        ir_set(out, IR_VOLUME, "volume.adjust", "");
         return 1;
     }
     return 0;
@@ -230,6 +330,30 @@ static int ir_match_screen_on(const char *n, ir_result *out)
     return 0;
 }
 
+/* ---------------- 播放控制（原厂技能） ---------------- */
+
+static const char *const IR_MEDIA_HIT[] = {
+    "暂停", "继续播放", "接着放", "接着播", "停止播放", "静音播放",
+    "下一首", "上一首", "切歌", "换一首", "换首歌", "单曲循环", "随机播放",
+    "播放音乐", "放首歌", "来首歌", "放音乐", "播放歌曲", "播放", "放一首", "播一首", "播首", "放首",
+    "来一首", "唱一首", "听歌", "停止音乐", "关掉音乐", "音乐关掉", NULL
+};
+
+static const char *const IR_MEDIA_VETO[] = {
+    /* 问"有什么/推荐/哪首"是要建议，不是要控制播放 */
+    "推荐", "有什么", "哪首", "哪些", "介绍", "好听", "怎么", "为什么",
+    "什么意思", "是什么", "播放器", NULL
+};
+
+static int ir_match_media(const char *n, ir_result *out)
+{
+    if (!ir_has_any(n, IR_MEDIA_HIT)) return 0;
+    if (ir_has_any(n, IR_MEDIA_VETO)) return 0;
+    if (ir_has(n, "暂停")) { ir_set(out, IR_MEDIA, "media.pause", "pause"); return 1; }
+    if (ir_has_any(n, IR_MEDIA_HIT)) { ir_set(out, IR_MEDIA, "media.play", "play"); return 1; }
+    return 0;
+}
+
 /* ---------------- 归一化与分类 ---------------- */
 
 int ir_normalize(const char *text, char *out, size_t cap)
@@ -282,11 +406,12 @@ int ir_classify_norm(const char *norm, ir_result *out)
     if (out != NULL) memset(out, 0, sizeof(*out));
     if (norm == NULL || norm[0] == '\0') return 0;
 
-    /* 顺序即优先级：关屏 > 开屏 > 天气 > 时间 > 音量 */
+    /* 顺序即优先级：关屏 > 开屏 > 天气 > 时间 > 播放控制 > 音量 */
     if (ir_match_screen_off(norm, out != NULL ? out : &tmp)) return 1;
     if (ir_match_screen_on(norm, out != NULL ? out : &tmp)) return 1;
     if (ir_match_weather(norm, out != NULL ? out : &tmp)) return 1;
     if (ir_match_time(norm, out != NULL ? out : &tmp)) return 1;
+    if (ir_match_media(norm, out != NULL ? out : &tmp)) return 1;
     if (ir_match_volume(norm, out != NULL ? out : &tmp)) return 1;
     return 0;
 }
@@ -313,6 +438,7 @@ const char *ir_intent_name(ir_intent it)
     case IR_SCREEN_OFF: return "screen_off";
     case IR_TIME:       return "time";
     case IR_SCREEN_ON:  return "screen_on";
+    case IR_MEDIA:      return "media";
     case IR_NONE:
     default:            return "none";
     }
@@ -326,5 +452,6 @@ int ir_intent_from_name(const char *name)
     if (strcmp(name, "screen_off") == 0) return IR_SCREEN_OFF;
     if (strcmp(name, "time") == 0) return IR_TIME;
     if (strcmp(name, "screen_on") == 0) return IR_SCREEN_ON;
+    if (strcmp(name, "media") == 0) return IR_MEDIA;
     return IR_NONE;
 }
