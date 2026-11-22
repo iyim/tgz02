@@ -1,0 +1,726 @@
+﻿# T8-05 disassembly / symbol check (ARM32, armv7a-linux-androideabi26-clang -O2)
+# host time: 2026-11-22 18:50:13
+# artifact: libtg_hook.so sha256=19d5cf690d0152631fdd3bdf218af65c08ac6661e41ac48e60bdf8f8f570aaee
+
+## 1) dynamic symbols (T8-05 surface)
+000080f8 T nls_init
+0000812c T nls_installed
+0000827c T nls_mode
+000082ac T nls_mode_name
+00008260 T nls_note_init_failure
+00008174 T nls_set_installed
+000081dc T nls_set_takeover
+00008144 T nls_takeover
+000082d4 T np_err_name
+00008448 T np_init
+0000853c T np_install
+00008500 T np_installed
+000083cc T np_sample
+00009484 T np_snapshot
+00008524 T np_state
+00008300 T np_state_name
+00008ce0 T np_uninstall
+00008328 T np_words
+000042d4 T tg_nlu_entry_code
+00004218 T tg_nlu_hook_installed
+000037c0 T tg_nlu_install
+000041a0 T tg_nlu_is_enabled
+000042c4 T tg_nlu_last_error
+000037a4 T tg_nlu_patch_hi
+00003794 T tg_nlu_patch_lo
+00003594 T tg_nlu_prepare
+000041d8 T tg_nlu_state_ready
+0000433c T tg_nlu_stats
+00004168 T tg_nlu_takeover_get
+00003f24 T tg_nlu_takeover_set
+00003d18 T tg_nlu_uninstall
+
+## 2) undefined symbols the hook lib now needs
+
+## 2) all undefined symbols (imports)
+         U __aeabi_memclr4
+         U __aeabi_memclr8
+         U __aeabi_memcpy
+         U __aeabi_memcpy8
+         U __aeabi_memmove
+         U __android_log_print
+         U __android_log_write
+         U __cxa_atexit
+         U __cxa_finalize
+         U __errno
+         U __register_atfork
+         U abort
+         U clock_gettime
+         U close
+         U connect
+         U dl_iterate_phdr
+         U fclose
+         U fcntl
+         U fgets
+         U fopen
+         U fread
+         U getenv
+         U getpid
+         U getsockopt
+         U memcmp
+         U memcpy
+         U mmap
+         U mprotect
+         U nanosleep
+         U poll
+         U pthread_attr_destroy
+         U pthread_attr_init
+         U pthread_attr_setstacksize
+         U pthread_cond_signal
+         U pthread_cond_timedwait
+         U pthread_create
+         U pthread_mutex_destroy
+         U pthread_mutex_init
+         U pthread_mutex_lock
+         U pthread_mutex_unlock
+         U pthread_once
+         U raise
+         U recv
+         U send
+         U snprintf
+         U socket
+         U sscanf
+         U strchr
+         U strcmp
+         U strlen
+         U strncpy
+         U strrchr
+         U strstr
+         U strtol
+         U strtoll
+         U vsnprintf
+
+## 3) tg_nlu_install (takes world_frozen in r0, must reach np_install)
+000037c0 <tg_nlu_install>:
+    37c0:	push	{r4, r5, r6, r7, r8, r9, sl, fp, lr}
+    37c4:	add	fp, sp, #28
+    37c8:	sub	sp, sp, #212	; 0xd4
+    37cc:	mov	r4, r0
+    37d0:	ldr	r0, [pc, #1076]	; 3c0c <tg_nlu_install+0x44c>
+    37d4:	ldr	r1, [pc, #1076]	; 3c10 <tg_nlu_install+0x450>
+    37d8:	add	r0, pc, r0
+    37dc:	add	r1, pc, r1
+    37e0:	bl	2d20 <pthread_once@plt>
+    37e4:	bl	2d38 <tg_nlu_prepare@plt>
+    37e8:	cmp	r0, #0
+    37ec:	beq	3838 <tg_nlu_install+0x78>
+    37f0:	mov	r5, r0
+    37f4:	ldr	r0, [pc, #1048]	; 3c14 <tg_nlu_install+0x454>
+    37f8:	ldr	r1, [pc, #1048]	; 3c18 <tg_nlu_install+0x458>
+    37fc:	add	r4, sp, #8
+    3800:	add	r0, pc, r0
+    3804:	mov	r2, #191	; 0xbf
+    3808:	add	r1, pc, r1
+    380c:	str	r5, [r0]
+    3810:	mov	r0, r4
+    3814:	bl	2d44 <__aeabi_memcpy8@plt>
+    3818:	ldr	r0, [pc, #1020]	; 3c1c <tg_nlu_install+0x45c>
+    381c:	mov	r1, #0
+    3820:	strb	r1, [sp, #199]	; 0xc7
+    3824:	mov	r1, r5
+    3828:	add	r0, pc, r0
+    382c:	mov	r2, r4
+    3830:	bl	3ccc <nlu_err_set>
+    3834:	b	3bb4 <tg_nlu_install+0x3f4>
+    3838:	ldr	r7, [pc, #992]	; 3c20 <tg_nlu_install+0x460>
+    383c:	add	r7, pc, r7
+    3840:	ldrb	r0, [r7]
+    3844:	cmp	r0, #0
+    3848:	bne	38c0 <tg_nlu_install+0x100>
+    384c:	ldr	r5, [pc, #976]	; 3c24 <tg_nlu_install+0x464>
+    3850:	movw	r8, #61444	; 0xf004
+    3854:	movt	r8, #58655	; 0xe51f
+    3858:	ldr	r5, [pc, r5]
+
+## 4) tg_nlu_takeover_set (must reach nls_set_takeover + readback)
+00003f24 <tg_nlu_takeover_set>:
+    3f24:	push	{r4, r5, r6, r7, r8, sl, fp, lr}
+    3f28:	add	fp, sp, #24
+    3f2c:	sub	sp, sp, #8
+    3f30:	mov	r5, r0
+    3f34:	ldr	r0, [pc, #460]	; 4108 <tg_nlu_takeover_set+0x1e4>
+    3f38:	ldr	r1, [pc, #460]	; 410c <tg_nlu_takeover_set+0x1e8>
+    3f3c:	add	r0, pc, r0
+    3f40:	add	r1, pc, r1
+    3f44:	bl	2d20 <pthread_once@plt>
+    3f48:	ldr	r0, [pc, #448]	; 4110 <tg_nlu_takeover_set+0x1ec>
+    3f4c:	cmp	r5, #0
+    3f50:	mov	r4, r5
+    3f54:	movwne	r4, #1
+    3f58:	add	r0, pc, r0
+    3f5c:	mov	r1, r4
+    3f60:	bl	2dbc <nls_set_takeover@plt>
+    3f64:	cmp	r0, #0
+    3f68:	beq	3fa8 <tg_nlu_takeover_set+0x84>
+    3f6c:	ldr	r0, [pc, #416]	; 4114 <tg_nlu_takeover_set+0x1f0>
+    3f70:	add	r0, pc, r0
+    3f74:	bl	2d80 <nls_installed@plt>
+    3f78:	mov	r1, r0
+    3f7c:	ldr	r0, [pc, #404]	; 4118 <tg_nlu_takeover_set+0x1f4>
+    3f80:	add	r0, pc, r0
+    3f84:	bl	3ccc <nlu_err_set>
+    3f88:	ldr	r0, [pc, #396]	; 411c <tg_nlu_takeover_set+0x1f8>
+    3f8c:	ldr	r1, [pc, #396]	; 4120 <tg_nlu_takeover_set+0x1fc>
+    3f90:	add	r0, pc, r0
+    3f94:	add	r1, pc, r1
+    3f98:	bl	352c <slog>
+    3f9c:	mvn	r0, #0
+    3fa0:	sub	sp, fp, #24
+    3fa4:	pop	{r4, r5, r6, r7, r8, sl, fp, pc}
+    3fa8:	cmp	r5, #0
+    3fac:	beq	402c <tg_nlu_takeover_set+0x108>
+    3fb0:	ldr	r5, [pc, #364]	; 4124 <tg_nlu_takeover_set+0x200>
+    3fb4:	mov	r1, #1
+    3fb8:	mov	r6, #1
+    3fbc:	add	r5, pc, r5
+    3fc0:	mov	r0, r5
+    3fc4:	bl	2db0 <t8_to_enabled_set@plt>
+    3fc8:	cmp	r0, #0
+    3fcc:	beq	403c <tg_nlu_takeover_set+0x118>
+    3fd0:	ldr	r0, [pc, #336]	; 4128 <tg_nlu_takeover_set+0x204>
+    3fd4:	mov	r1, #1
+
+## 5) np_install head (atomic lock + refuse-before-write)
+0000853c <np_install>:
+    853c:	push	{r4, r5, r6, r7, r8, sl, fp, lr}
+    8540:	add	fp, sp, #24
+    8544:	sub	sp, sp, #232	; 0xe8
+    8548:	cmp	r0, #0
+    854c:	mvn	r5, #0
+    8550:	movne	r4, r0
+    8554:	ldrne	r0, [r0]
+    8558:	cmpne	r0, #0
+    855c:	bne	856c <np_install+0x30>
+    8560:	mov	r0, r5
+    8564:	sub	sp, fp, #24
+    8568:	pop	{r4, r5, r6, r7, r8, sl, fp, pc}
+    856c:	cmp	r1, #0
+    8570:	beq	85b0 <np_install+0x74>
+    8574:	add	r0, r4, #56	; 0x38
+    8578:	mov	r2, #1
+    857c:	dmb	ish
+    8580:	ldrex	r1, [r0]
+    8584:	strex	r3, r2, [r0]
+    8588:	cmp	r3, #0
+    858c:	bne	8580 <np_install+0x44>
+    8590:	cmp	r1, #0
+    8594:	dmb	ish
+    8598:	beq	85d8 <np_install+0x9c>
+    859c:	ldr	r0, [r4, #124]	; 0x7c
+    85a0:	mvn	r5, #8
+    85a4:	add	r0, r0, #1
+    85a8:	str	r0, [r4, #124]	; 0x7c
+    85ac:	b	8560 <np_install+0x24>
+    85b0:	ldr	r1, [pc, #1648]	; 8c28 <np_install+0x6ec>
+    85b4:	mvn	r5, #1
+    85b8:	ldr	r0, [r4, #104]	; 0x68
+    85bc:	add	r1, pc, r1
+
+## 6) nls_mode (three-state decision)
+0000827c <nls_mode>:
+    827c:	mov	r2, r0
+    8280:	mov	r0, #0
+    8284:	cmp	r2, #0
+    8288:	beq	82a8 <nls_mode+0x2c>
+    828c:	ldr	r2, [r2, #4]
+    8290:	dmb	ish
+    8294:	cmp	r2, #0
+    8298:	bxeq	lr
+    829c:	mov	r0, #1
+    82a0:	cmp	r1, #0
+    82a4:	movweq	r0, #2
+    82a8:	bx	lr
+
+
+## 7) np_install call edges (verify -> freeze -> write -> readback -> rollback)
+    85d0:	bl	8c90 <np_seterr>
+    8664:	bl	8c90 <np_seterr>
+    86b8:	bl	8c90 <np_seterr>
+    8730:	bl	8c90 <np_seterr>
+    87f0:	bl	8c90 <np_seterr>
+    8834:	bl	8c90 <np_seterr>
+    8918:	bl	2e04 <snprintf@plt>
+    8940:	bl	8c90 <np_seterr>
+    8a1c:	bl	8c90 <np_seterr>
+    8a40:	bl	8c90 <np_seterr>
+    8a60:	bl	2e04 <snprintf@plt>
+    8b18:	bl	2e04 <snprintf@plt>
+    8c04:	bl	8c90 <np_seterr>
+
+## 8) np_uninstall call edges
+    8d68:	bl	8c90 <np_seterr>
+    8de8:	bl	8c90 <np_seterr>
+    8e68:	bl	8c90 <np_seterr>
+    8e94:	bl	8c90 <np_seterr>
+    8f14:	bl	8c90 <np_seterr>
+    8fb8:	bl	8c90 <np_seterr>
+    9074:	bl	2e04 <snprintf@plt>
+    909c:	bl	8c90 <np_seterr>
+    91e4:	bl	2e04 <snprintf@plt>
+    92e8:	bl	8c90 <np_seterr>
+    931c:	bl	8c90 <np_seterr>
+    93d4:	bl	8c90 <np_seterr>
+    9404:	bl	8c90 <np_seterr>
+
+## 9) injector: T8-05 strings present in the ARM32 binary
+--nlu-install
+--nlu-uninstall
+--nlu-on
+--nlu-off
+--nlu-status
+usage: %s [--pid N | --name PROC] --so /path/libtg_hook.so [--check|--uninstall] [--nlu-status|--nlu-install|--nlu-uninstall|--nlu-on|--nlu-off] [--fault NAME] [--verbose]
+[inject] ERROR stage=usage --nlu-* cannot be combined with --check/--uninstall
+tg_nlu_prepare
+tg_nlu_patch_lo
+tg_nlu_patch_hi
+tg_nlu_install
+tg_nlu_uninstall
+tg_nlu_takeover_set
+tg_nlu_takeover_get
+tg_nlu_hook_installed
+tg_nlu_entry_code
+tg_nlu_stats
+tg_nlu_last_error
+tg_nlu_state_ready
+[inject] nlu symbol missing: %s (old library?)
+[inject] nlu dlsym: prepare=0x%08x install=0x%08x takeover_set=0x%08x
+[inject] ERROR stage=nlu_symbols libtg_hook.so has no tg_nlu_* exports (rebuild the library for T8-05)
+[inject] ERROR stage=nlu_prepare_call rc=%d err=%s
+[inject] ERROR stage=nlu_prepare rc=%d
+[inject] ERROR stage=nlu_range lo=0x%08x hi=0x%08x
+[inject] nlu entry=0x%08x patch=[0x%08x,0x%08x)
+[inject] nlu hook_installed=%d takeover=%d state_ready=%d
+[inject] nlu entry_code=%s
+[inject] nlu stats=%s
+[inject] RESULT nlu-status ok installed=%d takeover=%d
+[inject] nlu installed_before=%d
+[inject] nlu patch already installed; takeover unchanged=%d
+[inject] RESULT nlu-install already_installed=1 takeover=%d
+[inject] nlu entry is already the original prologue; nothing to restore
+[inject] RESULT nlu-uninstall already_original=1
+[inject] ERROR stage=nlu_pause cmd=%s rc=%d err=%s (no byte written)
+[inject] nlu world frozen (%d threads), calling tg_nlu_%s(1)
+[inject] ERROR stage=nlu_%s_call rc=%d err=%s
+[inject] tg_nlu_%s(1) = %d (threads resumed)
+[inject] nlu installed_after=%d takeover=%d entry_code=%s
+[inject] ERROR stage=nlu_%s rc=%d (patch NOT confirmed)
+[inject] ERROR stage=nlu_verify installed=%d (expected 1)
+[inject] ERROR stage=nlu_verify installed=%d (expected 0)
+[inject] RESULT nlu-%s ok installed=%d takeover=%d
+[inject] ERROR stage=nlu_takeover_call rc=%d err=%s
+[inject] tg_nlu_takeover_set(%u) = %d; readback=%u installed=%u state_ready=%u
+[inject] ERROR stage=nlu_takeover rc=%d (switch unchanged=%u)
+[inject] ERROR stage=nlu_takeover_verify want=%u readback=%u
+[inject] WARN nlu takeover=1 but state_ready=0: callbacks are fail-closed (drop)
+[inject] RESULT nlu-%s ok takeover=%u installed=%u state_ready=%u
+[inject] nlu_last_error=%s
+g_nlu
+
+## 10) injector: freeze/write/resume call sites (ARM32)
+    173c:	bl	4fbc <rc_resume_all>
+    1908:	bl	6154 <rc_call_ns>
+    1a68:	bl	6154 <rc_call_ns>
+    1afc:	bl	5ccc <rc_call>
+    1bb8:	bl	5ccc <rc_call>
+    1c2c:	bl	5ccc <rc_call>
+    1ca4:	bl	5ccc <rc_call>
+    1cdc:	bl	5ccc <rc_call>
+    1e4c:	bl	6154 <rc_call_ns>
+    1e8c:	bl	3548 <pause_and_check>
+    1f4c:	bl	5ccc <rc_call>
+    1fdc:	bl	5ccc <rc_call>
+    20a0:	bl	5ccc <rc_call>
+    2160:	bl	5ccc <rc_call>
+    2200:	bl	5ccc <rc_call>
+    2210:	bl	4fbc <rc_resume_all>
+    2280:	bl	5ccc <rc_call>
+    22c4:	bl	5ccc <rc_call>
+    2310:	bl	3548 <pause_and_check>
+    2364:	bl	5ccc <rc_call>
+    239c:	bl	5ccc <rc_call>
+    23f8:	bl	5ccc <rc_call>
+    2434:	bl	4fbc <rc_resume_all>
+    2508:	bl	5ccc <rc_call>
+    2528:	bl	5ccc <rc_call>
+    2554:	bl	5ccc <rc_call>
+    25e0:	bl	5ccc <rc_call>
+    2690:	bl	5ccc <rc_call>
+    27b8:	bl	5ccc <rc_call>
+    2810:	bl	3548 <pause_and_check>
+    2880:	bl	5ccc <rc_call>
+    29c4:	bl	3548 <pause_and_check>
+    29f4:	bl	5ccc <rc_call>
+    2a04:	bl	4fbc <rc_resume_all>
+    2a88:	bl	5ccc <rc_call>
+    2b20:	bl	5ccc <rc_call>
+    2b40:	bl	5ccc <rc_call>
+    2b70:	bl	5ccc <rc_call>
+    2c28:	bl	5ccc <rc_call>
+    2cc8:	bl	5ccc <rc_call>
+    2d80:	bl	5ccc <rc_call>
+    2e14:	bl	5ccc <rc_call>
+    2e20:	bl	4fbc <rc_resume_all>
+    2f68:	bl	5ccc <rc_call>
+    2f84:	bl	5ccc <rc_call>
+    3008:	bl	5ccc <rc_call>
+    30dc:	bl	5ccc <rc_call>
+    33d8:	bl	4fbc <rc_resume_all>
+    3600:	bl	4fbc <rc_resume_all>
+    3678:	bl	4fbc <rc_resume_all>
+
+## 11) np_install / np_uninstall: atomic lock and indirect hook calls
+# np_sample / np_write_word / np_write_pair are static and inlined at -O2; the observable
+# proof of the transaction is the ldrex/strex lock and the indirect (blx) hook calls.
+--- np_install ---
+    857c:	dmb	ish
+    8580:	ldrex	r1, [r0]
+    8584:	strex	r3, r2, [r0]
+    8594:	dmb	ish
+    862c:	dmb	ish
+    8684:	dmb	ish
+    8694:	dmb	ish
+    86cc:	dmb	ish
+    8700:	blx	r3
+    8794:	dmb	ish
+    87c0:	blx	r6
+    8814:	dmb	ish
+    8850:	blx	r1
+    8888:	blx	r6
+    88d0:	blx	r3
+    88f4:	blx	r6
+    8974:	blx	r3
+    89dc:	dmb	ish
+    8a8c:	blx	r6
+    8ad0:	blx	r3
+    8af4:	blx	r6
+    8b40:	blx	r3
+    8ba0:	dmb	ish
+    8bc0:	dmb	ish
+    8c20:	blx	r1
+--- np_uninstall ---
+    8d20:	dmb	ish
+    8d24:	ldrex	r1, [r0]
+    8d28:	strex	r3, r2, [r0]
+    8d38:	dmb	ish
+    8dc0:	dmb	ish
+    8e04:	dmb	ish
+    8e14:	dmb	ish
+    8e38:	blx	r3
+    8e7c:	dmb	ish
+    8ef8:	dmb	ish
+    8f30:	blx	r1
+    8f5c:	dmb	ish
+    8f88:	blx	r6
+    8fe4:	blx	r6
+    902c:	blx	r3
+    9050:	blx	r6
+    90d0:	blx	r3
+    9128:	dmb	ish
+    9158:	blx	r6
+    919c:	blx	r3
+    91c0:	blx	r6
+    920c:	blx	r3
+    926c:	dmb	ish
+    9278:	dmb	ish
+    92a4:	dmb	ish
+    932c:	dmb	ish
+    93e8:	blx	r1
+
+## 12) injector: the NLU freeze -> call -> resume window (ARM32, around 0x2800)
+    2700:	ldr	r0, [pc, #2856]	; 3230 <main+0x2494>
+    2704:	add	r1, sp, #1248	; 0x4e0
+    2708:	add	r0, pc, r0
+    270c:	bl	3354 <out>
+    2710:	ldr	r0, [pc, #2844]	; 3234 <main+0x2498>
+    2714:	ldr	r2, [fp, #-320]	; 0xfffffec0
+    2718:	add	r0, pc, r0
+    271c:	ldr	r1, [fp, #-316]	; 0xfffffec4
+    2720:	b	2978 <main+0x1bdc>
+    2724:	.word	0x0000a9ec
+    2728:	.word	0x0000a9d0
+    272c:	ldr	r0, [fp, #-732]	; 0xfffffd24
+    2730:	cmp	r0, #0
+    2734:	beq	29b4 <main+0x1c18>
+    2738:	ldr	r0, [pc, #3020]	; 330c <main+0x2570>
+    273c:	add	r0, pc, r0
+    2740:	bl	3354 <out>
+    2744:	b	1f88 <main+0x11ec>
+    2748:	.word	0x0000a8b4
+    274c:	.word	0x000077b2
+    2750:	.word	0x00007774
+    2754:	.word	0x00006e2d
+    2758:	.word	0x00006e30
+    275c:	.word	0x00006e18
+    2760:	.word	0x00006e3d
+    2764:	.word	0x00006e36
+    2768:	.word	0x0000a7d0
+    276c:	ldr	r0, [sp, #48]	; 0x30
+    2770:	sub	r0, r0, #1
+    2774:	cmp	r0, #1
+    2778:	bhi	2a40 <main+0x1ca4>
+    277c:	ldr	r0, [pc, #2740]	; 3238 <main+0x249c>
+    2780:	mov	r2, #256	; 0x100
+    2784:	ldr	r4, [sp, #48]	; 0x30
+    2788:	mov	r3, #0
+    278c:	add	r0, pc, r0
+    2790:	cmp	r4, #1
+    2794:	addeq	r6, r0, #12
+    2798:	ldr	r1, [r0, #28]
+    279c:	ldr	r5, [r6]
+    27a0:	sub	r6, fp, #316	; 0x13c
+    27a4:	ldr	r0, [pc, #2704]	; 323c <main+0x24a0>
+    27a8:	stm	sp, {r6, r7}
+    27ac:	add	r0, pc, r0
+    27b0:	str	r2, [sp, #8]
+    27b4:	mov	r2, #0
+    27b8:	bl	5ccc <rc_call>
+    27bc:	ldr	r0, [pc, #2684]	; 3240 <main+0x24a4>
+    27c0:	ldr	r1, [fp, #-316]	; 0xfffffec4
+    27c4:	add	r0, pc, r0
+    27c8:	bl	3354 <out>
+    27cc:	ldr	r1, [pc, #2672]	; 3244 <main+0x24a8>
+    27d0:	cmp	r4, #1
+    27d4:	ldr	r2, [pc, #2668]	; 3248 <main+0x24ac>
+    27d8:	add	r1, pc, r1
+    27dc:	ldr	r0, [fp, #-316]	; 0xfffffec4
+    27e0:	add	r2, pc, r2
+    27e4:	movne	r2, r1
+    27e8:	cmpeq	r0, #1
+    27ec:	mov	r4, r2
+    27f0:	beq	2c98 <main+0x1efc>
+    27f4:	ldr	r1, [sp, #48]	; 0x30
+    27f8:	cmp	r1, #2
+    27fc:	cmpeq	r0, #0
+    2800:	beq	2cf4 <main+0x1f58>
+    2804:	ldr	r1, [fp, #-312]	; 0xfffffec8
+    2808:	sub	r2, fp, #300	; 0x12c
+    280c:	ldr	r0, [fp, #-308]	; 0xfffffecc
+    2810:	bl	3548 <pause_and_check>
+    2814:	cmp	r0, #0
+    2818:	beq	2dc4 <main+0x2028>
+    281c:	mov	r2, r0
+    2820:	ldr	r0, [pc, #2620]	; 3264 <main+0x24c8>
+    2824:	sub	r3, fp, #300	; 0x12c
+    2828:	mov	r1, r4
+    282c:	add	r0, pc, r0
+    2830:	b	1d14 <main+0xf78>
+    2834:	.word	0x00006e26
+    2838:	.word	0x0000a794
+    283c:	.word	0x00006dfe
+    2840:	.word	0x0000a864
+    2844:	mov	r0, #0
+    2848:	strb	r0, [sp, #1248]	; 0x4e0
+    284c:	ldr	r1, [sp, #348]	; 0x15c
+    2850:	cmp	r1, #0
+    2854:	beq	28d0 <main+0x1b34>
+    2858:	ldr	r0, [pc, #2768]	; 3330 <main+0x2594>
+    285c:	mov	r2, #0
+    2860:	str	r2, [fp, #-732]	; 0xfffffd24
+    2864:	sub	r3, fp, #732	; 0x2dc
+    2868:	add	r0, pc, r0
+    286c:	mov	r2, #256	; 0x100
+    2870:	stm	sp, {r3, r5}
+    2874:	mov	r3, #0
+    2878:	str	r2, [sp, #8]
+    287c:	mov	r2, #0
+    2880:	bl	5ccc <rc_call>
+    2884:	cmp	r0, #0
+    2888:	bne	28d0 <main+0x1b34>
+    288c:	ldr	r1, [fp, #-732]	; 0xfffffd24
+    2890:	cmp	r1, #0
+    2894:	beq	28c8 <main+0x1b2c>
+    2898:	ldr	r0, [pc, #2708]	; 3334 <main+0x2598>
+    289c:	mov	r2, #256	; 0x100
+    28a0:	str	r2, [sp, #4]
+    28a4:	add	r2, sp, #736	; 0x2e0
+    28a8:	add	r0, pc, r0
+    28ac:	mov	r3, #200	; 0xc8
+    28b0:	str	r5, [sp]
+    28b4:	bl	47c8 <rc_read_str>
+    28b8:	b	28d0 <main+0x1b34>
+    28bc:	.word	0x00006e0d
+    28c0:	.word	0x0000a724
+    28c4:	.word	0x00006dd5
+    28c8:	mov	r0, #0
+    28cc:	strb	r0, [sp, #736]	; 0x2e0
+    28d0:	ldr	r0, [pc, #2656]	; 3338 <main+0x259c>
+    28d4:	mov	r1, r8
+    28d8:	mov	r2, r6
+    28dc:	add	r0, pc, r0
+    28e0:	bl	3354 <out>
+    28e4:	ldrb	r0, [sp, #736]	; 0x2e0
+    28e8:	cmp	r0, #0
+    28ec:	beq	2900 <main+0x1b64>
+    28f0:	ldr	r0, [pc, #2628]	; 333c <main+0x25a0>
+    28f4:	add	r1, sp, #736	; 0x2e0
+    28f8:	add	r0, pc, r0
+    28fc:	bl	3354 <out>
+    2900:	ldrb	r0, [sp, #1248]	; 0x4e0
+    2904:	cmp	r0, #0
+    2908:	beq	291c <main+0x1b80>
+    290c:	ldr	r0, [pc, #2604]	; 3340 <main+0x25a4>
+    2910:	add	r1, sp, #1248	; 0x4e0
+    2914:	add	r0, pc, r0
+    2918:	bl	3354 <out>
+    291c:	cmp	r8, #0
+    2920:	beq	295c <main+0x1bc0>
+    2924:	ldr	r0, [pc, #2584]	; 3344 <main+0x25a8>
+    2928:	mov	r1, r8
+    292c:	add	r0, pc, r0
+    2930:	bl	3354 <out>
+    2934:	mov	r5, #20
+    2938:	b	18ac <main+0xb10>
+    293c:	.word	0x00006e1a
+    2940:	.word	0x00006ea0
+    2944:	.word	0x00006e8a
+    2948:	.word	0x00006e6f
+    294c:	.word	0x00006e58
+    2950:	.word	0x00006e3f
+    2954:	.word	0x00006e26
+    2958:	.word	0x00006e83
+    295c:	ldr	r0, [sp, #52]	; 0x34
+    2960:	cmp	r0, #0
+    2964:	beq	2988 <main+0x1bec>
+    2968:	ldr	r0, [pc, #2520]	; 3348 <main+0x25ac>
+    296c:	mov	r2, r6
+    2970:	ldr	r1, [sp, #44]	; 0x2c
+    2974:	add	r0, pc, r0
+    2978:	bl	3354 <out>
+    297c:	mov	r5, #0
+    2980:	b	18ac <main+0xb10>
+    2984:	.word	0x00006dfe
+    2988:	cmp	r6, #1
+    298c:	bne	2a30 <main+0x1c94>
+    2990:	ldr	r0, [pc, #2488]	; 3350 <main+0x25b4>
+    2994:	mov	r2, r4
+    2998:	ldr	r1, [sp, #44]	; 0x2c
+    299c:	mov	r3, #0
+    29a0:	add	r0, pc, r0
+    29a4:	mov	r5, #0
+    29a8:	bl	3354 <out>
+    29ac:	b	18ac <main+0xb10>
+    29b0:	.word	0x00006dc6
+    29b4:	add	r8, sp, #480	; 0x1e0
+    29b8:	ldr	r1, [sp, #320]	; 0x140
+    29bc:	ldr	r0, [sp, #324]	; 0x144
+    29c0:	mov	r2, r8
+    29c4:	bl	3548 <pause_and_check>
+    29c8:	cmp	r0, #0
+    29cc:	bne	231c <main+0x1580>
+    29d0:	ldr	r1, [sp, #356]	; 0x164
+    29d4:	mov	r2, #256	; 0x100
+    29d8:	ldr	r0, [pc, #2352]	; 3310 <main+0x2574>
+    29dc:	mov	r3, #0
+    29e0:	stm	sp, {r7, r8}
+    29e4:	mov	sl, #0
+    29e8:	add	r0, pc, r0
+    29ec:	str	r2, [sp, #8]
+    29f0:	mov	r2, #0
+    29f4:	bl	5ccc <rc_call>
+    29f8:	mov	r6, r0
+    29fc:	ldr	r0, [pc, #2320]	; 3314 <main+0x2578>
+    2a00:	add	r0, pc, r0
+    2a04:	bl	4fbc <rc_resume_all>
+    2a08:	ldr	r0, [pc, #2312]	; 3318 <main+0x257c>
+    2a0c:	cmp	r6, #0
+    2a10:	add	r0, pc, r0
+    2a14:	str	sl, [r0]
+    2a18:	beq	2d24 <main+0x1f88>
+    2a1c:	ldr	r0, [pc, #2296]	; 331c <main+0x2580>
+    2a20:	add	r2, sp, #480	; 0x1e0
+    2a24:	mov	r1, r6
+    2a28:	add	r0, pc, r0
+    2a2c:	b	1d38 <main+0xf9c>
+    2a30:	ldr	r0, [pc, #2324]	; 334c <main+0x25b0>
+    2a34:	mov	r1, r6
+    2a38:	add	r0, pc, r0
+    2a3c:	b	2930 <main+0x1b94>
+
+## 13) injector: pause_and_check success path -> rc_call(tg_nlu_install/uninstall) -> rc_resume_all
+# nlu_do() is static and single-call, so -O2 inlined it into main; the branch from 0x2818
+# (pause_and_check == RC_OK) lands here.
+    2d00:	ldr	r0, [pc, #1368]	; 3260 <main+0x24c4>
+    2d04:	add	r0, pc, r0
+    2d08:	bl	3354 <out>
+    2d0c:	mov	r5, #0
+    2d10:	b	18ac <main+0xb10>
+    2d14:	.word	0x00006bea
+    2d18:	.word	0x00006c41
+    2d1c:	.word	0x0000a364
+    2d20:	.word	0x00006cd3
+    2d24:	ldr	r0, [pc, #1524]	; 3320 <main+0x2584>
+    2d28:	ldr	r1, [sp, #312]	; 0x138
+    2d2c:	add	r0, pc, r0
+    2d30:	bl	3354 <out>
+    2d34:	ldr	r6, [sp, #312]	; 0x138
+    2d38:	cmp	r6, #0
+    2d3c:	beq	1f88 <main+0x11ec>
+    2d40:	add	r0, sp, #1248	; 0x4e0
+    2d44:	mov	r1, #200	; 0xc8
+    2d48:	bl	ba8 <__aeabi_memclr8@plt>
+    2d4c:	ldr	r1, [sp, #348]	; 0x15c
+    2d50:	cmp	r1, #0
+    2d54:	beq	31b0 <main+0x2414>
+    2d58:	ldr	r0, [pc, #1476]	; 3324 <main+0x2588>
+    2d5c:	mov	r2, #0
+    2d60:	str	r2, [sp, #736]	; 0x2e0
+    2d64:	add	r3, sp, #736	; 0x2e0
+    2d68:	add	r0, pc, r0
+    2d6c:	mov	r2, #256	; 0x100
+    2d70:	stm	sp, {r3, r8}
+    2d74:	mov	r3, #0
+    2d78:	str	r2, [sp, #8]
+    2d7c:	mov	r2, #0
+    2d80:	bl	5ccc <rc_call>
+    2d84:	cmp	r0, #0
+    2d88:	bne	31ac <main+0x2410>
+    2d8c:	ldr	r1, [sp, #736]	; 0x2e0
+    2d90:	cmp	r1, #0
+    2d94:	beq	31a4 <main+0x2408>
+    2d98:	ldr	r0, [pc, #1416]	; 3328 <main+0x258c>
+    2d9c:	mov	r2, #256	; 0x100
+    2da0:	str	r2, [sp, #4]
+    2da4:	add	r2, sp, #1248	; 0x4e0
+    2da8:	add	r0, pc, r0
+    2dac:	mov	r3, #200	; 0xc8
+    2db0:	str	r8, [sp]
+    2db4:	bl	47c8 <rc_read_str>
+    2db8:	b	31ac <main+0x2410>
+    2dbc:	.word	0x00009fb8
+    2dc0:	.word	0x00009f50
+    2dc4:	ldr	r0, [pc, #1180]	; 3268 <main+0x24cc>
+    2dc8:	mov	r2, r4
+    2dcc:	ldr	sl, [pc, #1176]	; 326c <main+0x24d0>
+    2dd0:	add	r0, pc, r0
+    2dd4:	add	sl, pc, sl
+    2dd8:	ldr	r1, [sl, #4]
+    2ddc:	bl	3354 <out>
+    2de0:	ldr	r0, [pc, #1160]	; 3270 <main+0x24d4>
+    2de4:	mov	r7, #0
+    2de8:	mov	r1, #1
+    2dec:	str	r7, [fp, #-328]	; 0xfffffeb8
+    2df0:	str	r1, [fp, #-332]	; 0xfffffeb4
+    2df4:	mov	r2, #256	; 0x100
+    2df8:	sub	r1, fp, #300	; 0x12c
+    2dfc:	str	r8, [sp]
+    2e00:	stmib	sp, {r1, r2}
+    2e04:	add	r0, pc, r0
+    2e08:	sub	r2, fp, #332	; 0x14c
+    2e0c:	mov	r1, r5
+    2e10:	mov	r3, #1
+    2e14:	bl	5ccc <rc_call>
+    2e18:	mov	r5, r0
+    2e1c:	mov	r0, sl
+    2e20:	bl	4fbc <rc_resume_all>
+    2e24:	ldr	r0, [pc, #1096]	; 3274 <main+0x24d8>
+    2e28:	mov	r8, #0
+    2e2c:	cmp	r5, #0
+    2e30:	add	r0, pc, r0
+    2e34:	str	r7, [r0]
+    2e38:	beq	2f1c <main+0x2180>
+    2e3c:	ldr	r0, [pc, #1076]	; 3278 <main+0x24dc>

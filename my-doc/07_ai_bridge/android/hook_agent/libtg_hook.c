@@ -57,6 +57,8 @@
 
 #include "tg_wire.h"
 #include "nlu_takeover.h"
+#include "nlu_switch.h"     /* T8-05：安装状态与接管开关（正交、原子） */
+#include "nlu_patch.h"      /* T8-05：入口补丁事务（校验/回滚/机器码记录） */
 
 /* ------------------------------------------------------------------ 常量 */
 
@@ -421,25 +423,69 @@ int tg_hook_uninstall(void)
  *     回调返回 0 -> 跳 trampoline（重放两条原厂指令 → 跳到 func+8，原函数完整执行）
  *     回调返回非 0 -> 恢复寄存器后 mov r0,#0; bx lr（直接返回调用者，原函数不执行）
  *
- * 开关：环境变量 TG_NLU_TAKEOVER=1。默认关闭时本段代码不拦任何原厂调用
- * （回调直接返回 0，等价于没装），设备行为与今天完全一致。
+ * T8-05：这里有两个**互不推导**的状态，别再合并成一个变量：
+ *   1) 入口补丁在不在      —— nlu_patch 事务（np_install/np_uninstall）的结果
+ *      · 由 Injector 的 --nlu-install / --nlu-uninstall 显式驱动；
+ *      · 与接管开关无关：接管关着也能装（真机阶段 A 就是这么验证原厂行为不变的）。
+ *   2) 接管开关在不在      —— nls_state（nlu_switch.c）
+ *      · 由 Injector 的 --nlu-on / --nlu-off 在目标进程内就地改写，读写都是原子操作；
+ *      · 关闭立刻生效：回调下一次进来就读到 0，直接放行原厂函数。
+ * 环境变量 TG_NLU_TAKEOVER 只保留"诊断记录"，**不再能开启接管**：
+ *   - :core 的进程环境由原厂决定，注入的库拿到的 getenv 与 supervisor 无关；
+ *   - "装 Hook 顺手开接管"这种隐式副作用必须断开。
+ *
+ * 补丁的写入不再是两句赋值：事务（校验序言 → 声明式冻结 → 写两个字 → 读回 →
+ * 失败回滚并读回确认）全部在 nlu_patch.c 里，本文件只提供宿主侧钩子
+ * （mprotect / 指令缓存刷新）与"世界已冻结"的声明。
  */
 #define TG_NLU_SYM      "_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE"
 #define TG_NLU_OFF      0x118ebcu
 #define TG_NLU_PRO_W0   0xE92D4FF0u     /* push {r4-r11, lr} */
 #define TG_NLU_PRO_W1   0xE28DB01Cu     /* add  r11, sp, #28 */
-#define TG_E_DISABLED   (-10)
+
+/* T8-05 新增返回码（与 T6/T8-03 的码段不重叠） */
+#define TG_E_UNSAFE     (-11)   /* 没有"目标线程已冻结"就要求落补丁 -> 拒绝 */
+#define TG_E_PATCH      (-12)   /* 补丁事务失败（含回滚未确认） */
+#define TG_E_BUSY       (-13)   /* 补丁事务重入 */
 
 static volatile int g_nlu_state = TG_E_NOT_INSTALLED;
-static volatile int g_nlu_patched;
-static volatile int g_nlu_enabled;      /* 环境变量开关（nlu_boot_once 里写一次） */
+static volatile int g_nlu_patched;      /* 镜像：1 = 入口当前是补丁机器码 */
 static volatile int g_nlu_boot_done;    /* 1 = 一次性初始化已经结束（仅用于诊断） */
 static volatile int g_nlu_init_failed;  /* 1 = 初始化失败（此时接管必须 fail-closed） */
+static volatile int g_nlu_env_ignored;  /* 1 = 环境变量要求开接管但被拒绝（诊断） */
 static int          g_nlu_mask = 0x7F;  /* T7B_ROUTE_ALL */
 static uint32_t     g_nlu_func;
 static uint32_t     g_nlu_orig[2];
 static void        *g_nlu_page;
 static t8_to_state  g_to;
+static nls_state    g_nlu_sw;           /* T8-05：安装状态 + 接管开关（原子） */
+static np_patch     g_nlu_pp;           /* T8-05：入口补丁事务（含机器码记录） */
+static int          g_nlu_pp_ready;
+static int          g_nlu_orig_prot;    /* 入口页原始保护位（第一次改保护时缓存） */
+static int          g_nlu_prot_valid;
+
+/*
+ * NLU 段独立的错误缓冲：tg_hook_* 与 tg_nlu_* 是两条独立的操作线，
+ * 共用一个 g_err 会让"上一次 T6 操作的错误"覆盖掉本次 NLU 失败原因。
+ */
+static char g_nlu_err[192];
+
+static void nlu_err_set(const char *fmt, ...)
+#if defined(__GNUC__)
+    __attribute__((format(printf, 1, 2)))
+#endif
+    ;
+
+static void nlu_err_set(const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    vsnprintf(g_nlu_err, sizeof(g_nlu_err), fmt, ap);
+    va_end(ap);
+}
+
+static const char *nlu_err(void) { return g_nlu_err; }
 
 /*
  * T8-04：一次性初始化闸门。
@@ -457,48 +503,86 @@ static pthread_once_t g_nlu_once = PTHREAD_ONCE_INIT;
 /* Hook 级计数（只用原子加；不含任何文本内容） */
 static volatile unsigned long g_nlu_final_seen, g_nlu_final_pass, g_nlu_final_failclosed;
 static volatile unsigned long g_nlu_nlp_calls, g_nlu_nlp_skip, g_nlu_nlp_pass;
+static volatile unsigned long g_nlu_nlp_failclosed;     /* 接管开但会话表不可用 -> 不放行 */
 
 static void nlu_boot_once(void)
 {
     const char *v;
     int rc;
+    int env_on = 0;
+
+    nls_init(&g_nlu_sw);
 
     v = getenv("TG_NLU_ROUTE_MASK");
     if (v != NULL && v[0] != '\0') {
         long m = strtol(v, NULL, 0);
         if (m > 0 && m <= 0x7F) g_nlu_mask = (int)m;
     }
+
+    /* T8-05：会话表**无条件**初始化（t8_to_init 只做一次 memset + mutex_init）。
+     * T8-04 只在 TG_NLU_TAKEOVER=1 时才 init，于是运行时开关根本没有可用的表。 */
+    rc = t8_to_init(&g_to);
+    if (rc != 0) g_nlu_init_failed = 1;
+    nls_note_init_failure(&g_nlu_sw, g_nlu_init_failed);
+
+    /* T8-05：环境变量不再能开接管。它只在"入口补丁此刻已经在位"时才被接受，
+     * 而真实启动路径（supervisor → injector → dlopen → 装补丁）永远不满足这个条件，
+     * 所以"装 Hook 顺手开接管"这条隐式路径被断开，接管只能由 Injector 显式打开。 */
     v = getenv("TG_NLU_TAKEOVER");
-    if (v != NULL && (v[0] == '1' || v[0] == 'y' || v[0] == 'Y')) {
-        rc = t8_to_init(&g_to);
-        if (rc != 0) g_nlu_init_failed = 1;
-        (void)t8_to_enabled_set(&g_to, 1);      /* 锁不可用时返回 -1，但开关记为开 -> fail-closed */
-        g_nlu_enabled = 1;
-        slog("nlu takeover: ENABLED (t8_to_init=%d ready=%d init_error=%d failed=%d mask=0x%02x)",
-             rc, g_to.mutex_ready, g_to.init_error, g_nlu_init_failed, g_nlu_mask);
-    } else {
-        g_nlu_enabled = 0;
-        slog("nlu takeover: disabled (default; factory behaviour unchanged)");
+    if (v != NULL && (v[0] == '1' || v[0] == 'y' || v[0] == 'Y')) env_on = 1;
+    if (env_on && nls_installed(&g_nlu_sw)) {
+        (void)t8_to_enabled_set(&g_to, 1);      /* 仅"补丁已在"时接受环境变量初值 */
+        (void)nls_set_takeover(&g_nlu_sw, 1);
+    } else if (env_on) {
+        g_nlu_env_ignored = 1;
+        (void)nls_set_takeover(&g_nlu_sw, 0);
     }
-    /* 放行顺序：先确保 enabled/init 状态可见，再宣布 boot 完成（诊断用） */
+
+    slog("nlu boot: t8_to_init=%d ready=%d init_failed=%d mask=0x%02x env_on=%d env_ignored=%d "
+         "installed=%d takeover=%d (runtime switch only)",
+         rc, g_to.mutex_ready, g_nlu_init_failed, g_nlu_mask, env_on, g_nlu_env_ignored,
+         nls_installed(&g_nlu_sw), nls_takeover(&g_nlu_sw));
+
+    /* 放行顺序：先确保状态可见，再宣布 boot 完成（诊断用） */
     __atomic_store_n(&g_nlu_boot_done, 1, __ATOMIC_RELEASE);
 }
 
-static int nlu_want_enabled(void)
+/* 一次性闸门：调度 + 原子 load。装/卸补丁、读开关、回调都从这里过一遍，
+ * 保证 t8_to_init 只跑一次（不会重复 pthread_mutex_init 毁掉已持有的锁）。 */
+static void nlu_boot_ensure(void)
 {
     (void)pthread_once(&g_nlu_once, nlu_boot_once);
-    return __atomic_load_n(&g_nlu_enabled, __ATOMIC_ACQUIRE);
 }
 
-/* onStream(isFinished=1) 时登记会话归属；开关关闭时什么都不做 */
+/* 接管开关：运行时状态，每次调用都实地读（关闭能立刻生效） */
+static int nlu_want_enabled(void)
+{
+    nlu_boot_ensure();
+    return nls_takeover(&g_nlu_sw);
+}
+
+/* pass / decide / failclosed 三态判定 */
+static int nlu_mode_now(void)
+{
+    nlu_boot_ensure();
+    return nls_mode(&g_nlu_sw, g_to.mutex_ready);
+}
+
+/* onStream(isFinished=1) 时登记会话归属；接管关闭时什么都不做 */
 static void nlu_note_final(int sid, const char *text)
 {
     char key[24];
     t8_to_why why = T8_TO_WHY_NONE;
     t8_to_decision d;
+    int mode = nlu_mode_now();
 
-    if (!nlu_want_enabled()) return;
+    if (mode == NLS_PASS) return;
     INC(g_nlu_final_seen);
+    if (mode == NLS_FAILCLOSED) {
+        /* 接管开着但会话表不可用：登记不了，也绝不静默放行 */
+        INC(g_nlu_final_failclosed);
+        return;
+    }
     if (sid > 0) snprintf(key, sizeof(key), "%d", sid);
     else key[0] = '\0';
     d = t8_to_on_final(&g_to, key, text, wall_ms(), g_nlu_mask, &why);
@@ -515,13 +599,19 @@ static int tg_nlp_cb(void *self, int sid, int type, void *res)
 {
     char key[24];
     int drop;
+    int mode;
 
     (void)self;
     (void)type;
     (void)res;
 
-    if (!nlu_want_enabled()) return 0;
+    mode = nlu_mode_now();
+    if (mode == NLS_PASS) return 0;         /* 补丁在但接管关：始终放行原厂 */
     INC(g_nlu_nlp_calls);
+    if (mode == NLS_FAILCLOSED) {           /* 状态不可用：不放行，也不碰会话表 */
+        INC(g_nlu_nlp_failclosed);
+        return 1;
+    }
     if (sid > 0) snprintf(key, sizeof(key), "%d", sid);
     else key[0] = '\0';
     drop = t8_to_should_drop(&g_to, key, wall_ms());
@@ -558,7 +648,7 @@ static int build_nlu_stub_page(uint32_t func, int *err_out)
     if (g_nlu_page == MAP_FAILED) {
         g_nlu_page = NULL;
         *err_out = TG_E_MMAP;
-        set_err("mmap(nlu stub) failed errno=%d", errno);
+        nlu_err_set("mmap(nlu stub) failed errno=%d", errno);
         return -1;
     }
 
@@ -589,13 +679,13 @@ static int build_nlu_stub_page(uint32_t func, int *err_out)
     if (old != 7) {
         mprotect(g_nlu_page, TG_STUB_PAGE, PROT_READ | PROT_EXEC);
         if (mprotect(g_nlu_page, TG_STUB_PAGE, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
-            set_err("mprotect(nlu stub, RWX) failed errno=%d", errno);
+            nlu_err_set("mprotect(nlu stub, RWX) failed errno=%d", errno);
             *err_out = TG_E_PROT;
             return -1;
         }
     }
     if (mprotect(g_nlu_page, TG_STUB_PAGE, PROT_READ | PROT_EXEC) != 0) {
-        set_err("mprotect(nlu stub, RX) failed errno=%d", errno);
+        nlu_err_set("mprotect(nlu stub, RX) failed errno=%d", errno);
         *err_out = TG_E_PROT;
         return -1;
     }
@@ -610,16 +700,16 @@ static int nlu_resolve(void)
 
     memset(&m, 0, sizeof(m));
     if (dl_iterate_phdr(mod_cb, &m) == 0 || !m.found) {
-        set_err("nlu: module %s is not loaded in this process", TG_MODULE);
+        nlu_err_set("nlu: module %s is not loaded in this process", TG_MODULE);
         return TG_E_MODULE;
     }
-    err = mem_find_sym(m.base, TG_NLU_SYM, &addr, &value, g_err, sizeof(g_err));
+    err = mem_find_sym(m.base, TG_NLU_SYM, &addr, &value, g_nlu_err, sizeof(g_nlu_err));
     if (err != TG_OK) {
-        slog("nlu prepare failed: %s", g_err);
+        slog("nlu prepare failed: %s", g_nlu_err);
         return err;
     }
     if (value != TG_NLU_OFF) {
-        set_err("nlu symbol %s offset 0x%x != expected 0x%x", TG_NLU_SYM, value, TG_NLU_OFF);
+        nlu_err_set("nlu symbol %s offset 0x%x != expected 0x%x", TG_NLU_SYM, value, TG_NLU_OFF);
         return TG_E_OFFSET;
     }
     g_nlu_func = addr;
@@ -629,8 +719,8 @@ static int nlu_resolve(void)
         g_nlu_orig[1] = p[1];
     }
     if (g_nlu_orig[0] != TG_NLU_PRO_W0 || g_nlu_orig[1] != TG_NLU_PRO_W1) {
-        set_err("nlu prologue mismatch at %p: %08x %08x (want %08x %08x)",
-                (void *)g_nlu_func, g_nlu_orig[0], g_nlu_orig[1], TG_NLU_PRO_W0, TG_NLU_PRO_W1);
+        nlu_err_set("nlu prologue mismatch at %p: %08x %08x (want %08x %08x)",
+                    (void *)g_nlu_func, g_nlu_orig[0], g_nlu_orig[1], TG_NLU_PRO_W0, TG_NLU_PRO_W1);
         g_nlu_func = 0;
         return TG_E_PROLOGUE;
     }
@@ -641,7 +731,7 @@ int tg_nlu_prepare(void)
 {
     int rc;
 
-    if (!nlu_want_enabled()) return TG_E_DISABLED;
+    nlu_boot_ensure();
     if (g_nlu_func != 0) { g_nlu_state = TG_OK; return TG_OK; }
     rc = nlu_resolve();
     g_nlu_state = rc;
@@ -655,97 +745,287 @@ int tg_nlu_prepare(void)
 unsigned int tg_nlu_patch_lo(void) { return g_nlu_func; }
 unsigned int tg_nlu_patch_hi(void) { return (g_nlu_func != 0) ? (g_nlu_func + 8u) : 0u; }
 
-int tg_nlu_install(void)
+/* ---- 宿主侧钩子：指令页写保护与指令缓存刷新（由 nlu_patch 的事务调用） ---- */
+
+static int nlu_pp_unprotect(void *ud, const char *what, char *err, size_t cap)
 {
-    uint32_t *p;
-    uintptr_t page;
-    int old;
-    int err;
+    uintptr_t page = (uintptr_t)g_nlu_func & ~(uintptr_t)0xFFF;
 
-    if (!nlu_want_enabled()) return TG_E_DISABLED;
-    if (g_nlu_patched) { g_nlu_state = TG_OK; return TG_OK; }
-    err = tg_nlu_prepare();
-    if (err != TG_OK) return err;
-
-    /* 入口一致性：必须还是原厂那两条指令（卸载→重装这条路上必然成立） */
-    p = (uint32_t *)g_nlu_func;
-    if (p[0] != g_nlu_orig[0] || p[1] != g_nlu_orig[1]) {
-        set_err("nlu entry not original at %p: %08x %08x", (void *)g_nlu_func, p[0], p[1]);
-        g_nlu_state = TG_E_PROLOGUE;
-        return TG_E_PROLOGUE;
+    (void)ud;
+    if (!g_nlu_prot_valid) {            /* 只记第一次的原始保护位：后面再读会读到 RWX */
+        g_nlu_orig_prot = page_prot(page);
+        g_nlu_prot_valid = 1;
     }
-    if (build_nlu_stub_page(g_nlu_func, &err) != 0) {
-        g_nlu_state = err;
-        return err;
-    }
-
-    page = g_nlu_func & ~(uintptr_t)0xFFF;
-    old = page_prot(page);
     if (mprotect((void *)page, 4096, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
-        set_err("nlu mprotect(func,RWX) failed errno=%d", errno);
-        g_nlu_state = TG_E_PROT;
-        return TG_E_PROT;
+        snprintf(err, cap, "mprotect(%s, page=0x%08x, RWX) failed errno=%d",
+                 what, (unsigned)page, errno);
+        return -1;
     }
-    /* 与 onStream 同序：先写字面量、再写跳转 */
-    p[1] = (uint32_t)(uintptr_t)g_nlu_page;
-    __builtin___clear_cache((char *)p, (char *)p + 8);
-    p[0] = TG_PATCH_JUMP;
-    __builtin___clear_cache((char *)p, (char *)p + 8);
-    (void)mprotect((void *)page, 4096, old ? old : (PROT_READ | PROT_EXEC));
+    return 0;
+}
 
-    g_nlu_patched = 1;
-    g_nlu_state = TG_OK;
-    slog("nlu hook installed: func=0x%08x stub=0x%08x", g_nlu_func, (unsigned)(uintptr_t)g_nlu_page);
+static void nlu_pp_reprotect(void *ud)
+{
+    uintptr_t page = (uintptr_t)g_nlu_func & ~(uintptr_t)0xFFF;
+
+    (void)ud;
+    if (!g_nlu_prot_valid) return;
+    (void)mprotect((void *)page, 4096, g_nlu_orig_prot ? g_nlu_orig_prot : (PROT_READ | PROT_EXEC));
+}
+
+static void nlu_pp_flush(void *ud, uint32_t *p, int nwords)
+{
+    (void)ud;
+    __builtin___clear_cache((char *)p, (char *)(p + nwords));
+}
+
+/*
+ * 把事务对象指到真实入口，并挂上宿主钩子。
+ * patch[1] 必须是 stub 页地址，所以 stub 必须先建好（build_nlu_stub_page 只分配一次）。
+ * 这一步只做内存与 mmap，不写入口。
+ */
+static int nlu_pp_setup(void)
+{
+    uint32_t patch[NP_WORDS];
+    int st = TG_OK;
+
+    if (g_nlu_pp_ready) return TG_OK;
+    if (build_nlu_stub_page(g_nlu_func, &st) != 0) {
+        char why[192];
+        memcpy(why, g_nlu_err, sizeof(why));
+        why[sizeof(why) - 1] = '\0';
+        nlu_err_set("stub page failed (state=%d): %s", st, why);
+        return st;
+    }
+    patch[0] = TG_PATCH_JUMP;
+    patch[1] = (uint32_t)(uintptr_t)g_nlu_page;
+    np_init(&g_nlu_pp, (uint32_t *)(uintptr_t)g_nlu_func, g_nlu_orig, patch);
+    g_nlu_pp.unprotect = nlu_pp_unprotect;
+    g_nlu_pp.reprotect = nlu_pp_reprotect;
+    g_nlu_pp.flush = nlu_pp_flush;
+    g_nlu_pp_ready = 1;
     return TG_OK;
 }
 
-int tg_nlu_uninstall(void)
+/*
+ * 安装入口补丁。**不看接管开关**：接管关着也能装（这是真机阶段 A 的前提）。
+ *
+ * world_frozen=1 是调用方（Injector）的承诺：它已经用 ptrace 暂停了目标进程的
+ * 全部线程，并核对过没有任何线程的 PC 落在 [patch_lo, patch_hi)。
+ * world_frozen=0 时一律拒绝，一个字节都不写（TG_E_UNSAFE）。
+ */
+int tg_nlu_install(int world_frozen)
 {
-    uint32_t *p;
-    uintptr_t page;
-    int old;
+    int rc;
 
-    if (!g_nlu_patched) return TG_OK;
-    p = (uint32_t *)g_nlu_func;
-    page = g_nlu_func & ~(uintptr_t)0xFFF;
-    old = page_prot(page);
-    if (mprotect((void *)page, 4096, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
-        set_err("nlu mprotect(func,RWX) failed on uninstall errno=%d", errno);
-        return TG_E_PROT;
+    nlu_boot_ensure();
+    rc = tg_nlu_prepare();
+    if (rc != TG_OK) {
+        char why[192];
+        g_nlu_state = rc;
+        memcpy(why, g_nlu_err, sizeof(why));
+        why[sizeof(why) - 1] = '\0';
+        nlu_err_set("nlu install: prepare failed (%d): %s", rc, why);
+        return rc;
     }
-    p[0] = g_nlu_orig[0];
-    p[1] = g_nlu_orig[1];
-    __builtin___clear_cache((char *)p, (char *)p + 8);
-    (void)mprotect((void *)page, 4096, old ? old : (PROT_READ | PROT_EXEC));
-    g_nlu_patched = 0;
+    rc = nlu_pp_setup();
+    if (rc != TG_OK) {
+        g_nlu_state = rc;
+        return rc;
+    }
+
+    rc = np_install(&g_nlu_pp, world_frozen);
+    g_nlu_patched = np_installed(&g_nlu_pp);
+    (void)nls_set_installed(&g_nlu_sw, g_nlu_patched);
+
+    if (rc != NP_OK) {
+        g_nlu_state = (rc == NP_E_UNFROZEN) ? TG_E_UNSAFE :
+                      (rc == NP_E_ENTRY)    ? TG_E_PROLOGUE :
+                      (rc == NP_E_BUSY)     ? TG_E_BUSY : TG_E_PATCH;
+        nlu_err_set("nlu install: %s", g_nlu_pp.last_error);
+        slog("%s", g_nlu_err);
+        return g_nlu_state;
+    }
+
+    /* 读回确认：状态镜像与实测必须一致，否则不报成功 */
+    if (!np_installed(&g_nlu_pp) || !nls_installed(&g_nlu_sw)) {
+        g_nlu_state = TG_E_PATCH;
+        nlu_err_set("nlu install: post-check failed (np=%d nls=%d)",
+                    np_installed(&g_nlu_pp), nls_installed(&g_nlu_sw));
+        slog("%s", g_nlu_err);
+        return TG_E_PATCH;
+    }
+
     g_nlu_state = TG_OK;
-    slog("nlu hook uninstalled, original prologue restored (func=0x%08x)", g_nlu_func);
+    nlu_err_set("nlu install: %s; takeover=%d (unchanged: installing never enables takeover)",
+                g_nlu_pp.last_error, nls_takeover(&g_nlu_sw));
+    slog("%s", g_nlu_err);
     return TG_OK;
 }
 
+/*
+ * 卸载入口补丁。同样要求 world_frozen=1。
+ * 卸载失败（含"读回确认失败"）返回非 0，并且 nls 的 installed 保持实际状态 ——
+ * 绝不出现"报了成功但机器码没恢复"的情况。
+ */
+int tg_nlu_uninstall(int world_frozen)
+{
+    int rc;
+
+    nlu_boot_ensure();
+    if (g_nlu_func == 0 || !g_nlu_pp_ready) {
+        nlu_err_set("nlu uninstall: no patch was ever installed in this process");
+        return TG_E_NOT_INSTALLED;
+    }
+
+    rc = np_uninstall(&g_nlu_pp, world_frozen);
+    g_nlu_patched = np_installed(&g_nlu_pp);
+    (void)nls_set_installed(&g_nlu_sw, g_nlu_patched);
+
+    if (rc == NP_OK) {
+        /* 补丁不在了：接管状态必须一起归零，否则 --nlu-status 会出现自相矛盾的组合 */
+        (void)t8_to_enabled_set(&g_to, 0);
+        g_nlu_state = TG_OK;
+        nlu_err_set("nlu uninstall: %s", g_nlu_pp.last_error);
+        slog("%s", g_nlu_err);
+        return TG_OK;
+    }
+
+    if (rc == NP_E_NOT_PATCHED) {
+        (void)t8_to_enabled_set(&g_to, 0);
+        g_nlu_state = TG_E_NOT_INSTALLED;
+        nlu_err_set("nlu uninstall: %s", g_nlu_pp.last_error);
+        return TG_E_NOT_INSTALLED;
+    }
+
+    g_nlu_state = (rc == NP_E_UNFROZEN) ? TG_E_UNSAFE :
+                  (rc == NP_E_ENTRY)    ? TG_E_PROLOGUE :
+                  (rc == NP_E_BUSY)     ? TG_E_BUSY : TG_E_PATCH;
+    nlu_err_set("nlu uninstall: %s", g_nlu_pp.last_error);
+    slog("%s", g_nlu_err);
+    return g_nlu_state;
+}
+
+/*
+ * 运行时接管开关（T8-05 的核心）：直接改目标进程里的状态，不碰进程环境、
+ * 不重新跑初始化。关闭立即生效 —— tg_nlp_cb 每次进来都实地读这个开关。
+ *
+ *   开：要求入口补丁已在（否则没有回调可接管，返回 TG_E_NOT_INSTALLED，开关保持关闭）；
+ *   关：任何时候都允许。
+ * 写入之后必须读回确认，读回不一致返回 TG_E_PATCH（不假报成功）。
+ */
+int tg_nlu_takeover_set(int on)
+{
+    int rc;
+
+    nlu_boot_ensure();
+    rc = nls_set_takeover(&g_nlu_sw, on ? 1 : 0);
+    if (rc != NLS_OK) {
+        nlu_err_set("nlu takeover on refused: entry patch is not installed (installed=%d)",
+                    nls_installed(&g_nlu_sw));
+        slog("%s", g_nlu_err);
+        return TG_E_NOT_INSTALLED;
+    }
+
+    if (on) {
+        if (t8_to_enabled_set(&g_to, 1) != 0) {
+            /* 会话表不可用：开关保留为开，但判定一定是 fail-closed（回调不放行） */
+            g_nlu_init_failed = 1;
+            nls_note_init_failure(&g_nlu_sw, 1);
+            nlu_err_set("nlu takeover=1 but state is not ready (ready=%d) -> fail-closed",
+                        g_to.mutex_ready);
+            slog("%s", g_nlu_err);
+            return (nls_takeover(&g_nlu_sw) == 1) ? TG_OK : TG_E_PATCH;
+        }
+    } else {
+        (void)t8_to_enabled_set(&g_to, 0);
+    }
+
+    if (nls_takeover(&g_nlu_sw) != (on ? 1 : 0)) {     /* 读回确认 */
+        nlu_err_set("nlu takeover write did not stick: want=%d readback=%d",
+                    on ? 1 : 0, nls_takeover(&g_nlu_sw));
+        return TG_E_PATCH;
+    }
+
+    nlu_err_set("nlu takeover=%d installed=%d ready=%d mode=%s",
+                on ? 1 : 0, nls_installed(&g_nlu_sw), g_to.mutex_ready ? 1 : 0,
+                nls_mode_name(nlu_mode_now()));
+    slog("%s", g_nlu_err);
+    return TG_OK;
+}
+
+int tg_nlu_takeover_get(void) { return nlu_want_enabled(); }
+
+/* 兼容 T8-03/04 注入器的旧调用名：语义就是"接管开关是否开着" */
 int tg_nlu_is_enabled(void) { return nlu_want_enabled(); }
+
+/* 会话表是否可用（0 时接管开着也只会 fail-closed） */
+int tg_nlu_state_ready(void)
+{
+    nlu_boot_ensure();
+    return g_to.mutex_ready ? 1 : 0;
+}
+
+/* 入口补丁是否真的在（实地读入口机器码，不信任何缓存标志） */
+int tg_nlu_hook_installed(void)
+{
+    int on;
+
+    nlu_boot_ensure();
+    if (g_nlu_func == 0 || !g_nlu_pp_ready) return 0;
+    (void)np_sample(&g_nlu_pp);
+    on = np_installed(&g_nlu_pp);
+    if (on != nls_installed(&g_nlu_sw)) {
+        /* 实测与镜像不一致（例如外部把我们写的字改回去了）：以实测为准 */
+        (void)nls_set_installed(&g_nlu_sw, on);
+    }
+    return on;
+}
+
+const char *tg_nlu_last_error(void) { return nlu_err(); }
+
+/* 安装前/安装后/卸载后的机器码 + 全部事务计数（一行） */
+void tg_nlu_entry_code(char *buf, size_t cap)
+{
+    if (buf == NULL || cap == 0) return;
+    if (!g_nlu_pp_ready) {
+        snprintf(buf, cap, "np{state=none func=0x%08x}", (unsigned)g_nlu_func);
+        return;
+    }
+    np_snapshot(&g_nlu_pp, buf, cap);
+}
 
 /* 一行诊断（不含文本、不含 API Key）：给 injector / status 打印 */
 void tg_nlu_stats(char *buf, size_t cap)
 {
     t8_to_snapshot s;
+    int mode;
 
     if (buf == NULL || cap == 0) return;
-    (void)nlu_want_enabled();          /* 保证开关/初始化状态已经就位（pthread_once，只跑一次） */
+    nlu_boot_ensure();
+    mode = nlu_mode_now();
     memset(&s, 0, sizeof(s));
     if (g_to.mutex_ready) {
         t8_to_snapshot_take(&g_to, wall_ms(), &s);
     }
     snprintf(buf, cap,
-             "nlu enabled=%d init_error=%d boot_done=%d init_failed=%d active=%d marked=%lu "
-             "passed=%lu dropped=%lu unknown=%lu overflow=%lu degraded=%d failclosed=%d "
-             "fc_events=%lu fc_passes=%lu final_seen=%lu nlp_calls=%lu nlp_skip=%lu nlp_pass=%lu",
-             s.enabled, s.init_error,
-             GET(g_nlu_boot_done), GET(g_nlu_init_failed),
-             s.active, s.marked, s.passed, s.dropped,
+             "nlu installed=%d takeover=%d mode=%s ready=%d env_ignored=%d boot_done=%d "
+             "init_failed=%d np_installs=%lu np_skips=%lu np_ifail=%lu np_refused=%lu "
+             "np_uninstalls=%lu np_ufail=%lu np_restores=%lu np_rfail=%lu busy=%lu "
+             "enabled=%d init_error=%d active=%d marked=%lu passed=%lu dropped=%lu unknown=%lu "
+             "overflow=%lu degraded=%d failclosed=%d fc_events=%lu fc_passes=%lu "
+             "final_seen=%lu nlp_calls=%lu nlp_skip=%lu nlp_pass=%lu nlp_failclosed=%lu",
+             nls_installed(&g_nlu_sw), nls_takeover(&g_nlu_sw), nls_mode_name(mode),
+             g_to.mutex_ready ? 1 : 0, GET(g_nlu_env_ignored), GET(g_nlu_boot_done),
+             GET(g_nlu_init_failed),
+             g_nlu_pp.installs, g_nlu_pp.install_skips, g_nlu_pp.install_fails,
+             g_nlu_pp.install_refusals, g_nlu_pp.uninstalls, g_nlu_pp.uninstall_fails,
+             g_nlu_pp.restores, g_nlu_pp.restore_fails, g_nlu_pp.busy_hits,
+             s.enabled, s.init_error, s.active, s.marked, s.passed, s.dropped,
              s.unknown, s.overflow_events, s.degraded, s.failclosed,
              s.failclosed_events, s.failclosed_passes,
-             GET(g_nlu_final_seen), GET(g_nlu_nlp_calls), GET(g_nlu_nlp_skip), GET(g_nlu_nlp_pass));
+             GET(g_nlu_final_seen), GET(g_nlu_nlp_calls), GET(g_nlu_nlp_skip), GET(g_nlu_nlp_pass),
+             GET(g_nlu_nlp_failclosed));
 }
 
 

@@ -16,6 +16,7 @@
  * 退出码（也是错误阶段，脚本可直接判定）：
  *    0 ok   10 usage   11 find_pid   12 abi   13 attach   14 prepare
  *   15 resolve_sym     16 write     17 dlopen  18 dlsym   19 install  20 status
+ *   21 fault_abort     22 nlu_patch（补丁事务失败/未确认）  23 nlu_switch（开关未生效）
  */
 
 #define _GNU_SOURCE 1
@@ -231,6 +232,220 @@ static int pause_and_check(uint32_t lo, uint32_t hi, char *err, size_t errlen)
     out("[inject] ERROR stage=pc_check: no safe window after %d attempts", max_attempts);
     return RC_E_UNSAFE;
 }
+/* -------------------------------------------------- T8-05：NLU 控制通道 */
+/*
+ * 控制通道就是注入器本来就在用的那一条：ptrace 附身目标进程的一个线程 →
+ * 用目标进程自己的 dlsym 取 libtg_hook.so 的导出函数 → rc_call 在目标里执行。
+ * 没有任何新的 IPC、没有 socket、没有文件、不改进程环境变量 —— 因为这正是
+ * T8-04 审查指出的问题：supervisor 的 getenv 与 :core 里的库毫无关系。
+ *
+ * 三个动作的权限条件完全一致：root（或与目标相同的 uid）+ ptrace 允许
+ * （Android 8.1 上 root 直接 attach 即可；SELinux Permissive 已在设备上确认）。
+ *
+ * 写入口补丁的两条命令（--nlu-install / --nlu-uninstall）在调用前一定先做
+ * "暂停全部线程 + 核对 PC 区间"，然后把 world_frozen=1 传给库里的事务；
+ * 库里对 world_frozen=0 一律拒绝写 —— 安全前提不会因为调用方疏忽而消失。
+ */
+#define NLU_NONE       0
+#define NLU_INSTALL    1
+#define NLU_UNINSTALL  2
+#define NLU_ON         3
+#define NLU_OFF        4
+#define NLU_STATUS     5
+
+typedef struct {
+    uint32_t prepare, lo, hi, install, uninstall;
+    uint32_t takeover_set, takeover_get, installed, entry_code, stats, last_error, state_ready;
+} nlu_syms;
+
+static nlu_syms g_nlu;
+
+#define NLU_TEXT_OFF 0x400u     /* 与 path(0x100)/symbol(0x180) 不重叠（scratch 64 KB） */
+#define NLU_TEXT_CAP 512u
+
+static int nlu_text(uint32_t fn, char *buf, size_t cap, char *err, size_t errlen)
+{
+    uint32_t args[2];
+    uint32_t ret = 0;
+    int rc;
+
+    if (buf == NULL || cap == 0) return RC_E_SYM;
+    buf[0] = '\0';
+    if (fn == 0) return RC_E_SYM;
+    rc = rc_write(&g_ctx, g_ctx.scratch + NLU_TEXT_OFF, "", 1, err, errlen);
+    if (rc != RC_OK) return rc;
+    args[0] = g_ctx.scratch + NLU_TEXT_OFF;
+    args[1] = (uint32_t)cap;
+    rc = rc_call(&g_ctx, fn, args, 2, &ret, err, errlen);
+    if (rc != RC_OK) return rc;
+    return rc_read_str(&g_ctx, g_ctx.scratch + NLU_TEXT_OFF, buf, cap, err, errlen);
+}
+
+/* 打印库里的 last_error（NLU 段有独立错误缓冲，不会和 T6 的混） */
+static void nlu_show_error(void)
+{
+    char txt[256];
+    char err[200];
+
+    if (g_nlu.last_error == 0) return;
+    if (nlu_text(g_nlu.last_error, txt, sizeof(txt), err, sizeof(err)) == RC_OK && txt[0] != '\0') {
+        out("[inject] nlu_last_error=%s", txt);
+    }
+}
+
+static int nlu_do(int cmd)
+{
+    char err[256];
+    char txt[512];
+    uint32_t ret = 0, lo = 0, hi = 0, installed = 0, takeover = 0, ready = 0;
+    uint32_t args[2];
+    int rc;
+
+    if (g_nlu.prepare == 0) {
+        out("[inject] ERROR stage=nlu_symbols libtg_hook.so has no tg_nlu_* exports "
+            "(rebuild the library for T8-05)");
+        return 18;
+    }
+
+    /* 只读解析：定位 onNlpResult 入口 + 校验序言（不改任何字节） */
+    rc = rc_call(&g_ctx, g_nlu.prepare, NULL, 0, &ret, err, sizeof(err));
+    if (rc != RC_OK) {
+        out("[inject] ERROR stage=nlu_prepare_call rc=%d err=%s", rc, err);
+        return 19;
+    }
+    if ((int)ret != 0) {
+        nlu_show_error();
+        out("[inject] ERROR stage=nlu_prepare rc=%d", (int)ret);
+        return 19;
+    }
+    if (g_nlu.lo != 0) (void)rc_call(&g_ctx, g_nlu.lo, NULL, 0, &lo, err, sizeof(err));
+    if (g_nlu.hi != 0) (void)rc_call(&g_ctx, g_nlu.hi, NULL, 0, &hi, err, sizeof(err));
+    if (lo == 0 || hi <= lo) {
+        out("[inject] ERROR stage=nlu_range lo=0x%08x hi=0x%08x", lo, hi);
+        return 19;
+    }
+    out("[inject] nlu entry=0x%08x patch=[0x%08x,0x%08x)", lo, lo, hi);
+
+    if (cmd == NLU_STATUS) {
+        char entry[400];
+        char stats[600];
+
+        (void)rc_call(&g_ctx, g_nlu.installed, NULL, 0, &installed, err, sizeof(err));
+        (void)rc_call(&g_ctx, g_nlu.takeover_get, NULL, 0, &takeover, err, sizeof(err));
+        if (g_nlu.state_ready != 0) (void)rc_call(&g_ctx, g_nlu.state_ready, NULL, 0, &ready, err, sizeof(err));
+        entry[0] = '\0';
+        stats[0] = '\0';
+        if (g_nlu.entry_code != 0) (void)nlu_text(g_nlu.entry_code, entry, sizeof(entry), err, sizeof(err));
+        if (g_nlu.stats != 0) (void)nlu_text(g_nlu.stats, stats, sizeof(stats), err, sizeof(err));
+        out("[inject] nlu hook_installed=%d takeover=%d state_ready=%d",
+            (int)installed, (int)takeover, (int)ready);
+        if (entry[0] != '\0') out("[inject] nlu entry_code=%s", entry);
+        if (stats[0] != '\0') out("[inject] nlu stats=%s", stats);
+        out("[inject] RESULT nlu-status ok installed=%d takeover=%d", (int)installed, (int)takeover);
+        return 0;
+    }
+
+    if (cmd == NLU_INSTALL || cmd == NLU_UNINSTALL) {
+        const char *what = (cmd == NLU_INSTALL) ? "install" : "uninstall";
+        uint32_t fn = (cmd == NLU_INSTALL) ? g_nlu.install : g_nlu.uninstall;
+
+        (void)rc_call(&g_ctx, g_nlu.installed, NULL, 0, &installed, err, sizeof(err));
+        out("[inject] nlu installed_before=%d", (int)installed);
+        if (cmd == NLU_INSTALL && installed == 1) {
+            (void)rc_call(&g_ctx, g_nlu.takeover_get, NULL, 0, &takeover, err, sizeof(err));
+            out("[inject] nlu patch already installed; takeover unchanged=%d", (int)takeover);
+            out("[inject] RESULT nlu-install already_installed=1 takeover=%d", (int)takeover);
+            return 0;
+        }
+        if (cmd == NLU_UNINSTALL && installed == 0) {
+            out("[inject] nlu entry is already the original prologue; nothing to restore");
+            out("[inject] RESULT nlu-uninstall already_original=1");
+            return 0;
+        }
+
+        /* 关键一步：全部线程停住 + 确认没有线程的 PC 在补丁区间里 */
+        rc = pause_and_check(lo, hi, err, sizeof(err));
+        if (rc != RC_OK) {
+            out("[inject] ERROR stage=nlu_pause cmd=%s rc=%d err=%s (no byte written)",
+                what, rc, err);
+            return 19;
+        }
+        out("[inject] nlu world frozen (%d threads), calling tg_nlu_%s(1)", g_paused.n, what);
+
+        args[0] = 1;    /* world_frozen：上面的 pause_and_check 就是它的依据 */
+        args[1] = 0;
+        rc = rc_call(&g_ctx, fn, args, 1, &ret, err, sizeof(err));
+        rc_resume_all(&g_paused);
+        g_paused_active = 0;
+        if (rc != RC_OK) {
+            out("[inject] ERROR stage=nlu_%s_call rc=%d err=%s", what, rc, err);
+            return 22;
+        }
+        out("[inject] tg_nlu_%s(1) = %d (threads resumed)", what, (int)ret);
+
+        /* 读回：安装状态、开关状态、四组机器码（失败也会打印，便于判读回滚结果） */
+        (void)rc_call(&g_ctx, g_nlu.installed, NULL, 0, &installed, err, sizeof(err));
+        (void)rc_call(&g_ctx, g_nlu.takeover_get, NULL, 0, &takeover, err, sizeof(err));
+        txt[0] = '\0';
+        if (g_nlu.entry_code != 0) (void)nlu_text(g_nlu.entry_code, txt, sizeof(txt), err, sizeof(err));
+        out("[inject] nlu installed_after=%d takeover=%d entry_code=%s",
+            (int)installed, (int)takeover, txt);
+
+        if ((int)ret != 0) {
+            nlu_show_error();
+            out("[inject] ERROR stage=nlu_%s rc=%d (patch NOT confirmed)", what, (int)ret);
+            return 22;
+        }
+        if (cmd == NLU_INSTALL && installed != 1) {
+            out("[inject] ERROR stage=nlu_verify installed=%d (expected 1)", (int)installed);
+            return 22;
+        }
+        if (cmd == NLU_UNINSTALL && installed != 0) {
+            out("[inject] ERROR stage=nlu_verify installed=%d (expected 0)", (int)installed);
+            return 22;
+        }
+        out("[inject] RESULT nlu-%s ok installed=%d takeover=%d", what, (int)installed, (int)takeover);
+        return 0;
+    }
+
+    /* NLU_ON / NLU_OFF：运行时开关，就地改目标进程里的状态 */
+    {
+        uint32_t want = (cmd == NLU_ON) ? 1u : 0u;
+        const char *what = (cmd == NLU_ON) ? "on" : "off";
+
+        args[0] = want;
+        args[1] = 0;
+        rc = rc_call(&g_ctx, g_nlu.takeover_set, args, 1, &ret, err, sizeof(err));
+        if (rc != RC_OK) {
+            out("[inject] ERROR stage=nlu_takeover_call rc=%d err=%s", rc, err);
+            return 23;
+        }
+        (void)rc_call(&g_ctx, g_nlu.takeover_get, NULL, 0, &takeover, err, sizeof(err));
+        (void)rc_call(&g_ctx, g_nlu.installed, NULL, 0, &installed, err, sizeof(err));
+        if (g_nlu.state_ready != 0) (void)rc_call(&g_ctx, g_nlu.state_ready, NULL, 0, &ready, err, sizeof(err));
+        out("[inject] tg_nlu_takeover_set(%u) = %d; readback=%u installed=%u state_ready=%u",
+            (unsigned)want, (int)ret, (unsigned)takeover, (unsigned)installed, (unsigned)ready);
+
+        if ((int)ret != 0) {
+            nlu_show_error();
+            out("[inject] ERROR stage=nlu_takeover rc=%d (switch unchanged=%u)", (int)ret, (unsigned)takeover);
+            return 23;
+        }
+        if (takeover != want) {
+            out("[inject] ERROR stage=nlu_takeover_verify want=%u readback=%u",
+                (unsigned)want, (unsigned)takeover);
+            return 23;
+        }
+        if (want == 1 && ready == 0) {
+            /* 开关确实开了，但会话表不可用 -> 生效方式是 fail-closed，必须让操作者看见 */
+            out("[inject] WARN nlu takeover=1 but state_ready=0: callbacks are fail-closed (drop)");
+        }
+        out("[inject] RESULT nlu-%s ok takeover=%u installed=%u state_ready=%u",
+            what, (unsigned)takeover, (unsigned)installed, (unsigned)ready);
+        return 0;
+    }
+}
+
 int main(int argc, char **argv)
 {
     pid_t pid = -1;
@@ -245,6 +460,7 @@ int main(int argc, char **argv)
     int pc_readfail_errno = 0;
     int pc_readfail_exec = 0;
     int verbose = 0;
+    int nlu_cmd = NLU_NONE;
     int i;
     int rc;
     int exit_code = 0;
@@ -271,19 +487,37 @@ int main(int argc, char **argv)
             check_only = 1;
         } else if (strcmp(argv[i], "--uninstall") == 0) {
             uninstall = 1;
+        } else if (strcmp(argv[i], "--nlu-install") == 0) {
+            nlu_cmd = NLU_INSTALL;
+        } else if (strcmp(argv[i], "--nlu-uninstall") == 0) {
+            nlu_cmd = NLU_UNINSTALL;
+        } else if (strcmp(argv[i], "--nlu-on") == 0) {
+            nlu_cmd = NLU_ON;
+        } else if (strcmp(argv[i], "--nlu-off") == 0) {
+            nlu_cmd = NLU_OFF;
+        } else if (strcmp(argv[i], "--nlu-status") == 0) {
+            nlu_cmd = NLU_STATUS;
         } else if (strcmp(argv[i], "--fault") == 0 && i + 1 < argc) {
             fault = argv[++i];
         } else if (strcmp(argv[i], "--verbose") == 0) {
             verbose = 1;
         } else {
-            out("usage: %s [--pid N | --name PROC] --so /path/libtg_hook.so [--check|--uninstall] [--fault NAME] [--verbose]",
-                argv[0]);
+            out("usage: %s [--pid N | --name PROC] --so /path/libtg_hook.so "
+                "[--check|--uninstall] [--nlu-status|--nlu-install|--nlu-uninstall|--nlu-on|--nlu-off] "
+                "[--fault NAME] [--verbose]", argv[0]);
             return 10;
         }
     }
     if (so == NULL) {
-        out("usage: %s [--pid N | --name PROC] --so /path/libtg_hook.so [--check|--uninstall] [--fault NAME] [--verbose]",
-            argv[0]);
+        out("usage: %s [--pid N | --name PROC] --so /path/libtg_hook.so "
+            "[--check|--uninstall] [--nlu-status|--nlu-install|--nlu-uninstall|--nlu-on|--nlu-off] "
+            "[--fault NAME] [--verbose]", argv[0]);
+        return 10;
+    }
+
+    /* 写类 --nlu-* 不能和 --check/--uninstall 混用：语义会互相掩盖，报成功也没人信 */
+    if (nlu_cmd != NLU_NONE && (check_only || uninstall)) {
+        out("[inject] ERROR stage=usage --nlu-* cannot be combined with --check/--uninstall");
         return 10;
     }
 
@@ -526,6 +760,56 @@ int main(int argc, char **argv)
             goto detach;
         }
         out("[inject] patch_range=[0x%08x,0x%08x)", patch_lo, patch_hi);
+    }
+
+    /* 8b2) T8-05：NLU 控制通道（可选符号 + 子命令）
+     *
+     * 这些符号是 T8-05 新加的；老库没有就报 18（明确"库太旧"），不猜、不降级。
+     * 顺序很关键：先解析（只读）→ 再暂停全世界 → 再落/卸补丁 → 恢复 → 读回核实。
+     */
+    if (nlu_cmd != NLU_NONE) {
+        struct { const char *name; uint32_t *slot; } nsyms[] = {
+            { "tg_nlu_prepare",        &g_nlu.prepare },
+            { "tg_nlu_patch_lo",       &g_nlu.lo },
+            { "tg_nlu_patch_hi",       &g_nlu.hi },
+            { "tg_nlu_install",        &g_nlu.install },
+            { "tg_nlu_uninstall",      &g_nlu.uninstall },
+            { "tg_nlu_takeover_set",   &g_nlu.takeover_set },
+            { "tg_nlu_takeover_get",   &g_nlu.takeover_get },
+            { "tg_nlu_hook_installed", &g_nlu.installed },
+            { "tg_nlu_entry_code",     &g_nlu.entry_code },
+            { "tg_nlu_stats",          &g_nlu.stats },
+            { "tg_nlu_last_error",     &g_nlu.last_error },
+            { "tg_nlu_state_ready",    &g_nlu.state_ready },
+        };
+        size_t k;
+
+        memset(&g_nlu, 0, sizeof(g_nlu));
+        for (k = 0; k < sizeof(nsyms) / sizeof(nsyms[0]); k++) {
+            uint32_t name_at = g_ctx.scratch + 0x180;
+            uint32_t args[2];
+            size_t n = strlen(nsyms[k].name) + 1;
+
+            if (n > 64) { exit_code = 18; goto detach; }
+            rc = rc_write(&g_ctx, name_at, nsyms[k].name, n, err, sizeof(err));
+            if (rc != RC_OK) {
+                out("[inject] ERROR stage=write_symbol name=%s err=%s", nsyms[k].name, err);
+                exit_code = 16;
+                goto detach;
+            }
+            args[0] = handle;
+            args[1] = name_at;
+            rc = rc_call_ns(&g_ctx, dlsym_fn, args, 2, nsyms[k].slot, err, sizeof(err));
+            if (rc != RC_OK || *nsyms[k].slot == 0) {
+                *nsyms[k].slot = 0;
+                out("[inject] nlu symbol missing: %s (old library?)", nsyms[k].name);
+            }
+        }
+        out("[inject] nlu dlsym: prepare=0x%08x install=0x%08x takeover_set=0x%08x",
+            g_nlu.prepare, g_nlu.install, g_nlu.takeover_set);
+
+        exit_code = nlu_do(nlu_cmd);
+        goto detach;
     }
 
     /* 8c) --uninstall：与安装相同的线程保护，再写回原厂两条指令 */

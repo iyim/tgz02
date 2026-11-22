@@ -131,7 +131,7 @@ void t8_to_destroy(t8_to_state *st)
     (void)pthread_mutex_destroy(&st->mutex);
 #endif
     st->mutex_ready = 0;
-    st->enabled = 0;
+    __atomic_store_n(&st->enabled, 0, __ATOMIC_RELEASE);
 }
 
 /*
@@ -143,22 +143,22 @@ int t8_to_enabled_set(t8_to_state *st, int on)
 {
     if (st == NULL) return -1;
     if (!on) {
-        st->enabled = 0;
+        __atomic_store_n(&st->enabled, 0, __ATOMIC_RELEASE);
         return 0;
     }
     if (!st->mutex_ready) {
-        st->init_error = 1;
-        st->enabled = 1;            /* 仍记为"开启"：这样调用方会走 fail-closed 分支 */
+        __atomic_store_n(&st->init_error, 1, __ATOMIC_RELEASE);
+        __atomic_store_n(&st->enabled, 1, __ATOMIC_RELEASE);            /* 仍记为"开启"：这样调用方会走 fail-closed 分支 */
         return -1;
     }
-    st->init_error = 0;
-    st->enabled = 1;
+    __atomic_store_n(&st->init_error, 0, __ATOMIC_RELEASE);
+    __atomic_store_n(&st->enabled, 1, __ATOMIC_RELEASE);
     return 0;
 }
 
 int t8_to_enabled(const t8_to_state *st)
 {
-    return (st != NULL) ? st->enabled : 0;
+    return (st != NULL) ? __atomic_load_n(&st->enabled, __ATOMIC_ACQUIRE) : 0;
 }
 
 t8_to_decision t8_to_on_final(t8_to_state *st, const char *session, const char *text,
@@ -173,7 +173,7 @@ t8_to_decision t8_to_on_final(t8_to_state *st, const char *session, const char *
 
     if (out_why != NULL) *out_why = T8_TO_WHY_NONE;
     if (st == NULL) return T8_TO_PASS;                       /* 根本没接上：不属于接管范围 */
-    if (!st->enabled) return T8_TO_PASS;                     /* 开关关闭：原厂行为完全不变 */
+    if (!__atomic_load_n(&st->enabled, __ATOMIC_ACQUIRE)) return T8_TO_PASS;                     /* 开关关闭：原厂行为完全不变 */
     if (!st->mutex_ready) {
         /* 锁不可用：**不碰共享状态**，直接 fail-closed（绝不静默放行） */
         if (out_why != NULL) *out_why = T8_TO_WHY_FAILCLOSED;
@@ -251,7 +251,7 @@ int t8_to_should_drop(t8_to_state *st, const char *session, long long now_ms)
     int rc = 0;
 
     if (st == NULL) return 0;
-    if (!st->enabled) return 0;                 /* 开关关闭：原厂照常处理 */
+    if (!__atomic_load_n(&st->enabled, __ATOMIC_ACQUIRE)) return 0;                 /* 开关关闭：原厂照常处理 */
     if (!st->mutex_ready) return 1;             /* 状态不可用：fail-closed，且不访问共享状态 */
 
     t8_lock(st);
@@ -328,8 +328,8 @@ void t8_to_snapshot_take(t8_to_state *st, long long now_ms, t8_to_snapshot *out)
     t8_lock(st);
     (void)t8_purge_locked(st, now_ms);
     out->active = t8_active_locked(st, now_ms);
-    out->enabled = st->enabled;
-    out->init_error = st->init_error;
+    out->enabled = __atomic_load_n(&st->enabled, __ATOMIC_ACQUIRE);
+    out->init_error = __atomic_load_n(&st->init_error, __ATOMIC_ACQUIRE);
     out->overflow = (st->overflow > 0) ? 1 : 0;
     out->degraded = (st->degraded_until_ms > now_ms) ? 1 : 0;
     out->failclosed = (st->failclosed_until_ms > now_ms) ? 1 : 0;

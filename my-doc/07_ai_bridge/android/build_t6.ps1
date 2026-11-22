@@ -56,6 +56,8 @@ $Targets = @(
                  (Join-Path $HookDir "libtg_hook.c"),
                  (Join-Path $HookDir "tg_wire.c"),
                  (Join-Path $Here "nlu_takeover.c"),
+                 (Join-Path $Here "nlu_switch.c"),
+                 (Join-Path $Here "nlu_patch.c"),
                  (Join-Path $Here "intent_route.c"),
                  (Join-Path $Here "echo_filter.c"),
                  "-llog")
