@@ -1,0 +1,89 @@
+# T7-05-R2 fault injection (real run_t7_05.sh against a fake device root)
+# host: MINGW64_NT-10.0-19045 2026-11-22 11:09:24
+# script: /d/tgz02/OS/system/my-doc/07_ai_bridge/tests/../android/run_t7_05.sh
+
+PASS [happy_stop] guard-stop rc=0 (got 0)
+PASS [happy_stop] guard-stop prints PASS
+PASS [happy_stop] verified hooked=0
+PASS [happy_stop] asr supervisor still alive
+PASS [happy_stop] asr supervisor never killed
+PASS [happy_rollback] rollback rc=0 (got 0)
+PASS [happy_rollback] rollback prints PASS
+PASS [happy_rollback] worker restored
+PASS [happy_rollback] conf restored
+PASS [happy_rollback] guard .so restored
+PASS [happy_rollback] worker perm 755
+PASS [happy_rollback] conf perm 600
+PASS [happy_rollback] guard perm 644
+PASS [happy_rollback] rollback reports asr untouched
+PASS [happy_start] guard-start rc=0 after cleaning stale sup (got 0)
+PASS [happy_start] guard-start actually launched a supervisor
+PASS [happy_start] guard-start reports asr unchanged
+
+PASS [injector_uninstall_fail] guard-stop non-zero (got 5)
+PASS [injector_uninstall_fail] no PASS with uninstall failure
+PASS [injector_uninstall_fail] failure reason printed
+PASS [rollback_after_uninstall_fail] rollback non-zero when uninstall fails (got 6)
+PASS [rollback_after_uninstall_fail] rollback aborts
+PASS [rollback_after_uninstall_fail] no PASS rollback
+PASS [rollback_after_uninstall_fail] artifacts untouched on abort
+
+PASS [still_hooked] guard-stop non-zero when hooked=1 remains (got 5)
+PASS [still_hooked] prints which pid still hooked
+PASS [still_hooked] no PASS
+PASS [no_verdict] no verdict from --check is a failure (got 5)
+
+PASS [sup_cannot_stop] guard-stop non-zero when supervisor survives (got 3)
+PASS [sup_cannot_stop] prints surviving supervisor
+PASS [sup_cannot_stop] no PASS
+PASS [start_after_failed_cleanup] guard-start refuses while stale sup alive (got 3)
+PASS [start_after_failed_cleanup] no second supervisor started
+PASS [start_after_failed_cleanup] prints refusal
+PASS [start_after_failed_cleanup] asr supervisor untouched
+
+PASS [restore_fail_worker] rollback non-zero for fail_worker (got 7)
+PASS [restore_fail_worker] prints FAIL restore for fail_worker
+PASS [restore_fail_worker] prints rollback: FAIL
+PASS [restore_fail_worker] no PASS for fail_worker
+PASS [restore_fail_worker] backup not consumed/overwritten
+PASS [restore_fail_conf] rollback non-zero for fail_conf (got 7)
+PASS [restore_fail_conf] prints FAIL restore for fail_conf
+PASS [restore_fail_conf] prints rollback: FAIL
+PASS [restore_fail_conf] no PASS for fail_conf
+PASS [restore_fail_conf] backup not consumed/overwritten
+PASS [restore_fail_guard] rollback non-zero for fail_guard (got 7)
+PASS [restore_fail_guard] prints FAIL restore for fail_guard
+PASS [restore_fail_guard] prints rollback: FAIL
+PASS [restore_fail_guard] no PASS for fail_guard
+PASS [restore_fail_guard] backup not consumed/overwritten
+
+PASS [sha_mismatch_after_copy] rollback non-zero on sha mismatch (got 7)
+PASS [sha_mismatch_after_copy] prints sha mismatch detail
+PASS [sha_mismatch_after_copy] no PASS on sha mismatch
+PASS [selfcheck_bad_backup] rollback aborts on backup sha drift (got 5)
+PASS [selfcheck_bad_backup] abort reason printed
+PASS [selfcheck_bad_backup] no PASS with bad backup
+
+PASS [worker_start_fail] rollback non-zero when worker start fails (got 1)
+PASS [worker_start_fail] prints worker start rc
+PASS [worker_start_fail] prints worker not running
+PASS [worker_start_fail] prints rollback: FAIL
+PASS [worker_start_fail] no PASS
+
+PASS [no_core_process] guard-stop fails when :core is absent (got 5)
+PASS [no_core_process] prints no :core
+
+PASS [rollback_check_unqueryable_after_replace] rollback still PASS (got 0)
+PASS [rollback_check_unqueryable_after_replace] prints PASS
+PASS [rollback_check_unqueryable_after_replace] explains the unqueryable state
+PASS [rollback_check_unqueryable_after_replace] points at the earlier verification
+PASS [rollback_check_unqueryable_after_replace] does not misreport as FAIL
+
+PASS [uninstall_requires_core_restart] guard-stop PASS after restarting :core (got 0)
+PASS [uninstall_requires_core_restart] explains the restart
+PASS [uninstall_requires_core_restart] verifies hooked=0 on the surviving core
+PASS [uninstall_requires_core_restart] prints guard-stop PASS
+PASS [uninstall_requires_core_restart] asr supervisor untouched
+
+# total: pass=73 fail=0
+# result: OK
