@@ -157,3 +157,75 @@ WARNING: event id=e-b1 was still unprocessed at exit (50 attempts, offset kept a
 
 > 本轮**没有把新 `ai_worker` 推到设备**（约束：不改变运行状态）。设备上跑的仍是 T7-06-R1 的
 > `32fc28001910…`，死信格式修复要等下一轮部署窗口才生效。
+
+---
+
+## 8. T7-09 追加：回滚失败不再伪装成"普通可重试失败"
+
+### 8.1 原缺陷
+
+```c
+if (dl_write_all(fd, line, len) != 0) {
+    (void)dl_truncate_sync(fd, end);   /* 回滚结果被丢弃 */
+    goto done;                         /* 统一返回 -1 */
+}
+```
+
+Worker 收到 `-1` 就按普通失败重试。可此时文件尾部**可能还留着完整/半条记录**
+（截断失败、或截断成功但回滚的 fsync 失败），于是下一次追加会**重复一条死信**；
+而 offset 又没推进 —— 重复与阻塞叠加。
+
+### 8.2 现在的三档语义（`dead_letter.h`）
+
+| 返回 | 含义 | Worker 动作 |
+|---|---|---|
+| `T6B_DL_OK (0)` | write + fsync 成功（`close` 失败只告警） | 提交 offset（跳过事件） |
+| `T6B_DL_E_IO (-1)` | 没写进去，且**已确认**回滚到写前长度 | 保持 pending，按原策略重试（安全） |
+| `T6B_DL_E_ROLLBACK (-2)` | 写失败，**回滚未确认**：尾部状态不确定 | 进持久化故障状态，**不再追加、不推进 offset、不跳过** |
+
+回滚确认 = 截断成功 **且** 截断后 seek 成功 **且** 回滚 fsync 成功。
+任一步失败都升级成 `-2`，并把 `io_stage / io_errno / rollback_stage / rollback_errno /
+pre_len / cur_len(cur_len_valid)` 一起带出去。
+
+### 8.3 Worker 侧闭环
+
+1. `dead_letter_event()` 收到 `-2` → 写故障标记 `dead_letter.fault.json`（`.tmp` + rename，
+   内容含 event_id / 阶段 / errno / 写前长度 / 当前长度）→ 返回 `-5`；
+2. `provider_attempt()` 把 `-5` 原样上抛（不再落进"可重试"分支）；
+3. 主循环收到 `-5` → 置 `pend_dl_fault` 闩锁 + `state="dead_letter_failed"`，
+   **不再调用 provider_attempt**（因此不会二次追加）、不推进 offset、不跳过事件；
+4. 状态文件新增 `"dead_letter":{"failed","event_id","io_stage","io_errno","rollback_stage",
+   "rollback_errno","pre_len","cur_len","cur_len_valid"}`，triage 一眼能看到现场；
+5. 标记存在时 `dead_letter_event()` 直接拒绝（返回 `-5`），**跨重启也不会重复追加**。
+   标记只能人工处理（确认文件尾部后删除），代码里没有任何自动删除路径。
+
+### 8.4 故障矩阵（主机测试，`-DT6B_DL_TESTING`）
+
+| # | 注入 | 期望 | 实测 |
+|---|---|---|---|
+| A2-1 | 先短写、再 write 失败，回滚成功 | `-1`，pre_len 回滚 | PASS |
+| A2-2 | write 失败，回滚截断成功 | `-1` | PASS |
+| A2-3 | write 失败，回滚截断失败 | `-2`，`rollback_stage=TRUNC` | PASS |
+| A2-4 | fsync 失败，回滚成功 | `-1` | PASS |
+| A2-5 | fsync 失败，回滚截断失败 | `-2`，且记录**仍留在文件里**（不确定状态） | PASS |
+| A2-6 | 截断成功但回滚 fsync 失败 | `-2`，`rollback_stage=ROLLBACK_SYNC` | PASS |
+| A2-7 | 尾部修复截断失败 | `-1`（什么都没追加，重试安全），`io_stage=REPAIR` | PASS |
+| A4 | fsync 成功、close 失败 | `0` + `close_failed=1`，只有一条记录 | PASS |
+
+Worker 级（真实进程 + 环境变量注入，`-DT6B_DL_TEST_ENV`，仅测试构建）：
+
+| 用例 | 断言 | 实测 |
+|---|---|---|
+| e2e C：`fsync_fail` + `trunc_fail` | `state=dead_letter_failed`、`counters.dead_letters=0`、`processed_total=0`、`last_event_id=""`、`pending=e-c1`、故障标记存在、死信文件恰好 2 行（seed + 一条未回滚写入，**没有重复**）、日志含 `ROLLBACK FAILED` 与 `persistent fault … latched` | PASS |
+| e2e D：带标记重启（并把消费状态复位成"会再读到这条事件"） | 仍为 2 行、日志含 `refusing to append` | PASS |
+
+> 生产构建不含任何测试符号：ARM 构建脚本会检查 `t6b_dl_test_fault` / `dl_test_env_init`
+> 必须不存在，见 `../evidence/t7_09_arm_build.log`。
+
+### 8.5 一个必须说清的既有边界
+
+`consumer_state.json` 里的 `offset` 是**读者游标**（读入 pending 时就已前移），
+这不是本轮引入的，也不在本轮修改范围内。后果是：**进程重启后，那条尚未处理的事件可能
+不会被重新读到**。所以"跨重启不重复"靠的是两条独立的保险：
+① 重启后若事件被重新读到 → 故障标记拒绝追加；② 若没被重新读到 → 自然也不会追加。
+两种情况下都不会产生重复死信，但"事件被跳过"这件事属于既有消费语义，本轮**只记录、不改**。

@@ -1,0 +1,82 @@
+# T7-09 原厂 ASR 有效语音窗口观测（只读）
+
+> 约束：只读观察。没有改设备状态、没重启 `:core`、没碰 Hook/Guard/Bridge、没调用任何原厂接口、
+> 没有独立加载 ASR 引擎。采样器 `asr_watch2.sh` 只读 `/proc`，只写自己的日志文件。
+
+## 1. 工具与实测标定（先说清楚"能不能做到 100 ms"）
+
+先按要求验证设备 shell 的小数秒 `sleep`：
+
+| 测试 | 结果 |
+|---|---|
+| `sleep 0.1` ×10 | ≈1.5–2.0 s（单次约 150–200 ms） |
+| `sleep 0.02 / 0.05` ×10 | ≈1 s（单次约 100 ms，已接近下限） |
+| `grep -c` 扫 `/proc/<core>/maps`（211 KB，2690 行） | ≈77 ms |
+| `pidof <pkg>:core` | ≈56 ms |
+| 两次 `/proc/net/tcp{,6}` grep | ≈68 ms |
+
+结论：**"100 ms 等间隔采样"在这台机器上做不到**——光一次 maps 扫描加一次 sleep 就 230 ms。
+所以 `asr_watch2.sh` 采取"一次 `cat maps` + shell 内 5 次模式匹配（少起进程）+ 443 每 5 轮更新一次"
+的折中，并在日志尾部自己写 `# rate` 行报告实测周期，不靠人估。
+
+**实测周期：min 320 ms / avg 400–440 ms / max 450 ms（≈2.4–2.7 Hz）**，是旧版 1 Hz 的 2.5 倍以上。
+
+采样列：`uptime_ms(毫秒) core_pid libaceAsr libmodel.bin libconfigure.bin libunet libvad_api 443_estab stale`
+
+## 2. 窗口 A（2026-11-22 16:52:57 起，已结束）
+
+| 项 | 观测值 |
+|---|---|
+| 采样条数 | **365**（跨度 156.85 s，平均 430 ms/点；实测 `min 310 / avg 430 / max 830 ms`） |
+| `:core` pid | 8342（365 条全一致 → 期间没有重启） |
+| `libaceAsr` / `libmodel.bin` / `libconfigure.bin` / `libunet` | **0/365**（整个窗口都没出现映射） |
+| `libvad_api` | 恒为 1（采样链路有效，不是读不到） |
+| 443 ESTABLISHED | 3 ~ 10 波动（空闲态本来就有，**不能**作为 ASR 证据） |
+| 同期 logcat | 110 007 行；`onWakeupCallback` / `onListenStarted` / `onStartTalk` / `onStopTalk` / `onStream` **合计 0 条** |
+
+原始数据：`../evidence/t7_09_channel_watch.log`（含 `# rate` 行与判定说明）。
+
+## 3. 本轮判定
+
+> **本轮观测无效：窗口内没有发生任何语音交互。**
+
+按任务要求，这种情况下不允许推出任何通道结论。特别声明：
+
+- **不得**因为"没采到 `libaceAsr`"就说"走的是云端"——采样周期 400 ms 仍可能漏掉瞬时加载；
+- **不得**因为"443 连接有 6~10 条"就说"走了云端 ASR"——空闲态本来就有这些连接（心跳/技能/上报）；
+- 本轮**没有** `isOffline` 证据（Hook 事件无该字段，本轮禁止改 Hook）。
+
+## 4. 下次窗口的操作步骤（照做即可给出结论）
+
+1. 设备侧启动采样（只读）：
+   ```sh
+   adb push asr_watch2.sh /data/local/tmp/t7/
+   adb shell su -c 'sh /data/local/tmp/t7/asr_watch2.sh 3000 100 &'
+   adb shell su -c 'logcat -v threadtime -f /data/local/tmp/t7/asr_watch2.logcat &'
+   ```
+2. **在采样运行期间**，对设备连续说 3 条指令：两条本地指令（如"现在几点""音量调到 5"）+
+   一条普通聊天（如"给我讲个笑话"）；
+3. 结束后（或 `touch asr_watch2.stop` 提前停）拉取：
+   `asr_watch2.log`（采样）、`asr_watch2.logcat`（语音时间轴）、
+   `work/events.jsonl` 新增行（识别文本与时间）；
+4. 用 logcat 的 `onStartTalk ~ onStopTalk` 圈出每一条语音的时间窗，再回看同时间窗的采样行。
+
+## 5. 判定口径（B3，逐条写死）
+
+| 观测现象 | 能得出的结论 | 不能得出的结论 |
+|---|---|---|
+| 识别窗口内 `libaceAsr` 由 0 变 1 | **本地引擎参与了这一轮** | 不能推出"最终文本来自本地"（引擎可能只做中间结果/端点判定） |
+| 事件里有 `isOffline=true` | 本地离线识别的**直接证据** | — |
+| 事件里有 `isOffline=false` | 非离线识别的证据 | — |
+| 本地库全程未观察到加载 | **仅**"未观察到" | 不能推出"一定走了云端"（采样率与瞬时加载） |
+| 443 连接数上升 | **仅**"有 TLS 流量" | 不能推出"这就是 ASR" |
+
+当前 Hook 事件没有 `is_offline`。本轮禁止改 Hook/部署新 Hook，因此**这条证据缺口保留**，
+等批准后再决定是否新增该字段。
+
+## 6. 遗留
+
+- 窗口 A 的原始文件仍在设备 `/data/local/tmp/t7/asr_watch2.*`（下一轮取用后即删）；
+  本文件提交的是工具与标定，不含"已捕获语音"的原始数据——因为本轮确实没捕获到。
+- 一旦有一个"含 3 条语音"的窗口，本报告会以 `T7-09_CHANNEL_OBSERVATION` 的增补段更新，
+  并在其中写明每条语音的时间窗与对应采样行。
