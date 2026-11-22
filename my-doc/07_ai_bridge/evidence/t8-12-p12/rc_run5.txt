@@ -1,0 +1,1 @@
+run5_negative_selftest NEG_SELFTEST_RC=2

@@ -1,0 +1,146 @@
+=== T8-12.9 R13/R14/EPOCH lifecycle model (host build) ===
+!!! NEGATIVE CONTROL #2: deliberate unsynchronised data race on 'now' !!!
+
+[A1] 提前处理：结果在收尾之前被处理（队列延迟 2500ms）
+  [PASS] GRACE : 早到结果命中（与队列延迟无关）
+  [PASS] EPOCH : 早到结果命中
+[A2] 晚到 delta=2500ms（大于 2 秒宽限）
+  [PASS] GRACE : delta>2s 时漏拦（放行给原厂）——2 秒假设被证伪
+  [PASS] EPOCH : 仍然命中（收尾不参与过期决策）
+[A3] 晚到 delta=100ms（小于 2 秒宽限）
+  [PASS] GRACE : delta<2s 时命中（只在阈值内有效）
+  [PASS] EPOCH : 同样命中
+[A4] 提前处理：队列延迟 8000ms（远超 2s）
+  [PASS] GRACE : 早到结果仍命中
+  [PASS] EPOCH : 早到结果仍命中
+
+[E1] 第七阶段 EPOCH：第 N 轮收尾 -> 第 N+1 轮本地指令 -> 第 N 轮结果迟到 100ms
+  [PASS] 复现 P0-1：EPOCH 下旧轮结果进入原厂技能执行路径（exec=1）
+  [PASS] 原因：本地判定直接释放了槽位（passed=1）
+  [PASS] 该结果既未命中槽位也未计入 stale（dropped=0 stale_after_local=0）
+  [PASS] 被当成"从未登记"的 key 放行（unknown=1）
+
+[E2] 第八阶段 EPOCH2：同一时序，本地判定不释放槽位
+  [PASS] 旧轮结果被压制，未进入原厂技能执行路径（exec=0）
+  [PASS] 命中槽位并拦下（dropped=1）
+  [PASS] 同时被标注为"上一轮的迟到结果"（stale_after_local=1）
+  [PASS] 本地判定不再计入放行（passed=0）
+
+[E3] EPOCH2 不回归：第 N+1 轮若仍是 AI 轮，必须照常拦截
+  [PASS] 新一轮 AI 轮的结果被拦下（exec=0）
+  [PASS] 命中槽位（dropped=1）
+  [PASS] 旧代次结果被计数（stale_after_new_final=1）
+  [PASS] 登记时刻覆盖了一个已收尾槽位（reg_over_closed=1）
+  [PASS] 本地迟到计数为 0（stale_after_local=0）
+
+[E4] 剩余风险（无法消除）：旧轮结果在第 N+1 轮 AI 登记之后到达
+  [PASS] 原厂执行被阻止（exec=0）—— 这一点是 EPOCH2 保证的
+  [PASS] 但归属仍然错：旧结果被当成第 N+1 轮的结果交给接管路径（stale_after_new_final=1）
+  [PASS] 现有接口（sid/type/NlpResult）没有代次字段，无法区分新旧 —— 明确保留为剩余风险
+
+[E5] 剩余风险（时间边界）：压制状态在 TTL 之后消失
+  [PASS] TTL 到期后压制解除（唯一残留窗口，长度 = 既有 TTL）
+  [PASS] 到期由 should_drop 在同一临界区内完成（expired=1）
+
+[E6] 作用域：压制只对本 key 生效
+  [PASS] key "S" 仍被压制
+  [PASS] 无关 key 不受影响（未登记 -> 放行）
+  [PASS] 只累计一次未知（unknown=1）
+
+[E7] 能力边界：sid 不同时原厂自己就会丢弃该结果
+  [PASS] sid 相同：EPOCH 下确实执行（exec=1）
+  [PASS] sid 不同：原厂 C5 拦掉，不执行（exec=0）
+  [PASS] 结论：放行不等于执行；危险区间被 C5 收窄为"同一 sid 的连续两轮"
+
+[B1] 空 key（session 缺失）多次触发，窗口按 key 绑定
+  [PASS] 空 key 第 1 次仍 fail-closed
+  [PASS] 空 key 第 2 次仍 fail-closed
+  [PASS] 空 key 第 3 次仍 fail-closed
+  [PASS] 空 key 第 4 次仍 fail-closed
+  [PASS] 空 key 第 5 次仍 fail-closed
+  [PASS] 空 key 的窗口不误伤具体会话 "555"
+  [PASS] 空 key 的 on_final 不分配槽位（empty_final=0）
+
+[B2] 64 槽耗尽
+  [PASS] 溢出会话被 fail-closed 拦下
+  [PASS] 已有会话仍按登记拦截（不受溢出影响）
+  [PASS] 无关未登记会话不被误拦
+  [PASS] 只有溢出那一次分配失败（alloc_fail=1 marked=64）
+
+[B3] 同 sid 快速复用：收尾 -> 3s 后新一轮（AI -> 本地）
+  [PASS] 第一轮登记后命中
+  [PASS] 收尾 3s 后、新一轮登记前：仍命中（不因收尾丢拦）
+  [PASS] 新一轮登记后仍命中（新代次接管）
+  [PASS] [EPOCH 保留用例] 本地指令释放槽位 -> 云侧结果放行
+
+[B6] 同 sid 快速复用 —— EPOCH2 对照（B3 的同一时序）
+  [PASS] 本地判定后仍压制（EPOCH2 与 B3 的唯一差别）
+  [PASS] 槽位被标记为本地判定（slot_local_decided=1）
+  [PASS] 本地判定不再产生放行（passed=0）
+
+[B4] TTL 到界与重新登记
+  [PASS] TTL 到期后放行（唯一的时间判据就是 TTL）
+  [PASS] 到期后重新登记可再次接管（不残留旧窗口）
+
+[B5] mutex 不可用：必须 fail-closed
+  [PASS] 已登记会话也拦（不碰共享状态）
+  [PASS] 空 key 也拦
+  [PASS] 未登记也拦（fail-closed 不退化）
+
+[C1] 4 线程 × 20000 次：登记 / 本地判定 / 收尾 / 查询 / 时钟推进 / 空 key  << 负向对照#2：真实数据竞争（无锁自增）>>
+==================
+WARNING: ThreadSanitizer: data race (pid=690)
+  Read of size 8 at 0x7b8800000008 by thread T2 (mutexes: write M2):
+    #0 on_teardown /work/t8_12_9_lifecycle_model.c:320 (model_tsan+0x1c50)
+    #1 worker /work/t8_12_9_lifecycle_model.c:646 (model_tsan+0x32cc)
+
+  Previous write of size 8 at 0x7b8800000008 by thread T1:
+    #0 clock_tick_worker /work/t8_12_9_lifecycle_model.c:197 (model_tsan+0x33fa)
+    #1 worker /work/t8_12_9_lifecycle_model.c:658 (model_tsan+0x33fa)
+
+  Location is heap block of size 5720 at 0x7b8800000000 allocated by main thread:
+    #0 malloc ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:647 (libtsan.so.2+0x3ebb8)
+    #1 scenario_concurrent /work/t8_12_9_lifecycle_model.c:742 (model_tsan+0x3968)
+    #2 main /work/t8_12_9_lifecycle_model.c:903 (model_tsan+0x3968)
+
+  Mutex M2 (0x7b8800001630) created at:
+    #0 pthread_mutex_init ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1295 (libtsan.so.2+0x50468)
+    #1 reset /work/t8_12_9_lifecycle_model.c:208 (model_tsan+0x138b)
+    #2 scenario_concurrent /work/t8_12_9_lifecycle_model.c:744 (model_tsan+0x3981)
+    #3 main /work/t8_12_9_lifecycle_model.c:903 (model_tsan+0x3981)
+
+  Thread T2 (tid=693, running) created by main thread at:
+    #0 pthread_create ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1001 (libtsan.so.2+0x5e686)
+    #1 t_create /work/t8_12_9_lifecycle_model.c:676 (model_tsan+0x3a25)
+    #2 scenario_concurrent /work/t8_12_9_lifecycle_model.c:751 (model_tsan+0x3a25)
+    #3 main /work/t8_12_9_lifecycle_model.c:903 (model_tsan+0x3a25)
+
+  Thread T1 (tid=692, running) created by main thread at:
+    #0 pthread_create ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1001 (libtsan.so.2+0x5e686)
+    #1 t_create /work/t8_12_9_lifecycle_model.c:676 (model_tsan+0x3a25)
+    #2 scenario_concurrent /work/t8_12_9_lifecycle_model.c:751 (model_tsan+0x3a25)
+    #3 main /work/t8_12_9_lifecycle_model.c:903 (model_tsan+0x3a25)
+
+SUMMARY: ThreadSanitizer: data race /work/t8_12_9_lifecycle_model.c:320 in on_teardown
+==================
+  [PASS] pthread_create 结果符合预期（注入=-1，已创建 4/4，create_ok=1）
+  [PASS] pthread_join 结果符合预期（报告失败注入=-1，弃置注入=-1，njoined=4/4，join_ok=1）
+  [PASS] 全部线程确认退出后才做统计断言
+  [PASS] 并发期间没有任何非法判定值（illegal=0）
+  [PASS] 没有漏锁访问（lock_violations=0）
+  [PASS] teardown_seen 精确等于各线程调用数之和（13334 vs 13334）
+  [PASS] teardown_hit 精确相等（8780 vs 8780）
+  [PASS] local_declined 精确相等（13334 vs 13334）
+  [PASS] empty_final 精确相等（13332 vs 13332）
+  [PASS] marked + alloc_fail 精确等于 AI 判定次数（8782+4551 vs 13333）
+  [PASS] dropped+failedclosed+degraded+unknown 精确等于查询次数（13334 vs 13334）
+  [PASS] 时钟精确等于各线程推进量之和（13333 vs 13333）—— now 无丢失更新
+  [PASS] 时钟推进次数非零（13333）
+  [PASS] 两个方向都产生了计数（marked=8782 dropped=8801）
+  [PASS] 收尾命中路径被覆盖（8780 次）
+  [PASS] 正常路径下 mutex 在 4 个线程全部 join 之后才销毁
+
+RESULT: PASS (checks=71 fails=0)
+ThreadSanitizer: reported 1 warnings
+EXIT=66
+TSAN_RACE_WARNINGS=1

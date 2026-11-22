@@ -212,6 +212,7 @@ must "B plain_race_control EXIT=1"       require_exit   plain_race_control.txt 1
 must "B tsan_race_control RESULT FAIL"   require_result tsan_race_control.txt  "$RES_LIFE_FAIL"
 must "B tsan_race_control EXIT=1"        require_exit   tsan_race_control.txt  1
 must "B tsan_race_control races=0"       require_races  tsan_race_control.txt  0
+must "B tsan_race_true RESULT PASS"      require_result tsan_race_true.txt "$RES_LIFE_PASS"
 must "B tsan_race_true has >=1 TSan report" require_races_gt0 tsan_race_true.txt
 must "B tsan_race_true EXIT=66"          require_exit   tsan_race_true.txt  66
 
