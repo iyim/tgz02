@@ -170,6 +170,92 @@ if ($workerBuilt) {
     else { Fail "e2e B: provider_retries == $($stB.counters.provider_retries)" }
 }
 
+# ---------- 4b) e2e C/D: rollback failure -> latched fault, never retried (T7-09) ----------
+Log ""
+Log "=== e2e C/D: dead-letter rollback failure latches a persistent fault ==="
+$FaultExe = Join-Path $Out "ai_worker.faultmodel.exe"
+$faultBuilt = Build "ai_worker(fault model)" $FaultExe $WorkerSrc @("-DT6B_DL_TESTING", "-DT6B_DL_TEST_ENV")
+if ($faultBuilt) {
+    $wc = Join-Path $E2e "c_work"; $sc = Join-Path $E2e "c_state"
+    New-Item -ItemType Directory -Force $wc | Out-Null
+    New-Item -ItemType Directory -Force $sc | Out-Null
+    # seed one valid record: proves the uncertain path never duplicates it (1 -> 2, never 3)
+    $seedLine = '{"ts":1700000000000,"event_id":"seed-g1","seq":1,"attempts":1,"error_class":"http_503","error_bytes":3,"invalid_utf8":0}'
+    [IO.File]::WriteAllText((Join-Path $sc "dead_letter.jsonl"), $seedLine + "`n", (New-Object Text.UTF8Encoding($false)))
+    [IO.File]::WriteAllLines((Join-Path $wc "events.jsonl"),
+        @((New-Event 1 "e-c1" "rollback")), (New-Object Text.UTF8Encoding($false)))
+
+    $wargsC = @("--work-dir", $wc, "--state-dir", $sc, "--provider", "mock",
+                "--mock-fail-from", "1", "--provider-retry-max", "1",
+                "--provider-backoff-ms", "1", "--provider-backoff-max-ms", "5",
+                "--state-sync-every", "1", "--poll-ms", "10", "--status-every-ms", "100",
+                "--max-runtime-ms", "3000")
+    $env:T6B_DL_TEST_FAULT = "fsync_fail"
+    $env:T6B_DL_TEST_FAULT2 = "trunc_fail"
+    Log ("run  : " + $FaultExe + " " + ($wargsC -join " ") + "  [T6B_DL_TEST_FAULT=fsync_fail FAULT2=trunc_fail]")
+    $outC = & $FaultExe @wargsC 2>&1 | Out-String
+    Log ("exit : " + $LASTEXITCODE)
+    ($outC.TrimEnd() -split "`r?`n" | Select-Object -Last 12) | ForEach-Object { Log $_ }
+    Remove-Item Env:\T6B_DL_TEST_FAULT -ErrorAction SilentlyContinue
+    Remove-Item Env:\T6B_DL_TEST_FAULT2 -ErrorAction SilentlyContinue
+
+    $stC = Get-Content (Join-Path $sc "ai_worker_status.json") -Raw | ConvertFrom-Json
+    # the last published status is "stopped" (process exited by max-runtime); the latch itself
+    # is proven by dead_letter.failed=1 plus the log line checked below
+    if ($stC.state -eq "dead_letter_failed" -or $stC.state -eq "stopped") {
+        Pass ("e2e C: state == " + $stC.state + " (latch judged by dead_letter.failed)")
+    } else { Fail "e2e C: state == '$($stC.state)'" }
+    if ([int]$stC.dead_letter.failed -eq 1) { Pass "e2e C: status.dead_letter.failed == 1" }
+    else { Fail "e2e C: status.dead_letter.failed == $($stC.dead_letter.failed)" }
+    if ($stC.dead_letter.event_id -eq "e-c1") { Pass "e2e C: fault event_id recorded" }
+    else { Fail "e2e C: fault event_id == '$($stC.dead_letter.event_id)'" }
+    if ([int]$stC.dead_letter.io_stage -eq 2) { Pass "e2e C: io_stage == FSYNC(2)" }
+    else { Fail "e2e C: io_stage == $($stC.dead_letter.io_stage)" }
+    if ([int]$stC.dead_letter.rollback_stage -eq 4) { Pass "e2e C: rollback_stage == TRUNC(4)" }
+    else { Fail "e2e C: rollback_stage == $($stC.dead_letter.rollback_stage)" }
+    if ([int]$stC.dead_letter.pre_len -gt 0) { Pass "e2e C: pre_len recorded" }
+    else { Fail "e2e C: pre_len == $($stC.dead_letter.pre_len)" }
+    if ([int]$stC.counters.dead_letters -eq 0) { Pass "e2e C: no dead letter was counted as skipped" }
+    else { Fail "e2e C: counters.dead_letters == $($stC.counters.dead_letters)" }
+    if ([int]$stC.counters.events_processed -eq 0) { Pass "e2e C: events_processed == 0" }
+    else { Fail "e2e C: events_processed == $($stC.counters.events_processed)" }
+    $csC = Get-Content (Join-Path $sc "consumer_state.json") -Raw | ConvertFrom-Json
+    if ([int]$csC.processed_total -eq 0 -and $csC.last_event_id -eq "") {
+        Pass "e2e C: offset not advanced (processed_total=0, no last_event_id)"
+    } else { Fail "e2e C: consumer_state shows progress ($($csC.processed_total)/'$($csC.last_event_id)')" }
+    if ($stC.pending_event_id -eq "e-c1") { Pass "e2e C: event stays pending" }
+    else { Fail "e2e C: pending_event_id == '$($stC.pending_event_id)'" }
+
+    $marker = Join-Path $sc "dead_letter.fault.json"
+    if (Test-Path $marker) { Pass "e2e C: fault marker written" } else { Fail "e2e C: fault marker missing" }
+    $dlC = @(Get-Content (Join-Path $sc "dead_letter.jsonl") | Where-Object { $_.Trim().Length -gt 0 })
+    if ($dlC.Count -eq 2) { Pass "e2e C: exactly 2 records (seed + one unrolled-back write, no duplicate)" }
+    else { Fail "e2e C: expected 2 records, got $($dlC.Count)" }
+    if ($outC -match 'ROLLBACK FAILED') { Pass "e2e C: log carries the full rollback-failure site" }
+    else { Fail "e2e C: no ROLLBACK FAILED line in the worker output" }
+    if ($outC -match 'persistent fault \(dead_letter_failed\) latched') {
+        Pass "e2e C: worker latched the persistent fault state"
+    } else { Fail "e2e C: worker did not latch the fault state" }
+    # D) restart with the marker present must refuse to append again (no duplicate across restarts)
+    #    NOTE: the reader resumes at the committed offset, which by design can be past a pending
+    #    event (pre-existing semantics, unchanged here). To exercise the marker we reset the
+    #    consumer state, i.e. the situation where the same event is read again.
+    Log "=== e2e D: restart with the marker present must refuse to append again ==="
+    Remove-Item (Join-Path $sc "consumer_state.json") -ErrorAction SilentlyContinue
+    $env:T6B_DL_TEST_FAULT = "fsync_fail"
+    $env:T6B_DL_TEST_FAULT2 = "trunc_fail"
+    $outD = & $FaultExe @wargsC 2>&1 | Out-String
+    Log ("exit : " + $LASTEXITCODE)
+    ($outD.TrimEnd() -split "`r?`n" | Select-Object -Last 8) | ForEach-Object { Log $_ }
+    Remove-Item Env:\T6B_DL_TEST_FAULT -ErrorAction SilentlyContinue
+    Remove-Item Env:\T6B_DL_TEST_FAULT2 -ErrorAction SilentlyContinue
+    $dlD = @(Get-Content (Join-Path $sc "dead_letter.jsonl") | Where-Object { $_.Trim().Length -gt 0 })
+    if ($dlD.Count -eq 2) { Pass "e2e D: still 2 records after restart (no duplicate append)" }
+    else { Fail "e2e D: record count changed to $($dlD.Count)" }
+    if ($outD -match 'refusing to append') { Pass "e2e D: restart refused to append (marker honoured)" }
+    else { Fail "e2e D: restart did not report the refusal" }
+}
+
 # ---------- 5) parser test (json.loads) + concurrency ----------
 Log ""
 Log "=== parser test (json.loads on every line + 6x100 concurrent appends) ==="

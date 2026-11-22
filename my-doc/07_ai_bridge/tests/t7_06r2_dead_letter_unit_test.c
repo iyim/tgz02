@@ -389,56 +389,152 @@ int main(int argc, char **argv)
         ok(file_size(path) <= 0, "append: rejected line left no file content");
     }
 
-    /* ---------- 16. A3/A4：故障注入 ---------- */
+    /* ---------- 16. 故障注入矩阵（T7-09 A2） ---------- */
     snprintf(tmp, sizeof(tmp), "%s/_dl_tmp", outdir);
     snprintf(path, sizeof(path), "%s/fault.jsonl", tmp);
     (void)UNLINK(path);
 
-    /* 16.1 短写：第一次只写一半，第二次写完 -> 记录完整 */
+    /* 16.1 短写：第一次只写一半，第二次写完 -> 记录完整（不是失败） */
     t6b_dl_test_fault_set(T6B_DL_FAULT_WRITE_SHORT);
-    ok(t6b_dl_append(path, line, n, &out) == 0, "A3: short write is continued, not lost");
+    ok(t6b_dl_append(path, line, n, &out) == T6B_DL_OK, "A3: short write is continued, not lost");
     ok(t6b_dl_test_fault_peek() == T6B_DL_FAULT_NONE, "A3: injected fault consumed once");
     blen = read_all(path, back, sizeof(back));
     ok(blen == n, "A3: short write produced exactly one complete line");
     ok(strncmp(back, line, n) == 0, "A3: short write content byte-exact");
 
-    /* 16.2 write 直接失败 -> -1 且文件回滚到写前长度 */
+    /* 16.2 短写后第二次 write 失败，回滚成功 -> -1：已确认干净，Worker 可以安全重试 */
     {
         long long before = file_size(path);
-        t6b_dl_test_fault_set(T6B_DL_FAULT_WRITE_FAIL);
-        ok(t6b_dl_append(path, another, n2, &out) == -1, "A3: write failure -> -1");
-        ok(file_size(path) == before, "A3: write failure rolled back to the previous length");
+        memset(&out, 0xff, sizeof(out));
+        t6b_dl_test_fault_set(T6B_DL_FAULT_WRITE_SHORT_FAIL);
+        t6b_dl_test_fault2_set(T6B_DL_FAULT_WRITE_FAIL);
+        ok(t6b_dl_append(path, another, n2, &out) == T6B_DL_E_IO,
+           "A2-1: partial write then write failure -> E_IO (retryable)");
+        ok(out.io_stage == T6B_DL_STAGE_WRITE, "A2-1: io_stage == WRITE");
+        ok(out.rollback_stage == T6B_DL_STAGE_NONE, "A2-1: rollback confirmed (stage NONE)");
+        ok(out.pre_len == before, "A2-1: pre_len reported");
+        ok(file_size(path) == before, "A2-1: file rolled back to pre_len");
         blen = read_all(path, back, sizeof(back));
-        ok(blen == n && strncmp(back, line, n) == 0, "A3: previous record untouched after rollback");
+        ok(blen == n && strncmp(back, line, n) == 0, "A2-1: previous record untouched");
     }
 
-    /* 16.3 fsync 失败 -> -1 且回滚 */
+    /* 16.3 write 失败 + 回滚截断成功 -> -1（干净失败） */
     {
         long long before = file_size(path);
+        memset(&out, 0xff, sizeof(out));
+        t6b_dl_test_fault_set(T6B_DL_FAULT_WRITE_FAIL);
+        ok(t6b_dl_append(path, another, n2, &out) == T6B_DL_E_IO, "A2-2: write failure -> E_IO");
+        ok(out.io_stage == T6B_DL_STAGE_WRITE && out.rollback_stage == T6B_DL_STAGE_NONE,
+           "A2-2: rollback confirmed");
+        ok(file_size(path) == before, "A2-2: rolled back to pre_len");
+    }
+
+    /* 16.4 write 失败 + 回滚截断失败 -> -2：状态不确定，禁止重试 */
+    {
+        long long before = file_size(path);
+        memset(&out, 0xff, sizeof(out));
+        t6b_dl_test_fault_set(T6B_DL_FAULT_WRITE_FAIL);
+        t6b_dl_test_fault2_set(T6B_DL_FAULT_TRUNC_FAIL);
+        ok(t6b_dl_append(path, another, n2, &out) == T6B_DL_E_ROLLBACK,
+           "A2-3: write failure + rollback trunc failure -> E_ROLLBACK");
+        ok(out.io_stage == T6B_DL_STAGE_WRITE, "A2-3: io_stage == WRITE");
+        ok(out.io_errno != 0, "A2-3: io_errno recorded");
+        ok(out.rollback_stage == T6B_DL_STAGE_TRUNC, "A2-3: rollback_stage == TRUNC");
+        ok(out.pre_len == before, "A2-3: pre_len recorded");
+        ok(out.cur_len_valid == 1, "A2-3: current length readable");
+        ok(file_size(path) == before, "A2-3: nothing extra was actually written");
+    }
+
+    /* 16.5 fsync 失败 + 回滚成功 -> -1 */
+    {
+        long long before = file_size(path);
+        memset(&out, 0xff, sizeof(out));
         t6b_dl_test_fault_set(T6B_DL_FAULT_FSYNC_FAIL);
-        ok(t6b_dl_append(path, another, n2, &out) == -1, "A4: fsync failure -> -1 (not durable)");
-        ok(file_size(path) == before, "A4: fsync failure rolled back");
+        ok(t6b_dl_append(path, another, n2, &out) == T6B_DL_E_IO, "A2-4: fsync failure -> E_IO");
+        ok(out.io_stage == T6B_DL_STAGE_FSYNC && out.rollback_stage == T6B_DL_STAGE_NONE,
+           "A2-4: fsync stage + rollback confirmed");
+        ok(file_size(path) == before, "A2-4: rolled back");
     }
 
-    /* 16.4 fsync 成功、close 失败 -> 0（数据已持久化），只报警一次，不重复追加 */
+    /* 16.6 fsync 失败 + 回滚截断失败 -> -2 */
     {
         long long before = file_size(path);
+        memset(&out, 0xff, sizeof(out));
+        t6b_dl_test_fault_set(T6B_DL_FAULT_FSYNC_FAIL);
+        t6b_dl_test_fault2_set(T6B_DL_FAULT_TRUNC_FAIL);
+        ok(t6b_dl_append(path, another, n2, &out) == T6B_DL_E_ROLLBACK,
+           "A2-5: fsync failure + rollback trunc failure -> E_ROLLBACK");
+        ok(out.io_stage == T6B_DL_STAGE_FSYNC, "A2-5: io_stage == FSYNC");
+        ok(out.rollback_stage == T6B_DL_STAGE_TRUNC, "A2-5: rollback_stage == TRUNC");
+        /* 关键：截断失败 => 那一行**还留在文件里**（状态不确定），这正是不能重试的原因 */
+        ok(file_size(path) == before + (long long)n2,
+           "A2-5: unrolled-back record is still in the file (uncertain state)");
+        ok(out.cur_len == before + (long long)n2, "A2-5: cur_len reflects the uncertain length");
+    }
+
+    /* 16.7 回滚截断成功但回滚 fsync 失败 -> -2 */
+    {
+        memset(&out, 0xff, sizeof(out));
+        t6b_dl_test_fault_set(T6B_DL_FAULT_FSYNC_FAIL);
+        t6b_dl_test_fault2_set(T6B_DL_FAULT_ROLLBACK_SYNC_FAIL);
+        ok(t6b_dl_append(path, another, n2, &out) == T6B_DL_E_ROLLBACK,
+           "A2-6: truncate ok but rollback fsync failed -> E_ROLLBACK");
+        ok(out.io_stage == T6B_DL_STAGE_FSYNC, "A2-6: io_stage == FSYNC");
+        ok(out.rollback_stage == T6B_DL_STAGE_ROLLBACK_SYNC,
+           "A2-6: rollback_stage == ROLLBACK_SYNC");
+        ok(out.rollback_errno != 0, "A2-6: rollback_errno recorded");
+    }
+
+    /* 16.8 fsync 成功、close 失败 -> 0（数据已持久化），只报警一次，不重复追加 */
+    {
+        long long before;
+
+        /* 前面的"状态不确定"用例会在文件里留下未回滚的记录，这里先重置成单行夹具 */
+        write_raw(path, line, n);
+        before = file_size(path);
+        ok(before == (long long)n, "A4: fixture reset to exactly one record");
+        memset(&out, 0, sizeof(out));
         t6b_dl_test_fault_set(T6B_DL_FAULT_CLOSE_FAIL);
-        ok(t6b_dl_append(path, another, n2, &out) == 0,
+        ok(t6b_dl_append(path, another, n2, &out) == T6B_DL_OK,
            "A4: close failure after fsync is NOT a write failure");
         ok(out.close_failed == 1, "A4: close failure reported in out.close_failed");
+        ok(out.io_stage == T6B_DL_STAGE_NONE, "A4: no io error recorded");
         ok(file_size(path) == before + (long long)n2, "A4: record is on disk exactly once");
         blen = read_all(path, back, sizeof(back));
         ok(count_lines(back, blen) == 2, "A4: no duplicate line from the close-failure path");
         ok(strncmp(back + n, another, n2) == 0, "A4: appended record byte-exact");
     }
 
-    /* 16.5 加锁失败 -> -1，不写，也不破坏文件 */
+    /* 16.9 加锁失败 -> -1，不写，也不破坏文件 */
     {
         long long before = file_size(path);
+        memset(&out, 0xff, sizeof(out));
         t6b_dl_test_fault_set(T6B_DL_FAULT_LOCK_FAIL);
-        ok(t6b_dl_append(path, line, n, &out) == -1, "A3: lock failure -> -1");
+        ok(t6b_dl_append(path, line, n, &out) == T6B_DL_E_IO, "A3: lock failure -> E_IO");
+        ok(out.io_stage == T6B_DL_STAGE_LOCK, "A3: io_stage == LOCK");
         ok(file_size(path) == before, "A3: lock failure leaves the file untouched");
+    }
+
+    /* 16.10 尾部修复本身失败 -> -1（什么都没追加，重试安全），但必须报 REPAIR 阶段 */
+    {
+        static const char half[] = "{\"ts\":1,\"half";
+        char seed[512];
+        size_t seedlen;
+        long long before;
+
+        seedlen = (size_t)snprintf(seed, sizeof(seed), "%s", line);
+        memcpy(seed + seedlen, half, sizeof(half) - 1);
+        seedlen += sizeof(half) - 1;
+        write_raw(path, seed, seedlen);
+        before = file_size(path);
+
+        memset(&out, 0xff, sizeof(out));
+        t6b_dl_test_fault2_set(T6B_DL_FAULT_TRUNC_FAIL);
+        ok(t6b_dl_append(path, another, n2, &out) == T6B_DL_E_IO,
+           "A2-7: tail-repair truncate failure -> E_IO (nothing appended)");
+        ok(out.io_stage == T6B_DL_STAGE_REPAIR, "A2-7: io_stage == REPAIR");
+        ok(file_size(path) == before, "A2-7: file untouched (junk still there, append refused)");
+        t6b_dl_test_fault2_set(T6B_DL_FAULT_NONE);
     }
 
     /* ---------- 17. 样例行齐了 ---------- */

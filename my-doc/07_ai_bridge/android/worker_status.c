@@ -42,6 +42,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     char esc_invalid[T6B_PROVIDER_MSG_MAX * 2];
     char esc_error[sizeof(((t6b_status *)0)->last_error) * 2];
     char esc_pending[(T6B_ID_MAX + 1) * 2];
+    char esc_dl_event[(T6B_ID_MAX + 1) * 2];
     char esc_model[sizeof(((t6b_status *)0)->model) * 2];
     char esc_class[sizeof(((t6b_status *)0)->last_error_class) * 2];
     char esc_ttsq[T6B_PATH_MAX * 2];
@@ -71,6 +72,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     wu_json_escape(esc_invalid, sizeof(esc_invalid), st->last_invalid);
     wu_json_escape(esc_error, sizeof(esc_error), st->last_error);
     wu_json_escape(esc_pending, sizeof(esc_pending), st->pending_event_id);
+    wu_json_escape(esc_dl_event, sizeof(esc_dl_event), st->dl_event_id);
     wu_json_escape(esc_model, sizeof(esc_model), st->model);
     wu_json_escape(esc_class, sizeof(esc_class), st->last_error_class);
     wu_json_escape(esc_ttsq, sizeof(esc_ttsq), st->tts_queue);
@@ -107,6 +109,10 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"tts_queued\":%llu,\"tts_skipped\":%llu,\"tts_enqueue_failed\":%llu,"
         /* T7-06-R2：死信条数（被跳过的事件数），triage 直接可读 */
         "\"dead_letters\":%llu},"
+        /* T7-09：死信回滚失败现场（只在 dead_letter_failed=1 时有意义） */
+        "\"dead_letter\":{\"failed\":%d,\"event_id\":\"%s\",\"io_stage\":%d,\"io_errno\":%d,"
+        "\"rollback_stage\":%d,\"rollback_errno\":%d,\"pre_len\":%lld,\"cur_len\":%lld,"
+        "\"cur_len_valid\":%d},"
         "\"tts_queue\":\"%s\","
         "\"context\":{\"enabled\":%d,\"max_messages\":%d,\"messages\":%d,\"turns\":%d,"
         "\"load_state\":%d,\"saves\":%llu,\"save_errors\":%llu,\"evicted\":%llu,"
@@ -151,7 +157,11 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         st->provider_retries, st->stuck_attempts,
         st->provider_stuck, st->state_persist_failed,
         st->tts_queued, st->tts_skipped, st->tts_enqueue_failed,
-        st->dead_lettered, esc_ttsq,
+        st->dead_lettered,
+        st->dead_letter_failed, esc_dl_event, st->dl_io_stage, st->dl_io_errno,
+        st->dl_rollback_stage, st->dl_rollback_errno, st->dl_pre_len, st->dl_cur_len,
+        st->dl_cur_len_valid,
+        esc_ttsq,
         st->context_enabled, st->context_max_messages, st->context_messages,
         st->context_turns, st->context_load_state, st->context_saves,
         st->context_save_errors, st->context_evicted, esc_ctxfile,

@@ -82,7 +82,7 @@ if ($dyn -notmatch 'NEEDED.*libc\.so')         { throw "does not NEED libc.so" }
 
 $sym = (& $ReadElf -sW $Obj 2>&1 | Out-String)
 $hasDl = ($sym -match 't6b_dl_format') -and ($sym -match 't6b_dl_append')
-$leaked = ($sym -match 't6b_dl_test_fault')
+$leaked = ($sym -match 't6b_dl_test_fault') -or ($sym -match 'dl_test_env_init')
 Log ("# symbols present: t6b_dl_format/t6b_dl_append = " + $hasDl)
 if ($leaked) { Log "# fault-injection symbols: PRESENT (BAD)" }
 else         { Log "# fault-injection symbols: absent (expected in a production build)" }

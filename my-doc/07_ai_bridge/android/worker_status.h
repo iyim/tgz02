@@ -81,6 +81,17 @@ typedef struct {
     int                provider_stuck;     /* 1 = 已超过重试上限，等待死信策略（不跳过） */
     char               pending_event_id[T6B_ID_MAX + 1]; /* 正在重试/卡住的事件 */
 
+    /* T7-09：死信回滚失败 -> 持久化故障状态（不追加、不推进 offset、不跳过） */
+    int                dead_letter_failed;   /* 1 = 已进入该状态 */
+    int                dl_io_stage;          /* 失败发生在哪一步（T6B_DL_STAGE_*） */
+    int                dl_io_errno;
+    int                dl_rollback_stage;    /* 回滚失败在哪一步 */
+    int                dl_rollback_errno;
+    long long          dl_pre_len;           /* 写前文件长度 */
+    long long          dl_cur_len;           /* 出错时的文件长度（dl_cur_len_valid=0 表示读不到） */
+    int                dl_cur_len_valid;
+    char               dl_event_id[T6B_ID_MAX + 1];
+
     /* 状态落盘（P1-3） */
     int                state_persist_failed;   /* 1 = 上次落盘失败，已停止推进消费 */
 

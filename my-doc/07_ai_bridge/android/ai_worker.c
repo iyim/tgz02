@@ -99,6 +99,10 @@ typedef struct {
     long long    last_status_ms;
     long long    last_activity_ms;
     int          pending_advances;      /* 已提交但尚未写入消费状态文件的推进次数 */
+    /* T7-09：死信回滚失败后的"持久化故障"闩锁。置位后不再对当前事件追加死信，
+     * 也不再读下一条：宁可停住，也不制造重复记录或静默跳过。 */
+    int          pend_dl_fault;
+    t6b_dl_out   dl_out;                /* 最近一次死信追加的诊断信息（写状态用） */
 } t6b_worker;
 
 static volatile sig_atomic_t g_stop = 0;
@@ -422,17 +426,73 @@ static int commit_event(t6b_worker *w);
  * 死信（dead letter）：把"已经放弃的事件"落成一行 JSON Lines，然后提交偏移跳过它。
  *
  * 历史：T7-06-R1 把整行引号换成单引号（不是合法 JSON）；T7-06-R2 把序列化与落盘
- * 抽到 dead_letter.c 并用严格转义重写。T7-08 按现场复核补齐三件事：
- *   - ts 用 **墙钟**（wu_wall_ms，Unix Epoch 毫秒）：死信是给人看的，跨重启要能排序对时；
- *     单调时钟只留给超时/退避（wu_now_ms），两者不混用；
- *   - 尾部修复不再有 4 KB 上限，也不会"补一个换行"把非法半行扶正（详见 dead_letter.c）；
- *   - 落盘成功但 close 报错时**不当作失败**：fsync 已经把数据写进设备，
- *     close 的错误只是 fd 层面的报告，重试只会造成重复死信。
+ * 抽到 dead_letter.c 并用严格转义重写；T7-08 补了墙钟、无上限尾部修复、文件级互斥、
+ * close 语义。T7-09 补最后一个洞：**回滚失败不能伪装成"普通可重试失败"**。
  *
- * 顺序仍然是"写 → fsync → 提交 offset"：
- *   - t6b_dl_append 返回非 0（含已回滚）= 这一条没落盘 → 返回 -1，调用方不推进 offset；
- *   - 落盘成功后才 commit_event()；commit 失败按原有语义返回 -2（前缀指纹未推进）。
+ * 三档返回（来自 dead_letter.c）在这里的分工：
+ *   T6B_DL_OK         -> 记录已持久化 -> commit_event() -> 返回 0（跳过该事件）
+ *   T6B_DL_E_IO       -> 没写进去且已确认回滚 -> 返回 -1（保持 pending，按原策略重试，安全）
+ *   T6B_DL_E_ROLLBACK -> 写失败且回滚没确认 -> 落故障标记 -> 返回 -5（进持久化故障状态，
+ *                        不再追加、不推进 offset、不静默跳过）
+ *
+ * 故障标记文件（dead_letter.fault.json）的作用是**跨重启**也拒绝重复追加：
+ * 只要它记着同一个 event_id，下次启动读到这条事件时也不会再写一遍。
+ * 处理完现场必须由人删掉该文件（文档里写清楚，绝不自动删）。
  */
+static void dl_fault_marker_path(const t6b_worker *w, char *out, size_t cap)
+{
+    snprintf(out, cap, "%s/dead_letter.fault.json",
+             (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT);
+}
+
+/* 故障标记里是否记着这个 event_id（读过一次就够，不做缓存：一条事件只查一次） */
+static int dl_marker_blocks(const t6b_worker *w)
+{
+    char path[T6B_PATH_MAX];
+    char buf[1024];
+    size_t len = 0;
+    char needle[T6B_ID_MAX + 32];
+
+    dl_fault_marker_path(w, path, sizeof(path));
+    if (wu_file_size(path) <= 0) return 0;
+    if (wu_read_file(path, buf, sizeof(buf), &len) != 0 || len == 0) return 0;
+
+    /* event_id 的字符集由 reader 限定为 [A-Za-z0-9._:-]，直接按原样匹配是安全的 */
+    snprintf(needle, sizeof(needle), "\"event_id\":\"%s\"", w->pend.event_id);
+    return (strstr(buf, needle) != NULL) ? 1 : 0;
+}
+
+/* 写出持久化故障标记：先写 .tmp 再 rename，读到的永远是完整内容 */
+static void dl_write_fault_marker(t6b_worker *w, const char *dl_path, const t6b_dl_out *o)
+{
+    char path[T6B_PATH_MAX];
+    char tmp[T6B_PATH_MAX + 8];
+    char body[1024];
+    int fd;
+    int n;
+
+    dl_fault_marker_path(w, path, sizeof(path));
+    snprintf(tmp, sizeof(tmp), "%s.tmp", path);
+    n = snprintf(body, sizeof(body),
+                 "{\"ts\":%lld,\"event_id\":\"%s\",\"seq\":%lu,\"attempts\":%d,"
+                 "\"dead_letter_file\":\"%s\","
+                 "\"io_stage\":%d,\"io_errno\":%d,"
+                 "\"rollback_stage\":%d,\"rollback_errno\":%d,"
+                 "\"pre_len\":%lld,\"cur_len\":%lld,\"cur_len_valid\":%d}\n",
+                 wu_wall_ms(), w->pend.event_id, w->pend.seq, w->pend_attempts,
+                 dl_path, o->io_stage, o->io_errno,
+                 o->rollback_stage, o->rollback_errno,
+                 o->pre_len, o->cur_len, o->cur_len_valid);
+    if (n <= 0 || (size_t)n >= sizeof(body)) return;
+
+    fd = wu_open_wo(tmp);
+    if (fd < 0) return;
+    if (wu_write_all(fd, body, (size_t)n) != 0) { (void)wu_close(fd); return; }
+    (void)wu_fsync(fd);
+    (void)wu_close(fd);
+    (void)wu_rename_replace(tmp, path);
+}
+
 static int dead_letter_event(t6b_worker *w)
 {
     char path[T6B_PATH_MAX];
@@ -440,9 +500,21 @@ static int dead_letter_event(t6b_worker *w)
     t6b_dl_rec rec;
     t6b_dl_out dl;
     size_t n;
+    int rc;
 
     snprintf(path, sizeof(path), "%s/dead_letter.jsonl",
              (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT);
+
+    /* 上一次已经写残过一次：这一次绝不再追加（跨重启也生效） */
+    if (dl_marker_blocks(w)) {
+        snprintf(w->st.dl_event_id, sizeof(w->st.dl_event_id), "%s", w->pend.event_id);
+        w->st.dead_letter_failed = 1;
+        snprintf(w->st.state, sizeof(w->st.state), "dead_letter_failed");
+        always("dead-letter: refusing to append event %s again: unresolved fault marker "
+               "(%s/dead_letter.fault.json) from a previous rollback failure",
+               w->pend.event_id, (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT);
+        return -5;
+    }
 
     memset(&rec, 0, sizeof(rec));
     rec.ts_ms = wu_wall_ms();                 /* T7-08：墙钟（Epoch ms），不是 CLOCK_MONOTONIC */
@@ -462,11 +534,47 @@ static int dead_letter_event(t6b_worker *w)
         return -1;
     }
 
-    if (t6b_dl_append(path, line, n, &dl) != 0) {
-        always("dead-letter: append(%s) failed errno=%d; event %s stays pending (offset NOT advanced)",
-               path, errno, w->pend.event_id);
+    memset(&dl, 0, sizeof(dl));
+    rc = t6b_dl_append(path, line, n, &dl);
+
+    if (rc == T6B_DL_E_ROLLBACK) {
+        /* 文件尾部状态不确定：写故障标记（供重启后与人工处理），绝不重试追加 */
+        w->dl_out = dl;
+        snprintf(w->st.state, sizeof(w->st.state), "dead_letter_failed");
+        w->st.dead_letter_failed = 1;
+        snprintf(w->st.dl_event_id, sizeof(w->st.dl_event_id), "%s", w->pend.event_id);
+        w->st.dl_io_stage = dl.io_stage;
+        w->st.dl_io_errno = dl.io_errno;
+        w->st.dl_rollback_stage = dl.rollback_stage;
+        w->st.dl_rollback_errno = dl.rollback_errno;
+        w->st.dl_pre_len = dl.pre_len;
+        w->st.dl_cur_len = dl.cur_len;
+        w->st.dl_cur_len_valid = dl.cur_len_valid;
+        t6b_status_note_error(&w->st,
+                              "dead-letter rollback failed: io_stage=%d io_errno=%d "
+                              "rollback_stage=%d rollback_errno=%d pre_len=%lld cur_len=%lld",
+                              dl.io_stage, dl.io_errno, dl.rollback_stage, dl.rollback_errno,
+                              dl.pre_len, dl.cur_len);
+        always("dead-letter: ROLLBACK FAILED for event %s (seq=%lu attempts=%d) "
+               "io_stage=%d io_errno=%d rollback_stage=%d rollback_errno=%d "
+               "file=%s pre_len=%lld cur_len=%lld(cur_len_valid=%d) "
+               "-> persistent fault state; offset NOT advanced, append NOT retried",
+               w->pend.event_id, w->pend.seq, w->pend_attempts,
+               dl.io_stage, dl.io_errno, dl.rollback_stage, dl.rollback_errno,
+               path, dl.pre_len, dl.cur_len, dl.cur_len_valid);
+        dl_write_fault_marker(w, path, &dl);
+        return -5;
+    }
+
+    if (rc != T6B_DL_OK) {
+        /* 已确认回滚（或根本没写进去）：可以安全重试同一条事件 */
+        w->dl_out = dl;
+        always("dead-letter: append(%s) failed io_stage=%d errno=%d; event %s stays pending "
+               "(rolled back to pre_len=%lld, offset NOT advanced)",
+               path, dl.io_stage, dl.io_errno, w->pend.event_id, dl.pre_len);
         return -1;
     }
+
     if (dl.repaired_bytes > 0)
         always("dead-letter: repaired %lld trailing byte(s) of an incomplete record in %s",
                dl.repaired_bytes, path);
@@ -1060,8 +1168,10 @@ static int provider_attempt(t6b_worker *w)
         if (w->cfg.provider_dead_letter &&
             w->pend_attempts >= w->cfg.provider_retry_max + T6B_DEAD_LETTER_EXTRA) {
             int drc = dead_letter_event(w);
-            if (drc == 0) return -3;
-            if (drc == -2) return -4;
+            if (drc == 0) return -3;      /* 死信已落盘、偏移已提交：跳过该事件 */
+            if (drc == -2) return -4;     /* 指纹推进失败：致命 */
+            /* T7-09：-5 表示"写失败且回滚没确认"——绝不能当成可重试失败再写一次 */
+            if (drc == -5) return -5;
             return -2;
         }
         return -2;
@@ -1590,6 +1700,15 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
 
         /* 1) 有待处理事件：先把它处理完（成功前不读下一条） */
         if (w->have_pend) {
+            /* T7-09：死信回滚失败后的持久化故障状态。
+             * 这里**不调用 provider_attempt**，因此不会再追加死信，也不会读下一条、不推进 offset。
+             * 只周期刷新状态文件，等人工处理（处理方式见 DEPLOY/report：删 dead_letter.fault.json）。 */
+            if (w->pend_dl_fault) {
+                if (wu_now_ms() - w->last_status_ms >= w->cfg.status_interval_ms)
+                    publish_status(w, "dead_letter_failed");
+                (void)wu_sleep_ms(200);
+                continue;
+            }
             if (wu_now_ms() < w->pend_next_ms) {
                 if (wu_now_ms() - w->last_status_ms >= w->cfg.status_interval_ms) {
                     publish_status(w, w->pend_stuck ? "error" : "running");
@@ -1618,6 +1737,18 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                 w->pend_stuck = 0;
                 w->st.dead_lettered++;
                 snprintf(w->st.state, sizeof(w->st.state), "running");
+            } else if (rc == -5) {
+                /* T7-09：死信写失败且回滚未确认 —— 文件尾部状态不确定。
+                 * 保持 pending、闩住追加、不推进 offset、不静默跳过；状态里留完整现场。 */
+                w->pend_dl_fault = 1;
+                w->pend_stuck = 1;
+                snprintf(w->st.state, sizeof(w->st.state), "dead_letter_failed");
+                w->st.dead_letter_failed = 1;
+                always("worker: persistent fault (dead_letter_failed) latched for event %s "
+                       "seq=%lu; no further dead-letter append and no offset advance "
+                       "until the fault marker is resolved",
+                       w->pend.event_id, w->pend.seq);
+                publish_status(w, "dead_letter_failed");
             } else if (rc == -4) {
                 /* 指纹推进失败：偏移没有前进，必须停止消费（不许退化成只比 inode） */
                 *exit_reason = "identity_hash_failed";
