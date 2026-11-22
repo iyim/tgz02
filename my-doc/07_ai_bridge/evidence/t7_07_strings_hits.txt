@@ -1,0 +1,24 @@
+﻿=== libsmartbox: cloud ASR endpoint / appkey ===
+_ZN9AliAiLabs4AGUI14SessionManager13setOralAppkeyEPc
+wss://asr-aicloud.alibaba.com:443
+
+=== libagspeech: config keys ===
+kSCKeyAceLib
+kSCKeyAsrLib
+kSCKeyAsrRes
+kSCKeyDisalbeWakeup
+kSCKeyFarNearFieldType
+kSCKeyNluLib
+kSCKeyRollback
+kSCKeySemRes
+kSCKeyUnconvWakeupLib
+kSCKeyUnconvWakeupRes
+kSCKeyVadLib
+kSCKeyVadRes
+kSCKeyWakeupLib
+kSCKeyWakeupRes
+
+=== apk assets: asr resources ===
+assets/asr_bg.zip 381131
+assets/fuzzylexicon.bin 337101
+assets/tts.zip 398534

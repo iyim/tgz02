@@ -1,0 +1,23 @@
+﻿<int name="devicesettingInfo::localASRPauseTime" value="150" />
+<int name="devicesettingInfo::speechUploadInterval" value="120" />
+<int name="devicesettingInfo::localASREnergyContextCnt" value="2" />
+<boolean name="devicesettingInfo::asrOnGW" value="true" />
+<string name="devicesettingInfo::wakeupStyleGlobal">opsSound</string>
+<int name="devicesettingInfo::energyContextCnt" value="2" />
+<int name="devicesettingInfo::localASREenergyJudgeTime" value="1750" />
+<int name="devicesettingInfo::pauseTime" value="700" />
+<int name="devicesettingInfo::localASRStopPolicy" value="3" />
+<boolean name="devicesettingInfo::dualChannelForASR" value="false" />
+<int name="devicesettingInfo::ASRStopPolicy" value="2" />
+<int name="devicesettingInfo::energyJudgeTime" value="1950" />
+<boolean name="devicesettingInfo::wakeupsound" value="true" />
+<string name="nightmodeInfo::wakeupStyle">lightWithOpsSound</string>
+<boolean name="nightmodeInfo::dsbEasyWakeup" value="true" />
+<int name="devicesettingInfo::localASREnergyCVCount" value="9" />
+<int name="devicesettingInfo::localASREnergyThreshold" value="60" />
+<int name="devicesettingInfo::energyCVCount" value="10" />
+<boolean name="lower_wake_threshold_switch" value="false" />
+<string name="devicesettingInfo::wakeupcolor">babyblue</string>
+<int name="devicesettingInfo::energyThreshold" value="90" />
+<int name="devicesettingInfo::asrrecordtime" value="5" />
+<boolean name="devicesettingInfo::localASR" value="true" />
