@@ -98,7 +98,7 @@
 static volatile int  g_state = TG_E_NOT_INSTALLED;
 static volatile int  g_patched;
 static volatile int  g_stop;
-static char          g_err[192];
+static char          g_err[320];
 
 static uint32_t      g_func;            /* 原厂函数运行期地址 */
 static uint32_t      g_orig[2];         /* 被替换的两条原厂指令 */
@@ -309,6 +309,90 @@ static int page_prot(uintptr_t page)
     return -1;
 }
 
+/* ------------------------------------------- T6 入口页权限（T8-06.2 修复）
+ *
+ * 入口页的原始权限只**确认一次**，然后长期保留：
+ *   - 查询失败（page_prot() 返回 -1，或返回值里出现 R/W/X 之外的位）时，
+ *     既不改保护、也不写入口 —— 绝不用"猜的权限"去 mprotect；
+ *   - 恢复失败时基线仍然有效（g_entry_prot_valid 保持 1），下一轮卸载/安装
+ *     可以**只重试恢复**，不需要重新查询；
+ *   - 恢复失败后绝不回头复查权限：那时的"当前权限"是 RWX，是**我们自己造成的**，
+ *     把它当成新的原始权限，等于永久放弃 W^X。
+ *
+ * 这一组状态跨"安装失败 / 卸载失败 / 重试"全程保留，卸载成功也不清零。
+ */
+static uintptr_t    g_entry_page;              /* 入口所在页（页对齐） */
+static int          g_entry_orig_prot = -1;    /* 首次确认的原始权限；-1 = 未知 */
+static volatile int g_entry_prot_valid;        /* 1 = 基线已确认，可以安全恢复 */
+static volatile int g_prot_dirty;              /* 1 = 恢复欠账（页面可能仍是 RWX） */
+static volatile unsigned long g_entry_prot_queries;  /* 真正读 /proc/self/maps 的次数 */
+static volatile unsigned long g_entry_prot_fails;    /* 查询/改保护/恢复失败次数 */
+static volatile unsigned long g_entry_patch_marks;   /* 入口写成补丁的次数 */
+static volatile unsigned long g_entry_unpatch_marks; /* 入口写回原厂序言的次数 */
+
+/*
+ * 改入口页权限前的两件事：确认原始基线（只查一次）、把页面打开成 RWX。
+ * 任一步失败都返回非零，调用方必须原样返回，不许继续写入口。
+ */
+static int entry_begin_write(const char *what)
+{
+    uintptr_t page;
+    int q;
+
+    if (g_func == 0) {
+        set_err("%s: func is not resolved", what);
+        return TG_E_SYMBOL;
+    }
+    page = (uintptr_t)g_func & ~(uintptr_t)0xFFF;
+    g_entry_page = page;
+
+    if (!g_entry_prot_valid) {
+        INC(g_entry_prot_queries);
+        q = page_prot(page);
+        if (q < 0 || (q & ~(PROT_READ | PROT_WRITE | PROT_EXEC)) != 0) {
+            INC(g_entry_prot_fails);
+            set_err("cannot determine original page protection of %s (page=0x%08x, query=%d); "
+                    "refusing to change protection and refusing to touch the entry",
+                    what, (unsigned)page, q);
+            return TG_E_PROT;
+        }
+        g_entry_orig_prot = q;
+        g_entry_prot_valid = 1;
+    }
+
+    if (mprotect((void *)page, 4096, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
+        INC(g_entry_prot_fails);
+        set_err("mprotect(%s, page=0x%08x, RWX) failed errno=%d",
+                what, (unsigned)page, errno);
+        return TG_E_PROT;
+    }
+    return TG_OK;
+}
+
+/*
+ * 把入口页恢复成基线权限。失败时 g_prot_dirty 置 1 并保留基线，
+ * 调用方（或下一次 tg_hook_uninstall()）可以只重试这一步。
+ */
+static int entry_restore_prot(const char *what)
+{
+    if (!g_entry_prot_valid || g_entry_orig_prot < 0) {
+        INC(g_entry_prot_fails);
+        set_err("%s: original page protection is unknown; refusing to guess a value",
+                what);
+        return TG_E_PROT;
+    }
+    if (mprotect((void *)g_entry_page, 4096, g_entry_orig_prot) != 0) {
+        INC(g_entry_prot_fails);
+        g_prot_dirty = 1;
+        set_err("mprotect(%s, page=0x%08x, prot=%d) failed errno=%d "
+                "(page may still be writable; baseline kept for retry)",
+                what, (unsigned)g_entry_page, g_entry_orig_prot, errno);
+        return TG_E_PROT;
+    }
+    g_prot_dirty = 0;
+    return TG_OK;
+}
+
 /* --------------------------------------------------------------- Hook 本体 */
 
 /*
@@ -375,56 +459,112 @@ static int build_stub_page(uint32_t func, int *err_out)
 
 static int patch_entry(void)
 {
-    uint32_t *p = (uint32_t *)g_func;
-    uintptr_t page = g_func & ~(uintptr_t)0xFFF;
-    int old = page_prot(page);
+    uint32_t *p;
+    char why[320];
+    int rc;
 
-    if (mprotect((void *)page, 4096, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
-        set_err("mprotect(func=%p, RWX) failed errno=%d", (void *)g_func, errno);
-        return TG_E_PROT;
+    if (g_func == 0) {
+        set_err("patch_entry: func is not resolved");
+        return TG_E_SYMBOL;
     }
+    p = (uint32_t *)g_func;
 
-    /* 先写字面量、再写跳转指令：两者之间若线程正好在 func+4 上执行，
+    /* 1) 先确认页面原始权限：查不到就拒绝，入口一个字节都不动 */
+    rc = entry_begin_write("func entry");
+    if (rc != TG_OK) return rc;
+
+    /* 2) 先写字面量、再写跳转指令：两者之间若线程正好在 func+4 上执行，
      * 最坏结果是该次调用异常（概率 ~ns 级窗口）；顺序反过来则必然跳到垃圾地址。 */
     p[1] = (uint32_t)(uintptr_t)g_stub_page;
     __builtin___clear_cache((char *)p, (char *)p + 8);
     p[0] = TG_PATCH_JUMP;
     __builtin___clear_cache((char *)p, (char *)p + 8);
+    INC(g_entry_patch_marks);
 
-    (void)mprotect((void *)page, 4096, old ? old : (PROT_READ | PROT_EXEC));
+    /* 3) 入口已经是补丁机器码了 —— g_patched 立刻如实反映入口状态。
+     *    后面即使页面保护恢复失败，也不能回头说"没装上"：入口就是补丁。 */
     g_patched = 1;
+
+    /* 4) 恢复页面保护：返回值必须检查。失败 = 安装失败（但入口是补丁）。 */
+    rc = entry_restore_prot("func entry");
+    if (rc != TG_OK) {
+        snprintf(why, sizeof(why), "%s", g_err);
+        set_err("entry IS patched at 0x%08x (%08x %08x) but page protection restore FAILED: %s "
+                "(page=0x%08x original prot=%d; sender thread NOT started; install NOT successful)",
+                (unsigned)g_func, p[0], p[1], why,
+                (unsigned)g_entry_page, g_entry_orig_prot);
+        return rc;
+    }
     return TG_OK;
 }
 
 int tg_hook_uninstall(void)
 {
     uint32_t *p;
-    uintptr_t page;
-    int old;
+    int rc;
 
-    if (!g_patched) return TG_OK;
-    p = (uint32_t *)g_func;
-    page = g_func & ~(uintptr_t)0xFFF;
-    old = page_prot(page);
-    if (mprotect((void *)page, 4096, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
-        set_err("mprotect(func, RWX) failed on uninstall errno=%d", errno);
-        return TG_E_PROT;
+    /* 入口补丁不在、也没有页面保护欠账：真的没有事情可做 */
+    if (!g_patched && !g_prot_dirty) return TG_OK;
+
+    /*
+     * 入口机器码上一轮已经写回，只剩页面保护欠账：这里必须真的再试一次恢复，
+     * 不能因为 g_patched==0 就直接返回成功（那会把 RWX 页面永久留在进程里）。
+     */
+    if (!g_patched) {
+        rc = entry_restore_prot("func entry (retry)");
+        if (rc != TG_OK) {
+            g_state = rc;
+            return rc;
+        }
+        g_state = TG_OK;
+        g_err[0] = '\0';
+        slog("hook already uninstalled; page protection restored on retry "
+             "(func=0x%08x prot=%d)", g_func, g_entry_orig_prot);
+        return TG_OK;
     }
+
+    p = (uint32_t *)g_func;
+    rc = entry_begin_write("func entry");
+    if (rc != TG_OK) {
+        g_state = rc;
+        return rc;
+    }
+
     p[0] = g_orig[0];
     p[1] = g_orig[1];
     __builtin___clear_cache((char *)p, (char *)p + 8);
-    (void)mprotect((void *)page, 4096, old ? old : (PROT_READ | PROT_EXEC));
+    INC(g_entry_unpatch_marks);
+
+    /* 入口机器码已经恢复 —— g_patched 如实反映入口状态（=0），
+     * 绝不为了"报错好看"伪造仍然 patched。 */
     g_patched = 0;
+
+    /* 页面保护恢复是独立的一件事：入口恢复成功 ≠ 保护恢复成功 */
+    rc = entry_restore_prot("func entry");
+    if (rc != TG_OK) {
+        char why[320];
+        snprintf(why, sizeof(why), "%s", g_err);
+        set_err("original prologue restored at 0x%08x (%08x %08x) but page protection "
+                "restore FAILED: %s (page=0x%08x original prot=%d; page may still be "
+                "writable; call tg_hook_uninstall() again to retry the restore)",
+                (unsigned)g_func, p[0], p[1], why,
+                (unsigned)g_entry_page, g_entry_orig_prot);
+        g_state = rc;
+        return rc;
+    }
+
     /*
      * 安装状态只由 g_patched 表达；g_state 是"上一次操作的结果"。
      * 卸载成功之后没有任何错误可言，所以这里回到 TG_OK —— 否则 Injector 的
      * --check 会把一次成功的卸载当成错误（exit=20），重装路径也会到处看到"状态错误"。
      * 发送线程保持运行（不设 g_stop）：重装时复用它，不再起第二个。
+     * 页面权限基线也保留（不清 g_entry_prot_valid）：下一次安装不必重新查询，
+     * 也不会因为"重查时正好是 RWX"而把基线永久污染成 RWX。
      */
     g_state = TG_OK;
     g_err[0] = '\0';
-    slog("hook uninstalled, original prologue restored (func=0x%08x sender=%d)",
-         g_func, g_thread_started);
+    slog("hook uninstalled, original prologue restored (func=0x%08x sender=%d prot=%d)",
+         g_func, g_thread_started, g_entry_orig_prot);
     return TG_OK;
 }
 
@@ -473,6 +613,10 @@ static int          g_nlu_mask = 0x7F;  /* T7B_ROUTE_ALL */
 static uint32_t     g_nlu_func;
 static uint32_t     g_nlu_orig[2];
 static void        *g_nlu_page;
+/* T8-06.2：stub 页最终拿到的权限，以及"是否降级成 RWX"（0 = 纯 RX，1 = RWX 降级）。
+ * 降级不是失败，但必须留痕：诊断时能读出"这一轮的 stub 页不是 W^X"。 */
+static int          g_nlu_page_prot;
+static volatile int g_nlu_page_degraded;
 static t8_to_state  g_to;
 static nls_state    g_nlu_sw;           /* T8-05：安装状态 + 接管开关（原子） */
 static np_patch     g_nlu_pp;           /* T8-05：入口补丁事务（含机器码记录） */
@@ -717,10 +861,12 @@ static int build_nlu_stub_page(uint32_t func, int *err_out)
 {
     uint32_t *c;
     uint32_t *t;
-    int old;
+    int rx_errno;
 
     if (g_nlu_page != NULL) return 0;
 
+    /* 第 1 步：mmap 出来就是 RW —— 填充 stub/trampoline 就在这个权限下完成。
+     * 不做"先 RX、再 RWX、最后 RX"那种来回切换：每一步都只改一次，且都看返回值。 */
     g_nlu_page = mmap(NULL, TG_STUB_PAGE, PROT_READ | PROT_WRITE,
                       MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (g_nlu_page == MAP_FAILED) {
@@ -751,23 +897,41 @@ static int build_nlu_stub_page(uint32_t func, int *err_out)
     t[2] = TG_PATCH_JUMP;
     t[3] = func + 8u;
 
+    /* 第 2 步：填充完毕 → 刷指令缓存（必须在转成可执行之前把数据写成指令流） */
     __builtin___clear_cache((char *)g_nlu_page, (char *)g_nlu_page + TG_STUB_PAGE);
 
-    old = page_prot((uintptr_t)g_nlu_page);
-    if (old != 7) {
-        mprotect(g_nlu_page, TG_STUB_PAGE, PROT_READ | PROT_EXEC);
-        if (mprotect(g_nlu_page, TG_STUB_PAGE, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
-            nlu_err_set("mprotect(nlu stub, RWX) failed errno=%d", errno);
-            *err_out = TG_E_PROT;
-            return -1;
-        }
+    /* 第 3 步：首选 RX。只有 mprotect 返回 0 才算成功。 */
+    if (mprotect(g_nlu_page, TG_STUB_PAGE, PROT_READ | PROT_EXEC) == 0) {
+        g_nlu_page_prot = PROT_READ | PROT_EXEC;
+        g_nlu_page_degraded = 0;
+        return 0;
     }
-    if (mprotect(g_nlu_page, TG_STUB_PAGE, PROT_READ | PROT_EXEC) != 0) {
-        nlu_err_set("mprotect(nlu stub, RX) failed errno=%d", errno);
-        *err_out = TG_E_PROT;
-        return -1;
+    rx_errno = errno;
+
+    /* 第 4 步：RX 明确失败，才按既有兼容策略降级到 RWX（Android 8.1 + permissive
+     * SELinux 实测允许）。成功即记录"降级"这一事实，失败才算错。 */
+    if (mprotect(g_nlu_page, TG_STUB_PAGE, PROT_READ | PROT_WRITE | PROT_EXEC) == 0) {
+        g_nlu_page_prot = PROT_READ | PROT_WRITE | PROT_EXEC;
+        g_nlu_page_degraded = 1;
+        nlu_err_set("nlu stub page is RWX (RX mprotect failed errno=%d); W^X degraded, "
+                    "stub stays executable (page=%p prot=%d)",
+                    rx_errno, g_nlu_page, g_nlu_page_prot);
+        slog("%s", g_nlu_err);
+        return 0;
     }
-    return 0;
+
+    /* 第 5 步：两种权限都拿不到 —— 不能假装 stub 可执行。
+     * 释放页面并把 g_nlu_page 清空，让下一次 prepare 重新建（不会留下半成品）。 */
+    nlu_err_set("mprotect(nlu stub) failed twice: RX errno=%d, RWX errno=%d; "
+                "stub page released, nothing written to the target",
+                rx_errno, errno);
+    slog("nlu stub page build FAILED: %s", g_nlu_err);
+    (void)munmap(g_nlu_page, TG_STUB_PAGE);
+    g_nlu_page = NULL;
+    g_nlu_page_prot = 0;
+    g_nlu_page_degraded = 0;
+    *err_out = TG_E_PROT;
+    return -1;
 }
 
 static int nlu_resolve(void)
@@ -1801,31 +1965,51 @@ int tg_hook_install(void)
     int err;
     pthread_attr_t attr;
 
-    if (g_patched) {
+    /*
+     * 幂等判定必须同时看三件事，不能只看 g_patched：
+     *   入口补丁在(g_patched) + 发送线程在跑(g_thread_started) + 页面保护没有欠账(!g_prot_dirty)。
+     *
+     * T8-06.2 的教训：patch_entry() 可能"入口写进去了、页面保护恢复失败"，
+     * 这时 g_patched=1 但 sender 根本没起、页面还是 RWX。若这里仍然凭 g_patched
+     * 直接返回成功，Injector 会以为装好了，实际既没有发送线程也还在 RWX 上跑。
+     * 所以这种状态必须继续往下走（补线程 + 补页面保护），而不是提前 return。
+     */
+    if (g_patched && g_thread_started && !g_prot_dirty) {
         g_state = TG_OK;
         return TG_OK;
     }
 
-    err = tg_hook_prepare();
-    if (err != TG_OK) return err;
+    if (!g_patched) {
+        err = tg_hook_prepare();
+        if (err != TG_OK) return err;
 
-    /* g_func 非空时 tg_hook_prepare() 会直接返回，所以这里要单独复核入口指令：
-     * 它同时覆盖"首次安装"和"卸载后重装"两件事，状态不一致一律拒绝。 */
-    err = verify_entry_state();
-    if (err != TG_OK) {
-        g_state = err;
-        return err;
-    }
+        /* g_func 非空时 tg_hook_prepare() 会直接返回，所以这里要单独复核入口指令：
+         * 它同时覆盖"首次安装"和"卸载后重装"两件事，状态不一致一律拒绝。 */
+        err = verify_entry_state();
+        if (err != TG_OK) {
+            g_state = err;
+            return err;
+        }
 
-    if (build_stub_page(g_func, &err) != 0) {
-        g_state = err;
-        return err;
-    }
+        if (build_stub_page(g_func, &err) != 0) {
+            g_state = err;
+            return err;
+        }
 
-    err = patch_entry();
-    if (err != TG_OK) {
-        g_state = err;
-        return err;
+        err = patch_entry();
+        if (err != TG_OK) {
+            /* 入口可能已经是补丁（页面保护恢复失败那条路）：这里不改 g_patched，
+             * 下一次 install 会走下面"补丁已在 → 只补页面保护/线程"的分支。 */
+            g_state = err;
+            return err;
+        }
+    } else if (g_prot_dirty) {
+        /* 入口补丁已经在，只是页面保护欠账：单独重试恢复，失败照样返回错误 */
+        err = entry_restore_prot("func entry (retry)");
+        if (err != TG_OK) {
+            g_state = err;
+            return err;
+        }
     }
 
     /* 复用判定只看"线程是否真的还在跑"：sender_main 退出时会把自己的
@@ -1845,10 +2029,21 @@ int tg_hook_install(void)
     }
     (void)pthread_attr_setstacksize(&attr, 128 * 1024);
     if (pthread_create(&g_thread, &attr, sender_main, NULL) != 0) {
+        int urc;
+        int perr = errno;
+
         pthread_attr_destroy(&attr);
-        (void)tg_hook_uninstall();
+        urc = tg_hook_uninstall();
         g_state = TG_E_THREAD;
-        set_err("pthread_create(sender) failed errno=%d", errno);
+        if (urc != TG_OK) {
+            /* 回滚自己也可能失败（入口写回了、页面保护没恢复）：两件事都要报出来 */
+            char why[320];
+            snprintf(why, sizeof(why), "%s", g_err);
+            set_err("pthread_create(sender) failed errno=%d; rollback of the entry patch "
+                    "also failed (rc=%d): %s", perr, urc, why);
+        } else {
+            set_err("pthread_create(sender) failed errno=%d", perr);
+        }
         return g_state;
     }
     pthread_attr_destroy(&attr);

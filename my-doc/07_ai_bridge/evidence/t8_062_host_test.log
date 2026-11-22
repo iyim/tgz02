@@ -1,0 +1,72 @@
+﻿# T8-06.2 host test log (T6 entry page protection + NLU stub page)
+# host time: 2026-11-22 19:18:16
+
+=== extract production functions from hook_agent/libtg_hook.c ===
+  ok  page_prot()              31 lines
+  ok  entry_begin_write()      34 lines
+  ok  entry_restore_prot()     19 lines
+  ok  patch_entry()            39 lines
+  ok  tg_hook_uninstall()      63 lines
+  ok  tg_hook_install()        88 lines
+  ok  verify_entry_state()     17 lines
+  ok  build_nlu_stub_page()    74 lines
+
+=== build t8_062_t6_prot_test ===
+PASS t8_062_t6_prot_test: 0 warning / 0 error
+
+=== run t8_062_t6_prot_test ===
+T8-06.2 T6 entry page protection + NLU stub page behaviour test
+(production functions extracted verbatim from hook_agent/libtg_hook.c)
+fake entry base = 0x10000000 (real, writable, below 4 GB)
+
+[A] T6 entry: unknown page protection must be refused
+
+[B] T6 install: failing to open the page is a failure, not a success
+
+[C] T6 install: entry patched but protection restore FAILED
+
+[D] T6 install: patched + no sender must NOT be reported as installed
+
+[E] T6 install: sender thread failure must roll back and report
+
+[F] T6 uninstall: entry restored but protection restore FAILED
+
+[G] T6 uninstall retry: the restore alone can be retried
+
+[H] NLU stub page: mmap RW -> fill -> flush -> RX (RWX only as fallback)
+
+RESULT: pass=126 fail=0
+exit : 0
+PASS t8_062_t6_prot_test: 126 assertions, 0 failures
+
+=== source assertions (only as a complement to the behaviour test) ===
+PASS no mprotect() result is discarded in patch_entry()/tg_hook_uninstall()
+PASS patch_entry(): query -> write -> record g_patched -> checked restore
+PASS tg_hook_uninstall(): entry-already-restored still retries the protection
+PASS tg_hook_uninstall(): g_patched reflects the entry, not the protection result
+PASS entry_begin_write(): unknown protection is refused before any mprotect()
+PASS entry_restore_prot(): debt is recorded and the baseline is never rewritten
+PASS tg_hook_install(): idempotent return requires the sender thread and a clean page
+PASS build_nlu_stub_page(): no /proc/self/maps query on the stub path
+PASS build_nlu_stub_page(): RX checked -> explicit RWX fallback -> failure releases the page
+
+=== regression suites (via run_t8_061_host_tests.ps1) ===
+  PASS production functions extracted verbatim (no hand-written copy)
+  PASS t8_061_page_prot_test: 0 warning / 0 error
+  PASS t8_061_page_prot_test: 73 assertions, 0 failures
+  PASS page_prot(): unknown page / unreadable maps -> -1 (old 'return 7' is gone)
+  PASS nlu_pp_unprotect(): refuses to change protection when the baseline is unknown
+  PASS baseline is marked valid only after the query succeeded
+  PASS t8_06_switch_test: 39 assertions, 0 failures
+  PASS t8_06_reprotect_test: 61 assertions, 0 failures
+  PASS t8_05_switch_test: 54 assertions, 0 failures
+  PASS t8_05_patch_test: 109 assertions, 0 failures
+PASS regression runner: # result: OK
+PASS   regression t8_061_page_prot_test = 73 assertions
+PASS   regression t8_06_switch_test = 39 assertions
+PASS   regression t8_06_reprotect_test = 61 assertions
+PASS   regression t8_05_switch_test = 54 assertions
+PASS   regression t8_05_patch_test = 109 assertions
+  regression assertions total = 336
+
+# result: OK (T8-06.2 behaviour test + 5 regression suites)
