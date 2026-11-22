@@ -1,0 +1,22 @@
+# annotated disassembly 0x11c9e0..0x11ca20 of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE @ 0x11c238 ====
+11c9e0  03 30 8f e0 add     r3, pc, r3
+11c9e4  00 70 8d e5 str     r7, [sp]
+11c9e8  00 00 8f e0 add     r0, pc, r0
+11c9ec  01 02 8d e9 stmib   sp, {r0, r9}
+11c9f0  82 fe ff ea b       #-1528 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x1c8>  ; -> 0x11c400 FUNC:_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x1c8
+11c9f4  04 00 94 e5 ldr     r0, [r4, #4]
+11c9f8  30 da fd eb bl      #-563008 <.plt+0x5f24>  ; -> 0x932c0 PLT:_ZN9AliAiLabs4AGUI14SessionManager16getSessionStatusEv
+11c9fc  06 00 50 e3 cmp     r0, #6
+11ca00  71 00 00 1a bne     #452 <_ZN9AliAiLabs4AGUI12SessionProxy9onHandlerEPNS0_7MessageE+0x994>
+11ca04  48 13 9f e5 ldr     r1, [pc, #840]
+11ca08  62 7f a0 e3 mov     r7, #392
+11ca0c  44 23 9f e5 ldr     r2, [pc, #836]
+11ca10  44 33 9f e5 ldr     r3, [pc, #836]
+11ca14  01 10 8f e0 add     r1, pc, r1
+11ca18  40 03 9f e5 ldr     r0, [pc, #832]
+11ca1c  02 20 8f e0 add     r2, pc, r2

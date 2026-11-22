@@ -1,0 +1,19 @@
+# annotated disassembly 0x11544c..0x115480 of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI14SessionManager14isSessionValidEhi @ 0x11544c ====
+11544c  00 c0 a0 e1 mov     r12, r0
+115450  00 00 a0 e3 mov     r0, #0
+115454  40 30 9c e5 ldr     r3, [r12, #64]
+115458  02 00 53 e1 cmp     r3, r2
+11545c  01 00 a0 03 moveq   r0, #1
+115460  00 00 51 03 cmpeq   r1, #0
+115464  00 00 00 0a beq     #0 <_ZN9AliAiLabs4AGUI14SessionManager14isSessionValidEhi+0x20>
+115468  1e ff 2f e1 bx      lr  ; -> indirect via lr
+11546c  68 10 9c e5 ldr     r1, [r12, #104]
+115470  00 00 a0 e3 mov     r0, #0
+115474  06 00 51 e3 cmp     r1, #6
+115478  01 00 00 b3 movwlt  r0, #1
+11547c  1e ff 2f e1 bx      lr  ; -> indirect via lr

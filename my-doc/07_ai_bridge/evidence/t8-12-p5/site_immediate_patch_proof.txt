@@ -1,0 +1,11 @@
+# T8-12.5  SITE_ID immediate patchability proof
+# build twice with -DSITE_ID=10 and -DSITE_ID=20; diff the .text bytes
+# SITE_ID=10 sha256 F571E1778EDBA7E9EDDFE690F0A447F713BEF78CAE2EEFA590041624F304A613
+# SITE_ID=20 sha256 12AF42E91D82F5472EF89C2A87AE7A003B3A0BB97DEF2AE13C81473B70F8E24C
+# differing byte offsets: 0x8  (count=1)
+# => the ONLY site-dependent byte is offset 0x08 (the "mov r0,#imm" immediate).
+#    Therefore a test harness may patch that one word to emulate a per-entry stub, and
+#    the patched word is provably identical to a dedicated compile for that site.
+
+SITE=10: 0F 50 2D E9 08 D0 4D E2 0A 00 A0 E3 08 10 9D E5 0C 20 9D E5 10 30 9D E5 14 C0 9D E5 00 C0 8D E5 1C C0 9D E5 04 C0 8D E5 10 C0 9F E5 3C FF 2F E1 08 D0 8D E2 0F 50 BD E8 04 F0 1F E5 11 11 11 11 22 22 22 22
+SITE=20: 0F 50 2D E9 08 D0 4D E2 14 00 A0 E3 08 10 9D E5 0C 20 9D E5 10 30 9D E5 14 C0 9D E5 00 C0 8D E5 1C C0 9D E5 04 C0 8D E5 10 C0 9F E5 3C FF 2F E1 08 D0 8D E2 0F 50 BD E8 04 F0 1F E5 11 11 11 11 22 22 22 22

@@ -1,0 +1,21 @@
+# annotated disassembly 0xfffbc..0xffff8 of libsmartbox.so
+# branch annotation: <target> then resolved name
+D:\tgz02\OS\_analysis\t6\libsmartbox.so:	file format ELF32-arm-little
+Disassembly of section .text:
+
+==== _ZN9AliAiLabs4AGUI6MmiCtx5getIdEPc @ 0xfffbc ====
+fffbc  10 4c 2d e9 push    {r4, r10, r11, lr}
+fffc0  08 b0 8d e2 add     r11, sp, #8
+fffc4  01 00 a0 e1 mov     r0, r1
+fffc8  01 40 a0 e1 mov     r4, r1
+fffcc  52 46 fe eb bl      #-452280 <.plt+0x4580>  ; -> 0x9191c PLT:_ZN9AliAiLabs4AGUI8StrUtils6strlenEPc
+fffd0  21 00 50 e3 cmp     r0, #33
+fffd4  05 00 00 ba blt     #20 <_ZN9AliAiLabs4AGUI6MmiCtx5getIdEPc+0x34>
+fffd8  20 20 84 e2 add     r2, r4, #32
+fffdc  20 10 40 e2 sub     r1, r0, #32
+fffe0  02 00 a0 e1 mov     r0, r2
+fffe4  00 20 a0 e3 mov     r2, #0
+fffe8  10 4c bd e8 pop     {r4, r10, r11, lr}
+fffec  9f 45 fe ea b       #-452996 <.plt+0x42d4>  ; -> 0x91670 PLT:_ZN9AliAiLabs4AGUI8StrUtils7toInt32EPKcii
+ffff0  00 00 a0 e3 mov     r0, #0
+ffff4  10 8c bd e8 pop     {r4, r10, r11, pc}
