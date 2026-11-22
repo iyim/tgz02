@@ -1,0 +1,3 @@
+listening abstract:tgz2_asr_bridge
+accepted fd=4
+shutdown(SHUT_RD) done on fd=4; listener closed; idling 300s

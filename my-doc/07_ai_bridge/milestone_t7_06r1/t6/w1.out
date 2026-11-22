@@ -1,0 +1,7 @@
+[aiw] 2026-11-21T14:04:30 lock acquired; previous owner pid=25507 no longer holding it
+[aiw] 2026-11-21T14:04:30 state v1 has no prefix fingerprint (offset=34119): cannot prove the file is the same one; rescanning from offset 0 and relying on recent_ids (111 ids) for bounded duplicates
+[aiw] 2026-11-21T14:04:30 legacy state migrated: rescanning from offset 0 with prefix tracking enabled
+[aiw] 2026-11-21T14:04:30 start pid=30453 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t6/ws/consumer_state.json provider=mock offset=34119 (mock only, no network)
+[aiw] 2026-11-21T14:04:32 exit reason=max_events processed=1 duplicates=111 invalid=0 gaps=0 resets=0 provider_retries=0 offset=34415 state_saves=113 state_errors=0
+[aiw] 2026-11-21T14:04:32 file identity: reason=legacy_state_rescan offset=34415 prefix_hash=e34f9a80fa8bdf33 resets=0 legacy_rescans=1 replacements=0 truncations=0
+[aiw] 2026-11-21T14:04:32 provider summary: name=mock calls=1 (no network)

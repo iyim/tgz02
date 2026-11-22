@@ -1,0 +1,120 @@
+2026-11-22 09:12:23 guard-stop uninstall pid=10414 [inject] abi=unknown (open /proc/10414/exe failed errno=13)
+2026-11-22 09:12:46 guard-start supervisor pid=15395 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 09:38:21 stop guard supervisor pid=15395 (TERM)
+2026-11-22 09:38:37 uninstall pid=15072 [inject] detached (target thread resumed)
+2026-11-22 09:38:57 guard-stop done rc=0
+2026-11-22 09:39:26 guard-start supervisor pid=25890 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 09:41:29 stop guard supervisor pid=25890 (TERM)
+2026-11-22 09:41:39 stop guard supervisor pid=25890 (KILL)
+2026-11-22 09:42:34 uninstall pid=15072 [inject] abi=unknown (open /proc/15072/exe failed errno=13)
+2026-11-22 09:42:59 guard-stop done rc=0
+2026-11-22 09:42:59 guard-reload restart core pid=15072
+2026-11-22 09:43:30 guard-start supervisor pid=29872 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 09:44:19 stop guard supervisor pid=29872 (TERM)
+2026-11-22 09:44:37 guard-start supervisor pid=31586 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 09:49:09 stop guard supervisor pid=31586 (TERM)
+2026-11-22 09:49:25 uninstall pid=30430 [inject] detached (target thread resumed)
+2026-11-22 09:49:42 guard-stop done rc=0
+2026-11-22 09:49:46 rollback: worker/conf/guard restored to T7-04, rc=1
+2026-11-22 09:50:48 uninstall pid=30430 [inject] detached after error (target thread resumed) exit=18
+2026-11-22 09:51:11 guard-stop done rc=0
+2026-11-22 09:51:17 rollback: worker/conf/guard restored to T7-04, rc=1
+2026-11-22 09:51:52 uninstall pid=30430 [inject] detached after error (target thread resumed) exit=18
+2026-11-22 09:52:19 guard-stop done rc=0
+2026-11-22 09:52:50 rollback: worker/conf/guard restored to T7-04, rc=0
+2026-11-22 09:53:26 guard-start supervisor pid=6829 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 10:35:52 guard-start supervisor pid=4710 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 10:39:51 stop guard supervisor pid=4710 (TERM)
+2026-11-22 10:40:07 uninstall pid=6672 rc=0 [inject] detached (target thread resumed)
+2026-11-22 10:40:10 uninstall: hooked=0 on every :core
+2026-11-22 10:40:25 guard-stop PASS
+2026-11-22 10:41:19 guard-start supervisor pid=11001 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 10:43:00 stop guard supervisor pid=11001 (TERM)
+2026-11-22 10:43:18 uninstall pid=6672 rc=0 [inject] detached (target thread resumed)
+2026-11-22 10:43:21 uninstall: hooked=0 on every :core
+2026-11-22 10:43:42 guard-stop PASS
+2026-11-22 10:44:08 rollback: worker/conf/guard restored to T7-04, rc=1
+2026-11-22 10:45:06 guard-start supervisor pid=17693 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 10:50:47 stop guard supervisor pid=17693 (TERM)
+2026-11-22 10:51:13 uninstall pid=6672 rc=19 [inject] detached after error (target thread resumed) exit=19
+2026-11-22 10:51:16 FAIL guard-stop uninstall rc=1
+2026-11-22 10:52:07 guard-start supervisor pid=22947 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 11:00:06 stop guard supervisor pid=22947 (TERM)
+2026-11-22 11:00:24 uninstall pid=6672 rc=19 [inject] detached after error (target thread resumed) exit=19
+2026-11-22 11:00:28 FAIL guard-stop uninstall rc=1
+2026-11-22 11:01:26 guard-start supervisor pid=28914 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 11:08:38 stop guard supervisor pid=28914 (TERM)
+2026-11-22 11:09:02 uninstall pid=6672 rc=19 [inject] detached after error (target thread resumed) exit=19
+2026-11-22 11:09:02 restart pid=6672 (uninstall could not be verified in place)
+2026-11-22 11:09:04 FAIL guard-stop uninstall rc=1
+2026-11-22 11:09:54 guard-start supervisor pid=2391 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 11:12:43 stop guard supervisor pid=2391 (TERM)
+2026-11-22 11:13:07 uninstall pid=32742 rc=0 [inject] detached (target thread resumed)
+2026-11-22 11:13:11 uninstall: hooked=0 on every :core
+2026-11-22 11:13:30 guard-stop PASS
+2026-11-22 11:13:54 rollback: pid=32742 check not queryable after .so replacement
+2026-11-22 11:14:08 rollback: worker/conf/guard restored to T7-04, rc=0
+2026-11-22 11:15:00 guard-start supervisor pid=8538 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 11:16:42 stop guard supervisor pid=8538 (TERM)
+2026-11-22 11:17:02 uninstall pid=32742 rc=19 [inject] detached after error (target thread resumed) exit=19
+2026-11-22 11:17:02 restart pid=32742 (uninstall could not be verified in place)
+2026-11-22 11:17:04 uninstall: hooked=0 on every :core
+2026-11-22 11:17:30 guard-stop PASS
+2026-11-22 11:17:30 guard-reload restart core pid=10832
+2026-11-22 11:18:07 guard-start supervisor pid=13119 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 12:06:09 stop guard supervisor pid=13119 (TERM)
+2026-11-22 12:06:33 uninstall pid=11805 rc=0 [inject] detached (target thread resumed)
+2026-11-22 12:06:36 uninstall: hooked=0 on every :core
+2026-11-22 12:07:01 guard-stop PASS
+2026-11-22 12:07:01 guard-reload restart core pid=11805
+2026-11-22 12:07:48 guard-start supervisor pid=26126 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 12:14:25 stop guard supervisor pid=26126 (TERM)
+2026-11-22 12:14:45 uninstall pid=27541 rc=0 [inject] detached (target thread resumed)
+2026-11-22 12:14:49 uninstall: hooked=0 on every :core
+2026-11-22 12:15:14 guard-stop PASS
+2026-11-22 12:15:14 guard-reload restart core pid=27541
+2026-11-22 12:16:01 guard-start supervisor pid=32304 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 12:24:27 stop guard supervisor pid=32304 (TERM)
+2026-11-22 12:24:54 uninstall pid=30954 rc=0 [inject] detached (target thread resumed)
+2026-11-22 12:24:58 uninstall: hooked=0 on every :core
+2026-11-22 12:25:22 guard-stop PASS
+2026-11-22 12:25:23 guard-reload restart core pid=30954
+2026-11-22 12:26:14 guard-start supervisor pid=6576 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 12:32:15 uninstall pid=8140 rc=19 [inject] detached after error (target thread resumed) exit=19
+2026-11-22 12:32:15 restart pid=8140 (uninstall could not be verified in place)
+2026-11-22 12:32:17 uninstall: hooked=0 on every :core
+2026-11-22 12:32:44 guard-stop PASS
+2026-11-22 12:32:44 guard-reload restart core pid=9269
+2026-11-22 12:33:26 guard-start supervisor pid=11433 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 12:37:32 stop guard supervisor pid=11433 (TERM)
+2026-11-22 12:37:54 uninstall pid=10128 rc=0 [inject] detached (target thread resumed)
+2026-11-22 12:37:58 uninstall: hooked=0 on every :core
+2026-11-22 12:38:27 guard-stop PASS
+2026-11-22 12:38:27 guard-reload restart core pid=10128
+2026-11-22 12:39:17 guard-start supervisor pid=15893 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 12:55:57 guard-start supervisor pid=4806 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 13:05:10 guard-start supervisor pid=4723 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 13:11:21 guard-start supervisor pid=4693 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 13:15:52 guard-start supervisor pid=4722 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 13:20:09 guard-start supervisor pid=4719 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 13:23:36 stop guard supervisor pid=4719 (TERM)
+2026-11-22 13:24:04 uninstall pid=1155 rc=0 [inject] detached (target thread resumed)
+2026-11-22 13:24:07 uninstall: hooked=0 on every :core
+2026-11-22 13:24:25 guard-stop PASS
+2026-11-22 13:24:26 guard-reload restart core pid=1155
+2026-11-22 13:25:15 guard-start supervisor pid=9707 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 13:26:29 stop guard supervisor pid=9707 (TERM)
+2026-11-22 13:26:53 uninstall pid=8342 rc=0 [inject] detached (target thread resumed)
+2026-11-22 13:26:56 uninstall: hooked=0 on every :core
+2026-11-22 13:27:16 guard-stop PASS
+2026-11-22 13:28:40 uninstall pid=8342 rc=0 [inject] detached (target thread resumed)
+2026-11-22 13:28:44 uninstall: hooked=0 on every :core
+2026-11-22 13:29:03 guard-stop PASS
+2026-11-22 13:47:48 guard-start supervisor pid=22356 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 13:52:50 stop guard supervisor pid=22356 (TERM)
+2026-11-22 13:53:16 guard-start supervisor pid=27530 so=/data/local/tmp/t7/libtg_ttsguard.so
+2026-11-22 13:55:56 stop guard supervisor pid=27530 (TERM)
+2026-11-22 13:56:16 uninstall pid=8342 rc=0 [inject] detached (target thread resumed)
+2026-11-22 13:56:19 uninstall: hooked=0 on every :core
+2026-11-22 13:56:38 guard-stop PASS
+2026-11-22 14:03:56 guard-start supervisor pid=4685 so=/data/local/tmp/t7/libtg_ttsguard.so

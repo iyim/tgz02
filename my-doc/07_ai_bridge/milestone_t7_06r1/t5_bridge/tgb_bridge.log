@@ -1,0 +1,2 @@
+{"type":"CONFIG","sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","max_clients":8,"dedup_cap":8192,"fault_after_writes":-1,"text_max_bytes":511,"body_max":1024}
+{"type":"READY","pid":2586,"events_stored":0,"replay_lines":540,"bad_lines":0,"truncated_bytes":0,"dedup_size":540}

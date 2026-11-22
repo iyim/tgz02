@@ -1,0 +1,189 @@
+2026-11-21 22:36:28 restart: kill -9 21984
+2026-11-21 22:36:28 restart: kill -9 23023
+2026-11-21 22:36:39 skip pid=23061: libsmartbox.so not mapped yet
+2026-11-21 22:37:30 skip pid=23061: libsmartbox.so not mapped yet
+2026-11-21 22:38:26 skip pid=23061: libsmartbox.so not mapped yet
+2026-11-21 22:38:51 inject pid=23061 age=142s
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+[inject] so_size=22708 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=23061 (manual)
+[inject] abi=unknown (open /proc/23061/exe failed errno=13)
+2026-11-21 22:39:23 inject pid=23061 age=174s
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+[inject] so_size=22708 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=23061 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] attached tid=23061 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xb0862000 stack=0xb086a000 trap=0xb0871000 gadget=0xb1edfa6c
+[inject] dlopen=0xb30ef0ad (libdl.so)
+[inject] dlsym=0xb30ef0bf (libdl.so)
+[inject] dlerror=0xb30ef0b7 (libdl.so)
+[inject] path_written=0xb0862100 len=35
+[inject] dlopen ok handle=0x0794c7a3 flags=0x2
+[inject] dlsym ok install=0x922021e0 prepare=0x92201bb0 status=0x92203134
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x9638ce14,0x96396364)
+[inject] paused 77 other threads (exec tid=23061); [0x9638ce14,0x96396364) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=0 min_sil=0 type=-1
+[inject] RESULT ok pid=23061 already_mapped=0 check_only=0
+[inject] detached (target thread resumed)
+2026-11-21 22:41:18 restart: kill -9 23061
+2026-11-21 22:41:44 inject pid=24675 age=26s
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+[inject] so_size=22780 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=24675 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] attached tid=24675 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xb0281000 stack=0xb0289000 trap=0xb0290000 gadget=0xb1edfa6c
+[inject] dlopen=0xb30ef0ad (libdl.so)
+[inject] dlsym=0xb30ef0bf (libdl.so)
+[inject] dlerror=0xb30ef0b7 (libdl.so)
+[inject] path_written=0xb0281100 len=35
+[inject] dlopen ok handle=0xbcb609d5 flags=0x2
+[inject] dlsym ok install=0x91c4a1e0 prepare=0x91c49bb0 status=0x91c4b110
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x96248e14,0x96252364)
+[inject] paused 81 other threads (exec tid=24675); [0x96248e14,0x96252364) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=0 min_sil=0 type=-1
+[inject] RESULT ok pid=24675 already_mapped=0 check_only=0
+[inject] detached (target thread resumed)
+2026-11-21 22:42:54 inject pid=25225 age=19s
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+[inject] so_size=22780 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=25225 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] attached tid=25225 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xb0286000 stack=0xb028e000 trap=0xb0295000 gadget=0xb1edfa6c
+[inject] dlopen=0xb30ef0ad (libdl.so)
+[inject] dlsym=0xb30ef0bf (libdl.so)
+[inject] dlerror=0xb30ef0b7 (libdl.so)
+[inject] path_written=0xb0286100 len=35
+[inject] dlopen ok handle=0x44b7dbe9 flags=0x2
+[inject] dlsym ok install=0x8f6121e0 prepare=0x8f611bb0 status=0x8f613110
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x963c8e14,0x963d2364)
+[inject] paused 78 other threads (exec tid=25225); [0x963c8e14,0x963d2364) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=0 min_sil=0 type=-1
+[inject] RESULT ok pid=25225 already_mapped=0 check_only=0
+[inject] detached (target thread resumed)
+2026-11-21 22:43:41 restart: kill -9 25623
+2026-11-21 22:44:05 inject pid=25913 age=24s
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+[inject] so_size=22848 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=25913 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] attached tid=25913 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xb07ef000 stack=0xb07f7000 trap=0xb07fe000 gadget=0xb1edfa6c
+[inject] dlopen=0xb30ef0ad (libdl.so)
+[inject] dlsym=0xb30ef0bf (libdl.so)
+[inject] dlerror=0xb30ef0b7 (libdl.so)
+[inject] path_written=0xb07ef100 len=35
+[inject] dlopen ok handle=0xc678a251 flags=0x2
+[inject] dlsym ok install=0x9125e1e0 prepare=0x9125dbb0 status=0x9125f2a0
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x96089e14,0x96093364)
+[inject] paused 79 other threads (exec tid=25913); [0x96089e14,0x96093364) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 thread=1 im_start=2 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=1 snap=0 cmds=1 min_vad=0 min_sil=0 type=-1
+[inject] RESULT ok pid=25913 already_mapped=0 check_only=0
+[inject] detached (target thread resumed)
+2026-11-21 22:44:54 restart: kill -9 25913
+2026-11-21 22:44:54 restart: kill -9 26373
+2026-11-21 22:45:17 inject pid=26412 age=23s
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+[inject] so_size=66820 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=26412 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] attached tid=26412 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xb0862000 stack=0xb086a000 trap=0xb0871000 gadget=0xb1edfa6c
+[inject] dlopen=0xb30ef0ad (libdl.so)
+[inject] dlsym=0xb30ef0bf (libdl.so)
+[inject] dlerror=0xb30ef0b7 (libdl.so)
+[inject] path_written=0xb0862100 len=35
+[inject] dlopen ok handle=0x79a6cd0f flags=0x2
+[inject] dlsym ok install=0x9134afd0 prepare=0x9134a9a0 status=0x9134c148
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x96709e14,0x96713364)
+[inject] paused 80 other threads (exec tid=26412); [0x96709e14,0x96713364) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=0 min_sil=0 type=-1
+[inject] RESULT ok pid=26412 already_mapped=0 check_only=0
+[inject] detached (target thread resumed)
+2026-11-21 22:46:11 restart: kill -9 26412
+2026-11-21 22:46:28 inject pid=26931 age=17s
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+[inject] so_size=66820 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=26931 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] attached tid=26931 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xb06c3000 stack=0xb06cb000 trap=0xb06d2000 gadget=0xb1edfa6c
+[inject] dlopen=0xb30ef0ad (libdl.so)
+[inject] dlsym=0xb30ef0bf (libdl.so)
+[inject] dlerror=0xb30ef0b7 (libdl.so)
+[inject] path_written=0xb06c3100 len=35
+[inject] dlopen ok handle=0x04418b8f flags=0x2
+[inject] dlsym ok install=0x8f493fd0 prepare=0x8f4939a0 status=0x8f495148
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x95c0ee14,0x95c18364)
+[inject] paused 81 other threads (exec tid=26931); [0x95c0ee14,0x95c18364) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=0 min_sil=0 type=-1
+[inject] RESULT ok pid=26931 already_mapped=0 check_only=0
+[inject] detached (target thread resumed)
+2026-11-21 22:47:22 restart: kill -9 26931
+2026-11-21 22:47:22 restart: kill -9 27467
+2026-11-21 22:47:39 inject pid=27493 age=17s
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+[inject] so_size=70948 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=27493 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] attached tid=27493 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xb06f1000 stack=0xb06f9000 trap=0xb0700000 gadget=0xb1edfa6c
+[inject] dlopen=0xb30ef0ad (libdl.so)
+[inject] dlsym=0xb30ef0bf (libdl.so)
+[inject] dlerror=0xb30ef0b7 (libdl.so)
+[inject] path_written=0xb06f1100 len=35
+[inject] dlopen ok handle=0x5fc41aff flags=0x2
+[inject] dlsym ok install=0x8fadd010 prepare=0x8fadc9e0 status=0x8fade344
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x963cae14,0x963d4364)
+[inject] paused 78 other threads (exec tid=27493); [0x963cae14,0x963d4364) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=0 min_sil=0 type=-1
+[inject] RESULT ok pid=27493 already_mapped=0 check_only=0
+[inject] detached (target thread resumed)
+2026-11-21 22:51:33 restart: kill -9 27493
+2026-11-21 22:53:10 restart: kill -9 28617
+2026-11-21 22:58:14 restart: kill -9 1161
+2026-11-21 22:58:14 restart: kill -9 5431
+2026-11-21 23:06:45 restart: kill -9 5479
+2026-11-21 23:06:45 restart: kill -9 8162
+2026-11-21 23:07:26 restart: kill -9 8213
+2026-11-21 23:08:03 restart: kill -9 8614
+2026-11-21 23:09:08 restart: kill -9 9010
+2026-11-21 23:15:42 restart: kill -9 9480

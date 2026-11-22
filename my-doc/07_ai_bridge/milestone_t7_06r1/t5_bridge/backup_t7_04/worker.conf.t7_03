@@ -1,0 +1,31 @@
+# worker.conf.example -- T7-01：AI Worker 配置示例（key=value，# 为注释）
+#
+# 复制到 /data/local/tmp/t5_bridge/ai_worker/worker.conf 并 chmod 600。
+#
+# ⚠ 这个文件里**没有也不能有** API Key：
+#   只有 api_key_file（key 文件的**路径**）。写 api_key=... 会被 Worker 直接拒绝（退出码 2）。
+#   日志、状态文件、命令行都不会出现 key 内容。
+#
+# 优先级：命令行参数 > 本文件 > 编译默认值。
+# 改完不用重新编译：sh run_ai_worker.sh stop && sh run_ai_worker.sh start-deepseek
+
+# mock | deepseek（deepseek 现在指的是"OpenAI 兼容的 chat/completions"，可以指向本地代理）
+provider=deepseek
+
+# 设备现有本地模型代理（不要换成官方接口）
+base_url=http://192.168.1.13:8790/v1
+model=deepseek-flash
+
+# key 文件的路径（内容只读到内存，fini 清零）
+api_key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key
+
+# 采样参数（0.0 - 2.0 / 1 - 8192）
+temperature=0.3
+max_tokens=300
+
+# 多轮上下文（T7-01）
+#   context_enabled=0 -> 每轮互相独立（T5-06C 行为）
+#   context_max_messages 只按**完整轮次**淘汰，最少 2、最多 48，必须是偶数
+context_enabled=1
+context_max_messages=6
+context_file=/data/local/tmp/t5_bridge/ai_worker/context.json

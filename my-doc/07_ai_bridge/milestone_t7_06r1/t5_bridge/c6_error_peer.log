@@ -1,0 +1,10 @@
+peer listening abstract:tgz2_asr_bridge mode=error flag=-
+accepted cfd=4
+RX n=1 id=t5b-29413-1969668-g1 bytes=213 mode=error
+TX id=t5b-29413-1969668-g1 status=error code=store_failed tweak=0 bytes=129
+RX n=2 id=t5b-29413-1969668-g1 bytes=213 mode=error
+TX id=t5b-29413-1969668-g1 status=error code=store_failed tweak=0 bytes=129
+RX n=3 id=t5b-29413-1969668-g1 bytes=213 mode=error
+TX id=t5b-29413-1969668-g1 status=stored code=ok tweak=0 bytes=120
+client closed
+connection done, frames_total=3

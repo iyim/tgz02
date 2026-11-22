@@ -1,0 +1,3 @@
+[aiw] 2026-11-20T18:56:59 lock acquired; previous owner pid=25374 no longer holding it
+[aiw] 2026-11-20T18:56:59 start pid=25507 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5_bridge/ai_worker/consumer_state.json provider=mock offset=33502 (mock only, no network)
+[aiw] 2026-11-20T19:00:00 exit reason=signal processed=2 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=34119 state_saves=3 state_errors=0

@@ -1,0 +1,400 @@
+2026-11-21 22:51:27.066 sup: start pid=28531 target=com.alibaba.ailabs.genie.smartapp:core injector=/data/local/tmp/t6/tg_injector agent=/data/local/tmp/t7/libtg_dialog.so interval=500ms retry=2000ms max=60000ms
+2026-11-21 22:51:27.076 sup: pidfile=/data/local/tmp/t7/dialog.sup.pid acquired (single instance)
+2026-11-21 22:51:27.086 sup: target found: pid=27493 starttime=1516778 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 22:51:27.108 sup: target ready: pid=27493 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=1
+inj| [inject] so_size=70948 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=27493 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=1 (/data/local/tmp/t7/libtg_dialog.so)
+inj| [inject] attached tid=27498 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xaac72000 stack=0xaac7a000 trap=0xaac81000 gadget=0xb1edfa6c
+inj| [inject] dlopen=0xb30ef0ad (libdl.so)
+inj| [inject] dlsym=0xb30ef0bf (libdl.so)
+inj| [inject] dlerror=0xb30ef0b7 (libdl.so)
+inj| [inject] path_written=0xaac72100 len=35
+inj| [inject] dlopen ok handle=0x5fc41aff flags=0x6
+inj| [inject] dlsym ok install=0x8fadd010 prepare=0x8fadc9e0 status=0x8fade344
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x963cae14,0x963d4364)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 thread=1 im_start=22 on_start=10 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=11 snap=16 cmds=3 min_vad=0 min_sil=0 type=-1
+inj| [inject] RESULT check pid=27493 hooked=1
+inj| [inject] detached (target thread resumed)
+2026-11-21 22:51:27.799 sup: check done: pid=27493 exit=0 hooked=1 state=hooked
+2026-11-21 22:51:27.799 sup: already hooked: pid=27493 (state=1); skip install
+2026-11-21 22:51:34.173 sup: target changed: old pid=27493 starttime=1516778 -> new pid=28617 starttime=1541889
+2026-11-21 22:51:34.173 sup: target found: pid=28617 starttime=1541889 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 22:51:34.236 sup: waiting: pid=28617 has not loaded libsmartbox.so yet
+2026-11-21 22:51:34.750 sup: target ready: pid=28617 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=1
+inj| [inject] so_size=70948 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=28617 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 22:51:34.858 sup: check done: pid=28617 exit=0 hooked=-1 state=unknown
+2026-11-21 22:51:34.858 sup: inject begin: pid=28617 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+inj| [inject] so_size=70948 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=28617 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=28617 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xb0eb6000 stack=0xb0ebe000 trap=0xb0ec5000 gadget=0xb1edfa6c
+inj| [inject] dlopen=0xb30ef0ad (libdl.so)
+inj| [inject] dlsym=0xb30ef0bf (libdl.so)
+inj| [inject] dlerror=0xb30ef0b7 (libdl.so)
+inj| [inject] path_written=0xb0eb6100 len=35
+inj| [inject] dlopen ok handle=0xc10fca65 flags=0x2
+inj| [inject] dlsym ok install=0x945dd010 prepare=0x945dc9e0 status=0x945de344
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x9638fe14,0x96399364)
+inj| [inject] ERROR stage=pause rc=-11 err=PTRACE_ATTACH tid=28622 failed errno=1
+inj| [inject] ERROR stage=install_pause rc=-11 err=PTRACE_ATTACH tid=28622 failed errno=1
+inj| [inject] detached after error (target thread resumed) exit=19
+2026-11-21 22:51:35.118 sup: inject failed: pid=28617 exit=19 hooked=-1 attempt=1 backoff=2000ms why=exit=19 (no hooked= in output)
+2026-11-21 22:51:37.350 sup: inject begin: pid=28617 attempt=2 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+inj| [inject] so_size=70948 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=28617 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=1 (/data/local/tmp/t7/libtg_dialog.so)
+inj| [inject] attached tid=28623 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xb05e9000 stack=0xb05f1000 trap=0xb05f8000 gadget=0xb1edfa6c
+inj| [inject] dlopen=0xb30ef0ad (libdl.so)
+inj| [inject] dlsym=0xb30ef0bf (libdl.so)
+inj| [inject] dlerror=0xb30ef0b7 (libdl.so)
+inj| [inject] path_written=0xb05e9100 len=35
+inj| [inject] dlopen ok handle=0xc10fca65 flags=0x6
+inj| [inject] dlsym ok install=0x945dd010 prepare=0x945dc9e0 status=0x945de344
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x9638fe14,0x96399364)
+inj| [inject] paused 78 other threads (exec tid=28623); [0x9638fe14,0x96399364) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=0 min_sil=0 type=-1
+inj| [inject] RESULT ok pid=28617 already_mapped=1 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 22:51:40.475 sup: inject end: pid=28617 exit=0 hooked=1 elapsed=3126ms ok
+2026-11-21 22:53:10.886 sup: target changed: old pid=28617 starttime=1541889 -> new pid=29160 starttime=1551561
+2026-11-21 22:53:10.887 sup: target found: pid=29160 starttime=1551561 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 22:53:10.967 sup: waiting: pid=29160 has not loaded libsmartbox.so yet
+2026-11-21 22:53:11.487 sup: target ready: pid=29160 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=1
+inj| [inject] so_size=70948 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=29160 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 22:53:11.582 sup: check done: pid=29160 exit=0 hooked=-1 state=unknown
+2026-11-21 22:53:11.582 sup: inject begin: pid=29160 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+inj| [inject] so_size=70948 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=29160 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=29165 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xb0cd9000 stack=0xb0ce1000 trap=0xb0ce8000 gadget=0xb1edfa6c
+inj| [inject] dlopen=0xb30ef0ad (libdl.so)
+inj| [inject] dlsym=0xb30ef0bf (libdl.so)
+inj| [inject] dlerror=0xb30ef0b7 (libdl.so)
+inj| [inject] path_written=0xb0cd9100 len=35
+inj| [inject] dlopen ok handle=0x05983857 flags=0x2
+inj| [inject] dlsym ok install=0x94108010 prepare=0x941079e0 status=0x94109344
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x95b4ce14,0x95b56364)
+inj| [inject] ERROR stage=pause rc=-11 err=PTRACE_ATTACH tid=29166 failed errno=1
+inj| [inject] ERROR stage=install_pause rc=-11 err=PTRACE_ATTACH tid=29166 failed errno=1
+inj| [inject] detached after error (target thread resumed) exit=19
+2026-11-21 22:53:11.869 sup: inject failed: pid=29160 exit=19 hooked=-1 attempt=1 backoff=2000ms why=exit=19 (no hooked= in output)
+2026-11-21 22:53:14.291 sup: inject begin: pid=29160 attempt=2 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+inj| [inject] so_size=70948 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=29160 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=1 (/data/local/tmp/t7/libtg_dialog.so)
+inj| [inject] attached tid=29166 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xb00b6000 stack=0xb00be000 trap=0xb00c5000 gadget=0xb1edfa6c
+inj| [inject] dlopen=0xb30ef0ad (libdl.so)
+inj| [inject] dlsym=0xb30ef0bf (libdl.so)
+inj| [inject] dlerror=0xb30ef0b7 (libdl.so)
+inj| [inject] path_written=0xb00b6100 len=35
+inj| [inject] dlopen ok handle=0x05983857 flags=0x6
+inj| [inject] dlsym ok install=0x94108010 prepare=0x941079e0 status=0x94109344
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x95b4ce14,0x95b56364)
+inj| [inject] paused 71 other threads (exec tid=29166); [0x95b4ce14,0x95b56364) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=0 min_sil=0 type=-1
+inj| [inject] RESULT ok pid=29160 already_mapped=1 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 22:53:15.531 sup: inject end: pid=29160 exit=0 hooked=1 elapsed=1239ms ok
+2026-11-21 22:54:45.163 sup: target gone: pid=29160 starttime=1551561
+2026-11-21 22:56:09.907 sup: start pid=4043 target=com.alibaba.ailabs.genie.smartapp:core injector=/data/local/tmp/t6/tg_injector agent=/data/local/tmp/t7/libtg_dialog.so interval=500ms retry=2000ms max=60000ms
+2026-11-21 22:56:09.921 sup: pidfile=/data/local/tmp/t7/dialog.sup.pid acquired (single instance)
+2026-11-21 22:56:09.932 sup: target found: pid=1161 starttime=1587 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 22:56:09.941 sup: target ready: pid=1161 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=1
+inj| [inject] so_size=70948 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=1161 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 22:56:10.026 sup: check done: pid=1161 exit=0 hooked=-1 state=unknown
+2026-11-21 22:56:10.026 sup: inject begin: pid=1161 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+inj| [inject] so_size=70948 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=1161 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=1168 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xaa2a4000 stack=0xaa2ac000 trap=0xaa2b3000 gadget=0xb1574a6c
+inj| [inject] dlopen=0xafde00ad (libdl.so)
+inj| [inject] dlsym=0xafde00bf (libdl.so)
+inj| [inject] dlerror=0xafde00b7 (libdl.so)
+inj| [inject] path_written=0xaa2a4100 len=35
+inj| [inject] dlopen ok handle=0x5279df29 flags=0x2
+inj| [inject] dlsym ok install=0x8f427010 prepare=0x8f4269e0 status=0x8f428344
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x95cc8e14,0x95cd2364)
+inj| [inject] paused 85 other threads (exec tid=1168); [0x95cc8e14,0x95cd2364) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=0 min_sil=0 type=-1
+inj| [inject] RESULT ok pid=1161 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 22:56:10.308 sup: inject end: pid=1161 exit=0 hooked=1 elapsed=281ms ok
+2026-11-21 22:58:14.723 sup: target gone: pid=1161 starttime=1587
+2026-11-21 22:58:15.325 sup: target found: pid=5479 starttime=19345 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 22:58:15.364 sup: waiting: pid=5479 has not loaded libsmartbox.so yet
+2026-11-21 22:58:15.877 sup: target ready: pid=5479 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=1
+inj| [inject] so_size=71068 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=5479 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 22:58:15.920 sup: check done: pid=5479 exit=0 hooked=-1 state=unknown
+2026-11-21 22:58:15.920 sup: inject begin: pid=5479 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+inj| [inject] so_size=71068 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=5479 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=5479 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xafad6000 stack=0xafade000 trap=0xafae5000 gadget=0xb1574a6c
+inj| [inject] dlopen=0xafde00ad (libdl.so)
+inj| [inject] dlsym=0xafde00bf (libdl.so)
+inj| [inject] dlerror=0xafde00b7 (libdl.so)
+inj| [inject] path_written=0xafad6100 len=35
+inj| [inject] dlopen ok handle=0x1bea9bc9 flags=0x2
+inj| [inject] dlsym ok install=0x9204b0f0 prepare=0x9204a9e0 status=0x9204c778
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x9530ee14,0x95318364)
+inj| [inject] ERROR stage=pause rc=-11 err=PTRACE_ATTACH tid=5486 failed errno=1
+inj| [inject] ERROR stage=install_pause rc=-11 err=PTRACE_ATTACH tid=5486 failed errno=1
+inj| [inject] detached after error (target thread resumed) exit=19
+2026-11-21 22:58:16.119 sup: inject failed: pid=5479 exit=19 hooked=-1 attempt=1 backoff=2000ms why=exit=19 (no hooked= in output)
+2026-11-21 22:58:18.328 sup: inject begin: pid=5479 attempt=2 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+inj| [inject] so_size=71068 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=5479 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=1 (/data/local/tmp/t7/libtg_dialog.so)
+inj| [inject] attached tid=5479 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xa9b80000 stack=0xa9b88000 trap=0xa9b8f000 gadget=0xb1574a6c
+inj| [inject] dlopen=0xafde00ad (libdl.so)
+inj| [inject] dlsym=0xafde00bf (libdl.so)
+inj| [inject] dlerror=0xafde00b7 (libdl.so)
+inj| [inject] path_written=0xa9b80100 len=35
+inj| [inject] dlopen ok handle=0x1bea9bc9 flags=0x6
+inj| [inject] dlsym ok install=0x9204b0f0 prepare=0x9204a9e0 status=0x9204c778
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x9530ee14,0x95318364)
+inj| [inject] paused 76 other threads (exec tid=5479); [0x9530ee14,0x95318364) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=0 min_sil=0 type=-1
+inj| [inject] RESULT ok pid=5479 already_mapped=1 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 22:58:19.255 sup: inject end: pid=5479 exit=0 hooked=1 elapsed=927ms ok
+2026-11-21 23:06:45.701 sup: target changed: old pid=5479 starttime=19345 -> new pid=8213 starttime=70427
+2026-11-21 23:06:45.702 sup: target found: pid=8213 starttime=70427 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 23:06:45.788 sup: waiting: pid=8213 has not loaded libsmartbox.so yet
+2026-11-21 23:06:46.349 sup: target ready: pid=8213 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=1
+inj| [inject] so_size=71132 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=8213 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 23:06:46.471 sup: check done: pid=8213 exit=0 hooked=-1 state=unknown
+2026-11-21 23:06:46.471 sup: inject begin: pid=8213 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+inj| [inject] so_size=71132 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=8213 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=8218 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xafe06000 stack=0xafe0e000 trap=0xafe15000 gadget=0xb1574a6c
+inj| [inject] dlopen=0xafde00ad (libdl.so)
+inj| [inject] dlsym=0xafde00bf (libdl.so)
+inj| [inject] dlerror=0xafde00b7 (libdl.so)
+inj| [inject] path_written=0xafe06100 len=35
+inj| [inject] dlopen ok handle=0xaf2efbd3 flags=0x2
+inj| [inject] dlsym ok install=0x94a44130 prepare=0x94a439e0 status=0x94a458cc
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x9570ee14,0x95718364)
+inj| [inject] paused 18 other threads (exec tid=8218); [0x9570ee14,0x95718364) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=0 min_sil=0 type=-1
+inj| [inject] RESULT ok pid=8213 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 23:06:46.803 sup: inject end: pid=8213 exit=0 hooked=1 elapsed=331ms ok
+2026-11-21 23:07:26.564 sup: target gone: pid=8213 starttime=70427
+2026-11-21 23:07:27.088 sup: target found: pid=8614 starttime=74531 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 23:07:27.090 sup: target ready: pid=8614 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=1
+inj| [inject] so_size=71132 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=8614 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 23:07:27.136 sup: check done: pid=8614 exit=0 hooked=-1 state=unknown
+2026-11-21 23:07:27.136 sup: inject begin: pid=8614 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+inj| [inject] so_size=71132 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=8614 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=8620 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xafef4000 stack=0xafefc000 trap=0xaff03000 gadget=0xb1574a6c
+inj| [inject] dlopen=0xafde00ad (libdl.so)
+inj| [inject] dlsym=0xafde00bf (libdl.so)
+inj| [inject] dlerror=0xafde00b7 (libdl.so)
+inj| [inject] path_written=0xafef4100 len=35
+inj| [inject] dlopen ok handle=0x2ff92f6f flags=0x2
+inj| [inject] dlsym ok install=0x94413130 prepare=0x944129e0 status=0x944148cc
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x953cbe14,0x953d5364)
+inj| [inject] ERROR stage=pause rc=-11 err=PTRACE_ATTACH tid=8621 failed errno=1
+inj| [inject] ERROR stage=install_pause rc=-11 err=PTRACE_ATTACH tid=8621 failed errno=1
+inj| [inject] detached after error (target thread resumed) exit=19
+2026-11-21 23:07:27.590 sup: inject failed: pid=8614 exit=19 hooked=-1 attempt=1 backoff=2000ms why=exit=19 (no hooked= in output)
+2026-11-21 23:07:29.674 sup: inject begin: pid=8614 attempt=2 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+inj| [inject] so_size=71132 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=8614 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=1 (/data/local/tmp/t7/libtg_dialog.so)
+inj| [inject] attached tid=8622 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xa9d46000 stack=0xa9d4e000 trap=0xa9d55000 gadget=0xb1574a6c
+inj| [inject] dlopen=0xafde00ad (libdl.so)
+inj| [inject] dlsym=0xafde00bf (libdl.so)
+inj| [inject] dlerror=0xafde00b7 (libdl.so)
+inj| [inject] path_written=0xa9d46100 len=35
+inj| [inject] dlopen ok handle=0x2ff92f6f flags=0x6
+inj| [inject] dlsym ok install=0x94413130 prepare=0x944129e0 status=0x944148cc
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x953cbe14,0x953d5364)
+inj| [inject] paused 77 other threads (exec tid=8622); [0x953cbe14,0x953d5364) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=0 min_sil=0 type=-1
+inj| [inject] RESULT ok pid=8614 already_mapped=1 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 23:07:31.248 sup: inject end: pid=8614 exit=0 hooked=1 elapsed=1573ms ok
+2026-11-21 23:08:03.500 sup: target changed: old pid=8614 starttime=74531 -> new pid=9010 starttime=78218
+2026-11-21 23:08:03.503 sup: target found: pid=9010 starttime=78218 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 23:08:03.544 sup: waiting: pid=9010 has not loaded libsmartbox.so yet
+2026-11-21 23:08:04.627 sup: target ready: pid=9010 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=1
+inj| [inject] so_size=71132 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=9010 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 23:08:04.693 sup: check done: pid=9010 exit=0 hooked=-1 state=unknown
+2026-11-21 23:08:04.693 sup: inject begin: pid=9010 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+inj| [inject] so_size=71132 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=9010 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=9010 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xafbfa000 stack=0xafc02000 trap=0xafc09000 gadget=0xb1574a6c
+inj| [inject] dlopen=0xafde00ad (libdl.so)
+inj| [inject] dlsym=0xafde00bf (libdl.so)
+inj| [inject] dlerror=0xafde00b7 (libdl.so)
+inj| [inject] path_written=0xafbfa100 len=35
+inj| [inject] dlopen ok handle=0x6a0a6c05 flags=0x2
+inj| [inject] dlsym ok install=0x9385e130 prepare=0x9385d9e0 status=0x9385f8cc
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x9518be14,0x95195364)
+inj| [inject] paused 31 other threads (exec tid=9010); [0x9518be14,0x95195364) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=900 min_sil=900 type=7
+inj| [inject] RESULT ok pid=9010 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 23:08:04.882 sup: inject end: pid=9010 exit=0 hooked=1 elapsed=190ms ok
+2026-11-21 23:09:09.102 sup: target changed: old pid=9010 starttime=78218 -> new pid=9480 starttime=84766
+2026-11-21 23:09:09.102 sup: target found: pid=9480 starttime=84766 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 23:09:09.134 sup: waiting: pid=9480 has not loaded libsmartbox.so yet
+2026-11-21 23:09:09.658 sup: target ready: pid=9480 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=1
+inj| [inject] so_size=71132 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=9480 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] check_only with no library mapped: nothing to query
+2026-11-21 23:09:09.754 sup: check done: pid=9480 exit=0 hooked=-1 state=unknown
+2026-11-21 23:09:09.754 sup: inject begin: pid=9480 attempt=1 injector=/data/local/tmp/t6/tg_injector
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t7/libtg_dialog.so check_only=0
+inj| [inject] so_size=71132 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+inj| [inject] pid=9480 (manual)
+inj| [inject] abi=ELF32/ARM  class=1 machine=40
+inj| [inject] already_mapped=0
+inj| [inject] attached tid=9480 (thread was in /system/lib/libc.so, score=3)
+inj| [inject] scratch=0xb00e8000 stack=0xb00f0000 trap=0xb00f7000 gadget=0xb1574a6c
+inj| [inject] dlopen=0xafde00ad (libdl.so)
+inj| [inject] dlsym=0xafde00bf (libdl.so)
+inj| [inject] dlerror=0xafde00b7 (libdl.so)
+inj| [inject] path_written=0xb00e8100 len=35
+inj| [inject] dlopen ok handle=0x3988d0e1 flags=0x2
+inj| [inject] dlsym ok install=0x949cb130 prepare=0x949ca9e0 status=0x949cc8cc
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x94e47e14,0x94e51364)
+inj| [inject] paused 18 other threads (exec tid=9480); [0x94e47e14,0x94e51364) is clear
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 thread=1 im_start=0 on_start=0 vad_set=0 sil_set=0 vad_clamp=0 sil_clamp=0 genie_ok=0 genie_fail=0 snap=0 cmds=0 min_vad=900 min_sil=900 type=7
+inj| [inject] RESULT ok pid=9480 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-21 23:09:09.929 sup: inject end: pid=9480 exit=0 hooked=1 elapsed=175ms ok
+2026-11-21 23:15:31.056 sup: stop requested: signal=15
+2026-11-21 23:15:31.056 sup: exit: pid=4043

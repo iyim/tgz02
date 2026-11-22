@@ -1,0 +1,5 @@
+[aiw] 2026-11-21T14:04:32 lock acquired; previous owner pid=30453 no longer holding it
+[aiw] 2026-11-21T14:04:32 start pid=30483 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t6/ws/consumer_state.json provider=mock offset=34415 (mock only, no network)
+[aiw] 2026-11-21T14:04:32 exit reason=max_events processed=1 duplicates=0 invalid=0 gaps=0 resets=0 provider_retries=0 offset=34720 state_saves=2 state_errors=0
+[aiw] 2026-11-21T14:04:32 file identity: reason=first_open offset=34720 prefix_hash=cf2f66399039f1fd resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-21T14:04:32 provider summary: name=mock calls=1 (no network)

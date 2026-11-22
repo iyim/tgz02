@@ -1,0 +1,80 @@
+peer listening abstract:tgz2_asr_bridge mode=noack flag=/data/local/tmp/t5_bridge/c5_ack
+accepted cfd=4
+RX n=1 id=t5b-29413-1970027-g1 bytes=198 mode=noack
+client closed
+connection done, frames_total=1
+accepted cfd=4
+RX n=2 id=t5b-29413-1970027-g1 bytes=198 mode=noack
+client closed
+connection done, frames_total=2
+accepted cfd=4
+RX n=3 id=t5b-29413-1970027-g1 bytes=198 mode=noack
+client closed
+connection done, frames_total=3
+accepted cfd=4
+RX n=4 id=t5b-29413-1970027-g1 bytes=198 mode=noack
+TX id=t5b-29413-1970027-g1 status=stored code=ok tweak=0 bytes=120
+RX n=5 id=t5b-29413-1970031-g1 bytes=210 mode=noack
+TX id=t5b-29413-1970031-g1 status=stored code=ok tweak=0 bytes=120
+RX n=6 id=t5b-29413-1970035-g1 bytes=210 mode=noack
+TX id=t5b-29413-1970035-g1 status=stored code=ok tweak=0 bytes=120
+RX n=7 id=t5b-29413-1970040-g1 bytes=207 mode=noack
+TX id=t5b-29413-1970040-g1 status=stored code=ok tweak=0 bytes=120
+RX n=8 id=t5b-29413-1970045-g1 bytes=207 mode=noack
+TX id=t5b-29413-1970045-g1 status=stored code=ok tweak=0 bytes=120
+RX n=9 id=t5b-29413-1970053-g1 bytes=213 mode=noack
+TX id=t5b-29413-1970053-g1 status=stored code=ok tweak=0 bytes=120
+RX n=10 id=t5b-29413-1970057-g1 bytes=216 mode=noack
+TX id=t5b-29413-1970057-g1 status=stored code=ok tweak=0 bytes=120
+RX n=11 id=t5b-29413-1970062-g1 bytes=213 mode=noack
+TX id=t5b-29413-1970062-g1 status=stored code=ok tweak=0 bytes=120
+RX n=12 id=t5b-29413-1970066-g1 bytes=207 mode=noack
+TX id=t5b-29413-1970066-g1 status=stored code=ok tweak=0 bytes=120
+RX n=13 id=t5b-29413-1970070-g1 bytes=204 mode=noack
+TX id=t5b-29413-1970070-g1 status=stored code=ok tweak=0 bytes=120
+RX n=14 id=t5b-29413-1970076-g1 bytes=207 mode=noack
+TX id=t5b-29413-1970076-g1 status=stored code=ok tweak=0 bytes=120
+RX n=15 id=t5b-29413-1970080-g1 bytes=213 mode=noack
+TX id=t5b-29413-1970080-g1 status=stored code=ok tweak=0 bytes=120
+RX n=16 id=t5b-29413-1970085-g1 bytes=204 mode=noack
+TX id=t5b-29413-1970085-g1 status=stored code=ok tweak=0 bytes=120
+RX n=17 id=t5b-29413-1970089-g1 bytes=210 mode=noack
+TX id=t5b-29413-1970089-g1 status=stored code=ok tweak=0 bytes=120
+RX n=18 id=t5b-29413-1970093-g1 bytes=210 mode=noack
+TX id=t5b-29413-1970093-g1 status=stored code=ok tweak=0 bytes=120
+RX n=19 id=t5b-29413-1970098-g1 bytes=207 mode=noack
+TX id=t5b-29413-1970098-g1 status=stored code=ok tweak=0 bytes=120
+RX n=20 id=t5b-29413-1970105-g1 bytes=213 mode=noack
+TX id=t5b-29413-1970105-g1 status=stored code=ok tweak=0 bytes=120
+RX n=21 id=t5b-29413-1970109-g1 bytes=216 mode=noack
+TX id=t5b-29413-1970109-g1 status=stored code=ok tweak=0 bytes=120
+RX n=22 id=t5b-29413-1970114-g1 bytes=213 mode=noack
+TX id=t5b-29413-1970114-g1 status=stored code=ok tweak=0 bytes=120
+RX n=23 id=t5b-29413-1970118-g1 bytes=207 mode=noack
+TX id=t5b-29413-1970118-g1 status=stored code=ok tweak=0 bytes=120
+RX n=24 id=t5b-29413-1970123-g1 bytes=204 mode=noack
+TX id=t5b-29413-1970123-g1 status=stored code=ok tweak=0 bytes=120
+RX n=25 id=t5b-29413-1970129-g1 bytes=207 mode=noack
+TX id=t5b-29413-1970129-g1 status=stored code=ok tweak=0 bytes=120
+RX n=26 id=t5b-29413-1970133-g1 bytes=213 mode=noack
+TX id=t5b-29413-1970133-g1 status=stored code=ok tweak=0 bytes=120
+RX n=27 id=t5b-29413-1970146-g1 bytes=210 mode=noack
+TX id=t5b-29413-1970146-g1 status=stored code=ok tweak=0 bytes=120
+RX n=28 id=t5b-29413-1970150-g1 bytes=210 mode=noack
+TX id=t5b-29413-1970150-g1 status=stored code=ok tweak=0 bytes=120
+RX n=29 id=t5b-29413-1970155-g1 bytes=204 mode=noack
+TX id=t5b-29413-1970155-g1 status=stored code=ok tweak=0 bytes=120
+RX n=30 id=t5b-29413-1970162-g1 bytes=210 mode=noack
+TX id=t5b-29413-1970162-g1 status=stored code=ok tweak=0 bytes=120
+RX n=31 id=t5b-29413-1970166-g1 bytes=213 mode=noack
+TX id=t5b-29413-1970166-g1 status=stored code=ok tweak=0 bytes=120
+RX n=32 id=t5b-29413-1970170-g1 bytes=216 mode=noack
+TX id=t5b-29413-1970170-g1 status=stored code=ok tweak=0 bytes=120
+RX n=33 id=t5b-29413-1969630-g1 bytes=213 mode=noack
+TX id=t5b-29413-1969630-g1 status=stored code=ok tweak=0 bytes=120
+RX n=34 id=t5b-29413-1969634-g1 bytes=207 mode=noack
+TX id=t5b-29413-1969634-g1 status=stored code=ok tweak=0 bytes=120
+RX n=35 id=t5b-29413-1969638-g1 bytes=204 mode=noack
+TX id=t5b-29413-1969638-g1 status=stored code=ok tweak=0 bytes=120
+client closed
+connection done, frames_total=35

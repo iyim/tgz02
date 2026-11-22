@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <int name="netConfigInfo::password_err" value="0" />
+    <int name="netConfigInfo::gateway_timeout" value="0" />
+    <int name="audio_record_num" value="0" />
+    <int name="devicesettingInfo::localASRPauseTime" value="150" />
+    <int name="netConfigInfo::wifi_auth_reject" value="0" />
+    <boolean name="devicesettingInfo::smartEqualizer" value="false" />
+    <int name="devicesettingInfo::speechUploadInterval" value="120" />
+    <boolean name="nightmodeInfo::dsbPhoneNotify" value="false" />
+    <int name="devicesettingInfo::localASREnergyContextCnt" value="2" />
+    <string name="nightmodeInfo::start">22:00</string>
+    <boolean name="devicesettingInfo::musicLight" value="false" />
+    <boolean name="devicesettingInfo::runInEngine" value="false" />
+    <boolean name="devicesettingInfo::asrOnGW" value="true" />
+    <string name="magicbox::uuid"></string>
+    <string name="devicesettingInfo::wakeupStyleGlobal">opsSound</string>
+    <int name="magicbox::refuse_count" value="0" />
+    <int name="netConfigInfo::net_config_fail_count" value="0" />
+    <int name="devicesettingInfo::energyContextCnt" value="2" />
+    <boolean name="devicesettingInfo::localWifiControl" value="true" />
+    <int name="devicesettingInfo::localASREenergyJudgeTime" value="1750" />
+    <int name="devicesettingInfo::pauseTime" value="700" />
+    <string name="magicbox::ip"></string>
+    <boolean name="nightmodeInfo::dsbMicphone" value="false" />
+    <string name="magicbox::name"></string>
+    <string name="bluetoothInfo::last_sink_mac"></string>
+    <int name="netConfigInfo::password_received_count" value="0" />
+    <boolean name="devicesettingInfo::genieButtonSound" value="true" />
+    <int name="volume" value="50" />
+    <string name="devicesettingInfo::atmosphereLightStyle">warm</string>
+    <int name="netConfigInfo::config_timeout" value="0" />
+    <boolean name="devicesettingInfo::iotOfflineCtrl" value="false" />
+    <int name="devicesettingInfo::localASRStopPolicy" value="3" />
+    <int name="bluetoothInfo::a2dp_mode" value="0" />
+    <string name="nightmodeInfo::end">07:30</string>
+    <boolean name="nightmodeInfo::dsbPowerOnStyle" value="false" />
+    <boolean name="devicesettingInfo::dualChannelForASR" value="false" />
+    <int name="devicesettingInfo::ASRStopPolicy" value="2" />
+    <int name="netConfigInfo::auth_fail" value="0" />
+    <int name="netConfigInfo::router_conn_fail" value="0" />
+    <int name="netConfigInfo::dhcp_timeout" value="0" />
+    <string name="bluetoothInfo::local_name"></string>
+    <string name="mic_status">unmute</string>
+    <string name="devicesettingInfo::messagecolor">orange</string>
+    <string name="bluetoothInfo::last_src_mac"></string>
+    <int name="devicesettingInfo::energyJudgeTime" value="1950" />
+    <int name="netConfigInfo::wifi_auth_timeout" value="0" />
+    <boolean name="nightmodeInfo::dsbPhoneLightNotify" value="false" />
+    <int name="netConfigInfo::wifi_network_not_found" value="0" />
+    <boolean name="debug_enable" value="false" />
+    <boolean name="devicesettingInfo::wakeupsound" value="true" />
+    <boolean name="devicesettingInfo::udpScan" value="true" />
+    <boolean name="nightmodeInfo::dsbMsgLight" value="true" />
+    <string name="devicesettingInfo::voiceType">xiaoxiannv</string>
+    <int name="audio_length" value="0" />
+    <boolean name="nightmodeInfo::enable" value="false" />
+    <string name="nightmodeInfo::wakeupStyle">lightWithOpsSound</string>
+    <string name="prompt_type">xiaokubao</string>
+    <int name="netConfigInfo::dhcp_start_failed" value="0" />
+    <int name="devicesettingInfo::reconn_gw_time" value="0" />
+    <boolean name="nightmodeInfo::dsbEasyWakeup" value="true" />
+    <boolean name="childmode" value="false" />
+    <boolean name="devicesettingInfo::fastIotControl" value="false" />
+    <int name="devicesettingInfo::localASREnergyCVCount" value="9" />
+    <int name="devicesettingInfo::mirrorBrightness" value="19" />
+    <int name="devicesettingInfo::localASREnergyThreshold" value="60" />
+    <int name="devicesettingInfo::energyCVCount" value="10" />
+    <int name="netConfigInfo::wifi_unkown_error" value="0" />
+    <string name="devicesettingInfo::gwurl"></string>
+    <string name="devicesettingInfo::mirrorLightSwitch">off</string>
+    <boolean name="lower_wake_threshold_switch" value="false" />
+    <string name="devicesettingInfo::wakeupcolor">babyblue</string>
+    <int name="cache_type" value="0" />
+    <int name="devicesettingInfo::energyThreshold" value="90" />
+    <int name="config_version" value="1" />
+    <int name="netConfigInfo::wifi_assoc_reject" value="0" />
+    <string name="devicesettingInfo::mirrorColorType">colorTypeOutdoorWarm</string>
+    <int name="devicesettingInfo::asrrecordtime" value="5" />
+    <int name="netConfigInfo::auth_timeout" value="0" />
+    <int name="extend_close_microphone_switch" value="0" />
+    <boolean name="devicesettingInfo::localASR" value="true" />
+    <boolean name="magicbox::connect_status" value="false" />
+    <int name="system_boot" value="0" />
+    <boolean name="devicesettingInfo::globalDsbMsgLight" value="true" />
+    <int name="netConfigInfo::wifi_scan_failed" value="0" />
+</map>

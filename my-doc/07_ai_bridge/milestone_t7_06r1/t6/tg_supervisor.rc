@@ -1,0 +1,38 @@
+# tg_supervisor.rc -- T6-03：让 Android init 在开机时拉起 T6-02 的 Native Supervisor
+#
+# 部署位置：/system/etc/init/tg_supervisor.rc
+#   Android 8.1 的 init 会自动导入目录 /system/etc/init、/vendor/etc/init、/odm/etc/init
+#   里的 *.rc（init 二进制里能查到这三个字符串），所以把本文件放进 /system/etc/init/
+#   就是"通过现有 init 导入机制加载"，不需要改 /init.rc、不需要改任何原厂 rc。
+#
+# 为什么用 post-fs-data 触发：
+#   本机 ro.crypto.state=unencrypted，/data 在 post-fs-data 之前已经挂载完成，
+#   /data/local/tmp/t6/ 里的二进制此时可用；再往后（boot_completed）补一次启动，
+#   避免个别机型 post-fs-data 阶段 /data 还没就绪。
+#
+# 只使用 Android 8.1 支持的 service 选项（class / user / group / disabled），
+# 刻意不用 restart_period、oom_score_adj 之类新版本才有的关键字——8.1 的 init 遇到
+# 不认识的选项会把整个 rc 判为解析失败。
+#
+# 失败不影响开机：rc 解析失败或服务起不来，init 只记录错误并继续启系统；
+# 服务本身不是 critical，不会被 init 用"重启系统"的方式兜底。
+
+service tg_supervisor /data/local/tmp/t6/tg_supervisor --pidfile /data/local/tmp/t6/tg_supervisor.pid --log /data/local/tmp/t6/supervisor.log
+    class late_start
+    user root
+    group root system
+    # 没有 seclabel 时 init 会拒绝启动：实测日志
+    #   init: service tg_supervisor does not have a SELinux domain defined
+    # （这是 init 的硬性检查，和 SELinux 是否 enforcing 无关）。
+    # u:r:init:s0 是每个 Android 都存在的域，不依赖 Magisk 的 su/magisk 域；
+    # 本机运行时 SELinux 为 Permissive，root + init 域足以 ptrace 目标进程。
+    seclabel u:r:init:s0
+    disabled
+
+# /data 可用后再启动（本机未加密，post-fs-data 即满足）
+on post-fs-data
+    start tg_supervisor
+
+# 兜底：开机完成后如果还没在跑，再拉一次（已在跑时 start 是空操作）
+on property:sys.boot_completed=1
+    start tg_supervisor

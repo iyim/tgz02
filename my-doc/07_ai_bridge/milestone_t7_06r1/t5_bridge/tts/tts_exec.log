@@ -1,0 +1,1029 @@
+tts_exec: ready pid=24253 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: another instance is running
+[22:47:27] executor exited rc=3 (restart 1)
+tts_exec: another instance is running
+[22:47:29] executor exited rc=3 (restart 2)
+tts_exec: another instance is running
+[22:47:31] executor exited rc=3 (restart 3)
+tts_exec: another instance is running
+[22:47:34] executor exited rc=3 (restart 4)
+tts_exec: another instance is running
+[22:47:36] executor exited rc=3 (restart 5)
+tts_exec: another instance is running
+[22:47:38] executor exited rc=3 (restart 6)
+tts_exec: another instance is running
+[22:47:41] executor exited rc=3 (restart 7)
+tts_exec: another instance is running
+[22:47:44] executor exited rc=3 (restart 8)
+tts_exec: another instance is running
+[22:47:46] executor exited rc=3 (restart 9)
+tts_exec: another instance is running
+[22:47:49] executor exited rc=3 (restart 10)
+tts_exec: another instance is running
+[22:47:51] executor exited rc=3 (restart 11)
+tts_exec: another instance is running
+[22:47:53] executor exited rc=3 (restart 12)
+tts_exec: another instance is running
+[22:47:55] executor exited rc=3 (restart 13)
+tts_exec: another instance is running
+[22:47:57] executor exited rc=3 (restart 14)
+tts_exec: another instance is running
+[22:48:00] executor exited rc=3 (restart 15)
+tts_exec: another instance is running
+[22:48:02] executor exited rc=3 (restart 16)
+tts_exec: another instance is running
+[22:48:04] executor exited rc=3 (restart 17)
+tts_exec: another instance is running
+[22:48:06] executor exited rc=3 (restart 18)
+tts_exec: another instance is running
+[22:48:08] executor exited rc=3 (restart 19)
+tts_exec: another instance is running
+tts_exec: another instance is running
+[22:48:11] executor exited rc=3 (restart 20)
+[22:48:11] executor exited rc=3 (restart 1)
+tts_exec: another instance is running
+[22:48:13] executor exited rc=3 (restart 2)
+tts_exec: another instance is running
+[22:48:14] executor exited rc=3 (restart 21)
+tts_exec: another instance is running
+tts_exec: another instance is running
+[22:48:16] executor exited rc=3 (restart 3)
+[22:48:16] executor exited rc=3 (restart 22)
+tts_exec: another instance is running
+tts_exec: another instance is running
+[22:48:18] executor exited rc=3 (restart 4)
+[22:48:18] executor exited rc=3 (restart 23)
+tts_exec: another instance is running
+tts_exec: another instance is running
+[22:48:20] executor exited rc=3 (restart 5)
+[22:48:20] executor exited rc=3 (restart 24)
+tts_exec: another instance is running
+tts_exec: another instance is running
+[22:48:22] executor exited rc=3 (restart 6)
+[22:48:22] executor exited rc=3 (restart 25)
+tts_exec: another instance is running
+tts_exec: another instance is running
+[22:48:25] executor exited rc=3 (restart 7)
+[22:48:25] executor exited rc=3 (restart 26)
+tts_exec: another instance is running
+[22:48:27] executor exited rc=3 (restart 8)
+tts_exec: another instance is running
+[22:48:27] executor exited rc=3 (restart 27)
+tts_exec: another instance is running
+tts_exec: another instance is running
+[22:48:29] executor exited rc=3 (restart 9)
+[22:48:29] executor exited rc=3 (restart 28)
+tts_exec: another instance is running
+tts_exec: another instance is running
+[22:48:32] executor exited rc=3 (restart 10)
+[22:48:32] executor exited rc=3 (restart 29)
+tts_exec: another instance is running
+tts_exec: another instance is running
+[22:48:34] executor exited rc=3 (restart 11)
+[22:48:34] executor exited rc=3 (restart 30)
+Killed 
+[22:48:34] executor exited rc=137 (restart 1)
+tts_exec: ready pid=25034 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: another instance is running
+[22:48:45] executor exited rc=3 (restart 1)
+tts_exec: another instance is running
+[22:48:47] executor exited rc=3 (restart 2)
+tts_exec: another instance is running
+[22:48:50] executor exited rc=3 (restart 3)
+tts_exec: another instance is running
+[22:48:53] executor exited rc=3 (restart 4)
+tts_exec: another instance is running
+[22:48:55] executor exited rc=3 (restart 5)
+tts_exec: another instance is running
+[22:48:58] executor exited rc=3 (restart 6)
+tts_exec: another instance is running
+[22:49:00] executor exited rc=3 (restart 7)
+tts_exec: ready pid=25267 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: another instance is running
+[22:49:24] executor exited rc=3 (restart 1)
+tts_exec: another instance is running
+[22:49:27] executor exited rc=3 (restart 2)
+tts_exec: another instance is running
+[22:49:29] executor exited rc=3 (restart 3)
+tts_exec: another instance is running
+[22:49:31] executor exited rc=3 (restart 4)
+tts_exec: another instance is running
+[22:49:33] executor exited rc=3 (restart 5)
+tts_exec: another instance is running
+[22:49:36] executor exited rc=3 (restart 6)
+tts_exec: another instance is running
+[22:49:38] executor exited rc=3 (restart 7)
+[22:49:39] supervisor start pid=25479
+tts_exec: ready pid=25473 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: another instance is running
+[22:49:41] executor exited rc=3 (restart 1)
+tts_exec: another instance is running
+[22:49:43] executor exited rc=3 (restart 2)
+tts_exec: another instance is running
+[22:49:45] executor exited rc=3 (restart 3)
+tts_exec: another instance is running
+[22:49:47] executor exited rc=3 (restart 4)
+tts_exec: another instance is running
+[22:49:50] executor exited rc=3 (restart 5)
+Killed 
+[22:49:51] executor exited rc=137 (restart 8)
+tts_exec: ready pid=25619 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: another instance is running
+[22:49:53] executor exited rc=3 (restart 9)
+[22:49:53] supervisor start pid=25652
+tts_exec: another instance is running
+tts_exec: another instance is running
+[22:49:56] executor exited rc=3 (restart 1)
+[22:49:56] executor exited rc=3 (restart 10)
+tts_exec: another instance is running
+[22:49:59] executor exited rc=3 (restart 2)
+tts_exec: another instance is running
+[22:49:59] executor exited rc=3 (restart 11)
+tts_exec: another instance is running
+[22:50:02] executor exited rc=3 (restart 3)
+tts_exec: another instance is running
+[22:50:02] executor exited rc=3 (restart 12)
+tts_exec: another instance is running
+[22:50:04] executor exited rc=3 (restart 4)
+tts_exec: another instance is running
+[22:50:04] executor exited rc=3 (restart 13)
+tts_exec: another instance is running
+[22:50:06] executor exited rc=3 (restart 5)
+tts_exec: another instance is running
+[22:50:07] executor exited rc=3 (restart 14)
+tts_exec: another instance is running
+[22:50:09] executor exited rc=3 (restart 6)
+tts_exec: another instance is running
+[22:50:09] executor exited rc=3 (restart 15)
+tts_exec: ready pid=25995 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+[22:50:30] supervisor start pid=26469
+tts_exec: ready pid=26474 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+[22:51:44] supervisor start pid=26956
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=26959 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245809 event=qtest-1 bytes=48
+[22:59:18] supervisor start pid=30294
+tts_exec: another instance is running
+[22:59:19] executor exited rc=3 (restart 1)
+tts_exec: another instance is running
+[22:59:22] executor exited rc=3 (restart 2)
+tts_exec: another instance is running
+[22:59:24] executor exited rc=3 (restart 3)
+tts_exec: another instance is running
+[22:59:26] executor exited rc=3 (restart 4)
+tts_exec: another instance is running
+[22:59:29] executor exited rc=3 (restart 5)
+tts_exec: another instance is running
+[22:59:33] executor exited rc=3 (restart 6)
+tts_exec: another instance is running
+[22:59:35] executor exited rc=3 (restart 7)
+tts_exec: another instance is running
+[22:59:38] executor exited rc=3 (restart 8)
+tts_exec: another instance is running
+[22:59:43] executor exited rc=3 (restart 9)
+tts_exec: another instance is running
+[22:59:46] executor exited rc=3 (restart 10)
+tts_exec: another instance is running
+[22:59:49] executor exited rc=3 (restart 11)
+tts_exec: another instance is running
+[22:59:51] executor exited rc=3 (restart 12)
+tts_exec: another instance is running
+[22:59:54] executor exited rc=3 (restart 13)
+tts_exec: another instance is running
+[22:59:56] executor exited rc=3 (restart 14)
+tts_exec: another instance is running
+[22:59:59] executor exited rc=3 (restart 15)
+tts_exec: another instance is running
+[23:00:01] executor exited rc=3 (restart 16)
+tts_exec: another instance is running
+[23:00:04] executor exited rc=3 (restart 17)
+tts_exec: another instance is running
+[23:00:06] executor exited rc=3 (restart 18)
+tts_exec: another instance is running
+[23:00:09] executor exited rc=3 (restart 19)
+tts_exec: another instance is running
+[23:00:11] executor exited rc=3 (restart 20)
+tts_exec: another instance is running
+[23:00:13] executor exited rc=3 (restart 21)
+tts_exec: another instance is running
+[23:00:15] executor exited rc=3 (restart 22)
+tts_exec: another instance is running
+[23:00:17] executor exited rc=3 (restart 23)
+tts_exec: another instance is running
+[23:00:20] executor exited rc=3 (restart 24)
+tts_exec: another instance is running
+[23:00:22] executor exited rc=3 (restart 25)
+tts_exec: another instance is running
+[23:00:24] executor exited rc=3 (restart 26)
+tts_exec: another instance is running
+[23:00:26] executor exited rc=3 (restart 27)
+tts_exec: another instance is running
+[23:00:29] executor exited rc=3 (restart 28)
+tts_exec: another instance is running
+[23:00:31] executor exited rc=3 (restart 29)
+tts_exec: another instance is running
+[23:00:33] executor exited rc=3 (restart 30)
+tts_exec: another instance is running
+[23:00:35] executor exited rc=3 (restart 31)
+tts_exec: another instance is running
+[23:00:38] executor exited rc=3 (restart 32)
+tts_exec: another instance is running
+[23:00:40] executor exited rc=3 (restart 33)
+tts_exec: another instance is running
+[23:00:42] executor exited rc=3 (restart 34)
+tts_exec: another instance is running
+[23:00:45] executor exited rc=3 (restart 35)
+tts_exec: another instance is running
+[23:00:48] executor exited rc=3 (restart 36)
+tts_exec: another instance is running
+[23:00:50] executor exited rc=3 (restart 37)
+tts_exec: another instance is running
+[23:00:53] executor exited rc=3 (restart 38)
+tts_exec: another instance is running
+[23:00:56] executor exited rc=3 (restart 39)
+tts_exec: another instance is running
+[23:00:58] executor exited rc=3 (restart 40)
+tts_exec: another instance is running
+[23:01:00] executor exited rc=3 (restart 41)
+tts_exec: another instance is running
+[23:01:03] executor exited rc=3 (restart 42)
+tts_exec: another instance is running
+[23:01:05] executor exited rc=3 (restart 43)
+tts_exec: another instance is running
+[23:01:07] executor exited rc=3 (restart 44)
+tts_exec: another instance is running
+[23:01:10] executor exited rc=3 (restart 45)
+tts_exec: another instance is running
+[23:01:12] executor exited rc=3 (restart 46)
+tts_exec: another instance is running
+[23:01:14] executor exited rc=3 (restart 47)
+tts_exec: another instance is running
+[23:01:17] executor exited rc=3 (restart 48)
+[23:01:18] supervisor start pid=2021
+tts_exec: another instance is running
+[23:01:19] executor exited rc=3 (restart 49)
+tts_exec: another instance is running
+[23:01:20] executor exited rc=3 (restart 1)
+tts_exec: another instance is running
+[23:01:22] executor exited rc=3 (restart 50)
+tts_exec: another instance is running
+[23:01:22] executor exited rc=3 (restart 2)
+tts_exec: another instance is running
+[23:01:24] executor exited rc=3 (restart 51)
+tts_exec: another instance is running
+[23:01:25] executor exited rc=3 (restart 3)
+tts_exec: another instance is running
+[23:01:27] executor exited rc=3 (restart 52)
+tts_exec: another instance is running
+[23:01:27] executor exited rc=3 (restart 4)
+tts_exec: another instance is running
+[23:01:29] executor exited rc=3 (restart 53)
+tts_exec: another instance is running
+[23:01:30] executor exited rc=3 (restart 5)
+tts_exec: another instance is running
+[23:01:31] executor exited rc=3 (restart 54)
+tts_exec: another instance is running
+[23:01:32] executor exited rc=3 (restart 6)
+tts_exec: another instance is running
+[23:01:34] executor exited rc=3 (restart 55)
+tts_exec: another instance is running
+[23:01:35] executor exited rc=3 (restart 7)
+tts_exec: another instance is running
+[23:01:37] executor exited rc=3 (restart 56)
+tts_exec: another instance is running
+[23:01:38] executor exited rc=3 (restart 8)
+tts_exec: another instance is running
+[23:01:40] executor exited rc=3 (restart 57)
+tts_exec: another instance is running
+[23:01:40] executor exited rc=3 (restart 9)
+tts_exec: another instance is running
+[23:01:43] executor exited rc=3 (restart 58)
+tts_exec: another instance is running
+[23:01:44] executor exited rc=3 (restart 10)
+tts_exec: another instance is running
+tts_exec: another instance is running
+[23:01:48] executor exited rc=3 (restart 59)
+[23:01:48] executor exited rc=3 (restart 11)
+tts_exec: another instance is running
+[23:01:52] executor exited rc=3 (restart 12)
+tts_exec: another instance is running
+[23:01:53] executor exited rc=3 (restart 60)
+tts_exec: another instance is running
+[23:01:55] executor exited rc=3 (restart 13)
+tts_exec: another instance is running
+[23:01:56] executor exited rc=3 (restart 61)
+tts_exec: another instance is running
+[23:02:00] executor exited rc=3 (restart 14)
+tts_exec: another instance is running
+[23:02:02] executor exited rc=3 (restart 62)
+tts_exec: another instance is running
+[23:02:03] executor exited rc=3 (restart 15)
+tts_exec: another instance is running
+[23:02:04] executor exited rc=3 (restart 63)
+tts_exec: another instance is running
+[23:02:06] executor exited rc=3 (restart 16)
+tts_exec: another instance is running
+[23:02:07] executor exited rc=3 (restart 64)
+tts_exec: another instance is running
+[23:02:08] executor exited rc=3 (restart 17)
+tts_exec: another instance is running
+[23:02:10] executor exited rc=3 (restart 65)
+tts_exec: another instance is running
+[23:02:11] executor exited rc=3 (restart 18)
+tts_exec: another instance is running
+[23:02:13] executor exited rc=3 (restart 66)
+tts_exec: another instance is running
+[23:02:13] executor exited rc=3 (restart 19)
+tts_exec: another instance is running
+[23:02:15] executor exited rc=3 (restart 67)
+tts_exec: another instance is running
+[23:02:16] executor exited rc=3 (restart 20)
+tts_exec: another instance is running
+[23:02:18] executor exited rc=3 (restart 68)
+tts_exec: another instance is running
+[23:02:19] executor exited rc=3 (restart 21)
+tts_exec: another instance is running
+[23:02:20] executor exited rc=3 (restart 69)
+tts_exec: another instance is running
+[23:02:22] executor exited rc=3 (restart 22)
+tts_exec: another instance is running
+[23:02:23] executor exited rc=3 (restart 70)
+tts_exec: another instance is running
+[23:02:24] executor exited rc=3 (restart 23)
+tts_exec: another instance is running
+[23:02:25] executor exited rc=3 (restart 71)
+tts_exec: another instance is running
+[23:02:26] executor exited rc=3 (restart 24)
+tts_exec: another instance is running
+[23:02:28] executor exited rc=3 (restart 72)
+tts_exec: another instance is running
+[23:02:28] executor exited rc=3 (restart 25)
+tts_exec: another instance is running
+[23:02:30] executor exited rc=3 (restart 73)
+tts_exec: another instance is running
+[23:02:31] executor exited rc=3 (restart 26)
+tts_exec: another instance is running
+[23:02:32] executor exited rc=3 (restart 74)
+tts_exec: another instance is running
+[23:02:33] executor exited rc=3 (restart 27)
+tts_exec: another instance is running
+[23:02:35] executor exited rc=3 (restart 75)
+tts_exec: another instance is running
+[23:02:36] executor exited rc=3 (restart 28)
+tts_exec: another instance is running
+[23:02:38] executor exited rc=3 (restart 76)
+tts_exec: another instance is running
+[23:02:39] executor exited rc=3 (restart 29)
+tts_exec: another instance is running
+[23:02:40] executor exited rc=3 (restart 77)
+tts_exec: another instance is running
+[23:02:41] executor exited rc=3 (restart 30)
+tts_exec: another instance is running
+[23:02:43] executor exited rc=3 (restart 78)
+tts_exec: another instance is running
+[23:02:44] executor exited rc=3 (restart 31)
+tts_exec: another instance is running
+[23:02:45] executor exited rc=3 (restart 79)
+tts_exec: another instance is running
+[23:02:46] executor exited rc=3 (restart 32)
+tts_exec: another instance is running
+[23:02:47] executor exited rc=3 (restart 80)
+tts_exec: another instance is running
+[23:02:49] executor exited rc=3 (restart 33)
+tts_exec: another instance is running
+[23:02:50] executor exited rc=3 (restart 81)
+tts_exec: another instance is running
+[23:02:51] executor exited rc=3 (restart 34)
+tts_exec: another instance is running
+[23:02:53] executor exited rc=3 (restart 82)
+tts_exec: another instance is running
+[23:02:54] executor exited rc=3 (restart 35)
+tts_exec: another instance is running
+[23:02:55] executor exited rc=3 (restart 83)
+tts_exec: another instance is running
+[23:02:56] executor exited rc=3 (restart 36)
+tts_exec: another instance is running
+[23:02:58] executor exited rc=3 (restart 84)
+tts_exec: another instance is running
+[23:02:59] executor exited rc=3 (restart 37)
+tts_exec: another instance is running
+[23:03:01] executor exited rc=3 (restart 85)
+tts_exec: another instance is running
+[23:03:02] executor exited rc=3 (restart 38)
+tts_exec: another instance is running
+[23:03:04] executor exited rc=3 (restart 86)
+tts_exec: another instance is running
+[23:03:05] executor exited rc=3 (restart 39)
+tts_exec: another instance is running
+[23:03:07] executor exited rc=3 (restart 87)
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=7341 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+[23:03:14] supervisor start pid=7507
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=7512 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245832 event=t5b-28413-1969028-g1 bytes=75
+tts_exec: play tts_id=5245837 event=t5b-28413-1969033-g1 bytes=72
+tts_exec: play tts_id=5245845 event=t5b-28413-1969040-g1 bytes=63
+tts_exec: play tts_id=5245850 event=t5b-28413-1969046-g1 bytes=169
+tts_exec: play tts_id=5245855 event=t5b-28413-1969051-g1 bytes=102
+tts_exec: play tts_id=5245860 event=t5b-28413-1969056-g1 bytes=90
+tts_exec: play tts_id=5245865 event=t5b-28413-1969061-g1 bytes=63
+tts_exec: play tts_id=5245870 event=t5b-28413-1969066-g1 bytes=108
+tts_exec: event t5b-28413-1969066-g1 requeued (attempt 1 failed: error)
+tts_exec: play tts_id=5245872 event=t5b-28413-1969066-g1 bytes=108
+Killed 
+[07:30:12] supervisor start pid=16329
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=16333 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245053 event=t5b-28236-1968249-g1 bytes=75
+tts_exec: play tts_id=5245058 event=t5b-28236-1968254-g1 bytes=90
+tts_exec: play tts_id=5245063 event=t5b-28236-1968259-g1 bytes=75
+tts_exec: play tts_id=5245068 event=t5b-28236-1968264-g1 bytes=81
+tts_exec: play tts_id=5245073 event=t5b-28236-1968269-g1 bytes=72
+Killed 
+[07:34:35] supervisor start pid=25793
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=25797 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245078 event=ord-1 bytes=28
+tts_exec: play tts_id=5245079 event=ord-2 bytes=28
+tts_exec: play tts_id=5245080 event=ord-3 bytes=28
+Killed 
+[07:37:15] supervisor start pid=28795
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=28800 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245086 event=t5b-28236-1968274-g1 bytes=123
+tts_exec: play tts_id=5245087 event=recover-1 bytes=162
+Killed 
+[07:38:21] executor exited rc=137 (restart 1)
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=29612 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: recovered inflight item recover-1 attempts=1 -> queue
+tts_exec: play tts_id=5245088 event=recover-1 bytes=162
+Killed 
+[07:40:02] supervisor start pid=32484
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=32489 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245097 event=t5b-28236-1968293-g1 bytes=120
+tts_exec: play tts_id=5245098 event=longtext1 bytes=243
+tts_exec: play tts_id=5245103 event=t5b-28236-1968299-g1 bytes=81
+tts_exec: play tts_id=5245108 event=t5b-28236-1968304-g1 bytes=99
+tts_exec: play tts_id=5245113 event=t5b-28236-1968309-g1 bytes=87
+tts_exec: play tts_id=5245118 event=t5b-28236-1968314-g1 bytes=78
+tts_exec: play tts_id=5245119 event=longtext1 bytes=243
+tts_exec: event longtext1 requeued (attempt 1 failed: error)
+tts_exec: play tts_id=5245123 event=s4long bytes=222
+tts_exec: event s4long requeued (attempt 1 failed: error)
+tts_exec: play tts_id=5245125 event=longtext1 bytes=243
+Killed 
+[07:45:23] supervisor start pid=9656
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=9660 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: recovered inflight item longtext1 attempts=2 -> queue
+tts_exec: play tts_id=5245129 event=s4long bytes=222
+tts_exec: play tts_id=5245130 event=longtext1 bytes=243
+Killed 
+[07:47:58] supervisor start pid=12371
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=12375 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: inflight item longtext1 reached max attempts (3); parking
+tts_exec: play tts_id=5245135 event=t5b-28236-1968320-g1 bytes=66
+tts_exec: play tts_id=5245136 event=recover-1 bytes=162
+Killed 
+[07:49:37] executor exited rc=137 (restart 1)
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=13311 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: recovered inflight item recover-1 attempts=1 -> queue
+tts_exec: play tts_id=5245137 event=recover-1 bytes=162
+tts_exec: play tts_id=5245143 event=t5b-28236-1968339-g1 bytes=90
+tts_exec: play tts_id=5245148 event=t5b-28236-1968344-g1 bytes=69
+tts_exec: play tts_id=5245153 event=t5b-28236-1968349-g1 bytes=66
+tts_exec: play tts_id=5245157 event=longtext1 bytes=243
+tts_exec: event longtext1 requeued (attempt 1 failed: error)
+tts_exec: play tts_id=5245159 event=longtext1 bytes=243
+tts_exec: event longtext1 requeued (attempt 2 failed: error)
+tts_exec: play tts_id=5245161 event=longtext1 bytes=243
+tts_exec: event longtext1 failed after 3 attempts (error); parked in failed/
+tts_exec: play tts_id=5245166 event=s4long bytes=222
+tts_exec: event s4long requeued (attempt 1 failed: error)
+tts_exec: play tts_id=5245168 event=s4long bytes=222
+Killed 
+[07:56:33] supervisor start pid=20203
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=20208 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245169 event=ord-1 bytes=28
+tts_exec: play tts_id=5245170 event=ord-2 bytes=28
+tts_exec: play tts_id=5245171 event=ord-3 bytes=28
+Killed 
+[07:59:23] supervisor start pid=23898
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=23902 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245177 event=t5b-28236-1968354-g1 bytes=126
+tts_exec: play tts_id=5245178 event=recover-1 bytes=162
+Killed 
+[08:01:46] executor exited rc=137 (restart 1)
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=25284 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: recovered inflight item recover-1 attempts=1 -> queue
+tts_exec: play tts_id=5245179 event=recover-1 bytes=162
+[08:02:20] supervisor start pid=26011
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=26015 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: recovered inflight item recover-1 attempts=2 -> queue
+tts_exec: play tts_id=5245180 event=recover-1 bytes=162
+Killed 
+[08:04:21] supervisor start pid=29552
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=29556 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245189 event=t5b-28236-1968385-g1 bytes=66
+tts_exec: play tts_id=5245194 event=t5b-28236-1968390-g1 bytes=72
+tts_exec: play tts_id=5245199 event=t5b-28236-1968395-g1 bytes=75
+tts_exec: play tts_id=5245204 event=t5b-28236-1968400-g1 bytes=96
+tts_exec: play tts_id=5245205 event=longtext1 bytes=243
+tts_exec: play tts_id=5245206 event=longtext2 bytes=243
+tts_exec: play tts_id=5245208 event=s4long bytes=222
+tts_exec: event s4long requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5245212 event=s4long bytes=222
+tts_exec: event s4long requeued (attempt 2 failed: interrupted)
+tts_exec: play tts_id=5245214 event=s4long bytes=222
+Killed 
+[08:08:54] supervisor start pid=5669
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=5673 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245215 event=ord-1 bytes=28
+tts_exec: play tts_id=5245216 event=ord-2 bytes=28
+tts_exec: play tts_id=5245217 event=ord-3 bytes=28
+Killed 
+[08:11:31] supervisor start pid=9471
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=9475 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245222 event=t5b-28236-1968409-g1 bytes=84
+tts_exec: play tts_id=5245224 event=recover-1 bytes=162
+Killed 
+[08:14:25] executor exited rc=137 (restart 1)
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=11126 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: recovered inflight item recover-1 attempts=1 -> queue
+tts_exec: play tts_id=5245225 event=recover-1 bytes=162
+Killed 
+[08:18:43] supervisor start pid=17609
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=17613 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245234 event=t5b-28236-1968430-g1 bytes=84
+tts_exec: play tts_id=5245246 event=t5b-28236-1968435-g1 bytes=90
+tts_exec: play tts_id=5245251 event=t5b-28236-1968447-g1 bytes=87
+tts_exec: play tts_id=5245256 event=t5b-28236-1968452-g1 bytes=78
+tts_exec: play tts_id=5245264 event=t5b-28236-1968457-g1 bytes=42
+tts_exec: play tts_id=5245265 event=longtext1 bytes=243
+tts_exec: event longtext1 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5245269 event=s4long bytes=222
+tts_exec: event s4long requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5245271 event=longtext1 bytes=243
+Killed 
+[08:22:50] supervisor start pid=23854
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=23858 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245272 event=ord-1 bytes=28
+tts_exec: play tts_id=5245273 event=ord-2 bytes=28
+tts_exec: play tts_id=5245274 event=ord-3 bytes=28
+Killed 
+[08:25:08] supervisor start pid=24839
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=24843 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245275 event=recover-1 bytes=162
+Killed 
+[08:29:13] supervisor start pid=29640
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=29645 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245289 event=t5b-28236-1968481-g1 bytes=81
+tts_exec: play tts_id=5245290 event=recover-1 bytes=292
+Killed 
+[08:29:37] executor exited rc=137 (restart 1)
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=29980 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: recovered inflight item recover-1 attempts=1 -> queue
+tts_exec: play tts_id=5245291 event=recover-1 bytes=292
+tts_exec: play tts_id=5245292 event=recover-083053 bytes=292
+Killed 
+[08:30:58] executor exited rc=137 (restart 2)
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=31693 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: recovered inflight item recover-083053 attempts=1 -> queue
+tts_exec: play tts_id=5245293 event=recover-083053 bytes=292
+tts_exec: play tts_id=5245301 event=t5b-28236-1968494-g1 bytes=45
+tts_exec: play tts_id=5245310 event=t5b-28236-1972594-g1 bytes=72
+tts_exec: play tts_id=5245330 event=t5b-28236-1968502-g1 bytes=57
+tts_exec: play tts_id=5245335 event=t5b-28236-1972602-g1 bytes=75
+tts_exec: play tts_id=5245336 event=longtext1 bytes=243
+tts_exec: play tts_id=5245337 event=longtext2 bytes=243
+tts_exec: event longtext2 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5245341 event=s4long bytes=222
+tts_exec: event s4long requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5245343 event=longtext2 bytes=243
+Killed 
+[08:39:54] supervisor start pid=9704
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=9708 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245344 event=ord-1 bytes=28
+tts_exec: play tts_id=5245345 event=ord-2 bytes=28
+tts_exec: play tts_id=5245346 event=ord-3 bytes=28
+Killed 
+[08:42:32] supervisor start pid=13422
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=13426 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245351 event=t5b-28236-1968512-g1 bytes=99
+tts_exec: play tts_id=5245353 event=recover-084517 bytes=292
+Killed 
+[08:45:25] executor exited rc=137 (restart 1)
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=15147 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: recovered inflight item recover-084517 attempts=1 -> queue
+tts_exec: play tts_id=5245354 event=recover-084517 bytes=292
+tts_exec: play tts_id=5245363 event=t5b-28236-1968559-g1 bytes=63
+tts_exec: play tts_id=5245368 event=t5b-28236-1968564-g1 bytes=75
+tts_exec: play tts_id=5245373 event=t5b-28236-1968569-g1 bytes=72
+tts_exec: play tts_id=5245378 event=t5b-28236-1968574-g1 bytes=108
+tts_exec: play tts_id=5245379 event=longtext1 bytes=243
+tts_exec: event longtext1 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5245383 event=s4long bytes=222
+tts_exec: event s4long requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5245385 event=longtext1 bytes=243
+Killed 
+[08:51:20] supervisor start pid=24911
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=24915 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245386 event=ord-1 bytes=28
+tts_exec: play tts_id=5245387 event=ord-2 bytes=28
+tts_exec: play tts_id=5245388 event=ord-3 bytes=28
+Killed 
+[08:54:13] supervisor start pid=27607
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=27613 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245393 event=t5b-28236-1968580-g1 bytes=78
+tts_exec: play tts_id=5245394 event=recover-085429 bytes=292
+Killed 
+[08:54:34] executor exited rc=137 (restart 1)
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=27941 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: recovered inflight item recover-085429 attempts=1 -> queue
+tts_exec: play tts_id=5245395 event=recover-085429 bytes=292
+tts_exec: play tts_id=5245404 event=t5b-28236-1968600-g1 bytes=78
+tts_exec: play tts_id=5245405 event=longtext-085700-1 bytes=243
+tts_exec: play tts_id=5245411 event=t5b-28236-1968607-g1 bytes=75
+tts_exec: play tts_id=5245416 event=t5b-28236-1968612-g1 bytes=72
+tts_exec: play tts_id=5245421 event=t5b-28236-1968617-g1 bytes=84
+tts_exec: play tts_id=5245426 event=t5b-28236-1968622-g1 bytes=96
+tts_exec: play tts_id=5245427 event=longtext-090025-1 bytes=243
+tts_exec: play tts_id=5245428 event=s4long bytes=222
+tts_exec: event s4long requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5245432 event=s4long bytes=222
+Killed 
+[09:01:55] supervisor start pid=14898
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=14902 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245435 event=ord-1 bytes=28
+tts_exec: play tts_id=5245436 event=ord-2 bytes=28
+tts_exec: play tts_id=5245437 event=ord-3 bytes=28
+Killed 
+[09:04:51] supervisor start pid=19622
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=19626 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5245442 event=t5b-28236-1968629-g1 bytes=78
+tts_exec: play tts_id=5245443 event=recover-090507 bytes=292
+Killed 
+[09:05:18] executor exited rc=137 (restart 1)
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=21008 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: recovered inflight item recover-090507 attempts=1 -> queue
+tts_exec: play tts_id=5245444 event=recover-090507 bytes=292
+[09:06:02] supervisor start pid=21791
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=21795 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: recovered inflight item recover-090507 attempts=2 -> queue
+tts_exec: play tts_id=5245446 event=recover-090507 bytes=292
+Killed 
+[09:19:14] supervisor start pid=31079
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=31083 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false
+tts_exec: play tts_id=5246130 event=notice-091919 bytes=27
+[18:51:00] supervisor start pid=6970
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=6974 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false max_attempts=3
+tts_exec: play tts_id=5243919 event=t6-1194-1967115-g2 bytes=207
+tts_exec: play tts_id=5243936 event=t6-1194-1967132-g3 bytes=156
+tts_exec: play tts_id=5243941 event=t6-1194-1967137-g4 bytes=165
+tts_exec: play tts_id=5243946 event=t6-1194-1967142-g5 bytes=39
+tts_exec: event t6-1194-1967142-g5 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5243950 event=t6-1194-1967142-g5 bytes=39
+tts_exec: play tts_id=5243960 event=t6-1194-1967156-g6 bytes=186
+tts_exec: play tts_id=5243993 event=t6-1194-1967189-g7 bytes=165
+tts_exec: play tts_id=5244006 event=t6-1194-1967202-g8 bytes=87
+tts_exec: play tts_id=5244023 event=t6-1194-1967216-g9 bytes=66
+tts_exec: event t6-1194-1967216-g9 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5244025 event=t6-1194-1967216-g9 bytes=66
+tts_exec: event t6-1194-1967216-g9 requeued (attempt 2 failed: interrupted)
+tts_exec: play tts_id=5244027 event=t6-1194-1967220-g10 bytes=30
+tts_exec: play tts_id=5244028 event=t6-1194-1967216-g9 bytes=66
+tts_exec: play tts_id=5244038 event=t6-1194-1967229-g11 bytes=33
+tts_exec: play tts_id=5244052 event=t6-1194-1967241-g12 bytes=48
+tts_exec: play tts_id=5244053 event=t6-1194-1967245-g13 bytes=132
+tts_exec: play tts_id=5244062 event=t6-1194-1967254-g14 bytes=69
+tts_exec: event t6-1194-1967254-g14 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5244064 event=t6-1194-1967254-g14 bytes=69
+tts_exec: play tts_id=5244072 event=t6-1194-1967265-g15 bytes=18
+tts_exec: play tts_id=5244092 event=t6-1194-1967274-g16 bytes=39
+tts_exec: play tts_id=5244101 event=t6-1194-1967293-g17 bytes=189
+tts_exec: play tts_id=5244122 event=t6-1194-1967316-g18 bytes=90
+tts_exec: event t6-1194-1967316-g18 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5244124 event=t6-1194-1967316-g18 bytes=90
+tts_exec: play tts_id=5244133 event=t6-1194-1967329-g19 bytes=159
+tts_exec: play tts_id=5244146 event=t6-1194-1967342-g20 bytes=87
+tts_exec: play tts_id=5244155 event=t6-1194-1967348-g21 bytes=90
+tts_exec: play tts_id=5244161 event=t6-1194-1967357-g22 bytes=177
+tts_exec: play tts_id=5244166 event=t6-1194-1967362-g23 bytes=153
+tts_exec: play tts_id=5244171 event=t6-1194-1967367-g24 bytes=126
+tts_exec: play tts_id=5244176 event=t6-1194-1967372-g25 bytes=129
+tts_exec: play tts_id=5244205 event=t6-1194-1967397-g26 bytes=135
+tts_exec: play tts_id=5244210 event=t6-1194-1967406-g27 bytes=96
+tts_exec: play tts_id=5244215 event=t6-1194-1967411-g28 bytes=153
+tts_exec: play tts_id=5244223 event=t6-1194-1967417-g29 bytes=33
+tts_exec: event t6-1194-1967417-g29 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5244225 event=t6-1194-1967417-g29 bytes=33
+tts_exec: play tts_id=5244238 event=t6-1194-1967434-g30 bytes=24
+tts_exec: play tts_id=5244243 event=t6-1194-1967439-g31 bytes=96
+tts_exec: play tts_id=5244250 event=t6-1194-1967446-g32 bytes=111
+tts_exec: play tts_id=5244267 event=t6-1194-1967463-g33 bytes=189
+tts_exec: play tts_id=5244296 event=t6-1194-1967489-g34 bytes=36
+tts_exec: play tts_id=5244302 event=t6-1194-1967498-g35 bytes=21
+tts_exec: play tts_id=5244307 event=t6-1194-1967503-g36 bytes=57
+tts_exec: play tts_id=5244319 event=t6-1194-1967512-g37 bytes=54
+tts_exec: event t6-1194-1967512-g37 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5244321 event=t6-1194-1967512-g37 bytes=54
+tts_exec: play tts_id=5244322 event=t6-1194-1967516-g38 bytes=156
+tts_exec: play tts_id=5244340 event=t6-1194-1967536-g39 bytes=168
+tts_exec: play tts_id=5244365 event=t6-1194-1967561-g40 bytes=183
+tts_exec: play tts_id=5244378 event=t6-1194-1967570-g41 bytes=111
+tts_exec: play tts_id=5244383 event=t6-1194-1967579-g42 bytes=126
+tts_exec: play tts_id=5244388 event=t6-1194-1967584-g43 bytes=108
+tts_exec: play tts_id=5244397 event=t6-1194-1967590-g44 bytes=141
+tts_exec: event t6-1194-1967590-g44 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5244403 event=t6-1194-1967590-g44 bytes=141
+tts_exec: play tts_id=5244404 event=t6-1194-1967599-g45 bytes=126
+tts_exec: play tts_id=5244409 event=t6-1194-1967605-g46 bytes=159
+tts_exec: play tts_id=5244414 event=t6-1194-1967610-g47 bytes=93
+tts_exec: play tts_id=5244419 event=t6-1194-1967615-g48 bytes=159
+tts_exec: play tts_id=5244425 event=t6-1194-1967621-g49 bytes=162
+tts_exec: play tts_id=5244430 event=t6-1194-1967626-g50 bytes=108
+tts_exec: play tts_id=5244437 event=t6-1194-1967633-g51 bytes=114
+tts_exec: play tts_id=5244443 event=t6-1194-1967639-g52 bytes=162
+tts_exec: event t6-1194-1967639-g52 requeued (attempt 1 failed: interrupted)
+tts_exec: event t6-1194-1967639-g52 requeued (attempt 2 failed: provider_error)
+tts_exec: play tts_id=5244984 event=t6-1194-1967639-g52 bytes=162
+tts_exec: event t6-1194-1967639-g52 failed after 3 attempts (interrupted); parked in failed/
+tts_exec: event t6-30288-1968205-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5245952 event=t6-30288-1968205-g1 bytes=69
+tts_exec: event t6-30785-1969159-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5244213 event=t6-30785-1969159-g1 bytes=72
+tts_exec: event t6-31313-1967462-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: event t6-31313-1967462-g1 requeued (attempt 2 failed: provider_error)
+tts_exec: event t6-31313-1967462-g1 failed after 3 attempts (rejected); parked in failed/
+tts_exec: event t6-484-1968383-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5244524 event=t6-484-1968383-g1 bytes=87
+tts_exec: event t6-1627-1967732-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5245025 event=t6-1627-1967732-g1 bytes=81
+tts_exec: event t6-5864-1966983-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5244540 event=t6-5864-1966983-g1 bytes=69
+tts_exec: event t7-selftest-1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5243822 event=t7-selftest-1 bytes=33
+tts_exec: event t7-selftest-2 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5246444 event=t7-selftest-2 bytes=33
+tts_exec: play tts_id=5246457 event=t7-selftest-3 bytes=33
+tts_exec: play tts_id=5246464 event=t6-14856-1969658-g1 bytes=42
+tts_exec: event t6-14856-1969658-g1 requeued (attempt 1 failed: timeout)
+tts_exec: event t6-14856-1973758-g2 requeued (attempt 1 failed: provider_error)
+Terminated 
+[21:02:52] supervisor start pid=18154
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=18158 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false max_attempts=3
+tts_exec: recovered inflight item t6-14856-1973758-g2 attempts=1 -> queue
+tts_exec: play tts_id=5245211 event=t6-14856-1969658-g1 bytes=42
+tts_exec: play tts_id=5245212 event=t6-14856-1973758-g2 bytes=81
+tts_exec: event t6-17450-1968415-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: event t6-17450-1968415-g1 requeued (attempt 2 failed: rejected)
+tts_exec: play tts_id=5245445 event=t6-17450-1968415-g1 bytes=81
+tts_exec: play tts_id=5245457 event=t6-21683-1968653-g1 bytes=81
+tts_exec: event t6-8505-1967900-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5244704 event=t6-8505-1967900-g1 bytes=84
+tts_exec: play tts_id=5244712 event=t6-8505-1967908-g2 bytes=78
+tts_exec: play tts_id=5244717 event=t6-8505-1967913-g3 bytes=129
+tts_exec: play tts_id=5244729 event=t6-8505-1967925-g5 bytes=174
+tts_exec: play tts_id=5244738 event=t7-02-syn-69 bytes=90
+tts_exec: play tts_id=5244739 event=t7-02-syn-71 bytes=66
+tts_exec: event t7-02-syn-72 requeued (attempt 1 failed: provider_error)
+tts_exec: event t7-02-syn-72 requeued (attempt 2 failed: rejected)
+tts_exec: play tts_id=5244570 event=t7-02-syn-72 bytes=75
+tts_exec: play tts_id=5244581 event=t6-23990-1967777-g1 bytes=54
+tts_exec: play tts_id=5244586 event=t6-23990-1967782-g2 bytes=36
+tts_exec: play tts_id=5244598 event=t6-23990-1967794-g4 bytes=123
+tts_exec: play tts_id=5244601 event=t7-02-syn-73 bytes=120
+tts_exec: play tts_id=5244602 event=t7-02-syn-75 bytes=81
+tts_exec: play tts_id=5244603 event=t7-02-syn-76 bytes=99
+tts_exec: event t6-26491-1969503-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5246307 event=t6-26491-1969503-g1 bytes=96
+tts_exec: play tts_id=5246319 event=t6-26491-1969515-g3 bytes=114
+tts_exec: play tts_id=5246326 event=t7-02-syn-78 bytes=111
+tts_exec: play tts_id=5246327 event=t7-02-syn-80 bytes=81
+tts_exec: play tts_id=5246328 event=t7-02-syn-81 bytes=78
+tts_exec: event t6-29054-1968182-g3 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5244986 event=t6-29054-1968182-g3 bytes=117
+tts_exec: play tts_id=5244993 event=t7-02-syn-83 bytes=90
+tts_exec: play tts_id=5244994 event=t7-02-syn-85 bytes=78
+tts_exec: play tts_id=5244995 event=t7-02-syn-86 bytes=78
+tts_exec: event t6-31827-1968675-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5245479 event=t6-31827-1968675-g1 bytes=99
+tts_exec: play tts_id=5245484 event=t6-31827-1968680-g2 bytes=81
+tts_exec: play tts_id=5245489 event=t6-31827-1968685-g3 bytes=135
+tts_exec: play tts_id=5245500 event=t6-31827-1972792-g5 bytes=39
+tts_exec: play tts_id=5245502 event=t7-02-syn-89 bytes=111
+tts_exec: play tts_id=5245503 event=t7-02-syn-91 bytes=78
+tts_exec: play tts_id=5245504 event=t7-02-syn-92 bytes=78
+tts_exec: play tts_id=5245517 event=t6-31827-1968713-g7 bytes=108
+tts_exec: event t6-4507-1967031-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5243835 event=t6-4507-1967031-g1 bytes=96
+tts_exec: play tts_id=5243840 event=t6-4507-1967036-g2 bytes=102
+tts_exec: play tts_id=5243847 event=t6-4507-1967041-g3 bytes=117
+tts_exec: play tts_id=5243886 event=t6-4507-1967082-g4 bytes=108
+tts_exec: play tts_id=5244032 event=t6-4507-1967228-g5 bytes=93
+tts_exec: play tts_id=5244037 event=t6-4507-1967233-g6 bytes=111
+tts_exec: play tts_id=5244042 event=t6-4507-1967238-g7 bytes=105
+tts_exec: play tts_id=5244043 event=t7-02-syn-98 bytes=105
+tts_exec: play tts_id=5244044 event=t7-02-syn-100 bytes=81
+tts_exec: play tts_id=5244045 event=t7-02-syn-101 bytes=75
+tts_exec: event t6-9123-1969461-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5246265 event=t6-9123-1969461-g1 bytes=99
+tts_exec: play tts_id=5246270 event=t6-9123-1969466-g2 bytes=93
+tts_exec: play tts_id=5246275 event=t6-9123-1969471-g3 bytes=135
+tts_exec: play tts_id=5246280 event=t6-9123-1969476-g4 bytes=120
+tts_exec: play tts_id=5246283 event=t7-02-syn-103 bytes=114
+tts_exec: play tts_id=5246284 event=t7-02-syn-105 bytes=72
+tts_exec: play tts_id=5246285 event=t7-02-syn-106 bytes=75
+tts_exec: play tts_id=5246295 event=t6-9123-1969491-g6 bytes=228
+tts_exec: play tts_id=5246300 event=t6-9123-1969496-g7 bytes=108
+tts_exec: play tts_id=5246305 event=t6-9123-1969501-g8 bytes=123
+tts_exec: play tts_id=5246310 event=t6-9123-1969506-g9 bytes=72
+tts_exec: play tts_id=5246317 event=t6-9123-1969513-g10 bytes=186
+tts_exec: play tts_id=5246322 event=t6-9123-1969518-g11 bytes=204
+tts_exec: play tts_id=5246327 event=t6-9123-1969523-g12 bytes=218
+tts_exec: event t6-23061-1966735-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5243539 event=t6-23061-1966735-g1 bytes=72
+tts_exec: play tts_id=5243550 event=t6-23061-1966746-g3 bytes=108
+[22:56:06] supervisor start pid=3986
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=3990 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false max_attempts=3
+tts_exec: event t703-syn-2 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5245888 event=t703-syn-2 bytes=124
+tts_exec: play tts_id=5245889 event=t703-syn-3 bytes=118
+tts_exec: play tts_id=5245890 event=t703-syn-4 bytes=285
+tts_exec: play tts_id=5245891 event=t703-syn-5 bytes=213
+tts_exec: play tts_id=5245892 event=t703-syn-6 bytes=231
+tts_exec: play tts_id=5245893 event=t703-syn-7 bytes=127
+tts_exec: play tts_id=5245894 event=t703-syn-8 bytes=123
+tts_exec: play tts_id=5245895 event=t703-syn-9 bytes=76
+tts_exec: play tts_id=5245896 event=t703-syn-10 bytes=261
+tts_exec: play tts_id=5245897 event=t703-syn-11 bytes=65
+tts_exec: event t6-10414-1969024-g1 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5245828 event=t6-10414-1969024-g1 bytes=123
+tts_exec: play tts_id=5245837 event=t6-10414-1969033-g3 bytes=162
+tts_exec: play tts_id=5245842 event=t6-10414-1969038-g4 bytes=108
+tts_exec: play tts_id=5245850 event=t6-10414-1969046-g5 bytes=168
+tts_exec: play tts_id=5245855 event=t6-10414-1969051-g6 bytes=172
+tts_exec: event t6-10414-1969051-g6 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5245859 event=t6-10414-1969051-g6 bytes=172
+tts_exec: event t6-10414-1969051-g6 requeued (attempt 2 failed: interrupted)
+tts_exec: play tts_id=5245861 event=t6-10414-1969051-g6 bytes=172
+tts_exec: play tts_id=5245862 event=t6-10414-1969056-g7 bytes=132
+tts_exec: play tts_id=5245867 event=t6-10414-1969063-g8 bytes=138
+tts_exec: event t6-10414-1969063-g8 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5245869 event=t6-10414-1969063-g8 bytes=138
+tts_exec: play tts_id=5245875 event=t6-10414-1969070-g9 bytes=126
+tts_exec: event t6-10414-1969070-g9 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5245878 event=t6-10414-1969070-g9 bytes=126
+tts_exec: play tts_id=5245946 event=t6-10414-1969141-g10 bytes=126
+tts_exec: play tts_id=5245953 event=t6-10414-1969149-g11 bytes=120
+tts_exec: play tts_id=5245958 event=t6-10414-1969154-g12 bytes=132
+tts_exec: play tts_id=5246017 event=t6-10414-1969213-g21 bytes=511
+tts_exec: event t6-10414-1969213-g21 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5246021 event=t6-10414-1969213-g21 bytes=511
+tts_exec: event t6-10414-1969213-g21 requeued (attempt 2 failed: interrupted)
+tts_exec: play tts_id=5246026 event=t6-10414-1969218-g22 bytes=156
+tts_exec: play tts_id=5246031 event=t6-10414-1969213-g21 bytes=511
+tts_exec: event t6-10414-1969213-g21 failed after 3 attempts (interrupted); parked in failed/
+tts_exec: play tts_id=5246040 event=t6-10414-1969233-g23 bytes=362
+tts_exec: event t6-10414-1969233-g23 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5246049 event=t6-10414-1969233-g23 bytes=362
+tts_exec: event t6-10414-1969233-g23 requeued (attempt 2 failed: interrupted)
+tts_exec: play tts_id=5246056 event=t6-10414-1969233-g23 bytes=362
+tts_exec: play tts_id=5246057 event=t6-10414-1969246-g24 bytes=370
+tts_exec: play tts_id=5246067 event=t6-10414-1969263-g25 bytes=51
+tts_exec: play tts_id=5246072 event=t6-10414-1969268-g26 bytes=123
+tts_exec: play tts_id=5246082 event=t6-10414-1969278-g27 bytes=174
+tts_exec: play tts_id=5246084 event=t704-gate-a bytes=224
+tts_exec: play tts_id=5246085 event=t704-gate-b bytes=266
+tts_exec: play tts_id=5246087 event=t704-gate-c bytes=209
+tts_exec: play tts_id=5246088 event=t704-gate-d bytes=320
+tts_exec: play tts_id=5246089 event=t704-gate-e bytes=367
+tts_exec: play tts_id=5246090 event=t704-gate-g bytes=331
+tts_exec: play tts_id=5246091 event=t704-gate-i bytes=585
+tts_exec: play tts_id=5246092 event=t704-gate-j bytes=644
+tts_exec: play tts_id=5246094 event=t704-gate-k bytes=471
+tts_exec: play tts_id=5246107 event=t6-10414-1969303-g29 bytes=296
+tts_exec: play tts_id=5246166 event=t6-10414-1969321-g31 bytes=135
+tts_exec: play tts_id=5246179 event=t6-10414-1969374-g33 bytes=263
+tts_exec: event t6-10414-1969374-g33 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5246183 event=t6-10414-1969374-g33 bytes=263
+tts_exec: event t6-10414-1969374-g33 requeued (attempt 2 failed: interrupted)
+tts_exec: play tts_id=5246195 event=t6-10414-1969374-g33 bytes=263
+tts_exec: event t6-10414-1969374-g33 failed after 3 attempts (interrupted); parked in failed/
+tts_exec: play tts_id=5246284 event=t6-10414-1969480-g43 bytes=499
+tts_exec: event t6-10414-1969480-g43 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5246288 event=t6-10414-1969480-g43 bytes=499
+tts_exec: event t6-10414-1969480-g43 requeued (attempt 2 failed: interrupted)
+tts_exec: play tts_id=5246300 event=t6-10414-1969480-g43 bytes=499
+tts_exec: event t6-10414-1969480-g43 failed after 3 attempts (interrupted); parked in failed/
+tts_exec: play tts_id=5246305 event=t6-10414-1969501-g45 bytes=653
+tts_exec: event t6-10414-1969501-g45 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5246310 event=t6-10414-1969501-g45 bytes=653
+tts_exec: event t6-10414-1969501-g45 requeued (attempt 2 failed: interrupted)
+tts_exec: play tts_id=5246316 event=t6-10414-1969506-g46 bytes=147
+tts_exec: event t6-10414-1969506-g46 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5246318 event=t6-10414-1969501-g45 bytes=653
+tts_exec: play tts_id=5246319 event=t6-10414-1969506-g46 bytes=147
+tts_exec: play tts_id=5246324 event=t6-10414-1969520-g48 bytes=158
+tts_exec: play tts_id=5246329 event=t6-10414-1969525-g49 bytes=171
+tts_exec: event t6-10414-1969525-g49 requeued (attempt 1 failed: interrupted)
+tts_exec: play tts_id=5246333 event=t6-10414-1969525-g49 bytes=171
+tts_exec: event t6-10414-1969525-g49 requeued (attempt 2 failed: interrupted)
+tts_exec: control: stop requested
+tts_exec: play tts_id=5246335 event=t6-10414-1969525-g49 bytes=171
+Terminated 
+[08:37:50] supervisor start pid=9028
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=9032 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false max_attempts=3
+Terminated 
+[08:38:21] supervisor start pid=9526
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=9530 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false max_attempts=3
+tts_exec: play tts_id=5246340 event=t6-10414-1969536-g51 bytes=177
+tts_exec: control: stop requested
+tts_exec: event t6-10414-1969546-g53 cancelled (stop requested)
+Terminated 
+[08:41:05] supervisor start pid=11411
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=11415 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false max_attempts=3
+tts_exec: play tts_id=5246354 event=t6-10414-1969550-g54 bytes=159
+tts_exec: play tts_id=5246359 event=t6-10414-1969555-g55 bytes=144
+tts_exec: control: stop requested
+tts_exec: play tts_id=5246368 event=t6-10414-1969564-g57 bytes=207
+tts_exec: play tts_id=5246373 event=t6-10414-1969569-g58 bytes=153
+tts_exec: play tts_id=5246378 event=t6-10414-1969574-g59 bytes=153
+tts_exec: control: stop requested
+tts_exec: control: stop requested
+tts_exec: control: stop requested
+tts_exec: event t6-15072-1969131-g10 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5245936 event=t6-15072-1969131-g10 bytes=201
+tts_exec: play tts_id=5245953 event=t6-15072-1969142-g12 bytes=102
+tts_exec: play tts_id=5245959 event=t6-15072-1969155-g13 bytes=93
+tts_exec: control: stop requested
+tts_exec: play tts_id=5245990 event=t6-15072-1969186-g17 bytes=135
+tts_exec: control: stop requested
+tts_exec: play tts_id=5246000 event=t6-15072-1969196-g19 bytes=90
+tts_exec: play tts_id=5246029 event=t6-15072-1969225-g21 bytes=132
+tts_exec: play tts_id=5246034 event=t6-15072-1969230-g22 bytes=150
+tts_exec: play tts_id=5246039 event=t6-15072-1969235-g23 bytes=138
+tts_exec: play tts_id=5246044 event=t6-15072-1969240-g24 bytes=147
+tts_exec: play tts_id=5246049 event=t6-15072-1969245-g25 bytes=132
+tts_exec: event t6-30430-1969083-g4 requeued (attempt 1 failed: provider_error)
+tts_exec: play tts_id=5245887 event=t6-30430-1969083-g4 bytes=98
+tts_exec: play tts_id=5245911 event=t6-30430-1969107-g7 bytes=152
+tts_exec: play tts_id=5245916 event=t6-30430-1969112-g8 bytes=119
+tts_exec: play tts_id=5245921 event=t6-30430-1969117-g9 bytes=146
+[13:31:21] supervisor start pid=17253
+tts_exec: pid file written: /data/local/tmp/t5_bridge/tts/tts_exec.pid exists=true
+tts_exec: ready pid=17257 root=/data/local/tmp/t5_bridge/tts timeout_ms=60000 once=false max_attempts=3
+tts_exec: play tts_id=5245018 event=t6-1165-1968291-g2 bytes=180
+tts_exec: play tts_id=5245019 event=t6-1165-1968296-g3 bytes=114
+tts_exec: play tts_id=5245020 event=t6-8342-1968206-g3 bytes=180
+tts_exec: play tts_id=5245021 event=t6-8342-1972306-g4 bytes=144
+tts_exec: play tts_id=5245026 event=t6-8342-1968222-g5 bytes=138
+tts_exec: play tts_id=5245028 event=t6-8342-CONFTEST-1795325849-g2 bytes=66
+tts_exec: play tts_id=5245029 event=t6-8342-CONFTEST-1795325880-g2 bytes=140
+tts_exec: play tts_id=5245041 event=t6-8342-1968230-g6 bytes=68
+tts_exec: control: stop requested
+tts_exec: play tts_id=5245053 event=t6-8342-1968249-g8 bytes=48
+tts_exec: play tts_id=5245058 event=t6-8342-1968254-g9 bytes=86
+tts_exec: play tts_id=5245074 event=t6-8342-1968259-g10 bytes=123
+tts_exec: play tts_id=5245088 event=t6-8342-1972359-g11 bytes=126
+tts_exec: play tts_id=5245090 event=t6-8342-1972363-g12 bytes=114
+tts_exec: control: stop requested
+tts_exec: play tts_id=5245143 event=t6-8342-CONFTEST-1795327367-g2 bytes=126
+tts_exec: play tts_id=5245161 event=t6-8342-1968357-g27 bytes=132
+tts_exec: play tts_id=5245195 event=t6-8342-1968391-g30 bytes=161
