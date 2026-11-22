@@ -1,0 +1,256 @@
+  PID  PPID STIME ARGS                       
+    1     0 13:18:20 init
+    2     0 13:18:20 [kthreadd]
+    3     2 13:18:20 [ksoftirqd/0]
+    5     2 13:18:20 [kworker/0:0H]
+    7     2 13:18:20 [rcu_preempt]
+    8     2 13:18:20 [rcu_sched]
+    9     2 13:18:20 [rcu_bh]
+   10     2 13:18:20 [migration/0]
+   11     2 13:18:20 [migration/1]
+   12     2 13:18:20 [ksoftirqd/1]
+   14     2 13:18:20 [kworker/1:0H]
+   15     2 13:18:20 [migration/2]
+   16     2 13:18:20 [ksoftirqd/2]
+   18     2 13:18:20 [kworker/2:0H]
+   19     2 13:18:20 [migration/3]
+   20     2 13:18:20 [ksoftirqd/3]
+   22     2 13:18:20 [kworker/3:0H]
+   23     2 13:18:20 [perf]
+   24     2 13:18:20 [GCPU]
+   25     2 13:18:20 [update_tz_count]
+   26     2 13:18:20 [writeback]
+   27     2 13:18:20 [crypto]
+   28     2 13:18:20 [bioset]
+   29     2 13:18:20 [kblockd]
+   30     2 13:18:20 [cmdq_auto_relea]
+   31     2 13:18:20 [cmdq_task]
+   32     2 13:18:20 [cmdq_resource]
+   33     2 13:18:20 [cmdq_auto_relea]
+   34     2 13:18:20 [cmdq_auto_relea]
+   35     2 13:18:20 [cmdq_auto_relea]
+   36     2 13:18:20 [cmdq_auto_relea]
+   37     2 13:18:20 [cmdq_auto_relea]
+   38     2 13:18:20 [cmdq_auto_relea]
+   39     2 13:18:20 [cmdq_auto_relea]
+   40     2 13:18:20 [cmdq_auto_relea]
+   41     2 13:18:20 [cmdq_auto_relea]
+   42     2 13:18:20 [cmdq_auto_relea]
+   43     2 13:18:20 [cmdq_auto_relea]
+   44     2 13:18:20 [cmdq_auto_relea]
+   45     2 13:18:20 [cmdq_auto_relea]
+   46     2 13:18:20 [cmdq_auto_relea]
+   47     2 13:18:20 [cmdq_auto_relea]
+   48     2 13:18:20 [cmdq_auto_relea]
+   50     2 13:18:20 [rtmm_reclaim]
+   51     2 13:18:20 [cfg80211]
+   52     2 13:18:20 [cfinteractive]
+   53     2 13:18:20 [ion_mm_heap]
+   54     2 13:18:20 [ion_mm_heap_for]
+   55     2 13:18:20 [ion_mm_heap_for]
+   56     2 13:18:20 [ion_history]
+   71     2 13:18:20 [kswapd0]
+   72     2 13:18:20 [vmstat]
+   73     2 13:18:20 [fsnotify_mark]
+   74     2 13:18:20 [fuse_log]
+  104     2 13:18:20 [bioset]
+  105     2 13:18:20 [bioset]
+  106     2 13:18:20 [bioset]
+  107     2 13:18:20 [bioset]
+  108     2 13:18:20 [bioset]
+  109     2 13:18:20 [bioset]
+  110     2 13:18:20 [bioset]
+  111     2 13:18:20 [bioset]
+  112     2 13:18:20 [bioset]
+  113     2 13:18:20 [hps_main]
+  114     2 13:18:20 [ged_notify_sw_v]
+  115     2 13:18:20 [ged_dump_fw_log]
+  116     2 13:18:20 [btif_rxd]
+  117     2 13:18:20 [kthermp]
+  118     2 13:18:20 [hang_detect]
+  119     2 13:18:20 [hang_detect1]
+  120     2 13:18:20 [irq/124-mt6397-]
+  121     2 13:18:20 [uether]
+  122     2 13:18:20 [uether_rx1]
+  123     2 13:18:20 [kpsmoused]
+  124     2 13:18:20 [dm_bufio_cache]
+  125     2 13:18:20 [irq/203-sdio-ei]
+  126     2 13:18:20 [kworker/3:2]
+  127     2 13:18:20 [binder]
+  133     2 13:18:20 [ipv6_addrconf]
+  142     2 13:18:20 [deferwq]
+  143     2 13:18:20 [mt_gpufreq_inpu]
+  144     2 13:18:20 [ksched_hint]
+  146     2 13:18:20 [accel_polling]
+  147     2 13:18:20 [usb20_st_wq]
+  149     2 13:18:20 [ddp_irq_log_kth]
+  150     2 13:18:20 [display_esd_che]
+  151     2 13:18:20 [display_check_a]
+  152     2 13:18:20 [present_fence_w]
+  153     2 13:18:20 [frame_update_wo]
+  154     2 13:18:20 [decouple_fence_]
+  155     2 13:18:21 [bioset]
+  156     2 13:18:21 [kworker/3:3]
+  157     2 13:18:21 [ion_fb_heap]
+  158     2 13:18:21 [mmcqd/0]
+  159     2 13:18:21 [bioset]
+  160     2 13:18:21 [mmcqd/0boot0]
+  161     2 13:18:21 [bioset]
+  162     2 13:18:21 [mmcqd/0boot1]
+  163     2 13:18:21 [bioset]
+  164     2 13:18:21 [mmcqd/0rpmb]
+  165     2 13:18:21 [pvr_timer]
+  166     2 13:18:21 [pvr_defer_free]
+  167     2 13:18:21 [pvr_device_wdg]
+  168     2 13:18:21 [pvr_cacheop]
+  169     2 13:18:21 [mwp]
+  170     2 13:18:21 [pvr_sync_defer_]
+  171     2 13:18:21 [pvr_sync_check_]
+  172     2 13:18:21 [entropy_thread]
+  173     2 13:18:21 [mtk-tpd]
+  174     2 13:18:21 [gtp-workqueue]
+  176     2 13:18:21 [mtk-tpd]
+  177     2 13:18:21 [touch_resume]
+  179     2 13:18:21 [PTP_CTRL_MCUSYS]
+  180     2 13:18:21 [kworker/3:1H]
+  184     2 13:18:21 [jbd2/mmcblk0p19]
+  185     2 13:18:21 [ext4-rsv-conver]
+  187     2 13:18:21 [kworker/2:1H]
+  188     2 13:18:22 [bioset]
+  189     2 13:18:22 [kdmflush]
+  190     2 13:18:22 [jbd2/mmcblk0p11]
+  191     2 13:18:22 [ext4-rsv-conver]
+  192     2 13:18:22 [kworker/0:1H]
+  193     1 13:18:22 ueventd
+  201     2 13:18:23 [kworker/1:1H]
+  207     2 13:18:23 [jbd2/mmcblk0p22]
+  208     2 13:18:23 [ext4-rsv-conver]
+  212     2 13:18:23 [jbd2/mmcblk0p20]
+  213     2 13:18:23 [ext4-rsv-conver]
+  217     2 13:18:23 [jbd2/mmcblk0p21]
+  218     2 13:18:23 [ext4-rsv-conver]
+  221     1 13:18:23 logd
+  222     1 13:18:23 servicemanager
+  223     1 13:18:23 hwservicemanager
+  224     1 13:18:23 vndservicemanager /dev/vndbinder
+  231     2 13:18:24 [kauditd]
+  232     1 13:18:24 android.hardware.keymaster@3.0-service
+  233     1 13:18:24 vold --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 --fsck_context=u:r:fsck:s0 --fsck_untrusted_context=u:r:fsck_untrusted:s0
+  243     1 13:18:24 magiskd
+  280     1 13:18:24 netd
+  281     1 13:18:24 zygote
+  282   280 13:18:24 iptables-restore --noflush -w -v
+  283   280 13:18:24 ip6tables-restore --noflush -w -v
+  300     1 13:18:25 android.hidl.allocator@1.0-service
+  301     1 13:18:25 android.hardware.audio@2.0-service-mediatek
+  302     1 13:18:25 android.hardware.bluetooth@1.0-service-mediatek
+  303     1 13:18:25 android.hardware.broadcastradio@1.1-service
+  304     1 13:18:25 android.hardware.cas@1.0-service
+  305     1 13:18:25 android.hardware.configstore@1.0-service
+  306     1 13:18:25 android.hardware.gatekeeper@1.0-service
+  307     1 13:18:25 android.hardware.graphics.composer@2.1-service
+  308     1 13:18:25 android.hardware.wifi@1.0-service
+  309     1 13:18:25 merged_hal_service
+  310     1 13:18:25 vendor.mediatek.hardware.keymanage@1.0-service
+  311     1 13:18:25 healthd
+  312     1 13:18:25 sh
+  313     1 13:18:25 watchdogd 20 10
+  315     1 13:18:25 audioserver
+  317     1 13:18:25 lmkd
+  318     1 13:18:25 mediaserver
+  319     1 13:18:25 surfaceflinger
+  320     1 13:18:25 thermalserviced
+  327     1 13:18:25 wmt_launcher -p /vendor/firmware/
+  328     2 13:18:25 [f_mtp]
+  332     1 13:18:25 ras-daemon
+  338     1 13:18:25 idsd
+  340     1 13:18:25 guardians
+  341     1 13:18:25 resource_manager
+  342     1 13:18:25 aal
+  343     1 13:18:25 batterywarning
+  344     1 13:18:25 cameraserver
+  345     1 13:18:25 dm_agent_binder
+  346     2 13:18:25 [mtk_stp_psm]
+  349     1 13:18:25 drmserver
+  350     2 13:18:25 [mtk_stp_btm]
+  351     1 13:18:25 thermald
+  352     2 13:18:25 [mtk_wmtd]
+  353     1 13:18:25 installd
+  354     1 13:18:25 keystore /data/misc/keystore
+  355     1 13:18:25 media.extractor aextractor
+  356     2 13:18:25 [mtk_wmtd_worker]
+  357     1 13:18:25 mobile_log_d
+  359     1 13:18:26 netdiag
+  361     1 13:18:26 storaged
+  365     1 13:18:26 wificond
+  366     1 13:18:26 media.codec hw/android.hardware.media.omx@1.0-service
+  372     1 13:18:26 android.hardware.sensors@1.0-service-mediatek
+  373     1 13:18:26 camerahalserver
+  374     1 13:18:26 thermal
+  377     1 13:18:26 sysenv_daemon
+  378     1 13:18:26 vendor.mediatek.hardware.pq@2.0-service
+  380     1 13:18:26 gatekeeperd /data/misc/gatekeeper
+  383     1 13:18:26 tombstoned
+  384     1 13:18:26 netdagent
+  385     1 13:18:26 rpmb_svc
+  406     2 13:18:26 [pvr_workqueue]
+  407     2 13:18:26 [pvr_workqueue]
+  408     2 13:18:26 [pvr_workqueue]
+  485   340 13:18:28 sh /data/cloud/data/tvshell.cloud.yunos.com/3.0.15/bin/clear_cache.sh /data/cloud/data/tvshell.cloud.yunos.com/3.0.15
+  585     1 13:18:29 aee_aed
+  701   281 13:18:29 system_server
+  833   281 13:18:32 com.google.android.inputmethod.pinyin
+  847   281 13:18:32 com.android.systemui
+  898   281 13:18:33 com.alibaba.ailabs.genie.osupdate
+  913   281 13:18:33 com.alibaba.ailabs.genie.smartapp
+  956   281 13:18:33 app.orchard.tv
+  996     2 13:18:33 [tx_thread]
+ 1017     1 13:18:33 wpa_supplicant -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf -I/vendor/etc/wifi/wpa_supplicant_overlay.conf -N -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf -e/data/misc/wifi/entropy.bin -I/vendor/etc/wifi/p2p_supplicant_overlay.conf -O/data/misc/wifi/sockets -g@android:wpa_wlan0
+ 1034     1 13:18:34 aee_aedv
+ 1074   281 13:18:34 com.alibaba.ailabs.genie.launcher
+ 1133   281 13:18:35 com.android.bluetooth
+ 1154     1 13:18:35 ged_srv
+ 1189   281 13:18:35 com.shere.assistivetouch
+ 1211   281 13:18:35 android.process.media
+ 1237   281 13:18:36 com.alibaba.ailabs.genie.smartapp:business
+ 1255   281 13:18:36 com.aligenie.ags
+ 1319   281 13:18:36 com.shere.assistivetouch.service
+ 1496   281 13:18:37 com.android.settings:SettingsProvider
+ 1656   281 13:18:40 android.process.acore
+ 1671   281 13:18:40 com.alibaba.ailabs.genie.iot:service
+ 1782     1 13:18:43 adbd --root_seclabel=u:r:su:s0
+ 1904   338 13:18:46 idsd
+ 2106   281 13:18:53 com.android.packageinstaller
+ 2176   281 13:18:55 com.shere.assistivetouch:xg_service_v3
+ 2391   281 13:19:01 android.ext.services
+ 2548   281 13:19:24 com.android.keychain
+ 2586     1 13:19:31 tgb_bridge --sock tgz2_asr_bridge --work-dir /data/local/tmp/t5_bridge/work
+ 3468     1 14:02:40 ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts
+ 4685     1 14:03:56 tg_supervisor --injector /data/local/tmp/t6/tg_injector --so /data/local/tmp/t7/libtg_ttsguard.so --name com.alibaba.ailabs.genie.smartapp:core --pidfile /data/local/tmp/t7/ttsguard.sup.pid --log /data/local/tmp/t7/ttsguard.sup.log
+ 8342   281 13:24:25 com.alibaba.ailabs.genie.smartapp:core
+ 8540   281 13:24:30 com.alibaba.ailabs.genie.rtc
+16401     2 18:09:49 [kworker/3:0]
+17253     1 13:31:20 sh /data/local/tmp/t5_bridge/tts_supervisor.sh
+17257 17253 13:31:20 app_process /system com.tgz02.tts.TtsExec --root /data/local/tmp/t5_bridge/tts --idle-ms 0 --timeout-ms 60000 --verbose
+17636     2 18:16:09 [kworker/u8:0]
+21409 17257 18:29:58 logcat -v time -s AudioStateManager:D VoiceManager:D
+22818     2 18:53:54 [kworker/u8:2]
+24030     2 19:18:05 [kworker/1:2]
+24095   485 19:19:02 sleep 60m
+26116     2 19:33:56 [kworker/u8:1]
+26336     2 19:39:24 [kworker/2:2]
+26457     2 19:43:01 [kworker/u8:6]
+26625     2 19:47:14 [kworker/2:0]
+26674     2 19:48:48 [kworker/u8:4]
+28070     2 19:53:58 [kworker/u8:3]
+28546     2 19:57:13 [kworker/0:2]
+28681     2 20:00:37 [kworker/u8:5]
+28729     2 20:02:14 [kworker/0:0]
+28764     2 20:03:22 [kworker/1:1]
+28932     2 20:07:16 [kworker/0:1]
+29003   281 20:07:39 com.topjohnwu.magisk
+29024 29003 20:07:40 su --mount-master
+29026   243 20:07:40 libbusybox.so sh
+29036 29026 20:07:40 com.topjohnwu.magisk:root:0
+30246     1 20:08:10 tg_supervisor --pidfile /data/local/tmp/t6/tg_supervisor.pid --log /data/local/tmp/t6/supervisor.log
+30413  1782 20:08:33 ps -A -o PID -o PPID -o STIME -o ARGS
