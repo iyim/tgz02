@@ -1004,7 +1004,10 @@ static void *tg_continuity_thread(void *arg)
             if (fgets(buf, sizeof(buf), f) != NULL) seq = strtoll(buf, NULL, 10);
             fclose(f);
         }
-        if (seq > last_seq) {
+        /* T8-15.4b: a large backwards jump means the peer changed its clock base
+         * (someone once wrote epoch seconds here, after which every monotonic-ms
+         * request looked stale and was ignored forever). Accept it as a reset. */
+        if (seq > last_seq || (last_seq - seq) > 60000) {
             last_seq = seq;
             g_req_seq = seq;
             g_req_pending = 1;
