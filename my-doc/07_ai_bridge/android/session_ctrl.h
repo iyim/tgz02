@@ -88,6 +88,9 @@ void sc_note_wake(sc_ctx *s, long long now_ms);
 int  sc_on_session_text(sc_ctx *s, const char *session, const char *event_id, long long now_ms);
 int  sc_on_submit(sc_ctx *s, const char *request_id, long long now_ms);
 void sc_on_request_result(sc_ctx *s, const char *request_id, int ok, long long now_ms);
+/* T8-13.4：请求归属判定（活动请求 && id 非空 && 与当前 request 完全一致）。
+ * 1 = 归属成立。只读，不修改状态；TTS 生命周期入口与 worker 幂等分支共用。 */
+int  sc_request_owns(const sc_ctx *s, const char *request_id);
 int  sc_on_tts_queued(sc_ctx *s, const char *request_id, long long now_ms);
 int  sc_on_play_state(sc_ctx *s, int playing, const char *event_id,
                       const char *outcome, long long now_ms);

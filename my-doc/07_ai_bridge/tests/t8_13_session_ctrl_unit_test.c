@@ -115,12 +115,16 @@ int main(void)
 
     /* ---------------- [4] TTS 播放期间打断 ---------------- */
     printf("\n[4] SPEAKING 中被打断 -> INTERRUPTED；随后同请求的 idle 仍被接受（终态化）\n");
-    (void)sc_on_tts_queued(&s, "t6-30807-1969310-g9", 40000);
+    /* T8-13.4：sc_on_tts_queued 现在要求"当前活动请求本人"（上一轮请求已在上/一步
+     * 终结），所以这一轮先建立自己的会话与请求，再走真实的 queued 事件。 */
+    (void)sc_on_session_text(&s, "1969315", "t6-30807-1969315-g1", 30500);
+    (void)sc_on_submit(&s, "t6-30807-1969315-g1", 30600);
+    check(sc_on_tts_queued(&s, "t6-30807-1969315-g1", 40000) == 1, "queued accepted (owned)");
     check(s.state == SC_SPEAKING, "queued -> SPEAKING");
     sc_on_interrupt(&s, 40100);
     check(s.state == SC_INTERRUPTED, "interrupt -> INTERRUPTED");
     check(s.interrupts == 1, "interrupt counted");
-    check(sc_on_play_state(&s, 0, "t6-30807-1969310-g9", "interrupted", 40200) == 1,
+    check(sc_on_play_state(&s, 0, "t6-30807-1969315-g1", "interrupted", 40200) == 1,
           "interrupted playback state accepted");
     check(s.state == SC_INTERRUPTED, "stays INTERRUPTED");
     check(sc_poll(&s, 40200 + 12000) == SC_CLOSING, "interrupted deadline -> CLOSING");
@@ -476,6 +480,130 @@ int main(void)
     (void)sc_on_tts_queued(&s, "evtH2", 190200);
     (void)sc_on_play_state(&s, 0, "evtH2", "ok", 190500);
     check(s.state == SC_FOLLOWUP && s.request_active == 0, "16: normal idle still works");
+
+    /* ---------------- [17] T8-13.4：q==0 幂等命中(queue/inflight) 的超时保护 ----------------
+     * 审查发现的边界：ai_worker 的 q==0 分支原先对 queue/inflight 只"保留等待"，
+     * 不进入 SPEAKING、也没有任何截止；而 sc_on_submit 给的 PROCESSING 没有有效截止、
+     * sc_poll 也不处理 PROCESSING 超时 —— TtsExec 不发布播放事件时永久停在 PROCESSING。
+     * 修复后：queue/inflight 走与 q>0 相同的 TTS 生命周期入口（SPEAKING + 5 倍截止），
+     * 且入口本身收紧为"只有当前活动请求本人"才能推进。 */
+    printf("\n[17] q==0 幂等命中 queue/inflight：进入 SPEAKING 且挂 5 倍截止\n");
+
+    /* 17.1 q==0 + queue：进入 SPEAKING，request_active 保持 1（不当作已播完） */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969800", "evtQ1", 200000);
+    (void)sc_on_submit(&s, "evtQ1", 200100);
+    check(s.state == SC_PROCESSING && s.request_active == 1, "17.1: active in PROCESSING");
+    check(sc_request_owns(&s, "evtQ1") == 1, "17.1: ownership predicate true for own id");
+    check(sc_on_tts_queued(&s, "evtQ1", 200200) == 1, "17.1: idempotent hit accepted");
+    check(s.state == SC_SPEAKING, "17.1: promoted to SPEAKING");
+    check(s.request_active == 1, "17.1: request still active (not treated as played)");
+    check(s.deadline_ms == 200200 + 5 * 12000, "17.1: 5x safety deadline armed");
+    check(sc_poll(&s, 200200 + 59999) == SC_SPEAKING, "17.1: within 5x window still SPEAKING");
+
+    /* 17.2 q==0 + inflight：进入 SPEAKING，仍等真实播放事件（同语义，阶段不同） */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969810", "evtQ2", 201000);
+    (void)sc_on_submit(&s, "evtQ2", 201100);
+    check(sc_on_tts_queued(&s, "evtQ2", 201200) == 1, "17.2: inflight hit accepted");
+    check(s.state == SC_SPEAKING && s.request_active == 1, "17.2: SPEAKING, waiting for idle");
+    check(sc_poll(&s, 201200 + 30000) == SC_SPEAKING, "17.2: mid-window no premature close");
+
+    /* 17.3 等待期间真实 idle 到达：正常进入 FOLLOWUP，request_active 归零 */
+    check(sc_on_play_state(&s, 0, "evtQ2", "ok", 201500) == 1, "17.3: real idle accepted");
+    check(s.state == SC_FOLLOWUP && s.request_active == 0, "17.3: FOLLOWUP, request finalized");
+    check(sc_poll(&s, 201500 + 12000) == SC_CLOSING && sc_poll(&s, 201500 + 12001) == SC_IDLE,
+          "17.3: session closes after followup window");
+
+    /* 17.4 超过 5 倍窗口仍无播放事件：CLOSING 并清掉活动请求（原缺口的核心断言） */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969820", "evtQ4", 202000);
+    (void)sc_on_submit(&s, "evtQ4", 202100);
+    (void)sc_on_tts_queued(&s, "evtQ4", 202200);
+    check(s.state == SC_SPEAKING && s.request_active == 1, "17.4: speaking active");
+    check(sc_poll(&s, 202200 + 60000) == SC_CLOSING, "17.4: 5x deadline -> CLOSING");
+    check(s.request_active == 0, "17.4: stuck request cleared at deadline");
+    check(s.request[0] == '\0' && strcmp(s.prev_request, "evtQ4") == 0,
+          "17.4: request retired to prev_request (late callback filter)");
+    check(s.timeouts == 1 && s.closes == 1, "17.4: timeout/close counters incremented");
+    check(sc_poll(&s, 202200 + 60001) == SC_IDLE, "17.4: back to IDLE, nothing hangs");
+
+    /* 17.5 无活动请求调用 sc_on_tts_queued：拒绝，不得复活已结束请求 */
+    {
+        unsigned long stale0;
+        int st0;
+        sc_init(&s, &c);
+        (void)sc_on_session_text(&s, "1969830", "evtQ5", 203000);
+        (void)sc_on_submit(&s, "evtQ5", 203100);
+        (void)sc_on_play_state(&s, 0, "evtQ5", "ok", 203200);   /* 请求已正常收尾 */
+        check(s.request_active == 0 && s.state == SC_FOLLOWUP, "17.5: request finalized first");
+        stale0 = s.stale_callbacks;
+        st0 = s.state;
+        check(sc_request_owns(&s, "evtQ5") == 0, "17.5: ownership false without active request");
+        check(sc_on_tts_queued(&s, "evtQ5", 203300) == 0, "17.5: rejected (no active request)");
+        check(s.state == st0, "17.5: state not resurrected to SPEAKING");
+        check(s.request_active == 0 && sc_same_req(&s, "evtQ5") == 1,
+              "17.5: no request revived (id kept only for duplicate detection)");
+        check(s.stale_callbacks == stale0 + 1, "17.5: only stale counter moved");
+        check(s.deadline_ms == 203200 + 12000,
+              "17.5: deadline not replaced by 5x speaking window");
+    }
+
+    /* 17.6 旧/空/未知 request_id：拒绝，不得污染新请求 */
+    {
+        unsigned long stale0;
+        sc_init(&s, &c);
+        (void)sc_on_session_text(&s, "1969840", "evtQ6", 204000);
+        (void)sc_on_submit(&s, "evtQ6", 204100);
+        stale0 = s.stale_callbacks;
+        check(sc_on_tts_queued(&s, "evtOLD", 204200) == 0, "17.6: stale id rejected");
+        check(sc_on_tts_queued(&s, "", 204300) == 0, "17.6: empty id rejected");
+        check(sc_on_tts_queued(&s, NULL, 204400) == 0, "17.6: NULL id rejected");
+        check(s.stale_callbacks == stale0 + 3, "17.6: three stale callbacks counted");
+        check(s.state == SC_PROCESSING, "17.6: still PROCESSING (never promoted)");
+        check(sc_same_req(&s, "evtQ6") == 1 && s.request_active == 1,
+              "17.6: current request untouched");
+        check(s.deadline_ms != 204400 + 60000,
+              "17.6: no 5x deadline leaked onto the live request");
+        /* 归属仍成立时，本请求自己的 TTS 生命周期入口照常工作 */
+        check(sc_on_tts_queued(&s, "evtQ6", 204500) == 1, "17.6: own id still accepted");
+        check(s.state == SC_SPEAKING && s.request_active == 1, "17.6: own request promoted");
+    }
+
+    /* 17.7 q==0 + done/failed：保持原有成功终结行为（回归，不得被本轮改动破坏） */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969850", "evtQ7", 205000);
+    (void)sc_on_submit(&s, "evtQ7", 205100);
+    sc_on_request_result(&s, "evtQ7", 1, 205200);      /* worker: stage=done 分支 */
+    check(s.request_active == 0, "17.7 done: request finalized on success");
+    check(s.state == SC_LISTENING, "17.7 done: PROCESSING exited to LISTENING");
+    check(s.deadline_ms == 205200 + 12000, "17.7 done: 1x fallback window, not 5x");
+    check(sc_poll(&s, 205200 + 12000) == SC_CLOSING && sc_poll(&s, 205200 + 12001) == SC_IDLE,
+          "17.7 done: closes, never stuck");
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969860", "evtQ8", 206000);
+    (void)sc_on_submit(&s, "evtQ8", 206100);
+    sc_on_request_result(&s, "evtQ8", 1, 206200);      /* worker: stage=failed 分支 */
+    check(s.request_active == 0 && s.state == SC_LISTENING,
+          "17.7 failed: same terminal success semantics as done");
+
+    /* 17.8 未知阶段的安全处理（worker 侧行为，此处核对状态机配合）：
+     * 不猜已播放、不伪造 SPEAKING；按"不会再有本请求的收尾"终结后，迟到的真实
+     * 播放 idle 只能作为迟到回调被过滤，不污染下一轮会话。 */
+    {
+        unsigned long stale0;
+        sc_init(&s, &c);
+        (void)sc_on_session_text(&s, "1969870", "evtQ9", 207000);
+        (void)sc_on_submit(&s, "evtQ9", 207100);
+        sc_on_request_result(&s, "evtQ9", 1, 207200);  /* worker: unknown stage -> safe finalize */
+        check(s.state == SC_LISTENING && s.request_active == 0,
+              "17.8: unknown stage finalized to LISTENING (no SPEAKING claimed)");
+        stale0 = s.stale_callbacks;
+        check(sc_on_play_state(&s, 0, "evtQ9", "ok", 207300) == 1,
+              "17.8: late idle accepted as duplicate (no migration)");
+        check(s.stale_callbacks == stale0, "17.8: not counted as stale (own id, already closed)");
+        check(s.state == SC_LISTENING, "17.8: late idle does not reopen the request");
+    }
 
     printf("\nSUMMARY: pass=%d fail=%d\n", g_pass, g_fail);
     printf("RESULT: %s\n", g_fail == 0 ? "PASS" : "FAIL");

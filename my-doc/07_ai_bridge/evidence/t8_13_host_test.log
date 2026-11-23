@@ -1,5 +1,5 @@
 ﻿# T8-13 session controller host test log
-# host time: 2026-11-23 17:46:19
+# host time: 2026-11-23 18:24:17
 
 === build t8_13_session_ctrl_unit_test ===
 cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_13_session_ctrl_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_13_session_ctrl_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\session_ctrl.c
@@ -39,7 +39,9 @@ cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\sys
 
 [16] SPEAKING 安全兜底（播放事件永不到达）
 
-SUMMARY: pass=154 fail=0
+[17] q==0 幂等命中 queue/inflight：进入 SPEAKING 且挂 5 倍截止
+
+SUMMARY: pass=199 fail=0
 RESULT: PASS
 
 === build t7_04_session_unit_test ===
@@ -116,5 +118,5 @@ cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz
 SUMMARY: pass=82 fail=0
 RESULT: PASS
 
-# total: pass=472 fail=0
+# total: pass=517 fail=0
 # result: OK

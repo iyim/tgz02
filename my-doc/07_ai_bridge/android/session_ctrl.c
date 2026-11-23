@@ -173,10 +173,25 @@ void sc_on_request_result(sc_ctx *s, const char *request_id, int ok, long long n
     }
 }
 
+/* 请求归属判定（T8-13.4）：唯一"这个回调能不能动当前请求"的判据。
+ * 必须同时满足：有活动请求 + 传入 id 非空 + 当前请求 id 非空 + 完全一致。
+ * 无活动请求 / 空 id / 旧 id / 未知 id 一律不成立 —— 供 TTS 生命周期入口与
+ * ai_worker 的幂等命中分支共用，避免两处各写一套判定而漂移。 */
+int sc_request_owns(const sc_ctx *s, const char *request_id)
+{
+    if (s == NULL || !s->request_active) return 0;
+    if (request_id == NULL || request_id[0] == '\0') return 0;
+    if (s->request[0] == '\0') return 0;
+    return strcmp(s->request, request_id) == 0;
+}
+
 int sc_on_tts_queued(sc_ctx *s, const char *request_id, long long now_ms)
 {
     if (s == NULL || !s->cfg.enabled) return s != NULL ? 1 : 0;
-    if (s->request_active && !sc_same(s->request, request_id)) {
+    /* T8-13.4：只有当前活动请求本人才能进入 SPEAKING。旧请求/空 id/无活动请求
+     * 一律拒绝（只计 stale，不改状态、不改 request）——否则一个已经结束的请求
+     * 会被"复活"成 SPEAKING，把 5 倍安全截止挂到错误的会话周期上。 */
+    if (!sc_request_owns(s, request_id)) {
         s->stale_callbacks++;
         return 0;
     }

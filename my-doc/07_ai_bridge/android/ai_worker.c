@@ -1362,8 +1362,15 @@ static int provider_attempt(t6b_worker *w)
                 /* T7-04：回答已入队 = 会话进入 SPEAKING，播报结束后等用户追问 */
                 (void)cs_on_queued(&w->cs, wu_now_ms());
                 /* T8-13：真实事件 -> 会话控制中心（TTS 生命周期开始）。
-                 * 情况 A：请求保持活动，等当前 request 对应的播放结束事件。 */
-                (void)sc_on_tts_queued(&w->sc, w->pend.event_id, wu_now_ms());
+                 * 情况 A：请求保持活动，等当前 request 对应的播放结束事件。
+                 * T8-13.4：入口现在要求"当前活动请求本人"；归属不成立时返回 0，
+                 * 只记一条可核对日志（播放本身由原厂 TtsExec 独立完成，不受影响）。 */
+                if (!sc_on_tts_queued(&w->sc, w->pend.event_id, wu_now_ms())) {
+                    always("tts queued but request NOT owned: event=%s state=%s active=%d "
+                           "- state machine not promoted (playback unaffected)",
+                           w->pend.event_id, sc_state_name(w->sc.state),
+                           w->sc.request_active);
+                }
             } else if (q == 0) {
                 if (w->cfg.tts_queue[0] != '\0') {
                     w->st.tts_skipped++;
@@ -1377,12 +1384,45 @@ static int provider_attempt(t6b_worker *w)
                      * done/failed = 该 event 不会再有播放结束事件 -> 请求终结
                      *               （成功语义，避免 request_active 永久挂着）；
                      * queue/inflight = TtsExec 稍后还会播并发布 playing/idle ->
-                     *               保留等待关系，等真实播放事件推进状态。 */
+                     *               进入 SPEAKING 并挂 5 倍安全截止，等真实播放事件推进。
+                     * T8-13.4（审查发现的边界）：queue/inflight 原先只"保留等待"，既没有
+                     * 进入 SPEAKING 也没有任何截止；而 sc_on_submit 给的 PROCESSING 没有
+                     * 有效截止、sc_poll 也不处理 PROCESSING 超时 —— 一旦 TtsExec 不发布
+                     * 对应播放事件，会话就永久停在 PROCESSING。这里接到与 q>0 相同的
+                     * TTS 生命周期入口（SPEAKING + 5 倍安全截止），**不**当作已播放完成。 */
                     if (stage != NULL && (strcmp(stage, "done") == 0 ||
                                           strcmp(stage, "failed") == 0)) {
                         sc_on_request_result(&w->sc, w->pend.event_id, 1, wu_now_ms());
+                    } else if (stage != NULL && (strcmp(stage, "queue") == 0 ||
+                                                 strcmp(stage, "inflight") == 0)) {
+                        /* 归属前置校验：必须是有活动请求、且 id 与本轮 pend 完全一致。
+                         * 不一致时只记录异常，不推进状态、不伪造 SPEAKING。 */
+                        if (!sc_request_owns(&w->sc, w->pend.event_id)) {
+                            always("tts idempotent hit NOT owned (stage=%s): event=%s "
+                                   "state=%s active=%d - staying put, no SPEAKING claimed",
+                                   stage, w->pend.event_id,
+                                   sc_state_name(w->sc.state), w->sc.request_active);
+                        } else {
+                            int acc = sc_on_tts_queued(&w->sc, w->pend.event_id, wu_now_ms());
+                            always("tts idempotent hit (stage=%s): event=%s speaking=%d "
+                                   "- waiting for real play event", stage,
+                                   w->pend.event_id, acc);
+                        }
+                    } else {
+                        /* stage 为空/未知：既不能猜"已播放"，也不能伪造 SPEAKING。
+                         * 安全处理：按"本请求不会再有播放收尾"终结（回 LISTENING 并挂
+                         * 关闭截止），把异常留在日志与错误计数里；若 TtsExec 之后确实
+                         * 播了，其收尾事件会以 request_active=0 的迟到回调被过滤，不会
+                         * 污染下一轮会话。 */
+                        always("ANOMALY tts idempotent hit with unknown stage: event=%s "
+                               "stage=%s - finalizing without claiming playback "
+                               "(no fabricated SPEAKING)",
+                               w->pend.event_id, stage != NULL ? stage : "(null)");
+                        t6b_status_note_error(&w->st,
+                                              "tts idempotent hit unknown stage: %s",
+                                              stage != NULL ? stage : "(null)");
+                        sc_on_request_result(&w->sc, w->pend.event_id, 1, wu_now_ms());
                     }
-                    /* queue/inflight：不终结，sc_on_play_state 的归属校验会等它 */
                 }
             } else {
                 w->st.tts_enqueue_failed++;
