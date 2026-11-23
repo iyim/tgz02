@@ -310,6 +310,22 @@ int sc_poll(sc_ctx *s, long long now_ms)
         s->deadline_ms = 0;
         return s->state;
     }
+    if (s->state == SC_INTERRUPTED && s->request_active &&
+        s->deadline_ms > 0 && now_ms >= s->deadline_ms) {
+        /* T8-13.5：interrupt 只把 5 倍截止覆盖成普通窗口，并不清除活动请求。
+         * 若 TtsExec 不发布对应的 interrupted/idle 收尾，请求就永远终结不了 ——
+         * 而下面的通用关闭分支要求 !request_active，绝不可能走到。与 T8-13.4 的
+         * SPEAKING 悬挂同类，必须在截止到达时连请求一起清场（旧 id 记入
+         * prev_request，迟到的播放收尾会被当作 stale 过滤）。 */
+        s->timeouts++;
+        s->closes++;
+        s->request_active = 0;
+        if (s->request[0] != '\0') sc_copy(s->prev_request, sizeof(s->prev_request), s->request);
+        s->request[0] = '\0';
+        sc_set(s, SC_CLOSING, now_ms, "interrupted deadline (no playback final event)");
+        s->deadline_ms = 0;
+        return s->state;
+    }
     if ((s->state == SC_FOLLOWUP || s->state == SC_INTERRUPTED || s->state == SC_LISTENING) &&
         s->deadline_ms > 0 && now_ms >= s->deadline_ms && !s->request_active) {
         s->timeouts++;

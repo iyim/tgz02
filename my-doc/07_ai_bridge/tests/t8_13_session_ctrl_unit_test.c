@@ -605,6 +605,83 @@ int main(void)
         check(s.state == SC_LISTENING, "17.8: late idle does not reopen the request");
     }
 
+    /* ---------------- [18] T8-13.5：打断后活动请求的超时清理 ----------------
+     * 审查发现的悬挂路径：sc_on_interrupt() 把 SPEAKING 的 5 倍安全截止覆盖成普通
+     * followup 窗口，但不清除 request_active；sc_poll() 的通用关闭分支要求
+     * !request_active，于是 TtsExec 不发布收尾事件时请求永久停在 INTERRUPTED。
+     * 修复：INTERRUPTED + 活动请求 + 截止到达 -> 连请求一起清场（同 SPEAKING 兜底）。 */
+    printf("\n[18] INTERRUPTED 且请求仍活动：截止到达时清理活动请求\n");
+
+    /* 18.1 建立活动请求并进入 SPEAKING，再触发 interrupt */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969900", "evtI1", 300000);
+    (void)sc_on_submit(&s, "evtI1", 300100);
+    check(sc_on_tts_queued(&s, "evtI1", 300200) == 1, "18.1: speaking established");
+    check(s.state == SC_SPEAKING && s.request_active == 1, "18.1: SPEAKING with active request");
+
+    /* 18.2 interrupt -> INTERRUPTED，活动请求仍在等真实收尾（不提前清请求） */
+    sc_on_interrupt(&s, 300300);
+    check(s.state == SC_INTERRUPTED, "18.2: interrupt -> INTERRUPTED");
+    check(s.request_active == 1 && sc_same_req(&s, "evtI1") == 1,
+          "18.2: request still active, same id");
+    check(s.interrupts == 1, "18.2: interrupt counted");
+    check(s.deadline_ms == 300300 + 12000,
+          "18.2: 5x speaking deadline replaced by 1x window (documented behavior)");
+
+    /* 18.3 截止前 poll：不关闭（真实收尾还有机会到达） */
+    check(sc_poll(&s, 300300 + 11999) == SC_INTERRUPTED, "18.3: before deadline stays INTERRUPTED");
+    check(s.request_active == 1 && s.closes == 0 && s.timeouts == 0,
+          "18.3: nothing cleared before deadline");
+
+    /* 18.4 截止到达且无播放收尾：CLOSING，活动请求清除，旧 id 进 prev_request */
+    check(sc_poll(&s, 300300 + 12000) == SC_CLOSING, "18.4: deadline -> CLOSING");
+    check(s.request_active == 0, "18.4: active request cleared");
+    check(s.request[0] == '\0', "18.4: current request emptied");
+    check(strcmp(s.prev_request, "evtI1") == 0, "18.4: old id retired to prev_request");
+    check(s.deadline_ms == 0, "18.4: deadline cleared");
+    check(s.timeouts == 1 && s.closes == 1, "18.4: timeout/close counters incremented");
+
+    /* 18.5 下一拍 IDLE */
+    check(sc_poll(&s, 300300 + 12001) == SC_IDLE, "18.5: back to IDLE");
+
+    /* 18.6 迟到的旧 ID idle：拒绝，状态不变 */
+    {
+        unsigned long stale0 = s.stale_callbacks;
+        int st0 = s.state;
+        check(sc_on_play_state(&s, 0, "evtI1", "interrupted", 300300 + 13000) == 0,
+              "18.6: late old-id idle rejected");
+        check(s.state == st0 && s.stale_callbacks == stale0 + 1,
+              "18.6: state unchanged, counted as stale");
+        check(s.request_active == 0, "18.6: no request reopened");
+    }
+
+    /* 18.7 新请求建立后，旧 ID 的迟到事件不能终结新请求 */
+    (void)sc_on_session_text(&s, "1969910", "evtI2", 320000);
+    (void)sc_on_submit(&s, "evtI2", 320100);
+    check(s.state == SC_PROCESSING && s.request_active == 1, "18.7: new request active");
+    check(sc_on_play_state(&s, 0, "evtI1", "ok", 320200) == 0,
+          "18.7: old id late idle rejected against new request");
+    check(s.state == SC_PROCESSING && s.request_active == 1 && sc_same_req(&s, "evtI2") == 1,
+          "18.7: new request untouched");
+    check(strcmp(s.prev_request, "evtI1") == 0, "18.7: prev_request still identifies the old id");
+
+    /* 18.8 真实 interrupted idle 在截止前到达：沿用原有正常收尾，不提前关闭 */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969920", "evtI3", 330000);
+    (void)sc_on_submit(&s, "evtI3", 330100);
+    (void)sc_on_tts_queued(&s, "evtI3", 330200);
+    sc_on_interrupt(&s, 330300);
+    check(s.state == SC_INTERRUPTED && s.request_active == 1, "18.8: interrupted, request active");
+    check(sc_on_play_state(&s, 0, "evtI3", "interrupted", 330500) == 1,
+          "18.8: real interrupted final accepted");
+    check(s.request_active == 0 && s.state == SC_INTERRUPTED,
+          "18.8: request finalized, stays INTERRUPTED");
+    check(s.deadline_ms == 330500 + 12000, "18.8: window re-armed from real event");
+    check(s.timeouts == 0 && s.closes == 0, "18.8: no timeout/close before window ends");
+    check(sc_poll(&s, 330500 + 11999) == SC_INTERRUPTED, "18.8: window still open");
+    check(sc_poll(&s, 330500 + 12000) == SC_CLOSING, "18.8: window end -> CLOSING");
+    check(sc_poll(&s, 330500 + 12001) == SC_IDLE, "18.8: -> IDLE");
+
     printf("\nSUMMARY: pass=%d fail=%d\n", g_pass, g_fail);
     printf("RESULT: %s\n", g_fail == 0 ? "PASS" : "FAIL");
     return g_fail == 0 ? 0 : 1;

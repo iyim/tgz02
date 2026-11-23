@@ -1,5 +1,5 @@
 ﻿# T7-05 NDK build log (libtg_ttsguard native_marker + ai_worker gate-first routing)
-# time: 2026-11-23 18:24:06
+# time: 2026-11-23 18:27:51
 # ndk : D:\tgz02\OS\_analysis\tools\android-ndk-r21e
 # cc  : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd
 
@@ -64,7 +64,7 @@ Dynamic section at offset 0x3e5c contains 28 entries:
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_session.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t7_dup.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\session_ctrl.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\dead_letter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c -ldl -llog
 (no compiler output: 0 warning, 0 error)
 exit: 0
-artifact: ai_worker  241472 B  sha256=5db44939151948babc8bc8b537bccf83d088555bf14e78565beff8774dfc03a3
+artifact: ai_worker  241472 B  sha256=4e54bfff8fe2ecd3f2e4d67fde6e4de79e89e6910f4f82ea3e15400d47bb6f82
 # --- readelf -h ---
 ELF Header:
   Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
