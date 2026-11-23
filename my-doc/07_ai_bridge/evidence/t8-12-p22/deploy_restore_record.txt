@@ -1,0 +1,14 @@
+﻿# T8-12.22 deployment + restoration record
+# deploy: p20 artifacts pushed and hash-verified on device:
+#   /data/local/tmp/t8/libtg_hook_p20.so  227c92aadf601c10ee95aab434442572eed8ea22d17a5a5f4be648755ad4d8cb
+#   /data/local/tmp/t8/tg_injector_p20    8c55d7e7c7c6b9cdb5cf4031f45155a2b94d0bf722155591adbe3e7e0613c16c
+#   /data/local/tmp/t8/ai_worker_p20      c0031c779bfc5d168397b371211e01377a6aa65cb0054fac1c61b423e9b9c166
+# install (2nd attempt after clean uninstall of p14):
+#   nlu world frozen (84 threads); tg_nlu_install(1)=0
+#   entry before=[e92d4ff0 e28db01c] after=[e51ff004 b3540000]
+#   takeover=1 mode=decide
+# restore:
+#   nlu-off -> takeover=0
+#   nlu-uninstall -> now=[e92d4ff0 e28db01c] (ORIGINAL factory prologue restored)
+#   --uninstall -> hooked=0
+#   :core pid 30807 alive and unchanged (starttime identical across session)

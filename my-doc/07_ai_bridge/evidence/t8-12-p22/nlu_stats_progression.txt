@@ -1,0 +1,7 @@
+﻿# T8-12.22 NLU stats progression (from tg_injector_p20 --nlu-status during the session)
+# after exit+time PC-playback rounds:
+nlu installed=1 takeover=1 mode=decide ... final_seen=2 nlp_calls=2 nlp_pass=2 marked=0 dropped=0 term_pass=0
+# after AI control round:
+nlu installed=1 takeover=1 mode=decide ... final_seen=3 nlp_calls=3 nlp_pass=2 marked=1 dropped=1 active=1 term_pass=0
+# after time-then-exit sequence:
+nlu installed=1 takeover=1 mode=decide ... final_seen=5 nlp_calls=5 nlp_pass=4 marked=1 dropped=1 term_pass=1 obs_total=6
