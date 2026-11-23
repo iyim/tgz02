@@ -163,7 +163,36 @@ my-doc/07_ai_bridge/T8-13_WAKE_SESSION_CONTROLLER.md  本报告
 - `sc_on_play_state` 的 `event_id` 参数暂未参与过滤（单请求并发下 outcome 语义已够）；多请求并发跟踪时启用。
 - 单元测试为纯逻辑验证，"真实事件驱动"在真机上以 `last_transition` 链路核对为准。
 
-## 六、提交
+
+## 七、T8-13.1 修正：TTS 播放事件归属（审查发现的必须修复项）
+
+审查发现 `sc_on_play_state()` 丢弃 `event_id`（`(void)event_id`），旧播放残留的 idle 可能误收尾当前请求。已修复，归属规则（`playing=0` 收尾按 `event_id` 四类分流）：
+
+| event_id | 有活动请求 | 无活动请求 |
+|---|---|---|
+| == request（当前） | 接受：终结请求 + 迁移 FOLLOWUP/INTERRUPTED | duplicate（刚处理过的收尾重复到达），不重置窗口 |
+| == prev_request（被顶替/清场） | stale，状态不动 | stale（迟到回调），返回 0 |
+| 空 | **拒绝**（不允许空 id 结束活动请求） | 接受为执行器快照（启动 idle），无迁移 |
+| 其它未知 | stale，状态不动 | stale，返回 0 |
+
+`playing=1` 只有 event_id 归属到当前活动请求时才提升 PROCESSING→SPEAKING；空/旧/未知 id 一律不迁移。
+
+新增测试 [13]a-h（审查点名的 6 场景 + 归属不变量）：
+
+- 13a 请求 A 播放中收到旧请求 B 的 idle → 拒绝，B 状态不动
+- 13b 空 event_id 的 idle → 拒绝
+- 13c 当前请求自己的 idle 收尾；同一条收尾重复到达 → duplicate，不重置 FOLLOWUP 窗口
+- 13d 已结束后陌生旧播放再次到达 → stale
+- 13e 新请求播放中，旧请求 A 的迟到 interrupted → 拒绝
+- 13f TTS 快照残留上一轮 idle + 当前请求尚未播放 → 不误迁移；当前请求自己的 playing → 正常提升 SPEAKING；旧 id / 空 id 的 playing 不迁移
+- 13g 无活动请求时启动 idle 快照 → 接受无迁移（closes/transitions=0）
+- 13h 归属不变量：只有当前请求自己的收尾能终结请求；收尾后同 id idle = 快照
+
+测试结果：主机 **435 pass / 0 fail**（t8_13 新套件 117 + 三组回归 25/211/82 全绿）；ARM32 `ai_worker` sha256 `17231eb0…`（241224 B）0 warning 0 error。证据：`evidence/t8_13_1_ndk_build_worker.log`。
+
+事件归属修复不改变接入点与观测字段；`ai_worker.c` 调用点（`play_state_poll` 传 event_id/outcome）不变。
+
+## 八、提交
 
 - 提交 SHA：见推送记录（本轮）
 - 关键实现：`session_ctrl.c`（状态机 + prev_request 迟到隔离 + CLOSING 瞬时态 + 无 TTS 兜底）

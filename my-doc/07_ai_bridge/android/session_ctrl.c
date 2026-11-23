@@ -183,39 +183,75 @@ int sc_on_tts_queued(sc_ctx *s, const char *request_id, long long now_ms)
 
 /*
  * TtsExec 播放状态（play.public.json 轮询）。
- * 只接受当前请求的 event_id；旧条目的 idle/interrupted 一律计 stale。
- * 返回 1 = 状态被接受；0 = 旧播放的迟到回调已丢弃。
+ *
+ * T8-13.1 事件归属规则（修复审查发现的"旧播放误收尾"缺陷）：
+ *   playing=0（idle/interrupted 收尾）按 event_id 分四类：
+ *     1) == request 且 request_active   -> 接受：终结请求并迁移 FOLLOWUP/INTERRUPTED；
+ *        同一条收尾再次到达（id 相同且已不活跃）-> duplicate_events，**不重置超时窗口**；
+ *     2) == prev_request（被顶替/清场的旧请求）-> 迟到回调：stale_callbacks，状态不动；
+ *     3) event_id 为空 -> 无法归属：当前有活动请求时拒绝（stale），无活动请求时
+ *        仅当作执行器快照（如启动时发布的 idle）接受但不做任何迁移；
+ *     4) 其它未知 id -> stale_callbacks，状态不动。
+ *   playing=1 只有 event_id 能归属到当前活动请求时才把 PROCESSING 提升为 SPEAKING；
+ *     空 id / 旧 id / 未知 id 一律不迁移。
+ * 返回 1 = 事件被接受（含"接受但无迁移"）；0 = 归属失败的迟到回调已丢弃。
  */
 int sc_on_play_state(sc_ctx *s, int playing, const char *event_id,
                      const char *outcome, long long now_ms)
 {
-    (void)event_id;   /* 当前播放状态以 outcome 语义为准；event_id 保留给未来的
-                         多请求并发跟踪（届时用它区分是哪条请求的播放）。 */
+    int id_known;
     if (s == NULL || !s->cfg.enabled) return s != NULL ? 1 : 0;
 
+    id_known = (event_id != NULL && event_id[0] != '\0');
+
     if (!playing) {
-        if (event_id != NULL && event_id[0] != '\0' && sc_same(s->prev_request, event_id)) {
-            /* 已被顶替/清场的旧播放收尾：迟到回调，绝不污染新会话状态 */
+        if (s->request_active) {
+            /* 有活动请求：只有"确实是当前请求的收尾"才能终结它 */
+            if (!id_known) {
+                /* 空 event_id 的 idle 不允许结束当前活动请求（审查要求 2） */
+                s->stale_callbacks++;
+                return 0;
+            }
+            if (sc_same(s->request, event_id)) {
+                s->request_active = 0;
+                sc_copy(s->prev_request, sizeof(s->prev_request), event_id);
+                if (outcome != NULL && (sc_same(outcome, "interrupted") ||
+                                        sc_same(outcome, "stopped"))) {
+                    sc_set(s, SC_INTERRUPTED, now_ms, "playback interrupted");
+                } else {
+                    sc_set(s, SC_FOLLOWUP, now_ms, "playback idle");
+                }
+                s->deadline_ms = now_ms + (long long)s->cfg.followup_timeout_ms;
+                return 1;
+            }
+            /* 旧请求（prev 或未知）的收尾：绝不终结新请求 */
             s->stale_callbacks++;
             return 0;
         }
-        /* 播放结束（idle）：迁移状态并终结请求（收尾即终结，旧回调此后按 stale 过滤） */
-        s->request_active = 0;
-        s->prev_request[0] = '\0';
-        if (outcome != NULL && (sc_same(outcome, "interrupted") || sc_same(outcome, "stopped"))) {
-            sc_set(s, SC_INTERRUPTED, now_ms, "playback interrupted");
-        } else {
-            sc_set(s, SC_FOLLOWUP, now_ms, "playback idle");
+        /* 无活动请求：收尾事件不再迁移任何状态，按来源分类计数 */
+        if (!id_known) return 1;                        /* 执行器快照（启动 idle 等） */
+        if (s->request[0] != '\0' && sc_same(s->request, event_id)) {
+            /* 刚由本模块处理过的收尾重复到达：duplicate，不重置窗口 */
+            s->duplicate_events++;
+            return 1;
         }
-        s->deadline_ms = now_ms + (long long)s->cfg.followup_timeout_ms;
-        return 1;
+        s->stale_callbacks++;                            /* prev/清场旧播放或陌生 id：迟到回调 */
+        return 0;
     }
 
-    /* playing=1：新播放开始（TTS queued 已把状态置 SPEAKING；这里只记录） */
-    if (s->state != SC_SPEAKING && s->state != SC_PROCESSING) {
-        /* 不在播放语境里却开始播放：接受但不迁移（原厂本地 TTS 也会播放） */
-        return 1;
+    /* playing=1：播放开始。只有能归属到当前活动请求时才提升 SPEAKING */
+    if (s->request_active) {
+        if (!id_known) return 1;                         /* 空 id：不迁移 */
+        if (sc_same(s->request, event_id)) {
+            if (s->state == SC_PROCESSING) {
+                sc_set(s, SC_SPEAKING, now_ms, "playback started");
+            }
+            return 1;
+        }
+        s->stale_callbacks++;
+        return 0;
     }
+    /* 无活动请求时的 playing（原厂本地 TTS 等）：接受但不迁移 */
     return 1;
 }
 

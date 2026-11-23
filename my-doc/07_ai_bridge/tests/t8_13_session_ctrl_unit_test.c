@@ -135,6 +135,7 @@ int main(void)
 
     /* ---------------- [6] 重复 ASR final ---------------- */
     printf("\n[6] 重复 final（同会话同 event_id）被丢弃\n");
+    sc_init(&s, &c);
     check(sc_on_session_text(&s, "1969340", "t6-30807-1969340-g1", 70000) == 1,
           "first final accepted");
     check(sc_on_session_text(&s, "1969340", "t6-30807-1969340-g1", 70100) == 0,
@@ -237,6 +238,104 @@ int main(void)
     check(strstr(s.last_transition, "SPEAKING") != NULL, "last transition visible");
     check(sc_state_name(SC_CLOSING) != NULL && sc_state_name(SC_FOLLOWUP) != NULL,
           "all state names present");
+
+    /* ---------------- [13] TTS 事件归属（T8-13.1 修复验证） ----------------
+     * 审查点名的 6 个场景：旧事件/空 event_id/重复 idle/残留快照/迟到 interrupted
+     * 一律不得污染当前请求的会话状态。 */
+    printf("\n[13] TTS 事件归属：旧/空/重复/残留播放事件不污染当前会话\n");
+
+    /* 13a：请求 A 播放中，收到旧请求 B 的 idle -> 拒绝，A 不被收尾 */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969500", "evtA1", 130000);
+    (void)sc_on_submit(&s, "evtA1", 130100);
+    (void)sc_on_tts_queued(&s, "evtA1", 130200);
+    check(s.state == SC_SPEAKING && s.request_active == 1, "13a setup: A playing");
+    (void)sc_on_submit(&s, "evtB1", 130300);          /* A 被顶替，B 成为当前请求 */
+    (void)sc_on_tts_queued(&s, "evtB1", 130400);
+    check(s.state == SC_SPEAKING && strcmp(s.request, "evtB1") == 0, "13a setup: B playing");
+    check(sc_on_play_state(&s, 0, "evtA1", "ok", 130500) == 0,
+          "13a: old request A idle rejected");
+    check(s.state == SC_SPEAKING, "13a: state still SPEAKING for B");
+    check(s.request_active == 1, "13a: B request untouched");
+
+    /* 13b：请求 A 播放中，收到空 event_id 的 idle -> 拒绝 */
+    check(sc_on_play_state(&s, 0, "", "ok", 130600) == 0,
+          "13b: empty event_id idle rejected");
+    check(s.state == SC_SPEAKING && s.request_active == 1, "13b: state untouched");
+
+    /* 13c：请求 B 自己的 idle 正常收尾；同一条收尾重复到达 -> 只计数，不重置窗口 */
+    check(sc_on_play_state(&s, 0, "evtB1", "ok", 130700) == 1,
+          "13c: B's own idle accepted");
+    check(s.state == SC_FOLLOWUP && s.request_active == 0, "13c: FOLLOWUP reached");
+    {
+        long long dl = s.deadline_ms;
+        check(sc_on_play_state(&s, 0, "evtB1", "ok", 130750) == 1,
+              "13c: repeated idle accepted (snapshot)");
+        check(s.deadline_ms == dl, "13c: deadline NOT reset by repeat");
+        check(s.duplicate_events >= 1, "13c: repeat counted");
+        check(s.state == SC_FOLLOWUP, "13c: state unchanged");
+    }
+
+    /* 13d：请求已结束后，旧播放状态再次到达（陌生 id）-> stale */
+    check(sc_on_play_state(&s, 0, "evtZ9", "ok", 130800) == 0,
+          "13d: unknown old playback rejected");
+    check(s.state == SC_FOLLOWUP, "13d: state unchanged");
+
+    /* 13e：请求 B 已开始，A 的迟到 interrupted 到达 -> 拒绝 */
+    (void)sc_on_session_text(&s, "1969510", "evtC1", 131000);
+    (void)sc_on_submit(&s, "evtC1", 131100);
+    (void)sc_on_tts_queued(&s, "evtC1", 131200);
+    check(s.state == SC_SPEAKING, "13e setup: C playing");
+    check(sc_on_play_state(&s, 0, "evtA1", "interrupted", 131300) == 0,
+          "13e: A's late interrupted rejected");
+    check(s.state == SC_SPEAKING && s.request_active == 1, "13e: C untouched");
+
+    /* 13f：TTS 状态文件保留上一轮 idle，当前请求尚未播放 -> 不误迁移 */
+    /* 场景：D 请求刚 submit（PROCESSING，还没 playing），残留快照是 C 的 idle */
+    (void)sc_on_session_text(&s, "1969520", "evtD1", 132000);
+    (void)sc_on_submit(&s, "evtD1", 132100);
+    check(s.state == SC_PROCESSING, "13f setup: D processing, not yet playing");
+    check(sc_on_play_state(&s, 0, "evtC1", "ok", 132200) == 0,
+          "13f: leftover idle for old event rejected");
+    check(s.state == SC_PROCESSING && s.request_active == 1, "13f: D still processing");
+    /* 空 id 的残留 idle 同样不能收尾 D */
+    check(sc_on_play_state(&s, 0, "", "ok", 132300) == 0,
+          "13f: empty-id leftover idle rejected");
+    check(s.state == SC_PROCESSING, "13f: D untouched by snapshot");
+    /* D 自己的 playing 开始（真实事件）-> 提升 SPEAKING */
+    check(sc_on_play_state(&s, 1, "evtD1", "", 132400) == 1,
+          "13f: D's own playing accepted");
+    check(s.state == SC_SPEAKING, "13f: PROCESSING -> SPEAKING via playing event");
+    /* 旧 id 的 playing 不迁移 */
+    (void)sc_on_submit(&s, "evtE1", 132500);          /* E 顶替 D */
+    check(s.state == SC_PROCESSING, "13f: E processing");
+    check(sc_on_play_state(&s, 1, "evtD1", "", 132600) == 0,
+          "13f: old event playing rejected");
+    check(s.state == SC_PROCESSING, "13f: E not promoted by old playing");
+    /* 空 id 的 playing 不迁移 */
+    check(sc_on_play_state(&s, 1, "", "", 132700) == 1,
+          "13f: empty-id playing accepted but no migration");
+    check(s.state == SC_PROCESSING, "13f: E still processing");
+
+    /* 13g：无活动请求时，残留 idle 只当快照（启动 idle），不做任何迁移 */
+    sc_init(&s, &c);
+    check(sc_on_play_state(&s, 0, "", "ok", 140000) == 1,
+          "13g: startup idle snapshot accepted");
+    check(s.state == SC_IDLE, "13g: stays IDLE");
+    check(s.closes == 0 && s.transitions == 0, "13g: no migration from snapshot");
+
+    /* 13h：归属规则不变量 —— 只有当前请求自己的收尾能终结请求 */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969530", "evtF1", 150000);
+    (void)sc_on_submit(&s, "evtF1", 150100);
+    (void)sc_on_tts_queued(&s, "evtF1", 150200);
+    (void)sc_on_play_state(&s, 0, "evtF1", "interrupted", 150300);
+    check(s.state == SC_INTERRUPTED && s.request_active == 0,
+          "13h: own interrupted finalizes request");
+    /* 收尾后同一请求的 idle 重复到达：duplicate，不迁移 */
+    check(sc_on_play_state(&s, 0, "evtF1", "ok", 150400) == 1,
+          "13h: post-finalize idle of same id accepted as snapshot");
+    check(s.state == SC_INTERRUPTED, "13h: state unchanged");
 
     printf("\nSUMMARY: pass=%d fail=%d\n", g_pass, g_fail);
     printf("RESULT: %s\n", g_fail == 0 ? "PASS" : "FAIL");
