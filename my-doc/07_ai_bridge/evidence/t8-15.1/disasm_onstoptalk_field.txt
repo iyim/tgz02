@@ -1,0 +1,31 @@
+﻿=== SessionManager::onStopTalk(int,_WakeEndInfo*) @0x113918 ===
+key window 0x113a28..0x113a70: ldr [this+128] -> str [ctx+76]; str 0 -> [this+128]
+
+D:\tgz02\OS\_analysis\libsmartbox.so:	file format ELF32-arm-little
+
+
+Disassembly of section .text:
+
+00113918 _ZN9AliAiLabs4AGUI14SessionManager10onStopTalkEiPNS0_19IInputDeviceManager13_WakeEndInfo_E:
+  113a28: 1c c2 9f e5                  	ldr	r12, [pc, #540]
+  113a2c: 03 30 8f e0                  	add	r3, pc, r3
+  113a30: 0c c0 8f e0                  	add	r12, pc, r12
+  113a34: 10 10 8d e8                  	stm	sp, {r4, r12}
+  113a38: 08 00 8d e5                  	str	r0, [sp, #8]
+  113a3c: 04 00 a0 e3                  	mov	r0, #4
+  113a40: 0c 70 8d e5                  	str	r7, [sp, #12]
+  113a44: 0f f7 fd eb                  	bl	#-533444 <.plt+0x42ec>
+  113a48: 48 40 95 e5                  	ldr	r4, [r5, #72]
+  113a4c: 80 00 95 e5                  	ldr	r0, [r5, #128]
+  113a50: 00 10 a0 e3                  	mov	r1, #0
+  113a54: 4c 00 84 e5                  	str	r0, [r4, #76]
+  113a58: 00 00 95 e5                  	ldr	r0, [r5]
+  113a5c: 80 10 85 e5                  	str	r1, [r5, #128]
+  113a60: 0a 10 a0 e1                  	mov	r1, r10
+  113a64: 18 20 90 e5                  	ldr	r2, [r0, #24]
+  113a68: 05 00 a0 e1                  	mov	r0, r5
+  113a6c: 32 ff 2f e1                  	blx	r2
+  113a70: 00 70 a0 e1                  	mov	r7, r0
+  113a74: 00 00 50 e3                  	cmp	r0, #0
+  113a78: 4e 00 00 ba                  	blt	#312 <_ZN9AliAiLabs4AGUI14SessionManager10onStopTalkEiPNS0_19IInputDeviceManager13_WakeEndInfo_E+0x2a0>
+  113a7c: 75 00 d5 e5                  	ldrb	r0, [r5, #117]

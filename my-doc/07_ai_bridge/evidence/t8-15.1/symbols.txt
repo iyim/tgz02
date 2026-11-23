@@ -1,0 +1,12 @@
+﻿=== TLS: libsmartbox.so sha256=65062e2d... (see device_state) ===
+  2013: 00111364  2076 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI14SessionManager11onStartTalkENS0_19IInputDeviceManager15InputDeviceTypeES3_PNS2_12_WakeUpInfo_EPNS2_16_WakeUpEventRet_E
+  2289: 001120a4   380 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI14SessionManager11onStartTalkEi
+  3887: 001565e8   264 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI23ContinuousDialogManager21startFullDuplexDialogEv
+  4224: 000fd7d0    36 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI8GenieApi32setFullDuplexDialogRenewDurationEj
+  4380: 00156900   488 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI23ContinuousDialogManager8onNotifyEiPvii
+  4395: 00113918   828 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI14SessionManager10onStopTalkEiPNS0_19IInputDeviceManager13_WakeEndInfo_E
+  4480: 0011556c   128 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI14SessionManager34fullDuplexDialogCurPageInBlackListEv
+  4828: 00113d54  1980 FUNC    GLOBAL DEFAULT   12 _ZN9AliAiLabs4AGUI14SessionManager10onStopTalkEi
+
+=== libagmmi.so: same setter (second definition) ===
+   393: 00047f88    36 FUNC    GLOBAL DEFAULT   11 _ZN9AliAiLabs4AGUI8GenieApi32setFullDuplexDialogRenewDurationEj

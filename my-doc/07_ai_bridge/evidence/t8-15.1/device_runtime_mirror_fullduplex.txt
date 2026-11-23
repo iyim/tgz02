@@ -1,0 +1,13 @@
+﻿=== device: fullDuplexDialog setting (cloud-pushed, mirrored locally) ===
+device clock : Mon Nov 23 20:58:07 CST 2026
+file         : /data/data/com.alibaba.ailabs.genie.smartapp/shared_prefs/runtime_device_mirror.xml
+stat         : -rw-rw---- 1 system system 7914 2026-11-22 13:24 /data/data/com.alibaba.ailabs.genie.smartapp/shared_prefs/runtime_device_mirror.xml
+
+ "needUpdate": false }, "fullDuplexDialog": { "version": 0, "value": "{ \"disableAppPages\": [ ], \"productFullDuplex\": true, \"fullDuplexEnable\": true, \"fullDuplexDeviceEnable\": false, \"value\": false }", "forceUpdate": false, "needUpdate": false }, "immersiveDialog": { "version
+
+--- reading ---
+productFullDuplex      = true   (the product supports continuous dialog)
+fullDuplexEnable       = true   (feature flag on)
+fullDuplexDeviceEnable = false  (device-level switch OFF  <-- why duplexDialogRenew stays 0)
+value                  = false  (same switch, boolean form)
+disableAppPages        = []     (no page excluded)

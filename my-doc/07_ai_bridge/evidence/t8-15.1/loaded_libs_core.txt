@@ -1,0 +1,19 @@
+﻿=== :core (pid 30807) loaded libraries (read-only /proc/<pid>/maps) ===
+device clock: Mon Nov 23 21:01:09 CST 2026
+distinct .so mapped: 268
+
+load order, first appearance (genie stack + ours):
+    0  /data/local/tmp/t8/libtg_hook_p20.so
+    1  /data/local/tmp/t8/libtg_hook_p18.so
+    2  /data/local/tmp/t8/libtg_hook_p17.so
+    3  /data/local/tmp/t8/libtg_hook_p15.so
+    8  /data/local/tmp/t8/libtg_hook.so
+   10  /data/local/tmp/t7/libtg_ttsguard.so
+   15  /system/app/smartapp/lib/arm/libagspeech.so
+   31  /system/app/smartapp/lib/arm/libsmartbox.so
+   36  /system/app/smartapp/lib/arm/libagmc.so
+   41  /system/app/smartapp/lib/arm/libagui.so
+   53  /system/app/smartapp/lib/arm/libinteraction_delegate.so
+
+libagmmi.so present in this process? -> NO (not mapped)
+libtg_ttsguard.so present?            -> YES (already resident in :core)
