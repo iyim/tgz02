@@ -1,0 +1,17 @@
+== rollback NLU probe (second install) ==
+[inject] nlu installed_after=0 takeover=0 entry_code=np{state=idle err=ok installs=2 skips=0 install_fails=0 refusals=0 uninstalls=2 uninstall_fails=0 restores=0 restore_fails=0 busy=0 prot_ok=4 prot_fails=0 before=[e92d4ff0 e28db01c] after=[e51ff004 b388c000] uninst=[e92d4ff0 e28db01c] now=[e92d4ff0 e28db01c]}
+[inject] RESULT nlu-uninstall ok installed=0 takeover=0
+== restore p14 hook ==
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=30807
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=258 final=26 queued=26 sent=26 acked=26 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=1 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=30807 already_mapped=1 check_only=0
+== entry bytes (should be original / patched-by-p14) ==
+onNlpResult:     e92d4ff0    e28db01c
+onStream   :     e51ff004    b386a000
+== restore amp volume to as-found (0 0) ==
+
+== final events count ==
+619 /data/local/tmp/t5_bridge/work/events.jsonl
+30807
