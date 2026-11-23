@@ -1,0 +1,23 @@
+﻿[07:35:44.665] scenario=s1 out=D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-15.5\s1_20261124_073544
+[07:35:47.084] continuity.req: 152111192
+[07:35:47.085] core pid: 21638
+[07:35:47.086] worker pid: 21569
+[07:35:47.087] worker log lines: 324  tap lines: 1529
+[07:35:47.571] baseline tap|wakeupType.=.1 = 28
+[07:35:48.184] baseline worker|route=native = 2
+[07:35:48.552] baseline worker|continuity.request = 4
+[07:35:49.162] baseline worker|route= = 12
+[07:35:49.219] capture -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-15.5\s1_20261124_073544\logcat_tgt_session.txt
+[07:35:49.223] PLAY r1.wake_time.wav
+[07:35:57.558] OK   await tap 'wakeupType.=.1' after 2,982 ms (28->29)
+[07:35:57.560] PLAY cmd_volup.wav
+[07:36:00.867] OK   await worker 'route=native' after 679 ms (2->3)
+[07:36:01.580] OK   await worker 'continuity.request' after 711 ms (4->5)
+[07:36:02.475] OK   await tap 'wakeupType.=.1' after 894 ms (29->30)
+[07:36:02.477] PLAY q3.name.wav
+[07:36:05.674] OK   await worker 'route=' after 728 ms (12->16)
+[07:36:05.677] sleep 9000 ms
+[07:36:15.220] capture stopped
+[07:36:16.082] continuity.req after: 152260648
+[07:36:16.083] listen_hold after: 121326077
+[07:36:16.083] worker log lines after: 358  tap lines after: 1645

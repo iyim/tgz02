@@ -1,0 +1,26 @@
+﻿=== scenario s7 @ 20261124_074202   (failed awaits: 5)
+--- native routes:
+--- continuity requests (worker):
+--- dialog lifecycle:
+[aiw] 2026-11-24T07:42:10 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:42:10 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:42:23 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:42:24 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=0 max_round=2 listening=0 followup_rounds_total=6 exit_turns=1
+--- factory sessions (tap):
+11-24 07:42:07.175 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1967059, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+--- guard (tgt) lines:
+11-24 07:40:43.098 I/tgt     (21638): onTtsStart ALLOW id=1971122 by=native_window intent=volume seq=11 exp_ms=1795477246292 streaming=1 text_bytes=178
+11-24 07:40:45.130 I/tgt     (21638): onTtsStart ALLOW id=5243830 by=session_id streaming=1 text_bytes=67
+11-24 07:40:50.867 I/tgt     (21638): continuity: auto-after-tts seq=1795477250773 startTalk(type=1, info+0=1) -> 0 (n=24 ok=0)
+11-24 07:40:58.573 I/tgt     (21638): onTtsStart DROP id=1971127 streaming=1 comm=AG-ws-receive text="没听清主人的话，可以再说一次吗" (factory NLU answer)
+11-24 07:41:14.780 I/tgt     (21638): onTtsStart ALLOW id=5243839 by=session_id streaming=1 text_bytes=9
+11-24 07:41:14.937 I/tgt     (21638): onTtsStart DROP id=1967035 streaming=1 comm=AG-ws-receive text="现在是早上七点四十一分。" (factory NLU answer)
+11-24 07:41:16.591 I/tgt     (21638): continuity: auto-after-tts seq=1795477276554 startTalk(type=1, info+0=1) -> 0 (n=25 ok=0)
+11-24 07:41:20.312 I/tgt     (21638): onTtsStart ALLOW id=1971136 by=native_window intent=volume seq=12 exp_ms=1795477288274 streaming=1 text_bytes=29
+11-24 07:41:21.581 I/tgt     (21638): continuity req: seq=152580842 accepted (new) -> pending (attempt window 2500 ms)
+11-24 07:41:21.581 I/tgt     (21638): continuity req: seq=152580842 firing after 1 ms
+11-24 07:41:21.582 I/tgt     (21638): continuity: worker-request seq=152580842 startTalk(type=1, info+0=1) -> 0 (n=26 ok=0)
+11-24 07:42:10.928 I/tgt     (21638): onTtsStart ALLOW id=5243863 by=session_id streaming=1 text_bytes=9
+11-24 07:42:11.049 I/tgt     (21638): onTtsStart DROP id=1967059 streaming=1 comm=AG-ws-receive text="现在是早上七点四十二分。" (factory NLU answer)
+11-24 07:42:12.810 I/tgt     (21638): continuity: hold active for 11610 ms more - auto-listen skipped
+11-24 07:42:12.810 I/tgt     (21638): continuity: auto trigger skipped (stop/exit hold) finished_ms=1795477332744

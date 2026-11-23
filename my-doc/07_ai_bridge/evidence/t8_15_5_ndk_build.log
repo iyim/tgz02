@@ -1,0 +1,22 @@
+﻿# T8-15 ARM32 build log (libtg_ttsguard + ai_worker, including tg_req_seq.h)
+# ndk : D:\tgz02\OS\_analysis\tools\android-ndk-r21e
+# host time: 2026-11-24 07:24:34
+
+# cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -fPIC -shared -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\libtg_ttsguard.so D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts\libtg_ttsguard.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_tts\native_marker.c -llog
+(no compiler output: 0 warning, 0 error)
+exit: 0
+artifact: libtg_ttsguard.so  41468 B  sha256=f3c3aa7c94d6da83bb9700c11e041206ba94621d283113105b89d97df6e1d80b
+  Class:                             ELF32
+  Type:                              DYN (Shared object file)
+  Machine:                           ARM
+
+# cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_session.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t7_dup.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\session_ctrl.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\dead_letter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\talk_tap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c -ldl -llog
+(no compiler output: 0 warning, 0 error)
+exit: 0
+artifact: ai_worker  277960 B  sha256=208f23660e9e0f3adf5c64fff5fc6dc2c022a781b1161b3d8e48bfeae30830f8
+  Class:                             ELF32
+  Type:                              DYN (Shared object file)
+  Machine:                           ARM
+
+# warnings: 0
+# result: OK (0 warning)

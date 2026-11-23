@@ -1,0 +1,14 @@
+﻿[aiw] 2026-11-24T07:42:07 factory wake (onStartTalk): session=1967059 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:42:10 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:42:10 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:42:10 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:42:10 route=skill skill=time.query event=t6-21638-1967059-g29 session=1967059 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T07:42:10 route=skill event=t6-21638-1967059-g29 seq=349 session=1967059 skill=time.query text_bytes=24
+[aiw] 2026-11-24T07:42:10 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:42:10 skill ok: skill=time.query event=t6-21638-1967059-g29 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T07:42:10 tts queued: event=t6-21638-1967059-g29 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:42:10 skill tts queued: skill=time.query event=t6-21638-1967059-g29
+[aiw] 2026-11-24T07:42:10 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:42:15 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=1
+[aiw] 2026-11-24T07:42:23 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:42:24 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=0 max_round=2 listening=0 followup_rounds_total=6 exit_turns=1

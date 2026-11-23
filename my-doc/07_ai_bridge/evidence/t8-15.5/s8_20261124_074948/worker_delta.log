@@ -1,0 +1,690 @@
+﻿[aiw] 2026-11-24T07:25:15 lock acquired; previous owner pid=3053 no longer holding it
+[aiw] 2026-11-24T07:25:15 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:25:15 system prompt: 689 bytes, placed at messages[0] (role=system, outside context eviction)
+[aiw] 2026-11-24T07:25:15 echo filter: enabled=1 no_command=1 window=+1200/-1500ms sim=60% state_file=/data/local/tmp/t5_bridge/tts/play.public.json
+[aiw] 2026-11-24T07:25:15 route: enabled=1 intents=0xff (volume=1 weather=1 screen_off=1 time=1 screen_on=1 media=1 exit=1) publish_file=/data/local/tmp/t5_bridge/work/native_route.public.json
+[aiw] 2026-11-24T07:25:15 gate: enabled=1 debounce=450ms max_hold=2500ms cross_session=1(1200ms) sim=80% hold_file=/data/local/tmp/t5_bridge/ai_worker/utterance_hold.json
+[aiw] 2026-11-24T07:25:15 session: enabled=1 timeout=12000ms (follow-up window after playback)
+[aiw] 2026-11-24T07:25:15 skill dispatch: enabled=1 registered=1 time_query=1 (off = native routing untouched)
+[aiw] 2026-11-24T07:25:15 skill device.status: switch=1 battery=/sys/class/power_supply/battery/capacity uptime=/proc/uptime
+[aiw] 2026-11-24T07:25:15 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+[aiw] 2026-11-24T07:25:15 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+[aiw] 2026-11-24T07:25:15 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+[aiw] 2026-11-24T07:25:15 start pid=21569 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5_bridge/ai_worker/consumer_state.json provider=deepseek offset=4272 (network enabled)
+[aiw] 2026-11-24T07:25:15 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:15 factory wake (onStartTalk): session=1969667 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:15 factory wake (onStartTalk): session=1969671 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:15 factory wake (onStartTalk): session=1973772 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:15 factory wake (onStartTalk): session=1973777 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:15 factory wake (onStartTalk): session=1969686 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:15 factory wake (onStartTalk): session=1973787 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:15 factory wake (onStartTalk): session=1973795 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:15 factory wake (onStartTalk): session=1973800 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:15 factory wake (onStartTalk): session=1973805 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:15 factory wake (onStartTalk): session=1973811 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:15 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1973817 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1969726 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1973827 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1973848 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1969756 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1969760 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1973861 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1973866 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1969774 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1969778 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1973879 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1969787 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1973888 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1969806 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1969820 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1969834 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:16 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:16 factory wake (onStartTalk): session=1973935 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:17 factory wake (onStartTalk): session=1969845 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:17 factory wake (onStartTalk): session=1969850 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:17 factory wake (onStartTalk): session=1969864 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:17 factory wake (onStartTalk): session=1973974 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:17 factory wake (onStartTalk): session=1969882 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:17 factory wake (onStartTalk): session=1973992 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:17 factory wake (onStartTalk): session=1974006 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:17 factory wake (onStartTalk): session=1969915 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:17 factory wake (onStartTalk): session=1974015 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:17 factory wake (onStartTalk): session=1969993 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:17 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:25:27 dialog closed: reason=deadline reached rounds_done=0 followup_rounds=0 max_round=0 listening=0 followup_rounds_total=0 exit_turns=0
+[aiw] 2026-11-24T07:25:56 factory wake (onStartTalk): session=1966794 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:25:59 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:59 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:59 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:25:59 route=native intent=screen_off rule=screen.keyword arg= event=t6-21638-1966794-g1 seq=321 session=1966794 text_bytes=24 merges=0 held_ms=0 publish_seq=1 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:25:59 native command (screen_off): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T07:25:59 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:26:00 continuity request: seq=151660001 sent (after native command) n=1 - waiting for factory session
+[aiw] 2026-11-24T07:26:00 continuity request: CONFIRMED by factory session=1970894 (+215 ms)
+[aiw] 2026-11-24T07:26:00 factory wake (onStartTalk): session=1970894 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:26:09 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:09 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:09 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:11 dialog closed: reason=deadline reached rounds_done=0 followup_rounds=0 max_round=1 listening=0 followup_rounds_total=0 exit_turns=0
+[aiw] 2026-11-24T07:26:14 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:26:31 factory wake (onStartTalk): session=1966803 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:26:34 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:34 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:34 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:34 route=skill skill=time.query event=t6-21638-1966803-g2 session=1966803 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T07:26:34 route=skill event=t6-21638-1966803-g2 seq=322 session=1966803 skill=time.query text_bytes=24
+[aiw] 2026-11-24T07:26:34 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:26:34 skill ok: skill=time.query event=t6-21638-1966803-g2 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T07:26:34 tts queued: event=t6-21638-1966803-g2 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:26:34 skill tts queued: skill=time.query event=t6-21638-1966803-g2
+[aiw] 2026-11-24T07:26:35 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:26:35 factory wake (onStartTalk): session=1970904 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:26:44 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:44 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:44 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:46 factory wake (onStartTalk): session=1970909 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:26:47 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:26:47 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=0 max_round=1 listening=1 followup_rounds_total=0 exit_turns=0
+[aiw] 2026-11-24T07:26:47 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:47 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:47 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:48 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:26:48 route=ai event=t6-21638-1970909-g3 seq=0 session=1970909 merges=0 held_ms=657 why=timeout text_bytes=9 session_state=PROCESSING
+[aiw] 2026-11-24T07:26:48 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:26:50 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1386ms resp_bytes=1022 reply_bytes=87 event=t6-21638-1970909-g3
+[aiw] 2026-11-24T07:26:50 request shape: event=t6-21638-1970909-g3 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-24T07:26:50 provider reply: event=t6-21638-1970909-g3 provider=deepseek req_msgs=7 history_msgs=6 latency=1386ms reply_bytes=87
+[aiw] 2026-11-24T07:26:50 tts queued: event=t6-21638-1970909-g3 reply_bytes=87 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:26:50 context commit: event=t6-21638-1970909-g3 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:26:50 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:26:53 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:26:54 factory wake (onStartTalk): session=1970916 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:26:57 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:57 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:57 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:26:57 route=ai event=t6-21638-1970916-g4 seq=0 session=1970916 merges=0 held_ms=647 why=timeout text_bytes=18 session_state=PROCESSING
+[aiw] 2026-11-24T07:26:57 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:26:59 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1237ms resp_bytes=847 reply_bytes=35 event=t6-21638-1970916-g4
+[aiw] 2026-11-24T07:26:59 request shape: event=t6-21638-1970916-g4 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-24T07:26:59 provider reply: event=t6-21638-1970916-g4 provider=deepseek req_msgs=7 history_msgs=6 latency=1237ms reply_bytes=35
+[aiw] 2026-11-24T07:26:59 tts queued: event=t6-21638-1970916-g4 reply_bytes=35 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:26:59 context commit: event=t6-21638-1970916-g4 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:27:02 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:27:02 factory wake (onStartTalk): session=1970921 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:27:10 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:27:10 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:27:10 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:27:14 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:27:14 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=0 max_round=1 listening=0 followup_rounds_total=0 exit_turns=0
+[aiw] 2026-11-24T07:27:15 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:28:40 factory wake (onStartTalk): session=1966831 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:28:44 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:28:44 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:28:44 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:28:44 route=skill skill=time.query event=t6-21638-1966831-g5 session=1966831 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T07:28:44 route=skill event=t6-21638-1966831-g5 seq=325 session=1966831 skill=time.query text_bytes=24
+[aiw] 2026-11-24T07:28:44 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:28:44 skill ok: skill=time.query event=t6-21638-1966831-g5 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T07:28:44 tts queued: event=t6-21638-1966831-g5 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:28:44 skill tts queued: skill=time.query event=t6-21638-1966831-g5
+[aiw] 2026-11-24T07:28:44 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:28:46 factory wake (onStartTalk): session=1970932 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:28:56 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:28:57 factory stop talk (EOU round=1 reason=1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:28:57 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:28:57 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:28:57 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=1
+[aiw] 2026-11-24T07:28:59 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=0 max_round=1 listening=0 followup_rounds_total=0 exit_turns=0
+[aiw] 2026-11-24T07:30:51 factory wake (onStartTalk): session=1966840 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:30:54 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:30:54 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:30:54 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:30:54 route=skill skill=time.query event=t6-21638-1966840-g6 session=1966840 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T07:30:54 route=skill event=t6-21638-1966840-g6 seq=326 session=1966840 skill=time.query text_bytes=24
+[aiw] 2026-11-24T07:30:54 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:30:54 skill ok: skill=time.query event=t6-21638-1966840-g6 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T07:30:54 tts queued: event=t6-21638-1966840-g6 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:30:54 skill tts queued: skill=time.query event=t6-21638-1966840-g6
+[aiw] 2026-11-24T07:30:54 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:30:56 factory wake (onStartTalk): session=1970941 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:31:04 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:31:04 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:31:04 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:31:06 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:31:08 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=0 max_round=1 listening=0 followup_rounds_total=0 exit_turns=0
+[aiw] 2026-11-24T07:31:10 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:33:21 factory wake (onStartTalk): session=1966849 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:33:25 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:33:25 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:33:25 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:33:25 route=skill skill=time.query event=t6-21638-1966849-g7 session=1966849 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T07:33:25 route=skill event=t6-21638-1966849-g7 seq=327 session=1966849 skill=time.query text_bytes=24
+[aiw] 2026-11-24T07:33:25 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:33:25 skill ok: skill=time.query event=t6-21638-1966849-g7 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T07:33:25 tts queued: event=t6-21638-1966849-g7 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:33:25 skill tts queued: skill=time.query event=t6-21638-1966849-g7
+[aiw] 2026-11-24T07:33:25 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:33:27 factory wake (onStartTalk): session=1970950 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:33:30 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:33:30 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:33:30 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:33:30 route=native intent=volume rule=volume.up arg=up event=t6-21638-1970950-g8 seq=328 session=1970950 text_bytes=18 merges=0 held_ms=0 publish_seq=2 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:33:30 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T07:33:30 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:33:31 continuity request: seq=152111192 sent (after native command) n=2 - waiting for factory session
+[aiw] 2026-11-24T07:33:32 continuity request: CONFIRMED by factory session=1970964 (+223 ms)
+[aiw] 2026-11-24T07:33:32 factory wake (onStartTalk): session=1970964 wake_type=1 listening=1 round=2
+[aiw] 2026-11-24T07:33:37 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:33:42 factory stop talk (EOU round=2 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:33:42 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:33:42 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:33:42 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=1 max_round=2 listening=0 followup_rounds_total=1 exit_turns=0
+[aiw] 2026-11-24T07:33:47 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:35:50 factory wake (onStartTalk): session=1966872 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:35:54 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:35:54 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:35:54 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:35:54 route=skill skill=time.query event=t6-21638-1966872-g9 session=1966872 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T07:35:54 route=skill event=t6-21638-1966872-g9 seq=329 session=1966872 skill=time.query text_bytes=24
+[aiw] 2026-11-24T07:35:54 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:35:54 skill ok: skill=time.query event=t6-21638-1966872-g9 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T07:35:54 tts queued: event=t6-21638-1966872-g9 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:35:54 skill tts queued: skill=time.query event=t6-21638-1966872-g9
+[aiw] 2026-11-24T07:35:54 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:35:56 factory wake (onStartTalk): session=1970973 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:36:00 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:36:00 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:36:00 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:36:00 route=native intent=volume rule=volume.up arg=up event=t6-21638-1970973-g10 seq=330 session=1970973 text_bytes=18 merges=0 held_ms=0 publish_seq=3 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:36:00 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T07:36:00 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:36:01 continuity request: seq=152260648 sent (after native command) n=3 - waiting for factory session
+[aiw] 2026-11-24T07:36:01 continuity request: CONFIRMED by factory session=1970987 (+227 ms)
+[aiw] 2026-11-24T07:36:01 factory wake (onStartTalk): session=1970987 wake_type=1 listening=1 round=2
+[aiw] 2026-11-24T07:36:04 factory stop talk (EOU round=2 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:36:04 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:36:04 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:36:05 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:36:05 route=ai event=t6-21638-1970987-g11 seq=0 session=1970987 merges=0 held_ms=627 why=timeout text_bytes=18 session_state=PROCESSING
+[aiw] 2026-11-24T07:36:05 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:36:06 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1197ms resp_bytes=774 reply_bytes=35 event=t6-21638-1970987-g11
+[aiw] 2026-11-24T07:36:06 request shape: event=t6-21638-1970987-g11 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-24T07:36:06 provider reply: event=t6-21638-1970987-g11 provider=deepseek req_msgs=7 history_msgs=6 latency=1197ms reply_bytes=35
+[aiw] 2026-11-24T07:36:06 tts queued: event=t6-21638-1970987-g11 reply_bytes=35 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:36:06 context commit: event=t6-21638-1970987-g11 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:36:06 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:36:11 factory wake (onStartTalk): session=1970992 wake_type=1 listening=1 round=2
+[aiw] 2026-11-24T07:36:18 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:36:20 factory stop talk (EOU round=2 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:36:20 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:36:20 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:36:23 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=1 max_round=2 listening=0 followup_rounds_total=2 exit_turns=0
+[aiw] 2026-11-24T07:36:25 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:37:52 factory wake (onStartTalk): session=1966900 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:37:56 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:37:56 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:37:56 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:37:56 route=skill skill=time.query event=t6-21638-1966900-g12 session=1966900 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T07:37:56 route=skill event=t6-21638-1966900-g12 seq=332 session=1966900 skill=time.query text_bytes=24
+[aiw] 2026-11-24T07:37:56 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:37:56 skill ok: skill=time.query event=t6-21638-1966900-g12 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T07:37:56 tts queued: event=t6-21638-1966900-g12 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:37:56 skill tts queued: skill=time.query event=t6-21638-1966900-g12
+[aiw] 2026-11-24T07:37:56 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:37:58 factory wake (onStartTalk): session=1971001 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:38:00 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:00 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:00 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:00 route=native intent=volume rule=volume.mute arg=mute event=t6-21638-1971001-g13 seq=333 session=1971001 text_bytes=6 merges=0 held_ms=0 publish_seq=4 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:38:00 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T07:38:01 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:38:02 continuity request: seq=152381489 sent (after native command) n=4 - waiting for factory session
+[aiw] 2026-11-24T07:38:02 continuity request: CONFIRMED by factory session=1971016 (+214 ms)
+[aiw] 2026-11-24T07:38:02 factory wake (onStartTalk): session=1971016 wake_type=1 listening=1 round=2
+[aiw] 2026-11-24T07:38:06 factory stop talk (EOU round=2 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:06 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:06 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:06 route=native intent=volume rule=volume.unmute arg=unmute event=t6-21638-1971016-g14 seq=334 session=1971016 text_bytes=12 merges=0 held_ms=0 publish_seq=5 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:38:06 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T07:38:06 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:38:07 continuity request: seq=152386908 sent (after native command) n=5 - waiting for factory session
+[aiw] 2026-11-24T07:38:07 continuity request: CONFIRMED by factory session=1971031 (+254 ms)
+[aiw] 2026-11-24T07:38:07 factory wake (onStartTalk): session=1971031 wake_type=1 listening=1 round=2
+[aiw] 2026-11-24T07:38:08 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:38:11 factory stop talk (EOU round=2 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:11 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:11 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:12 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:38:12 route=ai event=t6-21638-1971031-g15 seq=0 session=1971031 merges=0 held_ms=643 why=timeout text_bytes=18 session_state=PROCESSING
+[aiw] 2026-11-24T07:38:12 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:38:13 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1385ms resp_bytes=701 reply_bytes=61 event=t6-21638-1971031-g15
+[aiw] 2026-11-24T07:38:13 request shape: event=t6-21638-1971031-g15 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-24T07:38:13 provider reply: event=t6-21638-1971031-g15 provider=deepseek req_msgs=7 history_msgs=6 latency=1385ms reply_bytes=61
+[aiw] 2026-11-24T07:38:13 tts queued: event=t6-21638-1971031-g15 reply_bytes=61 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:38:13 context commit: event=t6-21638-1971031-g15 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:38:13 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:38:18 factory wake (onStartTalk): session=1971036 wake_type=1 listening=1 round=2
+[aiw] 2026-11-24T07:38:25 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:38:27 factory stop talk (EOU round=2 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:27 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:27 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:30 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=1 max_round=2 listening=0 followup_rounds_total=3 exit_turns=0
+[aiw] 2026-11-24T07:38:32 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:38:40 factory wake (onStartTalk): session=1966944 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:38:43 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:43 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:43 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:43 route=skill skill=time.query event=t6-21638-1966944-g16 session=1966944 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T07:38:43 route=skill event=t6-21638-1966944-g16 seq=336 session=1966944 skill=time.query text_bytes=24
+[aiw] 2026-11-24T07:38:43 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:38:43 skill ok: skill=time.query event=t6-21638-1966944-g16 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T07:38:43 tts queued: event=t6-21638-1966944-g16 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:38:43 skill tts queued: skill=time.query event=t6-21638-1966944-g16
+[aiw] 2026-11-24T07:38:43 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:38:45 factory wake (onStartTalk): session=1971045 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:38:49 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:49 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:49 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:38:49 route=native intent=media rule=media.play arg=play event=t6-21638-1971045-g17 seq=337 session=1971045 text_bytes=12 merges=0 held_ms=0 publish_seq=6 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:38:49 native command (media.play): no re-listen - it would cut the music
+[aiw] 2026-11-24T07:38:50 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:38:55 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:39:01 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=1 max_round=2 listening=0 followup_rounds_total=4 exit_turns=0
+[aiw] 2026-11-24T07:39:35 factory wake (onStartTalk): session=1966957 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:39:38 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:38 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:38 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:38 route=native intent=media rule=media.play arg=play event=t6-21638-1966957-g18 seq=338 session=1966957 text_bytes=24 merges=0 held_ms=0 publish_seq=7 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:39:38 native command (media.play): no re-listen - it would cut the music
+[aiw] 2026-11-24T07:39:39 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:39:45 factory wake (onStartTalk): session=1966964 wake_type=0 listening=1 round=1
+[aiw] 2026-11-24T07:39:49 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:49 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:49 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:49 route=native intent=volume rule=volume.down arg=down event=t6-21638-1966964-g19 seq=339 session=1966964 text_bytes=30 merges=0 held_ms=0 publish_seq=8 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:39:49 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T07:39:49 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:39:50 continuity request: seq=152490126 sent (after native command) n=6 - waiting for factory session
+[aiw] 2026-11-24T07:39:51 continuity request: CONFIRMED by factory session=1971074 (+210 ms)
+[aiw] 2026-11-24T07:39:51 factory wake (onStartTalk): session=1971074 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:39:52 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:52 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:52 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:53 route=native intent=media rule=media.pause arg=pause event=t6-21638-1971074-g20 seq=340 session=1971074 text_bytes=6 merges=0 held_ms=0 publish_seq=9 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:39:53 native command (media): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T07:39:53 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:39:54 continuity request: seq=152493667 sent (after native command) n=7 - waiting for factory session
+[aiw] 2026-11-24T07:39:54 continuity request: CONFIRMED by factory session=1971079 (+219 ms)
+[aiw] 2026-11-24T07:39:54 factory wake (onStartTalk): session=1971079 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:39:57 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:57 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:57 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:58 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:39:58 route=ai event=t6-21638-1971079-g21 seq=0 session=1971079 merges=0 held_ms=641 why=timeout text_bytes=18 session_state=PROCESSING
+[aiw] 2026-11-24T07:39:58 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:39:59 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1106ms resp_bytes=783 reply_bytes=85 event=t6-21638-1971079-g21
+[aiw] 2026-11-24T07:39:59 request shape: event=t6-21638-1971079-g21 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-24T07:39:59 provider reply: event=t6-21638-1971079-g21 provider=deepseek req_msgs=7 history_msgs=6 latency=1106ms reply_bytes=85
+[aiw] 2026-11-24T07:39:59 tts queued: event=t6-21638-1971079-g21 reply_bytes=85 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:39:59 context commit: event=t6-21638-1971079-g21 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:39:59 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:40:06 factory wake (onStartTalk): session=1971084 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:40:11 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:40:14 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:14 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:14 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:18 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=0 max_round=2 listening=0 followup_rounds_total=4 exit_turns=0
+[aiw] 2026-11-24T07:40:19 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:40:26 factory wake (onStartTalk): session=1966992 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:40:30 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:30 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:30 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:30 route=skill skill=time.query event=t6-21638-1966992-g22 session=1966992 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T07:40:30 route=skill event=t6-21638-1966992-g22 seq=342 session=1966992 skill=time.query text_bytes=24
+[aiw] 2026-11-24T07:40:30 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:40:30 skill ok: skill=time.query event=t6-21638-1966992-g22 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T07:40:30 tts queued: event=t6-21638-1966992-g22 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:40:30 skill tts queued: skill=time.query event=t6-21638-1966992-g22
+[aiw] 2026-11-24T07:40:30 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:40:32 factory wake (onStartTalk): session=1971093 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:40:34 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:34 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:34 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:34 route=native intent=volume rule=volume.up arg=up event=t6-21638-1971093-g23 seq=343 session=1971093 text_bytes=18 merges=0 held_ms=0 publish_seq=10 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:40:34 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T07:40:35 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:40:36 continuity request: seq=152535488 sent (after native command) n=8 - waiting for factory session
+[aiw] 2026-11-24T07:40:36 continuity request: CONFIRMED by factory session=1971107 (+216 ms)
+[aiw] 2026-11-24T07:40:36 factory wake (onStartTalk): session=1971107 wake_type=1 listening=1 round=2
+[aiw] 2026-11-24T07:40:38 factory stop talk (EOU round=2 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:38 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:38 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:38 route=native intent=volume rule=volume.mute arg=mute event=t6-21638-1971107-g24 seq=344 session=1971107 text_bytes=6 merges=0 held_ms=0 publish_seq=11 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:40:38 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T07:40:38 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:40:39 continuity request: seq=152538857 sent (after native command) n=9 - waiting for factory session
+[aiw] 2026-11-24T07:40:39 continuity request: CONFIRMED by factory session=1971122 (+260 ms)
+[aiw] 2026-11-24T07:40:39 factory wake (onStartTalk): session=1971122 wake_type=1 listening=1 round=2
+[aiw] 2026-11-24T07:40:42 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:40:42 factory stop talk (EOU round=2 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:42 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:42 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:43 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:40:43 route=ai event=t6-21638-1971122-g25 seq=0 session=1971122 merges=0 held_ms=622 why=timeout text_bytes=18 session_state=PROCESSING
+[aiw] 2026-11-24T07:40:43 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:40:45 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1463ms resp_bytes=989 reply_bytes=67 event=t6-21638-1971122-g25
+[aiw] 2026-11-24T07:40:45 request shape: event=t6-21638-1971122-g25 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-24T07:40:45 provider reply: event=t6-21638-1971122-g25 provider=deepseek req_msgs=7 history_msgs=6 latency=1463ms reply_bytes=67
+[aiw] 2026-11-24T07:40:45 tts queued: event=t6-21638-1971122-g25 reply_bytes=67 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:40:45 context commit: event=t6-21638-1971122-g25 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:40:45 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:40:51 factory wake (onStartTalk): session=1971127 wake_type=1 listening=1 round=2
+[aiw] 2026-11-24T07:40:57 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:40:58 factory stop talk (EOU round=2 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:58 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:40:58 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:41:02 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=1 max_round=2 listening=0 followup_rounds_total=5 exit_turns=0
+[aiw] 2026-11-24T07:41:03 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:41:11 factory wake (onStartTalk): session=1967035 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:41:14 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:41:14 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:41:14 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:41:14 route=skill skill=time.query event=t6-21638-1967035-g26 session=1967035 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T07:41:14 route=skill event=t6-21638-1967035-g26 seq=346 session=1967035 skill=time.query text_bytes=24
+[aiw] 2026-11-24T07:41:14 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:41:14 skill ok: skill=time.query event=t6-21638-1967035-g26 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T07:41:14 tts queued: event=t6-21638-1967035-g26 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:41:14 skill tts queued: skill=time.query event=t6-21638-1967035-g26
+[aiw] 2026-11-24T07:41:14 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:41:16 factory wake (onStartTalk): session=1971136 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:41:20 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:41:20 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:41:20 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:41:20 route=native intent=volume rule=volume.up arg=up event=t6-21638-1971136-g27 seq=347 session=1971136 text_bytes=18 merges=0 held_ms=0 publish_seq=12 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:41:20 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T07:41:20 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:41:21 continuity request: seq=152580842 sent (after native command) n=10 - waiting for factory session
+[aiw] 2026-11-24T07:41:21 continuity request: CONFIRMED by factory session=1971150 (+220 ms)
+[aiw] 2026-11-24T07:41:21 factory wake (onStartTalk): session=1971150 wake_type=1 listening=1 round=2
+[aiw] 2026-11-24T07:41:24 factory stop talk (EOU round=2 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:41:24 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:41:24 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:41:24 dialog end by voice: intent=exit (rounds_done=1 followup_rounds=0 followup_total=6 exit_turns=1)
+[aiw] 2026-11-24T07:41:24 listen hold: auto-listen suppressed for 60000 ms -> /data/local/tmp/t5_bridge/ai_worker/listen_hold
+[aiw] 2026-11-24T07:41:24 route=native intent=exit rule=exit.keyword arg= event=t6-21638-1971150-g28 seq=348 session=1971150 text_bytes=6 merges=0 held_ms=0 publish_seq=13 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:41:24 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:41:26 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:42:07 factory wake (onStartTalk): session=1967059 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:42:10 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:42:10 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:42:10 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:42:10 route=skill skill=time.query event=t6-21638-1967059-g29 session=1967059 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T07:42:10 route=skill event=t6-21638-1967059-g29 seq=349 session=1967059 skill=time.query text_bytes=24
+[aiw] 2026-11-24T07:42:10 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:42:10 skill ok: skill=time.query event=t6-21638-1967059-g29 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T07:42:10 tts queued: event=t6-21638-1967059-g29 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:42:10 skill tts queued: skill=time.query event=t6-21638-1967059-g29
+[aiw] 2026-11-24T07:42:10 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:42:15 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=1
+[aiw] 2026-11-24T07:42:23 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:42:24 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=0 max_round=2 listening=0 followup_rounds_total=6 exit_turns=1
+[aiw] 2026-11-24T07:47:24 factory wake (onStartTalk): session=1967065 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:47:28 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:47:28 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:47:28 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:47:28 route=skill skill=time.query event=t6-21638-1967065-g30 session=1967065 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T07:47:28 route=skill event=t6-21638-1967065-g30 seq=350 session=1967065 skill=time.query text_bytes=24
+[aiw] 2026-11-24T07:47:28 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:28 skill ok: skill=time.query event=t6-21638-1967065-g30 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T07:47:28 tts queued: event=t6-21638-1967065-g30 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:47:28 skill tts queued: skill=time.query event=t6-21638-1967065-g30
+[aiw] 2026-11-24T07:47:30 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:30 factory wake (onStartTalk): session=1971166 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:47:33 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:47:33 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:47:33 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:47:34 route=ai event=t6-21638-1971166-g31 seq=0 session=1971166 merges=0 held_ms=613 why=timeout text_bytes=18 session_state=PROCESSING
+[aiw] 2026-11-24T07:47:34 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:35 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1252ms resp_bytes=819 reply_bytes=73 event=t6-21638-1971166-g31
+[aiw] 2026-11-24T07:47:35 request shape: event=t6-21638-1971166-g31 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-24T07:47:35 provider reply: event=t6-21638-1971166-g31 provider=deepseek req_msgs=7 history_msgs=6 latency=1252ms reply_bytes=73
+[aiw] 2026-11-24T07:47:35 tts queued: event=t6-21638-1971166-g31 reply_bytes=73 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:47:35 context commit: event=t6-21638-1971166-g31 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:47:35 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:38 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:47:40 factory wake (onStartTalk): session=1971171 wake_type=1 listening=1 round=2
+[aiw] 2026-11-24T07:47:44 factory stop talk (EOU round=2 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:47:44 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:47:44 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:47:45 route=ai event=t6-21638-1971171-g32 seq=0 session=1971171 merges=0 held_ms=468 why=timeout text_bytes=24 session_state=PROCESSING
+[aiw] 2026-11-24T07:47:45 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:46 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1494ms resp_bytes=957 reply_bytes=99 event=t6-21638-1971171-g32
+[aiw] 2026-11-24T07:47:46 request shape: event=t6-21638-1971171-g32 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-24T07:47:46 provider reply: event=t6-21638-1971171-g32 provider=deepseek req_msgs=7 history_msgs=6 latency=1494ms reply_bytes=99
+[aiw] 2026-11-24T07:47:46 tts queued: event=t6-21638-1971171-g32 reply_bytes=99 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:47:46 context commit: event=t6-21638-1971171-g32 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:47:49 factory exit talk (platform session closed, round=3): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:47:53 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:53 factory wake (onStartTalk): session=1971176 wake_type=1 listening=1 round=3
+[aiw] 2026-11-24T07:47:56 factory stop talk (EOU round=3 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:47:56 factory stop talk (EOU round=3 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:47:56 factory stop talk (EOU round=3 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:47:56 route=ai event=t6-21638-1971176-g33 seq=0 session=1971176 merges=0 held_ms=470 why=timeout text_bytes=18 session_state=PROCESSING
+[aiw] 2026-11-24T07:47:56 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:58 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1472ms resp_bytes=1029 reply_bytes=78 event=t6-21638-1971176-g33
+[aiw] 2026-11-24T07:47:58 request shape: event=t6-21638-1971176-g33 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-24T07:47:58 provider reply: event=t6-21638-1971176-g33 provider=deepseek req_msgs=7 history_msgs=6 latency=1472ms reply_bytes=78
+[aiw] 2026-11-24T07:47:58 tts queued: event=t6-21638-1971176-g33 reply_bytes=78 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:47:58 context commit: event=t6-21638-1971176-g33 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:47:58 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:48:01 factory exit talk (platform session closed, round=4): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:48:06 factory wake (onStartTalk): session=1971181 wake_type=1 listening=1 round=4
+[aiw] 2026-11-24T07:48:09 factory stop talk (EOU round=4 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:09 factory stop talk (EOU round=4 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:09 factory stop talk (EOU round=4 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:10 factory exit talk (platform session closed, round=4): dialog stays open, relisten_armed=1
+[aiw] 2026-11-24T07:48:10 route=ai event=t6-21638-1971181-g34 seq=0 session=1971181 merges=0 held_ms=516 why=timeout text_bytes=18 session_state=PROCESSING
+[aiw] 2026-11-24T07:48:10 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:48:11 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1723ms resp_bytes=1018 reply_bytes=126 event=t6-21638-1971181-g34
+[aiw] 2026-11-24T07:48:11 request shape: event=t6-21638-1971181-g34 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-24T07:48:11 provider reply: event=t6-21638-1971181-g34 provider=deepseek req_msgs=7 history_msgs=6 latency=1723ms reply_bytes=126
+[aiw] 2026-11-24T07:48:11 tts queued: event=t6-21638-1971181-g34 reply_bytes=126 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:48:11 context commit: event=t6-21638-1971181-g34 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:48:19 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:48:19 factory wake (onStartTalk): session=1971194 wake_type=1 listening=1 round=5
+[aiw] 2026-11-24T07:48:23 factory stop talk (EOU round=5 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:23 factory stop talk (EOU round=5 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:23 factory stop talk (EOU round=5 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:23 route=ai event=t6-21638-1971194-g35 seq=0 session=1971194 merges=0 held_ms=633 why=timeout text_bytes=24 session_state=PROCESSING
+[aiw] 2026-11-24T07:48:23 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:48:25 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1531ms resp_bytes=1028 reply_bytes=96 event=t6-21638-1971194-g35
+[aiw] 2026-11-24T07:48:25 request shape: event=t6-21638-1971194-g35 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-24T07:48:25 provider reply: event=t6-21638-1971194-g35 provider=deepseek req_msgs=7 history_msgs=6 latency=1531ms reply_bytes=96
+[aiw] 2026-11-24T07:48:25 tts queued: event=t6-21638-1971194-g35 reply_bytes=96 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:48:25 context commit: event=t6-21638-1971194-g35 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:48:25 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:48:28 factory exit talk (platform session closed, round=6): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:48:32 factory wake (onStartTalk): session=1971199 wake_type=1 listening=1 round=6
+[aiw] 2026-11-24T07:48:37 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T07:48:42 factory stop talk (EOU round=6 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:42 factory stop talk (EOU round=6 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:42 factory stop talk (EOU round=6 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:44 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=5 max_round=6 listening=0 followup_rounds_total=11 exit_turns=1
+[aiw] 2026-11-24T07:48:47 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:48:53 factory wake (onStartTalk): session=1967065 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:48:53 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:53 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:53 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:53 factory wake (onStartTalk): session=1971166 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:48:53 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:53 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:53 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:53 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:48:53 factory wake (onStartTalk): session=1971171 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:48:53 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:53 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:53 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:53 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:48:53 factory wake (onStartTalk): session=1971176 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:48:53 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:53 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:53 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:54 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:48:54 factory wake (onStartTalk): session=1971181 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:48:54 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:54 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:54 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:54 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:48:54 factory wake (onStartTalk): session=1971194 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:48:54 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:54 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:54 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:54 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:48:54 factory wake (onStartTalk): session=1971199 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T07:48:54 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:54 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:54 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:48:54 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:49:05 dialog closed: reason=deadline reached rounds_done=0 followup_rounds=5 max_round=6 listening=0 followup_rounds_total=11 exit_turns=1

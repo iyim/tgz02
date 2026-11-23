@@ -1,0 +1,1120 @@
+--------- beginning of system
+--------- beginning of crash
+--------- beginning of main
+11-24 07:40:06.002 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetMediaPolicy:1593 [21680] get policy, policy=0, packageName=com.alibaba.genie.waft
+11-24 07:40:06.029 D/AGSpeechEngineProxy(21638): startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null), wakeupFilterWord:(null), vadtime:0
+11-24 07:40:06.029 D/AGSpeechEngine(21638): startListen,746
+11-24 07:40:06.029 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:06.030 I/tgt     (21638): continuity: auto-after-tts seq=1795477205981 startTalk(type=1, info+0=1) -> 0 (n=20 ok=0)
+11-24 07:40:06.030 D/AGSpeechEngine(21638): threadLoop,988: begin to process 8
+11-24 07:40:06.030 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:06.031 D/AGSpeechEngine(21638): onWakeup,1141: process wakeup of device(1)
+11-24 07:40:06.031 D/AGSpeechEngine(21638): startListenInternal,192
+11-24 07:40:06.031 D/AGSpeechEngine(21638): onListenStarted,1202: useASR30=0
+11-24 07:40:06.031 D/AGSpeechEngineProxy(21638): onListenStarted,684
+11-24 07:40:06.031 D/AGSpeechEngineProxy(21638): onListenStarted,696: 1, , , 0.000000, 0, 0, 0, f8a763e6cbfd11240740060300031957
+11-24 07:40:06.056 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971084, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:40:06.056 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 1, preStatus = 6, sessionId = 1971084, preSessionId = 1971079
+11-24 07:40:06.058 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=1, session=1971084
+11-24 07:40:06.059 D/AGSpeechEngineProxy(21638): onListenStarted,732, sessionID is 1971084
+11-24 07:40:06.059 D/AGSpeechEngine(21638): onListenStarted,1210: session id is 1971084, request id is 622a7ba4ae2f56f4b24a67ff5438d91d1971084
+11-24 07:40:06.059 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:06.060 D/AGSpeechEngine(21638): startListenInternal,269: needVAD = 1
+11-24 07:40:06.060 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:06.061 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:06.065 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1408 [21725] get context: packageName =com.alibaba.genie.waft, pkg = , className = 
+11-24 07:40:06.065 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [21725] foreground info, packageName = com.alibaba.genie.waft, className = com.alibaba.genie.waft.ui.tpl.WaftTplActivity, pkg = 
+11-24 07:40:06.071 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1433 [21725] get content, packageName =com.alibaba.genie.waft, pkg = , time=6
+11-24 07:40:06.089 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [21680] onGetSystemContext sessionId = 1971084  mSystemContextCallback = 0x921daa00
+11-24 07:40:06.102 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [21725] send startListened sessionId = 1971084
+11-24 07:40:06.102 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:06.102 D/AGSpeechEngine(21638): startListenInternal,302: should not use local asr
+11-24 07:40:06.103 D/AGSpeechEngine(21638): threadLoop,1090: end to process 8
+11-24 07:40:06.260 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:06.367 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:06.455 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:06.583 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:06.697 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:06.861 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:06.959 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:06.994 D/AGSpeechEngine(21638): handleWakeupPromptFinish,895
+11-24 07:40:06.996 D/AGSpeechEngine(21638): threadLoop,988: begin to process 21
+11-24 07:40:06.996 D/AGSpeechEngine(21638): threadLoop,1090: end to process 21
+11-24 07:40:07.060 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:07.168 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:07.296 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:07.435 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:07.559 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:07.653 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:07.796 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:07.939 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:08.035 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:08.137 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:08.280 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:08.372 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:08.553 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:08.641 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:08.776 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:08.845 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:08.965 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:09.120 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:09.234 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:09.353 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:09.448 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:09.621 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:09.721 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:09.815 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:09.929 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:10.050 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:10.219 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:10.320 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:10.429 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:10.528 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:10.655 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:10.800 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:10.934 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:11.028 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:11.156 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:11.298 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:11.397 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:11.504 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:11.635 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:11.782 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:11.882 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:11.997 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:12.138 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:12.212 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:12.310 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:12.481 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:12.599 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:12.706 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:12.808 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:12.977 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:13.073 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:13.166 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:13.311 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:13.411 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:13.586 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:13.676 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:13.775 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:13.914 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:14.015 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:14.159 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:14.279 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:14.392 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:14.519 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:14.661 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:14.705 D/AGSpeechEngine(21638): stopListen,790
+11-24 07:40:14.705 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:40:14.705 D/AGSpeechEngine(21638): threadLoop,1013: stop info is '{ "recordId": "f8a763e6cbfd11240740060300031957", "vadDelayInMillis": 0, "vadSource": "unknow", "vadFrameSeq": 842 }'
+11-24 07:40:14.706 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:14.706 D/AGSpeechEngine(21638): onCloudEOUEvent,646
+11-24 07:40:14.707 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:40:14.707 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:40:14.707 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:40:14.707 D/AGSpeechEngine(21638): stopListenInternal,348
+11-24 07:40:14.708 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:14.709 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:14.709 D/AGSpeechEngine(21638): onListenStopped,1225
+11-24 07:40:14.709 D/AGSpeechEngineProxy(21638): onListenStopped,747
+11-24 07:40:14.709 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:697 [21725] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 07:40:14.709 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:749 [21725] on stop talk, session=1971084
+11-24 07:40:14.709 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:786 [21725] on stop talk, send end frame, sessionId = 1971084
+11-24 07:40:14.709 E/SessionManager(21638): size = 1421, offset = 1474, max_size = 1022
+11-24 07:40:14.710 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:842 [21725] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "continuity", "speechContexts": { "recordId": "f8a763e6cbfd11240740060300031957", "wakeupWord": "", "doa": "{\"param_arr\":[97.500000,0.349137,87.500000,0.334368,92.500000,0.316495],\"score_arr\":[4283396.500000,4284057.500000,4286047,4289382.500000,4294090.500000,4300195,4307711,4316628.500000,4326899,4338415,4351001.500000,4364398,4378255,4392138,4405538.500000,4417901,4428656,4437263,4443254.500000,4446277,4446127,4442767.500000,4436334.500000,4427126,4415577.500000,4402223.500000,4387660.500000,4372503.500000,4357350.500000,4342756,4329207,4317115.500000,4306813,4298557.500000,4292536,4288874.500000,4287647,97.500000]}", "confidence": 0, "listenDuration": 8576, "voiceDuration": 8576, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visionInfomation": "", "voiceInfomation": "" }, "exten
+11-24 07:40:14.713 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 3, preStatus = 1, sessionId = 1971084, preSessionId = 1971084
+11-24 07:40:14.713 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=3, session=1971084
+11-24 07:40:14.764 D/AGSpeechEngine(21638): onListenStopped,1232: reset to use global deviceId 1 for wakeup
+11-24 07:40:14.764 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:40:14.912 I/tgt     (21638): onTtsStart DROP id=1971084 streaming=1 comm=AG-ws-receive text="没听清主人的话，可以再说一次吗" (factory NLU answer)
+11-24 07:40:19.736 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 6, preStatus = 3, sessionId = 1971084, preSessionId = 1971084
+11-24 07:40:19.736 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=6, session=1971084
+11-24 07:40:19.741 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionTtsStatus:1049 [21680] session=1971084, status = 6, tts status = 7
+11-24 07:40:19.742 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:exitTalk:1176 [21680] exit talk, input session=1971084, real session=1971084 exit=0
+11-24 07:40:19.742 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:40:19.742 E/AGSpeechEngine(21638): stopListenInternal,382: stop listen when 0
+11-24 07:40:19.742 D/AGSpeechEngine(21638): abortListen,395,wakeup type is continuity
+11-24 07:40:20.243 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 6, preStatus = 6, sessionId = 1971084, preSessionId = 1971084
+11-24 07:40:26.572 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:26.582 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:26.588 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:26.597 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:26.644 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:26.645 D/AGSpeechEngine(21638): onSpeechWakeup,530:tian mao jing ling,天猫精灵
+11-24 07:40:26.645 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:26.646 D/AGSpeechEngine(21638): threadLoop,988: begin to process 8
+11-24 07:40:26.648 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:26.649 D/AGSpeechEngine(21638): onWakeup,1141: process wakeup of device(1)
+11-24 07:40:26.649 D/AGSpeechEngine(21638): startListenInternal,192
+11-24 07:40:26.649 D/AGSpeechEngine(21638): onListenStarted,1202: useASR30=0
+11-24 07:40:26.649 D/AGSpeechEngineProxy(21638): onListenStarted,684
+11-24 07:40:26.649 D/AGSpeechEngineProxy(21638): onListenStarted,696: 0, tian mao jing ling, 天猫精灵, 0.952658, 42, 0, 0, f8a763e6cbfd11240740266450032373
+11-24 07:40:26.658 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1966992, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 07:40:26.659 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 1, preStatus = 6, sessionId = 1966992, preSessionId = 1971084
+11-24 07:40:26.660 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=1, session=1966992
+11-24 07:40:26.667 D/AGSpeechEngineProxy(21638): onListenStarted,732, sessionID is 1966992
+11-24 07:40:26.667 D/AGSpeechEngine(21638): onListenStarted,1210: session id is 1966992, request id is 1e219ced7ca97a818d346db20768c6901966992
+11-24 07:40:26.667 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:26.730 D/AGSpeechEngine(21638): startListenInternal,269: needVAD = 1
+11-24 07:40:26.735 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:26.736 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [21680] onGetSystemContext sessionId = 1966992  mSystemContextCallback = 0x921daa00
+11-24 07:40:26.774 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:26.780 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1408 [21725] get context: packageName =com.alibaba.genie.waft, pkg = , className = 
+11-24 07:40:26.781 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [21725] foreground info, packageName = com.alibaba.genie.waft, className = com.alibaba.genie.waft.ui.tpl.WaftTplActivity, pkg = 
+11-24 07:40:26.783 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1433 [21725] get content, packageName =com.alibaba.genie.waft, pkg = , time=2
+11-24 07:40:26.791 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [21725] send startListened sessionId = 1966992
+11-24 07:40:26.792 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:26.792 D/AGSpeechEngine(21638): startListenInternal,302: should not use local asr
+11-24 07:40:26.792 D/AGSpeechEngine(21638): threadLoop,1090: end to process 8
+11-24 07:40:26.802 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:26.814 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:26.837 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:26.859 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:26.885 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:26.919 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:26.934 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:26.956 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:26.987 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:26.999 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.008 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.017 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.026 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.037 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.041 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966992, text = 天天, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:27.042 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966992, text = 天猫, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:27.042 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:27.042 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 1, sessionId = 1966992, preSessionId = 1966992
+11-24 07:40:27.042 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=2, session=1966992
+11-24 07:40:27.042 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:27.043 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1966992, preSessionId = 1966992
+11-24 07:40:27.043 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:27.043 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:27.043 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:27.043 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:27.064 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966992, text = 天天猫猫精, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:27.065 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:27.065 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1966992, preSessionId = 1966992
+11-24 07:40:27.065 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:27.065 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:27.133 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.142 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.156 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.182 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966992, text = 天猫精灵, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:27.182 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:27.183 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1966992, preSessionId = 1966992
+11-24 07:40:27.183 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:27.183 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:27.275 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.294 D/AGSpeechEngine(21638): handleWakeupPromptFinish,895
+11-24 07:40:27.297 D/AGSpeechEngine(21638): threadLoop,988: begin to process 21
+11-24 07:40:27.297 D/AGSpeechEngine(21638): threadLoop,1090: end to process 21
+11-24 07:40:27.442 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.489 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.609 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.696 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.752 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.801 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:27.896 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:28.015 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:28.143 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:28.208 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:28.308 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:28.542 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:28.624 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:28.705 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:28.809 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:28.949 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:29.077 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:29.146 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:29.301 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:29.416 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:29.448 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966992, text = 天猫精灵现在, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:29.448 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:29.448 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1966992, preSessionId = 1966992
+11-24 07:40:29.449 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:29.449 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:29.558 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:29.621 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:29.650 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966992, text = 天猫精灵现在几, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:29.650 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:29.650 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:29.650 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:29.650 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1966992, preSessionId = 1966992
+11-24 07:40:29.805 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:29.921 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:29.953 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966992, text = 天猫精灵现在几点, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:29.953 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:29.953 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1966992, preSessionId = 1966992
+11-24 07:40:29.954 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:29.954 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:30.056 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:30.119 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:30.149 D/AGSpeechEngine(21638): stopListen,790
+11-24 07:40:30.149 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:40:30.149 D/AGSpeechEngine(21638): threadLoop,1013: stop info is '{ "recordId": "f8a763e6cbfd11240740266450032373", "vadDelayInMillis": 0, "vadSource": "unknow", "vadFrameSeq": 527 }'
+11-24 07:40:30.150 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:30.156 D/AGSpeechEngine(21638): onCloudEOUEvent,646
+11-24 07:40:30.156 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:40:30.156 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:40:30.156 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:40:30.156 D/AGSpeechEngine(21638): stopListenInternal,348
+11-24 07:40:30.172 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:30.172 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:30.173 D/AGSpeechEngine(21638): onListenStopped,1225
+11-24 07:40:30.173 D/AGSpeechEngineProxy(21638): onListenStopped,747
+11-24 07:40:30.173 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:697 [21725] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 07:40:30.173 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:749 [21725] on stop talk, session=1966992
+11-24 07:40:30.173 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:786 [21725] on stop talk, send end frame, sessionId = 1966992
+11-24 07:40:30.173 E/SessionManager(21638): size = 1460, offset = 1513, max_size = 1022
+11-24 07:40:30.173 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:842 [21725] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "f8a763e6cbfd11240740266450032373", "wakeupWord": "tian mao jing ling", "doa": "{\"param_arr\":[47.500000,0.973484,52.500000,0.021004,57.500000,0.005513],\"score_arr\":[4413913.500000,4414696,4417040.500000,4420936.500000,4426363,4433281,4441627,4451298,4462150,4473982,4486529,4499463,4512393.500000,4524876,4536432.500000,4546574.500000,4554831,4560784,4564099.500000,4564554,4562056.500000,4556654.500000,4548536,4538013.500000,4525504.500000,4511501,4496540,4481170.500000,4465929.500000,4451316.500000,4437779.500000,4425704.500000,4415411.500000,4407154,4401124.500000,4397456,4396223.500000,47.500000]}", "confidence": 0.95265799760818481, "listenDuration": 5316, "voiceDuration": 5316, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visionInfomatio
+11-24 07:40:30.174 D/AGSpeechEngine(21638): onListenStopped,1232: reset to use global deviceId 1 for wakeup
+11-24 07:40:30.174 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:40:30.175 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 3, preStatus = 2, sessionId = 1966992, preSessionId = 1966992
+11-24 07:40:30.175 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=3, session=1966992
+11-24 07:40:30.219 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966992, text = 天猫精灵现在几点, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:30.220 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:30.221 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 4, preStatus = 3, sessionId = 1966992, preSessionId = 1966992
+11-24 07:40:30.221 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=4, session=1966992
+11-24 07:40:30.231 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:30.231 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:30.424 I/tgt     (21638): playTts -> allow-listed id=5243796 comm=Binder:21638_2 text_bytes=9
+11-24 07:40:30.436 I/tgt     (21638): onTtsStart DROP id=1966992 streaming=1 comm=AG-ws-receive text="现在是早上七点四十分。" (factory NLU answer)
+11-24 07:40:30.475 I/tgt     (21638): onTtsStart ALLOW id=5243796 by=session_id streaming=1 text_bytes=9
+11-24 07:40:30.610 D/AGSpeechEngineProxy(21638): audioCheckPoint,1057:Audio check position is 513.
+11-24 07:40:32.065 D/AGSpeechEngineProxy(21638): startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null), wakeupFilterWord:(null), vadtime:0
+11-24 07:40:32.065 D/AGSpeechEngine(21638): startListen,746
+11-24 07:40:32.065 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:32.066 I/tgt     (21638): continuity: auto-after-tts seq=1795477232029 startTalk(type=1, info+0=1) -> 0 (n=21 ok=0)
+11-24 07:40:32.066 D/AGSpeechEngine(21638): threadLoop,988: begin to process 8
+11-24 07:40:32.068 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:32.068 D/AGSpeechEngine(21638): onWakeup,1141: process wakeup of device(1)
+11-24 07:40:32.068 D/AGSpeechEngine(21638): startListenInternal,192
+11-24 07:40:32.069 D/AGSpeechEngine(21638): onListenStarted,1202: useASR30=0
+11-24 07:40:32.069 D/AGSpeechEngineProxy(21638): onListenStarted,684
+11-24 07:40:32.069 D/AGSpeechEngineProxy(21638): onListenStarted,696: 1, , , 0.000000, 0, 0, 0, f8a763e6cbfd11240740320680033033
+11-24 07:40:32.095 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971093, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:40:32.095 D/AGSpeechEngineProxy(21638): onListenStarted,732, sessionID is 1971093
+11-24 07:40:32.095 D/AGSpeechEngine(21638): onListenStarted,1210: session id is 1971093, request id is 0a82e4bb8fc554e2546087f0a7b89c5c1971093
+11-24 07:40:32.097 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 1, preStatus = 4, sessionId = 1971093, preSessionId = 1966992
+11-24 07:40:32.099 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=1, session=1971093
+11-24 07:40:32.112 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:32.113 D/AGSpeechEngine(21638): startListenInternal,269: needVAD = 1
+11-24 07:40:32.113 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:32.132 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:32.212 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1408 [21725] get context: packageName =com.alibaba.genie.waft, pkg = , className = 
+11-24 07:40:32.213 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [21725] foreground info, packageName = com.alibaba.genie.waft, className = com.alibaba.genie.waft.ui.tpl.WaftTplActivity, pkg = 
+11-24 07:40:32.217 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [21680] onGetSystemContext sessionId = 1971093  mSystemContextCallback = 0x921daa00
+11-24 07:40:32.232 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1433 [21725] get content, packageName =com.alibaba.genie.waft, pkg = , time=19
+11-24 07:40:32.298 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [21725] send startListened sessionId = 1971093
+11-24 07:40:32.298 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:32.298 D/AGSpeechEngine(21638): startListenInternal,302: should not use local asr
+11-24 07:40:32.315 D/AGSpeechEngine(21638): threadLoop,1090: end to process 8
+11-24 07:40:32.467 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:32.620 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:32.716 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:32.787 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:32.930 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:33.058 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:33.133 D/AGSpeechEngine(21638): handleWakeupPromptFinish,895
+11-24 07:40:33.134 D/AGSpeechEngine(21638): threadLoop,988: begin to process 21
+11-24 07:40:33.134 D/AGSpeechEngine(21638): threadLoop,1090: end to process 21
+11-24 07:40:33.234 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:33.278 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971093, text = 音量, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:33.278 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:33.278 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 1, sessionId = 1971093, preSessionId = 1971093
+11-24 07:40:33.278 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=2, session=1971093
+11-24 07:40:33.280 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:33.280 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:33.335 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:33.458 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:33.606 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:33.697 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:33.728 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:33.728 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971093, preSessionId = 1971093
+11-24 07:40:33.728 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:33.728 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:33.730 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971093, text = 音量调, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:33.779 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:33.900 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:33.947 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971093, text = 音量调大, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:33.947 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:33.947 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:33.947 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:33.948 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971093, preSessionId = 1971093
+11-24 07:40:34.037 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:34.131 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:34.154 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971093, text = 音量调大一, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:34.154 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:34.154 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971093, preSessionId = 1971093
+11-24 07:40:34.155 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:34.155 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:34.264 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:34.398 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:34.428 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971093, text = 音量调大一点, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:34.428 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:34.428 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971093, preSessionId = 1971093
+11-24 07:40:34.429 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:34.429 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:34.536 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:34.612 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:34.643 D/AGSpeechEngine(21638): stopListen,790
+11-24 07:40:34.643 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:40:34.643 D/AGSpeechEngine(21638): threadLoop,1013: stop info is '{ "recordId": "f8a763e6cbfd11240740320680033033", "vadDelayInMillis": 0, "vadSource": "unknow", "vadFrameSeq": 227 }'
+11-24 07:40:34.644 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:34.647 D/AGSpeechEngine(21638): onCloudEOUEvent,646
+11-24 07:40:34.647 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:40:34.647 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:40:34.647 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:40:34.647 D/AGSpeechEngine(21638): stopListenInternal,348
+11-24 07:40:34.650 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:34.650 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:34.651 D/AGSpeechEngine(21638): onListenStopped,1225
+11-24 07:40:34.651 D/AGSpeechEngineProxy(21638): onListenStopped,747
+11-24 07:40:34.651 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:697 [21725] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 07:40:34.651 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:749 [21725] on stop talk, session=1971093
+11-24 07:40:34.651 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:786 [21725] on stop talk, send end frame, sessionId = 1971093
+11-24 07:40:34.652 E/SessionManager(21638): size = 1463, offset = 1516, max_size = 1022
+11-24 07:40:34.652 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:842 [21725] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "continuity", "speechContexts": { "recordId": "f8a763e6cbfd11240740320680033033", "wakeupWord": "", "doa": "{\"param_arr\":[42.500000,0.404678,52.500000,0.368056,62.500000,0.227266],\"score_arr\":[3737749.250000,3738603.250000,3741166.500000,3745437.750000,3751412.250000,3759066.250000,3768349.500000,3779169.500000,3791376.750000,3804753,3818999,3833735.500000,3848503.250000,3862781.500000,3876010,3887622,3897085.250000,3903939.750000,3907838,3908573,3906097,3900526,3892129,3881304.250000,3868547.750000,3854417.250000,3839490.500000,3824336,3809482.750000,3795402.250000,3782496,3771095,3761458.500000,3753782.250000,3748208,3744827.500000,3743695.250000,42.500000]}", "confidence": 0, "listenDuration": 2304, "voiceDuration": 2304, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visionInfoma
+11-24 07:40:34.652 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 3, preStatus = 2, sessionId = 1971093, preSessionId = 1971093
+11-24 07:40:34.653 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=3, session=1971093
+11-24 07:40:34.654 D/AGSpeechEngine(21638): onListenStopped,1232: reset to use global deviceId 1 for wakeup
+11-24 07:40:34.654 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:40:34.715 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971093, text = 音量调大一点, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:34.716 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:34.717 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 4, preStatus = 3, sessionId = 1971093, preSessionId = 1971093
+11-24 07:40:34.717 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=4, session=1971093
+11-24 07:40:34.719 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:34.719 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:34.932 I/tgt     (21638): onTtsStart ALLOW id=1971093 by=native_window intent=volume seq=10 exp_ms=1795477242907 streaming=1 text_bytes=38
+11-24 07:40:34.933 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onNlpResult:895 [21752] on nlp result, code = 0 , sessionId = 1971093, data = 1
+11-24 07:40:34.934 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 5, preStatus = 4, sessionId = 1971093, preSessionId = 1971093
+11-24 07:40:34.934 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=5, session=1971093
+11-24 07:40:35.001 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:exitTalk:1176 [21680] exit talk, input session=1971093, real session=1971093 exit=0
+11-24 07:40:35.001 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:40:35.001 E/AGSpeechEngine(21638): stopListenInternal,382: stop listen when 0
+11-24 07:40:35.001 D/AGSpeechEngine(21638): abortListen,395,wakeup type is continuity
+11-24 07:40:35.106 D/AGSpeechEngineProxy(21638): audioCheckPoint,1057:Audio check position is 513.
+11-24 07:40:35.190 D/AGSpeechEngine(21638): stopListen,790
+11-24 07:40:35.561 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 6, preStatus = 5, sessionId = 1971093, preSessionId = 1971093
+11-24 07:40:35.564 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=6, session=1971093
+11-24 07:40:36.190 I/tgt     (21638): continuity req: seq=152535488 accepted (new) -> pending (attempt window 2500 ms)
+11-24 07:40:36.191 I/tgt     (21638): continuity req: seq=152535488 firing after 1 ms
+11-24 07:40:36.191 D/AGSpeechEngineProxy(21638): startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null), wakeupFilterWord:(null), vadtime:0
+11-24 07:40:36.191 D/AGSpeechEngine(21638): startListen,746
+11-24 07:40:36.191 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:36.193 D/AGSpeechEngine(21638): threadLoop,988: begin to process 8
+11-24 07:40:36.193 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:36.195 D/AGSpeechEngine(21638): onWakeup,1141: process wakeup of device(1)
+11-24 07:40:36.195 D/AGSpeechEngine(21638): startListenInternal,192
+11-24 07:40:36.195 D/AGSpeechEngine(21638): onListenStarted,1202: useASR30=0
+11-24 07:40:36.195 D/AGSpeechEngineProxy(21638): onListenStarted,684
+11-24 07:40:36.195 D/AGSpeechEngineProxy(21638): onListenStarted,696: 1, , , 0.000000, 0, 0, 0, f8a763e6cbfd11240740361930034034
+11-24 07:40:36.200 I/tgt     (21638): continuity: worker-request seq=152535488 startTalk(type=1, info+0=1) -> 0 (n=22 ok=0)
+11-24 07:40:36.217 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971107, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:40:36.217 D/AGSpeechEngineProxy(21638): onListenStarted,732, sessionID is 1971107
+11-24 07:40:36.217 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 1, preStatus = 6, sessionId = 1971107, preSessionId = 1971093
+11-24 07:40:36.217 D/AGSpeechEngine(21638): onListenStarted,1210: session id is 1971107, request id is df52ee3d110a0d5eab3459d592404ad91971107
+11-24 07:40:36.217 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:36.219 D/AGSpeechEngine(21638): startListenInternal,269: needVAD = 1
+11-24 07:40:36.219 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:36.222 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=1, session=1971107
+11-24 07:40:36.223 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:36.283 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [21680] onGetSystemContext sessionId = 1971107  mSystemContextCallback = 0x921daa00
+11-24 07:40:36.284 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1408 [21725] get context: packageName =com.alibaba.genie.waft, pkg = , className = 
+11-24 07:40:36.284 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [21725] foreground info, packageName = com.alibaba.genie.waft, className = com.alibaba.genie.waft.ui.tpl.WaftTplActivity, pkg = 
+11-24 07:40:36.298 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1433 [21725] get content, packageName =com.alibaba.genie.waft, pkg = , time=15
+11-24 07:40:36.330 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [21725] send startListened sessionId = 1971107
+11-24 07:40:36.336 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:36.339 D/AGSpeechEngine(21638): startListenInternal,302: should not use local asr
+11-24 07:40:36.339 D/AGSpeechEngine(21638): threadLoop,1090: end to process 8
+11-24 07:40:36.500 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:36.609 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:36.698 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:36.799 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:36.931 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:37.098 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:37.185 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:37.283 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:37.372 D/AGSpeechEngine(21638): handleWakeupPromptFinish,895
+11-24 07:40:37.374 D/AGSpeechEngine(21638): threadLoop,988: begin to process 21
+11-24 07:40:37.374 D/AGSpeechEngine(21638): threadLoop,1090: end to process 21
+11-24 07:40:37.413 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:37.537 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:37.689 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:37.733 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971107, text = 静, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:37.733 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:37.733 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 1, sessionId = 1971107, preSessionId = 1971107
+11-24 07:40:37.733 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:37.738 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:37.744 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=2, session=1971107
+11-24 07:40:37.787 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:37.825 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971107, text = 静音, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:37.825 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:37.825 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:37.825 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971107, preSessionId = 1971107
+11-24 07:40:37.825 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:37.910 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:38.036 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:38.076 D/AGSpeechEngine(21638): stopListen,790
+11-24 07:40:38.076 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:40:38.076 D/AGSpeechEngine(21638): threadLoop,1013: stop info is '{ "recordId": "f8a763e6cbfd11240740361930034034", "vadDelayInMillis": 0, "vadSource": "unknow", "vadFrameSeq": 167 }'
+11-24 07:40:38.076 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:38.077 D/AGSpeechEngine(21638): onCloudEOUEvent,646
+11-24 07:40:38.077 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:40:38.077 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:40:38.077 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:40:38.077 D/AGSpeechEngine(21638): stopListenInternal,348
+11-24 07:40:38.117 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:38.118 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:38.118 D/AGSpeechEngine(21638): onListenStopped,1225
+11-24 07:40:38.118 D/AGSpeechEngineProxy(21638): onListenStopped,747
+11-24 07:40:38.118 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:697 [21725] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 07:40:38.118 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:749 [21725] on stop talk, session=1971107
+11-24 07:40:38.118 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:786 [21725] on stop talk, send end frame, sessionId = 1971107
+11-24 07:40:38.119 E/SessionManager(21638): size = 1484, offset = 1537, max_size = 1022
+11-24 07:40:38.119 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:842 [21725] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "continuity", "speechContexts": { "recordId": "f8a763e6cbfd11240740361930034034", "wakeupWord": "", "doa": "{\"param_arr\":[42.500000,0.531059,47.500000,0.462922,52.500000,0.006019],\"score_arr\":[3738690,3739604.750000,3742348.500000,3746913.500000,3753280.750000,3761409,3771221,3782589.500000,3795320,3809139.250000,3823685.500000,3838507,3853070.500000,3866780.500000,3879009.250000,3889135,3896588.500000,3900898.500000,3901732.500000,3898928,3892509.500000,3882687.500000,3869843,3854494.250000,3837257.500000,3818801,3799799.750000,3780899.500000,3762684.500000,3745660.500000,3730243.750000,3716762,3705463.250000,3696524.750000,3690066.750000,3686164.500000,3684859.250000,42.500000]}", "confidence": 0, "listenDuration": 1760, "voiceDuration": 1760, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel
+11-24 07:40:38.119 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 3, preStatus = 2, sessionId = 1971107, preSessionId = 1971107
+11-24 07:40:38.119 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=3, session=1971107
+11-24 07:40:38.121 D/AGSpeechEngine(21638): onListenStopped,1232: reset to use global deviceId 1 for wakeup
+11-24 07:40:38.121 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:40:38.151 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971107, text = 静音, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:38.151 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:38.151 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:38.151 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:38.151 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 4, preStatus = 3, sessionId = 1971107, preSessionId = 1971107
+11-24 07:40:38.152 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=4, session=1971107
+11-24 07:40:38.355 I/tgt     (21638): onTtsStart ALLOW id=1971107 by=native_window intent=volume seq=11 exp_ms=1795477246292 streaming=1 text_bytes=21
+11-24 07:40:38.355 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onNlpResult:895 [21752] on nlp result, code = 0 , sessionId = 1971107, data = 1
+11-24 07:40:38.357 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 5, preStatus = 4, sessionId = 1971107, preSessionId = 1971107
+11-24 07:40:38.360 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=5, session=1971107
+11-24 07:40:38.599 D/AGSpeechEngineProxy(21638): audioCheckPoint,1057:Audio check position is 513.
+11-24 07:40:38.636 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:exitTalk:1176 [21680] exit talk, input session=1971107, real session=1971107 exit=0
+11-24 07:40:38.637 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:40:38.637 E/AGSpeechEngine(21638): stopListenInternal,382: stop listen when 0
+11-24 07:40:38.637 D/AGSpeechEngine(21638): abortListen,395,wakeup type is continuity
+11-24 07:40:38.860 D/AGSpeechEngine(21638): stopListen,790
+11-24 07:40:39.288 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 6, preStatus = 5, sessionId = 1971107, preSessionId = 1971107
+11-24 07:40:39.288 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=6, session=1971107
+11-24 07:40:39.604 I/tgt     (21638): continuity req: seq=152538857 accepted (new) -> pending (attempt window 2500 ms)
+11-24 07:40:39.604 I/tgt     (21638): continuity req: seq=152538857 firing after 0 ms
+11-24 07:40:39.604 D/AGSpeechEngineProxy(21638): startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null), wakeupFilterWord:(null), vadtime:0
+11-24 07:40:39.605 D/AGSpeechEngine(21638): startListen,746
+11-24 07:40:39.605 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:39.605 D/AGSpeechEngine(21638): threadLoop,988: begin to process 8
+11-24 07:40:39.608 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:39.608 I/tgt     (21638): continuity: worker-request seq=152538857 startTalk(type=1, info+0=1) -> 0 (n=23 ok=0)
+11-24 07:40:39.609 D/AGSpeechEngine(21638): onWakeup,1141: process wakeup of device(1)
+11-24 07:40:39.609 D/AGSpeechEngine(21638): startListenInternal,192
+11-24 07:40:39.609 D/AGSpeechEngine(21638): onListenStarted,1202: useASR30=0
+11-24 07:40:39.609 D/AGSpeechEngineProxy(21638): onListenStarted,684
+11-24 07:40:39.609 D/AGSpeechEngineProxy(21638): onListenStarted,696: 1, , , 0.000000, 0, 0, 0, f8a763e6cbfd11240740396050035071
+11-24 07:40:39.621 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971122, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:40:39.621 D/AGSpeechEngineProxy(21638): onListenStarted,732, sessionID is 1971122
+11-24 07:40:39.621 D/AGSpeechEngine(21638): onListenStarted,1210: session id is 1971122, request id is beb957f9fee33863510c42bf8fa4fc471971122
+11-24 07:40:39.621 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:39.621 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 1, preStatus = 6, sessionId = 1971122, preSessionId = 1971107
+11-24 07:40:39.632 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=1, session=1971122
+11-24 07:40:39.633 D/AGSpeechEngine(21638): startListenInternal,269: needVAD = 1
+11-24 07:40:39.634 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:39.634 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:39.677 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1408 [21725] get context: packageName =com.alibaba.genie.waft, pkg = , className = 
+11-24 07:40:39.677 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [21725] foreground info, packageName = com.alibaba.genie.waft, className = com.alibaba.genie.waft.ui.tpl.WaftTplActivity, pkg = 
+11-24 07:40:39.681 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1433 [21725] get content, packageName =com.alibaba.genie.waft, pkg = , time=4
+11-24 07:40:39.694 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [21680] onGetSystemContext sessionId = 1971122  mSystemContextCallback = 0x921daa00
+11-24 07:40:39.713 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [21725] send startListened sessionId = 1971122
+11-24 07:40:39.713 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:39.714 D/AGSpeechEngine(21638): startListenInternal,302: should not use local asr
+11-24 07:40:39.714 D/AGSpeechEngine(21638): threadLoop,1090: end to process 8
+11-24 07:40:39.864 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:40.033 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:40.137 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:40.231 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:40.323 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:40.458 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:40.556 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:40.626 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:40.776 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:40.812 D/AGSpeechEngine(21638): handleWakeupPromptFinish,895
+11-24 07:40:40.814 D/AGSpeechEngine(21638): threadLoop,988: begin to process 21
+11-24 07:40:40.814 D/AGSpeechEngine(21638): threadLoop,1090: end to process 21
+11-24 07:40:40.903 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:41.042 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:41.131 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:41.257 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:41.289 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971122, text = 你, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:41.289 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:41.290 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 1, sessionId = 1971122, preSessionId = 1971122
+11-24 07:40:41.290 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:41.290 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:41.292 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=2, session=1971122
+11-24 07:40:41.397 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:41.539 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:41.591 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971122, text = 你叫, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:41.591 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:41.592 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971122, preSessionId = 1971122
+11-24 07:40:41.592 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:41.593 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:41.593 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:41.731 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:41.879 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:41.968 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:42.031 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971122, text = 你叫什么, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:42.031 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:42.032 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971122, preSessionId = 1971122
+11-24 07:40:42.032 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:42.032 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:42.108 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:42.239 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:42.278 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971122, text = 你叫什么名, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:42.278 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:42.278 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971122, preSessionId = 1971122
+11-24 07:40:42.279 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:42.279 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:42.377 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:42.454 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:42.485 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971122, text = 你叫什么名字, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:42.485 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:42.485 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:42.485 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:42.485 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971122, preSessionId = 1971122
+11-24 07:40:42.539 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:42.722 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:42.752 D/AGSpeechEngine(21638): stopListen,790
+11-24 07:40:42.753 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:40:42.753 D/AGSpeechEngine(21638): threadLoop,1013: stop info is '{ "recordId": "f8a763e6cbfd11240740396050035071", "vadDelayInMillis": 0, "vadSource": "unknow", "vadFrameSeq": 287 }'
+11-24 07:40:42.753 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:42.754 D/AGSpeechEngine(21638): onCloudEOUEvent,646
+11-24 07:40:42.754 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:40:42.754 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:40:42.754 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:40:42.754 D/AGSpeechEngine(21638): stopListenInternal,348
+11-24 07:40:42.756 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:42.757 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:42.757 D/AGSpeechEngine(21638): onListenStopped,1225
+11-24 07:40:42.757 D/AGSpeechEngineProxy(21638): onListenStopped,747
+11-24 07:40:42.758 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:697 [21725] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 07:40:42.758 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:749 [21725] on stop talk, session=1971122
+11-24 07:40:42.758 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:786 [21725] on stop talk, send end frame, sessionId = 1971122
+11-24 07:40:42.758 E/SessionManager(21638): size = 1400, offset = 1453, max_size = 1022
+11-24 07:40:42.758 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:842 [21725] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "continuity", "speechContexts": { "recordId": "f8a763e6cbfd11240740396050035071", "wakeupWord": "", "doa": "{\"param_arr\":[52.500000,0.563115,57.500000,0.411573,47.500000,0.025313],\"score_arr\":[4502815,4503741,4506522.500000,4511169,4517688.500000,4526075.500000,4536298,4548277.500000,4561869.500000,4576848,4592886,4609551,4626303.500000,4642514,4657488,4670507.500000,4680881,4687995.500000,4691370,4690703.500000,4685898.500000,4677076,4664565,4648878,4630666,4610669.500000,4589670,4568436,4547687.500000,4528067,4510121,4494297.500000,4480944,4470322.500000,4462617,4457948,4456384.500000,52.500000]}", "confidence": 0, "listenDuration": 3040, "voiceDuration": 3040, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visionInfomation": "", "voiceInfomation": "" }, "extensionContext": { "comm
+11-24 07:40:42.761 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 3, preStatus = 2, sessionId = 1971122, preSessionId = 1971122
+11-24 07:40:42.761 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=3, session=1971122
+11-24 07:40:42.767 D/AGSpeechEngine(21638): onListenStopped,1232: reset to use global deviceId 1 for wakeup
+11-24 07:40:42.767 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:40:42.823 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971122, text = 你叫什么名字, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:40:42.824 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:40:42.824 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 4, preStatus = 3, sessionId = 1971122, preSessionId = 1971122
+11-24 07:40:42.824 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=4, session=1971122
+11-24 07:40:42.825 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:40:42.825 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:40:43.098 I/tgt     (21638): onTtsStart ALLOW id=1971122 by=native_window intent=volume seq=11 exp_ms=1795477246292 streaming=1 text_bytes=178
+11-24 07:40:43.099 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onNlpResult:895 [21752] on nlp result, code = 0 , sessionId = 1971122, data = 1
+11-24 07:40:43.123 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 5, preStatus = 4, sessionId = 1971122, preSessionId = 1971122
+11-24 07:40:43.123 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=5, session=1971122
+11-24 07:40:43.127 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:exitTalk:1176 [21680] exit talk, input session=1971122, real session=1971122 exit=0
+11-24 07:40:43.127 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:40:43.127 E/AGSpeechEngine(21638): stopListenInternal,382: stop listen when 0
+11-24 07:40:43.127 D/AGSpeechEngine(21638): abortListen,395,wakeup type is continuity
+11-24 07:40:43.260 D/AGSpeechEngineProxy(21638): audioCheckPoint,1057:Audio check position is 513.
+11-24 07:40:43.670 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 6, preStatus = 5, sessionId = 1971122, preSessionId = 1971122
+11-24 07:40:43.670 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=6, session=1971122
+11-24 07:40:45.077 I/tgt     (21638): playTts -> allow-listed id=5243830 comm=Binder:21638_4 text_bytes=67
+11-24 07:40:45.130 I/tgt     (21638): onTtsStart ALLOW id=5243830 by=session_id streaming=1 text_bytes=67
+11-24 07:40:45.177 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetMediaPolicy:1593 [21680] get policy, policy=0, packageName=com.alibaba.genie.waft
+11-24 07:40:45.712 D/AGSpeechEngineProxy(21638): audioCheckPoint,1057:Audio check position is 513.
+11-24 07:40:50.866 D/AGSpeechEngineProxy(21638): startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null), wakeupFilterWord:(null), vadtime:0
+11-24 07:40:50.866 D/AGSpeechEngine(21638): startListen,746
+11-24 07:40:50.866 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:50.867 I/tgt     (21638): continuity: auto-after-tts seq=1795477250773 startTalk(type=1, info+0=1) -> 0 (n=24 ok=0)
+11-24 07:40:50.868 D/AGSpeechEngine(21638): threadLoop,988: begin to process 8
+11-24 07:40:50.868 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:50.868 D/AGSpeechEngine(21638): onWakeup,1141: process wakeup of device(1)
+11-24 07:40:50.869 D/AGSpeechEngine(21638): startListenInternal,192
+11-24 07:40:50.869 D/AGSpeechEngine(21638): onListenStarted,1202: useASR30=0
+11-24 07:40:50.869 D/AGSpeechEngineProxy(21638): onListenStarted,684
+11-24 07:40:50.869 D/AGSpeechEngineProxy(21638): onListenStarted,696: 1, , , 0.000000, 0, 0, 0, f8a763e6cbfd11240740508680036839
+11-24 07:40:50.885 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971127, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:40:50.885 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 1, preStatus = 6, sessionId = 1971127, preSessionId = 1971122
+11-24 07:40:50.893 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=1, session=1971127
+11-24 07:40:50.912 D/AGSpeechEngineProxy(21638): onListenStarted,732, sessionID is 1971127
+11-24 07:40:50.912 D/AGSpeechEngine(21638): onListenStarted,1210: session id is 1971127, request id is fa38c5b3bf5290785c0f4bd70b84bced1971127
+11-24 07:40:50.912 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:50.912 D/AGSpeechEngine(21638): startListenInternal,269: needVAD = 1
+11-24 07:40:50.912 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:50.913 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:50.917 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1408 [21725] get context: packageName =com.alibaba.genie.waft, pkg = , className = 
+11-24 07:40:50.917 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [21725] foreground info, packageName = com.alibaba.genie.waft, className = com.alibaba.genie.waft.ui.tpl.WaftTplActivity, pkg = 
+11-24 07:40:50.956 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [21680] onGetSystemContext sessionId = 1971127  mSystemContextCallback = 0x921daa00
+11-24 07:40:50.968 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1433 [21725] get content, packageName =com.alibaba.genie.waft, pkg = , time=50
+11-24 07:40:50.987 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [21725] send startListened sessionId = 1971127
+11-24 07:40:50.987 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:50.987 D/AGSpeechEngine(21638): startListenInternal,302: should not use local asr
+11-24 07:40:50.988 D/AGSpeechEngine(21638): threadLoop,1090: end to process 8
+11-24 07:40:51.163 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:51.270 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:51.361 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:51.477 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:51.618 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:51.725 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:51.827 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:51.960 D/AGSpeechEngine(21638): handleWakeupPromptFinish,895
+11-24 07:40:51.961 D/AGSpeechEngine(21638): threadLoop,988: begin to process 21
+11-24 07:40:51.963 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:51.964 D/AGSpeechEngine(21638): threadLoop,1090: end to process 21
+11-24 07:40:52.051 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:52.224 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:52.326 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:52.457 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:52.527 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:52.657 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:52.803 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:52.916 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:53.090 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:53.160 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:53.303 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:53.392 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:53.535 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:53.636 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:53.817 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:53.908 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:54.007 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:54.136 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:54.220 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:54.338 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:54.489 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:54.638 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:54.719 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:54.839 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:54.981 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:55.094 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:55.184 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:55.318 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:55.410 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:55.585 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:55.685 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:55.818 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:55.897 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:56.024 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:56.171 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:56.280 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:56.404 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:56.515 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:56.663 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:56.780 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:56.862 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:56.997 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:57.097 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:57.257 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:57.365 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:57.495 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:57.580 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:57.704 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:57.842 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:57.967 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:58.075 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:58.197 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:58.337 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:58.370 D/AGSpeechEngine(21638): stopListen,790
+11-24 07:40:58.370 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:40:58.370 D/AGSpeechEngine(21638): threadLoop,1013: stop info is '{ "recordId": "f8a763e6cbfd11240740508680036839", "vadDelayInMillis": 0, "vadSource": "unknow", "vadFrameSeq": 722 }'
+11-24 07:40:58.371 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:58.371 D/AGSpeechEngine(21638): onCloudEOUEvent,646
+11-24 07:40:58.371 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:40:58.371 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:40:58.371 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:40:58.371 D/AGSpeechEngine(21638): stopListenInternal,348
+11-24 07:40:58.374 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:40:58.375 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:40:58.376 D/AGSpeechEngine(21638): onListenStopped,1225
+11-24 07:40:58.376 D/AGSpeechEngineProxy(21638): onListenStopped,747
+11-24 07:40:58.376 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:697 [21725] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 07:40:58.376 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:749 [21725] on stop talk, session=1971127
+11-24 07:40:58.376 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:786 [21725] on stop talk, send end frame, sessionId = 1971127
+11-24 07:40:58.376 E/SessionManager(21638): size = 1470, offset = 1523, max_size = 1022
+11-24 07:40:58.376 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:842 [21725] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "continuity", "speechContexts": { "recordId": "f8a763e6cbfd11240740508680036839", "wakeupWord": "", "doa": "{\"param_arr\":[92.500000,0.560962,87.500000,0.252404,97.500000,0.186634],\"score_arr\":[3653968.500000,3654678.250000,3656810.250000,3660367.750000,3665352.250000,3671754.750000,3679546.500000,3688665.750000,3699007,3710406.500000,3722632,3735379,3748270.750000,3760866,3772678,3783201.750000,3791946,3798471.250000,3802423.500000,3803568.500000,3801810.250000,3797203.500000,3789947.250000,3780369.750000,3768902,3756043,3742327.750000,3728291.750000,3714443,3701242,3689087,3678309.250000,3669172.750000,3661878.500000,3656573.500000,3653353,3652273.500000,92.500000]}", "confidence": 0, "listenDuration": 7328, "voiceDuration": 7328, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visio
+11-24 07:40:58.380 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 3, preStatus = 1, sessionId = 1971127, preSessionId = 1971127
+11-24 07:40:58.380 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=3, session=1971127
+11-24 07:40:58.384 D/AGSpeechEngine(21638): onListenStopped,1232: reset to use global deviceId 1 for wakeup
+11-24 07:40:58.384 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:40:58.573 I/tgt     (21638): onTtsStart DROP id=1971127 streaming=1 comm=AG-ws-receive text="没听清主人的话，可以再说一次吗" (factory NLU answer)
+11-24 07:41:03.404 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 6, preStatus = 3, sessionId = 1971127, preSessionId = 1971127
+11-24 07:41:03.404 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=6, session=1971127
+11-24 07:41:03.424 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionTtsStatus:1049 [21680] session=1971127, status = 6, tts status = 7
+11-24 07:41:03.424 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:exitTalk:1176 [21680] exit talk, input session=1971127, real session=1971127 exit=0
+11-24 07:41:03.424 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:41:03.424 E/AGSpeechEngine(21638): stopListenInternal,382: stop listen when 0
+11-24 07:41:03.424 D/AGSpeechEngine(21638): abortListen,395,wakeup type is continuity
+11-24 07:41:03.926 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 6, preStatus = 6, sessionId = 1971127, preSessionId = 1971127
+11-24 07:41:10.882 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:10.890 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:10.929 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:10.930 D/AGSpeechEngine(21638): onSpeechWakeup,530:tian mao jing ling,天猫精灵
+11-24 07:41:10.930 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:10.931 D/AGSpeechEngine(21638): threadLoop,988: begin to process 8
+11-24 07:41:10.931 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:10.932 D/AGSpeechEngine(21638): onWakeup,1141: process wakeup of device(1)
+11-24 07:41:10.932 D/AGSpeechEngine(21638): startListenInternal,192
+11-24 07:41:10.932 D/AGSpeechEngine(21638): onListenStarted,1202: useASR30=0
+11-24 07:41:10.932 D/AGSpeechEngineProxy(21638): onListenStarted,684
+11-24 07:41:10.932 D/AGSpeechEngineProxy(21638): onListenStarted,696: 0, tian mao jing ling, 天猫精灵, 0.870677, 42, 0, 0, f8a763e6cbfd11240741109300037204
+11-24 07:41:10.936 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1967035, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 07:41:10.936 D/AGSpeechEngineProxy(21638): onListenStarted,732, sessionID is 1967035
+11-24 07:41:10.936 D/AGSpeechEngine(21638): onListenStarted,1210: session id is 1967035, request id is 3f45c3f6febf50d5dee5de9cb743d0f81967035
+11-24 07:41:10.936 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:10.937 D/AGSpeechEngine(21638): startListenInternal,269: needVAD = 1
+11-24 07:41:10.937 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:10.938 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:10.940 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1408 [21725] get context: packageName =com.alibaba.genie.waft, pkg = , className = 
+11-24 07:41:10.940 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [21725] foreground info, packageName = com.alibaba.genie.waft, className = com.alibaba.genie.waft.ui.tpl.WaftTplActivity, pkg = 
+11-24 07:41:10.942 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1433 [21725] get content, packageName =com.alibaba.genie.waft, pkg = , time=3
+11-24 07:41:10.949 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 1, preStatus = 6, sessionId = 1967035, preSessionId = 1971127
+11-24 07:41:10.952 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=1, session=1967035
+11-24 07:41:10.977 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [21680] onGetSystemContext sessionId = 1967035  mSystemContextCallback = 0x921daa00
+11-24 07:41:11.027 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [21725] send startListened sessionId = 1967035
+11-24 07:41:11.027 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.028 D/AGSpeechEngine(21638): startListenInternal,302: should not use local asr
+11-24 07:41:11.028 D/AGSpeechEngine(21638): threadLoop,1090: end to process 8
+11-24 07:41:11.082 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.092 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.109 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.119 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.137 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.147 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.156 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.165 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.176 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.185 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.194 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.203 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.213 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.245 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.275 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1967035, text = 天天, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:11.276 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:11.276 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 1, sessionId = 1967035, preSessionId = 1967035
+11-24 07:41:11.276 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=2, session=1967035
+11-24 07:41:11.277 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:11.277 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:11.281 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1967035, text = 天猫, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:11.281 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:11.282 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1967035, preSessionId = 1967035
+11-24 07:41:11.282 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:11.282 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:11.291 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1967035, text = 天猫精灵, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:11.291 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:11.291 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1967035, preSessionId = 1967035
+11-24 07:41:11.291 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:11.291 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:11.376 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.386 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.397 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.455 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.529 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.569 D/AGSpeechEngine(21638): handleWakeupPromptFinish,895
+11-24 07:41:11.570 D/AGSpeechEngine(21638): threadLoop,988: begin to process 21
+11-24 07:41:11.570 D/AGSpeechEngine(21638): threadLoop,1090: end to process 21
+11-24 07:41:11.598 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.699 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.838 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:11.985 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:12.095 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:12.196 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:12.348 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:12.478 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:12.539 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:12.684 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:12.815 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:12.958 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:13.037 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:13.175 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:13.320 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:13.464 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:13.517 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:13.615 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:13.778 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:13.802 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1967035, text = 天猫精灵现在, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:13.802 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:13.802 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1967035, preSessionId = 1967035
+11-24 07:41:13.803 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:13.803 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:13.915 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:14.023 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:14.046 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1967035, text = 天猫精灵现在几, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:14.051 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:14.051 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1967035, preSessionId = 1967035
+11-24 07:41:14.054 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:14.054 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:14.099 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:14.221 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:14.258 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1967035, text = 天猫精灵现在几点, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:14.258 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:14.258 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:14.258 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:14.260 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1967035, preSessionId = 1967035
+11-24 07:41:14.411 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:14.484 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:14.532 D/AGSpeechEngine(21638): stopListen,790
+11-24 07:41:14.532 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:41:14.532 D/AGSpeechEngine(21638): threadLoop,1013: stop info is '{ "recordId": "f8a763e6cbfd11240741109300037204", "vadDelayInMillis": 0, "vadSource": "unknow", "vadFrameSeq": 527 }'
+11-24 07:41:14.532 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:14.533 D/AGSpeechEngine(21638): onCloudEOUEvent,646
+11-24 07:41:14.533 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:41:14.533 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:41:14.533 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:41:14.533 D/AGSpeechEngine(21638): stopListenInternal,348
+11-24 07:41:14.538 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:14.538 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:14.539 D/AGSpeechEngine(21638): onListenStopped,1225
+11-24 07:41:14.539 D/AGSpeechEngineProxy(21638): onListenStopped,747
+11-24 07:41:14.539 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:697 [21725] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 07:41:14.539 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:749 [21725] on stop talk, session=1967035
+11-24 07:41:14.539 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:786 [21725] on stop talk, send end frame, sessionId = 1967035
+11-24 07:41:14.540 E/SessionManager(21638): size = 1537, offset = 1590, max_size = 1022
+11-24 07:41:14.540 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:842 [21725] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "f8a763e6cbfd11240741109300037204", "wakeupWord": "tian mao jing ling", "doa": "{\"param_arr\":[47.500000,0.980514,52.500000,0.018675,57.500000,0.000810],\"score_arr\":[3830099.250000,3831116.500000,3834155,3839172.500000,3846095,3854806.500000,3865147.750000,3876900.250000,3889785.500000,3903456,3917498.750000,3931439.500000,3944759.500000,3956912.250000,3967356.500000,3975586.250000,3981166.500000,3983765,3983180.250000,3979358.250000,3972398.500000,3962547,3950178.500000,3935767.500000,3919855.500000,3903015.750000,3885819.500000,3868808.250000,3852470,3837230.250000,3823439.500000,3811380.750000,3801269.250000,3793264.750000,3787476.750000,3783977.500000,3782807,47.500000]}", "confidence": 0.87067699432373047, "listenDuration": 5316, "voiceDuration": 5316, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength":
+11-24 07:41:14.540 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 3, preStatus = 2, sessionId = 1967035, preSessionId = 1967035
+11-24 07:41:14.543 D/AGSpeechEngine(21638): onListenStopped,1232: reset to use global deviceId 1 for wakeup
+11-24 07:41:14.543 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:41:14.549 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=3, session=1967035
+11-24 07:41:14.562 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1967035, text = 天猫精灵现在几点, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:14.564 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:14.564 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 4, preStatus = 3, sessionId = 1967035, preSessionId = 1967035
+11-24 07:41:14.564 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=4, session=1967035
+11-24 07:41:14.565 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:14.565 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:14.718 I/tgt     (21638): playTts -> allow-listed id=5243839 comm=Binder:21638_9 text_bytes=9
+11-24 07:41:14.780 I/tgt     (21638): onTtsStart ALLOW id=5243839 by=session_id streaming=1 text_bytes=9
+11-24 07:41:14.842 D/AGSpeechEngineProxy(21638): audioCheckPoint,1057:Audio check position is 513.
+11-24 07:41:14.937 I/tgt     (21638): onTtsStart DROP id=1967035 streaming=1 comm=AG-ws-receive text="现在是早上七点四十一分。" (factory NLU answer)
+11-24 07:41:16.579 D/AGSpeechEngineProxy(21638): startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null), wakeupFilterWord:(null), vadtime:0
+11-24 07:41:16.579 D/AGSpeechEngine(21638): startListen,746
+11-24 07:41:16.585 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:16.591 I/tgt     (21638): continuity: auto-after-tts seq=1795477276554 startTalk(type=1, info+0=1) -> 0 (n=25 ok=0)
+11-24 07:41:16.592 D/AGSpeechEngine(21638): threadLoop,988: begin to process 8
+11-24 07:41:16.592 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:16.592 D/AGSpeechEngine(21638): onWakeup,1141: process wakeup of device(1)
+11-24 07:41:16.592 D/AGSpeechEngine(21638): startListenInternal,192
+11-24 07:41:16.592 D/AGSpeechEngine(21638): onListenStarted,1202: useASR30=0
+11-24 07:41:16.592 D/AGSpeechEngineProxy(21638): onListenStarted,684
+11-24 07:41:16.592 D/AGSpeechEngineProxy(21638): onListenStarted,696: 1, , , 0.000000, 0, 0, 0, f8a763e6cbfd11240741165920038423
+11-24 07:41:16.598 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971136, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:41:16.599 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 1, preStatus = 4, sessionId = 1971136, preSessionId = 1967035
+11-24 07:41:16.608 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=1, session=1971136
+11-24 07:41:16.626 D/AGSpeechEngineProxy(21638): onListenStarted,732, sessionID is 1971136
+11-24 07:41:16.626 D/AGSpeechEngine(21638): onListenStarted,1210: session id is 1971136, request id is 77a0ddfdb84171d44cf559483c9688461971136
+11-24 07:41:16.626 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:16.627 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [21680] onGetSystemContext sessionId = 1971136  mSystemContextCallback = 0x921daa00
+11-24 07:41:16.627 D/AGSpeechEngine(21638): startListenInternal,269: needVAD = 1
+11-24 07:41:16.627 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:16.628 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:16.712 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1408 [21725] get context: packageName =com.alibaba.genie.waft, pkg = , className = 
+11-24 07:41:16.712 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [21725] foreground info, packageName = com.alibaba.genie.waft, className = com.alibaba.genie.waft.ui.tpl.WaftTplActivity, pkg = 
+11-24 07:41:16.722 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1433 [21725] get content, packageName =com.alibaba.genie.waft, pkg = , time=10
+11-24 07:41:16.787 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [21725] send startListened sessionId = 1971136
+11-24 07:41:16.788 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:16.788 D/AGSpeechEngine(21638): startListenInternal,302: should not use local asr
+11-24 07:41:16.788 D/AGSpeechEngine(21638): threadLoop,1090: end to process 8
+11-24 07:41:16.884 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:16.982 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:17.147 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:17.245 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:17.377 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:17.519 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:17.551 D/AGSpeechEngine(21638): handleWakeupPromptFinish,895
+11-24 07:41:17.551 D/AGSpeechEngine(21638): threadLoop,988: begin to process 21
+11-24 07:41:17.551 D/AGSpeechEngine(21638): threadLoop,1090: end to process 21
+11-24 07:41:17.577 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:17.721 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:17.853 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:17.950 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:18.081 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:18.228 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:18.387 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:18.445 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:18.564 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:18.593 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971136, text = 音, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:18.593 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:18.593 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 1, sessionId = 1971136, preSessionId = 1971136
+11-24 07:41:18.594 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=2, session=1971136
+11-24 07:41:18.595 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:18.595 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:18.654 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:18.860 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:18.904 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971136, text = 音量, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:18.904 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:18.904 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:18.904 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971136, preSessionId = 1971136
+11-24 07:41:18.904 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:18.922 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:19.065 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:19.091 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971136, text = 音量调, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:19.092 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:19.092 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971136, preSessionId = 1971136
+11-24 07:41:19.093 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:19.094 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:19.133 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:19.257 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:19.296 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971136, text = 音量调大, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:19.297 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:19.297 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971136, preSessionId = 1971136
+11-24 07:41:19.298 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:19.298 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:19.416 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:19.522 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:19.563 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971136, text = 音量调大一, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:19.564 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:19.564 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971136, preSessionId = 1971136
+11-24 07:41:19.564 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:19.564 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:19.635 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:19.767 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:19.791 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971136, text = 音量调大一点, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:19.791 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:19.791 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971136, preSessionId = 1971136
+11-24 07:41:19.791 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:19.791 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:19.898 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:20.015 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:20.048 D/AGSpeechEngine(21638): stopListen,790
+11-24 07:41:20.048 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:41:20.048 D/AGSpeechEngine(21638): threadLoop,1013: stop info is '{ "recordId": "f8a763e6cbfd11240741165920038423", "vadDelayInMillis": 0, "vadSource": "unknow", "vadFrameSeq": 317 }'
+11-24 07:41:20.052 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:20.053 D/AGSpeechEngine(21638): onCloudEOUEvent,646
+11-24 07:41:20.054 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:41:20.054 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:41:20.054 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:41:20.054 D/AGSpeechEngine(21638): stopListenInternal,348
+11-24 07:41:20.055 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:20.055 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:20.056 D/AGSpeechEngine(21638): onListenStopped,1225
+11-24 07:41:20.056 D/AGSpeechEngineProxy(21638): onListenStopped,747
+11-24 07:41:20.056 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:697 [21725] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 07:41:20.056 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:749 [21725] on stop talk, session=1971136
+11-24 07:41:20.056 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:786 [21725] on stop talk, send end frame, sessionId = 1971136
+11-24 07:41:20.057 E/SessionManager(21638): size = 1505, offset = 1558, max_size = 1022
+11-24 07:41:20.057 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:842 [21725] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "continuity", "speechContexts": { "recordId": "f8a763e6cbfd11240741165920038423", "wakeupWord": "", "doa": "{\"param_arr\":[52.500000,0.917340,57.500000,0.062178,62.500000,0.020483],\"score_arr\":[3245983.500000,3246634,3248580.500000,3251810,3256293.750000,3261982.750000,3268798.750000,3276625.500000,3285297.500000,3294592.750000,3304231.750000,3313875.500000,3323137,3331592.500000,3338810.750000,3344376.250000,3347923.750000,3349168.750000,3347932,3344161.500000,3337934.750000,3329457,3319043.250000,3307093.500000,3294060.500000,3280418.750000,3266631.750000,3253128.750000,3240287.750000,3228422.500000,3217782.500000,3208555.750000,3200877.250000,3194836.250000,3190490,3187871.750000,3186997,52.500000]}", "confidence": 0, "listenDuration": 3296, "voiceDuration": 3296, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "contai
+11-24 07:41:20.057 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 3, preStatus = 2, sessionId = 1971136, preSessionId = 1971136
+11-24 07:41:20.057 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=3, session=1971136
+11-24 07:41:20.064 D/AGSpeechEngine(21638): onListenStopped,1232: reset to use global deviceId 1 for wakeup
+11-24 07:41:20.064 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:41:20.113 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971136, text = 音量调大一点, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:20.114 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:20.114 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:20.114 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:20.114 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 4, preStatus = 3, sessionId = 1971136, preSessionId = 1971136
+11-24 07:41:20.114 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=4, session=1971136
+11-24 07:41:20.312 I/tgt     (21638): onTtsStart ALLOW id=1971136 by=native_window intent=volume seq=12 exp_ms=1795477288274 streaming=1 text_bytes=29
+11-24 07:41:20.312 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onNlpResult:895 [21752] on nlp result, code = 0 , sessionId = 1971136, data = 1
+11-24 07:41:20.313 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 5, preStatus = 4, sessionId = 1971136, preSessionId = 1971136
+11-24 07:41:20.314 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=5, session=1971136
+11-24 07:41:20.360 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:exitTalk:1176 [21680] exit talk, input session=1971136, real session=1971136 exit=0
+11-24 07:41:20.360 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:41:20.360 E/AGSpeechEngine(21638): stopListenInternal,382: stop listen when 0
+11-24 07:41:20.360 D/AGSpeechEngine(21638): abortListen,395,wakeup type is continuity
+11-24 07:41:20.538 D/AGSpeechEngineProxy(21638): audioCheckPoint,1057:Audio check position is 513.
+11-24 07:41:20.713 D/AGSpeechEngine(21638): stopListen,790
+11-24 07:41:20.954 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 6, preStatus = 5, sessionId = 1971136, preSessionId = 1971136
+11-24 07:41:20.954 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=6, session=1971136
+11-24 07:41:21.581 I/tgt     (21638): continuity req: seq=152580842 accepted (new) -> pending (attempt window 2500 ms)
+11-24 07:41:21.581 I/tgt     (21638): continuity req: seq=152580842 firing after 1 ms
+11-24 07:41:21.581 D/AGSpeechEngineProxy(21638): startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null), wakeupFilterWord:(null), vadtime:0
+11-24 07:41:21.581 D/AGSpeechEngine(21638): startListen,746
+11-24 07:41:21.581 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:21.582 I/tgt     (21638): continuity: worker-request seq=152580842 startTalk(type=1, info+0=1) -> 0 (n=26 ok=0)
+11-24 07:41:21.583 D/AGSpeechEngine(21638): threadLoop,988: begin to process 8
+11-24 07:41:21.583 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:21.584 D/AGSpeechEngine(21638): onWakeup,1141: process wakeup of device(1)
+11-24 07:41:21.584 D/AGSpeechEngine(21638): startListenInternal,192
+11-24 07:41:21.584 D/AGSpeechEngine(21638): onListenStarted,1202: useASR30=0
+11-24 07:41:21.584 D/AGSpeechEngineProxy(21638): onListenStarted,684
+11-24 07:41:21.584 D/AGSpeechEngineProxy(21638): onListenStarted,696: 1, , , 0.000000, 0, 0, 0, f8a763e6cbfd11240741215830039836
+11-24 07:41:21.602 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971150, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:41:21.602 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 1, preStatus = 6, sessionId = 1971150, preSessionId = 1971136
+11-24 07:41:21.604 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=1, session=1971150
+11-24 07:41:21.636 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [21680] onGetSystemContext sessionId = 1971150  mSystemContextCallback = 0x921daa00
+11-24 07:41:21.636 D/AGSpeechEngineProxy(21638): onListenStarted,732, sessionID is 1971150
+11-24 07:41:21.636 D/AGSpeechEngine(21638): onListenStarted,1210: session id is 1971150, request id is 29fcd379bdcb4b58c189b0bfbb1c11de1971150
+11-24 07:41:21.636 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:21.643 D/AGSpeechEngine(21638): startListenInternal,269: needVAD = 1
+11-24 07:41:21.643 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:21.645 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:21.665 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1408 [21725] get context: packageName =com.alibaba.genie.waft, pkg = , className = 
+11-24 07:41:21.665 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [21725] foreground info, packageName = com.alibaba.genie.waft, className = com.alibaba.genie.waft.ui.tpl.WaftTplActivity, pkg = 
+11-24 07:41:21.672 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1433 [21725] get content, packageName =com.alibaba.genie.waft, pkg = , time=7
+11-24 07:41:21.688 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [21725] send startListened sessionId = 1971150
+11-24 07:41:21.688 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:21.688 D/AGSpeechEngine(21638): startListenInternal,302: should not use local asr
+11-24 07:41:21.689 D/AGSpeechEngine(21638): threadLoop,1090: end to process 8
+11-24 07:41:21.791 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:21.963 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:22.087 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:22.210 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:22.345 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:22.445 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:22.560 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:22.618 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:22.761 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:22.883 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:22.919 D/AGSpeechEngine(21638): handleWakeupPromptFinish,895
+11-24 07:41:22.922 D/AGSpeechEngine(21638): threadLoop,988: begin to process 21
+11-24 07:41:22.922 D/AGSpeechEngine(21638): threadLoop,1090: end to process 21
+11-24 07:41:23.041 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:23.118 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:23.261 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:23.292 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971150, text = 退, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:23.292 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:23.293 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 1, sessionId = 1971150, preSessionId = 1971150
+11-24 07:41:23.293 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=2, session=1971150
+11-24 07:41:23.294 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:23.294 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:23.395 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:23.541 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:23.574 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971150, text = 退出, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:23.574 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:23.574 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971150, preSessionId = 1971150
+11-24 07:41:23.575 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:23.575 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:23.600 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:23.704 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:23.868 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:23.996 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:24.097 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:24.098 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:24.099 D/AGSpeechEngine(21638): onCloudEOUEvent,646
+11-24 07:41:24.100 D/AGSpeechEngine(21638): threadLoop,988: begin to process 9
+11-24 07:41:24.100 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:41:24.100 D/AGSpeechEngine(21638): stopListenInternal,348
+11-24 07:41:24.103 D/AGSpeechEngineProxy(21638): onListenData,739
+11-24 07:41:24.104 D/AGSpeechEngineProxy(21638): onUserTrace,800
+11-24 07:41:24.104 D/AGSpeechEngine(21638): onListenStopped,1225
+11-24 07:41:24.104 D/AGSpeechEngineProxy(21638): onListenStopped,747
+11-24 07:41:24.104 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:697 [21725] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 07:41:24.104 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:749 [21725] on stop talk, session=1971150
+11-24 07:41:24.104 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:786 [21725] on stop talk, send end frame, sessionId = 1971150
+11-24 07:41:24.105 E/SessionManager(21638): size = 1491, offset = 1544, max_size = 1022
+11-24 07:41:24.105 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:842 [21725] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "continuity", "speechContexts": { "recordId": "f8a763e6cbfd11240741215830039836", "wakeupWord": "", "doa": "{\"param_arr\":[47.500000,0.790649,52.500000,0.155486,57.500000,0.053865],\"score_arr\":[2664391.500000,2664738.500000,2665785.750000,2667549.500000,2670054,2673329,2677402.750000,2682294,2688005.500000,2694513,2701755.500000,2709627.500000,2717974,2726588,2735215.500000,2743566.250000,2751326.750000,2758183.750000,2763845.750000,2768068,2770669.250000,2771551,2770704.500000,2768210.250000,2764230.750000,2758999.500000,2752800.750000,2745951.500000,2738780.500000,2731612.500000,2724752.250000,2718473.500000,2713013,2708565.250000,2705281.750000,2703268.500000,2702590.500000,47.500000]}", "confidence": 0, "listenDuration": 2400, "voiceDuration": 2400, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "
+11-24 07:41:24.105 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 3, preStatus = 2, sessionId = 1971150, preSessionId = 1971150
+11-24 07:41:24.106 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=3, session=1971150
+11-24 07:41:24.174 D/AGSpeechEngine(21638): onListenStopped,1232: reset to use global deviceId 1 for wakeup
+11-24 07:41:24.174 D/AGSpeechEngine(21638): threadLoop,1090: end to process 9
+11-24 07:41:24.205 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971150, text = 退出, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:41:24.205 D/AGSpeechEngine(21638): handleListenResult,815
+11-24 07:41:24.205 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 4, preStatus = 3, sessionId = 1971150, preSessionId = 1971150
+11-24 07:41:24.205 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=4, session=1971150
+11-24 07:41:24.206 D/AGSpeechEngine(21638): threadLoop,988: begin to process 19
+11-24 07:41:24.206 D/AGSpeechEngine(21638): threadLoop,1090: end to process 19
+11-24 07:41:24.401 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onNlpResult:895 [21752] on nlp result, code = 0 , sessionId = 1971150, data = 1
+11-24 07:41:24.402 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 5, preStatus = 4, sessionId = 1971150, preSessionId = 1971150
+11-24 07:41:24.403 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=5, session=1971150
+11-24 07:41:24.476 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionTtsStatus:1049 [21680] session=1971150, status = 5, tts status = 7
+11-24 07:41:24.476 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:exitTalk:1176 [21680] exit talk, input session=1971150, real session=1971150 exit=0
+11-24 07:41:24.476 D/AGSpeechEngine(21638): stopListenInternal,337. mCurrentDeviceId is 1, getDeviceTypeById is 7
+11-24 07:41:24.476 E/AGSpeechEngine(21638): stopListenInternal,382: stop listen when 0
+11-24 07:41:24.476 D/AGSpeechEngine(21638): abortListen,395,wakeup type is continuity
+11-24 07:41:24.975 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 6, preStatus = 5, sessionId = 1971150, preSessionId = 1971150
+11-24 07:41:24.975 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=6, session=1971150
+11-24 07:41:25.284 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:fullDuplexDialogPageChangeToBlackList:1031 [21638] full duplex dialog, page change to: com.alibaba.ailabs.genie.launcher/com.alibaba.ailabs.genie.launcher.activity.AdultHomeActivity
+11-24 07:41:25.291 D/AGSpeechEngine(21638): threadLoop,988: begin to process 3
+11-24 07:41:25.292 D/AGSpeechEngine(21638): threadLoop,1090: end to process 3
+11-24 07:41:26.408 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetMediaPolicy:1593 [21680] get policy, policy=0, packageName=com.alibaba.ailabs.genie.launcher
+11-24 07:41:26.511 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetMediaPolicy:1593 [21752] get policy, policy=0, packageName=com.alibaba.ailabs.genie.launcher
+11-24 07:41:26.512 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onPushFilter:1709 [21752] on push filter: media policy 0, curPolicy = 0
+11-24 07:41:26.512 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetMediaUiPolicy:1573 [21752] get ui policy, policy = 0, curPolicy = 0, ui policy = 0

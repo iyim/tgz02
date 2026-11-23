@@ -1,0 +1,66 @@
+﻿11-24 07:38:39.967 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1966944, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 07:38:39.967 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 1, preStatus = 6, sessionId = 1966944, preSessionId = 1971036
+11-24 07:38:39.971 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1408 [21725] get context: packageName =com.alibaba.genie.waft, pkg = , className = 
+11-24 07:38:39.971 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [21725] foreground info, packageName = com.alibaba.genie.waft, className = com.alibaba.genie.waft.ui.tpl.WaftTplActivity, pkg = 
+11-24 07:38:39.973 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1433 [21725] get content, packageName =com.alibaba.genie.waft, pkg = , time=2
+11-24 07:38:39.976 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=1, session=1966944
+11-24 07:38:40.002 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [21680] onGetSystemContext sessionId = 1966944  mSystemContextCallback = 0x921daa00
+11-24 07:38:40.011 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [21725] send startListened sessionId = 1966944
+11-24 07:38:40.239 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966944, text = 天, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:38:40.240 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 1, sessionId = 1966944, preSessionId = 1966944
+11-24 07:38:40.240 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=2, session=1966944
+11-24 07:38:40.245 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966944, text = 天猫, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:38:40.245 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1966944, preSessionId = 1966944
+11-24 07:38:40.260 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966944, text = 天猫精灵, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:38:40.260 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1966944, preSessionId = 1966944
+11-24 07:38:42.852 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966944, text = 天猫精灵现在, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:38:42.853 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1966944, preSessionId = 1966944
+11-24 07:38:43.060 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966944, text = 天猫精灵现在几, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:38:43.060 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1966944, preSessionId = 1966944
+11-24 07:38:43.275 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966944, text = 天猫精灵现在几点, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:38:43.275 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1966944, preSessionId = 1966944
+11-24 07:38:43.565 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:697 [21725] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 07:38:43.565 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:749 [21725] on stop talk, session=1966944
+11-24 07:38:43.565 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:786 [21725] on stop talk, send end frame, sessionId = 1966944
+11-24 07:38:43.565 E/SessionManager(21638): size = 1493, offset = 1546, max_size = 1022
+11-24 07:38:43.565 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:842 [21725] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "f8a763e6cbfd11240738399560025426", "wakeupWord": "tian mao jing ling", "doa": "{\"param_arr\":[47.500000,0.970677,52.500000,0.024102,57.500000,0.005222],\"score_arr\":[3588006.500000,3588616,3590441.500000,3593474.250000,3597692.500000,3603062,3609523.250000,3616988.500000,3625330.500000,3634375,3643897.500000,3653619,3663212.250000,3672309.500000,3680521,3687455,3692746,3696080.500000,3697224.750000,3696045.500000,3692519.750000,3686743.500000,3678921.250000,3669352.500000,3658406.250000,3646499.500000,3634066.500000,3621536,3609311,3597753.250000,3587176,3577837.250000,3569944.500000,3563657,3559089.250000,3556318.750000,3555390.500000,47.500000]}", "confidence": 0.78555202484130859, "listenDuration": 5348, "voiceDuration": 5348, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "co
+11-24 07:38:43.565 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 3, preStatus = 2, sessionId = 1966944, preSessionId = 1966944
+11-24 07:38:43.568 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=3, session=1966944
+11-24 07:38:43.596 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1966944, text = 天猫精灵现在几点, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:38:43.596 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 4, preStatus = 3, sessionId = 1966944, preSessionId = 1966944
+11-24 07:38:43.597 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=4, session=1966944
+11-24 07:38:45.818 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971045, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:38:45.819 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 1, preStatus = 4, sessionId = 1971045, preSessionId = 1966944
+11-24 07:38:45.820 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=1, session=1971045
+11-24 07:38:45.830 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetSystemContext:729 [21680] onGetSystemContext sessionId = 1971045  mSystemContextCallback = 0x921daa00
+11-24 07:38:45.843 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1408 [21725] get context: packageName =com.alibaba.genie.waft, pkg = , className = 
+11-24 07:38:45.843 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1417 [21725] foreground info, packageName = com.alibaba.genie.waft, className = com.alibaba.genie.waft.ui.tpl.WaftTplActivity, pkg = 
+11-24 07:38:45.851 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onGetClientContext:1433 [21725] get content, packageName =com.alibaba.genie.waft, pkg = , time=8
+11-24 07:38:45.859 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:checkSendListenStarted:553 [21725] send startListened sessionId = 1971045
+11-24 07:38:47.720 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971045, text = 播, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:38:47.720 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 1, sessionId = 1971045, preSessionId = 1971045
+11-24 07:38:47.721 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=2, session=1971045
+11-24 07:38:47.942 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971045, text = 播放, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:38:47.942 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971045, preSessionId = 1971045
+11-24 07:38:48.210 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971045, text = 播放音, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:38:48.210 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971045, preSessionId = 1971045
+11-24 07:38:48.411 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 2, preStatus = 2, sessionId = 1971045, preSessionId = 1971045
+11-24 07:38:48.411 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971045, text = 播放音乐, isFinished = 0, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:38:48.996 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:697 [21725] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 07:38:48.996 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:749 [21725] on stop talk, session=1971045
+11-24 07:38:48.997 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:786 [21725] on stop talk, send end frame, sessionId = 1971045
+11-24 07:38:48.997 E/SessionManager(21638): size = 1454, offset = 1507, max_size = 1022
+11-24 07:38:48.997 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStopTalk:842 [21725] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "continuity", "speechContexts": { "recordId": "f8a763e6cbfd11240738457620026333", "wakeupWord": "", "doa": "{\"param_arr\":[47.500000,0.823085,52.500000,0.166331,42.500000,0.010584],\"score_arr\":[2968126.750000,2968843,2970986,2974534.250000,2979448,2985660.750000,2993070.500000,3001530.750000,3010840.750000,3020738.750000,3030899,3040937.750000,3050424.500000,3058900.250000,3065906.500000,3071015.500000,3073865.500000,3074193.500000,3071857,3066852.750000,3059315,3049508.750000,3037804.500000,3024648.750000,3010531,2995947.750000,2981371,2967228.750000,2953885.500000,2941640,2930721.250000,2921296.500000,2913482,2907352,2902950.750000,2900302.500000,2899419,47.500000]}", "confidence": 0, "listenDuration": 3136, "voiceDuration": 3136, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visio
+11-24 07:38:48.997 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 3, preStatus = 2, sessionId = 1971045, preSessionId = 1971045
+11-24 07:38:48.998 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=3, session=1971045
+11-24 07:38:49.085 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStream:641 [21752] sessionId = 1971045, text = 播放音乐, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-24 07:38:49.085 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 4, preStatus = 3, sessionId = 1971045, preSessionId = 1971045
+11-24 07:38:49.086 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=4, session=1971045
+11-24 07:38:49.972 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onNlpResult:895 [21752] on nlp result, code = 0 , sessionId = 1971045, data = 1
+11-24 07:38:49.979 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 5, preStatus = 4, sessionId = 1971045, preSessionId = 1971045
+11-24 07:38:49.979 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=5, session=1971045
+11-24 07:38:50.032 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:exitTalk:1176 [21680] exit talk, input session=1971045, real session=1971045 exit=0
+11-24 07:38:50.542 W/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1066 [21680] status = 6, preStatus = 5, sessionId = 1971045, preSessionId = 1971045
+11-24 07:38:50.543 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionStatus:1103 [21680] set status: notify status=6, session=1971045
+11-24 07:38:50.774 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:fullDuplexDialogPageChangeToBlackList:1031 [21638] full duplex dialog, page change to: com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.musicplayer.activity.MainActivity
+11-24 07:38:55.856 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:setSessionTtsStatus:1049 [21680] session=1971045, status = 6, tts status = 7

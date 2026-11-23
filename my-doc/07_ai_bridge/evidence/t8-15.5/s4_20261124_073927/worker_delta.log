@@ -1,0 +1,39 @@
+﻿[aiw] 2026-11-24T07:39:35 factory wake (onStartTalk): session=1966957 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T07:39:38 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:38 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:38 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:38 route=native intent=media rule=media.play arg=play event=t6-21638-1966957-g18 seq=338 session=1966957 text_bytes=24 merges=0 held_ms=0 publish_seq=7 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:39:38 native command (media.play): no re-listen - it would cut the music
+[aiw] 2026-11-24T07:39:39 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:39:45 factory wake (onStartTalk): session=1966964 wake_type=0 listening=1 round=1
+[aiw] 2026-11-24T07:39:49 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:49 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:49 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:49 route=native intent=volume rule=volume.down arg=down event=t6-21638-1966964-g19 seq=339 session=1966964 text_bytes=30 merges=0 held_ms=0 publish_seq=8 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:39:49 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T07:39:49 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:39:50 continuity request: seq=152490126 sent (after native command) n=6 - waiting for factory session
+[aiw] 2026-11-24T07:39:51 continuity request: CONFIRMED by factory session=1971074 (+210 ms)
+[aiw] 2026-11-24T07:39:51 factory wake (onStartTalk): session=1971074 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:39:52 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:52 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:52 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:53 route=native intent=media rule=media.pause arg=pause event=t6-21638-1971074-g20 seq=340 session=1971074 text_bytes=6 merges=0 held_ms=0 publish_seq=9 (factory answers; AI worker does not)
+[aiw] 2026-11-24T07:39:53 native command (media): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T07:39:53 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:39:54 continuity request: seq=152493667 sent (after native command) n=7 - waiting for factory session
+[aiw] 2026-11-24T07:39:54 continuity request: CONFIRMED by factory session=1971079 (+219 ms)
+[aiw] 2026-11-24T07:39:54 factory wake (onStartTalk): session=1971079 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T07:39:57 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:57 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:57 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T07:39:58 factory exit talk (platform session closed, round=1): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T07:39:58 route=ai event=t6-21638-1971079-g21 seq=0 session=1971079 merges=0 held_ms=641 why=timeout text_bytes=18 session_state=PROCESSING
+[aiw] 2026-11-24T07:39:58 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:39:59 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1106ms resp_bytes=783 reply_bytes=85 event=t6-21638-1971079-g21
+[aiw] 2026-11-24T07:39:59 request shape: event=t6-21638-1971079-g21 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-24T07:39:59 provider reply: event=t6-21638-1971079-g21 provider=deepseek req_msgs=7 history_msgs=6 latency=1106ms reply_bytes=85
+[aiw] 2026-11-24T07:39:59 tts queued: event=t6-21638-1971079-g21 reply_bytes=85 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T07:39:59 context commit: event=t6-21638-1971079-g21 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T07:39:59 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:40:06 factory wake (onStartTalk): session=1971084 wake_type=1 listening=1 round=1

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * libtg_ttsguard.c -- T7-02 原厂回答屏蔽（TTS 来源守卫），ARM32 / Android 8.1
  *
  * 目标：保留原厂唤醒、ASR、TTS 引擎，只屏蔽"原厂 NLU 对普通用户指令生成的回答"，
@@ -61,6 +61,8 @@
 #include <unistd.h>
 
 #include "native_marker.h"
+/* T8-15.5：续听请求序号的解析/受理判定（与 worker 共用同一份契约，host 上可单测） */
+#include "../tg_req_seq.h"
 
 #define TG_MODULE      "libsmartbox.so"
 #define TG_LOG_TAG     "tgt"
@@ -121,7 +123,12 @@
 #define TG_CONT_FILE_DEFAULT "/data/local/tmp/t7/continuity.req"
 /* 续听请求契约（worker 写、守卫读）：
  *   文件内容 = 一个十进制整数序号（严格递增，建议用 CLOCK_MONOTONIC 毫秒）。
- *   守卫只消费严格大于上次已消费值的序号 -> 轮询不会重复消费同一个请求。
+ *   T8-15.5 起规则由 tg_req_seq.h 统一实现，两侧共用同一份代码：
+ *     - 读侧先校验：空文件、半截数字、负数、尾巴带脏数据 -> 整条作废、不动基线
+ *       （旧实现会把被截断的空文件读成 -1，再被当成"计时基准重置"受理 -> 误开麦）；
+ *     - 写侧用"同目录临时文件 + rename"原子替换，读侧永远看不到半截内容；
+ *     - 只有严格大于基线的合法序号才消费；合法的大幅倒退按"换计时基准"一次性放行
+ *       （>= 1000、倒退 > 60000、3 s 内不重复），其余一律忽略。
  *   消费后先过三道闸门（停止/退出 hold、原厂正在聆听、800 ms 去抖）：
  *     - 命中 stop/exit hold  -> 立刻丢弃（用户已要求停止，终态，不重试）
  *     - 其它闸门            -> 在 TG_REQ_RETRY_MS 窗口内每 120 ms 重试
@@ -222,6 +229,8 @@ static volatile long long  g_req_at;
 
 static volatile long long  g_req_logged;
 static volatile unsigned long g_req_seen, g_req_fired, g_req_dropped;
+/* T8-15.5：读到空文件/半截/脏数据而被忽略的次数（诊断竞态用） */
+static volatile unsigned long g_req_invalid;
 
 /* ---------------- 调用计数（原子递增，onTtsStart 热路径只读一次） ---------------- */
 static volatile unsigned long g_seen_play;      /* playTts 被调用次数 */
@@ -973,49 +982,64 @@ static int cont_fire(const char *why, long long seq)
  *         就触发一次，最多 continuity_auto_max 次。默认关闭。 */
 static void *tg_continuity_thread(void *arg)
 {
-    long long last_seq = -1;
     long long last_fin = -1;
     unsigned auto_fired = 0;
+    tg_req_state req;
+    long long req_invalid_logged = 0;
 
     (void)arg;
     g_cont_alive = 1;
+    tg_req_state_init(&req);
     slog("continuity: armed, watching %s (startTalk@%08x type=%u auto=%d play=%s max=%u)",
          g_cont_file, g_func_starttalk, g_cont_type, g_cont_auto, g_play_file, g_cont_auto_max);
-    /* 先把当前请求序号读进来：启动时已有的序号不算新请求，只有"严格更大"才消费 */
-    {
-        FILE *f = fopen(g_cont_file, "r");
-
-        if (f != NULL) {
-            char buf[32] = {0};
-
-            if (fgets(buf, sizeof(buf), f) != NULL) last_seq = strtoll(buf, NULL, 10);
-            fclose(f);
-            slog("continuity: request baseline seq=%lld", last_seq);
-        }
+    /* 先把当前请求序号读进来：启动时已有的序号不算新请求。
+     * T8-15.5：只有"完整合法"的序号才能当基线；空文件/半截内容不建基线（守卫启动时
+     * 文件为空 = 还没有任何请求，下一条合法序号就是真请求）。 */
+    if (tg_req_read(g_cont_file, &req.last_seq) == 0) {
+        slog("continuity: request baseline seq=%lld", req.last_seq);
+    } else {
+        slog("continuity: request baseline: %s empty/invalid at start - first valid seq will fire",
+             g_cont_file);
     }
     while (g_cont_run) {
         long long seq = -1;
-        FILE *f = fopen(g_cont_file, "r");
+        const char *why = NULL;
+        long long now_m = mono_ms();
 
-        /* ---- T8-15.4：跨进程续听请求的消费端（契约见文件头） ---- */
-        if (f != NULL) {
-            char buf[32] = {0};
-
-            if (fgets(buf, sizeof(buf), f) != NULL) seq = strtoll(buf, NULL, 10);
-            fclose(f);
+        /* ---- T8-15.4/T8-15.5：跨进程续听请求的消费端（契约见文件头 + tg_req_seq.h） ----
+         * 只有 tg_req_read 成功（完整、合法、非负）的序号才允许参与比较。旧版在这里
+         * 直接把 fgets/strtoll 的结果拿来比，读到被截断的空文件时 seq=-1，会被
+         * "(last_seq - seq) > 60000" 当成"计时基准重置"受理 -> 没有用户指令也开麦。 */
+        if (tg_req_read(g_cont_file, &seq) == 0) {
+            why = tg_req_accept(&req, seq, now_m);
+            if (why == NULL && seq != req.last_seq && now_m - req_invalid_logged > 2000) {
+                req_invalid_logged = now_m;
+                slog("continuity req: seq=%lld ignored (stale; baseline=%lld, min=%lld)",
+                     seq, req.last_seq, TG_REQ_MIN_SEQ);
+            }
+        } else {
+            g_req_invalid++;
+            if (now_m - req_invalid_logged > 2000) {
+                req_invalid_logged = now_m;
+                slog("continuity req: request file invalid/empty/busy - ignored "
+                     "(invalid=%lu, baseline=%lld)", GET(g_req_invalid), req.last_seq);
+            }
         }
-        /* T8-15.4b: a large backwards jump means the peer changed its clock base
-         * (someone once wrote epoch seconds here, after which every monotonic-ms
-         * request looked stale and was ignored forever). Accept it as a reset. */
-        if (seq > last_seq || (last_seq - seq) > 60000) {
-            last_seq = seq;
+        if (why != NULL) {
+            if (g_req_pending) {
+                /* 上一条还没开麦就来了新的：只保留一条，重开麦没有意义。
+                 * 记一条日志，别让它变成"请求凭空消失"。 */
+                INC(g_req_dropped);
+                slog("continuity req: seq=%lld superseded by seq=%lld (not fired yet)",
+                     g_req_seq, seq);
+            }
             g_req_seq = seq;
             g_req_pending = 1;
-            g_req_at = mono_ms();
+            g_req_at = now_m;
             g_req_logged = 0;
             INC(g_req_seen);
-            slog("continuity req: seq=%lld accepted -> pending (attempt window %d ms)",
-                 seq, TG_REQ_RETRY_MS);
+            slog("continuity req: seq=%lld accepted (%s) -> pending (attempt window %d ms)",
+                 seq, why, TG_REQ_RETRY_MS);
         }
         if (g_req_pending) {
             long long now = mono_ms();
@@ -1644,8 +1668,10 @@ const char *tg_hook_stats(void)
                  g_cont_last, g_cont_file, GET(g_cont_skipped), g_dev_listening,
                  g_hooked_pstarttalk, TG_HOLD_FILE_DEFAULT);
         snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
-                 " req_seen=%lu req_fired=%lu req_dropped=%lu req_pending=%d req_seq=%lld",
-                 GET(g_req_seen), GET(g_req_fired), GET(g_req_dropped), g_req_pending, g_req_seq);
+                 " req_seen=%lu req_fired=%lu req_dropped=%lu req_invalid=%lu "
+                 "req_pending=%d req_seq=%lld",
+                 GET(g_req_seen), GET(g_req_fired), GET(g_req_dropped), GET(g_req_invalid),
+                 g_req_pending, g_req_seq);
     }
     return buf;
 }

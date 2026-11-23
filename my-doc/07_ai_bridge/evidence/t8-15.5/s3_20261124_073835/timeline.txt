@@ -1,0 +1,17 @@
+﻿[07:38:35.229] scenario=s3 out=D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-15.5\s3_20261124_073835
+[07:38:37.290] continuity.req: 152386908
+[07:38:37.292] core pid: 21638
+[07:38:37.293] worker pid: 21569
+[07:38:37.294] worker log lines: 414  tap lines: 1805
+[07:38:38.195] baseline tap|wakeupType.=.1 = 35
+[07:38:38.698] baseline worker|no.re-listen = 0
+[07:38:38.743] capture -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-15.5\s3_20261124_073835\logcat_tgt_session.txt
+[07:38:38.748] PLAY r1.wake_time.wav
+[07:38:47.003] OK   await tap 'wakeupType.=.1' after 2,881 ms (35->36)
+[07:38:47.005] PLAY cmd_play.wav
+[07:38:49.581] OK   await worker 'no.re-listen' after 562 ms (0->1)
+[07:38:49.585] sleep 25000 ms
+[07:39:15.127] capture stopped
+[07:39:16.265] continuity.req after: 152386908
+[07:39:16.267] listen_hold after: 121326077
+[07:39:16.268] worker log lines after: 434  tap lines after: 1871

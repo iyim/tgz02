@@ -1,0 +1,43 @@
+﻿=== scenario s7 @ 20261124_074716   (failed awaits: 0)
+--- native routes:
+--- continuity requests (worker):
+--- dialog lifecycle:
+[aiw] 2026-11-24T07:47:28 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:30 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:34 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:35 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:45 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:53 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:56 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:47:58 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:48:10 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:48:19 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:48:23 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:48:25 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T07:48:37 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+--- factory sessions (tap):
+11-24 07:47:24.374 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1967065, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 07:47:30.187 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971166, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:47:40.855 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971171, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:47:53.484 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971176, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:48:06.057 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971181, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:48:19.594 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971194, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 07:48:32.053 D/SessionManager(21638): JNI_AILABS SessionManager.cpp:onStartTalk:255 [21725] sessionId = 1971199, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+--- guard (tgt) lines:
+11-24 07:47:28.162 I/tgt     (21638): onTtsStart ALLOW id=5243869 by=session_id streaming=1 text_bytes=9
+11-24 07:47:28.297 I/tgt     (21638): onTtsStart DROP id=1967065 streaming=1 comm=AG-ws-receive text="现在是早上七点四十七分。" (factory NLU answer)
+11-24 07:47:30.166 I/tgt     (21638): continuity: auto-after-tts seq=1795477650144 startTalk(type=1, info+0=1) -> 0 (n=27 ok=0)
+11-24 07:47:33.671 I/tgt     (21638): onTtsStart DROP id=1971166 streaming=1 comm=AG-ws-receive text="《你叫什么名字》是4minute演唱的一首动感、魅力十足的嘻哈歌曲。以“你叫什么名字？”询问开始的告白展现出了女性的率真和大胆。" (factory NLU answer)
+11-24 07:47:35.448 I/tgt     (21638): onTtsStart ALLOW id=5243874 by=session_id streaming=1 text_bytes=73
+11-24 07:47:40.833 I/tgt     (21638): continuity: auto-after-tts seq=1795477660715 startTalk(type=1, info+0=1) -> 0 (n=28 ok=0)
+11-24 07:47:44.904 I/tgt     (21638): onTtsStart DROP id=1971171 streaming=1 comm=AG-ws-receive text="没听清主人的话，可以再说一次吗" (factory NLU answer)
+11-24 07:47:46.752 I/tgt     (21638): onTtsStart ALLOW id=5243879 by=session_id streaming=1 text_bytes=99
+11-24 07:47:53.431 I/tgt     (21638): continuity: auto-after-tts seq=1795477673349 startTalk(type=1, info+0=1) -> 0 (n=29 ok=0)
+11-24 07:47:56.969 I/tgt     (21638): onTtsStart DROP id=1971176 streaming=1 comm=AG-ws-receive text="一到十的英文是One to ten" (factory NLU answer)
+11-24 07:47:58.561 I/tgt     (21638): onTtsStart ALLOW id=5243884 by=session_id streaming=1 text_bytes=78
+11-24 07:48:06.031 I/tgt     (21638): continuity: auto-after-tts seq=1795477686000 startTalk(type=1, info+0=1) -> 0 (n=30 ok=0)
+11-24 07:48:11.968 I/tgt     (21638): onTtsStart ALLOW id=5243895 by=session_id streaming=1 text_bytes=126
+11-24 07:48:19.581 I/tgt     (21638): continuity: auto-after-tts seq=1795477699517 startTalk(type=1, info+0=1) -> 0 (n=31 ok=0)
+11-24 07:48:23.562 I/tgt     (21638): onTtsStart DROP id=1971194 streaming=1 comm=AG-ws-receive text="既然选择了远方，便只顾风雨兼程 你不勇敢，没人替你坚强 不知道合不合你的胃口。" (factory NLU answer)
+11-24 07:48:25.472 I/tgt     (21638): onTtsStart ALLOW id=5243902 by=session_id streaming=1 text_bytes=96
+11-24 07:48:32.041 I/tgt     (21638): continuity: auto-after-tts seq=1795477711936 startTalk(type=1, info+0=1) -> 0 (n=32 ok=0)

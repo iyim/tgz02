@@ -1,0 +1,15 @@
+﻿# T8-15.5 request-seq contract unit test log (host)
+# host time: 2026-11-24 07:39:11
+cc: C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_155_req_seq_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_155_req_seq_unit_test.c
+(no compiler output: 0 warning, 0 error)
+# T8-15.5 request-seq contract unit test
+  prefixes: total=11 readable=10 unreadable=1 fired_on_single_read=0
+legacy(w=truncate): good=119754 empty_content=3029 partial=0 missing=0 out_of_range=0 write_fails=0
+control(legacy truncate writer): empty+partial reads = 3029
+atomic(tmp+rename): good=90435 empty_content=0 partial=0 missing=1347 out_of_range=0 write_fails=1967
+note: opening failures are platform specific (win replace=1347)
+
+checks: pass=55 fail=0
+RESULT: PASS
+exit: 0
+# result: OK

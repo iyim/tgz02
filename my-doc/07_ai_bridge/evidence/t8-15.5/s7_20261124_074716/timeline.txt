@@ -1,0 +1,24 @@
+﻿[07:47:16.985] scenario=s7 out=D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-15.5\s7_20261124_074716
+[07:47:19.046] continuity.req: 152580842
+[07:47:19.047] core pid: 21638
+[07:47:19.048] worker pid: 21569
+[07:47:19.049] worker log lines: 572  tap lines: 2343
+[07:47:22.416] tap_pids=2 ; tap_size=465393 ; tap_lines=2346
+[07:47:22.922] baseline tap|wakeupType.=.1 = 45
+[07:47:22.970] capture -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-15.5\s7_20261124_074716\logcat_tgt_session.txt
+[07:47:22.975] PLAY r1.wake_time.wav
+[07:47:31.105] OK   await tap 'wakeupType.=.1' after 2,787 ms (45->46)
+[07:47:31.106] PLAY q3.name.wav
+[07:47:42.054] OK   await tap 'wakeupType.=.1' after 8,474 ms (46->47)
+[07:47:42.055] PLAY q4.encourage.wav
+[07:47:54.210] OK   await tap 'wakeupType.=.1' after 9,458 ms (47->48)
+[07:47:54.211] PLAY q5.count.wav
+[07:48:07.087] OK   await tap 'wakeupType.=.1' after 10,405 ms (48->49)
+[07:48:07.088] PLAY q2.joke.wav
+[07:48:20.539] OK   await tap 'wakeupType.=.1' after 10,893 ms (49->50)
+[07:48:20.540] PLAY q5.encourage.wav
+[07:48:23.242] sleep 15000 ms
+[07:48:38.790] capture stopped
+[07:48:40.075] continuity.req after: 152580842
+[07:48:40.077] listen_hold after: 152643739
+[07:48:40.078] worker log lines after: 650  tap lines after: 2569

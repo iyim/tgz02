@@ -1,4 +1,4 @@
-﻿/*
+/*
  * ai_worker.c -- 独立 AI Worker 进程（见 ai_worker.h）
  *
  * 主循环（单线程，固定内存）：
@@ -23,6 +23,7 @@
 #include "skill_dispatch.h"
 #include "t7_dup.h"
 #include "talk_tap.h"
+#include "tg_req_seq.h"
 #include "worker_conf.h"
 #include "worker_util.h"
 
@@ -2119,6 +2120,19 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
                     /* T8-15.3：退出/停止必须压过自动续听 —— 写一个带截止时间的
                      * "别再开麦"标记，守卫读到就跳过自动触发。 */
                     aiw_write_listen_hold(w, ir.intent == IR_EXIT ? 60000 : 20000, now_ms);
+                    /* T8-15.5：同时撤掉本机还在排队的续听请求 —— 否则"原厂指令 ->
+                     * 1.2 s 后开麦"会在用户已经说了停止/退出之后才落地（迟到开麦）。
+                     * 守卫侧还有 hold 兜底，这里是第一道闸。 */
+                    if (w->native_relisten_due_ms > 0 || w->native_rel_waiting) {
+                        always("native command: pending re-listen cancelled by %s "
+                               "(due_in=%lld ms waiting=%d)",
+                               ir_intent_name(ir.intent),
+                               w->native_relisten_due_ms > 0
+                                   ? w->native_relisten_due_ms - now_ms : -1,
+                               w->native_rel_waiting);
+                    }
+                    w->native_relisten_due_ms = 0;
+                    w->native_rel_waiting = 0;
                 }
                 snprintf(w->st.route_last, sizeof(w->st.route_last),
                          "route=native intent=%s rule=%s arg=%s session=%s seq=%lld",
@@ -2287,10 +2301,12 @@ static void aiw_write_listen_hold(t6b_worker *w, int hold_ms, long long now_ms)
 }
 
 /* T8-15.3：向 native 守卫"请求开麦"（守卫轮询这个文件里的数字，变化即触发一次）。
- * 只写数字、不需要守卫回写，方向与 listen_hold 一致（worker 写 / 守卫读）。 */
+ * 只写数字、不需要守卫回写，方向与 listen_hold 一致（worker 写 / 守卫读）。
+ * T8-15.5：改成"临时文件 + rename"原子替换。旧的 fopen(...,"w") 会先把文件截断，
+ * 守卫若正好读在截断与写入之间就会读到空文件；虽然守卫侧已经加了合法性校验，
+ * 写侧也不该生产半截内容（双重保险，且 host 压测可证）。 */
 static void aiw_request_continuity(t6b_worker *w, long long now_ms, const char *why)
 {
-    FILE *f;
     long long seq;
 
     w->native_relisten_requests++;
@@ -2299,14 +2315,12 @@ static void aiw_request_continuity(t6b_worker *w, long long now_ms, const char *
     w->native_req_seq = seq;
     w->native_rel_req_ms = now_ms;
     w->native_rel_waiting = 1;
-    f = fopen(T8_CONT_REQ_FILE, "w");
-    if (f == NULL) {
+    if (tg_req_write_atomic(T8_CONT_REQ_FILE, seq) != 0) {
         w->native_rel_waiting = 0;
-        always("continuity request: cannot write %s - device will not re-listen", T8_CONT_REQ_FILE);
+        always("continuity request: cannot write %s - device will not re-listen (errno=%d)",
+               T8_CONT_REQ_FILE, errno);
         return;
     }
-    fprintf(f, "%lld\n", seq);
-    fclose(f);
     always("continuity request: seq=%lld sent (%s) n=%lu - waiting for factory session",
            seq, why, w->native_relisten_requests);
 }
