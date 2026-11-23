@@ -1,0 +1,21 @@
+[21:31:04.890] logcat capture pid=29168 -> D:\tgz02\OS\_analysis\t815\runs\device_20261123_213104.logcat
+[21:31:06.005] baseline play: state=idle tts_id=5246629
+[21:31:06.018] === round 1 (wake=True) ===
+[21:31:06.042] PLAY r1.wake_time.wav
+[21:31:11.395] PLAY done r1.wake_time.wav
+[21:31:12.283] round 1: AI answer started tts_id=5246635 started_ms=1795440671036
+[21:31:13.653] round 1: AI answer finished tts_id=5246635 finished_ms=1795440673116 outcome=ok
+[21:31:14.265] === round 2 (wake=False) ===
+[21:31:14.267] PLAY q2.weather.wav
+[21:31:17.103] PLAY done q2.weather.wav
+[21:31:57.608] round 2: FAIL no AI answer within 40s
+[21:31:57.609] rounds answered: 1
+[21:31:57.610] === stop phrase ===
+[21:31:57.611] PLAY q6.stop.wav
+[21:31:59.282] PLAY done q6.stop.wav
+[21:32:01.798] === re-wake after stop ===
+[21:32:01.800] PLAY r2.wake_time.wav
+[21:32:07.103] PLAY done r2.wake_time.wav
+[21:32:07.571] re-wake answer started tts_id=5246640
+[21:32:07.572] re-wake answered: True
+[21:32:07.909] capture stopped

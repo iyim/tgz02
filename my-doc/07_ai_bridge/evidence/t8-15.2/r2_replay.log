@@ -1,0 +1,37 @@
+[21:53:10.734] logcat capture pid=3392 -> D:\tgz02\OS\_analysis\t815\runs\device_20261123_215310.logcat
+[21:53:11.828] baseline play: state=idle tts_id=5246826
+[21:53:11.840] === round 1 (wake=True) ===
+[21:53:11.854] PLAY r1.wake_time.wav
+[21:53:17.228] PLAY done r1.wake_time.wav
+[21:53:18.188] round 1: AI answer started tts_id=5246832 started_ms=1795441997149
+[21:53:19.897] round 1: AI answer finished tts_id=5246832 finished_ms=1795441999376 outcome=ok
+[21:53:20.506] === round 2 (wake=False) ===
+[21:53:20.511] PLAY q2.joke.wav
+[21:53:23.105] PLAY done q2.joke.wav
+[21:53:25.497] round 2: AI answer started tts_id=5246837 started_ms=1795442004905
+[21:53:32.904] round 2: AI answer finished tts_id=5246837 finished_ms=1795442011734 outcome=ok
+[21:53:33.510] === round 3 (wake=False) ===
+[21:53:33.512] PLAY q3.name.wav
+[21:53:35.963] PLAY done q3.name.wav
+[21:53:39.081] round 3: AI answer started tts_id=5246842 started_ms=1795442018352
+[21:53:43.005] round 3: AI answer finished tts_id=5246842 finished_ms=1795442022310 outcome=ok
+[21:53:43.622] === round 4 (wake=False) ===
+[21:53:43.624] PLAY q4.encourage.wav
+[21:53:46.372] PLAY done q4.encourage.wav
+[21:53:49.305] round 4: AI answer started tts_id=5246847 started_ms=1795442028418
+[21:53:53.490] round 4: AI answer finished tts_id=5246847 finished_ms=1795442032690 outcome=ok
+[21:53:54.105] === round 5 (wake=False) ===
+[21:53:54.108] PLAY q5.count.wav
+[21:53:56.599] PLAY done q5.count.wav
+[21:53:58.902] round 5: AI answer started tts_id=5246852 started_ms=1795442038303
+[21:54:06.928] round 5: AI answer finished tts_id=5246852 finished_ms=1795442046041 outcome=ok
+[21:54:07.543] rounds answered: 5
+[21:54:07.544] === stop phrase ===
+[21:54:07.546] PLAY q6.stop.wav
+[21:54:09.231] PLAY done q6.stop.wav
+[21:54:12.746] === re-wake after stop ===
+[21:54:12.749] PLAY r2.wake_time.wav
+[21:54:18.016] PLAY done r2.wake_time.wav
+[21:54:18.603] re-wake answer started tts_id=5246861
+[21:54:18.605] re-wake answered: True
+[21:54:18.955] capture stopped

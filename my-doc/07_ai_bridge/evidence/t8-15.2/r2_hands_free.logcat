@@ -1,0 +1,98 @@
+11-23 21:53:02.359 I/tgt     (30807): uninstalled: original prologues restored (playTts=97ae7afc onTtsStart=97ae7110 onStopTalk=00000000)
+11-23 21:53:02.369 I/tgt     (30807): continuity: thread exit
+11-23 21:53:03.119 I/tgt     (30807): libtg_ttsguard.so loaded (pid=30807); waiting for tg_hook_install() (native_allow=1 file=/data/local/tmp/t5_bridge/work/native_route.public.json)
+11-23 21:53:03.132 I/tgt     (30807): renew: conf=/data/local/tmp/t7/renew.conf renew_ms=0 renew_max=0 continuity_enable=1 file=/data/local/tmp/t7/continuity.cnt auto=1 play_file=/data/local/tmp/t5_bridge/tts/play.public.json auto_max=12
+11-23 21:53:03.134 I/tgt     (30807): prepare ok: base=0x979c8000 playTts=0x97ae7afc onTtsStart=0x97ae7110 onStopTalk=0x00000000 (renew_ms=0 continuity=1 startTalk=0x97ac4ff8)
+11-23 21:53:03.151 I/tgt     (30807): installed: onTtsStart patch=97ae7110 stub=b32e8100 tramp=b32e8180 ; playTts patch=97ae7afc stub=b32e8000 tramp=b32e8080
+11-23 21:53:03.152 I/tgt     (30807): continuity: armed, watching /data/local/tmp/t7/continuity.cnt (startTalk@97ac4ff8 type=1 auto=1 play=/data/local/tmp/t5_bridge/tts/play.public.json max=12)
+11-23 21:53:03.152 I/tgt     (30807): continuity: auto baseline finished_ms=1795441892589
+11-23 21:53:13.111 D/AGSpeechEngine(30807): onSpeechWakeup,530:tian mao jing ling,天猫精灵
+11-23 21:53:13.113 D/AGSpeechEngineProxy(30807): onListenStarted,696: 0, tian mao jing ling, 天猫精灵, 0.785618, 52, 0, 0, f8a763e6cbfd11232153131110183584
+11-23 21:53:13.125 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1970028, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-23 21:53:15.487 D/EOUDetector(30807): handleVADInfo,195:final status change from 0 to 1 when 2100
+11-23 21:53:16.838 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 21:53:16.871 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1970028, text = 天猫精灵现在几点, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 21:53:16.872 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1970028, txt = 天猫精灵现在几点, isFinished = 1, feedback = 1
+11-23 21:53:16.875 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1970028, isFinished = 1, text = 现在几点
+11-23 21:53:17.167 I/tgt     (30807): playTts -> allow-listed id=5246832 comm=Binder:30807_8 text_bytes=9
+11-23 21:53:17.221 I/tgt     (30807): onTtsStart DROP id=1970028 streaming=1 comm=AG-ws-receive text="晚上好主人，现在是晚上九点五十三分" (factory NLU answer)
+11-23 21:53:17.245 I/tgt     (30807): onTtsStart ALLOW id=5246832 by=session_id streaming=1 text_bytes=9
+11-23 21:53:19.413 D/AGSpeechEngineProxy(30807): startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null), wakeupFilterWord:(null), vadtime:0
+11-23 21:53:19.415 W/InputDeviceManager(30807): JNI_AILABS InputDeviceManager.cpp:startTalk:124 [3055] ret = 0, inputDevice = 1, recognizer = 1
+11-23 21:53:19.415 I/tgt     (30807): continuity: auto-after-tts seq=1795441999376 startTalk(type=1, info+0=1) -> 0 (n=1 ok=0)
+11-23 21:53:19.420 D/AGSpeechEngineProxy(30807): onListenStarted,696: 1, , , 0.000000, 0, 0, 0, f8a763e6cbfd11232153194190184237
+11-23 21:53:19.450 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1974129, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 21:53:20.980 D/EOUDetector(30807): handleVADInfo,195:final status change from 0 to 1 when 1040
+11-23 21:53:22.558 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 21:53:22.605 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1974129, text = 给我讲个笑话, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 21:53:22.607 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1974129, txt = 给我讲个笑话, isFinished = 1, feedback = 1
+11-23 21:53:22.620 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1974129, isFinished = 1, text = 给我讲个笑话
+11-23 21:53:22.916 I/tgt     (30807): onTtsStart DROP id=1974129 streaming=1 comm=AG-ws-receive text="继续为您播放" (factory NLU answer)
+11-23 21:53:24.948 I/tgt     (30807): playTts -> allow-listed id=5246837 comm=Binder:30807_B text_bytes=108
+11-23 21:53:25.041 I/tgt     (30807): onTtsStart ALLOW id=5246837 by=session_id streaming=1 text_bytes=108
+11-23 21:53:27.647 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1974129, real session=1974129 exit=0
+11-23 21:53:31.796 D/AGSpeechEngineProxy(30807): startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null), wakeupFilterWord:(null), vadtime:0
+11-23 21:53:31.797 W/InputDeviceManager(30807): JNI_AILABS InputDeviceManager.cpp:startTalk:124 [3055] ret = 0, inputDevice = 1, recognizer = 1
+11-23 21:53:31.797 I/tgt     (30807): continuity: auto-after-tts seq=1795442011734 startTalk(type=1, info+0=1) -> 0 (n=2 ok=0)
+11-23 21:53:31.797 D/AGSpeechEngineProxy(30807): onListenStarted,696: 1, , , 0.000000, 0, 0, 0, f8a763e6cbfd11232153317970185440
+11-23 21:53:31.801 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1974134, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 21:53:33.889 D/EOUDetector(30807): handleVADInfo,195:final status change from 0 to 1 when 1700
+11-23 21:53:35.487 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 21:53:35.547 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1974134, text = 你叫什么名字, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 21:53:35.550 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1974134, txt = 你叫什么名字, isFinished = 1, feedback = 1
+11-23 21:53:35.564 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1974134, isFinished = 1, text = 你叫什么名字
+11-23 21:53:35.952 I/tgt     (30807): onTtsStart DROP id=1974134 streaming=1 comm=AG-ws-receive text="《你叫什么名字》是4minute演唱的一首动感、魅力十足的嘻哈歌曲。以“你叫什么名字？”询问开始的告白展现出了女性的率真和大胆。" (factory NLU answer)
+11-23 21:53:38.417 I/tgt     (30807): playTts -> allow-listed id=5246842 comm=Binder:30807_10 text_bytes=60
+11-23 21:53:38.476 I/tgt     (30807): onTtsStart ALLOW id=5246842 by=session_id streaming=1 text_bytes=60
+11-23 21:53:40.577 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1974134, real session=1974134 exit=0
+11-23 21:53:42.339 D/AGSpeechEngineProxy(30807): startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null), wakeupFilterWord:(null), vadtime:0
+11-23 21:53:42.346 W/InputDeviceManager(30807): JNI_AILABS InputDeviceManager.cpp:startTalk:124 [3055] ret = 0, inputDevice = 1, recognizer = 1
+11-23 21:53:42.346 I/tgt     (30807): continuity: auto-after-tts seq=1795442022310 startTalk(type=1, info+0=1) -> 0 (n=3 ok=0)
+11-23 21:53:42.347 D/AGSpeechEngineProxy(30807): onListenStarted,696: 1, , , 0.000000, 0, 0, 0, f8a763e6cbfd11232153423460186953
+11-23 21:53:42.378 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1974139, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 21:53:43.956 D/EOUDetector(30807): handleVADInfo,195:final status change from 0 to 1 when 1120
+11-23 21:53:45.903 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 21:53:45.961 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1974139, text = 说一句鼓励我的话, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 21:53:45.963 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1974139, txt = 说一句鼓励我的话, isFinished = 1, feedback = 1
+11-23 21:53:45.967 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1974139, isFinished = 1, text = 说一句鼓励我的话
+11-23 21:53:46.685 I/tgt     (30807): onTtsStart DROP id=1974139 streaming=1 comm=AG-ws-receive text="既然选择了远方，便只顾风雨兼程 你不勇敢，没人替你坚强 不知道合不合你的胃口。" (factory NLU answer)
+11-23 21:53:48.444 I/tgt     (30807): playTts -> allow-listed id=5246847 comm=Binder:30807_10 text_bytes=66
+11-23 21:53:48.535 I/tgt     (30807): onTtsStart ALLOW id=5246847 by=session_id streaming=1 text_bytes=66
+11-23 21:53:50.981 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1974139, real session=1974139 exit=0
+11-23 21:53:52.813 D/AGSpeechEngineProxy(30807): startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null), wakeupFilterWord:(null), vadtime:0
+11-23 21:53:52.813 W/InputDeviceManager(30807): JNI_AILABS InputDeviceManager.cpp:startTalk:124 [3055] ret = 0, inputDevice = 1, recognizer = 1
+11-23 21:53:52.813 I/tgt     (30807): continuity: auto-after-tts seq=1795442032690 startTalk(type=1, info+0=1) -> 0 (n=4 ok=0)
+11-23 21:53:52.814 D/AGSpeechEngineProxy(30807): onListenStarted,696: 1, , , 0.000000, 0, 0, 0, f8a763e6cbfd11232153528130187639
+11-23 21:53:52.821 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1974144, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 21:53:54.506 D/EOUDetector(30807): handleVADInfo,195:final status change from 0 to 1 when 1300
+11-23 21:53:56.124 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 21:53:56.154 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1974144, text = 一到十怎么说, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 21:53:56.157 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1974144, txt = 一到十怎么说, isFinished = 1, feedback = 1
+11-23 21:53:56.172 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1974144, isFinished = 1, text = 一到十怎么说
+11-23 21:53:56.610 I/tgt     (30807): onTtsStart DROP id=1974144 streaming=1 comm=AG-ws-receive text="一到十的英文是One to ten" (factory NLU answer)
+11-23 21:53:58.393 I/tgt     (30807): playTts -> allow-listed id=5246852 comm=Binder:30807_B text_bytes=78
+11-23 21:53:58.446 I/tgt     (30807): onTtsStart ALLOW id=5246852 by=session_id streaming=1 text_bytes=78
+11-23 21:54:01.209 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1974144, real session=1974144 exit=0
+11-23 21:54:06.118 D/AGSpeechEngineProxy(30807): startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null), wakeupFilterWord:(null), vadtime:0
+11-23 21:54:06.119 W/InputDeviceManager(30807): JNI_AILABS InputDeviceManager.cpp:startTalk:124 [3055] ret = 0, inputDevice = 1, recognizer = 1
+11-23 21:54:06.119 I/tgt     (30807): continuity: auto-after-tts seq=1795442046041 startTalk(type=1, info+0=1) -> 0 (n=5 ok=0)
+11-23 21:54:06.130 D/AGSpeechEngineProxy(30807): onListenStarted,696: 1, , , 0.000000, 0, 0, 0, f8a763e6cbfd11232154061200188257
+11-23 21:54:06.171 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1974149, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 21:54:07.897 D/EOUDetector(30807): handleVADInfo,195:final status change from 0 to 1 when 1260
+11-23 21:54:09.029 D/EOUDetector(30807): handleVADInfo,195:final status change from 1 to 0 when 2540
+11-23 21:54:09.038 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 21:54:09.141 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1974149, text = 退出, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 21:54:09.142 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1974149, txt = 退出, isFinished = 1, feedback = 1
+11-23 21:54:09.145 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1974149, isFinished = 1, text = 退出
+11-23 21:54:09.417 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1974149, real session=1974149 exit=0
+11-23 21:54:13.852 D/AGSpeechEngine(30807): onSpeechWakeup,530:tian mao jing ling,天猫精灵
+11-23 21:54:13.854 D/AGSpeechEngineProxy(30807): onListenStarted,696: 0, tian mao jing ling, 天猫精灵, 0.784425, 47, 0, 0, f8a763e6cbfd11232154138520189598
+11-23 21:54:13.860 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1970057, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-23 21:54:16.294 D/EOUDetector(30807): handleVADInfo,195:final status change from 0 to 1 when 2180
+11-23 21:54:17.450 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 21:54:17.479 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1970057, text = 天猫精灵现在几点, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 21:54:17.480 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1970057, txt = 天猫精灵现在几点, isFinished = 1, feedback = 1
+11-23 21:54:17.496 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1970057, isFinished = 1, text = 现在几点
+11-23 21:54:17.728 I/tgt     (30807): playTts -> allow-listed id=5246861 comm=Binder:30807_10 text_bytes=9
+11-23 21:54:17.781 I/tgt     (30807): onTtsStart ALLOW id=5246861 by=session_id streaming=1 text_bytes=9
+11-23 21:54:17.864 I/tgt     (30807): onTtsStart DROP id=1970057 streaming=1 comm=AG-ws-receive text="晚上好主人，现在是晚上九点五十四分" (factory NLU answer)

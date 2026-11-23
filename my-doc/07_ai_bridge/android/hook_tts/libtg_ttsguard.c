@@ -1,4 +1,4 @@
-/*
+﻿/*
  * libtg_ttsguard.c -- T7-02 原厂回答屏蔽（TTS 来源守卫），ARM32 / Android 8.1
  *
  * 目标：保留原厂唤醒、ASR、TTS 引擎，只屏蔽"原厂 NLU 对普通用户指令生成的回答"，
@@ -77,6 +77,55 @@
 #define TG_PRO_START0  0xE92D4FF0u   /* push {r4-r11,lr} */
 #define TG_PRO_START1  0xE28DB01Cu   /* add  fp, sp, #28 */
 
+/* T8-15.2：原厂连续对话续期时长（duplexDialogRenew）的唯一合法入口。
+ * SessionManager::onStopTalk(int, _WakeEndInfo*) = 本轮 EOU。原厂自己的写法就是：
+ *   0x113a4c ldr r0,[r5,#128]   ; r5 = this（0x11392c mov r5,r0 确认）
+ *   0x113a54 str r0,[r4,#76]    ; 写入本轮 stopTalk 上下文 ctx+0x4C
+ *   0x113a5c str r1(=0),[r5,#128] ; 立刻清零 -> 值只在"这一轮"有效
+ * 所以续期时长必须在**进入 onStopTalk 之前**写好；在 TTS 结束时再设已经晚了。
+ * GenieApi::setFullDuplexDialogRenewDuration(unsigned) 的整个函数体只有
+ *   str r4,[r0,#128]（见 evidence/t8-15.1/disasm_setter.txt），等价于本 hook 的直写。
+ * 配置默认 renew_ms=0：此时第三个 hook 根本不会解析、不会安装。 */
+#define TG_SYM_STOPTALK \
+    "_ZN9AliAiLabs4AGUI14SessionManager10onStopTalkEiPNS0_19IInputDeviceManager13_WakeEndInfo_E"
+#define TG_OFF_STOPTALK    0x113918u
+#define TG_PRO_STOPTALK0   0xE92D4FF0u   /* push {r4-r11,lr} */
+#define TG_PRO_STOPTALK1   0xE28DB01Cu   /* add  fp, sp, #28 */
+#define TG_OFF_RENEW_FIELD 0x80u         /* SessionManager+0x80 = duplexDialogRenew */
+#define TG_RENEW_MS_MAX    30000u
+#define TG_RENEW_FILE_DEFAULT "/data/local/tmp/t7/renew.conf"
+
+/* T8-15.2 第二阶段：原厂"续听"的真正入口（客户端本地调用，不依赖服务端）。
+ * 真机证据（evidence/t8-15.2/r1_excerpt.logcat、evidence/t8-15.1/device_relisten_probe.log）：
+ *   21:12:02.052 AGSpeechEngine: handleWakeupPromptFinish,895
+ *   21:12:02.220 AGSpeechEngineProxy: startTalk,506:[NearbyWakeup] type:continuity, wakeupWord:(null)
+ *   21:12:02.235 AGSpeechEngine: onListenStarted,1202 -> onStartTalk wakeupType=1
+ * 同时证据显示：那一轮原厂自己发出的 duplexDialogRenew 是 0 —— 续听与这个字段无关，
+ * 是客户端本地"提示音播完 -> startTalk(continuity)"的流程。
+ * 该符号是本地符号（dynsym 里没有），只能按偏移调用，所以必须校验偏移 + 序言，否则拒绝安装。
+ * 结构体形状：官方 JNI Java_..._AiLabsCore_startTalk 先把栈上约 88 B 清零再填字段，
+ * 因此"全零 _WakeUpInfo_"才是原厂形状（不是 NULL）。 */
+#define TG_OFF_STARTTALK   0xfcff8u
+#define TG_PRO_STARTTALK0  0xE92D4830u   /* push {r4,r5,r11,lr} */
+#define TG_PRO_STARTTALK1  0xE28DB008u   /* add  r11, sp, #8 */
+#define TG_WAKEUPINFO_SIZE 88
+/* _WakeUpInfo_ 字段（AGSpeechEngineProxy::startTalk @ libsmartbox 0xe90a8 反汇编确认）：
+ *   +0x00 int    type            0 = active，1 = continuity（原厂续听用 1）
+ *   +0x04 char*  wakeupWord      续听时为 NULL
+ *   +0x08 char*  wakeupFilterWord
+ *   +0x18 int    vadtime
+ * 全零结构体 = active —— 21:35 的第一次实测就是这么开成了 active 会话（session 1969862，
+ * 服务端 20 s 后回"无指令"，一句都没听到）。所以必须把 type 置成 continuity。 */
+#define TG_OFF_WAKEUPTYPE  0x00u
+#define TG_CONT_TYPE_DEFAULT 1u
+#define TG_CONT_FILE_DEFAULT "/data/local/tmp/t7/continuity.once"
+/* T8-15.2 自动续听：读 T5 TTS 执行器发布的播放状态文件（守卫原本就在读同目录的
+ * native_route.public.json，读权限已具备）。语义：state 变回 idle 且 finished_ms 变化
+ * = 我方的 TTS 真的播完了（原厂回答会被守卫拦在 onTtsStart，不会触发这个变化）。
+ * 默认关闭（continuity_auto=0）。 */
+#define TG_PLAY_FILE_DEFAULT "/data/local/tmp/t5_bridge/tts/play.public.json"
+#define TG_CONT_AUTO_MAX_DEFAULT 12u
+
 /* 结构体字段偏移（由 libsmartbox.so 反汇编确认，见报告 1.3 节）：
  *   _TtsInfo_.text            = *(char **)(info + 0x04)
  *   TtsResponseInfo.text      = *(char **)(info + 0x28)
@@ -106,11 +155,39 @@ static int        g_state = TG_OK;
 static char       g_err[320];
 static int        g_patched;
 static int        g_hooked_play, g_hooked_start;
+static int        g_hooked_stoptalk;
 static uint32_t   g_func_play, g_func_start;
-static uint32_t   g_orig_play[2], g_orig_start[2];
+static uint32_t   g_func_stoptalk;
+static uint32_t   g_orig_play[2], g_orig_start[2], g_orig_stoptalk[2];
 static void      *g_stub_page = NULL;
-static uint32_t   g_stub_play, g_stub_start;
-static uint32_t   g_tramp_play, g_tramp_start;
+static uint32_t   g_stub_play, g_stub_start, g_stub_stoptalk;
+static uint32_t   g_tramp_play, g_tramp_start, g_tramp_stoptalk;
+
+/* T8-15.2：续期配置（renew.conf，默认不存在 => renew_ms=0 => 第三个 hook 不装） */
+static unsigned   g_renew_ms;
+static unsigned   g_renew_max;
+static char       g_renew_path[192];
+static volatile unsigned long g_renew_sets;      /* 实际写入 duplexDialogRenew 的次数 */
+static volatile unsigned long g_renew_skipped;   /* 因 renew_max 上限被跳过 */
+static volatile unsigned  g_renew_pre;           /* 最近一次进入 onStopTalk 时字段的旧值 */
+
+/* T8-15.2 第二阶段：手动一次性续听（默认关闭；只由控制文件触发，不做任何自动行为） */
+static uint32_t   g_func_starttalk;
+static int        g_cont_enable;
+static char       g_cont_file[192];
+static volatile int g_cont_run;              /* 轮询线程是否继续 */
+static volatile int g_cont_started;          /* 是否已创建过轮询线程 */
+static volatile int g_cont_alive;            /* 轮询线程是否还活着（uninstall 等它退出） */
+static volatile unsigned long g_cont_calls;  /* 实际调用 startTalk 的次数 */
+static volatile unsigned long g_cont_ok;     /* 返回值 >0 的次数 */
+static volatile int  g_cont_last;            /* 最近一次返回值 */
+static unsigned       g_cont_type = TG_CONT_TYPE_DEFAULT;   /* 写进 _WakeUpInfo_+0 的类型 */
+static int            g_cont_auto;                            /* 1 = 我方 TTS 播完自动续听 */
+static char           g_play_file[192];
+static unsigned       g_cont_auto_max = TG_CONT_AUTO_MAX_DEFAULT;
+static volatile unsigned long g_cont_polls;      /* 轮询次数（诊断用） */
+static volatile unsigned long g_play_reads;      /* play.public.json 成功解析次数 */
+static volatile unsigned long g_play_fails;      /* 解析失败次数 */
 
 /* ---------------- 调用计数（原子递增，onTtsStart 热路径只读一次） ---------------- */
 static volatile unsigned long g_seen_play;      /* playTts 被调用次数 */
@@ -647,10 +724,253 @@ static int page_prot(uintptr_t page)
  *   +0x130 <trampoline>
  *   trampoline(+0x180)???????????+ ldr pc,[pc,#-4] + func+8
  */
+/* ------------------------------------------------- T8-15.2 续期前置回调 */
+
+/*
+ * renew.conf 解析（默认路径 /data/local/tmp/t7/renew.conf，可用 TG_RENEW_FILE 覆盖）。
+ *   renew_ms=N     续听时长；0 或缺失 = 关闭（第三个 hook 不解析、不安装）
+ *   renew_max=N    最多写多少次（0 = 不限；防止没人管的时候无限续期）
+ * 任何读取/格式失败都退回 renew_ms=0（安全降级），只记日志，不抛错。
+ */
+static void renew_conf_load(void)
+{
+    const char *env = getenv("TG_RENEW_FILE");
+    char line[256];
+    FILE *f;
+
+    g_renew_ms = 0;
+    g_renew_max = 0;
+    g_cont_enable = 0;
+    g_cont_auto = 0;
+    snprintf(g_cont_file, sizeof(g_cont_file), "%s", TG_CONT_FILE_DEFAULT);
+    snprintf(g_play_file, sizeof(g_play_file), "%s", TG_PLAY_FILE_DEFAULT);
+    snprintf(g_renew_path, sizeof(g_renew_path), "%s",
+             (env != NULL && env[0] == '/') ? env : TG_RENEW_FILE_DEFAULT);
+
+    f = fopen(g_renew_path, "r");
+    if (f == NULL) {
+        slog("renew: no config at %s -> disabled", g_renew_path);
+        return;
+    }
+    while (fgets(line, sizeof(line), f) != NULL) {
+        char *p = line, *eq, *val, *end;
+        long v;
+
+        while (*p == ' ' || *p == '\t') p++;
+        eq = strchr(p, '=');
+        if (eq == NULL) continue;
+        *eq = '\0';
+        val = eq + 1;
+        while (*val == ' ' || *val == '\t') val++;
+        end = val;
+        while (*end != '\0' && *end != '\n' && *end != '\r' &&
+               *end != ' ' && *end != '\t' && *end != '#') end++;
+        *end = '\0';
+        while (eq > p && (eq[-1] == ' ' || eq[-1] == '\t')) *--eq = '\0';
+        if (val[0] == '\0') continue;
+
+        v = strtol(val, NULL, 10);
+        if (strcmp(p, "renew_ms") == 0) {
+            if (v < 0) v = 0;
+            if (v > (long)TG_RENEW_MS_MAX) v = (long)TG_RENEW_MS_MAX;
+            g_renew_ms = (unsigned)v;
+        } else if (strcmp(p, "renew_max") == 0) {
+            if (v < 0) v = 0;
+            g_renew_max = (unsigned)v;
+        } else if (strcmp(p, "continuity_enable") == 0) {
+            g_cont_enable = (v != 0);
+        } else if (strcmp(p, "continuity_type") == 0) {
+            if (v < 0) v = 0;
+            if (v > 3) v = 3;
+            g_cont_type = (unsigned)v;
+        } else if (strcmp(p, "continuity_auto") == 0) {
+            g_cont_auto = (v != 0);
+        } else if (strcmp(p, "continuity_auto_max") == 0) {
+            if (v < 0) v = 0;
+            g_cont_auto_max = (unsigned)v;
+        } else if (strcmp(p, "continuity_play_file") == 0) {
+            snprintf(g_play_file, sizeof(g_play_file), "%s",
+                     (val[0] == '/') ? val : TG_PLAY_FILE_DEFAULT);
+        } else if (strcmp(p, "continuity_file") == 0) {
+            snprintf(g_cont_file, sizeof(g_cont_file), "%s",
+                     (val[0] == '/') ? val : TG_CONT_FILE_DEFAULT);
+        }
+    }
+    fclose(f);
+    if (g_cont_file[0] == '\0') {
+        snprintf(g_cont_file, sizeof(g_cont_file), "%s", TG_CONT_FILE_DEFAULT);
+    }
+    if (g_play_file[0] == '\0') {
+        snprintf(g_play_file, sizeof(g_play_file), "%s", TG_PLAY_FILE_DEFAULT);
+    }
+    slog("renew: conf=%s renew_ms=%u renew_max=%u continuity_enable=%d file=%s auto=%d play_file=%s auto_max=%u",
+         g_renew_path, g_renew_ms, g_renew_max, g_cont_enable, g_cont_file,
+         g_cont_auto, g_play_file, g_cont_auto_max);
+}
+
+/*
+ * SessionManager::onStopTalk 前置回调。r0 = this（ARM AAPCS，0x11392c mov r5,r0 确认）。
+ * 只做一件事：把 renew_ms 写进 this+0x80，随后原厂体在 0x113a4c 立刻读走并清零。
+ * 不拦截、不改寄存器、不改返回值；self 为空就什么都不做（安全降级）。
+ */
+static void tg_stoptalk_pre(void *self, int eou_id, void *wake_end)
+{
+    unsigned pre;
+    unsigned long n;
+
+    (void)eou_id;
+    (void)wake_end;
+    if (self == NULL) return;
+
+    /* 上一次写入的值此刻应当已经是 0（原厂 0x113a5c 清零）：这是"字段真被消费"的旁证 */
+    pre = *(volatile unsigned *)((char *)self + TG_OFF_RENEW_FIELD);
+    g_renew_pre = pre;
+
+    if (g_renew_ms == 0) return;
+    n = GET(g_renew_sets);
+    if (g_renew_max != 0 && n >= (unsigned long)g_renew_max) {
+        INC(g_renew_skipped);
+        return;
+    }
+    *(volatile unsigned *)((char *)self + TG_OFF_RENEW_FIELD) = (unsigned)g_renew_ms;
+    INC(g_renew_sets);
+    slog("renew: self=%p pre=%u set=%u n=%lu", self, pre, (unsigned)g_renew_ms, n + 1);
+}
+
+/* 从 play.public.json 读 "state" 与 "finished_ms"：只有 state=idle 且带 finished_ms 才算一次播完。
+ * 返回 0 = 读到了，-1 = 没读到/格式不对（不触发，安全降级）。 */
+static int play_finished_ms(const char *path, long long *out)
+{
+    FILE *f = fopen(path, "r");
+    char buf[1024];
+    size_t n;
+    const char *p;
+
+    if (f == NULL) return -1;
+    n = fread(buf, 1, sizeof(buf) - 1, f);
+    fclose(f);
+    if (n == 0) return -1;
+    buf[n] = '\0';
+
+    p = strstr(buf, "\"state\"");
+    if (p == NULL) return -1;
+    p = strchr(p, ':');
+    if (p == NULL) return -1;
+    p++;
+    while (*p == ' ' || *p == '\t') p++;
+    if (*p != '"') return -1;
+    p++;
+    if (strncmp(p, "idle", 4) != 0) return -1;
+
+    p = strstr(buf, "\"finished_ms\"");
+    if (p == NULL) return -1;
+    p = strchr(p, ':');
+    if (p == NULL) return -1;
+    *out = strtoll(p + 1, NULL, 10);   /* ARM32: strtol 是 32 位，毫秒时间戳会溢出成 LONG_MAX */
+    return 0;
+}
+
+/* 真正调用一次续听。why 只用于日志。返回 startTalk 的返回值。 */
+static int cont_fire(const char *why, long long seq)
+{
+    unsigned char info[TG_WAKEUPINFO_SIZE];
+    unsigned long n;
+    int ret;
+
+    if (g_func_starttalk == 0) return -1;
+    memset(info, 0, sizeof(info));
+    *(unsigned *)(void *)(info + TG_OFF_WAKEUPTYPE) = g_cont_type;
+    n = (unsigned long)g_cont_calls;
+    g_cont_calls = n + 1;
+    /* startTalk(type, &_WakeUpInfo_) —— 结构体 +0 必须是 continuity，否则开成 active */
+    ret = ((int (*)(int, const void *))g_func_starttalk)((int)g_cont_type, info);
+    g_cont_last = ret;
+    if (ret > 0) g_cont_ok++;
+    slog("continuity: %s seq=%lld startTalk(type=%u, info+0=%u) -> %d (n=%lu ok=%lu)",
+         why, seq, g_cont_type, *(unsigned *)(void *)(info + TG_OFF_WAKEUPTYPE),
+         ret, n + 1, (unsigned long)g_cont_ok);
+    return ret;
+}
+
+/* T8-15.2：手动一次性续听线程。仅在 continuity_enable=1 时启动。
+ *   手动：控制文件里的数字变化 -> 触发一次（:core 的 SELinux 域不能写/删该目录，只能读）。
+ *   自动：continuity_auto=1 时，我方 TTS 播完（play.public.json 的 finished_ms 变化且 state=idle）
+ *         就触发一次，最多 continuity_auto_max 次。默认关闭。 */
+static void *tg_continuity_thread(void *arg)
+{
+    long long last = -1;
+    long long last_fin = -1;
+    unsigned auto_fired = 0;
+
+    (void)arg;
+    g_cont_alive = 1;
+    slog("continuity: armed, watching %s (startTalk@%08x type=%u auto=%d play=%s max=%u)",
+         g_cont_file, g_func_starttalk, g_cont_type, g_cont_auto, g_play_file, g_cont_auto_max);
+    /* 先把当前计数器读进来：启动时已有的数字不算触发，只有"变化"才触发 */
+    {
+        FILE *f = fopen(g_cont_file, "r");
+
+        if (f != NULL) {
+            char buf[32] = {0};
+
+            if (fgets(buf, sizeof(buf), f) != NULL) last = strtoll(buf, NULL, 10);
+            fclose(f);
+        }
+    }
+    while (g_cont_run) {
+        FILE *f = fopen(g_cont_file, "r");
+
+        if (f != NULL) {
+            char buf[32] = {0};
+            long long seq = -1;
+
+            if (fgets(buf, sizeof(buf), f) != NULL) seq = strtoll(buf, NULL, 10);
+            fclose(f);
+            if (seq >= 0 && seq != last) {
+                last = seq;
+                (void)cont_fire("manual-trigger", seq);
+            }
+        }
+        if (g_cont_auto) {
+            long long fin = 0;
+
+            if (play_finished_ms(g_play_file, &fin) == 0) {
+                INC(g_play_reads);
+                if (last_fin < 0) {
+                    last_fin = fin;             /* 首个观测值只作基线，不触发 */
+                    slog("continuity: auto baseline finished_ms=%lld", fin);
+                } else if (fin != last_fin) {
+                    last_fin = fin;
+                    if (g_cont_auto_max != 0 && auto_fired >= g_cont_auto_max) {
+                        if (auto_fired == g_cont_auto_max) {
+                            auto_fired++;
+                            slog("continuity: auto limit reached (%u) - staying quiet",
+                                 g_cont_auto_max);
+                        }
+                    } else {
+                        auto_fired++;
+                        (void)cont_fire("auto-after-tts", fin);
+                    }
+                }
+            } else {
+                INC(g_play_fails);
+            }
+        }
+        INC(g_cont_polls);
+        usleep(120 * 1000);
+    }
+    slog("continuity: thread exit");
+    g_cont_alive = 0;
+    return NULL;
+}
+
 #define STUB_PLAY_OFF    0x00
 #define TRAMP_PLAY_OFF   0x80
 #define STUB_START_OFF   0x100
 #define TRAMP_START_OFF  0x180
+/* T8-15.2 续期前置 hook（默认不装） */
+#define STUB_STOPTALK_OFF   0x200
+#define TRAMP_STOPTALK_OFF  0x280
 
 static int build_stub_page(void)
 {
@@ -719,6 +1039,39 @@ static int build_stub_page(void)
     t[1] = g_orig_start[1];
     t[2] = TG_PATCH_JUMP;
     t[3] = g_func_start + 8;
+
+    /* --- T8-15.2 onStopTalk 前置 stub（只在 renew_ms>0 时构建/安装） ---
+     *   +0x200 E92D401F  push {r0,r1,r2,r3,r4,lr}   ; 24 B，SP 保持 8 对齐
+     *   +0x204 E59F401C  ldr  r4,[pc,#0x1C]         ; -> +0x228 = cb
+     *   +0x208 E12FFF34  blx  r4                    ; cb(this, eou_id, info)
+     *   +0x20C E8BD401F  pop  {r0,r1,r2,r3,r4,lr}   ; 参数原样还原
+     *   +0x210 E59FF014  ldr  pc,[pc,#0x14]         ; -> +0x22C = trampoline
+     */
+    if (g_func_stoptalk != 0) {
+        uint32_t nop = 0xE1A00000u;      /* mov r0,r0 */
+
+        g_stub_stoptalk = (uint32_t)(uintptr_t)g_stub_page + STUB_STOPTALK_OFF;
+        g_tramp_stoptalk = (uint32_t)(uintptr_t)g_stub_page + TRAMP_STOPTALK_OFF;
+        s = (uint32_t *)(uintptr_t)g_stub_stoptalk;
+        s[0]  = 0xE92D401Fu;
+        s[1]  = 0xE59F401Cu;
+        s[2]  = 0xE12FFF34u;
+        s[3]  = 0xE8BD401Fu;
+        s[4]  = 0xE59FF014u;
+        s[5]  = nop;
+        s[6]  = nop;
+        s[7]  = nop;
+        s[8]  = nop;
+        s[9]  = nop;
+        s[10] = (uint32_t)(uintptr_t)&tg_stoptalk_pre;
+        s[11] = g_tramp_stoptalk;
+
+        t = (uint32_t *)(uintptr_t)g_tramp_stoptalk;
+        t[0] = g_orig_stoptalk[0];
+        t[1] = g_orig_stoptalk[1];
+        t[2] = TG_PATCH_JUMP;
+        t[3] = g_func_stoptalk + 8;
+    }
 
     __builtin___clear_cache((char *)g_stub_page, (char *)g_stub_page + TG_STUB_PAGE);
 
@@ -791,6 +1144,8 @@ int tg_hook_prepare(void)
 
     if (g_func_play != 0 && g_func_start != 0) return TG_OK;
 
+    renew_conf_load();
+
     dl_iterate_phdr(mod_cb, &m);
     if (!m.found) {
         set_err("module %s not loaded in pid %d", TG_MODULE, (int)getpid());
@@ -841,8 +1196,65 @@ int tg_hook_prepare(void)
 
     g_state = TG_OK;
     g_err[0] = '\0';
-    slog("prepare ok: base=%p playTts=0x%08x onTtsStart=0x%08x",
-         (void *)m.base, g_func_play, g_func_start);
+
+    /* T8-15.2：只有配了续期时长才解析并校验第三个入口；否则它根本不存在于本次安装。
+     * 注意安全降级方向：续期解析失败只关掉续期，**绝不能**连带把 TTS 守卫一起关掉
+     * （守卫缺失 = 原厂回答会盖住我们的回答，比"不续听"严重得多）。 */
+    g_func_stoptalk = 0;
+    g_hooked_stoptalk = 0;
+    if (g_renew_ms > 0) {
+        uint32_t a3 = 0;
+        const uint32_t *p;
+        const char *why = NULL;
+        char detail[256] = {0};
+
+        rc = mem_find_sym(m.base, TG_SYM_STOPTALK, &a3, detail, sizeof(detail));
+        if (rc != TG_OK) {
+            why = "symbol";
+        } else if ((a3 - (uint32_t)m.base) != TG_OFF_STOPTALK) {
+            snprintf(detail, sizeof(detail), "onStopTalk offset 0x%x != expected 0x%x",
+                     (unsigned)(a3 - (uint32_t)m.base), (unsigned)TG_OFF_STOPTALK);
+            why = "offset";
+        } else {
+            p = (const uint32_t *)(uintptr_t)a3;
+            if (p[0] != TG_PRO_STOPTALK0 || p[1] != TG_PRO_STOPTALK1) {
+                snprintf(detail, sizeof(detail), "onStopTalk prologue %08x %08x != %08x %08x",
+                         p[0], p[1], TG_PRO_STOPTALK0, TG_PRO_STOPTALK1);
+                why = "prologue";
+            } else {
+                g_orig_stoptalk[0] = p[0];
+                g_orig_stoptalk[1] = p[1];
+                g_func_stoptalk = a3;
+            }
+        }
+        if (why != NULL) {
+            set_err("renew: refusing onStopTalk hook (%s): %s -> renew disabled, TTS guard unaffected",
+                    why, detail[0] != '\0' ? detail : "?");
+            g_renew_ms = 0;
+            g_func_stoptalk = 0;
+        }
+    }
+
+    /* T8-15.2 第二阶段：GenieApi::startTalk 是本地符号（dynsym 里没有），只能按偏移 + 序言校验。
+     * 校验失败只关掉"手动续听"，TTS 守卫照旧安装。 */
+    g_func_starttalk = 0;
+    if (g_cont_enable) {
+        uint32_t a4 = (uint32_t)m.base + TG_OFF_STARTTALK;
+        const uint32_t *p = (const uint32_t *)(uintptr_t)a4;
+
+        if (p[0] != TG_PRO_STARTTALK0 || p[1] != TG_PRO_STARTTALK1) {
+            set_err("continuity: startTalk prologue %08x %08x != %08x %08x -> continuity disabled, "
+                    "TTS guard unaffected", p[0], p[1], TG_PRO_STARTTALK0, TG_PRO_STARTTALK1);
+            g_cont_enable = 0;
+        } else {
+            g_func_starttalk = a4;
+        }
+    }
+
+    slog("prepare ok: base=%p playTts=0x%08x onTtsStart=0x%08x onStopTalk=0x%08x "
+         "(renew_ms=%u continuity=%d startTalk=0x%08x)",
+         (void *)m.base, g_func_play, g_func_start, g_func_stoptalk, g_renew_ms,
+         g_cont_enable, g_func_starttalk);
     return TG_OK;
 }
 
@@ -853,6 +1265,7 @@ unsigned int tg_hook_patch_lo(void)
 
     if (g_func_play != 0) lo = g_func_play;
     if (g_func_start != 0 && (lo == 0 || g_func_start < lo)) lo = g_func_start;
+    if (g_func_stoptalk != 0 && (lo == 0 || g_func_stoptalk < lo)) lo = g_func_stoptalk;
     return (unsigned int)lo;
 }
 
@@ -862,6 +1275,7 @@ unsigned int tg_hook_patch_hi(void)
 
     if (g_func_play != 0) hi = g_func_play + 8;
     if (g_func_start != 0 && g_func_start + 8 > hi) hi = g_func_start + 8;
+    if (g_func_stoptalk != 0 && g_func_stoptalk + 8 > hi) hi = g_func_stoptalk + 8;
     return (unsigned int)hi;
 }
 
@@ -895,18 +1309,61 @@ int tg_hook_install(void)
         return rc;
     }
     g_hooked_play = 1;
+
+    /* T8-15.2：续期 hook 最后装。失败就把前两个一起回滚，绝不留下"续期装上了、守卫没装上"或
+     * 反过来这种半成品（守卫缺失 = 原厂回答会压过我们的回答）。 */
+    if (g_func_stoptalk != 0) {
+        rc = patch_one(g_func_stoptalk, g_stub_stoptalk, g_orig_stoptalk);
+        if (rc != TG_OK) {
+            (void)restore_one(g_func_play, g_orig_play);
+            g_hooked_play = 0;
+            (void)restore_one(g_func_start, g_orig_start);
+            g_hooked_start = 0;
+            g_state = rc;
+            return rc;
+        }
+        g_hooked_stoptalk = 1;
+    }
+
     g_patched = 1;
     g_state = TG_OK;
     g_err[0] = '\0';
 
     slog("installed: onTtsStart patch=%08x stub=%08x tramp=%08x ; playTts patch=%08x stub=%08x tramp=%08x",
          g_func_start, g_stub_start, g_tramp_start, g_func_play, g_stub_play, g_tramp_play);
+    if (g_hooked_stoptalk) {
+        slog("installed: onStopTalk renew hook patch=%08x stub=%08x tramp=%08x renew_ms=%u",
+             g_func_stoptalk, g_stub_stoptalk, g_tramp_stoptalk, g_renew_ms);
+    }
+    /* T8-15.2 第二阶段：手动一次性续听（只有 continuity_enable=1 才会走到这里） */
+    if (g_cont_enable && g_func_starttalk != 0 && !g_cont_started) {
+        pthread_t th;
+
+        g_cont_run = 1;
+        if (pthread_create(&th, NULL, tg_continuity_thread, NULL) == 0) {
+            (void)pthread_detach(th);
+            g_cont_started = 1;
+        } else {
+            g_cont_run = 0;
+            set_err("continuity: pthread_create failed -> continuity disabled (TTS guard unaffected)");
+        }
+    }
     return TG_OK;
 }
 
 int tg_hook_uninstall(void)
 {
     if (!g_patched) { g_state = TG_OK; return TG_OK; }
+
+    g_cont_run = 0;          /* 先让续听轮询线程停下，再恢复序言 */
+    /* 等它真的退出（最多 500 ms）：否则下一次 install 会起第二个轮询线程，
+     * 两个线程看到同一个计数器各触发一次 —— 重复开麦。 */
+    {
+        int spin;
+
+        for (spin = 0; spin < 50 && g_cont_alive; spin++) usleep(10 * 1000);
+        if (!g_cont_alive) g_cont_started = 0;
+    }
 
     if (g_hooked_play) {
         (void)restore_one(g_func_play, g_orig_play);
@@ -916,11 +1373,15 @@ int tg_hook_uninstall(void)
         (void)restore_one(g_func_start, g_orig_start);
         g_hooked_start = 0;
     }
+    if (g_hooked_stoptalk) {
+        (void)restore_one(g_func_stoptalk, g_orig_stoptalk);
+        g_hooked_stoptalk = 0;
+    }
     g_patched = 0;
     g_state = TG_OK;
     g_err[0] = '\0';
-    slog("uninstalled: original prologues restored (playTts=%08x onTtsStart=%08x)",
-         g_func_play, g_func_start);
+    slog("uninstalled: original prologues restored (playTts=%08x onTtsStart=%08x onStopTalk=%08x)",
+         g_func_play, g_func_start, g_func_stoptalk);
     return TG_OK;
 }
 
@@ -941,7 +1402,7 @@ int tg_hook_hooked(void)
 
 const char *tg_hook_stats(void)
 {
-    static char buf[420];
+    static char buf[760];
 
     snprintf(buf, sizeof(buf),
              "state=%d hooked=%d play=%d start=%d func_play=%08x func_start=%08x "
@@ -959,6 +1420,19 @@ const char *tg_hook_stats(void)
              GET(g_native_reads), GET(g_native_expired),
              g_native_stats.bad_marker, g_native.mk.seq,
              g_native_path[0] != '\0' ? g_native_path : "(disabled)");
+    {
+        size_t n = strlen(buf);
+
+        snprintf(buf + n, sizeof(buf) - n,
+                 " stoptalk=%d func_stoptalk=%08x renew_ms=%u renew_sets=%lu "
+                 "renew_skip=%lu renew_pre=%u renew_file=%s "
+                 "cont=%d cont_started=%d cont_calls=%lu cont_ok=%lu cont_last=%d cont_file=%s",
+                 g_hooked_stoptalk, g_func_stoptalk, g_renew_ms,
+                 GET(g_renew_sets), GET(g_renew_skipped), g_renew_pre,
+                 g_renew_path[0] != '\0' ? g_renew_path : "(none)",
+                 g_cont_enable, g_cont_started, GET(g_cont_calls), GET(g_cont_ok),
+                 g_cont_last, g_cont_file);
+    }
     return buf;
 }
 
