@@ -80,6 +80,9 @@ typedef struct {
     /* T8-15.3 补充：原厂指令（音量/媒体/屏幕…）执行完不会有我方 TTS，自动续听需要
      * 由 worker 主动补一次"开麦"请求，否则连续对话在这里断掉。 */
     long long    native_relisten_due_ms;
+    long long    native_rel_req_ms;      /* 请求发出的时刻（等原厂会话确认用） */
+    long long    native_req_seq;         /* 已写出的最大请求序号（严格递增） */
+    int          native_rel_waiting;     /* 1 = 已发请求，等待原厂开麦确认 */
     unsigned long native_relisten_requests;
     tt_ctx       tap;                    /* T8-15：原厂会话事件观察（只读 logcat 输出） */
     char         tap_path[T6B_PATH_MAX];
@@ -2285,16 +2288,25 @@ static void aiw_write_listen_hold(t6b_worker *w, int hold_ms, long long now_ms)
  * 只写数字、不需要守卫回写，方向与 listen_hold 一致（worker 写 / 守卫读）。 */
 static void aiw_request_continuity(t6b_worker *w, long long now_ms, const char *why)
 {
-    FILE *f = fopen(T8_CONT_REQ_FILE, "w");
+    FILE *f;
+    long long seq;
 
     w->native_relisten_requests++;
+    /* 序号严格递增：同一毫秒内连发两次也必须是两个不同序号，否则守卫会把第二次当成重复请求 */
+    seq = (now_ms > w->native_req_seq) ? now_ms : (w->native_req_seq + 1);
+    w->native_req_seq = seq;
+    w->native_rel_req_ms = now_ms;
+    w->native_rel_waiting = 1;
+    f = fopen(T8_CONT_REQ_FILE, "w");
     if (f == NULL) {
+        w->native_rel_waiting = 0;
         always("continuity request: cannot write %s - device will not re-listen", T8_CONT_REQ_FILE);
         return;
     }
-    fprintf(f, "%lld\n", now_ms);
+    fprintf(f, "%lld\n", seq);
     fclose(f);
-    always("continuity request: re-listen asked (%s) n=%lu", why, w->native_relisten_requests);
+    always("continuity request: seq=%lld sent (%s) n=%lu - waiting for factory session",
+           seq, why, w->native_relisten_requests);
 }
 
 /* 让 TTS 执行器立刻停播（并作废 queue/inflight 里还没播的项）。
@@ -2387,6 +2399,12 @@ static void factory_tap_poll(t6b_worker *w, long long now_ms)
     for (i = 0; i < n; i++) {
         switch (ev[i].kind) {
         case TT_EV_WAKE:
+            if (w->native_rel_waiting && ev[i].wake_type == 1 &&
+                now_ms - w->native_rel_req_ms <= 5000) {
+                w->native_rel_waiting = 0;
+                always("continuity request: CONFIRMED by factory session=%s (+%lld ms)",
+                       ev[i].session, now_ms - w->native_rel_req_ms);
+            }
             sc_on_factory_wake(&w->sc, ev[i].session, now_ms);
             always("factory wake (onStartTalk): session=%s wake_type=%d listening=%d round=%d",
                    ev[i].session[0] != '\0' ? ev[i].session : "?",
@@ -2440,6 +2458,12 @@ static void session_lifecycle_poll(t6b_worker *w, long long now_ms)
         } else {
             always("native command: dialog already closed - no re-listen requested");
         }
+    }
+    /* T8-15.4：请求是否真的换来了原厂一段新会话 —— 只看"发了 startTalk"不算数 */
+    if (w->native_rel_waiting && now_ms - w->native_rel_req_ms > 5000) {
+        w->native_rel_waiting = 0;
+        always("continuity request: NOT confirmed within 5000 ms (guard deferred/dropped; "
+               "see tgt log for req seq reason)");
     }
 
     (void)sc_poll(&w->sc, now_ms);

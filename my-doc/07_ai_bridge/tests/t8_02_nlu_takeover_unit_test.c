@@ -1,4 +1,4 @@
-/*
+﻿/*
  * t8_02_nlu_takeover_unit_test.c -- T8-02 host 单测（含 T8-01 的 70 条断言）
  *
  * A) 接管判定：真机抓到的 4 条文本 + 参数不完整 + 意图未启用 + 全禁用
@@ -150,7 +150,7 @@ int main(void)
         struct { const char *text; int expect_pass; const char *label; } cases[] = {
             { "天猫精灵现在几点",        1, "本地指令 time" },
             { "天猫精灵音量调到五",      1, "本地指令 volume.set" },
-            { "天猫精灵暂停",            1, "本地指令 stop" },
+            { "天猫精灵暂停",            1, "本地指令 media (T8-15.4)" },
             { "天猫精灵给我讲一个笑话",  0, "AI 聊天" }
         };
         for (i = 0; i < (int)(sizeof(cases)/sizeof(cases[0])); i++) {

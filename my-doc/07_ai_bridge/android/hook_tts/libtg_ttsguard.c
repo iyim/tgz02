@@ -1,4 +1,4 @@
-/*
+﻿/*
  * libtg_ttsguard.c -- T7-02 原厂回答屏蔽（TTS 来源守卫），ARM32 / Android 8.1
  *
  * 目标：保留原厂唤醒、ASR、TTS 引擎，只屏蔽"原厂 NLU 对普通用户指令生成的回答"，
@@ -118,7 +118,16 @@
  * 服务端 20 s 后回"无指令"，一句都没听到）。所以必须把 type 置成 continuity。 */
 #define TG_OFF_WAKEUPTYPE  0x00u
 #define TG_CONT_TYPE_DEFAULT 1u
-#define TG_CONT_FILE_DEFAULT "/data/local/tmp/t7/continuity.once"
+#define TG_CONT_FILE_DEFAULT "/data/local/tmp/t7/continuity.req"
+/* 续听请求契约（worker 写、守卫读）：
+ *   文件内容 = 一个十进制整数序号（严格递增，建议用 CLOCK_MONOTONIC 毫秒）。
+ *   守卫只消费严格大于上次已消费值的序号 -> 轮询不会重复消费同一个请求。
+ *   消费后先过三道闸门（停止/退出 hold、原厂正在聆听、800 ms 去抖）：
+ *     - 命中 stop/exit hold  -> 立刻丢弃（用户已要求停止，终态，不重试）
+ *     - 其它闸门            -> 在 TG_REQ_RETRY_MS 窗口内每 120 ms 重试
+ *     - 窗口到期仍在闸门里  -> 记为 expired 丢弃，并打印原因
+ *   路径必须与 worker 侧 T8_CONT_REQ_FILE 一致；配置里的 continuity_file 可覆盖，
+ *   但两侧不一致时 worker 的请求会被静默忽略（守卫启动日志会打实际监听路径）。 */
 /* T8-15.2 自动续听：读 T5 TTS 执行器发布的播放状态文件（守卫原本就在读同目录的
  * native_route.public.json，读权限已具备）。语义：state 变回 idle 且 finished_ms 变化
  * = 我方的 TTS 真的播完了（原厂回答会被守卫拦在 onTtsStart，不会触发这个变化）。
@@ -205,6 +214,14 @@ static uint32_t            g_stub_pstarttalk, g_tramp_pstarttalk;
 static uint32_t            g_orig_pstarttalk[2];
 static int                 g_hooked_pstarttalk;
 static volatile unsigned long g_cont_skipped;     /* 因"已在聆听/去抖/停止标记"被跳过的次数 */
+/* T8-15.4：worker -> 守卫的续听请求（单文件、单序号；契约见文件头注释） */
+#define TG_REQ_RETRY_MS 2500
+static volatile int        g_req_pending;
+static volatile long long  g_req_seq = -1;
+static volatile long long  g_req_at;
+
+static volatile long long  g_req_logged;
+static volatile unsigned long g_req_seen, g_req_fired, g_req_dropped;
 
 /* ---------------- 调用计数（原子递增，onTtsStart 热路径只读一次） ---------------- */
 static volatile unsigned long g_seen_play;      /* playTts 被调用次数 */
@@ -956,7 +973,7 @@ static int cont_fire(const char *why, long long seq)
  *         就触发一次，最多 continuity_auto_max 次。默认关闭。 */
 static void *tg_continuity_thread(void *arg)
 {
-    long long last = -1;
+    long long last_seq = -1;
     long long last_fin = -1;
     unsigned auto_fired = 0;
 
@@ -964,29 +981,66 @@ static void *tg_continuity_thread(void *arg)
     g_cont_alive = 1;
     slog("continuity: armed, watching %s (startTalk@%08x type=%u auto=%d play=%s max=%u)",
          g_cont_file, g_func_starttalk, g_cont_type, g_cont_auto, g_play_file, g_cont_auto_max);
-    /* 先把当前计数器读进来：启动时已有的数字不算触发，只有"变化"才触发 */
+    /* 先把当前请求序号读进来：启动时已有的序号不算新请求，只有"严格更大"才消费 */
     {
         FILE *f = fopen(g_cont_file, "r");
 
         if (f != NULL) {
             char buf[32] = {0};
 
-            if (fgets(buf, sizeof(buf), f) != NULL) last = strtoll(buf, NULL, 10);
+            if (fgets(buf, sizeof(buf), f) != NULL) last_seq = strtoll(buf, NULL, 10);
             fclose(f);
+            slog("continuity: request baseline seq=%lld", last_seq);
         }
     }
     while (g_cont_run) {
+        long long seq = -1;
         FILE *f = fopen(g_cont_file, "r");
 
+        /* ---- T8-15.4：跨进程续听请求的消费端（契约见文件头） ---- */
         if (f != NULL) {
             char buf[32] = {0};
-            long long seq = -1;
 
             if (fgets(buf, sizeof(buf), f) != NULL) seq = strtoll(buf, NULL, 10);
             fclose(f);
-            if (seq >= 0 && seq != last) {
-                last = seq;
-                (void)cont_fire("manual-trigger", seq);
+        }
+        if (seq > last_seq) {
+            last_seq = seq;
+            g_req_seq = seq;
+            g_req_pending = 1;
+            g_req_at = mono_ms();
+            g_req_logged = 0;
+            INC(g_req_seen);
+            slog("continuity req: seq=%lld accepted -> pending (attempt window %d ms)",
+                 seq, TG_REQ_RETRY_MS);
+        }
+        if (g_req_pending) {
+            long long now = mono_ms();
+            const char *skip = NULL;
+
+            if (hold_active()) skip = "stop/exit hold";
+            else if (g_dev_listening) skip = "factory already listening";
+            else if (g_last_cont_ms != 0 && now - g_last_cont_ms < 800) skip = "debounce";
+
+            if (skip == NULL) {
+                g_req_pending = 0;
+                INC(g_req_fired);
+                slog("continuity req: seq=%lld firing after %lld ms", g_req_seq, now - g_req_at);
+                (void)cont_fire("worker-request", g_req_seq);
+            } else if (strcmp(skip, "stop/exit hold") == 0) {
+                /* 停止/退出是终态：立刻丢弃，绝不重试 */
+                g_req_pending = 0;
+                INC(g_req_dropped);
+                slog("continuity req: seq=%lld dropped (%s) - user asked to stop", g_req_seq, skip);
+            } else if (now - g_req_at > TG_REQ_RETRY_MS) {
+                g_req_pending = 0;
+                INC(g_req_dropped);
+                slog("continuity req: seq=%lld expired after %lld ms (%s)",
+                     g_req_seq, now - g_req_at, skip);
+            } else if (now - g_req_logged > 400) {
+                g_req_logged = now;
+                slog("continuity req: seq=%lld deferred (%s) +%lld ms", g_req_seq, skip,
+                     now - g_req_at);
             }
         }
         if (g_cont_auto) {
@@ -1554,7 +1608,7 @@ int tg_hook_hooked(void)
 
 const char *tg_hook_stats(void)
 {
-    static char buf[760];
+    static char buf[1024];
 
     snprintf(buf, sizeof(buf),
              "state=%d hooked=%d play=%d start=%d func_play=%08x func_start=%08x "
@@ -1586,6 +1640,9 @@ const char *tg_hook_stats(void)
                  g_cont_enable, g_cont_started, GET(g_cont_calls), GET(g_cont_ok),
                  g_cont_last, g_cont_file, GET(g_cont_skipped), g_dev_listening,
                  g_hooked_pstarttalk, TG_HOLD_FILE_DEFAULT);
+        snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
+                 " req_seen=%lu req_fired=%lu req_dropped=%lu req_pending=%d req_seq=%lld",
+                 GET(g_req_seen), GET(g_req_fired), GET(g_req_dropped), g_req_pending, g_req_seq);
     }
     return buf;
 }

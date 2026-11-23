@@ -1,4 +1,4 @@
-/*
+﻿/*
  * t7_05r1_incomplete_unit_test.c -- T7-05-R1：不完整指令 vs 可执行指令，以及二次识别去重
  *
  * 任务书 §二 点名的风险：
@@ -75,7 +75,7 @@ int main(void)
     expect("关闭屏幕", IR_SCREEN_OFF, 1, NULL);
     expect("现在几点", IR_TIME, 1, NULL);
     expect("帮我播放周杰伦的歌", IR_MEDIA, 1, NULL);
-    expect("暂停", IR_STOP, 1, NULL);
+    expect("暂停", IR_MEDIA, 1, NULL);   /* T8-15.4 */
 
     printf("\n[3] 不完整表达进不了快路，也不会被当成完整指令发布\n");
     (void)ug_defaults(&c);

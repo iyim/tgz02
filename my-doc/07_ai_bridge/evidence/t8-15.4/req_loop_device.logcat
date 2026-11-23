@@ -1,0 +1,75 @@
+11-23 22:42:48.363 D/AGSpeechEngine(30807): onSpeechWakeup,530:tian mao jing ling,天猫精灵
+11-23 22:42:48.376 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1969562, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-23 22:42:52.201 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1969562, text = 天猫精灵现在几点, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:42:52.202 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1969562, txt = 天猫精灵现在几点, isFinished = 1, feedback = 1
+11-23 22:42:52.208 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1969562, isFinished = 1, text = 现在几点
+11-23 22:42:54.477 I/tgt     (30807): continuity: auto-after-tts seq=1795444974354 startTalk(type=1, info+0=1) -> 0 (n=17 ok=0)
+11-23 22:42:54.490 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1973663, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 22:43:03.575 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1973663, text = 你你叫什么名字, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:43:03.576 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1973663, txt = 你你叫什么名字, isFinished = 1, feedback = 1
+11-23 22:43:03.581 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1973663, isFinished = 1, text = 你你叫什么名字
+11-23 22:43:08.596 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1973663, real session=1973663 exit=0
+11-23 22:43:09.979 I/tgt     (30807): continuity: auto-after-tts seq=1795444989845 startTalk(type=1, info+0=1) -> 0 (n=18 ok=0)
+11-23 22:43:10.006 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1973668, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 22:43:15.292 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1973668, text = 音量调大一点, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:43:15.292 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1973668, txt = 音量调大一点, isFinished = 1, feedback = 1
+11-23 22:43:15.296 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1973668, isFinished = 1, text = 音量调大一点
+11-23 22:43:15.537 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1973668, real session=1973668 exit=0
+11-23 22:43:16.767 I/tgt     (30807): continuity req: seq=120295997 accepted -> pending (attempt window 2500 ms)
+11-23 22:43:16.767 I/tgt     (30807): continuity req: seq=120295997 firing after 0 ms
+11-23 22:43:16.768 I/tgt     (30807): continuity: worker-request seq=120295997 startTalk(type=1, info+0=1) -> 0 (n=19 ok=0)
+11-23 22:43:16.775 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1973682, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 22:43:24.944 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1973682, text = 你说一句鼓励的话, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:43:24.945 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1973682, txt = 你说一句鼓励的话, isFinished = 1, feedback = 1
+11-23 22:43:24.964 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1973682, isFinished = 1, text = 你说一句鼓励的话
+11-23 22:43:29.975 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1973682, real session=1973682 exit=0
+11-23 22:43:30.040 I/tgt     (30807): continuity: auto-after-tts seq=1795445009961 startTalk(type=1, info+0=1) -> 0 (n=20 ok=0)
+11-23 22:43:30.072 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1973687, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 22:43:38.583 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1973687, text = 静音, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:43:38.584 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1973687, txt = 静音, isFinished = 1, feedback = 1
+11-23 22:43:38.589 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1973687, isFinished = 1, text = 静音
+11-23 22:43:38.816 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1973687, real session=1973687 exit=0
+11-23 22:43:39.969 I/tgt     (30807): continuity req: seq=120319173 accepted -> pending (attempt window 2500 ms)
+11-23 22:43:39.969 I/tgt     (30807): continuity req: seq=120319173 firing after 1 ms
+11-23 22:43:39.970 I/tgt     (30807): continuity: worker-request seq=120319173 startTalk(type=1, info+0=1) -> 0 (n=21 ok=0)
+11-23 22:43:39.978 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1973702, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 22:43:46.625 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1973702, text = 取消静音, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:43:46.626 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1973702, txt = 取消静音, isFinished = 1, feedback = 1
+11-23 22:43:46.633 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1973702, isFinished = 1, text = 取消静音
+11-23 22:43:46.862 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1973702, real session=1973702 exit=0
+11-23 22:43:48.063 I/tgt     (30807): continuity req: seq=120327375 accepted -> pending (attempt window 2500 ms)
+11-23 22:43:48.063 I/tgt     (30807): continuity req: seq=120327375 firing after 1 ms
+11-23 22:43:48.079 I/tgt     (30807): continuity: worker-request seq=120327375 startTalk(type=1, info+0=1) -> 0 (n=22 ok=0)
+11-23 22:43:48.085 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1973717, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 22:43:55.253 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1973717, text = 一到十怎么说, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:43:55.253 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1973717, txt = 一到十怎么说, isFinished = 1, feedback = 1
+11-23 22:43:55.256 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1973717, isFinished = 1, text = 一到十怎么说
+11-23 22:44:00.275 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1973717, real session=1973717 exit=0
+11-23 22:44:03.740 I/tgt     (30807): continuity: auto-after-tts seq=1795445043660 startTalk(type=1, info+0=1) -> 0 (n=23 ok=0)
+11-23 22:44:03.744 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1973722, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 22:44:09.433 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1973722, text = 播放音乐, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:44:09.433 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1973722, txt = 播放音乐, isFinished = 1, feedback = 1
+11-23 22:44:09.436 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1973722, isFinished = 1, text = 播放音乐
+11-23 22:44:10.232 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1973722, real session=1973722 exit=0
+11-23 22:44:10.726 I/tgt     (30807): continuity req: seq=120350020 accepted -> pending (attempt window 2500 ms)
+11-23 22:44:10.726 I/tgt     (30807): continuity req: seq=120350020 firing after 1 ms
+11-23 22:44:10.732 I/tgt     (30807): continuity: worker-request seq=120350020 startTalk(type=1, info+0=1) -> 0 (n=24 ok=0)
+11-23 22:44:10.739 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1973727, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 22:44:17.251 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1973727, text = 暂停, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:44:17.252 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1973727, txt = 暂停, isFinished = 1, feedback = 1
+11-23 22:44:17.254 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1973727, isFinished = 1, text = 暂停
+11-23 22:44:17.496 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1973727, real session=1973727 exit=0
+11-23 22:44:18.680 I/tgt     (30807): continuity req: seq=120357964 accepted -> pending (attempt window 2500 ms)
+11-23 22:44:18.681 I/tgt     (30807): continuity req: seq=120357964 firing after 0 ms
+11-23 22:44:18.681 I/tgt     (30807): continuity: worker-request seq=120357964 startTalk(type=1, info+0=1) -> 0 (n=25 ok=0)
+11-23 22:44:18.696 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1973731, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 22:44:25.277 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1973731, text = 你叫什么名字, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:44:25.278 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1973731, txt = 你叫什么名字, isFinished = 1, feedback = 1
+11-23 22:44:25.284 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1973731, isFinished = 1, text = 你叫什么名字
+11-23 22:44:30.296 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1973731, real session=1973731 exit=0
+11-23 22:44:31.113 I/tgt     (30807): continuity: auto-after-tts seq=1795445071081 startTalk(type=1, info+0=1) -> 0 (n=26 ok=0)
+11-23 22:44:31.123 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1973736, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-23 22:44:37.183 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1973736, text = 退出, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:44:37.183 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1973736, txt = 退出, isFinished = 1, feedback = 1
+11-23 22:44:37.185 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1973736, isFinished = 1, text = 退出
+11-23 22:44:37.598 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1973736, real session=1973736 exit=0

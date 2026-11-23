@@ -1,4 +1,4 @@
-/*
+﻿/*
  * t7_05_route_negatives_unit_test.c -- T7-05 路由误判样本（任务书 五、路由规则完善）
  *
  * 每条样本都写明"应该走哪条路"，避免为了命中率把所有含"天气/时间/播放/停止"
@@ -62,7 +62,7 @@ int main(void)
     expect("现在几点", IR_TIME, "time");
     expect("明天会下雨吗", IR_WEATHER, "weather");
     expect("声音大一点", IR_VOLUME, "volume-up");
-    expect("暂停", IR_STOP, "stop");
+    expect("暂停", IR_MEDIA, "media");   /* T8-15.4 */
     expect("下一首", IR_MEDIA, "media-next");
 
     printf("\n[3] 中文数字/全角数字/百分比\n");

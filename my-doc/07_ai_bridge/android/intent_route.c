@@ -488,7 +488,10 @@ static const char *const IR_MEDIA_HIT[] = {
     "继续播放", "接着放", "接着播",
     "下一首", "上一首", "切歌", "换一首", "换首歌", "单曲循环", "随机播放",
     "播放音乐", "放首歌", "来首歌", "放音乐", "播放歌曲", "播放", "放一首", "播一首", "播首", "放首",
-    "来一首", "唱一首", "听歌", "停止音乐", "关掉音乐", "音乐关掉", NULL
+    "来一首", "唱一首", "听歌", "停止音乐", "关掉音乐", "音乐关掉",
+    /* T8-15.4：媒体暂停/恢复必须归"播放控制"，不能落进"结束对话"的停止语里 ——
+     * 否则用户说一句"暂停"就把连续对话关死（真机实测：暂停之后说的话再没人听）。 */
+    "暂停播放", "暂停一下", "暂停", "恢复播放", "继续播", NULL
 };
 
 static const char *const IR_MEDIA_VETO[] = {
@@ -497,13 +500,20 @@ static const char *const IR_MEDIA_VETO[] = {
     "什么意思", "是什么", "播放器", NULL
 };
 
+/* T8-15.4：播放"暂停/恢复"要能与"播放"区分开（arg 只用于我们自己的记录与日志，
+ * 原厂侧仍是自己的 NLU 决定动作；但有区分才看得出用户到底想干什么）。 */
+static const char *const IR_MEDIA_PAUSE[] = {
+    "暂停播放", "暂停一下", "暂停", NULL
+};
+
 static int ir_match_media(const char *n, ir_result *out)
 {
     if (!ir_has_any(n, IR_MEDIA_HIT)) return 0;
     if (ir_has_any(n, IR_MEDIA_VETO)) return 0;
 
-    if (ir_has_any(n, IR_MEDIA_HIT)) { ir_set(out, IR_MEDIA, "media.play", "play"); return 1; }
-    return 0;
+    if (ir_has_any(n, IR_MEDIA_PAUSE)) { ir_set(out, IR_MEDIA, "media.pause", "pause"); return 1; }
+    ir_set(out, IR_MEDIA, "media.play", "play");
+    return 1;
 }
 
 /* ---------------- 打断播报 ---------------- */
@@ -511,8 +521,8 @@ static int ir_match_media(const char *n, ir_result *out)
 /* 用户想"现在别说了"。这类话绝不能让模型回答（模型只会说"我停不了，你自己操作"），
  * 而且必须在 Worker 侧先把正在播的回答停掉（写 tts/control/stop）。 */
 static const char *const IR_STOP_HIT[] = {
-    "停止", "停下", "停一下", "先停", "暂停", "别说了", "别说", "不要说了",
-    "不用说了", "安静", "闭嘴", "打住", "停", NULL
+    "停止", "停下", "停一下", "先停", "别说了", "别说", "不要说了",
+    "不用说了", "安静", "闭嘴", "打住", NULL
 };
 
 static const char *const IR_STOP_VETO[] = {
@@ -523,7 +533,10 @@ static const char *const IR_STOP_VETO[] = {
 
 static int ir_match_stop(const char *n, ir_result *out)
 {
-    if (!ir_has_any(n, IR_STOP_HIT)) return 0;
+    /* T8-15.4：单字"停"只认整句 —— 否则"暂停/暂停播放"这类播放控制会被当成"结束对话"，
+     * 真机实测：一句"暂停"把连续对话关死，后面说的话再没人听（"停"仍在命中表里做子串匹配）。 */
+    int hit = ir_has_any(n, IR_STOP_HIT) || strcmp(n, "停") == 0;
+    if (!hit) return 0;
     if (ir_has_any(n, IR_STOP_VETO)) return 0;
     ir_set(out, IR_STOP, "stop.keyword", "stop");
     return 1;

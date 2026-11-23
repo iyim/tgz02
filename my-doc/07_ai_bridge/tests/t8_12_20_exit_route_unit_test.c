@@ -1,4 +1,4 @@
-/*
+﻿/*
  * t8_12_20_exit_route_unit_test.c -- T8-12.20 退出意图 host 单测（纯函数，零真机、零网络）
  *
  * 缺陷背景（T8-12.19 审查结论）：
@@ -132,7 +132,7 @@ int main(void)
     expect_intent("现在几点了", IR_TIME, "time route unchanged");
     expect_intent("天猫精灵现在几点", IR_TIME, "time route (wake) unchanged");
     expect_intent("停止播放", IR_STOP, "stop route unchanged");
-    expect_intent("暂停", IR_STOP, "stop route unchanged");
+    expect_intent("暂停", IR_MEDIA, "media (T8-15.4: pause must not end dialog)");
     expect_intent("继续播放", IR_MEDIA, "media route unchanged");
     expect_intent("下一首", IR_MEDIA, "media route unchanged");
     expect_intent("音量调到百分之三十", IR_VOLUME, "volume route unchanged");

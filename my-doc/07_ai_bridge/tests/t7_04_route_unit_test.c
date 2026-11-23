@@ -1,4 +1,4 @@
-/*
+﻿/*
  * t7_04_route_unit_test.c -- T7-04 本地意图路由的 host 单测（纯函数，零真机、零网络）
  *
  * 覆盖：
@@ -99,8 +99,8 @@ int main(void)
     expect_intent("把屏幕点亮", IR_SCREEN_ON, "");
 
     printf("\n[3b] media control (factory skill, must not be answered by the model)\n");
-    expect_intent("天猫精灵暂停播放", IR_STOP, "stop");
-    expect_intent("暂停", IR_STOP, "stop");
+    expect_intent("天猫精灵暂停播放", IR_MEDIA, "pause");   /* T8-15.4: 播放暂停不是结束对话 */
+    expect_intent("暂停", IR_MEDIA, "pause");
     expect_intent("继续播放", IR_MEDIA, "play");
     expect_intent("下一首", IR_MEDIA, "play");
     expect_intent("上一首", IR_MEDIA, "play");
@@ -111,7 +111,7 @@ int main(void)
     printf("\n[3c] stop / interrupt (must never reach the model)\n");
     expect_intent("停止", IR_STOP, "stop");
     expect_intent("天猫精灵停止", IR_STOP, "stop");
-    expect_intent("暂停", IR_STOP, "stop");
+    expect_intent("暂停", IR_MEDIA, "pause");
     expect_intent("别说了", IR_STOP, "stop");
     expect_intent("不用说了", IR_STOP, "stop");
     expect_intent("安静", IR_STOP, "stop");
