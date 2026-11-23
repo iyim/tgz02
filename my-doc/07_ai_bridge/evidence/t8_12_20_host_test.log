@@ -1,5 +1,5 @@
 ﻿# T8-12.20 exit intent host test log
-# host time: 2026-11-23 11:34:43
+# host time: 2026-11-23 11:45:35
 
 === build t8_12_20_exit_route_unit_test ===
 cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_12_20_exit_route_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_12_20_exit_route_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_takeover.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\dead_letter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c
@@ -44,7 +44,7 @@ cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\sys
 
 [6] names / helpers
 
-SUMMARY: pass=141 fail=0
+SUMMARY: pass=149 fail=0
 RESULT: PASS
 
 === build t7_05_route_negatives_unit_test ===
@@ -97,5 +97,5 @@ slots=64 ttl_ms=30000 degraded_ms=5000
 
 RESULT: pass=211 fail=0
 
-# total: pass=472 fail=0
+# total: pass=480 fail=0
 # result: OK

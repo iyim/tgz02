@@ -357,14 +357,21 @@ static int ir_match_time(const char *n, ir_result *out)
 {
     /* T8-12.20 修复遗留回归（3af077d2 引入，与本轮退出修复无关，为使回归套件
      * 全绿而最小修复）：否决词 "是什么" 会把 "现在是什么时间" 这样的真实问句
-     * 一并误杀。精确放宽：仅当句子里带 "现在"（明确问当前时间）时豁免通用否决，
-     * "生日是几号"（含"几"但语义是生日）、"日期格式是什么"（知识问句）仍被
-     * 各自的否决词正常拦下。 */
+     * 一并误杀。
+     * T8-12.21 收紧豁免（审查结论）：T8-12.20 的实现里 "现在"+"是什么" 同时出现
+     * 会整体跳过 ir_has_any，把 快递/生日/号码/格式 等其它否决词也一起豁免。
+     * 修正 = 单独遍历否决表：只有同时满足 "现在" 且否决项**恰好是** "是什么"
+     * 时跳过该项，其余否决项（含 "是什么意思"）照常生效。 */
+    int i;
+
     if (!ir_has_any(n, IR_TIME_HIT)) return 0;
-    if (ir_has(n, "现在")) {
-        if (ir_has_any(n, IR_TIME_VETO) && !ir_has(n, "是什么")) return 0;
-    } else if (ir_has_any(n, IR_TIME_VETO)) {
-        return 0;
+    {
+        int exempt_shi_sm = (ir_has(n, "现在") && ir_has(n, "是什么"));
+
+        for (i = 0; IR_TIME_VETO[i] != NULL; i++) {
+            if (exempt_shi_sm && strcmp(IR_TIME_VETO[i], "是什么") == 0) continue;
+            if (ir_has(n, IR_TIME_VETO[i])) return 0;
+        }
     }
     ir_set(out, IR_TIME, "time.keyword", "");
     return 1;

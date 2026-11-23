@@ -120,11 +120,20 @@ int main(void)
     printf("\n[4] time\n");
     expect_intent("现在几点", IR_TIME, "");
     expect_intent("现在是什么时间", IR_TIME, "");
+    expect_intent("现在是什么时间", IR_TIME, "");
     expect_intent("今天几号", IR_TIME, "");
     expect_intent("今天星期几", IR_TIME, "");
     expect_intent("今天礼拜几", IR_TIME, "");
     expect_intent("现在时间是多少", IR_TIME, "");
     expect_intent("天猫精灵现在几点了", IR_TIME, "");
+    /* T8-12.21：否决豁免收紧后的回归 —— 只有"是什么"在"现在"语境下被豁免，
+     * 其余否决词（快递/生日/号码/格式…）即使出现"现在+是什么"也必须生效 */
+    expect_intent("现在快递号是什么时间", IR_NONE, NULL);   /* 快递 否决 */
+    expect_intent("现在生日是什么时间", IR_NONE, NULL);     /* 生日 否决 */
+    expect_intent("现在房间号是什么时间", IR_NONE, NULL);   /* 房间号 否决 */
+    expect_intent("现在航班几点提醒", IR_NONE, NULL);       /* 几点提醒 否决 */
+    expect_intent("现在倒计时是什么时间", IR_NONE, NULL);   /* 倒计时 否决 */
+    expect_intent("现在订单号是什么时间", IR_NONE, NULL);   /* 订单 否决 */
 
     printf("\n[5] negatives (must stay on the AI path)\n");
     expect_intent("给我讲个笑话", IR_NONE, NULL);
