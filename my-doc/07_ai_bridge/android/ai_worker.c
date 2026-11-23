@@ -83,7 +83,6 @@ typedef struct {
     long long    native_rel_req_ms;      /* 请求发出的时刻（等原厂会话确认用） */
     long long    native_req_seq;         /* 已写出的最大请求序号（严格递增） */
     int          native_rel_waiting;     /* 1 = 已发请求，等待原厂开麦确认 */
-    int          native_rel_wait_audio;  /* 1 = 已排续听，等原厂这一轮音频播完再发 */
     unsigned long native_relisten_requests;
     tt_ctx       tap;                    /* T8-15：原厂会话事件观察（只读 logcat 输出） */
     char         tap_path[T6B_PATH_MAX];
@@ -2131,20 +2130,14 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
                        ir_intent_name(ir.intent), ir.rule, ir.arg, slot->event_id, slot->seq,
                        slot->session, (int)strlen(slot->text), slot->merges, slot->held_ms,
                        w->st.route_seq);
-                /* T8-15.4：原厂指令之后的续听策略
-                 *   - stop/exit          ：不续听（用户要停）
-                 *   - media(play)        ：不续听 —— 开麦会把刚开始的音乐掐掉（用户实测反馈）
-                 *   - 其它               ：等原厂这一轮播放真的结束（AudioManager status:complete）
-                 *                          再请求开麦，最长 4 s 兜底；否则会打断原厂的确认语。 */
-                if (ir.intent == IR_STOP || ir.intent == IR_EXIT) {
-                    /* nothing */
-                } else if (ir.intent == IR_MEDIA && strcmp(ir.arg, "play") == 0) {
+                /* T8-15.3：非停止/退出类的原厂指令执行完，补一次续听请求 ——
+                 * 这类指令不会有我方 TTS，不补就断在这里（真机复现过）。 */
+                if (ir.intent == IR_MEDIA && strcmp(ir.arg, "play") == 0) {
                     always("native command (media.play): no re-listen - it would cut the music");
-                } else {
-                    w->native_relisten_due_ms = now_ms + 4000;   /* 兜底：最多等 4 s */
-                    w->native_rel_wait_audio = 1;
-                    always("native command (%s): re-listen waits for factory playback to finish "
-                           "(cap 4000 ms)", ir_intent_name(ir.intent));
+                } else if (ir.intent != IR_STOP && ir.intent != IR_EXIT) {
+                    w->native_relisten_due_ms = now_ms + 1200;
+                    always("native command (%s): continuity re-listen scheduled in 1200 ms",
+                           ir_intent_name(ir.intent));
                 }
                 return 1;
             } else {
@@ -2429,18 +2422,6 @@ static void factory_tap_poll(t6b_worker *w, long long now_ms)
             always("factory stop talk (EOU round=%d reason=%d): listening=0, dialog stays open",
                    w->sc.round, ev[i].stop_reason);
             break;
-        case TT_EV_AUDIO_DONE:
-            /* T8-15.4：原厂这一轮播完了（确认语/提示音结束）-> 这时才适合开麦 */
-            if (w->native_rel_wait_audio) {
-                w->native_rel_wait_audio = 0;
-                w->native_relisten_due_ms = 0;
-                if (w->cfg.continuous_dialog && w->sc.state != SC_IDLE && w->sc.state != SC_CLOSING) {
-                    aiw_request_continuity(w, now_ms, "factory playback done");
-                } else {
-                    always("native command: dialog already closed - no re-listen requested");
-                }
-            }
-            break;
         case TT_EV_LISTEN_STOP:
             sc_on_factory_talk_stop(&w->sc, now_ms);
             break;
@@ -2474,7 +2455,6 @@ static void session_lifecycle_poll(t6b_worker *w, long long now_ms)
      * 就再也没有人开麦（真机复现过）。 */
     if (w->native_relisten_due_ms > 0 && now_ms >= w->native_relisten_due_ms) {
         w->native_relisten_due_ms = 0;
-        w->native_rel_wait_audio = 0;
         if (w->cfg.continuous_dialog && w->sc.state != SC_IDLE && w->sc.state != SC_CLOSING) {
             aiw_request_continuity(w, now_ms, "after native command");
         } else {

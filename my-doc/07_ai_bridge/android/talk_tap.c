@@ -1,4 +1,4 @@
-﻿/*
+/*
  * talk_tap.c -- 见 talk_tap.h
  *
  * 只读观察原厂 SessionManager 的日志行。没有任何写操作、没有 hook、没有线程。
@@ -117,7 +117,6 @@ int tt_parse_line(const char *line, tt_event *ev)
     else if (strstr(line, "exitTalk") != NULL)          kind = TT_EV_EXIT_TALK;
     else if (strstr(line, "onStopListen") != NULL)      kind = TT_EV_LISTEN_STOP;
     else if (strstr(line, "stopListen") != NULL)        kind = TT_EV_LISTEN_STOP;
-    else if (strstr(line, "onPlayStatusChange") != NULL && strstr(line, "status:complete") != NULL) kind = TT_EV_AUDIO_DONE;
 
     if (kind == TT_EV_NONE) return 0;
 
