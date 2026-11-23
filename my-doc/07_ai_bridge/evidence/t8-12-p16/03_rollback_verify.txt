@@ -1,0 +1,24 @@
+== 卸载观测补丁 ==
+[inject] nlu installed_after=0 takeover=0 entry_code=np{state=idle err=ok installs=3 skips=0 install_fails=0 refusals=0 uninstalls=3 uninstall_fails=0 restores=0 restore_fails=0 busy=0 prot_ok=6 prot_fails=0 before=[e92d4ff0 e28db01c] after=[e51ff004 b388c000] uninst=[e92d4ff0 e28db01c] now=[e92d4ff0 e28db01c]}
+[inject] RESULT nlu-uninstall ok installed=0 takeover=0
+== 卸载 p15 onStream hook，装回 p14（恢复本轮之前的生产状态）==
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=30807
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=258 final=26 queued=26 sent=26 acked=26 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=1 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=30807 already_mapped=1 check_only=0
+== 入口字节（只读 dd 复核）==
+onNlpResult @0x97ae0ebc :     e92d4ff0    e28db01c
+onStream    @0x97adb53c :     e51ff004    b386a000
+== :core 状态 ==
+30807
+30807 (e.smartapp:core) S 281 281 0 0 -1 1077952832 655448 3391 17366 1 3297753 58116 18 5 20 0 87 0 2467080 1268592640 23380 4294967295 1 1 0 0 0 0 4608 4096 1073777918 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+== 已部署件哈希（应为 p14 原件）==
+5be226901fb11d3ab5ff81410f43d834b72b7f9243d1ded58550bb0ac8138f85  /data/local/tmp/t8/libtg_hook.so
+add2c25d6bdd47824c4a9276c1eb81cfd3c71c79cbd06c3adefdc8e0a3412f24  /data/local/tmp/t8/tg_injector
+== iptables 最终状态 ==
+-P OUTPUT ACCEPT
+-A OUTPUT -j oem_out
+-A OUTPUT -j fw_OUTPUT
+-A OUTPUT -j st_OUTPUT
+-A OUTPUT -j bw_OUTPUT
