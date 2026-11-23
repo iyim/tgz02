@@ -99,10 +99,11 @@ int main(void)
     check(ir_route_bit(IR_SCREEN_ON) == T7B_ROUTE_SCREEN_ON, "screen_on bit");
     check(ir_route_bit(IR_MEDIA) == T7B_ROUTE_MEDIA, "media bit");
     check(ir_route_bit(IR_STOP) == T7B_ROUTE_STOP, "stop bit");
+    check(ir_route_bit(IR_EXIT) == T7B_ROUTE_EXIT, "exit bit (T8-12.20)");
     check(ir_route_bit(IR_NONE) == 0, "none bit = 0");
     check((T7B_ROUTE_VOLUME | T7B_ROUTE_WEATHER | T7B_ROUTE_SCREEN_OFF |
            T7B_ROUTE_TIME | T7B_ROUTE_SCREEN_ON | T7B_ROUTE_MEDIA |
-           T7B_ROUTE_STOP) == T7B_ROUTE_ALL, "all bits covered");
+           T7B_ROUTE_STOP | T7B_ROUTE_EXIT) == T7B_ROUTE_ALL, "all bits covered");
 
     printf("\n=== total: pass=%d fail=%d ===\n", g_pass, g_fail);
     return (g_fail == 0) ? 0 : 1;

@@ -1,0 +1,101 @@
+﻿# T8-12.20 exit intent host test log
+# host time: 2026-11-23 11:34:43
+
+=== build t8_12_20_exit_route_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_12_20_exit_route_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_12_20_exit_route_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_takeover.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\dead_letter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c
+(no compiler output: 0 warning, 0 error)
+=== run t8_12_20_exit_route_unit_test ===
+=== T8-12.20 exit intent route unit test ===
+
+[1] 正向：明确退出表达（整句精确匹配）
+
+[2] 反向与回归
+
+[3] 接管核心断言（t8_to_on_final 决策）
+
+[4] 配置路径：名字解析 / all 位覆盖 / 旧配置兼容 / 未知 token 前向兼容 / 回写
+
+[5] 映射完整性
+
+SUMMARY: pass=82 fail=0
+RESULT: PASS
+
+=== build t7_04_route_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_04_route_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_04_route_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_04_route_unit_test ===
+=== T7-04 intent route unit test ===
+
+[1] volume
+
+[1b] volume, Chinese numerals and 百分之 (real ASR strings)
+
+[2] weather
+
+[3] screen off / on
+
+[3b] media control (factory skill, must not be answered by the model)
+
+[3c] stop / interrupt (must never reach the model)
+
+[4] time
+
+[5] negatives (must stay on the AI path)
+
+[6] names / helpers
+
+SUMMARY: pass=141 fail=0
+RESULT: PASS
+
+=== build t7_05_route_negatives_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_05_route_negatives_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_05_route_negatives_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_05_route_negatives_unit_test ===
+=== T7-05 route false-positive / negative samples ===
+
+[1] 任务书点名的误判样本（必须走 AI）
+
+[2] 任务书点名的正样本（必须走原厂）
+
+[3] 中文数字/全角数字/百分比
+
+[4] 悬空谓词不产生完整意图（留给暂存门）
+
+[5] 意图到路由位的映射
+
+=== total: pass=38 fail=0 ===
+
+=== build t8_02_nlu_takeover_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_02_nlu_takeover_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_02_nlu_takeover_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_takeover.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c
+(no compiler output: 0 warning, 0 error)
+=== run t8_02_nlu_takeover_unit_test ===
+=== T8-02 NLU/CDM takeover unit test (capacity + concurrency) ===
+slots=64 ttl_ms=30000 degraded_ms=5000
+
+[A] 判定（真机 2026-11-22 17:52 的真实文本）
+  天猫精灵现在几点   -> PASS (why=none intent=time rule=time.keyword arg= complete=1)
+  天猫精灵音量调到五 -> PASS (why=none intent=volume rule=volume.set arg=set:5 complete=1)
+  天猫精灵暂停         -> PASS (why=none intent=stop rule=stop.keyword arg=stop complete=1)
+  天猫精灵给我讲一个笑话 -> TAKE (why=ai intent=none rule= arg= complete=0)
+
+[A2] 参数不完整 / 意图未启用 / 全禁用
+  音量调到百分之 -> TAKE (intent=volume complete=0 note=dangling)
+
+[B] 丢弃语义
+
+[C] 技能接口
+
+[D] 端到端：onStream -> onNlpResult 的分流
+  summary: factory_runs=1 our_replies=1 our_apply=1 dropped_nlu=1
+
+[E] 容量耗尽（不覆盖有效登记 / fail-closed 窗口）
+
+[F] 并发（登记/查询/清理/TTL 回收/重复登记）
+  mixed: threads=6 iters=400 marked=2400 dropped=2400 expired=0
+
+[G] 开关关闭 / 初始化失败 / 会话缺失
+
+RESULT: pass=211 fail=0
+
+# total: pass=472 fail=0
+# result: OK

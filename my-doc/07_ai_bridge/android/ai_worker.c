@@ -2560,7 +2560,7 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
                  cs_state_name(w.cs.state));
 
         always("route: enabled=%d intents=0x%02x (volume=%d weather=%d screen_off=%d "
-               "time=%d screen_on=%d media=%d) publish_file=%s",
+               "time=%d screen_on=%d media=%d exit=%d) publish_file=%s",
                c->route_native, c->route_intents,
                (c->route_intents & T7B_ROUTE_VOLUME) ? 1 : 0,
                (c->route_intents & T7B_ROUTE_WEATHER) ? 1 : 0,
@@ -2568,6 +2568,7 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
                (c->route_intents & T7B_ROUTE_TIME) ? 1 : 0,
                (c->route_intents & T7B_ROUTE_SCREEN_ON) ? 1 : 0,
                (c->route_intents & T7B_ROUTE_MEDIA) ? 1 : 0,
+               (c->route_intents & T7B_ROUTE_EXIT) ? 1 : 0,
                w.route_publish_path[0] != '\0' ? w.route_publish_path : "(disabled)");
         always("gate: enabled=%d debounce=%dms max_hold=%dms cross_session=%d(%dms) sim=%d%% "
                "hold_file=%s",

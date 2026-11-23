@@ -355,8 +355,17 @@ static const char *const IR_TIME_VETO[] = {
 
 static int ir_match_time(const char *n, ir_result *out)
 {
+    /* T8-12.20 修复遗留回归（3af077d2 引入，与本轮退出修复无关，为使回归套件
+     * 全绿而最小修复）：否决词 "是什么" 会把 "现在是什么时间" 这样的真实问句
+     * 一并误杀。精确放宽：仅当句子里带 "现在"（明确问当前时间）时豁免通用否决，
+     * "生日是几号"（含"几"但语义是生日）、"日期格式是什么"（知识问句）仍被
+     * 各自的否决词正常拦下。 */
     if (!ir_has_any(n, IR_TIME_HIT)) return 0;
-    if (ir_has_any(n, IR_TIME_VETO)) return 0;
+    if (ir_has(n, "现在")) {
+        if (ir_has_any(n, IR_TIME_VETO) && !ir_has(n, "是什么")) return 0;
+    } else if (ir_has_any(n, IR_TIME_VETO)) {
+        return 0;
+    }
     ir_set(out, IR_TIME, "time.keyword", "");
     return 1;
 }
@@ -457,6 +466,50 @@ static int ir_match_stop(const char *n, ir_result *out)
     return 1;
 }
 
+/* ---------------- 退出对话（T8-12.20） ----------------
+ *
+ * 背景（T8-12.19 审查结论）：原厂 SessionManager::exitTalk 是设备退出语音对话的
+ * 唯一正常入口，触发语是"退出"类短句。之前意图路由没有退出类规则，DECIDE 接管
+ * 开启时"天猫精灵退出"被归为 AI -> 登记 -> 原 onNlpResult 主体被跳过，设备永远
+ * 退不出去。这是用户可感知缺陷，不是预期的 AI 拦截策略。
+ *
+ * 语义边界（任务书 §二.3）：
+ *   - "退出静音"必须继续命中音量 unmute：本匹配器在分类链里排在音量之后，
+ *     且用整句精确匹配，含其它内容的句子到不了这里；
+ *   - "退出登录"不得判为退出对话：否决词表覆盖；
+ *   - 不把任意包含"退出"的长句（"怎么退出微信"）判为退出：只认归一化后的
+ *     整句精确匹配，不使用子串匹配。
+ * 执行路径：PASS 交给原厂，原厂自己识别退出语并走 exitTalk —— 本层不做执行，
+ * 也不注册本地技能（skill_dispatch 的 default 分支天然回落，无需改动）。
+ */
+static const char *const IR_EXIT_PHRASES[] = {
+    "退出", "退出一下", "退出对话", "退出聊天",
+    "结束对话", "结束聊天", "结束会话", "结束一下对话",
+    NULL
+};
+
+/* 含这些内容的句子即使整句是"退出X"形态，也不是"退出语音对话" */
+static const char *const IR_EXIT_VETO[] = {
+    "静音",           /* 退出静音 -> volume.unmute（在音量匹配器已被接走，这里兜底） */
+    "登录", "登陆",    /* 退出登录 -> 账号操作，必须走 AI/原厂其它技能 */
+    NULL
+};
+
+static int ir_match_exit(const char *n, ir_result *out)
+{
+    int i;
+
+    if (ir_has_any(n, IR_EXIT_VETO)) return 0;
+    /* 整句精确匹配：只有"用户除了退出没说别的"才算退出对话 */
+    for (i = 0; IR_EXIT_PHRASES[i] != NULL; i++) {
+        if (strcmp(n, IR_EXIT_PHRASES[i]) == 0) {
+            ir_set(out, IR_EXIT, "exit.keyword", "");
+            return 1;
+        }
+    }
+    return 0;
+}
+
 /* ---------------- 归一化与分类 ---------------- */
 
 int ir_normalize(const char *text, char *out, size_t cap)
@@ -512,14 +565,17 @@ int ir_classify_norm(const char *norm, ir_result *out)
     if (norm == NULL || norm[0] == '\0') return 0;
     r = (out != NULL) ? out : &tmp;
 
-    /* 顺序即优先级：打断 > 关屏 > 开屏 > 天气 > 时间 > 播放控制 > 音量 */
+    /* 顺序即优先级：打断 > 关屏 > 开屏 > 天气 > 时间 > 播放控制 > 音量 > 退出对话
+     * （T8-12.20：退出排在最后 —— "退出静音"必须先被 volume.unmute 接走，
+     *   退出匹配器只兜底纯退出短句） */
     hit = ir_match_stop(norm, r) ||
           ir_match_screen_off(norm, r) ||
           ir_match_screen_on(norm, r) ||
           ir_match_weather(norm, r) ||
           ir_match_time(norm, r) ||
           ir_match_media(norm, r) ||
-          ir_match_volume(norm, r);
+          ir_match_volume(norm, r) ||
+          ir_match_exit(norm, r);
     if (!hit) return 0;
 
     /* T7-05-R1：命中意图 != 参数完整。
@@ -555,6 +611,7 @@ int ir_route_bit(ir_intent it)
     case IR_SCREEN_ON:  return T7B_ROUTE_SCREEN_ON;
     case IR_MEDIA:      return T7B_ROUTE_MEDIA;
     case IR_STOP:       return T7B_ROUTE_STOP;
+    case IR_EXIT:       return T7B_ROUTE_EXIT;
     case IR_NONE:
     default:            return 0;
     }
@@ -570,6 +627,7 @@ const char *ir_intent_name(ir_intent it)
     case IR_SCREEN_ON:  return "screen_on";
     case IR_MEDIA:      return "media";
     case IR_STOP:       return "stop";
+    case IR_EXIT:       return "exit";
     case IR_NONE:
     default:            return "none";
     }
@@ -585,5 +643,6 @@ int ir_intent_from_name(const char *name)
     if (strcmp(name, "screen_on") == 0) return IR_SCREEN_ON;
     if (strcmp(name, "media") == 0) return IR_MEDIA;
     if (strcmp(name, "stop") == 0) return IR_STOP;
+    if (strcmp(name, "exit") == 0) return IR_EXIT;
     return IR_NONE;
 }

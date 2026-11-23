@@ -39,7 +39,9 @@ typedef enum {
     IR_TIME = 4,
     IR_SCREEN_ON = 5,    /* 任务书要求"至少"四类；开屏同属原厂屏幕能力，顺手一起管 */
     IR_MEDIA = 6,        /* 播放控制（下一首/继续/播放…）：原厂技能本来就管，不该让模型抢答 */
-    IR_STOP = 7          /* 打断播报（停止/暂停/别说了）：第一效果是立刻静音，不是让模型解释 */
+    IR_STOP = 7,         /* 打断播报（停止/暂停/别说了）：第一效果是立刻静音，不是让模型解释 */
+    IR_EXIT = 8          /* T8-12.20：退出对话（退出/退出一下/结束对话）——原厂 exitTalk 的触发语，
+                          * 之前没有这条规则导致 DECIDE 下被当 AI 拦下，原厂退出链路走不到 */
 } ir_intent;
 
 typedef struct {
@@ -63,7 +65,10 @@ typedef struct {
 #define T7B_ROUTE_SCREEN_ON  0x10
 #define T7B_ROUTE_MEDIA      0x20
 #define T7B_ROUTE_STOP       0x40
-#define T7B_ROUTE_ALL        0x7F
+#define T7B_ROUTE_EXIT       0x80   /* T8-12.20：退出对话位。T7B_ROUTE_ALL 由 0x7F 扩到 0xFF，
+                                     * worker_conf 的掩码校验（~T7B_ROUTE_ALL）与 libtg_hook 的
+                                     * env 上限校验都引用 ALL，必须同步扩大。 */
+#define T7B_ROUTE_ALL        0xFF
 
 /* 判定一条 ASR 文本：1 = 属于原厂基础指令（route=native），0 = 不是（route=ai） */
 int ir_classify(const char *text, ir_result *out);

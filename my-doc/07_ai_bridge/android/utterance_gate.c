@@ -151,6 +151,7 @@ static int ug_fast_ready(const ug_config *c, const char *text, const char **why)
     case IR_MEDIA:      bit = T7B_ROUTE_MEDIA; break;
     case IR_STOP:       bit = T7B_ROUTE_STOP; break;
     case IR_TIME:       bit = T7B_ROUTE_TIME; break;
+    case IR_EXIT:       bit = T7B_ROUTE_EXIT; break;   /* T8-12.20：完整退出短句走快路 */
     default:            return 0;
     }
     if ((c->fast_intents & bit) == 0) return 0;

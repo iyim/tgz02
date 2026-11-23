@@ -66,6 +66,7 @@ static int wc_route_intents(const char *v, int *out)
         else if (strcmp(tok, "media") == 0) mask |= T7B_ROUTE_MEDIA;
         else if (strcmp(tok, "stop") == 0) mask |= T7B_ROUTE_STOP;
         else if (strcmp(tok, "time") == 0) mask |= T7B_ROUTE_TIME;
+        else if (strcmp(tok, "exit") == 0) mask |= T7B_ROUTE_EXIT;  /* T8-12.20 */
         else if (strcmp(tok, "all") == 0) mask |= T7B_ROUTE_ALL;
         else if (strcmp(tok, "none") == 0) mask = 0;
         /* 其它名字：忽略（前向兼容，不让一个拼写错误把整份配置废掉） */
@@ -380,6 +381,8 @@ static const char *wc_route_intents_str(int mask)
         o += (size_t)snprintf(out + o, sizeof(out) - o, "%sstop", o ? "," : "");
     if ((mask & T7B_ROUTE_MEDIA) && o + 6 < sizeof(out))
         o += (size_t)snprintf(out + o, sizeof(out) - o, "%smedia", o ? "," : "");
+    if ((mask & T7B_ROUTE_EXIT) && o + 6 < sizeof(out))
+        o += (size_t)snprintf(out + o, sizeof(out) - o, "%sexit", o ? "," : "");
     if (o == 0) snprintf(out, sizeof(out), "none");
     return out;
 }
