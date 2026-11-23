@@ -25,6 +25,9 @@
 
 #define T6B_WORK_DIR_DEFAULT    "/data/local/tmp/t5_bridge/work"
 #define T6B_STATE_DIR_DEFAULT   "/data/local/tmp/t5_bridge/ai_worker"
+/* T8-15.3：native 守卫（libtg_ttsguard）轮询的"请求开麦"计数器；worker 写、守卫读。
+ * 原厂指令类轮次没有我方 TTS，靠这个文件把续听补回来。 */
+#define T8_CONT_REQ_FILE        "/data/local/tmp/t7/continuity.cnt"
 #define T6B_EVENTS_NAME_DEFAULT "events.jsonl"
 #define T6B_LOCK_NAME_DEFAULT   "ai_worker.lock"
 #define T6B_PROVIDER_MOCK       "mock"

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * ai_worker.c -- 独立 AI Worker 进程（见 ai_worker.h）
  *
  * 主循环（单线程，固定内存）：
@@ -77,6 +77,10 @@ typedef struct {
     cs_ctx       cs;                     /* T7-04：连续对话会话状态 */
     sc_ctx       sc;                     /* T8-13：会话控制中心（真实事件驱动的生命周期） */
     int          sc_prev_state;          /* T8-15：上一拍的会话状态（识别对话收束时刻） */
+    /* T8-15.3 补充：原厂指令（音量/媒体/屏幕…）执行完不会有我方 TTS，自动续听需要
+     * 由 worker 主动补一次"开麦"请求，否则连续对话在这里断掉。 */
+    long long    native_relisten_due_ms;
+    unsigned long native_relisten_requests;
     tt_ctx       tap;                    /* T8-15：原厂会话事件观察（只读 logcat 输出） */
     char         tap_path[T6B_PATH_MAX];
     int          tap_err_logged;         /* 只记一次 tap 读失败，避免刷日志 */
@@ -1773,6 +1777,7 @@ static int commit_skipped(t6b_worker *w, const char **exit_reason)
 
 static void tts_request_stop(t6b_worker *w, const char *why);
 static void aiw_write_listen_hold(t6b_worker *w, int hold_ms, long long now_ms);
+static void aiw_request_continuity(t6b_worker *w, long long now_ms, const char *why);
 
 static int route_intent_enabled(const t6b_worker *w, ir_intent it)
 {
@@ -2122,6 +2127,13 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
                        ir_intent_name(ir.intent), ir.rule, ir.arg, slot->event_id, slot->seq,
                        slot->session, (int)strlen(slot->text), slot->merges, slot->held_ms,
                        w->st.route_seq);
+                /* T8-15.3：非停止/退出类的原厂指令执行完，补一次续听请求 ——
+                 * 这类指令不会有我方 TTS，不补就断在这里（真机复现过）。 */
+                if (ir.intent != IR_STOP && ir.intent != IR_EXIT) {
+                    w->native_relisten_due_ms = now_ms + 1200;
+                    always("native command (%s): continuity re-listen scheduled in 1200 ms",
+                           ir_intent_name(ir.intent));
+                }
                 return 1;
             } else {
                 /* ---- T7-05 ②：标记没写成功 -> 不能静默跳过 AI，改走模型 ---- */
@@ -2269,6 +2281,22 @@ static void aiw_write_listen_hold(t6b_worker *w, int hold_ms, long long now_ms)
     always("listen hold: auto-listen suppressed for %d ms -> %s", hold_ms, path);
 }
 
+/* T8-15.3：向 native 守卫"请求开麦"（守卫轮询这个文件里的数字，变化即触发一次）。
+ * 只写数字、不需要守卫回写，方向与 listen_hold 一致（worker 写 / 守卫读）。 */
+static void aiw_request_continuity(t6b_worker *w, long long now_ms, const char *why)
+{
+    FILE *f = fopen(T8_CONT_REQ_FILE, "w");
+
+    w->native_relisten_requests++;
+    if (f == NULL) {
+        always("continuity request: cannot write %s - device will not re-listen", T8_CONT_REQ_FILE);
+        return;
+    }
+    fprintf(f, "%lld\n", now_ms);
+    fclose(f);
+    always("continuity request: re-listen asked (%s) n=%lu", why, w->native_relisten_requests);
+}
+
 /* 让 TTS 执行器立刻停播（并作废 queue/inflight 里还没播的项）。
  * 机制是 T5-06D 就有的：TtsExec 每轮扫描 <tts_queue>/control/stop，见到就调原厂
  * stopTts(-1) 并跳过后续项。这里只负责把"该停了"这件事写下去。 */
@@ -2400,6 +2428,19 @@ static void session_lifecycle_poll(t6b_worker *w, long long now_ms)
 {
     int prev = w->sc_prev_state;
     int now;
+
+    /* T8-15.3：原厂指令执行完之后补一次开麦请求。
+     * 为什么必须在这里补：音量/静音/媒体这类指令是**原厂自己执行**的，我方不播 TTS，
+     * 而 native 守卫的自动续听只认"我方 TTS 播完" —— 不补这一步，用户调完音量再说话
+     * 就再也没有人开麦（真机复现过）。 */
+    if (w->native_relisten_due_ms > 0 && now_ms >= w->native_relisten_due_ms) {
+        w->native_relisten_due_ms = 0;
+        if (w->cfg.continuous_dialog && w->sc.state != SC_IDLE && w->sc.state != SC_CLOSING) {
+            aiw_request_continuity(w, now_ms, "after native command");
+        } else {
+            always("native command: dialog already closed - no re-listen requested");
+        }
+    }
 
     (void)sc_poll(&w->sc, now_ms);
     now = w->sc.state;
