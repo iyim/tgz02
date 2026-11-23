@@ -162,7 +162,8 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"last_transition\":\"%s\",\"transitions\":%lu,\"opens\":%lu,"
         "\"stale_callbacks\":%lu,\"duplicate_events\":%lu,\"timeouts\":%lu,"
         "\"interrupts\":%lu,\"closes\":%lu},"
-        "\"skill_dispatch\":{\"enabled\":%d,\"calls\":%lu,\"ok\":%lu,\"fail\":%lu,"
+        "\"skill_dispatch\":{\"enabled\":%d,\"device_status\":%d,\"calls\":%lu,\"ok\":%lu,"
+        "\"fail\":%lu,"
         "\"noimpl\":%lu,\"claimed\":%lu,\"dedup\":%lu,"
         "\"last_skill\":\"%s\",\"last_result\":\"%s\"},"
         "\"pending_event_id\":\"%s\","
@@ -221,7 +222,7 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         esc_sc_last_transition, st->sc_transitions, st->sc_opens,
         st->sc_stale_callbacks, st->sc_duplicate_events, st->sc_timeouts,
         st->sc_interrupts, st->sc_closes,
-        st->sk_enabled, st->sk_calls, st->sk_ok, st->sk_fail,
+        st->sk_enabled, st->sk_device_enabled, st->sk_calls, st->sk_ok, st->sk_fail,
         st->sk_noimpl, st->sk_claimed, st->sk_dedup,
         esc_sk_skill, esc_sk_result,
         esc_pending,

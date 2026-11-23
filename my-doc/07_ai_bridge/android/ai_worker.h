@@ -19,6 +19,7 @@
 #include "event_reader.h"
 #include "intent_route.h"
 #include "provider.h"
+#include "skill_dispatch.h"
 #include "utterance_gate.h"
 #include "worker_status.h"
 
@@ -85,6 +86,10 @@ typedef struct {
      * 只有显式打开后，已注册的技能（本轮仅 time.query）才由 Worker 自己执行并播报；
      * 其它意图仍走原厂 route=native 或大模型。 */
     int         skill_dispatch;
+    /* T8-14.2：device.status 独立开关（默认 0）。总开关与它同时为 1 才接管设备状态查询。 */
+    int         skill_device_status;
+    /* 可选：覆盖电池 capacity 路径（空 = 按候选列表自动探测，真机为 sysfs） */
+    char        skill_battery_path[T8_SK_PATH_MAX];
     /* T7-04：ASR 暂存门（半句话/修订合并） */
     ug_config   gate;
     /* T7-04：连续对话会话状态 */

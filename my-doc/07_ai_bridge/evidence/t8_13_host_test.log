@@ -1,5 +1,5 @@
 ﻿# T8-13 session controller host test log
-# host time: 2026-11-23 18:50:03
+# host time: 2026-11-23 19:47:13
 
 === build t8_13_session_ctrl_unit_test ===
 cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_13_session_ctrl_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_13_session_ctrl_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\session_ctrl.c

@@ -76,6 +76,7 @@ typedef struct {
     cs_ctx       cs;                     /* T7-04：连续对话会话状态 */
     sc_ctx       sc;                     /* T8-13：会话控制中心（真实事件驱动的生命周期） */
     t8_skill_registry sk;                /* T8-14.1：自有技能注册表（默认不接管任何意图） */
+    t8_dev_ctx   dev;                    /* T8-14.2：device.status 的数据源路径 */
     /* T8-14.1：本轮 pend 由哪个技能执行（0 = 走 Provider）。放在 pend 之外是因为它
      * 必须跨 Provider 重试保留：重试的是"同一件事"，不是"换一条路重新问模型"。 */
     int          pend_skill_id;
@@ -392,6 +393,7 @@ static void publish_status(t6b_worker *w, const char *state)
     w->st.sk_ok = w->sk.ok;
     w->st.sk_fail = w->sk.fail;
     w->st.sk_noimpl = w->sk.noimpl;
+    w->st.sk_device_enabled = w->cfg.skill_device_status;
 
     /* Provider 观测：真实 Provider 才有 http/latency/resp_bytes；
      * 这些字段只放数字与短枚举，绝不含 key / 用户文本 / 上游正文。 */
@@ -1942,7 +1944,13 @@ static int skill_claim_id(const t6b_worker *w, const char *session, const ir_res
 
     if (w == NULL || !w->cfg.skill_dispatch) return 0;
     if (!classified || ir == NULL || !ir->complete) return 0;
-    if (!route_intent_enabled(w, ir->intent)) return 0;
+    /* T8-14.2：device.status 是"纯自有"意图，没有原厂 route 位，因此它的门槛不是
+     * route_intents 而是自己的独立开关；开关关闭时整条判定直接不成立（回落 AI）。 */
+    if (ir->intent == IR_DEVICE_STATUS) {
+        if (!w->cfg.skill_device_status) return 0;
+    } else if (!route_intent_enabled(w, ir->intent)) {
+        return 0;
+    }
     if (!t8_skill_from_intent((int)ir->intent, ir->arg, session, &req)) return 0;
     if (req.id <= T8_SK_NONE || req.id >= T8_SK_MAX) return 0;
     if (w->sk.entry[req.id].exec == NULL) return 0;      /* 未注册：回落到原厂/AI */
@@ -2551,6 +2559,9 @@ void t6b_config_defaults(t6b_config *c)
     c->route_intents = T7B_ROUTE_ALL;
     /* T8-14.1：自有技能调度默认关闭 —— 关闭时所有现有行为逐字节不变 */
     c->skill_dispatch = 0;
+    /* T8-14.2：device.status 默认关闭（总开关之外的第二道闸） */
+    c->skill_device_status = 0;
+    c->skill_battery_path[0] = '\0';
     /* T7-04：暂存门默认打开（半句话/修订合并），会话状态默认打开 */
     (void)ug_defaults(&c->gate);
     cs_defaults(&c->session);
@@ -2898,6 +2909,19 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         if (t8_skill_register(&w.sk, T8_SK_TIME_QUERY, t8_skill_time_exec, NULL) != T8_SK_OK) {
             always("skill register failed: time.query (skill dispatch stays inert)");
         }
+        /* T8-14.2：设备状态技能的数据源路径。battery_path 空 = 按候选列表自动探测；
+         * 探测结果只影响"这项数据可不可读"，为 0 时技能会明确降级而不是编数字。 */
+        t8_dev_defaults(&w.dev);
+        if (c->skill_battery_path[0] != '\0') {
+            snprintf(w.dev.battery_path, sizeof(w.dev.battery_path), "%s",
+                     c->skill_battery_path);
+        } else {
+            (void)t8_dev_detect_battery(&w.dev);
+        }
+        if (t8_skill_register(&w.sk, T8_SK_DEVICE_STATUS, t8_skill_device_status_exec,
+                              &w.dev) != T8_SK_OK) {
+            always("skill register failed: device.status");
+        }
         w.st.sk_enabled = c->skill_dispatch;
         snprintf(w.st.sk_last_skill, sizeof(w.st.sk_last_skill), "%s", "none");
         snprintf(w.st.sk_last_result, sizeof(w.st.sk_last_result), "%s", "none");
@@ -2939,6 +2963,10 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
                c->skill_dispatch,
                (w.sk.entry[T8_SK_TIME_QUERY].exec != NULL) ? 1 : 0,
                (c->skill_dispatch && (c->route_intents & T7B_ROUTE_TIME)) ? 1 : 0);
+        always("skill device.status: switch=%d battery=%s uptime=%s",
+               c->skill_device_status,
+               w.dev.battery_path[0] != '\0' ? w.dev.battery_path : "(unavailable)",
+               w.dev.uptime_path[0] != '\0' ? w.dev.uptime_path : "(unavailable)");
 
         /* 上次退出时还有一句没交出去：恢复它（并立刻提交），绝不重复提交 */
         if (ug_hold_restore(&w.ug, w.gate_hold_path, wu_now_ms(), &ugo) == UG_HELD &&

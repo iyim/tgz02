@@ -10,6 +10,7 @@
 #include "intent_route.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -79,6 +80,7 @@ const char *t8_skill_name(t8_skill_id id)
     case T8_SK_SCREEN_ON:    return "screen.on";
     case T8_SK_SCREEN_OFF:   return "screen.off";
     case T8_SK_APP_LAUNCH:   return "app.launch";
+    case T8_SK_DEVICE_STATUS: return "device.status";
     default:                 return "none";
     }
 }
@@ -136,6 +138,10 @@ int t8_skill_from_intent(int intent, const char *arg, const char *session, t8_sk
         return 1;
     case IR_STOP:
         t8_skill_req_init(out, T8_SK_MEDIA_STOP, session);
+        return 1;
+    case IR_DEVICE_STATUS:
+        /* T8-14.2：设备自身状态（电量/运行时长），无参数 */
+        t8_skill_req_init(out, T8_SK_DEVICE_STATUS, session);
         return 1;
     case IR_SCREEN_ON:
         t8_skill_req_init(out, T8_SK_SCREEN_ON, session);
@@ -257,5 +263,178 @@ int t8_skill_time_exec(const t8_skill_req *req, t8_skill_result *res, void *ctx)
 #endif
     snprintf(res->message, sizeof(res->message), "now %02d:%02d",
              tmv.tm_hour, tmv.tm_min);
+    return T8_SK_OK;
+}
+
+/* ---------- T8-14.2：设备自身状态（device.status） ---------- */
+
+/*
+ * 真机确认可读的两个数据源（见 T8-14.2 报告 §一）：
+ *   电池容量：/sys/class/power_supply/<name>/capacity  —— 单行 0..100 整数
+ *   运行时长：/proc/uptime 第一个字段                    —— 秒（浮点，可带小数）
+ * 读不到就是读不到：不猜、不缓存、不用默认值。
+ */
+
+static const char *const SK_BATTERY_CANDIDATES[] = {
+    "/sys/class/power_supply/battery/capacity",
+    "/sys/class/power_supply/bms/capacity",
+    "/sys/class/power_supply/BAT0/capacity",
+    "/sys/class/power_supply/battery/capacity_raw",
+    NULL
+};
+
+/* 读一个小整数文件（允许行尾换行/空白）。值必须落在 [lo,hi]。
+ * 返回 1 = 读到合法值，0 = 文件不可读或值非法。 */
+static int sk_read_int(const char *path, int lo, int hi, int *out)
+{
+    char buf[64];
+    FILE *f;
+    size_t n;
+    long v;
+    char *end = NULL;
+
+    if (path == NULL || path[0] == '\0' || out == NULL) return 0;
+    f = fopen(path, "rb");
+    if (f == NULL) return 0;
+    n = fread(buf, 1, sizeof(buf) - 1, f);
+    fclose(f);
+    if (n == 0) return 0;
+    buf[n] = '\0';
+
+    /* 只接受"可选空白 + 十进制整数 + 可选空白"：任何其它字符都算非法值 */
+    {
+        char *p = buf;
+        while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') p++;
+        if (*p < '0' || *p > '9') return 0;
+        v = strtol(p, &end, 10);
+        if (end == NULL) return 0;
+        while (*end == ' ' || *end == '\t' || *end == '\n' || *end == '\r') end++;
+        if (*end != '\0') return 0;
+    }
+    if (v < lo || v > hi) return 0;
+    *out = (int)v;
+    return 1;
+}
+
+/* 读 /proc/uptime 的第一个字段（秒）。返回 1 = 合法非负值。 */
+static int sk_read_uptime_secs(const char *path, long long *out)
+{
+    char buf[128];
+    FILE *f;
+    size_t n;
+    double v;
+    char *end = NULL;
+
+    if (path == NULL || path[0] == '\0' || out == NULL) return 0;
+    f = fopen(path, "rb");
+    if (f == NULL) return 0;
+    n = fread(buf, 1, sizeof(buf) - 1, f);
+    fclose(f);
+    if (n == 0) return 0;
+    buf[n] = '\0';
+
+    v = strtod(buf, &end);
+    if (end == buf) return 0;               /* 没有任何数字 */
+    if (v < 0.0) return 0;
+    if (v > 1.0e9) return 0;                /* ~31 年：明显是垃圾数据 */
+    *out = (long long)v;
+    return 1;
+}
+
+void t8_dev_defaults(t8_dev_ctx *c)
+{
+    if (c == NULL) return;
+    memset(c, 0, sizeof(*c));
+    sk_copy(c->uptime_path, sizeof(c->uptime_path), "/proc/uptime");
+}
+
+int t8_dev_detect_battery(t8_dev_ctx *c)
+{
+    int i, pct;
+
+    if (c == NULL) return 0;
+    c->battery_path[0] = '\0';
+    for (i = 0; SK_BATTERY_CANDIDATES[i] != NULL; i++) {
+        if (sk_read_int(SK_BATTERY_CANDIDATES[i], 0, 100, &pct)) {
+            sk_copy(c->battery_path, sizeof(c->battery_path), SK_BATTERY_CANDIDATES[i]);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* "1 天 6 小时" / "3 小时 12 分钟" / "8 分钟" —— 越短的播报越自然 */
+static void sk_fmt_duration(long long secs, char *out, size_t cap)
+{
+    long long d, h, m;
+
+    if (secs < 0) secs = 0;
+    d = secs / 86400;
+    h = (secs % 86400) / 3600;
+    m = (secs % 3600) / 60;
+
+    if (d > 0) {
+        if (h > 0) snprintf(out, cap, "%lld 天 %lld 小时", d, h);
+        else       snprintf(out, cap, "%lld 天", d);
+    } else if (h > 0) {
+        if (m > 0) snprintf(out, cap, "%lld 小时 %lld 分钟", h, m);
+        else       snprintf(out, cap, "%lld 小时", h);
+    } else {
+        snprintf(out, cap, "%lld 分钟", m);
+    }
+}
+
+int t8_skill_device_status_exec(const t8_skill_req *req, t8_skill_result *res, void *ctx)
+{
+    t8_dev_ctx local;
+    const t8_dev_ctx *dc;
+    int pct = -1;
+    long long secs = -1;
+    char dur[48];
+
+    (void)req;
+    if (res == NULL) return T8_SK_E_ARG;
+
+    memset(&local, 0, sizeof(local));
+    dc = (const t8_dev_ctx *)ctx;
+    if (dc == NULL) {
+        t8_dev_defaults(&local);
+        dc = &local;
+    }
+
+    if (dc->battery_path[0] != '\0') {
+        if (!sk_read_int(dc->battery_path, 0, 100, &pct)) pct = -1;
+    } else {
+        t8_dev_ctx probe;
+
+        t8_dev_defaults(&probe);
+        if (t8_dev_detect_battery(&probe)) {
+            if (!sk_read_int(probe.battery_path, 0, 100, &pct)) pct = -1;
+        } else {
+            pct = -1;
+        }
+    }
+
+    {
+        const char *up = dc->uptime_path[0] != '\0' ? dc->uptime_path : "/proc/uptime";
+        if (!sk_read_uptime_secs(up, &secs)) secs = -1;
+    }
+
+    if (pct < 0 && secs < 0) {
+        /* 两个数据源都不可用：明确失败，不编数字（Worker 走重试/死信，绝不双答） */
+        sk_copy(res->message, sizeof(res->message), "device status unavailable");
+        res->code = T8_SK_E_CTX;   /* 直接调用者（含单测）也能读到失败码 */
+        return T8_SK_E_CTX;
+    }
+
+    if (pct >= 0 && secs >= 0) {
+        sk_fmt_duration(secs, dur, sizeof(dur));
+        snprintf(res->message, sizeof(res->message), "电量 %d%%，已运行 %s", pct, dur);
+    } else if (pct >= 0) {
+        snprintf(res->message, sizeof(res->message), "电量 %d%%", pct);
+    } else {
+        sk_fmt_duration(secs, dur, sizeof(dur));
+        snprintf(res->message, sizeof(res->message), "已运行 %s", dur);
+    }
     return T8_SK_OK;
 }

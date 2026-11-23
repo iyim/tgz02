@@ -209,6 +209,7 @@ typedef struct {
      * claimed = 本进程接管（跳过原厂路由）的 utterance 数；dedup = 同一 event_id 已有
      * 持久化播报条目而被跳过执行的次数；last_skill/last_result 只放短标签。 */
     int                sk_enabled;
+    int                sk_device_enabled;   /* T8-14.2：device.status 独立开关 */
     unsigned long      sk_calls;
     unsigned long      sk_ok;
     unsigned long      sk_fail;

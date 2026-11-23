@@ -335,6 +335,62 @@ static int ir_match_weather(const char *n, ir_result *out)
     return 1;
 }
 
+/* ---------------- 设备自身状态（T8-14.2） ----------------
+ *
+ * 背景：音箱自己有多少电、开了多久，原厂没有这项能力。这是第一个"纯自有"意图 ——
+ * 所以它**没有 route 位**（ir_route_bit 返回 0），永远不会被放行给原厂执行；
+ * 只在自有技能开关打开时由 device.status 接管，否则照旧交给模型。
+ *
+ * 识别边界（任务书 §三）：
+ *   - 电量类：电量/电池/多少电/剩多少电/还有多少电/几格电 ...
+ *   - 时长类：运行多久/开机多久/运行时间/工作多久 ...
+ *   - 否决：电压/电流/电费/功率（问的是电学量，不是剩余电量）；
+ *           充电宝/手机/笔记本/电动车（问的是别的设备）；推荐/买/价格（在挑商品）；
+ *           什么意思/为什么/原理/怎么算/怎么办/怎么修（在问知识，不是查状态）。
+ * 分类顺序上必须排在"时间"之前："设备运行时间是多少"里含 "时间是多少"（时间命中词），
+ * 排在后面就会被误判成问时间。
+ */
+static const char *const IR_DEV_POWER_HIT[] = {
+    "电量", "电池", "多少电", "剩多少电", "还有多少电", "还剩多少电",
+    "几格电", "剩余电量", "电量还剩", "电量还有", "电量多少", NULL
+};
+
+/* ⚠ 匹配发生在**规范化之后**的文本上，而 ef_strip_fillers 会把语气词"行"整字删除：
+ *   "运行多久" -> "运多久"，"运行时间" -> "运时间"。
+ * 所以词表必须以"规范化后仍能命中"的形式为主（运多久/运时间/运了多久），
+ * 原始写法只作可读性冗余保留。这一条是 T8-14.2 真机前实测踩到的坑。 */
+static const char *const IR_DEV_UPTIME_HIT[] = {
+    "运多久", "运了多久", "运多长时间", "运时间",
+    "运行多久", "运行时间",
+    "开机多久", "开机多长时间", "开机时间",
+    "工作多久", "工作多长时间",
+    "开多久", "开了多久", "开多长时间", NULL
+};
+
+static const char *const IR_DEV_VETO[] = {
+    "电压", "电流", "电费", "功率", "充电器", "充电线", "电阻",
+    "充电宝", "手机", "笔记本", "电动车", "耳机", "灯泡",
+    "推荐", "买", "价格", "多少钱", "哪个好",
+    "什么意思", "是什么意思", "为什么", "原理", "怎么算", "区别", "知识",
+    "怎么办", "怎么修", "坏了",
+    /* "运输/物流时间"是问快递，不是问本机运行时长 */
+    "运输", "快递", "物流", "发货", "配送", NULL
+};
+
+static int ir_match_device_status(const char *n, ir_result *out)
+{
+    int power = ir_has_any(n, IR_DEV_POWER_HIT);
+    int uptime = ir_has_any(n, IR_DEV_UPTIME_HIT);
+
+    if (!power && !uptime) return 0;
+    if (ir_has_any(n, IR_DEV_VETO)) return 0;
+
+    if (power && uptime) ir_set(out, IR_DEVICE_STATUS, "device.both", "");
+    else if (power)      ir_set(out, IR_DEVICE_STATUS, "device.power", "");
+    else                 ir_set(out, IR_DEVICE_STATUS, "device.uptime", "");
+    return 1;
+}
+
 /* ---------------- 时间 ---------------- */
 
 static const char *const IR_TIME_HIT[] = {
@@ -572,13 +628,16 @@ int ir_classify_norm(const char *norm, ir_result *out)
     if (norm == NULL || norm[0] == '\0') return 0;
     r = (out != NULL) ? out : &tmp;
 
-    /* 顺序即优先级：打断 > 关屏 > 开屏 > 天气 > 时间 > 播放控制 > 音量 > 退出对话
+    /* 顺序即优先级：打断 > 关屏 > 开屏 > 天气 > 设备状态 > 时间 > 播放控制 > 音量 > 退出对话
      * （T8-12.20：退出排在最后 —— "退出静音"必须先被 volume.unmute 接走，
-     *   退出匹配器只兜底纯退出短句） */
+     *   退出匹配器只兜底纯退出短句；
+     *  T8-14.2：设备状态排在时间之前 —— "设备运行时间是多少"含时间命中词，
+     *   排在后面会被误判成问时间） */
     hit = ir_match_stop(norm, r) ||
           ir_match_screen_off(norm, r) ||
           ir_match_screen_on(norm, r) ||
           ir_match_weather(norm, r) ||
+          ir_match_device_status(norm, r) ||
           ir_match_time(norm, r) ||
           ir_match_media(norm, r) ||
           ir_match_volume(norm, r) ||
@@ -635,6 +694,7 @@ const char *ir_intent_name(ir_intent it)
     case IR_MEDIA:      return "media";
     case IR_STOP:       return "stop";
     case IR_EXIT:       return "exit";
+    case IR_DEVICE_STATUS: return "device_status";
     case IR_NONE:
     default:            return "none";
     }
@@ -651,5 +711,6 @@ int ir_intent_from_name(const char *name)
     if (strcmp(name, "media") == 0) return IR_MEDIA;
     if (strcmp(name, "stop") == 0) return IR_STOP;
     if (strcmp(name, "exit") == 0) return IR_EXIT;
+    if (strcmp(name, "device_status") == 0) return IR_DEVICE_STATUS;
     return IR_NONE;
 }

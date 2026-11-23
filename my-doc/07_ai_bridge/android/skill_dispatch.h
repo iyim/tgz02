@@ -34,7 +34,8 @@ typedef enum {
     T8_SK_SCREEN_ON = 8,
     T8_SK_SCREEN_OFF = 9,
     T8_SK_APP_LAUNCH = 10,    /* argv[0] = 包名/别名 */
-    T8_SK_MAX = 11
+    T8_SK_DEVICE_STATUS = 11, /* T8-14.2：设备自身状态（电池电量 / 运行时长），无参数 */
+    T8_SK_MAX = 12
 } t8_skill_id;
 
 #define T8_SK_OK          0
@@ -100,5 +101,30 @@ int t8_skill_volume_exec(const t8_skill_req *req, t8_skill_result *res, void *ct
 
 /* 时间查询示例：不执行任何设备操作，只给出可播报文本（证明"无副作用技能"的形态） */
 int t8_skill_time_exec(const t8_skill_req *req, t8_skill_result *res, void *ctx);
+
+/* ---------------- T8-14.2：设备自身状态（device.status） ----------------
+ *
+ * 只看**真机上确认可读**的两个数据源，不做任何推测：
+ *   - 电池：sysfs 的 capacity（0..100 整数）。设备实测：/sys/class/power_supply/battery/capacity
+ *   - 运行时长：/proc/uptime 的第一个字段（秒，浮点）
+ * 任一数据源不可用（文件缺失 / 读失败 / 值非法）就在播报文本里明确降级，
+ * **绝不用默认值/上次值顶替**；两个都不可用时返回 T8_SK_E_CTX（失败），而不是编一个数字。
+ */
+#define T8_SK_PATH_MAX 192
+
+typedef struct {
+    char battery_path[T8_SK_PATH_MAX]; /* 空 = 按候选列表自动探测（真机 sysfs） */
+    char uptime_path[T8_SK_PATH_MAX];  /* 空 = /proc/uptime */
+} t8_dev_ctx;
+
+/* 填默认路径：uptime=/proc/uptime，battery=空（自动探测） */
+void t8_dev_defaults(t8_dev_ctx *c);
+
+/* 在候选列表里找到第一个可读出合法 0..100 的 capacity 文件，写进 ctx->battery_path。
+ * 返回 1 = 找到，0 = 没有可用电源节点（不是错误，只表示这台设备没有电池/权限）。 */
+int t8_dev_detect_battery(t8_dev_ctx *c);
+
+/* 设备状态技能：ctx 指向 t8_dev_ctx（可为 NULL = 用默认路径） */
+int t8_skill_device_status_exec(const t8_skill_req *req, t8_skill_result *res, void *ctx);
 
 #endif /* T8_SKILL_DISPATCH_H */

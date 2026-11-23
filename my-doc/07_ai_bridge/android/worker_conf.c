@@ -264,6 +264,17 @@ static int wc_apply(t6b_config *cfg, const char *key, const char *val, char *err
         cfg->skill_dispatch = iv;
         return 0;
     }
+    /* T8-14.2：device.status 独立开关（默认 0）+ 可选的电池 capacity 路径覆盖 */
+    if (strcmp(key, "skill_device_status_enabled") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->skill_device_status = iv;
+        return 0;
+    }
+    if (strcmp(key, "skill_device_battery_path") == 0) {
+        if (wc_copy(cfg->skill_battery_path,
+                    sizeof(cfg->skill_battery_path), val) != 0) goto bad;
+        return 0;
+    }
     if (strcmp(key, "gate") == 0) {
         if (wc_bool(val, &iv) != 0) goto bad;
         cfg->gate.enabled = iv;
@@ -429,7 +440,9 @@ int wc_write(const t6b_config *cfg, const char *path, char *err, size_t errlen)
                  "gate_cross_session_ms=%d\n"
                  "session=%d\n"
                  "session_timeout_ms=%d\n"
-                 "skill_dispatch_enabled=%d\n",
+                 "skill_dispatch_enabled=%d\n"
+                 "skill_device_status_enabled=%d\n"
+                 "skill_device_battery_path=%s\n",
                  cfg->provider_name, cfg->deepseek.base_url, cfg->deepseek.model,
                  cfg->deepseek.api_key_file, cfg->deepseek.temperature,
                  cfg->deepseek.max_tokens, cfg->context_enabled, cfg->context_max_messages,
@@ -438,7 +451,9 @@ int wc_write(const t6b_config *cfg, const char *path, char *err, size_t errlen)
                  cfg->gate.enabled ? 1 : 0, cfg->gate.debounce_ms, cfg->gate.max_hold_ms,
                  cfg->gate.cross_session ? 1 : 0, cfg->gate.cross_session_ms,
                  cfg->session.enabled ? 1 : 0, cfg->session.timeout_ms,
-                 cfg->skill_dispatch ? 1 : 0);
+                 cfg->skill_dispatch ? 1 : 0,
+                 cfg->skill_device_status ? 1 : 0,
+                 cfg->skill_battery_path);
     if (n < 0 || (size_t)n >= sizeof(buf)) {
         if (err) snprintf(err, errlen, "config buffer too small");
         return -1;
