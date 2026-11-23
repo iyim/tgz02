@@ -67,7 +67,7 @@ def main():
         raise SystemExit("INC/GET macro definition changed in production file")
 
     # 回调路径里禁止出现的调用
-    rs, re_ = find_fn(src, "static void obs_record(int sid, int type, int mode, int decision)")
+    rs, re_ = find_fn(src, "static void obs_record(int sid, int type, int mode, int decision, int res_is_null)")
     rec = src[rs:re_]
     for name, body in (("obs_record", rec), ("tg_nlp_cb", cb)):
         for pat in BAN:

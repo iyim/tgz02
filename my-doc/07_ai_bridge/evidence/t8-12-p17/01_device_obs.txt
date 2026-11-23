@@ -1,0 +1,31 @@
+collected=2026-11-23T10:25:10.0707418+08:00
+(注：p17 已卸载，此快照来自卸载前最后一次导出)
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t8/libtg_hook_p17.so check_only=0
+[inject] so_size=125092 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=30807 (matched cmdline=com.alibaba.ailabs.genie.smartapp:core)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t8/libtg_hook_p17.so)
+[inject] attached tid=30807 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa6891000 stack=0xa6899000 trap=0xa68a0000 gadget=0xb4dada6c
+[inject] dlopen=0xb46df0ad (libdl.so)
+[inject] dlsym=0xb46df0bf (libdl.so)
+[inject] dlerror=0xb46df0b7 (libdl.so)
+[inject] path_written=0xa6891100 len=37
+[inject] dlopen ok handle=0xb661b20b flags=0x6
+[inject] dlsym ok install=0x9288e490 prepare=0x9288e230 status=0x9288f838
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x97adb53c,0x97adb544)
+[inject] nlu dlsym: prepare=0x9288bdc4 install=0x9288bff0 takeover_set=0x9288cb48
+[inject] nlu entry=0x97ae0ebc patch=[0x97ae0ebc,0x97ae0ec4)
+[inject] observe_begin installed=0 takeover=0 (obs-note: these are the T8-12.15 observation records, not the nlu stats line)
+[inject] obs| obs v=1 cap=256 total=6 release=6 skip=0 failclosed=0 overwritten=0 contended=0 ring_first=0 ring_next=6
+[inject] obs| obs i=0 mono=75808351 wall=1795400509032 sid=1969080 type=0 mode=pass decision=PASS resnull=0
+[inject] obs| obs i=1 mono=75817528 wall=1795400518209 sid=1969085 type=0 mode=pass decision=PASS resnull=0
+[inject] obs| obs i=2 mono=75844013 wall=1795400544693 sid=1969089 type=0 mode=pass decision=PASS resnull=0
+[inject] obs| obs i=3 mono=75884179 wall=1795400584859 sid=1969093 type=0 mode=pass decision=PASS resnull=0
+[inject] obs| obs i=4 mono=75895124 wall=1795400595805 sid=1969097 type=0 mode=pass decision=PASS resnull=0
+[inject] obs| obs i=5 mono=75906463 wall=1795400607144 sid=1969101 type=0 mode=pass decision=PASS resnull=0
+[inject] observe_end chunks=1 lines=7
+[inject] RESULT nlu-observe ok installed=0 takeover=0 records=7
+[inject] detached (target thread resumed)

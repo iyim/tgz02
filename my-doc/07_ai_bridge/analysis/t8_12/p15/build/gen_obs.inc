@@ -1,7 +1,7 @@
 /* 本文件由 extract_obs.py 从 libtg_hook.c 逐字抽取，请勿手工修改。
  * 源文件 : libtg_hook.c
- * obs模块: sha256 c01df96e100e76d53bd455ae558bd0ae570be5020292418dde94b180eb9ffc79
- * tg_nlp_cb: sha256 38c86d7156cabdfd0fc32a2089de368cbbaff411a83a34bce92476d83f6fd4e3
+ * obs模块: sha256 20b4e902a185918f3a9465376e4f6cd6041fbb83dc4391e163ae37955dd00bd6
+ * tg_nlp_cb: sha256 b28350aa2286f02ef30ec159641bf4d4046df211ea6db081ae74f60216c78e38
  */
 /* @@TG-OBS-MODULE-BEGIN@@ */
 /*
@@ -39,6 +39,8 @@ typedef struct {
     volatile int32_t  type;         /* 回调的 type */
     volatile int32_t  mode;         /* 回调发生时的模式：NLS_PASS/DECIDE/FAILCLOSED */
     volatile int32_t  decision;     /* 0 = 放行原厂(PASS)，1 = 跳过(DROP) */
+    volatile int32_t  res_is_null;  /* R13: res 指针是否为空（只比较指针，不解引用） */
+    volatile int32_t  reserved;     /* 补齐 8 字节对齐，留待扩展 */
 } tg_obs_slot;
 
 static tg_obs_slot g_obs[TG_OBS_CAP];
@@ -80,9 +82,10 @@ static void obs_cpu_relax(void)
 
 /*
  * 记一条观测。调用点保证：不做 I/O、不分配、不取锁、不解引用 res。
- * 只读 sid/type 两个整数，绝不碰 NlpResult 内容，也不记录任何语音文本。
+ * 只读 sid/type 两个整数 + res 是否为空（仅指针比较），绝不碰 NlpResult 内容，
+ * 也不记录任何语音文本。
  */
-static void obs_record(int sid, int type, int mode, int decision)
+static void obs_record(int sid, int type, int mode, int decision, int res_is_null)
 {
     unsigned long n = __atomic_fetch_add(&g_obs_total, 1UL, __ATOMIC_RELAXED);
     tg_obs_slot *s = &g_obs[n & TG_OBS_MASK];
@@ -115,6 +118,8 @@ static void obs_record(int sid, int type, int mode, int decision)
     s->type = type;
     s->mode = mode;
     s->decision = decision ? 1 : 0;
+    s->res_is_null = res_is_null ? 1 : 0;
+    s->reserved = 0;
     __atomic_store_n(&s->seq, q + 2u, __ATOMIC_RELEASE);
 }
 
@@ -167,11 +172,12 @@ int tg_nlu_observe(char *buf, unsigned int cap, unsigned int from)
         if ((q1 & 1u) != 0) continue;                      /* 正在写：跳过，不返回半条 */
         if (__atomic_load_n(&s->tick, __ATOMIC_RELAXED) != (uint64_t)i) continue;  /* 已被覆盖 */
         need = snprintf(line, sizeof(line),
-                        "obs i=%lu mono=%lld wall=%lld sid=%d type=%d mode=%s decision=%s\n",
+                        "obs i=%lu mono=%lld wall=%lld sid=%d type=%d mode=%s decision=%s resnull=%d\n",
                         i, (long long)s->mono_ms, (long long)s->wall_ms,
                         (int)s->sid, (int)s->type,
                         nls_mode_name((int)s->mode),
-                        (s->decision != 0) ? "DROP" : "PASS");
+                        (s->decision != 0) ? "DROP" : "PASS",
+                        (s->res_is_null != 0) ? 1 : 0);
         q2 = __atomic_load_n(&s->seq, __ATOMIC_ACQUIRE);
         if (q1 != q2 || (q2 & 1u) != 0) continue;          /* 读的过程中被改写：丢弃 */
         if (need <= 0) continue;
@@ -190,25 +196,32 @@ static int tg_nlp_cb(void *self, int sid, int type, void *res)
     char key[24];
     int drop;
     int mode;
+    int res_is_null = (res == NULL) ? 1 : 0;
 
     (void)self;
-    (void)res;
+
+    /* R13: 收尾通知无条件放行，先于任何接管判定 */
+    if (type == 2 || type == 3) {
+        obs_record(sid, type, nlu_mode_now(), 0, res_is_null);
+        INC(g_nlu_terminal_pass);
+        return 0;
+    }
 
     mode = nlu_mode_now();
     if (mode == NLS_PASS) {                 /* 补丁在但接管关：始终放行原厂 */
-        obs_record(sid, type, mode, 0);
+        obs_record(sid, type, mode, 0, res_is_null);
         return 0;
     }
     INC(g_nlu_nlp_calls);
     if (mode == NLS_FAILCLOSED) {           /* 状态不可用：不放行，也不碰会话表 */
         INC(g_nlu_nlp_failclosed);
-        obs_record(sid, type, mode, 1);
+        obs_record(sid, type, mode, 1, res_is_null);
         return 1;
     }
     if (sid > 0) snprintf(key, sizeof(key), "%d", sid);
     else key[0] = '\0';
     drop = t8_to_should_drop(&g_to, key, wall_ms());
     if (drop) INC(g_nlu_nlp_skip); else INC(g_nlu_nlp_pass);
-    obs_record(sid, type, mode, drop ? 1 : 0);
+    obs_record(sid, type, mode, drop ? 1 : 0, res_is_null);
     return drop ? 1 : 0;
 }

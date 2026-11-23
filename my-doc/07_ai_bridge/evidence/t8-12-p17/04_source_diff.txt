@@ -1,0 +1,126 @@
+diff --git a/my-doc/07_ai_bridge/android/hook_agent/libtg_hook.c b/my-doc/07_ai_bridge/android/hook_agent/libtg_hook.c
+index 068c2eee..9d205c49 100644
+--- a/my-doc/07_ai_bridge/android/hook_agent/libtg_hook.c
++++ b/my-doc/07_ai_bridge/android/hook_agent/libtg_hook.c
+@@ -726,6 +726,7 @@ static pthread_once_t g_nlu_once = PTHREAD_ONCE_INIT;
+ static volatile unsigned long g_nlu_final_seen, g_nlu_final_pass, g_nlu_final_failclosed;
+ static volatile unsigned long g_nlu_nlp_calls, g_nlu_nlp_skip, g_nlu_nlp_pass;
+ static volatile unsigned long g_nlu_nlp_failclosed;     /* 接管开但会话表不可用 -> 不放行 */
++static volatile unsigned long g_nlu_terminal_pass;      /* R13: type=2/3 收尾通知无条件放行次数 */
+ 
+ static void nlu_boot_once(void)
+ {
+@@ -849,6 +850,8 @@ typedef struct {
+     volatile int32_t  type;         /* 回调的 type */
+     volatile int32_t  mode;         /* 回调发生时的模式：NLS_PASS/DECIDE/FAILCLOSED */
+     volatile int32_t  decision;     /* 0 = 放行原厂(PASS)，1 = 跳过(DROP) */
++    volatile int32_t  res_is_null;  /* R13: res 指针是否为空（只比较指针，不解引用） */
++    volatile int32_t  reserved;     /* 补齐 8 字节对齐，留待扩展 */
+ } tg_obs_slot;
+ 
+ static tg_obs_slot g_obs[TG_OBS_CAP];
+@@ -890,9 +893,10 @@ static void obs_cpu_relax(void)
+ 
+ /*
+  * 记一条观测。调用点保证：不做 I/O、不分配、不取锁、不解引用 res。
+- * 只读 sid/type 两个整数，绝不碰 NlpResult 内容，也不记录任何语音文本。
++ * 只读 sid/type 两个整数 + res 是否为空（仅指针比较），绝不碰 NlpResult 内容，
++ * 也不记录任何语音文本。
+  */
+-static void obs_record(int sid, int type, int mode, int decision)
++static void obs_record(int sid, int type, int mode, int decision, int res_is_null)
+ {
+     unsigned long n = __atomic_fetch_add(&g_obs_total, 1UL, __ATOMIC_RELAXED);
+     tg_obs_slot *s = &g_obs[n & TG_OBS_MASK];
+@@ -925,6 +929,8 @@ static void obs_record(int sid, int type, int mode, int decision)
+     s->type = type;
+     s->mode = mode;
+     s->decision = decision ? 1 : 0;
++    s->res_is_null = res_is_null ? 1 : 0;
++    s->reserved = 0;
+     __atomic_store_n(&s->seq, q + 2u, __ATOMIC_RELEASE);
+ }
+ 
+@@ -977,11 +983,12 @@ int tg_nlu_observe(char *buf, unsigned int cap, unsigned int from)
+         if ((q1 & 1u) != 0) continue;                      /* 正在写：跳过，不返回半条 */
+         if (__atomic_load_n(&s->tick, __ATOMIC_RELAXED) != (uint64_t)i) continue;  /* 已被覆盖 */
+         need = snprintf(line, sizeof(line),
+-                        "obs i=%lu mono=%lld wall=%lld sid=%d type=%d mode=%s decision=%s\n",
++                        "obs i=%lu mono=%lld wall=%lld sid=%d type=%d mode=%s decision=%s resnull=%d\n",
+                         i, (long long)s->mono_ms, (long long)s->wall_ms,
+                         (int)s->sid, (int)s->type,
+                         nls_mode_name((int)s->mode),
+-                        (s->decision != 0) ? "DROP" : "PASS");
++                        (s->decision != 0) ? "DROP" : "PASS",
++                        (s->res_is_null != 0) ? 1 : 0);
+         q2 = __atomic_load_n(&s->seq, __ATOMIC_ACQUIRE);
+         if (q1 != q2 || (q2 & 1u) != 0) continue;          /* 读的过程中被改写：丢弃 */
+         if (need <= 0) continue;
+@@ -1003,32 +1010,47 @@ int tg_nlu_observe(char *buf, unsigned int cap, unsigned int from)
+  * 观测**不参与**决定：返回值仍由 mode 与 t8_to_should_drop 决定，一行都没改。
+  * 注意 g_nlu_nlp_calls 的语义保持原样（只在非 PASS 模式下累加），观测总数另记在
+  * g_obs_total 里 —— 否则旧有的 nlp_pass+skip+failclosed == nlp_calls 不变量会破。
++ *
++ * T8-12.17（R13）：type=2（exitTalk 合成结果）与 type=3（Handler 收尾通知，
++ * 已确认存在 (sid,3,NULL) 调用路径）是**原厂收尾通知**，不是可被接管的技能结果。
++ * 对它们**无条件放行**，优先级高于 DECIDE 与 FAILCLOSED：
++ *   - 不查会话表、不进 fail-closed 降级窗口、不计 nlp_calls/skip/pass/failclosed；
++ *   - 单独记 g_nlu_terminal_pass，观测里记 resnull；
++ *   - 返回值恒为 0，绝不吞收尾。
++ * 其它 type（含 0 与未识别 type）仍走既有判定，语义不变。
+  */
+ static int tg_nlp_cb(void *self, int sid, int type, void *res)
+ {
+     char key[24];
+     int drop;
+     int mode;
++    int res_is_null = (res == NULL) ? 1 : 0;
+ 
+     (void)self;
+-    (void)res;
++
++    /* R13: 收尾通知无条件放行，先于任何接管判定 */
++    if (type == 2 || type == 3) {
++        obs_record(sid, type, nlu_mode_now(), 0, res_is_null);
++        INC(g_nlu_terminal_pass);
++        return 0;
++    }
+ 
+     mode = nlu_mode_now();
+     if (mode == NLS_PASS) {                 /* 补丁在但接管关：始终放行原厂 */
+-        obs_record(sid, type, mode, 0);
++        obs_record(sid, type, mode, 0, res_is_null);
+         return 0;
+     }
+     INC(g_nlu_nlp_calls);
+     if (mode == NLS_FAILCLOSED) {           /* 状态不可用：不放行，也不碰会话表 */
+         INC(g_nlu_nlp_failclosed);
+-        obs_record(sid, type, mode, 1);
++        obs_record(sid, type, mode, 1, res_is_null);
+         return 1;
+     }
+     if (sid > 0) snprintf(key, sizeof(key), "%d", sid);
+     else key[0] = '\0';
+     drop = t8_to_should_drop(&g_to, key, wall_ms());
+     if (drop) INC(g_nlu_nlp_skip); else INC(g_nlu_nlp_pass);
+-    obs_record(sid, type, mode, drop ? 1 : 0);
++    obs_record(sid, type, mode, drop ? 1 : 0, res_is_null);
+     return drop ? 1 : 0;
+ }
+ 
+@@ -1685,6 +1707,7 @@ void tg_nlu_stats(char *buf, size_t cap)
+              "enabled=%d init_error=%d active=%d marked=%lu passed=%lu dropped=%lu unknown=%lu "
+              "overflow=%lu degraded=%d failclosed=%d fc_events=%lu fc_passes=%lu "
+              "final_seen=%lu nlp_calls=%lu nlp_skip=%lu nlp_pass=%lu nlp_failclosed=%lu "
++             "term_pass=%lu "
+              "obs_total=%lu obs_release=%lu obs_skip=%lu obs_failclosed=%lu "
+              "obs_overwritten=%lu obs_contended=%lu obs_cap=%u",
+              nls_installed(&g_nlu_sw), nls_takeover(&g_nlu_sw), nls_mode_name(mode),
+@@ -1701,6 +1724,7 @@ void tg_nlu_stats(char *buf, size_t cap)
+              s.failclosed_events, s.failclosed_passes,
+              GET(g_nlu_final_seen), GET(g_nlu_nlp_calls), GET(g_nlu_nlp_skip), GET(g_nlu_nlp_pass),
+              GET(g_nlu_nlp_failclosed),
++             GET(g_nlu_terminal_pass),
+              GET(g_obs_total), GET(g_obs_release), GET(g_obs_skip), GET(g_obs_failclosed),
+              GET(g_obs_overwritten), GET(g_obs_contended), (unsigned)TG_OBS_CAP);
+ }

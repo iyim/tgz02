@@ -32,6 +32,7 @@
 
 /* 被抽出的 tg_nlp_cb 依赖这些外部符号，由本测试提供 */
 static volatile unsigned long g_nlu_nlp_calls, g_nlu_nlp_skip, g_nlu_nlp_pass, g_nlu_nlp_failclosed;
+static volatile unsigned long g_nlu_terminal_pass;   /* R13 收尾放行计数 */
 static t8_to_state g_to;
 static int g_stub_mode = NLS_PASS;
 
@@ -85,10 +86,10 @@ static void test_single(void)
     unsigned long t0 = GET(g_obs_total), r0 = GET(g_obs_release), s0 = GET(g_obs_skip);
 
     printf("\n[A2] single-thread accounting\n");
-    obs_record(11, 1, NLS_PASS, 0);
-    obs_record(12, 2, NLS_DECIDE, 1);
-    obs_record(13, 3, NLS_DECIDE, 0);
-    obs_record(14, 4, NLS_FAILCLOSED, 1);
+    obs_record(11, 1, NLS_PASS, 0, 0);
+    obs_record(12, 2, NLS_DECIDE, 1, 0);
+    obs_record(13, 3, NLS_DECIDE, 0, 1);
+    obs_record(14, 4, NLS_FAILCLOSED, 1, 0);
 
     CHECK(GET(g_obs_total) == t0 + 4);
     CHECK(GET(g_obs_release) == r0 + 2);
@@ -108,7 +109,7 @@ static void test_overwrite(void)
     for (i = 0; i < (unsigned long)TG_OBS_CAP + (unsigned long)extra; i++) {
         int sid = (int)(i & 0xFFFFu);
 
-        obs_record(sid, -sid, NLS_DECIDE, (int)(i & 1u));
+        obs_record(sid, -sid, NLS_DECIDE, (int)(i & 1u), 0);
     }
     CHECK(GET(g_obs_total) == t0 + (unsigned long)TG_OBS_CAP + (unsigned long)extra);
     {   /* 覆盖数 = 写入总数超出容量的部分（从进程启动起算，不是从本轮测试起算） */
@@ -150,7 +151,7 @@ static void *writer_main(void *arg)
         int sid = (int)(t & 0x3FFFFFUL);
 
         /* 不变量：type == -sid。任何"半条记录"或两个写者混写都会破坏它。 */
-        obs_record(sid, -sid, NLS_DECIDE, (int)(t & 1u));
+        obs_record(sid, -sid, NLS_DECIDE, (int)(t & 1u), 0);
     }
     return NULL;
 }
@@ -164,7 +165,7 @@ static void *writer_main_small(void *arg)
         unsigned long t = (unsigned long)id * 200UL + (unsigned long)i;
         int sid = (int)(t & 0x3FFFFFUL);
 
-        obs_record(sid, -sid, NLS_DECIDE, (int)(t & 1u));
+        obs_record(sid, -sid, NLS_DECIDE, (int)(t & 1u), 0);
     }
     return NULL;
 }
@@ -325,7 +326,7 @@ static void test_callback(void)
     /* 1) PASS：原厂放行，观测 +1，g_nlu_nlp_calls 语义不变（仍旧只在非 PASS 时累加） */
     t0 = GET(g_obs_total); calls0 = GET(g_nlu_nlp_calls);
     g_stub_mode = NLS_PASS;
-    rc = tg_nlp_cb(NULL, 4242, 3, NULL);
+    rc = tg_nlp_cb(NULL, 4242, 0, NULL);
     CHECK(rc == 0);
     CHECK(GET(g_obs_total) == t0 + 1);
     CHECK(GET(g_nlu_nlp_calls) == calls0);
@@ -333,31 +334,94 @@ static void test_callback(void)
     /* 2) DECIDE + 已登记会话：丢（返回 1），观测记 DROP */
     skip0 = GET(g_nlu_nlp_skip);
     g_stub_mode = NLS_DECIDE;
-    rc = tg_nlp_cb(NULL, 4242, 3, NULL);
+    rc = tg_nlp_cb(NULL, 4242, 0, NULL);
     CHECK(rc == 1);
     CHECK(GET(g_nlu_nlp_skip) == skip0 + 1);
 
     /* 3) DECIDE + 未登记会话：放行（返回 0），观测记 PASS */
     pass0 = GET(g_nlu_nlp_pass);
-    rc = tg_nlp_cb(NULL, 9999, 3, NULL);
+    rc = tg_nlp_cb(NULL, 9999, 0, NULL);
     CHECK(rc == 0);
     CHECK(GET(g_nlu_nlp_pass) == pass0 + 1);
 
     /* 4) FAILCLOSED：丢（返回 1），且不碰会话表（登记仍然在，切回 DECIDE 还能丢） */
     fc0 = GET(g_nlu_nlp_failclosed);
     g_stub_mode = NLS_FAILCLOSED;
-    rc = tg_nlp_cb(NULL, 4242, 3, NULL);
+    rc = tg_nlp_cb(NULL, 4242, 0, NULL);
     CHECK(rc == 1);
     CHECK(GET(g_nlu_nlp_failclosed) == fc0 + 1);
 
     g_stub_mode = NLS_DECIDE;
-    CHECK(tg_nlp_cb(NULL, 4242, 3, NULL) == 1);
+    CHECK(tg_nlp_cb(NULL, 4242, 0, NULL) == 1);
 
     /* 5) 目标进程里卸载/关闭接管时，原厂必须全部放行 */
     CHECK(t8_to_enabled_set(&g_to, 0) == 0);
     g_stub_mode = NLS_PASS;
-    CHECK(tg_nlp_cb(NULL, 4242, 3, NULL) == 0);
-    CHECK(tg_nlp_cb(NULL, 4243, 3, NULL) == 0);
+    CHECK(tg_nlp_cb(NULL, 4242, 0, NULL) == 0);
+    CHECK(tg_nlp_cb(NULL, 4243, 0, NULL) == 0);
+}
+
+/* ------------------------------------------------------- R13 收尾通知保护 */
+
+/*
+ * type=2（exitTalk 合成结果）与 type=3（Handler 收尾通知，res 可为 NULL）：
+ * 必须无条件放行，优先级高于 DECIDE / FAILCLOSED，且不碰会话表、不计普通 NLU 判定。
+ */
+static void test_r13_terminal(void)
+{
+    unsigned long t0, calls0, term0, idx;
+    unsigned long marked0, dropped0, passed0, unknown0;
+    int i, m;
+
+    printf("\n[R13] type=2/3 收尾通知无条件放行\n");
+    CHECK(t8_to_enabled_set(&g_to, 1) == 0);
+
+    /* 注册一个会话：DECIDE 模式下"普通结果(type=0)"本来会被丢，用它对照"收尾不被误伤" */
+    {
+        t8_to_why why;
+
+        CHECK(t8_to_on_final(&g_to, "7777", "zzz no local intent", wall_ms(), 0, &why) == T8_TO_TAKE);
+    }
+    marked0 = g_to.marked; dropped0 = g_to.dropped; passed0 = g_to.passed; unknown0 = g_to.unknown;
+
+    for (i = 0; i < 2; i++) {
+        int ty = (i == 0) ? 2 : 3;
+
+        for (m = 0; m < 3; m++) {
+            int mode = (m == 0) ? NLS_PASS : (m == 1) ? NLS_DECIDE : NLS_FAILCLOSED;
+            int rc;
+
+            t0 = GET(g_obs_total); calls0 = GET(g_nlu_nlp_calls); term0 = GET(g_nlu_terminal_pass);
+            g_stub_mode = mode;
+            rc = tg_nlp_cb(NULL, 7777, ty, NULL);   /* res=NULL -> resnull=1 */
+            CHECK(rc == 0);                                   /* 收尾恒放行 */
+            CHECK(GET(g_nlu_nlp_calls) == calls0);            /* 不进普通 NLU 判定 */
+            CHECK(GET(g_nlu_terminal_pass) == term0 + 1);     /* 收尾计数 +1 */
+            CHECK(GET(g_obs_total) == t0 + 1);
+
+            idx = GET(g_obs_total) - 1;
+            CHECK(g_obs[idx & TG_OBS_MASK].type == ty);
+            CHECK(g_obs[idx & TG_OBS_MASK].decision == 0);
+            CHECK(g_obs[idx & TG_OBS_MASK].res_is_null == 1);
+        }
+    }
+
+    /* 收尾路径必须零接触会话表 */
+    CHECK(g_to.marked == marked0);
+    CHECK(g_to.dropped == dropped0);
+    CHECK(g_to.passed == passed0);
+    CHECK(g_to.unknown == unknown0);
+
+    /* res != NULL 时 resnull=0（只比较指针，绝不 deref） */
+    {
+        g_stub_mode = NLS_DECIDE;
+        CHECK(tg_nlp_cb(NULL, 7777, 3, (void *)0x1234u) == 0);
+        idx = GET(g_obs_total) - 1;
+        CHECK(g_obs[idx & TG_OBS_MASK].res_is_null == 0);
+        CHECK(g_obs[idx & TG_OBS_MASK].type == 3);
+    }
+
+    CHECK(t8_to_enabled_set(&g_to, 0) == 0);
 }
 
 int main(void)
@@ -373,6 +437,7 @@ int main(void)
     test_realistic_concurrency();
     test_chunked();
     test_callback();
+    test_r13_terminal();
 
     printf("\n---\nchecks: pass=%d fail=%d\n", g_pass, g_fail);
     printf("RESULT: %s\n", (g_fail == 0) ? "PASS" : "FAIL");
