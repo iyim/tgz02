@@ -118,6 +118,9 @@ int sc_on_session_text(sc_ctx *s, const char *session, const char *event_id, lon
     } else {
         sc_set(s, SC_LISTENING, now_ms, "same session new final");
     }
+    /* LISTENING 也挂关闭截止：final 到达但 utterance 一直未提交（暂存门挂死等
+     * 异常场景）时，会话也能按超时关闭，不永久滞留 */
+    s->deadline_ms = now_ms + (long long)s->cfg.followup_timeout_ms;
     s->last_final_ms = now_ms;
     sc_copy(s->last_final_event, sizeof(s->last_final_event), event_id);
     return 1;
@@ -178,6 +181,9 @@ int sc_on_tts_queued(sc_ctx *s, const char *request_id, long long now_ms)
         return 0;
     }
     sc_set(s, SC_SPEAKING, now_ms, "tts queued");
+    /* SPEAKING 安全截止 = 5 倍窗口：正常播放 idle 先到；TtsExec 崩溃/卡死时
+     * 兜底关闭，防止永久卡 SPEAKING（T8-13.3 真机发现的第二处卡点） */
+    s->deadline_ms = now_ms + (long long)s->cfg.followup_timeout_ms * 5;
     return 1;
 }
 
@@ -277,6 +283,18 @@ int sc_poll(sc_ctx *s, long long now_ms)
     if (s == NULL) return SC_IDLE;
     if (!s->cfg.enabled) return s->state;
 
+    if (s->state == SC_SPEAKING && s->deadline_ms > 0 && now_ms >= s->deadline_ms) {
+        /* SPEAKING 安全兜底：播放事件迟迟不来（TtsExec 卡死）。此时 request 已无
+         * 法通过播放收尾，必须连请求一起清掉，否则永久悬挂 */
+        s->timeouts++;
+        s->closes++;
+        s->request_active = 0;
+        if (s->request[0] != '\0') sc_copy(s->prev_request, sizeof(s->prev_request), s->request);
+        s->request[0] = '\0';
+        sc_set(s, SC_CLOSING, now_ms, "speaking deadline (no playback events)");
+        s->deadline_ms = 0;
+        return s->state;
+    }
     if ((s->state == SC_FOLLOWUP || s->state == SC_INTERRUPTED || s->state == SC_LISTENING) &&
         s->deadline_ms > 0 && now_ms >= s->deadline_ms && !s->request_active) {
         s->timeouts++;

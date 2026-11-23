@@ -438,6 +438,45 @@ int main(void)
     /* 不变量：以上所有情况都不会留下无法关闭的活动请求 —— 每个分支后
      * request_active==0 或有对应的播放/超时事件必然到达（A/C'） */
 
+
+    /* ---------------- [15] T8-13.3 真机缺陷回归：init 后 enabled 必须为 1 ----------------
+     * 真机发现：worker 曾以 sc_init(&w.sc, &w.sc.cfg) 自引用初始化，memset 后自拷贝
+     * 导致 enabled=0，状态机整体失效。修正为 sc_init(s, NULL) + 直接覆盖字段。
+     * 此处回归验证 NULL-config 路径的默认值正确。 */
+    printf("\n[15] init(NULL) 默认值正确（真机缺陷回归）\n");
+    sc_init(&s, NULL);
+    check(s.cfg.enabled == 1, "init(NULL): enabled defaults to 1");
+    check(s.cfg.followup_timeout_ms == 12000, "init(NULL): timeout defaults to 12000");
+    check(s.state == SC_IDLE, "init(NULL): state IDLE");
+    /* 模拟 worker 修正后的序列：init(NULL) -> 覆盖 timeout -> 状态机可用 */
+    s.cfg.followup_timeout_ms = 9000;
+    (void)sc_on_session_text(&s, "1969700", "evtG1", 170000);
+    check(s.state == SC_LISTENING && s.opens == 1, "post-fix: state machine functional");
+    check(sc_poll(&s, 170000 + 9000) == SC_CLOSING, "post-fix: custom timeout honored");
+
+
+    /* ---------------- [16] T8-13.3 真机缺陷回归：SPEAKING 安全兜底 ----------------
+     * 真机发现：播放结束事件因 cs-state 守卫被挡、sc 卡死 SPEAKING。
+     * 修复后：SPEAKING 挂 5 倍窗口安全截止；超时连请求一起清场。 */
+    printf("\n[16] SPEAKING 安全兜底（播放事件永不到达）\n");
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969710", "evtH1", 180000);
+    (void)sc_on_submit(&s, "evtH1", 180100);
+    (void)sc_on_tts_queued(&s, "evtH1", 180200);
+    check(s.state == SC_SPEAKING && s.request_active == 1, "16: speaking active");
+    check(sc_poll(&s, 180200 + 11999) == SC_SPEAKING, "16: within 1x window still speaking");
+    check(sc_poll(&s, 180200 + 59999) == SC_SPEAKING, "16: within 5x window still speaking");
+    check(sc_poll(&s, 180200 + 60000) == SC_CLOSING, "16: 5x deadline -> CLOSING");
+    check(s.request_active == 0, "16: stuck request cleared");
+    check(sc_poll(&s, 180200 + 60001) == SC_IDLE, "16: back to IDLE");
+    /* 正常路径不受影响：播放 idle 在窗口内到达则正常收尾 */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969720", "evtH2", 190000);
+    (void)sc_on_submit(&s, "evtH2", 190100);
+    (void)sc_on_tts_queued(&s, "evtH2", 190200);
+    (void)sc_on_play_state(&s, 0, "evtH2", "ok", 190500);
+    check(s.state == SC_FOLLOWUP && s.request_active == 0, "16: normal idle still works");
+
     printf("\nSUMMARY: pass=%d fail=%d\n", g_pass, g_fail);
     printf("RESULT: %s\n", g_fail == 0 ? "PASS" : "FAIL");
     return g_fail == 0 ? 0 : 1;

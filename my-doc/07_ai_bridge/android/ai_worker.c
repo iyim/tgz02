@@ -1729,6 +1729,10 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
     w->uttq_head = (w->uttq_head + 1) % T6B_UTT_QUEUE;
     w->uttq_count--;
 
+    /* T8-13.3 真机修复：session_text 移到路由判定之前 —— native 指令（time 等）
+     * 也是真实会话事件，同样要被状态机看到（此前 native 路径 bypass 了状态机） */
+    (void)sc_on_session_text(&w->sc, slot->session, slot->event_id, now_ms);
+
     /* ---- T7-05 ①：完整 utterance 到手，先看能不能交给原厂 ---- */
     if (w->cfg.route_native && ir_classify(slot->text, &ir) &&
         route_intent_enabled(w, ir.intent)) {
@@ -1838,7 +1842,6 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
 
     /* T8-13：真实事件 -> 会话控制中心。route=ai 的 pend 建立即登记 AI 请求；
      * 若上一请求尚未终结，这里会打断并顶替（sc_on_submit 内部处理 stale）。 */
-    (void)sc_on_session_text(&w->sc, slot->session, slot->event_id, now_ms);
     (void)sc_on_submit(&w->sc, slot->event_id, now_ms);
     (void)cs_on_submit(&w->cs, now_ms);
     w->st.route_ai++;
@@ -1861,9 +1864,9 @@ static void play_state_poll(t6b_worker *w, long long now_ms)
     int playing;
     char ev[SC_ID_MAX];
     char outcome[32];
+    int cs_listening_context;
 
     if (w->cfg.tts_queue[0] == '\0') return;
-    if (w->cs.state != CS_SPEAKING && w->cs.state != CS_PROCESSING) return;
 
     join_path(path, sizeof(path), w->cfg.tts_queue, "play.public.json");
     if (wu_read_file(path, buf, sizeof(buf), &len) != 0) return;
@@ -1873,7 +1876,9 @@ static void play_state_poll(t6b_worker *w, long long now_ms)
 
     w->play_playing = playing;
     w->play_known = 1;
-    if (!playing) {
+
+    cs_listening_context = (w->cs.state == CS_SPEAKING || w->cs.state == CS_PROCESSING);
+    if (!playing && cs_listening_context) {
         (void)cs_on_play_idle(&w->cs, now_ms);
         if (w->cs.state == CS_WAIT_NEXT) {
             always("session: state=WAIT_NEXT turns=%d followups=%d wait=%dms "
@@ -1881,8 +1886,9 @@ static void play_state_poll(t6b_worker *w, long long now_ms)
                    w->cs.turns, w->cs.followups, w->cfg.session.timeout_ms);
         }
     }
-    /* T8-13：真实事件 -> 会话控制中心。TtsExec 发布的 event_id / last_outcome
-     * 用于区分"当前请求的收尾"与"旧播放的迟到状态"（stale 过滤在 sc 内部）。 */
+    /* T8-13.3 真机修复：sc 的事件归属自己判断，不依赖 cs 状态。
+     * 此前这里的 cs-state 守卫会在 cs 先超时关闭（CLOSED）后把真实播放 idle
+     * 挡在门外，sc 卡死在 SPEAKING。event_id 归属由 sc_on_play_state 负责。 */
     ev[0] = '\0';
     outcome[0] = '\0';
     (void)sc_json_str(buf, len, "event_id", ev, sizeof(ev));
@@ -2613,10 +2619,12 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         w.ug.cfg.fast_native = c->route_native ? 1 : 0;
         w.ug.cfg.fast_intents = (unsigned int)c->route_intents;
         cs_init(&w.cs, &c->session);
-        /* T8-13：会话控制中心（与 cs_state 同启，配置共用 session_timeout_ms） */
-        sc_defaults(&w.sc.cfg);
+        /* T8-13：会话控制中心（与 cs_state 同启，配置共用 session_timeout_ms）。
+         * T8-13.3 真机缺陷修复：此前写的是 sc_init(&w.sc, &w.sc.cfg) —— sc_init
+         * 先 memset 整个 ctx 再从 c 拷贝 cfg，自引用等于把 cfg 清零（enabled=0），
+         * 状态机在生产环境整体失效。修正：先 init 再覆盖配置字段。 */
+        sc_init(&w.sc, NULL);
         w.sc.cfg.followup_timeout_ms = c->session.timeout_ms;
-        sc_init(&w.sc, &w.sc.cfg);
 
         w.st.route_enabled = c->route_native;
         w.st.route_intents = c->route_intents;

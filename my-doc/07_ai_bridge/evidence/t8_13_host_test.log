@@ -1,5 +1,5 @@
 ﻿# T8-13 session controller host test log
-# host time: 2026-11-23 16:33:25
+# host time: 2026-11-23 17:46:19
 
 === build t8_13_session_ctrl_unit_test ===
 cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_13_session_ctrl_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_13_session_ctrl_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\session_ctrl.c
@@ -35,7 +35,11 @@ cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\sys
 
 [14] Provider 成功四情况：A 入队/B 无队列/C 幂等/D 失败死信
 
-SUMMARY: pass=142 fail=0
+[15] init(NULL) 默认值正确（真机缺陷回归）
+
+[16] SPEAKING 安全兜底（播放事件永不到达）
+
+SUMMARY: pass=154 fail=0
 RESULT: PASS
 
 === build t7_04_session_unit_test ===
@@ -112,5 +116,5 @@ cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz
 SUMMARY: pass=82 fail=0
 RESULT: PASS
 
-# total: pass=460 fail=0
+# total: pass=472 fail=0
 # result: OK

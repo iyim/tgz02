@@ -1,0 +1,28 @@
+﻿[aiw] 2026-11-23T17:37:36 lock acquired; previous owner pid=27490 no longer holding it
+[aiw] 2026-11-23T17:37:36 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-23T17:37:36 system prompt: 689 bytes, placed at messages[0] (role=system, outside context eviction)
+[aiw] 2026-11-23T17:37:36 echo filter: enabled=1 no_command=1 window=+1200/-1500ms sim=60% state_file=/data/local/tmp/t5_bridge/tts/play.public.json
+[aiw] 2026-11-23T17:37:36 route: enabled=1 intents=0xff (volume=1 weather=1 screen_off=1 time=1 screen_on=1 media=1 exit=1) publish_file=/data/local/tmp/t5_bridge/work/native_route.public.json
+[aiw] 2026-11-23T17:37:36 gate: enabled=1 debounce=450ms max_hold=2500ms cross_session=1(1200ms) sim=80% hold_file=/data/local/tmp/t5_bridge/ai_worker/utterance_hold.json
+[aiw] 2026-11-23T17:37:36 session: enabled=1 timeout=12000ms (follow-up window after playback)
+[aiw] 2026-11-23T17:37:36 provider ready: deepseek model=deepseek-flash url=http://192.168.1.13:8790/v1/chat/completions key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key key_mode=0600
+[aiw] 2026-11-23T17:37:36 WARNING: deepseek base url uses plain http (no TLS): http://192.168.1.13:8790/v1/chat/completions
+[aiw] 2026-11-23T17:37:36 libcurl: dlopen ok, version=libcurl/7.52.0-DEV BoringSSL zlib/1.2.8
+[aiw] 2026-11-23T17:37:36 start pid=31100 events=/data/local/tmp/t5_bridge/work/events.jsonl state=/data/local/tmp/t5_bridge/ai_worker/consumer_state.json provider=deepseek offset=200585 (network enabled)
+[aiw] 2026-11-23T17:38:18 route=native intent=time rule=time.keyword arg= event=t6-30807-1969353-g13 seq=111 session=1969353 text_bytes=27 merges=0 held_ms=0 publish_seq=1 (factory answers; AI worker does not)
+[aiw] 2026-11-23T17:39:10 route=ai event=t6-30807-1969359-g14 seq=0 session=1969359 merges=0 held_ms=623 why=timeout text_bytes=33 session_state=PROCESSING
+[aiw] 2026-11-23T17:39:10 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-23T17:39:12 deepseek ok: model=deepseek-flash http=200 curl=0 latency=1398ms resp_bytes=842 reply_bytes=138 event=t6-30807-1969359-g14
+[aiw] 2026-11-23T17:39:12 request shape: event=t6-30807-1969359-g14 system=1(role=system,bytes=689) history_msgs=6 user_msgs=1 req_msgs=7
+[aiw] 2026-11-23T17:39:12 provider reply: event=t6-30807-1969359-g14 provider=deepseek req_msgs=7 history_msgs=6 latency=1398ms reply_bytes=138
+[aiw] 2026-11-23T17:39:12 tts queued: event=t6-30807-1969359-g14 reply_bytes=138 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-23T17:39:12 context commit: event=t6-30807-1969359-g14 turns=3 msgs=6 file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-23T17:39:12 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-23T17:39:24 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-23T17:39:24 route=native intent=time rule=time.keyword arg= event=t6-30807-1969371-g15 seq=113 session=1969371 text_bytes=27 merges=0 held_ms=0 publish_seq=2 (factory answers; AI worker does not)
+[aiw] 2026-11-23T17:40:33 echo filter: drop event=t6-30807-1969379-g16 seq=114 reason=drop_no_command (no command content after wake/filler strip (norm=12 rest=0)) text_bytes=12
+[aiw] 2026-11-23T17:43:05 route=native intent=volume rule=volume.up arg=up event=t6-30807-1969392-g17 seq=115 session=1969392 text_bytes=30 merges=0 held_ms=0 publish_seq=3 (factory answers; AI worker does not)
+[aiw] 2026-11-23T17:44:04 route=native intent=volume rule=volume.mute arg=mute event=t6-30807-1969410-g18 seq=116 session=1969410 text_bytes=18 merges=0 held_ms=0 publish_seq=4 (factory answers; AI worker does not)
+[aiw] 2026-11-23T17:44:26 route=native intent=volume rule=volume.unmute arg=unmute event=t6-30807-1969427-g19 seq=117 session=1969427 text_bytes=24 merges=0 held_ms=0 publish_seq=5 (factory answers; AI worker does not)
+[aiw] 2026-11-23T17:45:27 tts stop requested (route=native intent=stop)
+[aiw] 2026-11-23T17:45:27 route=native intent=stop rule=stop.keyword arg=stop event=t6-30807-1969446-g20 seq=118 session=1969446 text_bytes=18 merges=0 held_ms=0 publish_seq=6 (factory answers; AI worker does not)
