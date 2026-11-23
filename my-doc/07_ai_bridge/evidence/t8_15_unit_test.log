@@ -1,0 +1,33 @@
+﻿# T8-15 unit test log
+# host time: 2026-11-23 20:43:46
+cc: C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15_continuous_dialog_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_15_continuous_dialog_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\session_ctrl.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\talk_tap.c
+(no compiler output: 0 warning, 0 error)
+=== T8-15 continuous dialog unit test ===
+
+[1] one wake -> 5 rounds, same asr session
+
+[2] one wake -> 5 rounds, factory opens a new asr session per turn
+
+[3] late idle of round 1 must not end round 2
+
+[4] duplicate final / revision inside the same turn
+
+[5] max_rounds reached -> close and reopen
+
+[6] user stop ends the dialog
+
+[7] relisten window expiry closes the dialog honestly
+
+[8] window boundary is exact
+
+[9] factory events: listening facts only, never turn/round changes
+
+[10] talk tap line parsing
+
+[11] talk tap incremental read (partial line / append / truncation)
+
+[12] continuous=0 keeps the T8-13 semantics
+
+=== pass=141 fail=0 ===
+exit: 0
+# result: OK

@@ -202,7 +202,15 @@ int main(void)
 
     /* ---------------- [10] FOLLOWUP 边界 ---------------- */
     printf("\n[10] FOLLOWUP：ctx_valid 与 device_listening 独立，不冒充免唤醒聆听\n");
-    sc_init(&s, &c);
+    /* T8-15 之后 FOLLOWUP 默认就是"免唤醒续听窗口"（continuous=1，续听窗口内的
+     * 新 ASR 会话算同一对话的下一轮，见 t8_15 单测）。本组固定 T8-13 的旧语义
+     * —— continuous=0：新 ASR 会话 = 新对话 —— 以保证旧口径仍被覆盖。 */
+    {
+        sc_config legacy;
+        sc_defaults(&legacy);
+        legacy.continuous = 0;
+        sc_init(&s, &legacy);
+    }
     (void)sc_on_session_text(&s, "1969380", "t6-30807-1969380-g1", 110000);
     (void)sc_on_submit(&s, "t6-30807-1969380-g1", 110100);
     (void)sc_on_tts_queued(&s, "t6-30807-1969380-g1", 110200);

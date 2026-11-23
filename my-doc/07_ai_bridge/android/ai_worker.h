@@ -90,6 +90,18 @@ typedef struct {
     int         skill_device_status;
     /* 可选：覆盖电池 capacity 路径（空 = 按候选列表自动探测，真机为 sysfs） */
     char        skill_battery_path[T8_SK_PATH_MAX];
+    /* T8-15：免唤醒连续对话（一次唤醒、多轮、主动停止）。
+     * 语义主体在 session_ctrl（对话 = 唤醒后的一串轮次；轮 = 一条 asr_final）。
+     * 这里只放"策略参数"，默认值即 T8-15 交付行为：打开续听、12 s 窗口、最多 8 轮。 */
+    int         continuous_dialog;          /* 1 = 播报结束后装填免唤醒续听窗口（默认 1） */
+    int         continuous_relisten_ms;     /* 续听窗口长度（默认 12000） */
+    int         continuous_max_rounds;      /* 单个对话最多轮次（默认 8；0 = 不限） */
+    int         session_ctx_clear_on_close; /* 1 = 对话收束时清空模型上下文（默认 0：保持跨唤醒上下文） */
+    /* T8-15：原厂会话事件观察（factory talk tap）。
+     * 只读 logcat 输出文件里的 SessionManager 日志行，不 hook、不动 :core。
+     * 打开后 last_wake_ms / device_listening 才是真实值；关闭时两者保持 0（不冒充）。 */
+    int         factory_talk_tap;
+    char        factory_talk_log[T6B_PATH_MAX]; /* 空 = state_dir/factory_talk.log */
     /* T7-04：ASR 暂存门（半句话/修订合并） */
     ug_config   gate;
     /* T7-04：连续对话会话状态 */

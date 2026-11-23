@@ -1,0 +1,14 @@
+﻿=== T8-15 read-only probe (no deployment this round) ===
+host time: 2026-11-23 20:41:55   device clock: Mon Nov 23 20:41:55 CST 2026
+
+--- processes ---
+root          2586     1    4404    448 0                   0 S tgb_bridge
+root          6356     1    7136   3512 0                   0 S ai_worker
+system       30807   281 1249008  97512 0                   0 S com.alibaba.ailabs.genie.smartapp:core
+
+--- deployed worker binary sha256 (still the T8-14.2 build; nothing deployed by T8-15) ---
+389b8b310f06bf2ac33c792cbc1fc4646424ce705fa3ba9e0504c9d7ef40fadf  /data/local/tmp/t5_bridge/bin/ai_worker
+
+--- worker.conf lines matching factory_talk / continuous (empty = keys absent => defaults + tap off) ---
+factory_talk : 0 line(s)
+continuous   : 0 line(s)

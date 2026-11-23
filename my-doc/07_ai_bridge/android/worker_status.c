@@ -36,7 +36,7 @@ void t6b_status_note_error(t6b_status *st, const char *fmt, ...)
 
 int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t errlen)
 {
-    static char buf[8192];
+    static char buf[12288];
     char esc_events[T6B_PATH_MAX * 2];
     char esc_state[T6B_PATH_MAX * 2];
     char esc_invalid[T6B_PROVIDER_MSG_MAX * 2];
@@ -66,6 +66,10 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     /* T8-14.1：技能调度的短标签（skill 名 / 结果码，均无用户正文） */
     char esc_sk_skill[96];
     char esc_sk_result[112];
+    /* T8-15：连续对话结束原因 / tap 文件路径与最近会话 id（均无用户正文） */
+    char esc_sc_end_reason[400];
+    char esc_tap_file[T6B_PATH_MAX + 8];
+    char esc_tap_last_session[160];
     char tmp[T6B_PATH_MAX + 8];
     char dir[T6B_PATH_MAX];
     int n;
@@ -104,6 +108,9 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
                    st->sc_last_transition);
     wu_json_escape(esc_sk_skill, sizeof(esc_sk_skill), st->sk_last_skill);
     wu_json_escape(esc_sk_result, sizeof(esc_sk_result), st->sk_last_result);
+    wu_json_escape(esc_sc_end_reason, sizeof(esc_sc_end_reason), st->sc_end_reason);
+    wu_json_escape(esc_tap_file, sizeof(esc_tap_file), st->tap_file);
+    wu_json_escape(esc_tap_last_session, sizeof(esc_tap_last_session), st->tap_last_session_str);
 
     n = snprintf(buf, sizeof(buf),
         "{\"version\":%d,\"state\":\"%s\",\"pid\":%lld,"
@@ -161,7 +168,16 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"last_final_ms\":%lld,\"last_final_event\":\"%s\","
         "\"last_transition\":\"%s\",\"transitions\":%lu,\"opens\":%lu,"
         "\"stale_callbacks\":%lu,\"duplicate_events\":%lu,\"timeouts\":%lu,"
-        "\"interrupts\":%lu,\"closes\":%lu},"
+        "\"interrupts\":%lu,\"closes\":%lu,"
+        "\"continuous\":%d,\"relisten_ms\":%d,\"max_rounds\":%d,"
+        "\"round\":%d,\"max_round_seen\":%d,\"relisten_armed\":%d,"
+        "\"ctx_valid\":%d,\"device_listening\":%d,"
+        "\"followup_rounds\":%lu,\"rounds_total\":%lu,\"session_ends\":%lu,"
+        "\"round_cap_hits\":%lu,\"wake_events\":%lu,\"talk_stops\":%lu,"
+        "\"listen_starts\":%lu,\"exit_talks\":%lu,\"end_reason\":\"%s\"},"
+        "\"talk_tap\":{\"enabled\":%d,\"file\":\"%s\",\"lines\":%lu,\"recognized\":%lu,"
+        "\"wakes\":%lu,\"listen_starts\":%lu,\"talk_stops\":%lu,\"listen_stops\":%lu,"
+        "\"ignored\":%lu,\"malformed\":%lu,\"resets\":%lu,\"exit_talks\":%lu,\"last_session\":\"%s\"},"
         "\"skill_dispatch\":{\"enabled\":%d,\"device_status\":%d,\"calls\":%lu,\"ok\":%lu,"
         "\"fail\":%lu,"
         "\"noimpl\":%lu,\"claimed\":%lu,\"dedup\":%lu,"
@@ -222,6 +238,15 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         esc_sc_last_transition, st->sc_transitions, st->sc_opens,
         st->sc_stale_callbacks, st->sc_duplicate_events, st->sc_timeouts,
         st->sc_interrupts, st->sc_closes,
+        st->sc_continuous, st->sc_relisten_ms, st->sc_max_rounds,
+        st->sc_round, st->sc_max_round_seen, st->sc_relisten_armed,
+        st->sc_ctx_valid, st->sc_device_listening,
+        st->sc_followup_rounds, st->sc_rounds_total, st->sc_session_ends,
+        st->sc_round_cap_hits, st->sc_wake_events, st->sc_talk_stops,
+        st->sc_listen_starts, st->sc_exit_talks, esc_sc_end_reason,
+        st->tap_enabled, esc_tap_file, st->tap_lines, st->tap_recognized,
+        st->tap_wakes, st->tap_listen_starts, st->tap_talk_stops, st->tap_listen_stops,
+        st->tap_ignored, st->tap_malformed, st->tap_resets, st->tap_exit_talks, esc_tap_last_session,
         st->sk_enabled, st->sk_device_enabled, st->sk_calls, st->sk_ok, st->sk_fail,
         st->sk_noimpl, st->sk_claimed, st->sk_dedup,
         esc_sk_skill, esc_sk_result,

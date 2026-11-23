@@ -22,6 +22,7 @@
 #include "session_ctrl.h"
 #include "skill_dispatch.h"
 #include "t7_dup.h"
+#include "talk_tap.h"
 #include "worker_conf.h"
 #include "worker_util.h"
 
@@ -75,6 +76,10 @@ typedef struct {
     ug_ctx       ug;                     /* T7-04：ASR 暂存门（半句话/修订合并） */
     cs_ctx       cs;                     /* T7-04：连续对话会话状态 */
     sc_ctx       sc;                     /* T8-13：会话控制中心（真实事件驱动的生命周期） */
+    int          sc_prev_state;          /* T8-15：上一拍的会话状态（识别对话收束时刻） */
+    tt_ctx       tap;                    /* T8-15：原厂会话事件观察（只读 logcat 输出） */
+    char         tap_path[T6B_PATH_MAX];
+    int          tap_err_logged;         /* 只记一次 tap 读失败，避免刷日志 */
     t8_skill_registry sk;                /* T8-14.1：自有技能注册表（默认不接管任何意图） */
     t8_dev_ctx   dev;                    /* T8-14.2：device.status 的数据源路径 */
     /* T8-14.1：本轮 pend 由哪个技能执行（0 = 走 Provider）。放在 pend 之外是因为它
@@ -386,6 +391,39 @@ static void publish_status(t6b_worker *w, const char *state)
     w->st.sc_timeouts = w->sc.timeouts;
     w->st.sc_interrupts = w->sc.interrupts;
     w->st.sc_closes = w->sc.closes;
+    /* T8-15：连续对话（对话/轮次/续听窗口/上下文有效性）与 tap 观察值 */
+    w->st.sc_round = w->sc.round;
+    w->st.sc_max_round_seen = w->sc.max_round_seen;
+    w->st.sc_relisten_armed = sc_is_relisten_armed(&w->sc);
+    w->st.sc_ctx_valid = w->sc.ctx_valid;
+    w->st.sc_device_listening = w->sc.device_listening;
+    w->st.sc_followup_rounds = w->sc.followup_rounds;
+    w->st.sc_rounds_total = w->sc.rounds_total;
+    w->st.sc_session_ends = w->sc.session_ends;
+    w->st.sc_round_cap_hits = w->sc.round_cap_hits;
+    w->st.sc_wake_events = w->sc.wake_events;
+    w->st.sc_talk_stops = w->sc.talk_stops;
+    w->st.sc_listen_starts = w->sc.listen_starts;
+    w->st.sc_exit_talks = w->sc.exit_talks;
+    w->st.sc_continuous = w->sc.cfg.continuous;
+    w->st.sc_relisten_ms = (int)(w->sc.cfg.relisten_ms > 0 ? w->sc.cfg.relisten_ms
+                                                           : w->sc.cfg.followup_timeout_ms);
+    w->st.sc_max_rounds = w->sc.cfg.max_rounds;
+    snprintf(w->st.sc_end_reason, sizeof(w->st.sc_end_reason), "%s", w->sc.end_reason);
+    w->st.tap_enabled = w->cfg.factory_talk_tap;
+    snprintf(w->st.tap_file, sizeof(w->st.tap_file), "%s", w->tap_path);
+    w->st.tap_lines = w->tap.lines;
+    w->st.tap_recognized = w->tap.recognized;
+    w->st.tap_wakes = w->tap.wakes;
+    w->st.tap_listen_starts = w->tap.listen_starts;
+    w->st.tap_talk_stops = w->tap.talk_stops;
+    w->st.tap_listen_stops = w->tap.listen_stops;
+    w->st.tap_ignored = w->tap.ignored;
+    w->st.tap_malformed = w->tap.malformed;
+    w->st.tap_resets = w->tap.resets;
+    w->st.tap_exit_talks = w->tap.exit_talks;
+    snprintf(w->st.tap_last_session_str, sizeof(w->st.tap_last_session_str), "%s",
+             w->tap.last_session);
 
     /* T8-14.1：技能调度观测（只放计数与短标签，绝不含用户正文/参数） */
     w->st.sk_enabled = w->cfg.skill_dispatch;
@@ -2056,6 +2094,16 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
                     /* 打断类：先把声音停掉，再让原厂回一句 */
                     tts_request_stop(w, "route=native intent=stop");
                 }
+                /* T8-15：停止/退出 = 结束当前连续对话（下一句要重新唤醒）。
+                 * 只收束我们自己的对话状态，原厂照常执行它的音量/媒体/退出动作。 */
+                if (ir.intent == IR_STOP || ir.intent == IR_EXIT) {
+                    always("dialog end by voice: intent=%s (rounds_done=%d followup_rounds=%lu)",
+                           ir_intent_name(ir.intent), w->sc.round, w->sc.followup_rounds);
+                    sc_on_session_end(&w->sc,
+                                      ir.intent == IR_EXIT ? "user exit (route=native exit)"
+                                                           : "user stop (route=native stop)",
+                                      now_ms);
+                }
                 snprintf(w->st.route_last, sizeof(w->st.route_last),
                          "route=native intent=%s rule=%s arg=%s session=%s seq=%lld",
                          ir_intent_name(ir.intent), ir.rule, ir.arg, slot->session,
@@ -2243,6 +2291,109 @@ static void interrupt_if_speaking(t6b_worker *w)
     tts_request_stop(w, "new utterance");
 }
 
+/*
+ * T8-15：原厂会话事件观察（factory talk tap）。
+ *
+ * 只读 state_dir/factory_talk.log（由脚本侧的 logcat 生产者写入），从中取出原厂
+ * SessionManager 自己打的真实日志行，喂给会话控制中心：
+ *   onStartTalk   -> 唤醒成功（带 sessionId）：last_wake_ms/device_listening 变成真实值
+ *   onListenStart -> 开始录音
+ *   onStopTalk    -> 本轮 EOU（**不**结束对话，只说明这一轮录音停了）
+ *
+ * 边界：这是"读日志"，不是"注入回调"。tap 关闭、文件不存在、格式不认识时一律什么都不做
+ * （状态机保持"未接入"语义：last_wake_ms/device_listening 为 0），绝不猜。
+ */
+static void factory_tap_poll(t6b_worker *w, long long now_ms)
+{
+    tt_event ev[TT_BATCH_MAX];
+    char err[128];
+    int n;
+    int i;
+
+    if (!w->cfg.factory_talk_tap || w->tap_path[0] == '\0') return;
+
+    err[0] = '\0';
+    n = tt_poll(&w->tap, w->tap_path, ev, TT_BATCH_MAX, err, sizeof(err));
+    if (n < 0) {
+        if (!w->tap_err_logged) {
+            always("talk tap: not readable (%s) - device_listening stays unobserved", err);
+            w->tap_err_logged = 1;
+        }
+        return;
+    }
+    if (w->tap_err_logged) {
+        always("talk tap: readable again (%s)", w->tap_path);
+        w->tap_err_logged = 0;
+    }
+    for (i = 0; i < n; i++) {
+        switch (ev[i].kind) {
+        case TT_EV_WAKE:
+            sc_on_factory_wake(&w->sc, ev[i].session, now_ms);
+            always("factory wake (onStartTalk): session=%s wake_type=%d listening=%d round=%d",
+                   ev[i].session[0] != '\0' ? ev[i].session : "?",
+                   ev[i].wake_type, w->sc.device_listening, w->sc.round);
+            break;
+        case TT_EV_LISTEN_START:
+            sc_on_factory_listen_start(&w->sc, now_ms);
+            always("factory listen start (onListenStarted): listening=1 round=%d", w->sc.round);
+            break;
+        case TT_EV_TALK_STOP:
+            sc_on_factory_talk_stop(&w->sc, now_ms);
+            /* 注意口径：EOU 不是对话结束。续听窗口仍然有效，等下一句（若原厂续期）。 */
+            always("factory stop talk (EOU round=%d reason=%d): listening=0, dialog stays open",
+                   w->sc.round, ev[i].stop_reason);
+            break;
+        case TT_EV_LISTEN_STOP:
+            sc_on_factory_talk_stop(&w->sc, now_ms);
+            break;
+        case TT_EV_EXIT_TALK:
+            sc_on_factory_exit_talk(&w->sc, now_ms);
+            always("factory exit talk (platform session closed, round=%d): dialog stays open, "
+                   "relisten_armed=%d", w->sc.round, sc_is_relisten_armed(&w->sc));
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+/*
+ * T8-15：会话生命周期一拍。
+ *   1) sc_poll：FOLLOWUP/INTERRUPTED/LISTENING 到期 -> CLOSING -> IDLE；
+ *   2) 对话收束（第一次看到 CLOSING）时做两件事：
+ *      - ctx_valid 归零（上下文不再属于任何对话）；
+ *      - 配置要求时清空 conv_context（默认不清：保持 T7-01 的跨唤醒上下文）。
+ *   3) 每拍把 ctx_valid 与 conv_context 的真实内容对齐（有历史且对话未结束才算有效）。
+ */
+static void session_lifecycle_poll(t6b_worker *w, long long now_ms)
+{
+    int prev = w->sc_prev_state;
+    int now;
+
+    (void)sc_poll(&w->sc, now_ms);
+    now = w->sc.state;
+
+    if (now != prev) {
+        if (now == SC_CLOSING && prev != SC_CLOSING) {
+            always("dialog closed: reason=%s rounds_done=%d followup_rounds=%lu "
+                   "max_round=%d listening=%d followup_rounds_total=%lu",
+                   w->sc.end_reason[0] != '\0' ? w->sc.end_reason : "-",
+                   w->sc.round, w->sc.followup_rounds, w->sc.max_round_seen,
+                   w->sc.device_listening, w->sc.followup_rounds);
+            if (w->cfg.session_ctx_clear_on_close) {
+                (void)cv_clear(&w->cv);
+                w->st.context_messages = 0;
+                w->st.context_turns = 0;
+                always("context cleared at dialog close (session_ctx_clear_on_close=1)");
+            }
+        }
+        w->sc_prev_state = now;
+    }
+
+    (void)sc_set_ctx_valid(&w->sc,
+                           (now != SC_IDLE && now != SC_CLOSING) && w->cv.count > 0);
+}
+
 static int worker_loop(t6b_worker *w, const char **exit_reason)
 {
     long long started = wu_now_ms();
@@ -2282,7 +2433,8 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
          *      顺序很重要：先让"到期的东西"进队列，再统一提交，保证同一句话只提一次。 */
         session_poll(w, wu_now_ms());
         play_state_poll(w, wu_now_ms());
-        (void)sc_poll(&w->sc, wu_now_ms());      /* T8-13：FOLLOWUP/INTERRUPTED 超时 -> CLOSING -> IDLE */
+        factory_tap_poll(w, wu_now_ms());          /* T8-15：原厂唤醒/EOU 事件（只读 tap） */
+        session_lifecycle_poll(w, wu_now_ms());    /* T8-15：sc_poll + 对话收束后处理 */
         if (!w->have_pend) {
             ug_out ugo;
 
@@ -2562,6 +2714,16 @@ void t6b_config_defaults(t6b_config *c)
     /* T8-14.2：device.status 默认关闭（总开关之外的第二道闸） */
     c->skill_device_status = 0;
     c->skill_battery_path[0] = '\0';
+    /* T8-15：免唤醒连续对话默认打开（这是 T8-15 交付的语义本身；不动原厂任何东西）。
+     * 语义：播报结束后装填续听窗口，窗口内到达的下一句算同一对话的下一轮。 */
+    c->continuous_dialog = 1;
+    c->continuous_relisten_ms = 12000;
+    c->continuous_max_rounds = 8;
+    c->session_ctx_clear_on_close = 0;
+    /* T8-15：原厂会话事件观察默认关闭 —— 需要设备侧先起 logcat 生产者，且关闭时
+     * 不改变任何既有行为（last_wake_ms / device_listening 保持 0，不冒充）。 */
+    c->factory_talk_tap = 0;
+    c->factory_talk_log[0] = '\0';
     /* T7-04：暂存门默认打开（半句话/修订合并），会话状态默认打开 */
     (void)ug_defaults(&c->gate);
     cs_defaults(&c->session);
@@ -2902,6 +3064,23 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
          * 状态机在生产环境整体失效。修正：先 init 再覆盖配置字段。 */
         sc_init(&w.sc, NULL);
         w.sc.cfg.followup_timeout_ms = c->session.timeout_ms;
+        /* T8-15：连续对话策略参数（对话 = 唤醒后的一串轮次） */
+        w.sc.cfg.continuous  = c->continuous_dialog ? 1 : 0;
+        w.sc.cfg.relisten_ms = c->continuous_relisten_ms;
+        w.sc.cfg.max_rounds  = c->continuous_max_rounds;
+        w.sc_prev_state = w.sc.state;
+        /* T8-15：原厂会话事件观察（只读 tap 文件；关闭时保持"未接入"语义） */
+        tt_init(&w.tap);
+        w.tap_err_logged = 0;
+        if (c->factory_talk_tap) {
+            if (c->factory_talk_log[0] != '\0') {
+                snprintf(w.tap_path, sizeof(w.tap_path), "%s", c->factory_talk_log);
+            } else {
+                join_path(w.tap_path, sizeof(w.tap_path), c->state_dir, "factory_talk.log");
+            }
+        } else {
+            w.tap_path[0] = '\0';
+        }
 
         /* T8-14.1：自有技能注册表。**只注册 time.query**（本轮唯一的真实闭环），
          * 其余技能保持未注册 = 永不接管，原厂音量/媒体/屏幕路径完全不变。 */

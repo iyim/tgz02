@@ -50,7 +50,7 @@ $LibSrc = @(
     "deepseek_provider.c", "event_reader.c", "consumer_state.c", "provider.c",
     "mock_provider.c", "worker_status.c", "worker_util.c", "seq_gap.c",
     "conv_context.c", "worker_conf.c", "dead_letter.c", "echo_filter.c",
-    "intent_route.c", "session_ctrl.c", "conv_session.c", "skill_dispatch.c",
+    "intent_route.c", "session_ctrl.c", "conv_session.c", "skill_dispatch.c", "talk_tap.c",
     "t7_dup.c", "utterance_gate.c"
 ) | ForEach-Object { Join-Path $Android $_ }
 $WorkerSrc = @((Join-Path $Android "ai_worker.c")) + $LibSrc

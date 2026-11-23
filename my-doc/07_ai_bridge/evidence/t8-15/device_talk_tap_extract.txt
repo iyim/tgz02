@@ -1,0 +1,18 @@
+﻿11-23 20:38:35.886 D/AGSpeechEngineProxy(30807): onListenStarted,684
+11-23 20:38:35.900 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1969684, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-23 20:38:38.706 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onExitTalk:873 [30906] on exit talk, session=1969684
+11-23 20:38:38.707 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 20:38:38.708 W/SessionManager(30807): JNI_AILABS SessionManager.cpp:setSessionId:1003 [30906] sessionId = 1084952, isSimulationDialogue = 1, isExitTalk = 1
+11-23 20:38:38.709 D/AGSpeechEngineProxy(30807): onListenStarted,684
+11-23 20:38:38.714 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1969684, real session=1969684 exit=1
+11-23 20:38:38.720 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1969689, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-23 20:38:42.662 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 20:38:47.733 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1969689, real session=1969689 exit=0
+11-23 20:38:56.619 D/AGSpeechEngineProxy(30807): onListenStarted,684
+11-23 20:38:56.627 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1969694, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-23 20:38:58.708 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 20:39:03.803 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1969694, real session=1969694 exit=0
+11-23 20:39:05.718 D/AGSpeechEngineProxy(30807): onListenStarted,684
+11-23 20:39:05.725 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStartTalk:255 [30906] sessionId = 1969699, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-23 20:39:07.137 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 20:39:12.307 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:exitTalk:1176 [30870] exit talk, input session=1969699, real session=1969699 exit=0

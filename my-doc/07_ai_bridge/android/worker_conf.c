@@ -310,6 +310,37 @@ static int wc_apply(t6b_config *cfg, const char *key, const char *val, char *err
         cfg->session.timeout_ms = iv;
         return 0;
     }
+    /* T8-15：免唤醒连续对话（默认打开；关闭 = 回到 T8-13 的"每轮新唤醒"语义） */
+    if (strcmp(key, "continuous_dialog_enabled") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->continuous_dialog = iv;
+        return 0;
+    }
+    if (strcmp(key, "continuous_relisten_ms") == 0) {
+        if (wc_int(val, 0, 120000, &iv) != 0) goto bad;
+        cfg->continuous_relisten_ms = iv;
+        return 0;
+    }
+    if (strcmp(key, "continuous_max_rounds") == 0) {
+        if (wc_int(val, 0, 64, &iv) != 0) goto bad;
+        cfg->continuous_max_rounds = iv;
+        return 0;
+    }
+    if (strcmp(key, "session_ctx_clear_on_close") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->session_ctx_clear_on_close = iv;
+        return 0;
+    }
+    /* T8-15：原厂会话事件观察（只读 logcat 输出文件；默认关闭） */
+    if (strcmp(key, "factory_talk_tap_enabled") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->factory_talk_tap = iv;
+        return 0;
+    }
+    if (strcmp(key, "factory_talk_log") == 0) {
+        if (wc_copy(cfg->factory_talk_log, sizeof(cfg->factory_talk_log), val) != 0) goto bad;
+        return 0;
+    }
     /* 明确拒绝把凭据写进普通配置：只认 api_key_file */
     if (strcmp(key, "api_key") == 0) {
         if (err) snprintf(err, errlen, "api_key is not accepted in the config file; "

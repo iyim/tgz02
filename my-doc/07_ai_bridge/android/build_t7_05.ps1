@@ -44,7 +44,7 @@ $WorkerSources = @(
     # T8-14.1: skill dispatch must be part of the ARM32 worker build
     "skill_dispatch.c",
     "dead_letter.c",
-    "provider.c", "mock_provider.c", "deepseek_provider.c", "ai_worker.c"
+    "provider.c", "mock_provider.c", "deepseek_provider.c", "talk_tap.c", "ai_worker.c"
 ) | ForEach-Object { Join-Path $Here $_ }
 
 $Targets = @(

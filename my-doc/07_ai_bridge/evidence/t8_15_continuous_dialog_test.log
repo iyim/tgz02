@@ -1,0 +1,66 @@
+﻿# T8-15 continuous dialog host test log
+# host time: 2026-11-23 20:43:16
+
+=== build ai_worker (host) ===
+  (0 warning, 0 error)
+
+=== case A: one wake -> 5 rounds (a new factory asr session per turn) ===
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --conf D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\A\worker.conf --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\A\work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\A\state --provider mock --tts-queue-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\A\tts --gate 0 --poll-ms 10 --status-every-ms 100 --provider-backoff-ms 200 --provider-backoff-max-ms 400 --idle-exit-ms 15000 --max-runtime-ms 60000
+  round 1 -> tts event e-a1
+  round 2 -> tts event e-a2
+  round 3 -> tts event e-a3
+  round 4 -> tts event e-a4
+  round 5 -> tts event e-a5
+  PASS A: all 5 rounds reached the TTS queue
+  PASS A: 5 events consumed
+  PASS A: 5 model answers
+  PASS A: dialog round = 5
+  PASS A: still ONE dialog (no re-wake)
+  PASS A: 4 hands-free rounds
+  PASS A: rounds_total = 5
+  PASS A: max_round_seen = 5
+  PASS A: context valid for the dialog
+  PASS A: relisten window armed after the last answer
+  PASS A: exactly ONE factory wake observed
+  PASS A: 5 factory EOU events observed
+  PASS A: no fake barge-in (each turn waited for its answer)
+  PASS A: device listening = 0 (honest: mic is closed)
+  PASS A: tap recognized 7 factory lines
+  PASS A: tap bound the wake to its session id
+  PASS A: context really carries all turns
+
+=== case B: tap disabled (default) -> rounds work, nothing is faked ===
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --conf D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\B\worker.conf --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\B\work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\B\state --provider mock --tts-queue-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\B\tts --gate 0 --poll-ms 10 --status-every-ms 100 --provider-backoff-ms 200 --provider-backoff-max-ms 400 --idle-exit-ms 15000 --max-runtime-ms 60000
+  PASS B: 3 rounds without any wake event
+  PASS B: one dialog
+  PASS B: 2 hands-free rounds
+  PASS B: wake_events = 0 (tap off, nothing invented)
+  PASS B: last_wake_ms stays 0
+  PASS B: device_listening stays 0
+  PASS B: tap disabled in status
+
+=== case C: continuous_dialog_enabled=0 -> T8-13 semantics ===
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --conf D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\C\worker.conf --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\C\work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\C\state --provider mock --tts-queue-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\C\tts --gate 0 --poll-ms 10 --status-every-ms 100 --provider-backoff-ms 200 --provider-backoff-max-ms 400 --idle-exit-ms 15000 --max-runtime-ms 60000
+  PASS C: continuous flag off in status
+  PASS C: every new asr session opened a dialog (legacy)
+  PASS C: no hands-free round claimed
+  PASS C: all 3 events still answered
+
+=== case D: continuous_max_rounds=3 -> cap enforced ===
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --conf D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\D\worker.conf --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\D\work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\D\state --provider mock --tts-queue-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\D\tts --gate 0 --poll-ms 10 --status-every-ms 100 --provider-backoff-ms 200 --provider-backoff-max-ms 400 --idle-exit-ms 15000 --max-runtime-ms 60000
+  PASS D: cap = 3 in status
+  PASS D: cap was hit
+  PASS D: a new dialog was opened after the cap
+  PASS D: no dialog exceeds the cap
+  PASS D: no utterance was dropped
+
+=== case E: native stop ends the dialog, next utterance opens a new one ===
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --conf D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\E\worker.conf --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\E\work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\E\state --provider mock --tts-queue-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_15\E\tts --gate 0 --poll-ms 10 --status-every-ms 100 --provider-backoff-ms 200 --provider-backoff-max-ms 400 --idle-exit-ms 15000 --max-runtime-ms 60000
+  PASS E: dialog closed after the stop utterance
+  PASS E: end_reason records the user stop
+  PASS E: stop still went to the factory
+  PASS E: the next utterance opened a new dialog
+  PASS E: new dialog starts at round 1
+
+# total: pass=38 fail=0
+# result: OK

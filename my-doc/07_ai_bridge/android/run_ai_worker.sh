@@ -11,6 +11,13 @@
 #   sh run_ai_worker.sh log [N]              看进程日志（默认 20 行）
 #   sh run_ai_worker.sh events [N]           看最近 N 条 events.jsonl（只读）
 #
+# T8-15（原厂会话事件观察 / factory talk tap）：
+#   sh run_ai_worker.sh start-tap           只读观察原厂 SessionManager 日志到 $STATE/factory_talk.log
+#   sh run_ai_worker.sh stop-tap            停掉观察进程
+#   sh run_ai_worker.sh tap [N]             看最近 N 行 tap 文件
+#   说明：tap 只是 `logcat -s SessionManager:V`，不 hook、不注入、不碰 smartapp:core。
+#   Worker 侧需 worker.conf 里 factory_talk_tap_enabled=1 才会去读这个文件。
+#
 # T7-01（多轮上下文 + 配置化）：
 #   - 若 $STATE/worker.conf 存在，start/start-deepseek 会自动加 --conf（CLI 参数仍然优先）；
 #   - 配置文件只放 base_url / model / key 的**文件路径** / temperature / max_tokens /
@@ -328,6 +335,56 @@ case "$cmd" in
     fi
     ;;
 
+  start-tap)
+    # T8-15：只读观察原厂会话日志行（唤醒成功 / EOU / exitTalk）。
+    # 这是**读日志**，不是 hook：没有注入、没有改 :core、没有额外权限要求（root 下 logcat 可读）。
+    TAPLOG=$STATE/factory_talk.log
+    TAPPID=$STATE/factory_talk.pid
+    mkdir -p "$STATE" || exit 1
+    if [ -f "$TAPPID" ]; then
+        old=$(cat "$TAPPID" 2>/dev/null)
+        if [ -n "${old:-}" ] && kill -0 "$old" 2>/dev/null; then
+            echo "tap already running: pid=$old"
+            exit 1
+        fi
+        rm -f "$TAPPID"
+    fi
+    : > "$TAPLOG" || { echo "cannot truncate $TAPLOG"; exit 1; }
+    # 需要 onListenStarted 时把 AG-speech_engine:V AGSpeechEngineProxy:V 一起加上
+    # （代价：录音期间 onListenData 每秒约 100 行）。
+    nohup logcat -v time -s SessionManager:V >> "$TAPLOG" 2>&1 &
+    echo $! > "$TAPPID"
+    sleep 1
+    echo "tap started: pid=$(cat "$TAPPID") file=$TAPLOG"
+    ;;
+
+  stop-tap)
+    TAPPID=$STATE/factory_talk.pid
+    if [ ! -f "$TAPPID" ]; then
+        echo "no tap pid file"
+        exit 1
+    fi
+    old=$(cat "$TAPPID" 2>/dev/null)
+    if [ -n "${old:-}" ] && kill -0 "$old" 2>/dev/null; then
+        kill -TERM "$old" 2>/dev/null
+        sleep 1
+        echo "tap stopped: pid=$old"
+    else
+        echo "tap not running: pid=${old:-?}"
+    fi
+    rm -f "$TAPPID"
+    ;;
+
+  tap)
+    n=${1:-20}
+    if [ -f "$STATE/factory_talk.log" ]; then
+        tail -n "$n" "$STATE/factory_talk.log"
+    else
+        echo "no tap file yet: $STATE/factory_talk.log"
+        exit 1
+    fi
+    ;;
+
   stop)
     if ! read_pid; then
         rm -f "$PID"
@@ -374,7 +431,7 @@ case "$cmd" in
     ;;
 
   *)
-    echo "usage: sh $0 {start|start-deepseek|status|stats|state|context|clear-context|key|log [N]|events [N]|stop}"
+    echo "usage: sh $0 {start|start-deepseek|status|stats|state|context|clear-context|key|log [N]|events [N]|start-tap|stop-tap|tap [N]|stop}"
     exit 2
     ;;
 esac

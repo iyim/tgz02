@@ -205,6 +205,40 @@ typedef struct {
     unsigned long      sc_interrupts;          /* 用户打断 */
     unsigned long      sc_closes;              /* CLOSING 次数 */
 
+    /* T8-15：连续对话（对话 = 一次唤醒后的多轮；轮 = 一条 asr_final） */
+    int                sc_continuous;          /* 1 = 续听窗口内的新 ASR 会话算同一对话下一轮 */
+    int                sc_relisten_ms;         /* 播报结束后的免唤醒续听窗口 */
+    int                sc_max_rounds;          /* 单对话最多轮次（0 = 不限） */
+    int                sc_round;               /* 当前对话第几轮（0 = 无对话） */
+    int                sc_max_round_seen;      /* 本次运行观察到的最长对话轮数 */
+    int                sc_relisten_armed;      /* 1 = 正在续听窗口内 */
+    int                sc_ctx_valid;           /* 1 = 模型上下文承载当前对话 */
+    int                sc_device_listening;    /* 1 = 原厂仍在聆听（tap 观察值） */
+    unsigned long      sc_followup_rounds;     /* 免唤醒轮次 */
+    unsigned long      sc_rounds_total;        /* 累计轮次 */
+    unsigned long      sc_session_ends;        /* 收束的对话数 */
+    unsigned long      sc_round_cap_hits;      /* 触达 max_rounds 的次数 */
+    unsigned long      sc_wake_events;         /* 原厂唤醒事件（tap） */
+    unsigned long      sc_talk_stops;          /* 原厂 onStopTalk（EOU）次数 */
+    unsigned long      sc_listen_starts;       /* 原厂 onListenStarted 次数 */
+    unsigned long      sc_exit_talks;          /* 原厂 exitTalk（平台会话退出）次数 */
+    char               sc_end_reason[192];     /* 最近一次对话结束原因 */
+
+    /* T8-15：原厂会话事件观察（factory talk tap，只读 logcat 输出文件） */
+    int                tap_enabled;
+    char               tap_file[T6B_PATH_MAX];
+    unsigned long      tap_lines;
+    unsigned long      tap_recognized;
+    unsigned long      tap_wakes;
+    unsigned long      tap_listen_starts;
+    unsigned long      tap_talk_stops;
+    unsigned long      tap_listen_stops;
+    unsigned long      tap_exit_talks;
+    unsigned long      tap_ignored;
+    unsigned long      tap_malformed;
+    unsigned long      tap_resets;
+    char               tap_last_session_str[64];
+
     /* T8-14.1：自有技能调度（skill_dispatch）。calls/ok/fail/noimpl 来自 t8_skill_registry；
      * claimed = 本进程接管（跳过原厂路由）的 utterance 数；dedup = 同一 event_id 已有
      * 持久化播报条目而被跳过执行的次数；last_skill/last_result 只放短标签。 */
