@@ -1,0 +1,76 @@
+﻿=== GenieApi::startTalk(InputDeviceType,_WakeUpInfo const*) @ libsmartbox+0xfcff8 (88 B) ===
+Disassembly of section .text:
+
+000fcff8 _ZN9AliAiLabs4AGUI8GenieApi9startTalkENS0_19IInputDeviceManager15InputDeviceTypeEPKNS2_12_WakeUpInfo_E:
+   fcff8: 30 48 2d e9                  	push	{r4, r5, r11, lr}
+   fcffc: 08 b0 8d e2                  	add	r11, sp, #8
+   fd000: 01 40 a0 e1                  	mov	r4, r1
+   fd004: 00 50 a0 e1                  	mov	r5, r0
+   fd008: 1c 43 fe eb                  	bl	#-455568 <.plt+0x8e4>
+   fd00c: 00 00 50 e3                  	cmp	r0, #0
+   fd010: 0c 00 00 0a                  	beq	#48 <_ZN9AliAiLabs4AGUI8GenieApi9startTalkENS0_19IInputDeviceManager15InputDeviceTypeEPKNS2_12_WakeUpInfo_E+0x50>
+   fd014: 00 10 90 e5                  	ldr	r1, [r0]
+   fd018: 10 10 91 e5                  	ldr	r1, [r1, #16]
+   fd01c: 31 ff 2f e1                  	blx	r1
+   fd020: 00 10 90 e5                  	ldr	r1, [r0]
+   fd024: 04 20 a0 e1                  	mov	r2, r4
+   fd028: 08 30 91 e5                  	ldr	r3, [r1, #8]
+   fd02c: 05 10 a0 e1                  	mov	r1, r5
+   fd030: 33 ff 2f e1                  	blx	r3
+   fd034: 00 10 a0 e1                  	mov	r1, r0
+   fd038: 00 00 a0 e3                  	mov	r0, #0
+   fd03c: 00 00 51 e3                  	cmp	r1, #0
+   fd040: 01 00 00 c3                  	movwgt	r0, #1
+   fd044: 30 88 bd e8                  	pop	{r4, r5, r11, pc}
+   fd048: 00 00 a0 e3                  	mov	r0, #0
+   fd04c: 30 88 bd e8                  	pop	{r4, r5, r11, pc}
+
+=== InputDeviceManager::startTalk(InputDeviceType,_WakeUpInfo_*) @ libsmartbox+0x107e14 (344 B, head) ===
+(type in r0, info in r1; info is only forwarded to device->vtbl[3](info); startTalk itself does not dereference it)
+Disassembly of section .text:
+
+00107e14 _ZN9AliAiLabs4AGUI18InputDeviceManager9startTalkENS0_19IInputDeviceManager15InputDeviceTypeEPNS2_12_WakeUpInfo_E:
+  107e14: f0 48 2d e9                  	push	{r4, r5, r6, r7, r11, lr}
+  107e18: 10 b0 8d e2                  	add	r11, sp, #16
+  107e1c: 20 d0 4d e2                  	sub	sp, sp, #32
+  107e20: 02 60 a0 e1                  	mov	r6, r2
+  107e24: 01 20 a0 e1                  	mov	r2, r1
+  107e28: 00 10 a0 e1                  	mov	r1, r0
+  107e2c: 18 00 8d e2                  	add	r0, sp, #24
+  107e30: cb 29 fe eb                  	bl	#-481492 <.plt+0x51c8>
+  107e34: 18 50 9d e5                  	ldr	r5, [sp, #24]
+  107e38: 00 40 e0 e3                  	mvn	r4, #0
+  107e3c: 00 70 a0 e3                  	mov	r7, #0
+  107e40: 00 00 55 e3                  	cmp	r5, #0
+  107e44: 09 00 00 0a                  	beq	#36 <_ZN9AliAiLabs4AGUI18InputDeviceManager9startTalkENS0_19IInputDeviceManager15InputDeviceTypeEPNS2_12_WakeUpInfo_E+0x5c>
+  107e48: 05 00 a0 e1                  	mov	r0, r5
+  107e4c: c7 29 fe eb                  	bl	#-481508 <.plt+0x51d4>
+  107e50: 00 00 50 e3                  	cmp	r0, #0
+  107e54: 05 00 00 0a                  	beq	#20 <_ZN9AliAiLabs4AGUI18InputDeviceManager9startTalkENS0_19IInputDeviceManager15InputDeviceTypeEPNS2_12_WakeUpInfo_E+0x5c>
+  107e58: 00 10 90 e5                  	ldr	r1, [r0]
+  107e5c: 18 20 91 e5                  	ldr	r2, [r1, #24]
+  107e60: 06 10 a0 e1                  	mov	r1, r6
+  107e64: 32 ff 2f e1                  	blx	r2
+  107e68: 00 40 a0 e1                  	mov	r4, r0
+  107e6c: 01 70 a0 e3                  	mov	r7, #1
+
+=== TtsManager::onTtsEnd(int) @ libsmartbox+0x11f780 (580 B) : candidate trigger for S2 ===
+Disassembly of section .text:
+
+0011f780 _ZN9AliAiLabs4AGUI10TtsManager8onTtsEndEi:
+  11f780: f0 4d 2d e9                  	push	{r4, r5, r6, r7, r8, r10, r11, lr}
+  11f784: 18 b0 8d e2                  	add	r11, sp, #24
+  11f788: 20 d0 4d e2                  	sub	sp, sp, #32
+  11f78c: 00 50 a0 e1                  	mov	r5, r0
+  11f790: 18 02 9f e5                  	ldr	r0, [pc, #536]
+  11f794: 01 40 a0 e1                  	mov	r4, r1
+  11f798: 00 00 9f e7                  	ldr	r0, [pc, r0]
+  11f79c: 00 00 d0 e5                  	ldrb	r0, [r0]
+  11f7a0: 00 00 50 e3                  	cmp	r0, #0
+  11f7a4: 0c 00 00 0a                  	beq	#48 <_ZN9AliAiLabs4AGUI10TtsManager8onTtsEndEi+0x5c>
+  11f7a8: 04 12 9f e5                  	ldr	r1, [pc, #516]
+  11f7ac: dc 70 a0 e3                  	mov	r7, #220
+  11f7b0: 00 22 9f e5                  	ldr	r2, [pc, #512]
+  11f7b4: 00 32 9f e5                  	ldr	r3, [pc, #512]
+  11f7b8: 01 10 8f e0                  	add	r1, pc, r1
+  11f7bc: fc 01 9f e5                  	ldr	r0, [pc, #508]

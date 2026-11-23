@@ -1,0 +1,33 @@
+﻿=== T8-15.1 device probe: factory no-wake re-listen (2026-11-23 21:11:53-21:12:08) ===
+capture: adb logcat -v time -s SessionManager:V AGSpeechEngineProxy:V AG-speech_engine:V AGSpeechEngine:V
+audio  : wake16.wav (vol 1.0) -> s_time.wav (vol 0.06, unintelligible) -> s_time.wav (vol 1.0)
+note   : s_time.wav itself contains the wake word, so one extra KWS wake appears in this window;
+         the type=1 session below has wakeupWord empty and KWS confidence 0.000000 => NOT a wake.
+
+11-23 21:11:53.065 D/AGSpeechEngine(30807): onSpeechWakeup,530:tian mao jing ling,澶╃尗绮剧伒
+11-23 21:11:53.067 D/AGSpeechEngineProxy(30807): onListenStarted,684
+11-23 21:11:53.067 D/AGSpeechEngineProxy(30807): onListenStarted,696: 0, tian mao jing ling, 澶╃尗绮剧伒, 0.818691, 47, 0, 0, f8a763e6cbfd11232111530650128957
+11-23 21:11:53.073 D/SessionManager(30807): onStartTalk:255 [30906] sessionId = 1969741, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-23 21:11:53.441 D/AGSpeechEngine(30807): handleWakeupPromptFinish,895
+11-23 21:12:01.255 D/AGSpeechEngine(30807): onSpeechWakeup,530:tian mao jing ling,澶╃尗绮剧伒
+11-23 21:12:01.261 D/AGSpeechEngine(30807): onListenExit,1237
+11-23 21:12:01.261 D/AGSpeechEngineProxy(30807): onListenExit,760
+11-23 21:12:01.261 D/SessionManager(30807): onExitTalk:873 [30906] on exit talk, session=1969741
+11-23 21:12:01.261 D/SessionManager(30807): setSessionId:985 [30906] set session, cancel previous:1969741, new session:1085009
+11-23 21:12:01.262 D/SessionManager(30807): onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 21:12:01.265 W/SessionManager(30807): setSessionId:1003 [30906] sessionId = 1085009, isSimulationDialogue = 1, isExitTalk = 1
+11-23 21:12:01.269 D/SessionManager(30807): exitTalk:1176 [30870] exit talk, input session=1969741, real session=1969741 exit=1
+11-23 21:12:01.274 D/AGSpeechEngine(30807): onListenExit,1242
+11-23 21:12:01.275 D/AGSpeechEngineProxy(30807): onListenStarted,684
+11-23 21:12:01.275 D/AGSpeechEngineProxy(30807): onListenStarted,696: 0, tian mao jing ling, 澶╃尗绮剧伒, 0.818213, 47, 0, 0, f8a763e6cbfd11232112012550129551
+11-23 21:12:01.277 W/SessionManager(30807): onNlpResult:889 [30934] on nlp result, invalid session id: current=1085009, target=1969741
+11-23 21:12:01.288 D/SessionManager(30807): onStartTalk:255 [30906] sessionId = 1969746, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-23 21:12:01.522 D/SessionManager(30807): onStopTalk:697 [30906] onStopTalk, mStopTalkReason = 0, reason = normal
+11-23 21:12:01.525 D/SessionManager(30807): onStopTalk:842 [30906] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "f8a763e6cbfd11232112012550129551", "wakeupWord": "tian mao jing ling", "doa": "{\"param_arr\":[82.500000,1,2.500000,0,7.500000,0],\"score_arr\":[46106232,46109268,46118356,46133376,46154132,46180272,46211356,46246712,46285508,46326680,46368932,46410764,46450536,46486508,46516968,46540276,46555088,46560336,46555432,46540256,46515180,46481048,46439128,46390972,46338356,46283108,46227060,46171900,46119168,46070164,46025952,45987384,45955120,45929612,45911188,45900060,45896336,82.500000]}", "confidence": 0.81821298599243164, "listenDuration": 1700, "voiceDuration": 1700, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel": 1 }, "visionInfomation": "", "voiceInfomation": "" }, "extensionContext": { "commonSelectContext": { "version": 2, "pageId": "{\"label\":\"s
+11-23 21:12:01.581 D/AGSpeechEngine(30807): handleWakeupPromptFinish,895
+11-23 21:12:01.722 D/SessionManager(30807): onNlpResult:895 [30934] on nlp result, code = 0 , sessionId = 1969746, data = 1
+11-23 21:12:01.727 D/SessionManager(30807): exitTalk:1176 [30870] exit talk, input session=1969746, real session=1969746 exit=0
+11-23 21:12:02.052 D/AGSpeechEngine(30807): handleWakeupPromptFinish,895
+11-23 21:12:02.235 D/AGSpeechEngineProxy(30807): onListenStarted,684
+11-23 21:12:02.235 D/AGSpeechEngineProxy(30807): onListenStarted,696: 1, , , 0.000000, 0, 1, -1, f8a763e6cbfd11232112022350130502
+11-23 21:12:02.249 D/SessionManager(30807): onStartTalk:255 [30906] sessionId = 1973846, wakeupType = 1, wakeupWord=, needLight=1, needVoice=-1
