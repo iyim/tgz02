@@ -19,6 +19,7 @@
 #include "echo_filter.h"
 #include "intent_route.h"
 #include "seq_gap.h"
+#include "session_ctrl.h"
 #include "t7_dup.h"
 #include "worker_conf.h"
 #include "worker_util.h"
@@ -72,6 +73,7 @@ typedef struct {
     ef_ctx       ef;                     /* T7-02：播报回声 / 无指令过滤 */
     ug_ctx       ug;                     /* T7-04：ASR 暂存门（半句话/修订合并） */
     cs_ctx       cs;                     /* T7-04：连续对话会话状态 */
+    sc_ctx       sc;                     /* T8-13：会话控制中心（真实事件驱动的生命周期） */
     char         gate_hold_path[T6B_PATH_MAX];
     char         route_publish_path[T6B_PATH_MAX];
     t6b_utt      uttq[T6B_UTT_QUEUE];     /* 等待 Provider 的完整指令（最多 4 条） */
@@ -358,6 +360,26 @@ static void publish_status(t6b_worker *w, const char *state)
     w->st.session_opened = w->cs.opened;
     w->st.session_closed = w->cs.closed_by_timeout;
     snprintf(w->st.session_detail, sizeof(w->st.session_detail), "%s", w->cs.last_detail);
+
+    /* T8-13：会话控制中心观测（真实事件驱动的生命周期） */
+    w->st.sc_enabled = w->sc.cfg.enabled;
+    snprintf(w->st.sc_state, sizeof(w->st.sc_state), "%s", sc_state_name(w->sc.state));
+    snprintf(w->st.sc_session, sizeof(w->st.sc_session), "%s", w->sc.session);
+    snprintf(w->st.sc_request, sizeof(w->st.sc_request), "%s", w->sc.request);
+    w->st.sc_request_active = w->sc.request_active;
+    w->st.sc_last_wake_ms = w->sc.last_wake_ms;          /* 唤醒事件未接入前恒 0 */
+    w->st.sc_last_final_ms = w->sc.last_final_ms;
+    snprintf(w->st.sc_last_final_event, sizeof(w->st.sc_last_final_event), "%s",
+             w->sc.last_final_event);
+    snprintf(w->st.sc_last_transition, sizeof(w->st.sc_last_transition), "%s",
+             w->sc.last_transition);
+    w->st.sc_transitions = w->sc.transitions;
+    w->st.sc_opens = w->sc.opens;
+    w->st.sc_stale_callbacks = w->sc.stale_callbacks;
+    w->st.sc_duplicate_events = w->sc.duplicate_events;
+    w->st.sc_timeouts = w->sc.timeouts;
+    w->st.sc_interrupts = w->sc.interrupts;
+    w->st.sc_closes = w->sc.closes;
 
     /* Provider 观测：真实 Provider 才有 http/latency/resp_bytes；
      * 这些字段只放数字与短枚举，绝不含 key / 用户文本 / 上游正文。 */
@@ -1332,6 +1354,8 @@ static int provider_attempt(t6b_worker *w)
                 ef_note_enqueue(&w->ef, w->pend.event_id, rep.text, wu_wall_ms());
                 /* T7-04：回答已入队 = 会话进入 SPEAKING，播报结束后等用户追问 */
                 (void)cs_on_queued(&w->cs, wu_now_ms());
+                /* T8-13：真实事件 -> 会话控制中心（TTS 生命周期开始） */
+                (void)sc_on_tts_queued(&w->sc, w->pend.event_id, wu_now_ms());
             } else if (q == 0) {
                 if (w->cfg.tts_queue[0] != '\0') {
                     w->st.tts_skipped++;
@@ -1395,10 +1419,12 @@ static int provider_attempt(t6b_worker *w)
 
     if (rep.status == T6B_P_TIMEOUT) {
         w->st.provider_timeout++;
+        sc_note_timeout(&w->sc);          /* T8-13：请求超时计数（请求仍在重试，不迁移状态） */
         snprintf(w->pend_error, sizeof(w->pend_error), "%s", rep.message);
         t6b_status_note_error(&w->st, "provider timeout: %s", rep.message);
     } else {
         w->st.provider_err++;
+        sc_note_timeout(&w->sc);          /* T8-13：请求失败计数 */
         snprintf(w->pend_error, sizeof(w->pend_error), "%s", rep.message);
         t6b_status_note_error(&w->st, "provider error: %s", rep.message);
     }
@@ -1787,6 +1813,10 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
     w->pend_next_ms = 0;
     w->pend_error[0] = '\0';
 
+    /* T8-13：真实事件 -> 会话控制中心。route=ai 的 pend 建立即登记 AI 请求；
+     * 若上一请求尚未终结，这里会打断并顶替（sc_on_submit 内部处理 stale）。 */
+    (void)sc_on_session_text(&w->sc, slot->session, slot->event_id, now_ms);
+    (void)sc_on_submit(&w->sc, slot->event_id, now_ms);
     (void)cs_on_submit(&w->cs, now_ms);
     w->st.route_ai++;
     snprintf(w->st.route_last, sizeof(w->st.route_last),
@@ -1806,6 +1836,8 @@ static void play_state_poll(t6b_worker *w, long long now_ms)
     char buf[768];
     size_t len = 0;
     int playing;
+    char ev[SC_ID_MAX];
+    char outcome[32];
 
     if (w->cfg.tts_queue[0] == '\0') return;
     if (w->cs.state != CS_SPEAKING && w->cs.state != CS_PROCESSING) return;
@@ -1826,6 +1858,13 @@ static void play_state_poll(t6b_worker *w, long long now_ms)
                    w->cs.turns, w->cs.followups, w->cfg.session.timeout_ms);
         }
     }
+    /* T8-13：真实事件 -> 会话控制中心。TtsExec 发布的 event_id / last_outcome
+     * 用于区分"当前请求的收尾"与"旧播放的迟到状态"（stale 过滤在 sc 内部）。 */
+    ev[0] = '\0';
+    outcome[0] = '\0';
+    (void)sc_json_str(buf, len, "event_id", ev, sizeof(ev));
+    (void)sc_json_str(buf, len, "last_outcome", outcome, sizeof(outcome));
+    (void)sc_on_play_state(&w->sc, playing, ev, outcome, now_ms);
 }
 
 static void gate_hold_flush(t6b_worker *w)
@@ -1898,6 +1937,8 @@ static void interrupt_if_speaking(t6b_worker *w)
     w->st.interrupts++;
     always("interrupt: playback stopped for a new utterance (session_state=%s)",
            cs_state_name(w->cs.state));
+    /* T8-13：真实事件 -> 会话控制中心（用户打断当前播报/处理） */
+    sc_on_interrupt(&w->sc, wu_now_ms());
     tts_request_stop(w, "new utterance");
 }
 
@@ -1940,6 +1981,7 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
          *      顺序很重要：先让"到期的东西"进队列，再统一提交，保证同一句话只提一次。 */
         session_poll(w, wu_now_ms());
         play_state_poll(w, wu_now_ms());
+        (void)sc_poll(&w->sc, wu_now_ms());      /* T8-13：FOLLOWUP/INTERRUPTED 超时 -> CLOSING -> IDLE */
         if (!w->have_pend) {
             ug_out ugo;
 
@@ -1994,6 +2036,7 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                 w->pend_next_ms = 0;
                 w->pend_stuck = 0;
                 w->st.dead_lettered++;
+                sc_on_request_result(&w->sc, w->pend.event_id, 0, wu_now_ms());
                 snprintf(w->st.state, sizeof(w->st.state), "running");
             } else if (rc == -5) {
                 /* T7-09：死信写失败且回滚未确认 —— 文件尾部状态不确定。
@@ -2544,6 +2587,10 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         w.ug.cfg.fast_native = c->route_native ? 1 : 0;
         w.ug.cfg.fast_intents = (unsigned int)c->route_intents;
         cs_init(&w.cs, &c->session);
+        /* T8-13：会话控制中心（与 cs_state 同启，配置共用 session_timeout_ms） */
+        sc_defaults(&w.sc.cfg);
+        w.sc.cfg.followup_timeout_ms = c->session.timeout_ms;
+        sc_init(&w.sc, &w.sc.cfg);
 
         w.st.route_enabled = c->route_native;
         w.st.route_intents = c->route_intents;

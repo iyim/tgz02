@@ -186,6 +186,25 @@ typedef struct {
     unsigned long      session_closed;
     char               session_detail[160];
 
+    /* T8-13：会话控制中心（真实事件驱动的生命周期观测） */
+    int                sc_enabled;
+    char               sc_state[16];           /* IDLE/WAKE_PENDING/LISTENING/PROCESSING/SPEAKING/
+                                                INTERRUPTED/FOLLOWUP/CLOSING */
+    char               sc_session[128];        /* 当前 ASR 会话 id */
+    char               sc_request[128];        /* 当前/最近 AI 请求 event_id */
+    int                sc_request_active;      /* 1 = 有未终结的 AI 请求 */
+    long long          sc_last_wake_ms;        /* 唤醒事件未接入前恒 0 */
+    long long          sc_last_final_ms;       /* 最近一次 asr_final 墙钟 ms */
+    char               sc_last_final_event[128];
+    char               sc_last_transition[192];/* 最近一次状态迁移 "A->B (why)" */
+    unsigned long      sc_transitions;
+    unsigned long      sc_opens;               /* 新 ASR 会话数 */
+    unsigned long      sc_stale_callbacks;     /* 旧请求/旧播放迟到回调（已拒绝） */
+    unsigned long      sc_duplicate_events;    /* 重复 final / 重复 submit */
+    unsigned long      sc_timeouts;            /* Provider 超时 + 窗口超时关闭 */
+    unsigned long      sc_interrupts;          /* 用户打断 */
+    unsigned long      sc_closes;              /* CLOSING 次数 */
+
     unsigned long      last_seq;
     char               last_event_id[T6B_ID_MAX + 1];
     char               last_event_at[24];

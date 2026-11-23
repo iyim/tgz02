@@ -58,6 +58,11 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     char esc_gate_file[T6B_PATH_MAX * 2];
     char esc_session_state[48];
     char esc_session_detail[352];
+    char esc_sc_state[48];
+    char esc_sc_session[288];
+    char esc_sc_request[288];
+    char esc_sc_last_final_event[288];
+    char esc_sc_last_transition[448];
     char tmp[T6B_PATH_MAX + 8];
     char dir[T6B_PATH_MAX];
     int n;
@@ -87,6 +92,13 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     wu_json_escape(esc_gate_file, sizeof(esc_gate_file), st->gate_hold_file);
     wu_json_escape(esc_session_state, sizeof(esc_session_state), st->session_state);
     wu_json_escape(esc_session_detail, sizeof(esc_session_detail), st->session_detail);
+    wu_json_escape(esc_sc_state, sizeof(esc_sc_state), st->sc_state);
+    wu_json_escape(esc_sc_session, sizeof(esc_sc_session), st->sc_session);
+    wu_json_escape(esc_sc_request, sizeof(esc_sc_request), st->sc_request);
+    wu_json_escape(esc_sc_last_final_event, sizeof(esc_sc_last_final_event),
+                   st->sc_last_final_event);
+    wu_json_escape(esc_sc_last_transition, sizeof(esc_sc_last_transition),
+                   st->sc_last_transition);
 
     n = snprintf(buf, sizeof(buf),
         "{\"version\":%d,\"state\":\"%s\",\"pid\":%lld,"
@@ -139,6 +151,12 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"session\":{\"enabled\":%d,\"timeout_ms\":%d,\"state\":\"%s\","
         "\"turns\":%d,\"followups\":%d,\"opened\":%lu,\"closed\":%lu,"
         "\"detail\":\"%s\"},"
+        "\"session_ctrl\":{\"enabled\":%d,\"state\":\"%s\",\"session\":\"%s\","
+        "\"request\":\"%s\",\"request_active\":%d,\"last_wake_ms\":%lld,"
+        "\"last_final_ms\":%lld,\"last_final_event\":\"%s\","
+        "\"last_transition\":\"%s\",\"transitions\":%lu,\"opens\":%lu,"
+        "\"stale_callbacks\":%lu,\"duplicate_events\":%lu,\"timeouts\":%lu,"
+        "\"interrupts\":%lu,\"closes\":%lu},"
         "\"pending_event_id\":\"%s\","
         "\"last_invalid\":\"%s\",\"last_error\":\"%s\",\"exit_reason\":\"%s\"}\n",
         st->version, st->state, st->pid,
@@ -189,6 +207,12 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         st->session_enabled, st->session_timeout_ms, esc_session_state,
         st->session_turns, st->session_followups, st->session_opened, st->session_closed,
         esc_session_detail,
+        st->sc_enabled, esc_sc_state, esc_sc_session,
+        esc_sc_request, st->sc_request_active, st->sc_last_wake_ms,
+        st->sc_last_final_ms, esc_sc_last_final_event,
+        esc_sc_last_transition, st->sc_transitions, st->sc_opens,
+        st->sc_stale_callbacks, st->sc_duplicate_events, st->sc_timeouts,
+        st->sc_interrupts, st->sc_closes,
         esc_pending,
         esc_invalid, esc_error, st->exit_reason);
     if (n < 0 || (size_t)n >= sizeof(buf)) {

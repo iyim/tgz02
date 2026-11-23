@@ -40,6 +40,7 @@ $WorkerSources = @(
     "worker_util.c", "event_reader.c", "consumer_state.c", "seq_gap.c",
     "conv_context.c", "worker_conf.c", "worker_status.c", "echo_filter.c",
     "intent_route.c", "utterance_gate.c", "conv_session.c", "t7_dup.c",
+    "session_ctrl.c",
     "dead_letter.c",
     "provider.c", "mock_provider.c", "deepseek_provider.c", "ai_worker.c"
 ) | ForEach-Object { Join-Path $Here $_ }

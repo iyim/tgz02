@@ -1,0 +1,112 @@
+﻿# T8-13 session controller host test log
+# host time: 2026-11-23 13:34:11
+
+=== build t8_13_session_ctrl_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_13_session_ctrl_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_13_session_ctrl_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\session_ctrl.c
+(no compiler output: 0 warning, 0 error)
+=== run t8_13_session_ctrl_unit_test ===
+=== T8-13 session_ctrl unit test ===
+
+[1] 正常生命周期: final -> submit -> queued -> idle -> FOLLOWUP -> 超时关闭
+
+[2] 连续两次独立唤醒：新 session 清掉旧请求信息
+
+[3] PROCESSING 中新 submit 顶替旧请求；旧回调被 stale 过滤
+
+[4] SPEAKING 中被打断 -> INTERRUPTED；随后同请求的 idle 仍被接受（终态化）
+
+[5] 旧请求晚到：新会话的 idle 回调被 stale 过滤
+
+[6] 重复 final（同会话同 event_id）被丢弃
+
+[7] Provider 超时计数；死信放弃 -> LISTENING
+
+[8] 未接入事件不冒充：WAKE_PENDING 不可达、device_listening 恒 0
+
+[9] force_close -> CLOSING -> IDLE（死信闩锁/关机场景）
+
+[10] FOLLOWUP：ctx_valid 与 device_listening 独立，不冒充免唤醒聆听
+
+[11] sc_json_str：TtsExec play.public.json 字段提取
+
+[12] 观测计数与迁移原因可见性
+
+SUMMARY: pass=81 fail=0
+RESULT: PASS
+
+=== build t7_04_session_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t7_04_session_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t7_04_session_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_session.c
+(no compiler output: 0 warning, 0 error)
+=== run t7_04_session_unit_test ===
+=== T7-04 conversation session unit test ===
+
+[1] normal turn lifecycle
+
+[2] follow-up inside the window
+
+[3] timeout closes the session
+
+[4] new wake after close opens a new session
+
+[5] playback idle without queued TTS still settles
+
+[6] disabled session keeps state untouched
+
+[7] timeout is configurable
+
+SUMMARY: pass=25 fail=0
+RESULT: PASS
+
+=== build t8_02_nlu_takeover_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_02_nlu_takeover_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_02_nlu_takeover_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_takeover.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c
+(no compiler output: 0 warning, 0 error)
+=== run t8_02_nlu_takeover_unit_test ===
+=== T8-02 NLU/CDM takeover unit test (capacity + concurrency) ===
+slots=64 ttl_ms=30000 degraded_ms=5000
+
+[A] 判定（真机 2026-11-22 17:52 的真实文本）
+  天猫精灵现在几点   -> PASS (why=none intent=time rule=time.keyword arg= complete=1)
+  天猫精灵音量调到五 -> PASS (why=none intent=volume rule=volume.set arg=set:5 complete=1)
+  天猫精灵暂停         -> PASS (why=none intent=stop rule=stop.keyword arg=stop complete=1)
+  天猫精灵给我讲一个笑话 -> TAKE (why=ai intent=none rule= arg= complete=0)
+
+[A2] 参数不完整 / 意图未启用 / 全禁用
+  音量调到百分之 -> TAKE (intent=volume complete=0 note=dangling)
+
+[B] 丢弃语义
+
+[C] 技能接口
+
+[D] 端到端：onStream -> onNlpResult 的分流
+  summary: factory_runs=1 our_replies=1 our_apply=1 dropped_nlu=1
+
+[E] 容量耗尽（不覆盖有效登记 / fail-closed 窗口）
+
+[F] 并发（登记/查询/清理/TTL 回收/重复登记）
+  mixed: threads=6 iters=400 marked=2400 dropped=2400 expired=0
+
+[G] 开关关闭 / 初始化失败 / 会话缺失
+
+RESULT: pass=211 fail=0
+
+=== build t8_12_20_exit_route_unit_test ===
+cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_12_20_exit_route_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_12_20_exit_route_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\nlu_takeover.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\dead_letter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c
+(no compiler output: 0 warning, 0 error)
+=== run t8_12_20_exit_route_unit_test ===
+=== T8-12.20 exit intent route unit test ===
+
+[1] 正向：明确退出表达（整句精确匹配）
+
+[2] 反向与回归
+
+[3] 接管核心断言（t8_to_on_final 决策）
+
+[4] 配置路径：名字解析 / all 位覆盖 / 旧配置兼容 / 未知 token 前向兼容 / 回写
+
+[5] 映射完整性
+
+SUMMARY: pass=82 fail=0
+RESULT: PASS
+
+# total: pass=399 fail=0
+# result: OK
