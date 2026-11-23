@@ -1,4 +1,4 @@
-/*
+﻿/*
  * talk_tap.h -- T8-15 原厂会话事件观察（factory talk tap）
  *
  * 解决的问题：
@@ -41,6 +41,7 @@
 #define TT_EV_TALK_STOP     3   /* onStopTalk：本轮 EOU 结束（录音停） */
 #define TT_EV_LISTEN_STOP   4   /* onStopListen / stopListen：录音停止 */
 #define TT_EV_EXIT_TALK     5   /* exitTalk：原厂平台会话退出（每轮回答后都会发生） */
+#define TT_EV_AUDIO_DONE    6   /* T8-15.4：原厂一次播放结束（AudioManager onPlayStatusChange status:complete） */
 
 typedef struct {
     int  kind;

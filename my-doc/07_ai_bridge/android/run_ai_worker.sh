@@ -1,4 +1,4 @@
-#!/system/bin/sh
+﻿#!/system/bin/sh
 # run_ai_worker.sh -- 独立 AI Worker（ai_worker）的设备端控制脚本
 #
 #   sh run_ai_worker.sh start [extra args]   启动（默认 work=/data/local/tmp/t5_bridge/work）
@@ -352,7 +352,8 @@ case "$cmd" in
     : > "$TAPLOG" || { echo "cannot truncate $TAPLOG"; exit 1; }
     # 需要 onListenStarted 时把 AG-speech_engine:V AGSpeechEngineProxy:V 一起加上
     # （代价：录音期间 onListenData 每秒约 100 行）。
-    nohup logcat -v time -s SessionManager:V >> "$TAPLOG" 2>&1 &
+    # T8-15.4：AudioManager 只为拿"原厂这一轮播完了"(status:complete)，用于延后续听；只读日志。
+nohup logcat -v time -s SessionManager:V AudioManager:V >> "$TAPLOG" 2>&1 &
     echo $! > "$TAPPID"
     sleep 1
     echo "tap started: pid=$(cat "$TAPPID") file=$TAPLOG"
