@@ -1,0 +1,41 @@
+collected=2026-11-23T09:48:22.4217653+08:00
+# 后两条 (1969037/1969042) 由 PC 侧播放录音驱动（文件名 wake_clock48.wav，250 ms 间隔）
+== obs ==
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t8/libtg_hook_p15.so check_only=0
+[inject] so_size=125056 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=30807 (matched cmdline=com.alibaba.ailabs.genie.smartapp:core)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t8/libtg_hook_p15.so)
+[inject] attached tid=30807 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa6c54000 stack=0xa6c5c000 trap=0xa6c63000 gadget=0xb4dada6c
+[inject] dlopen=0xb46df0ad (libdl.so)
+[inject] dlsym=0xb46df0bf (libdl.so)
+[inject] dlerror=0xb46df0b7 (libdl.so)
+[inject] path_written=0xa6c54100 len=37
+[inject] dlopen ok handle=0xedc11129 flags=0x6
+[inject] dlsym ok install=0x928ca460 prepare=0x928ca200 status=0x928cb808
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x97adb53c,0x97adb544)
+[inject] nlu dlsym: prepare=0x928c7dac install=0x928c7fe0 takeover_set=0x928c8b38
+[inject] nlu entry=0x97ae0ebc patch=[0x97ae0ebc,0x97ae0ec4)
+[inject] observe_begin installed=1 takeover=0 (obs-note: these are the T8-12.15 observation records, not the nlu stats line)
+[inject] obs| obs v=1 cap=256 total=6 release=6 skip=0 failclosed=0 overwritten=0 contended=0 ring_first=0 ring_next=6
+[inject] obs| obs i=0 mono=73404087 wall=1795398104768 sid=1969014 type=0 mode=pass decision=PASS
+[inject] obs| obs i=1 mono=73409986 wall=1795398110667 sid=1969019 type=0 mode=pass decision=PASS
+[inject] obs| obs i=2 mono=73703129 wall=1795398403810 sid=1969025 type=0 mode=pass decision=PASS
+[inject] obs| obs i=3 mono=73722112 wall=1795398422793 sid=1969031 type=0 mode=pass decision=PASS
+[inject] obs| obs i=4 mono=73776800 wall=1795398477480 sid=1969037 type=0 mode=pass decision=PASS
+[inject] obs| obs i=5 mono=73782330 wall=1795398483011 sid=1969042 type=0 mode=pass decision=PASS
+[inject] observe_end chunks=1 lines=7
+[inject] RESULT nlu-observe ok installed=1 takeover=0 records=7
+[inject] detached (target thread resumed)
+
+== events tail ==
+{"version":1,"rec":"asr_final","event_id":"t6-30807-1969003-g26","event_type":"asr_final","pid":30807,"session_id":"1969003","text":"天猫精灵","text_bytes":12,"text_chars":4,"is_final":true,"received_at_ms":1795396097945,"recv_at_ms":1795396097951,"stored_at_ms":1795396097951,"seq":73}
+{"version":1,"rec":"asr_final","event_id":"t6-30807-1969014-g1","event_type":"asr_final","pid":30807,"session_id":"1969014","text":"天猫精灵今天天气怎么样","text_bytes":33,"text_chars":11,"is_final":true,"received_at_ms":1795398104315,"recv_at_ms":1795398104317,"stored_at_ms":1795398104321,"seq":74}
+{"version":1,"rec":"asr_final","event_id":"t6-30807-1969019-g2","event_type":"asr_final","pid":30807,"session_id":"1969019","text":"天猫精灵今天天气怎么样","text_bytes":33,"text_chars":11,"is_final":true,"received_at_ms":1795398110392,"recv_at_ms":1795398110393,"stored_at_ms":1795398110393,"seq":75}
+{"version":1,"rec":"asr_final","event_id":"t6-30807-1969025-g3","event_type":"asr_final","pid":30807,"session_id":"1969025","text":"天猫精灵现在进行第一轮","text_bytes":33,"text_chars":11,"is_final":true,"received_at_ms":1795398403344,"recv_at_ms":1795398403345,"stored_at_ms":1795398403345,"seq":76}
+{"version":1,"rec":"asr_final","event_id":"t6-30807-1969031-g4","event_type":"asr_final","pid":30807,"session_id":"1969031","text":"天猫精灵现在几点了","text_bytes":27,"text_chars":9,"is_final":true,"received_at_ms":1795398422367,"recv_at_ms":1795398422369,"stored_at_ms":1795398422369,"seq":77}
+{"version":1,"rec":"asr_final","event_id":"t6-30807-1969037-g5","event_type":"asr_final","pid":30807,"session_id":"1969037","text":"天猫精灵现在几点了","text_bytes":27,"text_chars":9,"is_final":true,"received_at_ms":1795398477148,"recv_at_ms":1795398477148,"stored_at_ms":1795398477148,"seq":78}
+{"version":1,"rec":"asr_final","event_id":"t6-30807-1969042-g6","event_type":"asr_final","pid":30807,"session_id":"1969042","text":"天猫精灵现在几点了","text_bytes":27,"text_chars":9,"is_final":true,"received_at_ms":1795398482742,"recv_at_ms":1795398482744,"stored_at_ms":1795398482744,"seq":79}
