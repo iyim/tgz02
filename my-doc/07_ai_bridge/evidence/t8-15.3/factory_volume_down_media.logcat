@@ -1,0 +1,24 @@
+11-23 22:08:38.690 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:08:44.740 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 1, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:08:50.680 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:08:54.123 I/[apollo 2.17.4.111](30807): [MediaPlayer.cpp:484] setDataSource - instance:0x9279e850
+11-23 22:08:56.699 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:08:57.705 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1969121, text = 天猫精灵播放音乐, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:08:57.706 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1969121, txt = 天猫精灵播放音乐, isFinished = 1, feedback = 1
+11-23 22:08:57.713 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1969121, isFinished = 1, text = 播放音乐
+11-23 22:08:58.466 I/[apollo 2.17.4.111](30807): [MediaPlayer.cpp:484] setDataSource - instance:0x9279c7d0
+11-23 22:08:58.560 I/[apollo 2.17.4.111](30807): [MediaPlayer.cpp:484] setDataSource - instance:0x96a912d0
+11-23 22:09:02.712 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:09:06.300 I/[apollo 2.17.4.111](30807): [MediaPlayer.cpp:484] setDataSource - instance:0x96a93710
+11-23 22:09:08.677 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:09:10.576 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1969127, text = 天猫精灵音量调小一点, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:09:10.577 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1969127, txt = 天猫精灵音量调小一点, isFinished = 1, feedback = 1
+11-23 22:09:10.581 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1969127, isFinished = 1, text = 音量调小一点
+11-23 22:09:10.865 I/[apollo 2.17.4.111](30807): [MediaPlayer.cpp:484] setDataSource - instance:0x92bc4b90
+11-23 22:09:14.714 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 20, cost of feed is 0
+11-23 22:09:19.664 I/[apollo 2.17.4.111](30807): [MediaPlayer.cpp:484] setDataSource - instance:0x92bc3650
+11-23 22:09:20.700 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 1, mSystemInfo->volume_level_ is 20, cost of feed is 0
+11-23 22:09:22.769 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1969141, text = 天猫精灵继续播放, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:09:22.770 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1969141, txt = 天猫精灵继续播放, isFinished = 1, feedback = 1
+11-23 22:09:22.776 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1969141, isFinished = 1, text = 继续播放
+11-23 22:09:26.712 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 20, cost of feed is 0

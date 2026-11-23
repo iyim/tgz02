@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ai_worker.c -- 独立 AI Worker 进程（见 ai_worker.h）
  *
  * 主循环（单线程，固定内存）：
@@ -1772,6 +1772,7 @@ static int commit_skipped(t6b_worker *w, const char **exit_reason)
 /* ---------------- T7-04：路由 / 暂存门 / 会话 ---------------- */
 
 static void tts_request_stop(t6b_worker *w, const char *why);
+static void aiw_write_listen_hold(t6b_worker *w, int hold_ms, long long now_ms);
 
 static int route_intent_enabled(const t6b_worker *w, ir_intent it)
 {
@@ -2097,12 +2098,19 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
                 /* T8-15：停止/退出 = 结束当前连续对话（下一句要重新唤醒）。
                  * 只收束我们自己的对话状态，原厂照常执行它的音量/媒体/退出动作。 */
                 if (ir.intent == IR_STOP || ir.intent == IR_EXIT) {
-                    always("dialog end by voice: intent=%s (rounds_done=%d followup_rounds=%lu)",
-                           ir_intent_name(ir.intent), w->sc.round, w->sc.followup_rounds);
+                    /* T8-15.3：退出语不是一个对话轮次（否则 rounds_done 会比实际多 1）。 */
+                    if (ir.intent == IR_EXIT) sc_note_exit_turn(&w->sc);
+                    always("dialog end by voice: intent=%s (rounds_done=%d followup_rounds=%lu "
+                           "followup_total=%lu exit_turns=%lu)",
+                           ir_intent_name(ir.intent), w->sc.round, w->sc.followup_rounds,
+                           w->sc.followup_rounds_total, w->sc.exit_turns);
                     sc_on_session_end(&w->sc,
                                       ir.intent == IR_EXIT ? "user exit (route=native exit)"
                                                            : "user stop (route=native stop)",
                                       now_ms);
+                    /* T8-15.3：退出/停止必须压过自动续听 —— 写一个带截止时间的
+                     * "别再开麦"标记，守卫读到就跳过自动触发。 */
+                    aiw_write_listen_hold(w, ir.intent == IR_EXIT ? 60000 : 20000, now_ms);
                 }
                 snprintf(w->st.route_last, sizeof(w->st.route_last),
                          "route=native intent=%s rule=%s arg=%s session=%s seq=%lld",
@@ -2236,6 +2244,29 @@ static void session_poll(t6b_worker *w, long long now_ms)
         always("session: state=%s (%s) turns=%d followups=%d (back to wake-word standby)",
                cs_state_name(w->cs.state), w->cs.last_detail, w->cs.turns, w->cs.followups);
     }
+}
+
+/* T8-15.3：把"别再自动开麦"的截止时间写给 native 守卫（libtg_ttsguard 的自动续听）。
+ * 两边用的是同一个 CLOCK_MONOTONIC，所以直接写绝对毫秒。
+ * 写失败只记日志、不改对话行为：守卫读不到就不拦，安全方向是"少开麦"而不是"多开麦"。 */
+static void aiw_write_listen_hold(t6b_worker *w, int hold_ms, long long now_ms)
+{
+    char path[T6B_PATH_MAX];
+    char buf[64];
+    FILE *f;
+
+    join_path(path, sizeof(path),
+              (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT,
+              "listen_hold");
+    snprintf(buf, sizeof(buf), "%lld\n", now_ms + (long long)hold_ms);
+    f = fopen(path, "w");
+    if (f == NULL) {
+        always("listen hold: cannot write %s - native auto-listen will not be suppressed", path);
+        return;
+    }
+    fputs(buf, f);
+    fclose(f);
+    always("listen hold: auto-listen suppressed for %d ms -> %s", hold_ms, path);
 }
 
 /* 让 TTS 执行器立刻停播（并作废 queue/inflight 里还没播的项）。
@@ -2376,10 +2407,10 @@ static void session_lifecycle_poll(t6b_worker *w, long long now_ms)
     if (now != prev) {
         if (now == SC_CLOSING && prev != SC_CLOSING) {
             always("dialog closed: reason=%s rounds_done=%d followup_rounds=%lu "
-                   "max_round=%d listening=%d followup_rounds_total=%lu",
+                   "max_round=%d listening=%d followup_rounds_total=%lu exit_turns=%lu",
                    w->sc.end_reason[0] != '\0' ? w->sc.end_reason : "-",
                    w->sc.round, w->sc.followup_rounds, w->sc.max_round_seen,
-                   w->sc.device_listening, w->sc.followup_rounds);
+                   w->sc.device_listening, w->sc.followup_rounds_total, w->sc.exit_turns);
             if (w->cfg.session_ctx_clear_on_close) {
                 (void)cv_clear(&w->cv);
                 w->st.context_messages = 0;

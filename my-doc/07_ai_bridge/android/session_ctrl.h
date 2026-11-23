@@ -92,7 +92,10 @@ typedef struct {
     unsigned long timeouts;           /* Provider 超时 + FOLLOWUP 超时关闭 */
     unsigned long interrupts;         /* 用户打断（播报/处理中被新 utterance 打断） */
     unsigned long closes;             /* 进入 CLOSING 的次数 */
-    unsigned long followup_rounds;    /* 免唤醒续听的轮次（续听窗口内到达、期间无新唤醒） */
+    unsigned long followup_rounds;    /* 本次对话内的免唤醒轮次（新对话时归零） */
+    unsigned long followup_rounds_total; /* 进程内累计的免唤醒轮次（T8-15.3：与上面的口径分开） */
+    unsigned long exit_turns;         /* 被"退出/结束"意图消耗掉的轮次（不计入对话轮数） */
+    long long   last_exit_ms;         /* 上一次 exitTalk 的时间（去重用） */
     unsigned long rounds_total;       /* 累计接受的轮次 */
     unsigned long session_ends;       /* 正常收束的对话数 */
     unsigned long round_cap_hits;     /* 触达 max_rounds 而强制收束的次数 */
@@ -120,6 +123,9 @@ void sc_on_factory_talk_stop(sc_ctx *s, long long now_ms);
 /* T8-15：原厂 exitTalk（平台会话退出）。与 onStopTalk 一样是"每轮"事件：
  * 它只说明原厂的 ASR/TTS 会话这一段结束了，**不**代表我们的对话收束。 */
 void sc_on_factory_exit_talk(sc_ctx *s, long long now_ms);
+/* T8-15.3：用户用"退出/结束"类语句收束对话时，把这一轮从对话轮数里扣掉
+ * （退出语不是一个对话轮次，否则 rounds_done 会比实际对话轮数多 1）。 */
+void sc_note_exit_turn(sc_ctx *s);
 
 int  sc_on_session_text(sc_ctx *s, const char *session, const char *event_id, long long now_ms);
 int  sc_on_submit(sc_ctx *s, const char *request_id, long long now_ms);

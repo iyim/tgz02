@@ -148,7 +148,9 @@ void sc_on_factory_listen_start(sc_ctx *s, long long now_ms)
 void sc_on_factory_talk_stop(sc_ctx *s, long long now_ms)
 {
     if (s == NULL || !s->cfg.enabled) return;
-    s->talk_stops++;
+    /* T8-15.3：原厂同一轮 EOU 会连打 2~3 条日志（onStopTalk / onListenStopped / reason=-1），
+     * 计数只在"聆听 -> 停止"这一次状态跃迁上做，否则 talk_stops 会被放大三倍。 */
+    if (s->device_listening) s->talk_stops++;
     s->last_talk_stop_ms = now_ms;
     s->device_listening = 0;
 }
@@ -156,11 +158,25 @@ void sc_on_factory_talk_stop(sc_ctx *s, long long now_ms)
 void sc_on_factory_exit_talk(sc_ctx *s, long long now_ms)
 {
     if (s == NULL || !s->cfg.enabled) return;
-    s->exit_talks++;
+    /* T8-15.3：exitTalk 在一条会话里会重复打印；200 ms 内的重复只算一次 */
+    if (s->last_exit_ms == 0 || now_ms - s->last_exit_ms >= 200) {
+        s->exit_talks++;
+        s->last_exit_ms = now_ms;
+    }
     s->device_listening = 0;
-    (void)now_ms;
     /* 原厂平台会话退出：真机上每轮回答结束后都会出现（exitTalk exit=0）。
      * 它不结束我们的对话 —— 续听窗口继续等下一句，直到超时/停止/轮次上限。 */
+}
+
+/* T8-15.3：退出语不是对话轮次。worker 判定 intent=exit 后、收束对话之前调用一次。
+ * 退出语在 final 到达时已经按"续听命中"记过一轮，这里把 round 和 followup_rounds 一起退回，
+ * 让 rounds_done 与实际 AI 对话轮数一致（5 轮对话 + 一句退出 => rounds_done=5）。 */
+void sc_note_exit_turn(sc_ctx *s)
+{
+    if (s == NULL || !s->cfg.enabled) return;
+    s->exit_turns++;
+    if (s->round > 0) s->round--;
+    if (s->followup_rounds > 0) s->followup_rounds--;
 }
 
 /*
@@ -200,6 +216,7 @@ int sc_on_session_text(sc_ctx *s, const char *session, const char *event_id, lon
         /* 新对话：旧请求记入 prev_request（迟到的播放/结果回调按它过滤） */
         s->opens++;
         s->round = 1;
+        s->followup_rounds = 0;      /* T8-15.3：免唤醒轮次是"每段对话"的计数，新对话归零 */
         s->request_active = 0;
         if (s->request[0] != '\0') sc_copy(s->prev_request, sizeof(s->prev_request), s->request);
         s->request[0] = '\0';
@@ -219,6 +236,7 @@ int sc_on_session_text(sc_ctx *s, const char *session, const char *event_id, lon
             s->request[0] = '\0';
             s->opens++;
             s->round = 1;
+            s->followup_rounds = 0;
             sc_copy(s->session, sizeof(s->session), session);
             sc_copy(s->asr_session, sizeof(s->asr_session), session);
             sc_set(s, SC_LISTENING, now_ms, "round cap -> new dialog");
@@ -226,6 +244,7 @@ int sc_on_session_text(sc_ctx *s, const char *session, const char *event_id, lon
         } else {
             s->round++;
             s->followup_rounds++;
+            s->followup_rounds_total++;
             sc_copy(s->asr_session, sizeof(s->asr_session), session);
             sc_set(s, SC_LISTENING, now_ms,
                    same_asr ? "follow-up (same asr session)" : "follow-up (new asr session)");
@@ -238,6 +257,7 @@ int sc_on_session_text(sc_ctx *s, const char *session, const char *event_id, lon
         /* 非续听窗口里出现了另一个 ASR 会话：沿用 T8-13 语义（新会话 = 新对话） */
         s->opens++;
         s->round = 1;
+        s->followup_rounds = 0;
         s->request_active = 0;
         if (s->request[0] != '\0') sc_copy(s->prev_request, sizeof(s->prev_request), s->request);
         s->request[0] = '\0';

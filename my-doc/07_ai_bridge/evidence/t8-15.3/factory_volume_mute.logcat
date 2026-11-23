@@ -1,0 +1,46 @@
+11-23 22:06:32.695 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 1, mSystemInfo->volume_level_ is 20, cost of feed is 0
+11-23 22:06:38.710 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 20, cost of feed is 0
+11-23 22:06:44.720 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 20, cost of feed is 0
+11-23 22:06:50.690 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 20, cost of feed is 0
+11-23 22:06:56.570 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=20, audioType=3, isFullDuplexMode=0, isAsrMode=1
+11-23 22:06:56.717 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 1, mSystemInfo->volume_level_ is 20, cost of feed is 0
+11-23 22:06:57.132 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=20, audioType=2, isFullDuplexMode=0, isAsrMode=1
+11-23 22:07:00.657 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=20, audioType=2, isFullDuplexMode=0, isAsrMode=0
+11-23 22:07:00.669 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1970127, text = 天猫精灵音量调大一点, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:07:00.670 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1970127, txt = 天猫精灵音量调大一点, isFinished = 1, feedback = 1
+11-23 22:07:00.675 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1970127, isFinished = 1, text = 音量调大一点
+11-23 22:07:01.060 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=20, audioType=3, isFullDuplexMode=0, isAsrMode=0
+11-23 22:07:01.206 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=30, audioType=3, isFullDuplexMode=0, isAsrMode=0
+11-23 22:07:02.665 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:07:08.688 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:07:14.712 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 1, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:07:20.731 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 1, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:07:21.614 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=30, audioType=3, isFullDuplexMode=0, isAsrMode=1
+11-23 22:07:21.643 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=30, audioType=2, isFullDuplexMode=0, isAsrMode=1
+11-23 22:07:25.061 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=30, audioType=2, isFullDuplexMode=0, isAsrMode=0
+11-23 22:07:25.127 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1970141, text = 天猫精灵静音, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:07:25.127 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1970141, txt = 天猫精灵静音, isFinished = 1, feedback = 1
+11-23 22:07:25.129 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1970141, isFinished = 1, text = 静音
+11-23 22:07:25.424 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=30, audioType=3, isFullDuplexMode=0, isAsrMode=0
+11-23 22:07:25.508 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=0, audioType=3, isFullDuplexMode=0, isAsrMode=0
+11-23 22:07:26.737 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 0, cost of feed is 0
+11-23 22:07:32.723 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 0, cost of feed is 0
+11-23 22:07:36.332 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=0, audioType=3, isFullDuplexMode=0, isAsrMode=1
+11-23 22:07:36.895 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=0, audioType=2, isFullDuplexMode=0, isAsrMode=1
+11-23 22:07:38.786 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 1, mSystemInfo->volume_level_ is 0, cost of feed is 0
+11-23 22:07:40.370 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=0, audioType=2, isFullDuplexMode=0, isAsrMode=0
+11-23 22:07:40.395 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1970157, text = 天猫精灵取消静音, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:07:40.395 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1970157, txt = 天猫精灵取消静音, isFinished = 1, feedback = 1
+11-23 22:07:40.400 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1970157, isFinished = 1, text = 取消静音
+11-23 22:07:40.810 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=0, audioType=3, isFullDuplexMode=0, isAsrMode=0
+11-23 22:07:40.931 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=30, audioType=3, isFullDuplexMode=0, isAsrMode=0
+11-23 22:07:44.683 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:07:50.685 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:07:51.615 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=30, audioType=3, isFullDuplexMode=0, isAsrMode=1
+11-23 22:07:52.320 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=30, audioType=2, isFullDuplexMode=0, isAsrMode=1
+11-23 22:07:55.272 D/WakeupEngineWrapper(30807): setSystemInfo,272: volumeLevel=30, audioType=2, isFullDuplexMode=0, isAsrMode=0
+11-23 22:07:55.331 D/SessionManager(30807): JNI_AILABS SessionManager.cpp:onStream:641 [30934] sessionId = 1970172, text = 天猫精灵暂停, isFinished = 1, isOffline = 0, needNlp = 0, noDisplay =0
+11-23 22:07:55.332 D/SessionProxy(30807): JNI_AILABS SessionProxy.cpp:onHandler:136 [30870]  online text stream, sessionId = 1970172, txt = 天猫精灵暂停, isFinished = 1, feedback = 1
+11-23 22:07:55.336 W/SessionDispatch(30807): JNI_AILABS SessionDispatch.cpp:onStream:206 [30870] sessionId = 1970172, isFinished = 1, text = 暂停
+11-23 22:07:56.699 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 1, mSystemInfo->volume_level_ is 30, cost of feed is 0
+11-23 22:08:02.711 D/XEGNLocalEngine.cpp(30807): mainProcess,1737: mAudioDataQueue's size is 0, mSystemInfo->volume_level_ is 30, cost of feed is 0

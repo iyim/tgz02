@@ -1,0 +1,37 @@
+[22:14:31.678] logcat capture pid=34976 -> D:\tgz02\OS\_analysis\t815\runs\device_20261123_221431.logcat
+[22:14:32.165] baseline play: state=idle tts_id=5246040
+[22:14:32.170] === round 1 (wake=True) ===
+[22:14:32.180] PLAY r1.wake_time.wav
+[22:14:37.489] PLAY done r1.wake_time.wav
+[22:14:38.341] round 1: AI answer started tts_id=5246046 started_ms=1795443277089
+[22:14:40.077] round 1: AI answer finished tts_id=5246046 finished_ms=1795443278965 outcome=ok
+[22:14:40.684] === round 2 (wake=False) ===
+[22:14:40.687] PLAY q2.joke.wav
+[22:14:43.291] PLAY done q2.joke.wav
+[22:14:46.131] round 2: AI answer started tts_id=5246051 started_ms=1795443285056
+[22:14:52.436] round 2: AI answer finished tts_id=5246051 finished_ms=1795443291393 outcome=ok
+[22:14:53.039] === round 3 (wake=False) ===
+[22:14:53.041] PLAY q3.name.wav
+[22:14:55.489] PLAY done q3.name.wav
+[22:14:58.589] round 3: AI answer started tts_id=5246056 started_ms=1795443297381
+[22:15:01.996] round 3: AI answer finished tts_id=5246056 finished_ms=1795443301093 outcome=ok
+[22:15:02.610] === round 4 (wake=False) ===
+[22:15:02.614] PLAY q4.encourage.wav
+[22:15:05.367] PLAY done q4.encourage.wav
+[22:15:07.520] round 4: AI answer started tts_id=5246061 started_ms=1795443307126
+[22:15:11.565] round 4: AI answer finished tts_id=5246061 finished_ms=1795443311225 outcome=ok
+[22:15:12.170] === round 5 (wake=False) ===
+[22:15:12.171] PLAY q5.count.wav
+[22:15:14.635] PLAY done q5.count.wav
+[22:15:16.587] round 5: AI answer started tts_id=-1 started_ms=1795443316286
+[22:15:23.018] round 5: AI answer finished tts_id=5246066 finished_ms=1795443322628 outcome=ok
+[22:15:23.628] rounds answered: 5
+[22:15:23.629] === stop phrase ===
+[22:15:23.631] PLAY q6.stop.wav
+[22:15:25.310] PLAY done q6.stop.wav
+[22:15:28.827] === re-wake after stop ===
+[22:15:28.828] PLAY r2.wake_time.wav
+[22:15:34.101] PLAY done r2.wake_time.wav
+[22:15:34.639] re-wake answer started tts_id=5246075
+[22:15:34.641] re-wake answered: True
+[22:15:34.978] capture stopped
