@@ -1,0 +1,18 @@
+== takeover state before teardown ==
+[inject] nlu hook_installed=1 takeover=0 state_ready=1
+[inject] RESULT nlu-status ok installed=1 takeover=0
+== uninstall p18 NLU patch ==
+[inject] nlu installed_after=0 takeover=0 entry_code=np{state=idle err=ok installs=1 skips=0 install_fails=0 refusals=0 uninstalls=1 uninstall_fails=0 restores=0 restore_fails=0 busy=0 prot_ok=2 prot_fails=0 before=[e92d4ff0 e28db01c] after=[e51ff004 b3541000] uninst=[e92d4ff0 e28db01c] now=[e92d4ff0 e28db01c]}
+[inject] RESULT nlu-uninstall ok installed=0 takeover=0
+== uninstall p18 onStream + restore p14 ==
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=30807
+[inject] hook_status=0 hooked=1
+[inject] RESULT ok pid=30807 already_mapped=1 check_only=0
+== entry bytes ===
+onNlpResult:     e92d4ff0    e28db01c
+onStream   :     e51ff004    b386a000
+== core + artifacts + takeover recheck ==
+30807
+5be226901fb11d3ab5ff81410f43d834b72b7f9243d1ded58550bb0ac8138f85  /data/local/tmp/t8/libtg_hook.so
+add2c25d6bdd47824c4a9276c1eb81cfd3c71c79cbd06c3adefdc8e0a3412f24  /data/local/tmp/t8/tg_injector
