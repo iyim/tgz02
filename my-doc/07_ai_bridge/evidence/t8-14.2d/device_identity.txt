@@ -1,0 +1,16 @@
+# T8-14.2D device identity (getprop, read-only, 2026-11-23 20:15:01)
+
+ro.product.model                 AILABS_S1L
+ro.product.device                ailabs_s1l
+ro.product.name                  full_ailabs_s1l
+ro.build.version.release         6.1.8-RS-20221104.1459
+ro.build.version.sdk             27
+ro.product.cpu.abi               armeabi-v7a
+ro.build.display.id              O11019 test-keys
+ro.build.fingerprint             alps/full_ailabs_s1l/ailabs_s1l:6.1.8-RS-20221104.1459/O11019/1667545132:user/test-keys
+
+## PID snapshot (after restore)
+  root          2586     1    4404    440 0                   0 S tgb_bridge
+  root          5915     1    7136   3352 0                   0 S ai_worker
+  root         17257 17253  866504  28356 0                   0 S app_process
+  system       30807   281 1249008  97100 0                   0 S com.alibaba.ailabs.genie.smartapp:core
