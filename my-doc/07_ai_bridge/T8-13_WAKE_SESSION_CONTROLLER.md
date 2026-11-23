@@ -197,3 +197,36 @@ my-doc/07_ai_bridge/T8-13_WAKE_SESSION_CONTROLLER.md  本报告
 - 提交 SHA：见推送记录（本轮）
 - 关键实现：`session_ctrl.c`（状态机 + prev_request 迟到隔离 + CLOSING 瞬时态 + 无 TTS 兜底）
 - 测试：主机 399 pass / 0 fail（含 3 组回归）；ARM32 全产物 0 warning 0 error
+
+## 九、T8-13.2 修正：Provider 成功后的请求终结与无 TTS 兜底（审查发现的第二个实质缺陷）
+
+审查发现：`sc_on_tts_queued` 只在 `q>0` 时调用；无 TTS 队列分支和幂等命中（q==0）分支都不通知会话控制中心，`sc_on_request_result(ok=1)` 从未被调用 —— `request_active` 可能永久卡 1、状态停在 PROCESSING。已修复，Provider 成功分支现在按四个情况明确区分：
+
+| 情况 | 触发 | 会话控制中心动作 | 结果 |
+|---|---|---|---|
+| **A** TTS 新内容入队（q>0） | `tts_enqueue` 返回 1 | `sc_on_tts_queued`（保持活动） | 请求保持活动，等当前 request 对应的真实播放结束事件 |
+| **B** TTS 队列未配置 | `cfg.tts_queue[0]=='\0'` | `sc_on_request_result(ok=1)` | 退出 PROCESSING → LISTENING + 超时窗口，绝不留下活动请求 |
+| **C** 幂等命中（q==0） | `tts_enqueue` 返回 0，`*stage` 区分阶段 | **done/failed** → `sc_on_request_result(ok=1)`（不会再有播放事件，终结）；**queue/inflight** → 不终结，等 TtsExec 的真实 playing/idle 推进 | 不再把所有 q==0 当成播放完成 |
+| **D** TTS 入队失败（q<0） | `tts_enqueue` 返回 -1 | 不终结（保持活动，走既有重试/偏移机制） | 重试耗尽死信 → `sc_on_request_result(ok=0)`；死信闩锁（rc==-5）→ `sc_force_close` |
+
+**q==0 的真实语义及证据**：`tts_enqueue()` 的幂等检查按四个持久化阶段逐一探测（`ai_worker.c:1158-1172`），`found_stage` 记录命中阶段：
+- `queue` = 回答在 `<tts>/queue/`，TtsExec 稍后会播并发布 playing/idle → **必须继续等**；
+- `inflight` = 正在播放 → **必须继续等**；
+- `done` = 已播完（`<tts>/done/*.ok` 存在）→ **不会再有播放事件，终结请求**；
+- `failed` = 已放弃（超过重试上限 parked）→ **不会再有播放事件，终结请求**。
+
+实现方式：`tts_enqueue` 增加出参 `const char **out_stage`（q==0 时写 `"queue"/"inflight"/"done"/"failed"`），签名变化不影响其它调用方（全仓唯一调用点）。幂等日志也改为 `tts skip (stage=%s)` 可观测。
+
+**终结点全量核对**（`sc_on_request_result`/`sc_force_close` 调用位置）：
+1. 成功 + 无 TTS 队列（情况 B）→ ok=1 ✓
+2. 成功 + 幂等 done/failed（情况 C 终态）→ ok=1 ✓
+3. 成功 + 幂等 queue/inflight（情况 C 等待）→ 不调用，等播放事件 ✓
+4. 成功 + 新入队（情况 A）→ 不调用（`sc_on_tts_queued` 保持活动），等播放事件 ✓
+5. 死信放弃（rc==-3）→ ok=0 ✓
+6. 死信闩锁（rc==-5）→ `sc_force_close` ✓（新增，修复闩锁期间 request_active 永久悬挂）
+7. 旧请求终态回调 → `prev_request`/request 不匹配 → stale 过滤，不影响新请求 ✓（[14] 断言）
+8. q<0 重试期间 → 不调用，请求保持活动（等待重试结果）✓
+
+**新增测试 [14]**（8 项场景）：A 入队等待真实收尾、B 无队列立即终结+窗口、C done 终结、C' inflight 等待→播放→收尾、D 重试保持+死信清理、死信闩锁 force_close、旧请求终态回调过滤、无永久悬挂不变量。
+
+测试结果：主机 **460 pass / 0 fail**（t8_13 套件 142 + 回归 25/211/82）；ARM32 `ai_worker` sha256 `66dc8652…`（241180 B）0 warning 0 error。证据：`evidence/t8_13_2_ndk_build_worker.log`。

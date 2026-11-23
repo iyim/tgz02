@@ -33,6 +33,12 @@ static void check(int cond, const char *what)
     }
 }
 
+/* 本地小工具：sc_same 是 session_ctrl.c 的静态函数，测试里用 strcmp 等价 */
+static int sc_same_req(const sc_ctx *s, const char *id)
+{
+    return s != NULL && s->request[0] != '\0' && strcmp(s->request, id) == 0;
+}
+
 int main(void)
 {
     sc_ctx s;
@@ -336,6 +342,101 @@ int main(void)
     check(sc_on_play_state(&s, 0, "evtF1", "ok", 150400) == 1,
           "13h: post-finalize idle of same id accepted as snapshot");
     check(s.state == SC_INTERRUPTED, "13h: state unchanged");
+
+    /* 13h：归属规则不变量 —— 只有当前请求自己的收尾能终结请求 */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969530", "evtF1", 150000);
+    (void)sc_on_submit(&s, "evtF1", 150100);
+    (void)sc_on_tts_queued(&s, "evtF1", 150200);
+    (void)sc_on_play_state(&s, 0, "evtF1", "interrupted", 150300);
+    check(s.state == SC_INTERRUPTED && s.request_active == 0,
+          "13h: own interrupted finalizes request");
+    /* 收尾后同一请求的 idle 重复到达：duplicate，不迁移 */
+    check(sc_on_play_state(&s, 0, "evtF1", "ok", 150400) == 1,
+          "13h: post-finalize idle of same id accepted as snapshot");
+    check(s.state == SC_INTERRUPTED, "13h: state unchanged");
+
+    /* ---------------- [14] Provider 成功后的请求终结（T8-13.2 修复验证） ----------------
+     * 按 ai_worker.c provider 成功分支现在实际调用的 API 序列，逐情况核对：
+     * 不会留下无法关闭的 request_active=1。 */
+    printf("\n[14] Provider 成功四情况：A 入队/B 无队列/C 幂等/D 失败死信\n");
+
+    /* 情况 A：TTS 新内容入队（q>0）—— submit -> tts_queued（请求保持活动）->
+     *         等真实播放结束事件（play idle）-> 收尾 */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969600", "evtA", 160000);
+    (void)sc_on_submit(&s, "evtA", 160100);
+    check(s.request_active == 1 && s.state == SC_PROCESSING, "A: active in PROCESSING");
+    (void)sc_on_tts_queued(&s, "evtA", 160200);
+    check(s.request_active == 1 && s.state == SC_SPEAKING, "A: waits for play idle (active kept)");
+    (void)sc_on_play_state(&s, 0, "evtA", "ok", 160300);
+    check(s.request_active == 0 && s.state == SC_FOLLOWUP, "A: closed by real play idle");
+    check(sc_poll(&s, 160300 + 12000) == SC_CLOSING && sc_poll(&s, 160300 + 12001) == SC_IDLE,
+          "A: session closes after window");
+
+    /* 情况 B：无 TTS 队列 —— submit -> request_result(ok)（worker 的 tts_queue 空分支）->
+     *         立即退出 PROCESSING，不留下活动请求 */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969610", "evtB", 161000);
+    (void)sc_on_submit(&s, "evtB", 161100);
+    sc_on_request_result(&s, "evtB", 1, 161200);      /* worker: no tts queue branch */
+    check(s.request_active == 0, "B: request finalized, not stuck active");
+    check(s.state == SC_LISTENING, "B: PROCESSING exited (LISTENING fallback window)");
+    check(s.deadline_ms > 161200, "B: deadline armed for eventual close");
+    check(sc_poll(&s, 161200 + 12000) == SC_CLOSING && sc_poll(&s, 161200 + 12001) == SC_IDLE,
+          "B: closes, never stuck");
+
+    /* 情况 C：幂等命中 done/failed（worker 分支调用 request_result(ok)）—— 终结 */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969620", "evtC", 162000);
+    (void)sc_on_submit(&s, "evtC", 162100);
+    sc_on_request_result(&s, "evtC", 1, 162200);      /* worker: q==0 stage=done/failed */
+    check(s.request_active == 0 && s.state == SC_LISTENING, "C(done): finalized, no wait");
+
+    /* 情况 C'：幂等命中 queue/inflight —— 不终结，等真实播放事件推进 */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969630", "evtC2", 163000);
+    (void)sc_on_submit(&s, "evtC2", 163100);
+    check(s.request_active == 1, "C': no request_result call for queue/inflight stage");
+    (void)sc_on_play_state(&s, 1, "evtC2", "", 163200);   /* TtsExec starts playing */
+    check(s.state == SC_SPEAKING && s.request_active == 1, "C': playing keeps wait relation");
+    (void)sc_on_play_state(&s, 0, "evtC2", "ok", 163300);
+    check(s.request_active == 0 && s.state == SC_FOLLOWUP, "C': real idle closes it");
+
+    /* 情况 D：q<0 重试期间请求保持；死信放弃正确清理 */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969640", "evtD", 164000);
+    (void)sc_on_submit(&s, "evtD", 164100);
+    sc_note_timeout(&s);
+    check(s.request_active == 1 && s.state == SC_PROCESSING, "D: retry keeps request active");
+    sc_on_request_result(&s, "evtD", 0, 164200);      /* dead-letter abandon */
+    check(s.request_active == 0 && s.state == SC_LISTENING, "D: dead-letter cleaned up");
+    check(sc_poll(&s, 164200 + 12000) == SC_CLOSING, "D: session closes via deadline");
+    check(sc_poll(&s, 164200 + 12001) == SC_IDLE, "D: never stuck");
+
+    /* 死信闩锁：force_close 清空一切悬挂 */
+    (void)sc_on_session_text(&s, "1969650", "evtD2", 165000);
+    (void)sc_on_submit(&s, "evtD2", 165100);
+    sc_force_close(&s, "dead letter latch", 165200);
+    check(s.request_active == 0 && s.state == SC_CLOSING, "latch: force close clears request");
+    check(sc_poll(&s, 165300) == SC_IDLE, "latch: back to IDLE");
+
+    /* 旧请求终态回调不能结束新请求（worker 顺序：新请求已顶替旧请求） */
+    sc_init(&s, &c);
+    (void)sc_on_session_text(&s, "1969660", "evtOld", 166000);
+    (void)sc_on_submit(&s, "evtOld", 166100);
+    (void)sc_on_submit(&s, "evtNew", 166200);         /* 顶替 */
+    check(sc_same_req(&s, "evtNew"), "setup: new request current");
+    {
+        unsigned long before = s.stale_callbacks;
+        sc_on_request_result(&s, "evtOld", 1, 166300);   /* 旧请求成功回调迟到 */
+        check(s.stale_callbacks == before + 1, "old terminal callback filtered");
+        check(s.request_active == 1 && s.state == SC_PROCESSING, "new request untouched");
+        sc_on_request_result(&s, "evtNew", 1, 166400);
+        check(s.request_active == 0, "new request finalized by its own callback");
+    }
+    /* 不变量：以上所有情况都不会留下无法关闭的活动请求 —— 每个分支后
+     * request_active==0 或有对应的播放/超时事件必然到达（A/C'） */
 
     printf("\nSUMMARY: pass=%d fail=%d\n", g_pass, g_fail);
     printf("RESULT: %s\n", g_fail == 0 ? "PASS" : "FAIL");

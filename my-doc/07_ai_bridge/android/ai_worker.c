@@ -1079,10 +1079,15 @@ static int tts_existing_item_durable(const char *path, const char *dir,
  *
  * 返回：
  *   1 = 新条目已持久化入队；
- *   0 = 同 event_id 的条目已存在，且所在目录重新 fsync 成功；
+ *   0 = 同 event_id 的条目已存在，且所在目录重新 fsync 成功（幂等命中）；
+ *       *out_stage 记录命中的阶段（"queue"=排队待播 / "inflight"=正在播放 /
+ *       "done"=已播完 / "failed"=已放弃），供会话控制中心区分等待语义
+ *       （T8-13.2：只有 done/failed 才是"不会再有播放结束事件"，queue/inflight
+ *       必须继续等待对应的播放状态）；
  *  -1 = 失败，调用方不得提交消费偏移。
  */
-static int tts_enqueue(t6b_worker *w, const t6b_reply *rep, char *err, size_t errlen)
+static int tts_enqueue(t6b_worker *w, const t6b_reply *rep, char *err, size_t errlen,
+                       const char **out_stage)
 {
     static char esc[2 * T6B_REPLY_TEXT_MAX + 64];
     static char body[2 * T6B_REPLY_TEXT_MAX + 256];
@@ -1180,6 +1185,7 @@ static int tts_enqueue(t6b_worker *w, const t6b_reply *rep, char *err, size_t er
     if (found == 1) {
         logf_(&w->cfg, "TTS idempotent hit event=%s stage=%s dirfsync=ok",
               eid, found_stage);
+        if (out_stage != NULL) *out_stage = found_stage;
         return 0;
     }
 
@@ -1344,7 +1350,8 @@ static int provider_attempt(t6b_worker *w)
              * P1-2：入队失败 = 这条回答还没有落到任何持久位置 → **不许提交偏移**，
              *       当前事件留在原地，走 Provider 重试/退避，回答会被重新请求。 */
             char terr[96];
-            int q = tts_enqueue(w, &rep, terr, sizeof(terr));
+            const char *stage = NULL;   /* T8-13.2：幂等命中的 TTS 阶段 */
+            int q = tts_enqueue(w, &rep, terr, sizeof(terr), &stage);
             if (q > 0) {
                 /* P1-2：tts_enqueue() 只负责持久化，成功计数由调用方记（1 = 新条目已落盘） */
                 w->st.tts_queued++;
@@ -1354,16 +1361,28 @@ static int provider_attempt(t6b_worker *w)
                 ef_note_enqueue(&w->ef, w->pend.event_id, rep.text, wu_wall_ms());
                 /* T7-04：回答已入队 = 会话进入 SPEAKING，播报结束后等用户追问 */
                 (void)cs_on_queued(&w->cs, wu_now_ms());
-                /* T8-13：真实事件 -> 会话控制中心（TTS 生命周期开始） */
+                /* T8-13：真实事件 -> 会话控制中心（TTS 生命周期开始）。
+                 * 情况 A：请求保持活动，等当前 request 对应的播放结束事件。 */
                 (void)sc_on_tts_queued(&w->sc, w->pend.event_id, wu_now_ms());
             } else if (q == 0) {
                 if (w->cfg.tts_queue[0] != '\0') {
                     w->st.tts_skipped++;
                     /* P1-2：幂等命中必须能在证据里看到（queue/inflight/done/failed 任一路径） */
-                    always("tts skip (already queued/played): event=%s reply_bytes=%d queue=%s",
+                    always("tts skip (stage=%s): event=%s reply_bytes=%d queue=%s",
+                           stage != NULL ? stage : "?",
                            w->pend.event_id, rep.text_bytes, w->cfg.tts_queue);
                     /* 幂等命中：这条回答本来就在队列/已播过，同样作为回声候选 */
                     ef_note_enqueue(&w->ef, w->pend.event_id, rep.text, wu_wall_ms());
+                    /* T8-13.2 情况 C：幂等命中按阶段区分等待语义。
+                     * done/failed = 该 event 不会再有播放结束事件 -> 请求终结
+                     *               （成功语义，避免 request_active 永久挂着）；
+                     * queue/inflight = TtsExec 稍后还会播并发布 playing/idle ->
+                     *               保留等待关系，等真实播放事件推进状态。 */
+                    if (stage != NULL && (strcmp(stage, "done") == 0 ||
+                                          strcmp(stage, "failed") == 0)) {
+                        sc_on_request_result(&w->sc, w->pend.event_id, 1, wu_now_ms());
+                    }
+                    /* queue/inflight：不终结，sc_on_play_state 的归属校验会等它 */
                 }
             } else {
                 w->st.tts_enqueue_failed++;
@@ -1387,6 +1406,10 @@ static int provider_attempt(t6b_worker *w)
         if (w->cfg.tts_queue[0] == '\0') {
             /* 没有 TTS 队列 = 不会有播报：会话直接进入"等下一句"，避免卡在 SPEAKING */
             (void)cs_on_play_idle(&w->cs, wu_now_ms());
+            /* T8-13.2 情况 B：Provider 成功但永远不会有播放事件 ->
+             * 请求在此终结（sc 内部回 LISTENING 并挂超时窗口），绝不留下
+             * request_active=1 卡在 PROCESSING。 */
+            sc_on_request_result(&w->sc, w->pend.event_id, 1, wu_now_ms());
         }
         {
             int cr = commit_event(w);
@@ -2043,6 +2066,9 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
                  * 保持 pending、闩住追加、不推进 offset、不静默跳过；状态里留完整现场。 */
                 w->pend_dl_fault = 1;
                 w->pend_stuck = 1;
+                /* T8-13.2：死信闩锁 = 该请求永久放弃。Worker 停止消费直到故障解除，
+                 * 会话控制状态必须同步清理，绝不留下 request_active=1 的永久悬挂。 */
+                sc_force_close(&w->sc, "dead_letter_failed latch", wu_now_ms());
                 snprintf(w->st.state, sizeof(w->st.state), "dead_letter_failed");
                 w->st.dead_letter_failed = 1;
                 always("worker: persistent fault (dead_letter_failed) latched for event %s "

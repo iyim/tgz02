@@ -1,5 +1,5 @@
 ﻿# T8-13 session controller host test log
-# host time: 2026-11-23 16:12:01
+# host time: 2026-11-23 16:33:25
 
 === build t8_13_session_ctrl_unit_test ===
 cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_13_session_ctrl_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_13_session_ctrl_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\session_ctrl.c
@@ -33,7 +33,9 @@ cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\sys
 
 [13] TTS 事件归属：旧/空/重复/残留播放事件不污染当前会话
 
-SUMMARY: pass=117 fail=0
+[14] Provider 成功四情况：A 入队/B 无队列/C 幂等/D 失败死信
+
+SUMMARY: pass=142 fail=0
 RESULT: PASS
 
 === build t7_04_session_unit_test ===
@@ -110,5 +112,5 @@ cc   : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -pthread -I D:\tgz
 SUMMARY: pass=82 fail=0
 RESULT: PASS
 
-# total: pass=435 fail=0
+# total: pass=460 fail=0
 # result: OK
