@@ -1,0 +1,47 @@
+T8-12.15 真机 NLU 回调原始观测记录
+============================================================
+设备      : TG-Z02 AILABS_S1L  serial 192.168.1.9:5555
+目标进程  : com.alibaba.ailabs.genie.smartapp:core  pid=30807  starttime=2467080
+被观测入口: libsmartbox.so + 0x118ebc  (AliAiLabs::AGUI::SessionDispatch::onNlpResult)
+补丁区间  : [0x97ae0ebc, 0x97ae0ec4)
+装载库    : /data/local/tmp/t8/libtg_hook_p15.so  sha256 feb472014054eb4d9631658d90052f612dd3bd9a177b5092a42abc35126503cc
+导出方式  : /data/local/tmp/t8/tg_injector_p15 --nlu-observe （分块调用 tg_nlu_observe(buf,cap,from)）
+
+------------------------------------------------------------
+一、安装后的第一份快照（08:22:1x，语音之前）
+------------------------------------------------------------
+[inject] observe_begin installed=1 takeover=0 (obs-note: these are the T8-12.15 observation records, not the nlu stats line)
+[inject] obs| obs v=1 cap=256 total=0 release=0 skip=0 failclosed=0 overwritten=0 contended=0 ring_first=0 ring_next=0
+[inject] observe_end chunks=1 lines=1
+
+对应 status 行里的新计数（与上面这条快照同源，和 nlu stats 的旧字段并列）：
+  obs_total=0 obs_release=0 obs_skip=0 obs_failclosed=0 obs_overwritten=0 obs_contended=0 obs_cap=256
+且原有状态字段为：nlu installed=1 takeover=0 mode=pass ready=1 np_installs=1 prot_state=0
+
+------------------------------------------------------------
+二、第二次快照（08:22:5x，第一次原厂 TTS 播放之后）
+------------------------------------------------------------
+（完整输出见 09_nlu_observe_after_voice1.txt）
+obs v=1 cap=256 total=0 release=0 skip=0 failclosed=0 overwritten=0 contended=0 ring_first=0 ring_next=0
+
+------------------------------------------------------------
+三、第三次快照（08:24:0x，音量拉到最大后第二次播放之后）
+------------------------------------------------------------
+（完整输出见 11_voice_retry_vol100.txt）
+obs v=1 cap=256 total=0 release=0 skip=0 failclosed=0 overwritten=0 contended=0 ring_first=0 ring_next=0
+
+------------------------------------------------------------
+四、结论：本轮观测到的 NLU 回调记录数 = 0
+------------------------------------------------------------
+total=0 表示 onNlpResult 在我们的补丁在位期间**一次都没有被调用**，因此：
+  * 没有任何一条 "obs i=..." 记录（记录格式见 libtg_hook.c 的 tg_nlu_observe）；
+  * 没有 sessionId / type / mode / decision 可读；
+  * 这不是"缓冲满了没取到"（overwritten=0、contended=0、ring_next=0），
+    而是回调真的没发生。
+
+为什么没有回调：本轮所有播报都走原厂 TTS（扬声器），而设备的音频链路对 mic 输入做了
+回声消除（logcat 里 AudioVoiceUIDL / UnconvWakeupManager 的实测见 voice_regression.txt），
+设备听不见自己的声音；现场也没有真人说话。没有语音轮次 → 原厂 ASR 不出 final →
+原厂没有 NLU 结果 → onNlpResult 不被调用。
+
+不改变的判断：这**不能**用来证明"跨轮归属风险不存在"。

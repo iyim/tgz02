@@ -252,10 +252,12 @@ static int pause_and_check(uint32_t lo, uint32_t hi, char *err, size_t errlen)
 #define NLU_ON         3
 #define NLU_OFF        4
 #define NLU_STATUS     5
+#define NLU_OBSERVE    6        /* T8-12.15：只读导出被动观测环快照 */
 
 typedef struct {
     uint32_t prepare, lo, hi, install, uninstall;
     uint32_t takeover_set, takeover_get, installed, entry_code, stats, last_error, state_ready;
+    uint32_t observe;           /* T8-12.15 tg_nlu_observe */
 } nlu_syms;
 
 static nlu_syms g_nlu;
@@ -279,6 +281,33 @@ static int nlu_text(uint32_t fn, char *buf, size_t cap, char *err, size_t errlen
     rc = rc_call(&g_ctx, fn, args, 2, &ret, err, errlen);
     if (rc != RC_OK) return rc;
     return rc_read_str(&g_ctx, g_ctx.scratch + NLU_TEXT_OFF, buf, cap, err, errlen);
+}
+
+/*
+ * T8-12.15：三参数版本（观测快照要带 from）。缓冲同样放在 scratch 里，
+ * 但比 512 字节的状态行大：scratch 是 64 KB，数据区 0x0..0x8000 给远端栈，
+ * 所以 0x400 起用 8 KB 不会碰到栈和沙袋（沙袋在 0xF000）。
+ */
+#define OBS_TEXT_OFF 0x400u
+#define OBS_TEXT_CAP 8192u
+
+static int nlu_text3(uint32_t fn, char *buf, size_t cap, uint32_t a2, uint32_t *ret,
+                     char *err, size_t errlen)
+{
+    uint32_t args[3];
+    int rc;
+
+    if (buf == NULL || cap == 0) return RC_E_SYM;
+    buf[0] = '\0';
+    if (fn == 0) return RC_E_SYM;
+    rc = rc_write(&g_ctx, g_ctx.scratch + OBS_TEXT_OFF, "", 1, err, errlen);
+    if (rc != RC_OK) return rc;
+    args[0] = g_ctx.scratch + OBS_TEXT_OFF;   /* r0 = buf   */
+    args[1] = (uint32_t)cap;                  /* r1 = cap   */
+    args[2] = a2;                             /* r2 = from  */
+    rc = rc_call(&g_ctx, fn, args, 3, ret, err, errlen);
+    if (rc != RC_OK) return rc;
+    return rc_read_str(&g_ctx, g_ctx.scratch + OBS_TEXT_OFF, buf, cap, err, errlen);
 }
 
 /* 打印库里的 last_error（NLU 段有独立错误缓冲，不会和 T6 的混） */
@@ -325,6 +354,64 @@ static int nlu_do(int cmd)
         return 19;
     }
     out("[inject] nlu entry=0x%08x patch=[0x%08x,0x%08x)", lo, lo, hi);
+
+    /* 6) T8-12.15：只读导出被动观测环。
+     *    - 不改补丁、不改开关、不暂停线程；
+     *    - 输出用 "obs|" 前缀，和上面的 nlu stats 行在文本层面就不可能混；
+     *    - 分块取：tg_nlu_observe(buf,cap,from) 返回下一次的 from，0 = 取完。 */
+    if (cmd == NLU_OBSERVE) {
+        char obuf[OBS_TEXT_CAP];
+        uint32_t from = 0;
+        int chunks = 0, lines = 0, stop = 0;
+
+        if (g_nlu.observe == 0) {
+            out("[inject] ERROR stage=nlu_observe libtg_hook.so has no tg_nlu_observe export "
+                "(rebuild the library for T8-12.15)");
+            return 18;
+        }
+        (void)rc_call(&g_ctx, g_nlu.installed, NULL, 0, &installed, err, sizeof(err));
+        (void)rc_call(&g_ctx, g_nlu.takeover_get, NULL, 0, &takeover, err, sizeof(err));
+        out("[inject] observe_begin installed=%d takeover=%d (obs-note: these are the T8-12.15 "
+            "observation records, not the nlu stats line)", (int)installed, (int)takeover);
+
+        while (!stop && chunks < 64) {
+            uint32_t next = 0;
+            int n;
+
+            rc = nlu_text3(g_nlu.observe, obuf, sizeof(obuf), from, &next, err, sizeof(err));
+            if (rc != RC_OK) {
+                out("[inject] ERROR stage=nlu_observe_call from=%u rc=%d err=%s",
+                    (unsigned)from, rc, err);
+                return 24;
+            }
+            chunks++;
+            n = (int)next;
+
+            {   /* 逐行打印，空行不输出 */
+                char *p = obuf;
+
+                while (p != NULL && *p != '\0') {
+                    char *nl = strchr(p, '\n');
+
+                    if (nl != NULL) *nl = '\0';
+                    if (*p != '\0') { out("[inject] obs| %s", p); lines++; }
+                    if (nl == NULL) break;
+                    p = nl + 1;
+                }
+            }
+
+            if (n < 0) {
+                out("[inject] ERROR stage=nlu_observe_ret ret=%d", n);
+                return 24;
+            }
+            if (n == 0) stop = 1;
+            else from = (uint32_t)n;
+        }
+        out("[inject] observe_end chunks=%d lines=%d", chunks, lines);
+        out("[inject] RESULT nlu-observe ok installed=%d takeover=%d records=%d",
+            (int)installed, (int)takeover, lines);
+        return 0;
+    }
 
     if (cmd == NLU_STATUS) {
         char entry[400];
@@ -497,20 +584,22 @@ int main(int argc, char **argv)
             nlu_cmd = NLU_OFF;
         } else if (strcmp(argv[i], "--nlu-status") == 0) {
             nlu_cmd = NLU_STATUS;
+        } else if (strcmp(argv[i], "--nlu-observe") == 0) {
+            nlu_cmd = NLU_OBSERVE;
         } else if (strcmp(argv[i], "--fault") == 0 && i + 1 < argc) {
             fault = argv[++i];
         } else if (strcmp(argv[i], "--verbose") == 0) {
             verbose = 1;
         } else {
             out("usage: %s [--pid N | --name PROC] --so /path/libtg_hook.so "
-                "[--check|--uninstall] [--nlu-status|--nlu-install|--nlu-uninstall|--nlu-on|--nlu-off] "
+                "[--check|--uninstall] [--nlu-status|--nlu-observe|--nlu-install|--nlu-uninstall|--nlu-on|--nlu-off] "
                 "[--fault NAME] [--verbose]", argv[0]);
             return 10;
         }
     }
     if (so == NULL) {
         out("usage: %s [--pid N | --name PROC] --so /path/libtg_hook.so "
-            "[--check|--uninstall] [--nlu-status|--nlu-install|--nlu-uninstall|--nlu-on|--nlu-off] "
+            "[--check|--uninstall] [--nlu-status|--nlu-observe|--nlu-install|--nlu-uninstall|--nlu-on|--nlu-off] "
             "[--fault NAME] [--verbose]", argv[0]);
         return 10;
     }
@@ -781,6 +870,7 @@ int main(int argc, char **argv)
             { "tg_nlu_stats",          &g_nlu.stats },
             { "tg_nlu_last_error",     &g_nlu.last_error },
             { "tg_nlu_state_ready",    &g_nlu.state_ready },
+            { "tg_nlu_observe",        &g_nlu.observe },
         };
         size_t k;
 

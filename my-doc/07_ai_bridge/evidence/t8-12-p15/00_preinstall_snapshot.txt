@@ -1,0 +1,44 @@
+安装前入口快照（T8-12.15）
+============================================================
+采集时刻 : 2026-11-23 08:21 (CST)
+采集方式 : adb shell su -c 'dd if=/proc/30807/mem ...'（只读，不 attach、不暂停、不写）
+
+一、目标进程
+------------------------------------------------------------
+pidof com.alibaba.ailabs.genie.smartapp:core   → 30807
+/proc/30807/stat                               → 30807 (e.smartapp:core) S ...  82 线程
+stat 第 22 字段 starttime                      → 2467080（与 2026-11-22 20:09:57 supervisor 记录的完全相同）
+
+二、libsmartbox.so 装载
+------------------------------------------------------------
+/proc/30807/maps 首行:
+  979c8000-97adb000 r-xp 00000000 b3:13 485  /system/app/smartapp/lib/arm/libsmartbox.so
+→ base(load bias) = 0x979c8000
+sha256(libsmartbox.so) = f6e3c3543ff6da5b59bf60b884b6ce4332897c75aa6b89b8dccc0c266df80940  (2 047 772 B)
+
+三、两个入口的机器码（本轮动手之前）
+------------------------------------------------------------
+onNlpResult  0x97ae0ebc (= base+0x118ebc)  前 16 字节:
+    e92d4ff0  e28db01c  e24dd034  e1a0a003        ← 原厂序言（push {r4-r11,lr} / add r11,sp,#28 …）
+
+onStream     0x97adb53c (= base+0x11353c)  前 16 字节:
+    e51ff004  b386a000  e24dd02c  e1a06000        ← 已被 T6 Hook 打补丁（本轮之前就是这个状态）
+
+四、当时已部署的件
+------------------------------------------------------------
+/data/local/tmp/t8/libtg_hook.so   120608 B  sha256 5be226901fb11d3ab5ff81410f43d834b72b7f9243d1ded58550bb0ac8138f85
+/data/local/tmp/t8/tg_injector      80780 B  sha256 add2c25d6bdd47824c4a9276c1eb81cfd3c71c79cbd06c3adefdc8e0a3412f24
+/data/local/tmp/t8/supervisor.log  2552 B   （supervisor pid 31289；stats 行见 core_processes 类证据）
+
+五、本轮要装的件（构建于 08:19，NDK r21e / armv7a-linux-androideabi26-clang，0 warning）
+------------------------------------------------------------
+/data/local/tmp/t8/libtg_hook_p15.so  125056 B  sha256 feb472014054eb4d9631658d90052f612dd3bd9a177b5092a42abc35126503cc
+/data/local/tmp/t8/tg_injector_p15     81044 B  sha256 8c55d7e7c7c6b9cdb5cf4031f45155a2b94d0bf722155591adbe3e7e0613c16c
+（两者都用新路径，避免 bionic 按路径去重导致"dlopen 返回已加载的旧模块"）
+
+六、安装前判据检查
+------------------------------------------------------------
+[x] 目标 pid 与 starttime 已记录（30807 / 2467080）
+[x] onNlpResult 入口是原厂序言（e92d4ff0 e28db01c）——可以安装
+[x] 现有 Hook 的 sha256 已记录，且有 cp -a 备份
+[x] 回滚命令与恢复判据已写明（见 rollback_verification.txt 的 R1/R2/R3）

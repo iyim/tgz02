@@ -1,0 +1,56 @@
+Injector 线程冻结 / 入口安装 / 回滚路径检查（T8-12.15 §五）
+============================================================
+对象：android/injector/remote_call.c（未改）+ android/hook_agent/libtg_hook.c（本轮改）
+说明：本轮不动 remote_call.c；这里只核对"我们新加的观测代码"走的是不是既有安全路径。
+
+一、线程冻结（rc_pause_all / rc_resume_all）
+------------------------------------------------------------
+* 枚举 /proc/<pid>/task，对执行线程以外的每个 tid 做 PTRACE_ATTACH 并 waitpid 确认进入 stop；
+* 重新枚举直到线程集合稳定（没有新 tid 出现），最多 8 轮；
+* 任何一步失败 → 把已暂停的线程全部 detach 再报错，不留"半冻结"状态。
+本轮实测：安装 NLU 补丁时 "paused 82 other threads (exec tid=30807)"；
+          卸载时 "paused 83 other threads"；两次都随后 "threads resumed"。
+本轮期间 :core 线程数 82→84 波动，暂停计数与之吻合，未出现 attach 失败或残留 stop。
+
+二、入口窗口检查（rc_pc_in_range）
+------------------------------------------------------------
+* 写补丁前，逐个读已暂停线程的 PC，只要有一个落在 [patch_lo, patch_hi) 就拒绝写入。
+本轮实测：两次安装/卸载都打印 "[0x97ae0ebc,0x97ae0ec4) is clear" 后才写。
+
+三、入口安装（tg_nlu_install(world_frozen)）
+------------------------------------------------------------
+1. world_frozen != 1 直接拒绝（TG_E_UNSAFE），一个字节都不写 —— 也就是"库里自己再判一次"，
+   不依赖 Injector 的承诺；
+2. 控制锁用 trylock（有限重试），世界已冻结时绝不死等（TG_E_BUSY）；
+3. tg_nlu_prepare()：按 dl_iterate_phdr 找到 libsmartbox 基址 → 查符号 →
+   **校验 vaddr 必须等于 0x118ebc** → 读并保存原厂序言两字；
+4. stub 页：mmap RW → 填 ARM 指令 → __builtin___clear_cache → 优先 mprotect RX，
+   失败退 RWX 并记 prot_state（降级可见）；两种都失败就 munmap 并让下次重新 prepare；
+5. 三点事务 np_*：unprotect → 写 8 字节 → flush(clear_cache) → reprotect → 读回校验；
+   事务计数（installs/skips/fails/refusals/restores/prot_ok/prot_fails）都在 tg_nlu_stats 里可见；
+6. 若"机器码进去了但页面保护没恢复"，返回错误并把接管显式压成关闭（不允许 RWX 页进入接管）。
+
+本轮实测 entry_code：
+  state=patched installs=1 install_fails=0 refusals=0 prot_ok=1 prot_fails=0
+  before=[e92d4ff0 e28db01c] after=[e51ff004 b388c000]
+
+四、回调侧（本轮新增，必须不改变任何语义）
+------------------------------------------------------------
+* 无论 mode=PASS/DECIDE/FAILCLOSED，都只做：一次原子 fetch_add + 一条定长记录 + 两次原子 store；
+* 不做文件/网络/logcat I/O、不 malloc、不取阻塞锁（extract_obs.py 对这函数体做禁用调用扫描，clean）；
+* 不解引用 NlpResult*，不记录语音文本；
+* 返回值仍由 mode 与 t8_to_should_drop 决定，观测不参与（host 单测 [B] 组逐条钉住）。
+* g_nlu_nlp_calls 的旧语义保持不变（只在非 PASS 模式下累加），观测总数另记 obs_total。
+
+五、回滚路径
+------------------------------------------------------------
+* tg_nlu_uninstall(world_frozen)：同样要求世界冻结 + trylock + 写回原厂两字 + 读回校验；
+* 本轮实测：installed_before=1 → tg_nlu_uninstall(1)=0 → installed_after=0，
+  entry_code: uninst=[e92d4ff0 e28db01c] now=[e92d4ff0 e28db01c]，独立只读 dd 复核一致；
+* 若 uninstall 失败，Injector 返回 22 且打印 entry_code（机器码），不会假装成功。
+
+六、结论
+------------------------------------------------------------
+本轮新增的观测代码完全落在既有安全路径之内：
+冻结由 Injector 做、窗口由 rc_pc_in_range 守、写入由 np_* 事务做并读回校验、回滚写回原厂字节并复核。
+没有新增任何"绕过检查写内存"的路径。

@@ -1,0 +1,15 @@
+== final state 2026-11-23T08:36:24.3845005+08:00 ==
+30807
+30807 (e.smartapp:core) S 281 281 0 0 -1 1077952832 432527 3391 11089 1 3008593 49541 18 5 20 0 84 0 2467080 1258078208 21686 4294967295 1 1 0 0 0 0 4608 4096 1073777918 0 0 0 17 1 0 0 0 0 0 0 0 0 0 0 0 0 0
+== onStream entry (expect patched) ==
+    e51ff004    b386a000    e24dd02c    e1a06000
+== onNlpResult entry (expect original prologue) ==
+    e92d4ff0    e28db01c    e24dd034    e1a0a003
+== deployed artifacts ==
+5be226901fb11d3ab5ff81410f43d834b72b7f9243d1ded58550bb0ac8138f85  /data/local/tmp/t8/libtg_hook.so
+add2c25d6bdd47824c4a9276c1eb81cfd3c71c79cbd06c3adefdc8e0a3412f24  /data/local/tmp/t8/tg_injector
+feb472014054eb4d9631658d90052f612dd3bd9a177b5092a42abc35126503cc  /data/local/tmp/t8/libtg_hook_p15.so
+8c55d7e7c7c6b9cdb5cf4031f45155a2b94d0bf722155591adbe3e7e0613c16c  /data/local/tmp/t8/tg_injector_p15
+== events.jsonl unchanged? (line count + tail) ==
+617 /data/local/tmp/t5_bridge/work/events.jsonl
+{"version":1,"rec":"asr_final","event_id":"t6-30807-1968956-g24","event_type":"asr_final","pid":30807,"session_id":"1968956","text":"天猫精灵关闭屏幕","text_bytes":24,"text_chars":8,"is_final":true,"received_at_ms":1795390149798,"recv_at_ms":1795390149798,"stored_at_ms":1795390149799,"seq":71}

@@ -1,0 +1,6 @@
+source   : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\hook_agent\libtg_hook.c
+source sha256      : 0142cc51edfb926348f555b3d4b82c7d150b920b9a63afb7a221d2bf7e2c3468
+obs module sha256  : c01df96e100e76d53bd455ae558bd0ae570be5020292418dde94b180eb9ffc79 (6556 bytes)
+tg_nlp_cb sha256   : 38c86d7156cabdfd0fc32a2089de368cbbaff411a83a34bce92476d83f6fd4e3 (759 bytes)
+forbidden-call scan: obs_record=clean tg_nlp_cb=clean
+written            : D:\tgz02\OS\system\my-doc\07_ai_bridge\analysis\t8_12\p15\build\gen_obs.inc

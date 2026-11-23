@@ -1,0 +1,52 @@
+回滚验证结果（T8-12.15）
+============================================================
+设备 : TG-Z02 AILABS_S1L  serial 192.168.1.9:5555
+进程 : com.alibaba.ailabs.genie.smartapp:core  pid=30807  starttime=2467080（全程未变）
+库基址: libsmartbox.so base = 0x979c8000（本轮 maps 实测）
+地址 : onNlpResult = base+0x118ebc = 0x97ae0ebc   onStream = base+0x11353c = 0x97adb53c
+
+一、安装前（读 /proc/30807/mem，只读）
+------------------------------------------------------------
+onNlpResult 16 字节: e92d4ff0 e28db01c e24dd034 e1a0a003     ← 原厂序言
+onStream    16 字节: e51ff004 b386a000 e24dd02c e1a06000     ← 已被 T6 Hook 打补丁（本轮之前就是这样）
+已部署件 : libtg_hook.so   sha256 5be226901fb11d3ab5ff81410f43d834b72b7f9243d1ded58550bb0ac8138f85 (120608 B)
+           tg_injector     sha256 add2c25d6bdd47824c4a9276c1eb81cfd3c71c79cbd06c3adefdc8e0a3412f24 ( 80780 B)
+备份     : /data/local/tmp/t8/backup_p14/{libtg_hook.so.p14, tg_injector.p14}（哈希同上，cp -a 保留）
+
+二、回滚命令与恢复判据（本轮实际执行的顺序）
+------------------------------------------------------------
+R1) 恢复 T6 onStream Hook（库升级前先卸）
+    tg_injector --name ...:core --so /data/local/tmp/t8/libtg_hook.so --uninstall
+    判据: hooked=0 且 onStream 首 8 字节回到 e92d4ff0 e28db01c
+    实测: hooked=0 after uninstall；读回 e92d4ff0 e28db01c e24dd02c e1a06000   ✔
+
+R2) 卸掉 NLU 被动观测补丁
+    tg_injector_p15 --name ...:core --so /data/local/tmp/t8/libtg_hook_p15.so --nlu-uninstall
+    判据: installed_after=0 且 entry_code 的 uninst / now 都是 [e92d4ff0 e28db01c]
+    实测: np{state=idle ... uninstalls=1 uninstall_fails=0 prot_ok=2
+                before=[e92d4ff0 e28db01c] after=[e51ff004 b388c000]
+                uninst=[e92d4ff0 e28db01c] now=[e92d4ff0 e28db01c]}                ✔
+          独立只读复核（dd /proc/30807/mem @0x97ae0ebc）:
+                e92d4ff0 e28db01c e24dd034 e1a0a003                                 ✔ 与安装前逐个字节相同
+
+R3) 恢复本轮之前的库（p14）
+    tg_injector --name ...:core --so /data/local/tmp/t8/libtg_hook.so   （走 canonical 路径 → bionic 复用已映射的 p14 模块）
+    判据: hooked=1 且 onStream 首 8 字节 = e51ff004 <stub>
+    实测: hook_status=0 hooked=1；读回 e51ff004 b386a000 e24dd02c e1a06000           ✔
+
+三、回滚后的最终状态（08:36:24）
+------------------------------------------------------------
+onStream    : e51ff004 b386a000 e24dd02c e1a06000     （= 本轮动手之前的那份字节，完全一致）
+onNlpResult : e92d4ff0 e28db01c e24dd034 e1a0a003     （= 原厂，NLU 补丁已不在）
+进程        : pid=30807 starttime=2467080 State=S 线程=84
+已部署件    : libtg_hook.so 5be22690…（未动）  tg_injector add2c25d…（未动）
+遗留        : libtg_hook_p15.so feb47201… 与 tg_injector_p15 8c55d7e7… 仍留在 /data/local/tmp/t8/
+              （p15 模块在 :core 里仍处于已映射状态——bionic 不支持卸载，故它是一块惰性内存，
+                其 onStream 补丁与 NLU 补丁都已卸掉，stats 停在卸载前）
+事件日志    : events.jsonl 仍 617 行，末条 seq=71（本轮没有产生新的 asr_final）
+
+四、结论
+------------------------------------------------------------
+* 三条回滚路径（先卸主 Hook / 卸 NLU 补丁 / 恢复旧库）全部实测通过，判据用的是**入口字节**而不是退出码；
+* 回滚后设备状态与本轮开工前逐字节一致（onStream 那 16 字节可直接对照）；
+* 没有出现需要重启 :core 才能恢复的情形。

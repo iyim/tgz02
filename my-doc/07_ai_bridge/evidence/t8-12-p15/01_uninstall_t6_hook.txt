@@ -1,0 +1,22 @@
+collected=2026-11-23T08:21:34.5295943+08:00
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t8/libtg_hook.so check_only=0
+[inject] so_size=120608 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=30807 (matched cmdline=com.alibaba.ailabs.genie.smartapp:core)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t8/libtg_hook.so)
+[inject] attached tid=30807 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xb223d000 stack=0xb2245000 trap=0xb224c000 gadget=0xb4dada6c
+[inject] dlopen=0xb46df0ad (libdl.so)
+[inject] dlsym=0xb46df0bf (libdl.so)
+[inject] dlerror=0xb46df0b7 (libdl.so)
+[inject] path_written=0xb223d100 len=33
+[inject] dlopen ok handle=0xc2e591bb flags=0x6
+[inject] dlsym ok install=0x955a7090 prepare=0x955a6e38 status=0x955a8438
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x97adb53c,0x97adb544)
+[inject] paused 81 other threads (exec tid=30807); [0x97adb53c,0x97adb544) is clear
+[inject] tg_hook_uninstall() = 0 (threads resumed)
+[inject] hooked=0 after uninstall
+[inject] RESULT uninstalled pid=30807
+[inject] detached (target thread resumed)

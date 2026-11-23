@@ -1,0 +1,24 @@
+collected=2026-11-23T08:22:48.2135615+08:00
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t8/libtg_hook_p15.so check_only=0
+[inject] so_size=125056 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=30807 (matched cmdline=com.alibaba.ailabs.genie.smartapp:core)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t8/libtg_hook_p15.so)
+[inject] attached tid=30807 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xace47000 stack=0xace4f000 trap=0xace56000 gadget=0xb4dada6c
+[inject] dlopen=0xb46df0ad (libdl.so)
+[inject] dlsym=0xb46df0bf (libdl.so)
+[inject] dlerror=0xb46df0b7 (libdl.so)
+[inject] path_written=0xace47100 len=37
+[inject] dlopen ok handle=0xedc11129 flags=0x6
+[inject] dlsym ok install=0x928ca460 prepare=0x928ca200 status=0x928cb808
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x97adb53c,0x97adb544)
+[inject] nlu dlsym: prepare=0x928c7dac install=0x928c7fe0 takeover_set=0x928c8b38
+[inject] nlu entry=0x97ae0ebc patch=[0x97ae0ebc,0x97ae0ec4)
+[inject] observe_begin installed=1 takeover=0 (obs-note: these are the T8-12.15 observation records, not the nlu stats line)
+[inject] obs| obs v=1 cap=256 total=0 release=0 skip=0 failclosed=0 overwritten=0 contended=0 ring_first=0 ring_next=0
+[inject] observe_end chunks=1 lines=1
+[inject] RESULT nlu-observe ok installed=1 takeover=0 records=1
+[inject] detached (target thread resumed)

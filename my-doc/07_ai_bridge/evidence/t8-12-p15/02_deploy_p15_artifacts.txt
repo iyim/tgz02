@@ -1,0 +1,22 @@
+## backup (step by step, each command under su)
+5be226901fb11d3ab5ff81410f43d834b72b7f9243d1ded58550bb0ac8138f85  /data/local/tmp/t8/backup_p14/libtg_hook.so.p14
+add2c25d6bdd47824c4a9276c1eb81cfd3c71c79cbd06c3adefdc8e0a3412f24  /data/local/tmp/t8/backup_p14/tg_injector.p14
+## push via /data/local/tmp then move under su
+D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\libtg_hook.so: 1 file pushed, 0 skipped. 181.2 MB/s (125056 bytes in 0.001s)
+D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\tg_injector: 1 file pushed, 0 skipped. 145.6 MB/s (81044 bytes in 0.001s)
+feb472014054eb4d9631658d90052f612dd3bd9a177b5092a42abc35126503cc  /data/local/tmp/t8/libtg_hook_p15.so
+8c55d7e7c7c6b9cdb5cf4031f45155a2b94d0bf722155591adbe3e7e0613c16c  /data/local/tmp/t8/tg_injector_p15
+/data/local/tmp/t8/:
+total 416
+drwxr-xr-x 2 root  root    4096 2026-11-23 08:21 backup_p14
+-rwxr-xr-x 1 shell shell 120608 2026-11-22 19:45 libtg_hook.so
+-rwxr-xr-x 1 shell shell 125056 2026-11-23 08:21 libtg_hook_p15.so
+-rw-r--r-- 1 root  root    2552 2026-11-22 20:09 supervisor.log
+-rwxr-xr-x 1 shell shell  80780 2026-11-22 19:45 tg_injector
+-rwxr-xr-x 1 shell shell  81044 2026-11-23 08:21 tg_injector_p15
+-rw-r--r-- 1 root  root       6 2026-11-22 20:09 tg_supervisor.pid
+
+/data/local/tmp/t8/backup_p14/:
+total 200
+-rwxr-xr-x 1 shell shell 120608 2026-11-23 08:21 libtg_hook.so.p14
+-rwxr-xr-x 1 shell shell  80780 2026-11-23 08:21 tg_injector.p14

@@ -1,0 +1,38 @@
+== A) rollback: --nlu-uninstall ==
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t8/libtg_hook_p15.so check_only=0
+[inject] so_size=125056 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=30807 (matched cmdline=com.alibaba.ailabs.genie.smartapp:core)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t8/libtg_hook_p15.so)
+[inject] attached tid=30807 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xb286d000 stack=0xb2875000 trap=0xb287c000 gadget=0xb4dada6c
+[inject] dlopen=0xb46df0ad (libdl.so)
+[inject] dlsym=0xb46df0bf (libdl.so)
+[inject] dlerror=0xb46df0b7 (libdl.so)
+[inject] path_written=0xb286d100 len=37
+[inject] dlopen ok handle=0xedc11129 flags=0x6
+[inject] dlsym ok install=0x928ca460 prepare=0x928ca200 status=0x928cb808
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x97adb53c,0x97adb544)
+[inject] nlu dlsym: prepare=0x928c7dac install=0x928c7fe0 takeover_set=0x928c8b38
+[inject] nlu entry=0x97ae0ebc patch=[0x97ae0ebc,0x97ae0ec4)
+[inject] nlu installed_before=1
+[inject] paused 83 other threads (exec tid=30807); [0x97ae0ebc,0x97ae0ec4) is clear
+[inject] nlu world frozen (83 threads), calling tg_nlu_uninstall(1)
+[inject] tg_nlu_uninstall(1) = 0 (threads resumed)
+[inject] nlu installed_after=0 takeover=0 entry_code=np{state=idle err=ok installs=1 skips=0 install_fails=0 refusals=0 uninstalls=1 uninstall_fails=0 restores=0 restore_fails=0 busy=0 prot_ok=2 prot_fails=0 before=[e92d4ff0 e28db01c] after=[e51ff004 b388c000] uninst=[e92d4ff0 e28db01c] now=[e92d4ff0 e28db01c]}
+[inject] RESULT nlu-uninstall ok installed=0 takeover=0
+[inject] detached (target thread resumed)
+== entry bytes after uninstall (read-only) ==
+    e92d4ff0    e28db01c    e24dd034    e1a0a003
+== B) core health ==
+30807
+S 2467080
+84
+== tombstones since install ==
+total 1376
+drwxrwx--x  2 system     system   4096 2026-11-21 20:20 .
+-rw-r-----  1 tombstoned system  61260 2026-11-21 20:20 tombstone_03
+-rw-r-----  1 tombstoned system     98 2026-11-21 16:14 tombstone_02
+-rw-r-----  1 tombstoned system  24265 2026-11-21 13:53 tombstone_01

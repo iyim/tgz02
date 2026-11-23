@@ -1,0 +1,23 @@
+collected=2026-11-23T08:22:02.8928398+08:00
+[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t8/libtg_hook_p15.so check_only=0
+[inject] so_size=125056 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=30807 (matched cmdline=com.alibaba.ailabs.genie.smartapp:core)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=0
+[inject] attached tid=30807 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xacff3000 stack=0xacffb000 trap=0xad002000 gadget=0xb4dada6c
+[inject] dlopen=0xb46df0ad (libdl.so)
+[inject] dlsym=0xb46df0bf (libdl.so)
+[inject] dlerror=0xb46df0b7 (libdl.so)
+[inject] path_written=0xacff3100 len=37
+[inject] dlopen ok handle=0xedc11129 flags=0x2
+[inject] dlsym ok install=0x928ca460 prepare=0x928ca200 status=0x928cb808
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x97adb53c,0x97adb544)
+[inject] paused 81 other threads (exec tid=30807); [0x97adb53c,0x97adb544) is clear
+[inject] tg_hook_install() = 0 (threads resumed)
+[inject] hook_status=0 hooked=1
+[inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+[inject] RESULT ok pid=30807 already_mapped=0 check_only=0
+[inject] detached (target thread resumed)

@@ -1,0 +1,60 @@
+原厂语音回归结果（T8-12.15）
+============================================================
+目标：安装被动观测补丁后，先确认原厂语音链路仍然可用（原厂技能仍可执行）。
+结论：**未能取得真机语音样本**。原因不是补丁，而是本轮拿不到音频输入。下面是把能排除的都排除掉的实测记录。
+
+一、补丁侧不阻断（可验证的部分）
+------------------------------------------------------------
+1. 补丁形式：入口 8 字节改成 `e51ff004 <stub>`（ldr pc,[pc,#-4]），stub 里保存 r0-r3/r4/lr →
+   调 C 回调 → 原样恢复 → 若回调返回 0 则重放原厂两条指令（`e92d4ff0 e28db01c`）后跳回 func+8。
+   回调用的是原厂语义：takeover=0 时 mode=pass，回调直接 `return 0`，原厂 CDM 照常执行。
+2. 安装时读回的三点状态：
+   before=[e92d4ff0 e28db01c]  after=[e51ff004 b388c000]  uninst=[e92d4ff0 e28db01c]
+   安装/卸载各 pause 了 82 / 83 个线程，补丁窗口 [0x97ae0ebc,0x97ae0ec4) 在写入前确认 clear。
+3. 补丁在位期间（08:22:0x~08:36）目标进程全程存活：
+   pid=30807 / starttime=2467080 不变，State=S，线程 82→84，无新增 tombstone
+   （/data/tombstones 最新一条仍是 2026-11-21 20:20，早于本轮）。
+4. 回滚后 onNlpResult 入口字节与安装前逐字节相同（见 rollback_verification.txt）。
+
+二、语音输入通路：逐条排除
+------------------------------------------------------------
+(1) 原厂 TTS 播报唤醒词（扬声器 → 麦克风）
+    08:22:29.831  played event=p15voice-082226  text="天猫精灵，现在几点了"  dur=2201ms  (系统音量 40/100)
+    08:23:57.923  played event=p15voice2-082354 同文本  dur=2175ms  (音量已设到最大 index=15)
+    结果：两次都没有产生 asr_final（events.jsonl 仍是 617 行、末条 seq=71），obs_total 仍是 0。
+
+(2) 直接开 ALSA 播放（绕过原厂 TTS 状态机，想让设备"听到外部声音"）
+    adb shell su -c 'tinyplay /data/local/tmp/t8/p15_wake.wav'
+    → cannot open device '/dev/snd/pcmC0D0p' / Unable to open PCM device 0.
+    （Android 音频 HAL 占着主 PCM；本机没有可用的第二通路）
+
+(3) 唤醒引擎状态（logcat 实测，08:22~08:24 连续）
+    W UnconvWakeupManager: feed,68:feed when not started        ← 唤醒管理器一直"未启动"
+    D XEGNLocalEngine.cpp: mainProcess ... mAudioDataQueue's size is 0/1, volume_level_ is 40/15
+    D AudioVoiceUIDL: [SetInputStandBy] ReadRefFromRing to exit? (0)
+    D AudioALSAStreamOut: close() setMicGain to 1.7!
+    说明：mic 采集链路对扬声器输出做了回声消除（AEC），设备听不见自己的声音；
+    唤醒词模型因此不会被自家 TTS 触发。
+
+(4) 试图把前台切回原厂应用（想让唤醒引擎重启）
+    am start -n .../musicplayer.activity.MainActivity → "Activity not started, its current task has been brought to the front"
+    mResumedActivity 仍是 app.orchard.tv/.MainActivity；唤醒管理器日志没有变化。
+
+(5) 现场真人语音
+    本轮操作者明确回复"现在不方便说话"，因此没有真人语音可用。
+
+三、因此本轮"原厂技能仍可执行"这一条
+------------------------------------------------------------
+状态：**UNKNOWN（未取得语音样本）**，不是"通过"，也不是"失败"。
+能说的只有：
+  * 补丁没有引入崩溃、没有让进程退出、没有改变入口以外的任何字节；
+  * 回滚后入口与原厂完全一致；
+  * 但"原厂技能确实还能执行"需要一次真实的语音轮次才能证明，本轮没有。
+
+四、如果下一轮补做，最小步骤
+------------------------------------------------------------
+1. 补丁已在位时，对着设备说一句「天猫精灵，现在几点了」；
+2. 同时观察三处：events.jsonl 是否新增 asr_final（ASR 链路）、
+   --nlu-observe 的 obs_total 是否 >0（NLU 回调链路）、
+   设备是否真的报出时间（原厂技能执行）；
+3. 三处同时成立才叫语音回归通过。
