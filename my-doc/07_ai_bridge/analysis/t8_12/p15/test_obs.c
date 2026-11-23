@@ -424,6 +424,48 @@ static void test_r13_terminal(void)
     CHECK(t8_to_enabled_set(&g_to, 0) == 0);
 }
 
+/* ------------------------------------------------------- R13-01 行格式化与边界 */
+
+/*
+ * 最坏情况行宽：INT32_MAX 的 sid/type + failclosed（最长 mode 名）+ resnull，
+ * 时间戳走真实 clock（13 位）。校验导出完整、以换行结尾、不发生截断越界。
+ */
+static void test_line_format(void)
+{
+    char buf[2048];
+    unsigned long t0 = GET(g_obs_total);
+    int next;
+
+    printf("\n[A7] worst-case line formatting (R13-01 buffer bound)\n");
+    CHECK(TG_OBS_LINE_MAX >= 160);   /* 修复后的安全余量 */
+
+    obs_record(2147483647, 2147483647, NLS_FAILCLOSED, 0, 1);  /* PASS + resnull=1 */
+    obs_record(2147483647, 2147483647, NLS_FAILCLOSED, 1, 0);  /* DROP + resnull=0 */
+
+    {   /* 从最新两条开始导出，避免被更早测试写入的 256 条环挤占缓冲 */
+        unsigned long total = GET(g_obs_total);
+
+        next = tg_nlu_observe(buf, sizeof(buf), (unsigned)(total - 2));
+        CHECK(next == 0);
+    }
+
+    CHECK(strstr(buf, "sid=2147483647") != NULL);
+    CHECK(strstr(buf, "type=2147483647") != NULL);
+    CHECK(strstr(buf, "mode=failclosed") != NULL);
+    CHECK(strstr(buf, "decision=PASS") != NULL);
+    CHECK(strstr(buf, "decision=DROP") != NULL);
+    CHECK(strstr(buf, "resnull=1") != NULL);
+    CHECK(strstr(buf, "resnull=0") != NULL);
+
+    {   /* 输出以完整一行的换行收尾 */
+        size_t len = strlen(buf);
+
+        CHECK(len > 0 && buf[len - 1] == '\n');
+    }
+
+    CHECK(GET(g_obs_total) == t0 + 2);
+}
+
 int main(void)
 {
     printf("T8-12.15 host unit test: NLU callback passive observation\n");
@@ -438,6 +480,7 @@ int main(void)
     test_chunked();
     test_callback();
     test_r13_terminal();
+    test_line_format();
 
     printf("\n---\nchecks: pass=%d fail=%d\n", g_pass, g_fail);
     printf("RESULT: %s\n", (g_fail == 0) ? "PASS" : "FAIL");

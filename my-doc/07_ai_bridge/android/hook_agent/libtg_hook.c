@@ -839,7 +839,7 @@ static void nlu_note_final(int sid, const char *text)
  */
 #define TG_OBS_CAP        256u          /* 必须为 2 的幂 */
 #define TG_OBS_MASK       (TG_OBS_CAP - 1u)
-#define TG_OBS_LINE_MAX   104
+#define TG_OBS_LINE_MAX   160           /* 最坏情况：INT64 时间戳 + INT32 sid/type + failclosed + resnull ≈ 152 B */
 
 typedef struct {
     volatile uint64_t seq;          /* 槽位 seqlock：偶数=稳定，奇数=写入中 */
@@ -991,7 +991,7 @@ int tg_nlu_observe(char *buf, unsigned int cap, unsigned int from)
                         (s->res_is_null != 0) ? 1 : 0);
         q2 = __atomic_load_n(&s->seq, __ATOMIC_ACQUIRE);
         if (q1 != q2 || (q2 & 1u) != 0) continue;          /* 读的过程中被改写：丢弃 */
-        if (need <= 0) continue;
+        if (need <= 0 || (size_t)need >= sizeof(line)) continue;  /* 被截断/不完整：丢弃，绝不越界 memcpy */
         if (off + (size_t)need >= (size_t)cap) break;      /* 这一块放不下了，下次再来 */
         memcpy(buf + off, line, (size_t)need);
         off += (size_t)need;
