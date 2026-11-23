@@ -1,0 +1,7 @@
+﻿
+[inject] nlu entry_code=np{state=idle err=ok installs=3 skips=0 install_fails=0 refusals=0 uninstalls=3 uninstall_fails
+=0 restores=0 restore_fails=0 busy=0 prot_ok=6 prot_fails=0 before=[e92d4ff0 e28db01c] after=[e51ff004 b3540000] uninst
+=[e92d4ff0 e28db01c] now=[e92d4ff0 e28db01c]}
+[inject] RESULT nlu-status ok installed=0 takeover=0
+
+

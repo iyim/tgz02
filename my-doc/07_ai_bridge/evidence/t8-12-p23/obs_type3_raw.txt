@@ -1,0 +1,32 @@
+﻿[inject] tg_injector t6-01 begin
+[inject] so=/data/local/tmp/t8/libtg_hook_p20.so check_only=0
+[inject] so_size=125124 mode=0755 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=30807 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/data/local/tmp/t8/libtg_hook_p20.so)
+[inject] attached tid=30807 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0x97967000 stack=0x9796f000 trap=0x97976000 gadget=0xb4dada6c
+[inject] dlopen=0xb46df0ad (libdl.so)
+[inject] dlsym=0xb46df0bf (libdl.so)
+[inject] dlerror=0xb46df0b7 (libdl.so)
+[inject] path_written=0x97967100 len=37
+[inject] dlopen ok handle=0x5add1b17 flags=0x6
+[inject] dlsym ok install=0x913e2480 prepare=0x913e2220 status=0x913e3828
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x97adb53c,0x97adb544)
+[inject] nlu dlsym: prepare=0x913dfdac install=0x913dffe0 takeover_set=0x913e0b38
+[inject] nlu entry=0x97ae0ebc patch=[0x97ae0ebc,0x97ae0ec4)
+[inject] observe_begin installed=1 takeover=1 (obs-note: these are the T8-12.15 observation records, not the nlu stats line)
+[inject] obs| obs v=1 cap=256 total=9 release=8 skip=1 failclosed=0 overwritten=0 contended=0 ring_first=0 ring_next=9
+[inject] obs| obs i=0 mono=82750470 wall=1795407451150 sid=1969176 type=0 mode=decide decision=PASS resnull=0
+[inject] obs| obs i=1 mono=82765522 wall=1795407466203 sid=1969182 type=0 mode=decide decision=PASS resnull=0
+[inject] obs| obs i=2 mono=82836336 wall=1795407537017 sid=1969188 type=0 mode=decide decision=DROP resnull=0
+[inject] obs| obs i=3 mono=82973672 wall=1795407674353 sid=1969198 type=2 mode=decide decision=PASS resnull=0
+[inject] obs| obs i=4 mono=82976138 wall=1795407676819 sid=1969203 type=0 mode=decide decision=PASS resnull=0
+[inject] obs| obs i=5 mono=82985965 wall=1795407686646 sid=1969207 type=0 mode=decide decision=PASS resnull=0
+[inject] obs| obs i=6 mono=83411545 wall=1795408112226 sid=1969214 type=0 mode=decide decision=PASS resnull=0
+[inject] obs| obs i=7 mono=83542934 wall=1795408243614 sid=1969220 type=0 mode=decide decision=PASS resnull=0
+[inject] obs| obs i=8 mono=83640384 wall=1795408341064 sid=1969226 type=3 mode=decide decision=PASS resnull=1
+[inject] observe_end chunks=1 lines=10
+[inject] RESULT nlu-observe ok installed=1 takeover=1 records=10
+[inject] detached (target thread resumed)
