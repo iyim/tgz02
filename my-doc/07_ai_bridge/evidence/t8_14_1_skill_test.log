@@ -1,0 +1,122 @@
+﻿# T8-14.1 skill dispatch host test log
+# host time: 2026-11-23 18:45:51
+
+cc  : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\dead_letter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\session_ctrl.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_session.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t7_dup.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c
+  (0 warning, 0 error)
+
+cc  : C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1_skill_registry_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_14_1_skill_registry_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c
+  (0 warning, 0 error)
+
+=== case 1: skill_dispatch_enabled=0 -> factory route unchanged ===
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --conf D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case1_off\worker.conf --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case1_off\work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case1_off\state --provider mock --tts-queue-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case1_off\tts --gate 0 --poll-ms 10 --status-every-ms 100 --provider-retry-max 1 --provider-backoff-ms 400 --provider-backoff-max-ms 800 --idle-exit-ms 1200 --max-runtime-ms 4000
+  | [aiw] 2026-11-23T18:46:03 skill dispatch: enabled=0 registered=1 time_query=0 (off = native routing untouched)
+  | [aiw] 2026-11-23T18:46:03 route=native intent=time rule=time.keyword arg= event=e-off1 seq=1 session=1969001 text_bytes=12 merges=0 held_ms=0 publish_seq=1 (factory answers; AI worker does not)
+  exit=0
+  PASS 1: factory route used (route.native >= 1)
+  PASS 1: time intent routed natively
+  PASS 1: skill dispatch reported disabled
+  PASS 1: t8_skill_execute never called
+  PASS 1: no AI pend created
+  PASS 1: nothing handed to TTS
+  PASS 1: TTS queue has no item
+  PASS 1: no skill path log while disabled
+
+=== case 2: skill_dispatch_enabled=1 -> time.query executed by worker ===
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --conf D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case2_on\worker.conf --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case2_on\work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case2_on\state --provider mock --tts-queue-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case2_on\tts --gate 0 --poll-ms 10 --status-every-ms 100 --provider-retry-max 1 --provider-backoff-ms 400 --provider-backoff-max-ms 800 --idle-exit-ms 1200 --max-runtime-ms 4000
+  | [aiw] 2026-11-23T18:46:05 skill dispatch: enabled=1 registered=1 time_query=1 (off = native routing untouched)
+  | [aiw] 2026-11-23T18:46:05 route=skill skill=time.query event=e-on1 session=1969002 rule=time.keyword arg=- (native routing skipped for this utterance)
+  | [aiw] 2026-11-23T18:46:05 route=skill event=e-on1 seq=1 session=1969002 skill=time.query text_bytes=12
+  | [aiw] 2026-11-23T18:46:05 skill ok: skill=time.query event=e-on1 code=OK took=0ms reply_bytes=9
+  | [aiw] 2026-11-23T18:46:05 tts queued: event=e-on1 reply_bytes=9 queue=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case2_on\tts
+  | [aiw] 2026-11-23T18:46:05 skill tts queued: skill=time.query event=e-on1
+  exit=0
+  PASS 2: skill dispatch reported enabled
+  PASS 2: skill executed exactly once
+  PASS 2: skill reported ok
+  PASS 2: last_skill == time.query
+  PASS 2: last_result == ok:time.query
+  PASS 2: factory publish path NOT used (route.native == 0)
+  PASS 2: model NOT called (route.ai == 0)
+  PASS 2: claimed counter == 1
+  PASS 2: offset advanced after TTS enqueue
+  PASS 2: exactly one TTS queue item
+  PASS 2: queue file named after event_id (e-on1)
+  PASS 2: queue body event_id matches
+  PASS 2: queue text is the skill message (now 18:46)
+  PASS 2: reply_bytes consistent with text
+  PASS 2: route=skill log present
+  PASS 2: no factory native route log
+
+=== case 3: skill ON + TTS enqueue fails -> offset must NOT advance ===
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --conf D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case3_fault\worker.conf --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case3_fault\work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case3_fault\state --provider mock --tts-queue-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case3_fault\tts --gate 0 --poll-ms 10 --status-every-ms 100 --provider-retry-max 1 --provider-backoff-ms 400 --provider-backoff-max-ms 800 --idle-exit-ms 1200 --max-runtime-ms 2200
+  | [aiw] 2026-11-23T18:46:06 skill dispatch: enabled=1 registered=1 time_query=1 (off = native routing untouched)
+  | [aiw] 2026-11-23T18:46:06 route=skill skill=time.query event=e-fault1 session=1969003 rule=time.keyword arg=- (native routing skipped for this utterance)
+  | [aiw] 2026-11-23T18:46:06 route=skill event=e-fault1 seq=1 session=1969003 skill=time.query text_bytes=12
+  | [aiw] 2026-11-23T18:46:06 skill ok: skill=time.query event=e-fault1 code=OK took=0ms reply_bytes=9
+  | [aiw] 2026-11-23T18:46:06 tts enqueue FAILED: event=e-fault1 reply_bytes=9 (open tmp failed (errno=2)); offset NOT advanced, event kept and retried (no answer is dropped)
+  | [aiw] 2026-11-23T18:46:06 event id=e-fault1 tts enqueue still failing after 1 attempts (open tmp failed (errno=2)): keeping it, no event will be skipped
+  | [aiw] 2026-11-23T18:46:07 skill ok: skill=time.query event=e-fault1 code=OK took=0ms reply_bytes=9
+  | [aiw] 2026-11-23T18:46:07 tts enqueue FAILED: event=e-fault1 reply_bytes=9 (open tmp failed (errno=2)); offset NOT advanced, event kept and retried (no answer is dropped)
+  | [aiw] 2026-11-23T18:46:07 event id=e-fault1 tts enqueue still failing after 2 attempts (open tmp failed (errno=2)): keeping it, no event will be skipped
+  | [aiw] 2026-11-23T18:46:08 skill ok: skill=time.query event=e-fault1 code=OK took=0ms reply_bytes=9
+  | [aiw] 2026-11-23T18:46:08 tts enqueue FAILED: event=e-fault1 reply_bytes=9 (open tmp failed (errno=2)); offset NOT advanced, event kept and retried (no answer is dropped)
+  | [aiw] 2026-11-23T18:46:08 event id=e-fault1 tts enqueue still failing after 3 attempts (open tmp failed (errno=2)): keeping it, no event will be skipped
+  exit=0
+  PASS 3: nothing persisted into the TTS queue
+  PASS 3: events_processed == 0 (no commit)
+  PASS 3: pending_event_id kept (e-fault1)
+  PASS 3: enqueue failure counted
+  PASS 3: skill was executed (attempt recorded)
+  PASS 3: consumer_state.processed_total == 0
+  PASS 3: worker logged 'offset NOT advanced'
+
+=== case 4: same event_id replay (fresh state) -> no re-execution, no re-queue ===
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --conf D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case2_on\worker.conf --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case2_on\work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case2_on\state_replay --provider mock --tts-queue-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case2_on\tts --gate 0 --poll-ms 10 --status-every-ms 100 --provider-retry-max 1 --provider-backoff-ms 400 --provider-backoff-max-ms 800 --idle-exit-ms 1200 --max-runtime-ms 4000
+  | [aiw] 2026-11-23T18:46:09 skill dispatch: enabled=1 registered=1 time_query=1 (off = native routing untouched)
+  | [aiw] 2026-11-23T18:46:09 route=skill skill=time.query event=e-on1 session=1969002 rule=time.keyword arg=- (native routing skipped for this utterance)
+  | [aiw] 2026-11-23T18:46:09 route=skill event=e-on1 seq=1 session=1969002 skill=time.query text_bytes=12
+  | [aiw] 2026-11-23T18:46:09 skill skip (already enqueued stage=queue): event=e-on1 skill=time.query
+  exit=0
+  PASS 4: dedup hit counted (skill not re-executed)
+  PASS 4: skill NOT executed again in this run
+  PASS 4: nothing re-enqueued
+  PASS 4: offset advanced (event consumed once)
+  PASS 4: factory path still not used
+  PASS 4: still exactly one queue item
+  PASS 4: queue item text unchanged (no second broadcast)
+  PASS 4: dedup log present
+
+=== case 5: skill ON -> volume/stop still on the factory route ===
+run : D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\ai_worker.exe --conf D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case5_native\worker.conf --work-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case5_native\work --state-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case5_native\state --provider mock --tts-queue-dir D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_14_1\case5_native\tts --gate 0 --poll-ms 10 --status-every-ms 100 --provider-retry-max 1 --provider-backoff-ms 400 --provider-backoff-max-ms 800 --idle-exit-ms 1200 --max-runtime-ms 5000
+  | [aiw] 2026-11-23T18:46:11 skill dispatch: enabled=1 registered=1 time_query=1 (off = native routing untouched)
+  | [aiw] 2026-11-23T18:46:11 route=native intent=volume rule=volume.set arg=set:30 event=e-vol1 seq=1 session=1969005 text_bytes=23 merges=0 held_ms=0 publish_seq=1 (factory answers; AI worker does not)
+  | [aiw] 2026-11-23T18:46:11 tts stop requested (route=native intent=stop)
+  | [aiw] 2026-11-23T18:46:11 route=native intent=stop rule=stop.keyword arg=stop event=e-stop1 seq=2 session=1969005 text_bytes=6 merges=0 held_ms=0 publish_seq=2 (factory answers; AI worker does not)
+  exit=0
+  PASS 5: volume routed natively
+  PASS 5: stop routed natively
+  PASS 5: both utterances used the factory publish path
+  PASS 5: skill dispatch untouched (no overlap)
+  PASS 5: nothing went to the model
+  PASS 5: no TTS item for factory-routed intents
+  PASS 5: skill claimed nothing
+
+=== case 6: registry contract (NOIMPL for unregistered skill, C unit test) ===
+  | === T8-14.1 skill registry unit test ===
+  | 
+  | [1] 未注册技能返回 NOIMPL（不假装执行成功）
+  | 
+  | [2] 注册 time.query 后执行成功，message 可播报
+  | 
+  | [3] 非法输入被拒绝（不执行任何回调）
+  | 
+  | [4] intent -> t8_skill_req 翻译（time/volume/media/screen）
+  | 
+  | [5] 技能名与计数不变量
+  | 
+  | SUMMARY: pass=38 fail=0
+  | RESULT: PASS
+  PASS 6: registry unit test PASS (NOIMPL never fakes success)
+
+# total: pass=47 fail=0
+# result: OK

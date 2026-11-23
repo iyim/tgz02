@@ -63,6 +63,9 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
     char esc_sc_request[288];
     char esc_sc_last_final_event[288];
     char esc_sc_last_transition[448];
+    /* T8-14.1：技能调度的短标签（skill 名 / 结果码，均无用户正文） */
+    char esc_sk_skill[96];
+    char esc_sk_result[112];
     char tmp[T6B_PATH_MAX + 8];
     char dir[T6B_PATH_MAX];
     int n;
@@ -99,6 +102,8 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
                    st->sc_last_final_event);
     wu_json_escape(esc_sc_last_transition, sizeof(esc_sc_last_transition),
                    st->sc_last_transition);
+    wu_json_escape(esc_sk_skill, sizeof(esc_sk_skill), st->sk_last_skill);
+    wu_json_escape(esc_sk_result, sizeof(esc_sk_result), st->sk_last_result);
 
     n = snprintf(buf, sizeof(buf),
         "{\"version\":%d,\"state\":\"%s\",\"pid\":%lld,"
@@ -157,6 +162,9 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         "\"last_transition\":\"%s\",\"transitions\":%lu,\"opens\":%lu,"
         "\"stale_callbacks\":%lu,\"duplicate_events\":%lu,\"timeouts\":%lu,"
         "\"interrupts\":%lu,\"closes\":%lu},"
+        "\"skill_dispatch\":{\"enabled\":%d,\"calls\":%lu,\"ok\":%lu,\"fail\":%lu,"
+        "\"noimpl\":%lu,\"claimed\":%lu,\"dedup\":%lu,"
+        "\"last_skill\":\"%s\",\"last_result\":\"%s\"},"
         "\"pending_event_id\":\"%s\","
         "\"last_invalid\":\"%s\",\"last_error\":\"%s\",\"exit_reason\":\"%s\"}\n",
         st->version, st->state, st->pid,
@@ -213,6 +221,9 @@ int t6b_status_write(const t6b_status *st, const char *path, char *err, size_t e
         esc_sc_last_transition, st->sc_transitions, st->sc_opens,
         st->sc_stale_callbacks, st->sc_duplicate_events, st->sc_timeouts,
         st->sc_interrupts, st->sc_closes,
+        st->sk_enabled, st->sk_calls, st->sk_ok, st->sk_fail,
+        st->sk_noimpl, st->sk_claimed, st->sk_dedup,
+        esc_sk_skill, esc_sk_result,
         esc_pending,
         esc_invalid, esc_error, st->exit_reason);
     if (n < 0 || (size_t)n >= sizeof(buf)) {

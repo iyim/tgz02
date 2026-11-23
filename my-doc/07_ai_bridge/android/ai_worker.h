@@ -81,6 +81,10 @@ typedef struct {
     /* T7-04：本地意图优先路由（原厂已有能力优先，不进大模型） */
     int         route_native;                /* 1 = 启用本地意图路由（默认 1） */
     int         route_intents;               /* 位掩码：见 T7B_ROUTE_* */
+    /* T8-14.1：自有技能调度（默认 0 = 完全保持原厂/原行为）。
+     * 只有显式打开后，已注册的技能（本轮仅 time.query）才由 Worker 自己执行并播报；
+     * 其它意图仍走原厂 route=native 或大模型。 */
+    int         skill_dispatch;
     /* T7-04：ASR 暂存门（半句话/修订合并） */
     ug_config   gate;
     /* T7-04：连续对话会话状态 */

@@ -41,6 +41,8 @@ $WorkerSources = @(
     "conv_context.c", "worker_conf.c", "worker_status.c", "echo_filter.c",
     "intent_route.c", "utterance_gate.c", "conv_session.c", "t7_dup.c",
     "session_ctrl.c",
+    # T8-14.1: skill dispatch must be part of the ARM32 worker build
+    "skill_dispatch.c",
     "dead_letter.c",
     "provider.c", "mock_provider.c", "deepseek_provider.c", "ai_worker.c"
 ) | ForEach-Object { Join-Path $Here $_ }

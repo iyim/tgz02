@@ -20,6 +20,7 @@
 #include "intent_route.h"
 #include "seq_gap.h"
 #include "session_ctrl.h"
+#include "skill_dispatch.h"
 #include "t7_dup.h"
 #include "worker_conf.h"
 #include "worker_util.h"
@@ -74,6 +75,10 @@ typedef struct {
     ug_ctx       ug;                     /* T7-04：ASR 暂存门（半句话/修订合并） */
     cs_ctx       cs;                     /* T7-04：连续对话会话状态 */
     sc_ctx       sc;                     /* T8-13：会话控制中心（真实事件驱动的生命周期） */
+    t8_skill_registry sk;                /* T8-14.1：自有技能注册表（默认不接管任何意图） */
+    /* T8-14.1：本轮 pend 由哪个技能执行（0 = 走 Provider）。放在 pend 之外是因为它
+     * 必须跨 Provider 重试保留：重试的是"同一件事"，不是"换一条路重新问模型"。 */
+    int          pend_skill_id;
     char         gate_hold_path[T6B_PATH_MAX];
     char         route_publish_path[T6B_PATH_MAX];
     t6b_utt      uttq[T6B_UTT_QUEUE];     /* 等待 Provider 的完整指令（最多 4 条） */
@@ -380,6 +385,13 @@ static void publish_status(t6b_worker *w, const char *state)
     w->st.sc_timeouts = w->sc.timeouts;
     w->st.sc_interrupts = w->sc.interrupts;
     w->st.sc_closes = w->sc.closes;
+
+    /* T8-14.1：技能调度观测（只放计数与短标签，绝不含用户正文/参数） */
+    w->st.sk_enabled = w->cfg.skill_dispatch;
+    w->st.sk_calls = w->sk.calls;
+    w->st.sk_ok = w->sk.ok;
+    w->st.sk_fail = w->sk.fail;
+    w->st.sk_noimpl = w->sk.noimpl;
 
     /* Provider 观测：真实 Provider 才有 http/latency/resp_bytes；
      * 这些字段只放数字与短枚举，绝不含 key / 用户文本 / 上游正文。 */
@@ -1259,6 +1271,118 @@ static int tts_enqueue(t6b_worker *w, const t6b_reply *rep, char *err, size_t er
     return 1;
 }
 
+/* ---------------- T8-14.1：自有技能调度（默认关闭） ---------------- */
+
+/*
+ * 只读探测：TTS 队列里是否已经有同一 event_id 的条目。
+ *
+ * 与 tts_enqueue() 的幂等检查不同，这里**不建目录、不 fsync、不写任何东西**：它跑在
+ * "要不要执行技能"之前，只回答一个问题 —— 这句话是不是已经说过了。跨进程重扫
+ * （重启后同一 event 被再次读出）命中时必须跳过技能执行，否则同一 event_id 会被
+ * 重复执行、重复播报。
+ *
+ * 返回 1 = 已存在（*stage 指出阶段），0 = 不存在（含 tts_queue 未配置）。
+ */
+static int tts_probe_stage(const t6b_worker *w, const char *eid, const char **stage)
+{
+    static const char *const names[4] = { "queue", "inflight", "done", "failed" };
+    static const char *const fmts[4] = { "queue/%s.json", "inflight/%s.json",
+                                         "done/%s.ok", "failed/%s.json" };
+    char tail[T6B_PATH_MAX];
+    char path[T6B_PATH_MAX];
+    struct stat st;
+    int i;
+
+    if (stage != NULL) *stage = NULL;
+    if (w == NULL || eid == NULL || eid[0] == '\0') return 0;
+    if (w->cfg.tts_queue[0] == '\0') return 0;
+
+    for (i = 0; i < 4; i++) {
+        if (snprintf(tail, sizeof(tail), fmts[i], eid) >= (int)sizeof(tail)) continue;
+        if (snprintf(path, sizeof(path), "%s/%s", w->cfg.tts_queue, tail) >=
+            (int)sizeof(path)) {
+            continue;
+        }
+#ifdef _WIN32
+        if (stat(path, &st) != 0) continue;
+#else
+        if (lstat(path, &st) != 0) continue;
+#endif
+        if (!S_ISREG(st.st_mode)) continue;
+        if (stage != NULL) *stage = names[i];
+        return 1;
+    }
+    return 0;
+}
+
+/*
+ * 执行本轮 pend 绑定的技能，并把结果翻译成 Provider 回复结构 —— 这样"入队 + 幂等 +
+ * 提交偏移 + 重试/死信"整条既有链路原样复用，不需要第二套播报/消费实现。
+ *
+ * 返回 0 = 成功（rep->status = T6B_P_OK，text/text_bytes 就绪）；
+ *      -1 = 失败（rep->status = T6B_P_ERROR）—— 调用方按 Provider 失败处理：
+ *           偏移不动、按退避重试、超限进死信；绝不当成成功，也不静默丢弃事件。
+ */
+static int skill_run(t6b_worker *w, t6b_reply *rep)
+{
+    t8_skill_req req;
+    t8_skill_result res;
+    long long t0 = wu_now_ms();
+    const char *name = t8_skill_name((t8_skill_id)w->pend_skill_id);
+    int rc;
+
+    memset(&req, 0, sizeof(req));
+    memset(&res, 0, sizeof(res));
+    t8_skill_req_init(&req, (t8_skill_id)w->pend_skill_id, w->pend.session_id);
+    /* 本轮接管的技能（time.query）不需要参数。将来的带参技能在这里用
+     * t8_skill_req_arg() 填，参数只来自 intent_route 的结构化结果，绝不从自由文本现编。 */
+    rc = t8_skill_execute(&w->sk, &req, &res);
+    t0 = wu_now_ms() - t0;
+
+    snprintf(w->st.sk_last_skill, sizeof(w->st.sk_last_skill), "%s", name);
+
+    if (rc == T8_SK_OK) {
+        size_t n = strlen(res.message);
+
+        if (n == 0 || n >= sizeof(rep->text)) {
+            /* 技能"成功"但给不出可播报文本：不许当成功往 TTS 里塞空串 */
+            snprintf(rep->message, sizeof(rep->message),
+                     "skill %s returned empty/oversize message", name);
+            snprintf(w->st.sk_last_result, sizeof(w->st.sk_last_result), "empty:%s", name);
+            rep->status = T6B_P_ERROR;
+            rep->code = T8_SK_E_FAIL;
+            rep->text_bytes = 0;
+            rep->text[0] = '\0';
+            rep->latency_ms = t0;
+            always("skill FAILED: skill=%s event=%s code=EMPTY_MESSAGE took=%lldms",
+                   name, w->pend.event_id, t0);
+            return -1;
+        }
+        memcpy(rep->text, res.message, n + 1);
+        rep->text_bytes = (int)n;
+        rep->status = T6B_P_OK;
+        rep->code = 0;
+        rep->latency_ms = t0;
+        snprintf(w->st.sk_last_result, sizeof(w->st.sk_last_result), "ok:%s", name);
+        always("skill ok: skill=%s event=%s code=OK took=%lldms reply_bytes=%d",
+               name, w->pend.event_id, t0, rep->text_bytes);
+        return 0;
+    }
+
+    rep->status = T6B_P_ERROR;
+    rep->code = rc;
+    rep->text_bytes = 0;
+    rep->text[0] = '\0';
+    rep->latency_ms = t0;
+    snprintf(rep->message, sizeof(rep->message), "skill %s failed rc=%d", name, rc);
+    snprintf(w->st.sk_last_result, sizeof(w->st.sk_last_result), "%s:%s",
+             (rc == T8_SK_E_NOIMPL) ? "noimpl" : "fail", name);
+    always("skill FAILED: skill=%s event=%s code=%d took=%lldms "
+           "(offset NOT advanced, event kept for retry)",
+           name, w->pend.event_id, rc, t0);
+    return -1;
+}
+
 /* ---------------- Provider 调用与重试（P1-2） ---------------- */
 
 /*
@@ -1280,43 +1404,77 @@ static int provider_attempt(t6b_worker *w)
 
     w->pend_attempts++;
 
-    /* T7-01：先把"历史 + 本轮 user"拼成完整 messages 数组，再交给 Provider。
-     * T7-03：system prompt 固定放在 messages[0]（不在历史里，因此不会被淘汰）；
-     *        上下文关闭时 nmsg==1（只有本轮），行为与 T5-06C 完全一致。 */
-    merr[0] = '\0';
-    nmsg = cv_build_messages(&w->cv,
-                             (w->cfg.deepseek.system_prompt[0] != '\0')
-                                 ? w->cfg.deepseek.system_prompt
-                                 : T6B_DS_SYSTEM_PROMPT_DEFAULT,
-                             w->pend.text, w->msg_json, sizeof(w->msg_json),
-                             merr, sizeof(merr));
-    if (nmsg <= 0) {
-        w->st.provider_err++;
-        snprintf(w->pend_error, sizeof(w->pend_error), "context build failed: %s",
-                 merr[0] != '\0' ? merr : "no messages");
-        t6b_status_note_error(&w->st, "context build failed: %s",
-                              merr[0] != '\0' ? merr : "no messages");
-        return -1;
-    }
-    rc = t6b_provider_complete_msgs(&w->prov, w->msg_json, w->pend.text, &rep);
+    if (w->pend_skill_id != 0) {
+        /*
+         * T8-14.1：本轮是自有技能请求 —— 不请求模型。
+         * 执行前先做"这句话是不是已经说过了"的持久化探测：命中就直接终结并推进消费，
+         * 既不重复执行技能，也不重复入队播报（重启后重扫同一 event 的安全网）。
+         */
+        const char *stage = NULL;
 
-    if (rc != 0) {
-        w->st.provider_err++;
-        snprintf(w->pend_error, sizeof(w->pend_error), "%s", rep.message);
-        t6b_status_note_error(&w->st, "provider unavailable: %s", rep.message);
-        return -1;
+        memset(&rep, 0, sizeof(rep));
+        if (tts_probe_stage(w, w->pend.event_id, &stage)) {
+            w->st.sk_dedup++;
+            always("skill skip (already enqueued stage=%s): event=%s skill=%s",
+                   stage != NULL ? stage : "?", w->pend.event_id,
+                   t8_skill_name((t8_skill_id)w->pend_skill_id));
+            snprintf(w->st.sk_last_result, sizeof(w->st.sk_last_result), "dedup:%s",
+                     t8_skill_name((t8_skill_id)w->pend_skill_id));
+            /* 本轮不会再有播报事件 -> 会话请求在此终结（不伪造播放） */
+            sc_on_request_result(&w->sc, w->pend.event_id, 1, wu_now_ms());
+            {
+                int cr = commit_event(w);
+                if (cr == -2) return -4;
+                if (cr != 0) return -3;
+            }
+            return 0;
+        }
+        (void)skill_run(w, &rep);
+        nmsg = 0;
+    } else {
+        /* T7-01：先把"历史 + 本轮 user"拼成完整 messages 数组，再交给 Provider。
+         * T7-03：system prompt 固定放在 messages[0]（不在历史里，因此不会被淘汰）；
+         *        上下文关闭时 nmsg==1（只有本轮），行为与 T5-06C 完全一致。 */
+        merr[0] = '\0';
+        nmsg = cv_build_messages(&w->cv,
+                                 (w->cfg.deepseek.system_prompt[0] != '\0')
+                                     ? w->cfg.deepseek.system_prompt
+                                     : T6B_DS_SYSTEM_PROMPT_DEFAULT,
+                                 w->pend.text, w->msg_json, sizeof(w->msg_json),
+                                 merr, sizeof(merr));
+        if (nmsg <= 0) {
+            w->st.provider_err++;
+            snprintf(w->pend_error, sizeof(w->pend_error), "context build failed: %s",
+                     merr[0] != '\0' ? merr : "no messages");
+            t6b_status_note_error(&w->st, "context build failed: %s",
+                                  merr[0] != '\0' ? merr : "no messages");
+            return -1;
+        }
+        rc = t6b_provider_complete_msgs(&w->prov, w->msg_json, w->pend.text, &rep);
+
+        if (rc != 0) {
+            w->st.provider_err++;
+            snprintf(w->pend_error, sizeof(w->pend_error), "%s", rep.message);
+            t6b_status_note_error(&w->st, "provider unavailable: %s", rep.message);
+            return -1;
+        }
     }
 
     if (rep.status == T6B_P_OK) {
-        const char *pname = (w->prov.ops != NULL) ? w->prov.ops->name : "none";
+        /* T8-14.1：技能路径的"provider"就是技能本身，日志与计数器分开记，
+         * 不让技能成功混进 provider_ok（否则观测上分不清是谁回答的） */
+        int is_skill = (w->pend_skill_id != 0);
+        const char *pname = is_skill ? "skill"
+                                     : ((w->prov.ops != NULL) ? w->prov.ops->name : "none");
 
-        w->st.provider_ok++;
+        if (is_skill) w->st.sk_ok++;
+        else          w->st.provider_ok++;
         logf_(&w->cfg,
               "event id=%s seq=%lu pid=%lld text_bytes=%d -> provider=%s status=ok "
               "latency=%lldms reply_bytes=%d msgs=%d (attempt %d)",
               w->pend.event_id, w->pend.seq, w->pend.pid, w->pend.text_bytes,
               pname, rep.latency_ms, rep.text_bytes, nmsg, w->pend_attempts);
-        if (w->prov_deepseek) {
+        if (w->prov_deepseek && !is_skill) {
             /* 真实调用的可核对事实：模型、HTTP 状态、curl 结果、耗时、响应字节数。
              * 不含 key、不含请求体、不含模型原文。 */
             always("deepseek ok: model=%s http=%d curl=%d latency=%lldms resp_bytes=%llu "
@@ -1325,6 +1483,7 @@ static int provider_attempt(t6b_worker *w)
                    w->ds.last_latency_ms, w->ds.last_resp_bytes, rep.text_bytes,
                    w->pend.event_id);
         }
+        if (!is_skill) {
         /* T7-03：每轮可核对的请求结构（不含正文）：system 是否在首位、各角色条数 */
         always("request shape: event=%s system=1(role=system,bytes=%d) history_msgs=%d "
                "user_msgs=1 req_msgs=%d",
@@ -1333,15 +1492,18 @@ static int provider_attempt(t6b_worker *w)
                                ? w->cfg.deepseek.system_prompt
                                : T6B_DS_SYSTEM_PROMPT_DEFAULT),
                (nmsg > 0) ? nmsg - 1 : 0, nmsg);
+        }
         if (w->pend_stuck) {
             always("pending event cleared: id=%s after %d attempts; resuming normal pace",
                    w->pend.event_id, w->pend_attempts);
         }
+        if (!is_skill) {
         /* T7-01：每轮可核对的请求规模（历史几条 + 本轮 1 条），mock/真实 Provider 都打 */
         always("provider reply: event=%s provider=%s req_msgs=%d history_msgs=%d "
                "latency=%lldms reply_bytes=%d",
                w->pend.event_id, pname, nmsg, (nmsg > 0) ? nmsg - 1 : 0,
                rep.latency_ms, rep.text_bytes);
+        }
         w->pend_stuck = 0;
         w->pend_error[0] = '\0';
         {
@@ -1357,6 +1519,10 @@ static int provider_attempt(t6b_worker *w)
                 w->st.tts_queued++;
                 always("tts queued: event=%s reply_bytes=%d queue=%s",
                        w->pend.event_id, rep.text_bytes, w->cfg.tts_queue);
+                if (w->pend_skill_id != 0) {
+                    always("skill tts queued: skill=%s event=%s",
+                           t8_skill_name((t8_skill_id)w->pend_skill_id), w->pend.event_id);
+                }
                 /* T7-02：把"我刚让它播的文本"登记进回声过滤器的候选集 */
                 ef_note_enqueue(&w->ef, w->pend.event_id, rep.text, wu_wall_ms());
                 /* T7-04：回答已入队 = 会话进入 SPEAKING，播报结束后等用户追问 */
@@ -1378,6 +1544,7 @@ static int provider_attempt(t6b_worker *w)
                     always("tts skip (stage=%s): event=%s reply_bytes=%d queue=%s",
                            stage != NULL ? stage : "?",
                            w->pend.event_id, rep.text_bytes, w->cfg.tts_queue);
+                    if (w->pend_skill_id != 0) w->st.sk_dedup++;
                     /* 幂等命中：这条回答本来就在队列/已播过，同样作为回声候选 */
                     ef_note_enqueue(&w->ef, w->pend.event_id, rep.text, wu_wall_ms());
                     /* T8-13.2 情况 C：幂等命中按阶段区分等待语义。
@@ -1462,7 +1629,7 @@ static int provider_attempt(t6b_worker *w)
          *   - 放在偏移之后，是为了避免"提交失败 -> 重试同一条事件 -> 同一轮被追加两次"；
          *   - 崩溃窗口的代价只是这一轮不进历史，绝不会写进错误内容。
          */
-        if (w->cv.cfg.enabled && rep.text_bytes > 0) {
+        if (w->pend_skill_id == 0 && w->cv.cfg.enabled && rep.text_bytes > 0) {
             int cvc = cv_commit_turn(&w->cv, w->pend.text, rep.text);
             if (cvc == 0) {
                 always("context commit: event=%s turns=%d msgs=%d file=%s",
@@ -1758,11 +1925,39 @@ static void uttq_push(t6b_worker *w, const ug_out *u, unsigned long seq)
  * 中间态。放到暂存门放出**完整 utterance**之后判定，才保证"一段话只判一次、
  * 只执行一次"，也不会出现原厂和 AI 双回答。
  */
+/*
+ * T8-14.1：这一条完整 utterance 要不要由自有技能接管。
+ *
+ * 三条同时成立才接管（否则一律返回 0，保持原厂路由/大模型原路）：
+ *   1) skill_dispatch_enabled=1（默认关）；
+ *   2) 意图位在 route_intents 里被启用，且参数完整（ir_complete）；
+ *   3) 该意图能翻译成技能请求，且这个技能**已注册**（没注册的绝不在生产路径上产生 NOIMPL）。
+ *
+ * 返回技能 id（>0）= 接管；0 = 不接管。命中时同时把 t8_skill_req 填好给调用方。
+ */
+static int skill_claim_id(const t6b_worker *w, const char *session, const ir_result *ir,
+                          int classified, t8_skill_req *out)
+{
+    t8_skill_req req;
+
+    if (w == NULL || !w->cfg.skill_dispatch) return 0;
+    if (!classified || ir == NULL || !ir->complete) return 0;
+    if (!route_intent_enabled(w, ir->intent)) return 0;
+    if (!t8_skill_from_intent((int)ir->intent, ir->arg, session, &req)) return 0;
+    if (req.id <= T8_SK_NONE || req.id >= T8_SK_MAX) return 0;
+    if (w->sk.entry[req.id].exec == NULL) return 0;      /* 未注册：回落到原厂/AI */
+    if (out != NULL) *out = req;
+    return (int)req.id;
+}
+
 static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
 {
     t6b_utt *slot;
     size_t n;
     ir_result ir;
+    t8_skill_req sk_req;
+    int classified;
+    int sk_id = 0;
 
     if (w->uttq_count <= 0) return -1;
     slot = &w->uttq[w->uttq_head];
@@ -1773,8 +1968,25 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
      * 也是真实会话事件，同样要被状态机看到（此前 native 路径 bypass 了状态机） */
     (void)sc_on_session_text(&w->sc, slot->session, slot->event_id, now_ms);
 
+    /* ---- T8-14.1：自有技能优先（只在显式开启且技能已注册时接管） ---- */
+    memset(&sk_req, 0, sizeof(sk_req));
+    classified = ir_classify(slot->text, &ir);
+    sk_id = skill_claim_id(w, slot->session, &ir, classified, &sk_req);
+    if (sk_id != 0) {
+        /* 接管：本条不再写原厂放行标记、也不进大模型；由 pend 上的技能 id 决定执行者 */
+        w->st.sk_claimed++;
+        snprintf(w->st.sk_last_skill, sizeof(w->st.sk_last_skill), "%s",
+                 t8_skill_name((t8_skill_id)sk_id));
+        snprintf(w->st.sk_last_result, sizeof(w->st.sk_last_result), "claimed:%s",
+                 t8_skill_name((t8_skill_id)sk_id));
+        always("route=skill skill=%s event=%s session=%s rule=%s arg=%s "
+               "(native routing skipped for this utterance)",
+               t8_skill_name((t8_skill_id)sk_id), slot->event_id, slot->session,
+               ir.rule, ir.arg[0] != '\0' ? ir.arg : "-");
+    }
+
     /* ---- T7-05 ①：完整 utterance 到手，先看能不能交给原厂 ---- */
-    if (w->cfg.route_native && ir_classify(slot->text, &ir) &&
+    if (sk_id == 0 && w->cfg.route_native && classified &&
         route_intent_enabled(w, ir.intent)) {
         /* T7-05-R1 ①：识别到意图 != 参数完整。
          * "音量调到百分之" 这种（数量被 ASR 截断）不允许写放行标记，否则原厂会按
@@ -1879,19 +2091,31 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
     w->pend_backoff_ms = 0;
     w->pend_next_ms = 0;
     w->pend_error[0] = '\0';
+    /* T8-14.1：本轮由谁执行（0 = Provider，>0 = 技能 id）。跨重试保留同一个值。 */
+    w->pend_skill_id = sk_id;
 
     /* T8-13：真实事件 -> 会话控制中心。route=ai 的 pend 建立即登记 AI 请求；
      * 若上一请求尚未终结，这里会打断并顶替（sc_on_submit 内部处理 stale）。 */
     (void)sc_on_submit(&w->sc, slot->event_id, now_ms);
     (void)cs_on_submit(&w->cs, now_ms);
-    w->st.route_ai++;
-    snprintf(w->st.route_last, sizeof(w->st.route_last),
-             "route=ai event=%s session=%s merges=%d held_ms=%lld why=%s",
-             slot->event_id, slot->session, slot->merges, slot->held_ms, slot->why);
-    always("route=ai event=%s seq=%lu session=%s merges=%d held_ms=%lld why=%s text_bytes=%d "
-           "session_state=%s",
-           slot->event_id, slot->seq, slot->session, slot->merges, slot->held_ms, slot->why,
-           (int)n, cs_state_name(w->cs.state));
+    if (sk_id == 0) {
+        w->st.route_ai++;
+        snprintf(w->st.route_last, sizeof(w->st.route_last),
+                 "route=ai event=%s session=%s merges=%d held_ms=%lld why=%s",
+                 slot->event_id, slot->session, slot->merges, slot->held_ms, slot->why);
+        always("route=ai event=%s seq=%lu session=%s merges=%d held_ms=%lld why=%s "
+               "text_bytes=%d session_state=%s",
+               slot->event_id, slot->seq, slot->session, slot->merges, slot->held_ms, slot->why,
+               (int)n, cs_state_name(w->cs.state));
+    } else {
+        /* T8-14.1：技能请求不占 route.ai（那是"交给大模型"的计数），单独可观测 */
+        snprintf(w->st.route_last, sizeof(w->st.route_last),
+                 "route=skill event=%s session=%s skill=%s",
+                 slot->event_id, slot->session, t8_skill_name((t8_skill_id)sk_id));
+        always("route=skill event=%s seq=%lu session=%s skill=%s text_bytes=%d",
+               slot->event_id, slot->seq, slot->session,
+               t8_skill_name((t8_skill_id)sk_id), (int)n);
+    }
     return 0;
 }
 
@@ -2325,6 +2549,8 @@ void t6b_config_defaults(t6b_config *c)
     /* T7-04：本地意图路由默认打开（音量/天气/关屏/开屏/时间交给原厂，不进大模型） */
     c->route_native = 1;
     c->route_intents = T7B_ROUTE_ALL;
+    /* T8-14.1：自有技能调度默认关闭 —— 关闭时所有现有行为逐字节不变 */
+    c->skill_dispatch = 0;
     /* T7-04：暂存门默认打开（半句话/修订合并），会话状态默认打开 */
     (void)ug_defaults(&c->gate);
     cs_defaults(&c->session);
@@ -2666,6 +2892,16 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         sc_init(&w.sc, NULL);
         w.sc.cfg.followup_timeout_ms = c->session.timeout_ms;
 
+        /* T8-14.1：自有技能注册表。**只注册 time.query**（本轮唯一的真实闭环），
+         * 其余技能保持未注册 = 永不接管，原厂音量/媒体/屏幕路径完全不变。 */
+        t8_skill_registry_init(&w.sk);
+        if (t8_skill_register(&w.sk, T8_SK_TIME_QUERY, t8_skill_time_exec, NULL) != T8_SK_OK) {
+            always("skill register failed: time.query (skill dispatch stays inert)");
+        }
+        w.st.sk_enabled = c->skill_dispatch;
+        snprintf(w.st.sk_last_skill, sizeof(w.st.sk_last_skill), "%s", "none");
+        snprintf(w.st.sk_last_result, sizeof(w.st.sk_last_result), "%s", "none");
+
         w.st.route_enabled = c->route_native;
         w.st.route_intents = c->route_intents;
         snprintf(w.st.route_publish_file, sizeof(w.st.route_publish_file), "%s",
@@ -2698,6 +2934,11 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
                w.gate_hold_path);
         always("session: enabled=%d timeout=%dms (follow-up window after playback)",
                w.cs.cfg.enabled, w.cs.cfg.timeout_ms);
+        always("skill dispatch: enabled=%d registered=%d time_query=%d "
+               "(off = native routing untouched)",
+               c->skill_dispatch,
+               (w.sk.entry[T8_SK_TIME_QUERY].exec != NULL) ? 1 : 0,
+               (c->skill_dispatch && (c->route_intents & T7B_ROUTE_TIME)) ? 1 : 0);
 
         /* 上次退出时还有一句没交出去：恢复它（并立刻提交），绝不重复提交 */
         if (ug_hold_restore(&w.ug, w.gate_hold_path, wu_now_ms(), &ugo) == UG_HELD &&

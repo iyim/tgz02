@@ -205,6 +205,19 @@ typedef struct {
     unsigned long      sc_interrupts;          /* 用户打断 */
     unsigned long      sc_closes;              /* CLOSING 次数 */
 
+    /* T8-14.1：自有技能调度（skill_dispatch）。calls/ok/fail/noimpl 来自 t8_skill_registry；
+     * claimed = 本进程接管（跳过原厂路由）的 utterance 数；dedup = 同一 event_id 已有
+     * 持久化播报条目而被跳过执行的次数；last_skill/last_result 只放短标签。 */
+    int                sk_enabled;
+    unsigned long      sk_calls;
+    unsigned long      sk_ok;
+    unsigned long      sk_fail;
+    unsigned long      sk_noimpl;
+    unsigned long      sk_claimed;
+    unsigned long      sk_dedup;
+    char               sk_last_skill[40];
+    char               sk_last_result[48];
+
     unsigned long      last_seq;
     char               last_event_id[T6B_ID_MAX + 1];
     char               last_event_at[24];
