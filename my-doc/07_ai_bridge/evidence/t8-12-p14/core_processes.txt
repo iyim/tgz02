@@ -1,0 +1,46 @@
+# core_processes  pid=30807  collected_at=2026-11-23T08:02:26+08:00
+== snapshot 1 (ps -A filtered) ==
+  913   281 system       com.alibaba.ailabs.genie.smartapp
+ 3468     1 root         ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts
+ 4685     1 root         tg_supervisor --injector /data/local/tmp/t6/tg_injector --so /data/local/tmp/t7/libtg_ttsguard.so --name com.alibaba.ailabs.genie.smartapp:core --pidfile /data/local/tmp/t7/ttsguard.sup.pid --log /data/local/tmp/t7/ttsguard.sup.log
+17253     1 root         sh /data/local/tmp/t5_bridge/tts_supervisor.sh
+17257 17253 root         app_process /system com.tgz02.tts.TtsExec --root /data/local/tmp/t5_bridge/tts --idle-ms 0 --timeout-ms 60000 --verbose
+29017   281 system       com.alibaba.ailabs.genie.smartapp:business
+30807   281 system       com.alibaba.ailabs.genie.smartapp:core
+31289     1 root         tg_supervisor --injector /data/local/tmp/t8/tg_injector --so /data/local/tmp/t8/libtg_hook.so --name com.alibaba.ailabs.genie.smartapp:core --pidfile /data/local/tmp/t8/tg_supervisor.pid --log /data/local/tmp/t8/supervisor.log
+
+== /proc/30807/cmdline ==
+com.alibaba.ailabs.genie.smartapp:core
+== /proc/30807/stat ==
+30807 (e.smartapp:core) S 281 281 0 0 -1 1077952832 401441 3391 10938 1 2871453 46899 18 5 20 0 82 0 2467080 1256075264 20025 4294967295 2277531648 2277550645 3200321888 3200314840 3034411448 0 4608 4096 1073777918 0 0 0 17 0 0 0 0 0 0 2277555376 2277556224 2278543360 3200322158 3200322234 3200322234 3200323556 0
+== /proc/30807/status (selected) ==
+Name:	e.smartapp:core
+State:	S (sleeping)
+Tgid:	30807
+Pid:	30807
+PPid:	281
+Threads:	82
+CapEff:	0000000000000000
+Seccomp:	0
+== thread count ==
+82
+== open fd count ==
+120
+
+== snapshot 2 (stability re-check after 2s) ==
+  913   281 system       com.alibaba.ailabs.genie.smartapp
+ 3468     1 root         ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts
+ 4685     1 root         tg_supervisor --injector /data/local/tmp/t6/tg_injector --so /data/local/tmp/t7/libtg_ttsguard.so --name com.alibaba.ailabs.genie.smartapp:core --pidfile /data/local/tmp/t7/ttsguard.sup.pid --log /data/local/tmp/t7/ttsguard.sup.log
+17253     1 root         sh /data/local/tmp/t5_bridge/tts_supervisor.sh
+17257 17253 root         app_process /system com.tgz02.tts.TtsExec --root /data/local/tmp/t5_bridge/tts --idle-ms 0 --timeout-ms 60000 --verbose
+29017   281 system       com.alibaba.ailabs.genie.smartapp:business
+30807   281 system       com.alibaba.ailabs.genie.smartapp:core
+31289     1 root         tg_supervisor --injector /data/local/tmp/t8/tg_injector --so /data/local/tmp/t8/libtg_hook.so --name com.alibaba.ailabs.genie.smartapp:core --pidfile /data/local/tmp/t8/tg_supervisor.pid --log /data/local/tmp/t8/supervisor.log
+
+== supervisor pidfile ==
+31289
+== hook stats line from supervisor.log ==
+inj| [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+
+== core starttime re-read (must equal 2467080 across both snapshots) ==
+30807 (e.smartapp:core) S 281 281 0 0 -1 1077952832 401451 3391 10938 1 2871739 46907 18 5 20 0 82 0 2467080 1256075264 20024 4294967295 2277531648 2277550645 3200321888 3200314840 3034411448 0 4608 4096 1073777918 0 0 0 17 0 0 0 0 0 0 2277555376 2277556224 2278543360 3200322158 3200322234 3200322234 3200323556 0

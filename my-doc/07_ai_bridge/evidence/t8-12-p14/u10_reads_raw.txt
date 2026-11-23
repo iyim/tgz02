@@ -1,0 +1,13 @@
+# U10 read-only GOT/vtable slot reads from live :core (pid 30807)
+# collected_at=2026-11-23T08:01:59+08:00
+# method: dd if=/proc/30807/mem bs=1 skip=<base+slot> count=4 | od -An -tx4   (read-only, no ptrace attach, no write)
+# base(libsmartbox load bias)=0x979c8000=2543616000
+# columns: SYM SLOT ADDR RAW
+SessionProxy::onHandler 1f18d0 0x97bb98d0 97ae4238
+SessionManager::exitTalk 1f17bc 0x97bb97bc 97ad90e4
+SessionDispatch::onNlpResultInner 1f1894 0x97bb9894 97ae096c
+SessionDispatch::onPushNlpResult 1f1898 0x97bb9898 97ae09ec
+SessionDispatch::onRouterDetailInfo 1f17e4 0x97bb97e4 97ae0830
+SessionDispatch::playAudios 1f17e0 0x97bb97e0 97adfd40
+SessionDispatch::onNlpResult 1f1624 0x97bb9624 97ae0ebc
+SessionManager::onNlpResultInner 1f15c0 0x97bb95c0 97adcb98

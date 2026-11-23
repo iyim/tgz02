@@ -1,0 +1,31 @@
+# device_facts  collected_at=2026-11-23T08:02:31+08:00 serial=192.168.1.9:5555
+== getprop ==
+ro.product.model=AILABS_S1L
+ro.product.brand=alps
+ro.product.device=ailabs_s1l
+ro.build.version.release=6.1.8-RS-20221104.1459
+ro.build.version.sdk=27
+ro.build.id=O11019
+ro.build.fingerprint=alps/full_ailabs_s1l/ailabs_s1l:6.1.8-RS-20221104.1459/O11019/1667545132:user/test-keys
+ro.product.cpu.abi=armeabi-v7a
+ro.product.cpu.abilist=armeabi-v7a,armeabi
+ro.build.type=user
+ro.build.tags=test-keys
+ro.debuggable=0
+ro.secure=1
+ro.serialno=INZ5KBBUJZQSRCKZ
+
+== getenforce ==
+Permissive
+== uname -a ==
+Linux localhost 4.4.95+ #1 SMP PREEMPT Fri Nov 4 14:52:25 CST 2022 armv7l
+== proc uptime (sec) / loadavg ==
+67452.94 82375.57
+== date ==
+Mon Nov 23 08:02:33 CST 2026
+== su -c id (device root shell used for all reads) ==
+uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0
+== magisk ==
+27.0:MAGISK:R
+== adb transport ==
+serial=192.168.1.9:5555 transport=tcp/5555  (adb over Wi-Fi, no USB involved)

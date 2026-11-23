@@ -1,0 +1,19 @@
+# library_hashes  collected_at=2026-11-23T08:01:54+08:00
+# target libraries + the two already-deployed hook libraries (state, not modified this round)
+f6e3c3543ff6da5b59bf60b884b6ce4332897c75aa6b89b8dccc0c266df80940  /system/app/smartapp/lib/arm/libsmartbox.so
+65062e2d95a6055d0786ef20c3201737b65975b6d16ad0ea8987746a23f05b78  /system/app/smartapp/lib/arm/libagmmi.so
+5be226901fb11d3ab5ff81410f43d834b72b7f9243d1ded58550bb0ac8138f85  /data/local/tmp/t8/libtg_hook.so
+6d989d8d3ea4e89491dd5348c1b1e70a965b62626fc01acf062e2d8dd983b842  /data/local/tmp/t7/libtg_ttsguard.so
+
+-rw-r--r-- 1 shell shell   23008 2026-11-22 11:16 /data/local/tmp/t7/libtg_ttsguard.so
+-rwxr-xr-x 1 shell shell  120608 2026-11-22 19:45 /data/local/tmp/t8/libtg_hook.so
+-rw-r--r-- 1 root  root   841956 2026-11-17 19:45 /system/app/smartapp/lib/arm/libagmmi.so
+-rw-r--r-- 1 root  root  2047772 2026-11-17 19:45 /system/app/smartapp/lib/arm/libsmartbox.so
+
+== load-presence sweep (all processes) ==
+procs mapping libsmartbox: /proc/30807/maps
+
+procs mapping libagmmi  : 
+procs mapping libtg_hook: /proc/30807/maps
+
+procs mapping libtg_ttsguard: /proc/30807/maps

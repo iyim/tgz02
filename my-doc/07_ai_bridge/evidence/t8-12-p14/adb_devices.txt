@@ -1,0 +1,26 @@
+# T8-12.14 NAS-side ADB bootstrap and status
+# collected_at=2026-11-23T08:01:48+08:00 NAS=MacNas 6.18.18.c1126-trim
+
+== which adb (before bootstrap) ==
+adb: command not found  (NAS image ships no adb client)
+
+== bootstrapped client ==
+-rwxr-xr-x 1 mathon Users 11114880 Jan  1  2008 /home/mathon/adb-tools/platform-tools/adb
+Android Debug Bridge version 1.0.41
+Version 37.0.3-16887417
+Installed as /home/mathon/adb-tools/platform-tools/adb
+Running on Linux 6.18.18.c1126-trim (x86_64)
+
+== adb devices -l ==
+List of devices attached
+192.168.1.9:5555       device product:full_ailabs_s1l model:AILABS_S1L device:ailabs_s1l transport_id:1
+
+
+== adb get-state / get-serialno ==
+device
+192.168.1.9:5555
+
+== key provenance ==
+adbkey copied from the already-authorized workstation key; device adb_keys untouched.
+-rw------- 1 mathon Users 1732 Nov 23 07:57 /home/mathon/.android/adbkey
+-rw-r--r-- 1 mathon Users  720 Nov 23 07:57 /home/mathon/.android/adbkey.pub

@@ -1,0 +1,75 @@
+U10 双库绑定 —— 真机只读读取结果（T8-12.14）
+==============================================================================
+采集时间   : 2026-11-23T08:01:59+08:00 (NAS adb -> 设备 192.168.1.9:5555)
+目标进程   : com.alibaba.ailabs.genie.smartapp:core  pid=30807  starttime=2467080  线程=82
+进程稳定性 : 采集前后两次快照 pid/starttime 不变（见 core_processes.txt）
+读取方法   : dd if=/proc/30807/mem bs=1 skip=<base+slot> count=4 | od -An -tx4 -v
+             纯 read()，不 PTRACE_ATTACH、不暂停线程、不写任何内存、不注入
+libsmartbox: base(load bias)=0x979c8000，sha256 f6e3c3543ff6da5b59bf60b884b6ce4332897c75aa6b89b8dccc0c266df80940
+             ^ 与本项目自第一阶段起一直审计的同一文件完全一致（2 047 772 B）
+libagmmi   : sha256 65062e2d95a6055d0786ef20c3201737b65975b6d16ad0ea8987746a23f05b78 (841 956 B)
+
+一、静态前提（本轮复核，非历史结论）
+------------------------------------------------------------------------------
+1) 8 个符号的 PLT 桩 -> 绝对地址重定位槽位，由 libsmartbox.so 的 .rel.plt/.dynsym 直接解析核对：
+   SessionProxy::onHandler                vaddr=0x11c238  slot=0x1f18d0  期望值=0x97ae4238
+   SessionManager::exitTalk               vaddr=0x1110e4  slot=0x1f17bc  期望值=0x97ad90e4
+   SessionDispatch::onNlpResultInner      vaddr=0x11896c  slot=0x1f1894  期望值=0x97ae096c
+   SessionDispatch::onPushNlpResult       vaddr=0x1189ec  slot=0x1f1898  期望值=0x97ae09ec
+   SessionDispatch::onRouterDetailInfo    vaddr=0x118830  slot=0x1f17e4  期望值=0x97ae0830
+   SessionDispatch::playAudios            vaddr=0x117d40  slot=0x1f17e0  期望值=0x97adfd40
+   SessionDispatch::onNlpResult           vaddr=0x118ebc  slot=0x1f1624  期望值=0x97ae0ebc
+   SessionManager::onNlpResultInner       vaddr=0x114b98  slot=0x1f15c0  期望值=0x97adcb98
+   （槽位与 T8-12.6 §5.2 表一致：onHandler 0x1f18d0 / exitTalk 0x1f17bc / ... 全部对上）
+2) libsmartbox.so 的 DT_NEEDED 共 36 项，不含 libagmmi；设备上除 libagmmi.so 自身外没有任何文件引用它
+   => libagmmi 只能由 dlopen 进入，不能靠 DT_NEEDED 被自动装载
+3) libsmartbox.so 为 2 个 PT_LOAD：off 0x0 -> vaddr 0x0；off 0x1ea114 -> vaddr 0x1eb114
+   => 运行时地址恒为 base+vaddr，本轮读取地址即按此计算
+
+二、运行时实际读取（libsmartbox 侧，8/8 命中）
+------------------------------------------------------------------------------
+符号                                     槽位         槽位地址         读到的值       库内目标         判定
+SessionProxy::onHandler                0x1f18d0   0x97bb98d0 0x97ae4238 0x11c238     MATCH smartbox
+SessionManager::exitTalk               0x1f17bc   0x97bb97bc 0x97ad90e4 0x1110e4     MATCH smartbox
+SessionDispatch::onNlpResultInner      0x1f1894   0x97bb9894 0x97ae096c 0x11896c     MATCH smartbox
+SessionDispatch::onPushNlpResult       0x1f1898   0x97bb9898 0x97ae09ec 0x1189ec     MATCH smartbox
+SessionDispatch::onRouterDetailInfo    0x1f17e4   0x97bb97e4 0x97ae0830 0x118830     MATCH smartbox
+SessionDispatch::playAudios            0x1f17e0   0x97bb97e0 0x97adfd40 0x117d40     MATCH smartbox
+SessionDispatch::onNlpResult           0x1f1624   0x97bb9624 0x97ae0ebc 0x118ebc     MATCH smartbox
+SessionManager::onNlpResultInner       0x1f15c0   0x97bb95c0 0x97adcb98 0x114b98     MATCH smartbox
+
+命中率: 8/8。每一行的读值都精确等于 base + 该符号在 libsmartbox 自己的 .dynsym 里的 st_value，
+说明这些调用点/表项在 :core 里绑定到的是 libsmartbox 自己那份实现，没有发生跨库抢占。
+
+三、libagmmi 侧
+------------------------------------------------------------------------------
+目标进程: NOT LOADED。全设备 248 个进程的 /proc/*/maps 扫描，libagmmi 命中 0 个；
+libsmartbox 只在 /proc/30807/maps 命中 1 个。
+SessionProxy::onHandler                agmmi_slot=0x1f18d0   -> NOT LOADED（无映射，无法读）
+SessionManager::exitTalk               agmmi_slot=0x1f17bc   -> NOT LOADED（无映射，无法读）
+SessionDispatch::onNlpResultInner      agmmi_slot=0x1f1894   -> NOT LOADED（无映射，无法读）
+SessionDispatch::onPushNlpResult       agmmi_slot=0x1f1898   -> NOT LOADED（无映射，无法读）
+SessionDispatch::onRouterDetailInfo    agmmi_slot=0x1f17e4   -> NOT LOADED（无映射，无法读）
+SessionDispatch::playAudios            agmmi_slot=0x1f17e0   -> NOT LOADED（无映射，无法读）
+SessionDispatch::onNlpResult           agmmi_slot=0x1f1624   -> NOT LOADED（无映射，无法读）
+SessionManager::onNlpResultInner       agmmi_slot=0x1f15c0   -> NOT LOADED（无映射，无法读）
+
+四、U10 判定
+------------------------------------------------------------------------------
+绑定结果: smartbox（无 split）。
+  * 8/8 个目标符号在 :core 内的实际指针均指向 libsmartbox 自己的实现；
+  * libagmmi 在本轮观测窗口内没有被任何进程装载，因此不存在'两份实现同时在跑'；
+  * 因此 R21 在本轮运行态下不成立：按 libsmartbox base+vaddr 计算安装点地址是有依据的。
+保留的风险（未关闭）:
+  * libagmmi 若在某条功能路径被 dlopen(RTLD_LOCAL)，届时它自己的重定位会绑定到它自己那份，
+    split 会在那一刻出现。本轮观测不到 = 现在不成立，不等于结构上不可能；
+  * 本轮只核验了 8 个符号的读取点，其它安装点未覆盖；
+  * 结论仅对本 pid=30807 / starttime=2467080 这个进程实例有效；:core 重启后必须重算 base 并重读。
+
+五、失败判据核对（T8-12.6 §5.4）
+------------------------------------------------------------------------------
+① 目标 pid 变化            : 未发生（两次快照 pid=30807 / starttime=2467080）
+② libsmartbox 未装载       : 未发生（maps 命中）
+③ 槽位值不等于两个候选之一 : 未发生（8/8 等于 base+vaddr(libsmartbox)）
+④ 同符号两库指向不同且都不是自己 : 不适用（agmmi 未装载）
+⑤ maps 基址与静态 p_vaddr 对不上 : 未发生（base+vaddr 与 2 个 PT_LOAD 一致）
