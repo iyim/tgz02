@@ -1,0 +1,22 @@
+intent_route.h 意图枚举与路由位（全文见 intent_route.h）:
+  IR_NONE/IR_VOLUME/IR_WEATHER/IR_SCREEN_OFF/IR_TIME/IR_SCREEN_ON/IR_MEDIA/IR_STOP
+  T7B_ROUTE_* = 0x01..0x40, T7B_ROUTE_ALL = 0x7F
+  → 没有退出/结束对话类意图。
+
+intent_route.c 中出现「退出」的位置（仅音量 unmute 的否决词）：
+  line 221: "取消静音", "退出静音", "恢复声音", "打开声音", "声音打开",
+
+ir_classify_norm 的匹配顺序（无 exit 匹配器）:
+          r->complete = 0;
+          if (r->note[0] == '\0') snprintf(r->note, sizeof(r->note), "dangling");
+      }
+      return 1;
+  }
+  int ir_classify(const char *text, ir_result *out)
+  {
+      char prepared[IR_TEXT_MAX];
+      char norm[IR_TEXT_MAX];
+      int n;
+  
+      if (out != NULL) memset(out, 0, sizeof(*out));
+      if (text == NULL) return 0;

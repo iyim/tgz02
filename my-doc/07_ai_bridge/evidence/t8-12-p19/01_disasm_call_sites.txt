@@ -1,0 +1,99 @@
+SessionManager::exitTalk @0x1110e4  (0x10c bytes)  -- type=2 synth call site:
+----------------------------------------------------------------------------------------------------
+0x01110e4 e92d4df0 push	{r4, r5, r6, r7, r8, sl, fp, lr}
+0x01110e8 e28db018 add	fp, sp, #24
+0x01110ec e24dd018 sub	sp, sp, #24
+0x01110f0 e5904040 ldr	r4, [r0, #64]	; 0x40
+0x01110f4 e1a08002 mov	r8, r2
+0x01110f8 e1a06001 mov	r6, r1
+0x01110fc e3520000 cmp	r2, #0
+0x0111100 0a000010 beq	111148 <_ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih@@Base+0x64>
+0x0111104 e1a05000 mov	r5, r0
+0x0111108 e3a00098 mov	r0, #152	; 0x98
+0x011110c ebfdf0f8 bl	8d4f4 <_Znwj@plt>
+0x0111110 e1a07000 mov	r7, r0
+0x0111114 ebfe06cb bl	92c48 <_ZN9AliAiLabs4AGUI9NlpResultC1Ev@plt>
+0x0111118 e3a00001 mov	r0, #1
+0x011111c e3a01002 mov	r1, #2
+0x0111120 e9870003 stmib	r7, {r0, r1}
+0x0111124 e1a01006 mov	r1, r6
+0x0111128 e3a02002 mov	r2, #2
+0x011112c e5950010 ldr	r0, [r5, #16]
+0x0111130 e1a03007 mov	r3, r7
+0x0111134 ebfe06c6 bl	92c54 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE@plt>
+0x0111138 e5970000 ldr	r0, [r7]
+0x011113c e5901004 ldr	r1, [r0, #4]
+0x0111140 e1a00007 mov	r0, r7
+0x0111144 e12fff31 blx	r1
+0x0111148 e59f008c ldr	r0, [pc, #140]	; 1111dc <_ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih@@Base+0xf8>
+0x011114c e3760001 cmn	r6, #1
+0x0111150 11a04006 movne	r4, r6
+0x0111154 e79f0000 ldr	r0, [pc, r0]
+0x0111158 e5d00000 ldrb	r0, [r0]
+0x011115c e3500000 cmp	r0, #0
+0x0111160 0a00000e beq	1111a0 <_ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih@@Base+0xbc>
+0x0111164 e59f1074 ldr	r1, [pc, #116]	; 1111e0 <_ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih@@Base+0xfc>
+0x0111168 e3007498 movw	r7, #1176	; 0x498
+0x011116c e59f2070 ldr	r2, [pc, #112]	; 1111e4 <_ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih@@Base+0x100>
+0x0111170 e59f3070 ldr	r3, [pc, #112]	; 1111e8 <_ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih@@Base+0x104>
+0x0111174 e08f1001 add	r1, pc, r1
+0x0111178 e59f006c ldr	r0, [pc, #108]	; 1111ec <_ZN9AliAiLabs4AGUI14SessionManager8exitTalkEih@@Base+0x108>
+0x011117c e08f2002 add	r2, pc, r2
+0x0111180 e08f3003 add	r3, pc, r3
+0x0111184 e58d7000 str	r7, [sp]
+0x0111188 e08f0000 add	r0, pc, r0
+0x011118c e98d0041 stmib	sp, {r0, r6}
+0x0111190 e3a00004 mov	r0, #4
+0x0111194 e58d400c str	r4, [sp, #12]
+0x0111198 e58d8010 str	r8, [sp, #16]
+0x011119c ebfe0139 bl	91688 <AgutilLog@plt>
+0x01111a0 ebfdf2b6 bl	8dc80 <_ZN9AliAiLabs4AGUI8IMmiCore11getInstanceEv@plt>
+0x01111a4 e5901000 ldr	r1, [r0]
+0x01111a8 e5911010 ldr	r1, [r1, #16]
+0x01111ac e12fff31 blx	r1
+0x01111b0 e5901000 ldr	r1, [r0]
+0x01111b4 e5912018 ldr	r2, [r1, #24]
+0x01111b8 e1a01004 mov	r1, r4
+0x01111bc e24bd018 sub	sp, fp, #24
+0x01111c0 e8bd4df0 pop	{r4, r5, r6, r7, r8, sl, fp, lr}
+0x01111c4 e12fff12 bx	r2
+0x01111c8 e1a04000 mov	r4, r0
+0x01111cc e1a00007 mov	r0, r7
+0x01111d0 ebfdf0d0 bl	8d518 <_ZdlPv@plt>
+0x01111d4 e1a00004 mov	r0, r4
+0x01111d8 ebfdf0d4 bl	8d530 <_Unwind_Resume@plt>
+0x01111dc 000de2b0 ; <UNDEFINED> instruction: 0x000de2b0
+0x01111e0 000bd0e5 andeq	sp, fp, r5, ror #1
+0x01111e4 000bd0ec andeq	sp, fp, ip, ror #1
+0x01111e8 000b96d2 ldrdeq	r9, [fp], -r2
+0x01111ec 000bdb7d andeq	sp, fp, sp, ror fp
+0x01111f0 e92d4df0 push	{r4, r5, r6, r7, r8, sl, fp, lr}
+
+SessionProxy::onHandler @0x11c238 -- type=3 call site + onNlpResultEnd tail:
+----------------------------------------------------------------------------------------------------
+0x011cbd0 e3a01001 mov	r1, #1
+0x011cbd4 ebfdda10 bl	9341c <_ZN9AliAiLabs4AGUI7Handler13removeMessageEi@plt>
+0x011cbd8 e5940004 ldr	r0, [r4, #4]
+0x011cbdc e1a01009 mov	r1, r9
+0x011cbe0 e3a02006 mov	r2, #6
+0x011cbe4 ebfdd9eb bl	93398 <_ZN9AliAiLabs4AGUI14SessionManager16setSessionStatusEiNS0_13IDeviceMirror13SessionStatusE@plt>
+0x011cbe8 e5940008 ldr	r0, [r4, #8]
+0x011cbec e1a01009 mov	r1, r9
+0x011cbf0 e3a02003 mov	r2, #3
+0x011cbf4 e3a03000 mov	r3, #0
+0x011cbf8 ebfdd815 bl	92c54 <_ZN9AliAiLabs4AGUI15SessionDispatch11onNlpResultEiiPNS0_9NlpResultE@plt>
+0x011cbfc e594000c ldr	r0, [r4, #12]
+0x011cc00 e3a01001 mov	r1, #1
+0x011cc04 ebfdda04 bl	9341c <_ZN9AliAiLabs4AGUI7Handler13removeMessageEi@plt>
+0x011cc08 e5940004 ldr	r0, [r4, #4]
+0x011cc0c e1a01009 mov	r1, r9
+0x011cc10 e3a02000 mov	r2, #0
+0x011cc14 e3a03003 mov	r3, #3
+0x011cc18 e24bd018 sub	sp, fp, #24
+0x011cc1c e8bd4bf0 pop	{r4, r5, r6, r7, r8, r9, fp, lr}
+0x011cc20 eafdd9fa b	93410 <_ZN9AliAiLabs4AGUI14SessionManager14onNlpResultEndEiPNS0_9NlpResultEi@plt>
+0x011cc24 e2840028 add	r0, r4, #40	; 0x28
+0x011cc28 e1a01005 mov	r1, r5
+0x011cc2c ebfdc3ce bl	8db6c <_ZNSt6__ndk112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6assignEPKc@plt>
+0x011cc30 e24bd018 sub	sp, fp, #24
+
