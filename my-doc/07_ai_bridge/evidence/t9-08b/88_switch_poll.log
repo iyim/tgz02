@@ -1,0 +1,18 @@
+--------- beginning of system
+--------- beginning of main
+11-24 21:45:04.058 I/T907VOICE(13163): home: poll stop
+11-24 21:45:09.561 I/T907VOICE(13163): conversation: poll start
+11-24 21:45:15.333 I/T907VOICE(13163): home: poll start
+11-24 21:45:15.731 I/T907VOICE(13163): conversation: poll stop
+11-24 21:45:19.066 I/T907VOICE(13163): home: poll stop
+11-24 21:45:20.877 I/T907VOICE(13163): conversation: poll start
+11-24 21:45:23.594 I/T907VOICE(13163): conversation: poll stop
+11-24 21:45:25.106 I/T907VOICE(13163): home: poll start
+11-24 21:45:28.056 I/T907VOICE(13163): home: poll stop
+11-24 21:45:30.052 I/T907VOICE(13163): conversation: poll start
+11-24 21:45:33.014 I/T907VOICE(13163): conversation: poll stop
+11-24 21:45:34.716 I/T907VOICE(13163): home: poll start
+11-24 21:45:37.936 I/T907VOICE(13163): home: poll stop
+11-24 21:45:39.916 I/T907VOICE(13163): conversation: poll start
+11-24 21:45:42.831 I/T907VOICE(13163): conversation: poll stop
+11-24 21:45:44.473 I/T907VOICE(13163): home: poll start

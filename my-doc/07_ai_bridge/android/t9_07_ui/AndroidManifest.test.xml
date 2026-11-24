@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   T9-07R1 TEST BUILD ONLY (build.ps1 -Test).
-  Identical to the production manifest except that it also declares the automation driver.
-  The production APK is linked from AndroidManifest.xml and does not contain that class at all.
+  Same as the production manifest plus the automation driver, which lives in src_test/ and is
+  absent from the shipped APK.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tgz02.voice"
-    android:versionCode="2"
-    android:versionName="1.1.0-test">
+    android:versionCode="4"
+    android:versionName="1.2.0-test">
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="27" />
 
@@ -17,10 +17,9 @@
         android:theme="@android:style/Theme.Material.NoActionBar">
 
         <activity
-            android:name=".ConversationActivity"
+            android:name=".VoiceHomeActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,10 +28,22 @@
         </activity>
 
         <activity
+            android:name=".ConversationActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <activity
             android:name=".TestConversationActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <activity
+            android:name=".MoreActivity"
+            android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
         <activity

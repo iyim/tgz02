@@ -115,9 +115,18 @@ public final class VoiceBridgeClient {
     private final Play lastPlay = new Play();
     private final Status lastStatus = new Status();
 
+    private final String page;
+
     VoiceBridgeClient(Context ctx)
     {
+        this(ctx, "page");
+    }
+
+    /** page name only appears in the diagnostic log, so "who is polling" is unambiguous */
+    VoiceBridgeClient(Context ctx, String pageName)
+    {
         appCtx = ctx.getApplicationContext();
+        page = pageName;
     }
 
     void setListener(Listener l)
@@ -141,6 +150,7 @@ public final class VoiceBridgeClient {
     {
         if (running) return;
         running = true;
+        diag(page + ": poll start");
         poller = new Thread(new Runnable() {
             public void run() { loop(); }
         }, "voicebridge");
@@ -150,7 +160,9 @@ public final class VoiceBridgeClient {
 
     void stopPolling()
     {
+        if (!running) return;
         running = false;
+        diag(page + ": poll stop");
         Thread t = poller;
         poller = null;
         if (t != null) t.interrupt();

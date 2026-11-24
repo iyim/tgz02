@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  T9-07 product UI. An ordinary, unprivileged app:
-    - no permissions at all (it needs none: the bridge paths are readable by the app's group),
-    - no sharedUserId, no root, no service, no receiver, no boot hook,
-    - the only things it writes are its own files dir and <ui>/inbox/<event_id>.json.
+  T9-08B product UI: voice-first home, settings, and a "更多功能" entrance that keeps the
+  previously built text/history screens reachable.
+
+  The app is still an ordinary, unprivileged one: no permissions, no sharedUserId, no service,
+  and no intent-reading code in any of the production activities.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tgz02.voice"
-    android:versionCode="1"
-    android:versionName="1.0.0">
+    android:versionCode="3"
+    android:versionName="1.2.0">
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="27" />
 
@@ -17,17 +18,30 @@
         android:allowBackup="false"
         android:theme="@android:style/Theme.Material.NoActionBar">
 
+        <!-- the product: voice only -->
         <activity
-            android:name=".ConversationActivity"
+            android:name=".VoiceHomeActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- keeps the text/history screens reachable; no launcher entry -->
+        <activity
+            android:name=".ConversationActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <activity
+            android:name=".MoreActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
 
         <activity
             android:name=".SettingsActivity"

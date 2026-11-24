@@ -1,0 +1,145 @@
+﻿# T9-08B structure acceptance (voice home, more menu, stop, switching, shipped APK)
+# host time : 2026-11-24 21:44:12
+# apk       : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t9_07_ui\dist\voice_ui.apk  sha256=04873ba8fbf1f7ac317594bc3da8b4ca70be02b4e58ebbca3d9edca6a40b12dc
+
+================
+== 0 preconditions
+================
+== worker ==
+pid=22221
+cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10071 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10071 
+== play.public.json ==
+{
+  "v": 1,
+  "pid": 2516,
+  "updated_ms": 1795527756565,
+  "state": "idle",
+  "event_id": "ui-1795527751943-2804",
+  "tts_id": 5246475,
+  "started_ms": 1795527753286,
+  "finished_ms": 1795527756565,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}
+stop_requests=0
+0
+== status.public.json ==
+{"v":1,"ts":"2026-11-24T21:44:22","ts_ms":1795527863745,"pid":22221,"worker":"running","uptime_ms":2615602,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":14,"err":0,"timeout":0,"last_http":200,"last_error":"","last_class":"ok","last_latency_ms":1038},"dialog":{"state":"idle","sc":"IDLE","round":0,"session":"1969666","listening":0,"tap":1},"counters":{"events_processed":13,"tts_queued":26,"inbox_accepted":16,"inbox_rejected":0,"gate_released":14,"route_native":1,"ui_published":29,"ui_errors":0}}
+== events (last 3) ==
+-- 000000000138.json
+{"v":1,"seq":138,"ts":"2026-11-24T21:40:55","ts_ms":1795527655704,"kind":"turn","session":"","event_id":"ui-1795527654462-9299","route":"ai","skill":"","status":"ok","user":"What is the capital of France","user_bytes":29,"user_cut":0,"reply":"巴黎，法国的首都就是巴黎。","reply_bytes":39,"reply_cut":0,"reason":""}
+-- 000000000139.json
+{"v":1,"seq":139,"ts":"2026-11-24T21:41:55","ts_ms":1795527715349,"kind":"turn","session":"1969666","event_id":"t6-1180-1969666-g31","route":"skill","skill":"time.query","status":"ok","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 21:41","reply_bytes":9,"reply_cut":0,"reason":""}
+-- 000000000140.json
+{"v":1,"seq":140,"ts":"2026-11-24T21:42:33","ts_ms":1795527753210,"kind":"turn","session":"","event_id":"ui-1795527751943-2804","route":"ai","skill":"","status":"ok","user":"What is the capital of France","user_bytes":29,"user_cut":0,"reply":"还是巴黎呀，法国首都一直是巴黎。","reply_bytes":48,"reply_cut":0,"reason":""}
+newest_event=000000000140.json
+newest_json={"v":1,"seq":140,"ts":"2026-11-24T21:42:33","ts_ms":1795527753210,"kind":"turn","session":"","event_id":"ui-1795527751943-2804","route":"ai","skill":"","status":"ok","user":"What is the capital of France","user_bytes":29,"user_cut":0,"reply":"还是巴黎呀，法国首都一直是巴黎。","reply_bytes":48,"reply_cut":0,"reason":""}
+events_total=140
+== queue / inflight ==
+inflight: 
+== journal (last 6, total 1020) ==
+{"ts":"2026-11-24T21:35:56.385+0800","kind":"tts","event_id":"saystop-213523","tts_id":5246435,"outcome":"ok","dur_ms":23883,"text_bytes":245,"attempts":2}
+{"ts":"2026-11-24T21:38:28.342+0800","kind":"tts","event_id":"t6-1180-1969642-g29","tts_id":5246446,"outcome":"ok","dur_ms":1943,"text_bytes":9,"attempts":1}
+{"ts":"2026-11-24T21:40:20.803+0800","kind":"tts","event_id":"t6-1180-1969651-g30","tts_id":5246455,"outcome":"ok","dur_ms":1822,"text_bytes":9,"attempts":1}
+{"ts":"2026-11-24T21:40:58.276+0800","kind":"tts","event_id":"ui-1795527654462-9299","tts_id":5246460,"outcome":"ok","dur_ms":2532,"text_bytes":39,"attempts":1}
+{"ts":"2026-11-24T21:41:57.342+0800","kind":"tts","event_id":"t6-1180-1969666-g31","tts_id":5246470,"outcome":"ok","dur_ms":1946,"text_bytes":9,"attempts":1}
+{"ts":"2026-11-24T21:42:36.561+0800","kind":"tts","event_id":"ui-1795527751943-2804","tts_id":5246475,"outcome":"ok","dur_ms":3264,"text_bytes":48,"attempts":1}
+== app ==
+uid_of_voice=    userId=10071
+inbox=drwx------ 2 u0_a71 u0_a71 4096 2026-11-24 21:42 /data/local/tmp/t9_ui/inbox
+events=drwxr-x--- 2 root u0_a71 4096 2026-11-24 21:42 /data/local/tmp/t9_ui/events
+EXIT=0
+
+   [PASS] the worker is running
+   [PASS] the channel owner is the app (uid 10071)
+   [PASS] the device is silent before the run
+   [PASS] the launcher screen is the voice home
+
+================
+== 1 the home screen is voice-only
+================
+   [PASS] no text field on the home screen
+   [PASS] no send button on the home screen
+   [PASS] no history entry on the home screen
+   [PASS] the stop control is present
+   [PASS] settings is reachable
+   [PASS] the more menu is reachable
+   screenshot: 80_home.png
+
+================
+== 2 the stop control on the home screen
+================
+submitted saystop-214431
+
+   [PASS] a long playback is running before the stop
+   [PASS] the home screen is in front while it is still speaking
+   screenshot: 82_before_stop.png
+{"ts":"2026-11-24T21:40:58.276+0800","kind":"tts","event_id":"ui-1795527654462-9299","tts_id":5246460,"outcome":"ok","dur_ms":2532,"text_bytes":39,"attempts":1}
+{"ts":"2026-11-24T21:41:57.342+0800","kind":"tts","event_id":"t6-1180-1969666-g31","tts_id":5246470,"outcome":"ok","dur_ms":1946,"text_bytes":9,"attempts":1}
+{"ts":"2026-11-24T21:42:36.561+0800","kind":"tts","event_id":"ui-1795527751943-2804","tts_id":5246475,"outcome":"ok","dur_ms":3264,"text_bytes":48,"attempts":1}
+{"ts":"2026-11-24T21:44:40.130+0800","kind":"tts","event_id":"saystop-214431","tts_id":5246480,"outcome":"interrupted","dur_ms":8695,"text_bytes":245,"attempts":1}
+
+   [PASS] the stop cut the current playback short
+   screenshot: 83_after_stop.png
+   play state after the second press: idle
+   KF-1 (documented in T9_08B_VOICE_FIRST_UI.md section 4): a stop is reported by the
+   factory as error, so TtsExec re-queues the item; the button works, the replay is the retry.
+
+================
+== 3 the more menu keeps the old screens reachable
+================
+   [PASS] the more menu opens
+   [PASS] the menu lists the text conversation entry
+   [PASS] the menu itself has no text field
+   screenshot: 84_more_menu.png
+   [PASS] the entry opens the existing conversation screen
+   [PASS] the migrated screen still has its text field
+   screenshot: 85_conversation.png
+
+================
+== 4 page switching: one poller per page, nothing replayed
+================
+   [PASS] round 1 returns to the home screen
+   [PASS] round 2 returns to the home screen
+   [PASS] round 3 returns to the home screen
+11-24 21:45:04.058 I/T907VOICE(13163): home: poll stop
+11-24 21:45:09.561 I/T907VOICE(13163): conversation: poll start
+11-24 21:45:15.333 I/T907VOICE(13163): home: poll start
+11-24 21:45:15.731 I/T907VOICE(13163): conversation: poll stop
+11-24 21:45:19.066 I/T907VOICE(13163): home: poll stop
+11-24 21:45:20.877 I/T907VOICE(13163): conversation: poll start
+11-24 21:45:23.594 I/T907VOICE(13163): conversation: poll stop
+11-24 21:45:25.106 I/T907VOICE(13163): home: poll start
+11-24 21:45:28.056 I/T907VOICE(13163): home: poll stop
+11-24 21:45:30.052 I/T907VOICE(13163): conversation: poll start
+11-24 21:45:33.014 I/T907VOICE(13163): conversation: poll stop
+11-24 21:45:34.716 I/T907VOICE(13163): home: poll start
+11-24 21:45:37.936 I/T907VOICE(13163): home: poll stop
+11-24 21:45:39.916 I/T907VOICE(13163): conversation: poll start
+11-24 21:45:42.831 I/T907VOICE(13163): conversation: poll stop
+11-24 21:45:44.473 I/T907VOICE(13163): home: poll start
+   sequence: home:stop -> conversation:start -> home:start -> conversation:stop -> home:stop -> conversation:start -> conversation:stop -> home:start -> home:stop -> conversation:start -> conversation:stop -> home:start -> home:stop -> conversation:start -> conversation:stop -> home:start
+   [PASS] no page ever starts a second poller while its own is running
+   [PASS] the switching produced a clean start/stop sequence
+   [PASS] the home screen ends as the polling page
+   [PASS] back on the home screen after three rounds
+   [PASS] still no text field after the rounds
+   screenshot: 89_after_switching.png
+
+================
+== 5 the shipped APK is still closed
+================
+   [PASS] intent extras are still ignored
+
+   [PASS] no permission requested
+   [PASS] no automation driver in the shipped dex
+   [PASS] no intent-extras code in the shipped dex
+   [PASS] the voice home is in the shipped dex
+   [PASS] the launcher is the voice home
+   [PASS] the manifest declares no permission
+   screen_off_timeout restored to 60000
+
+================
+RESULT: PASS (0 failed checks)
+================

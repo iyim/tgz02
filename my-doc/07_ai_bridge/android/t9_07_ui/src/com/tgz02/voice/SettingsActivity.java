@@ -39,7 +39,7 @@ public final class SettingsActivity extends Activity implements VoiceBridgeClien
     protected void onCreate(Bundle b)
     {
         super.onCreate(b);
-        client = new VoiceBridgeClient(this);
+        client = new VoiceBridgeClient(this, "settings");
         store = new SessionStore(getFilesDir());
         setContentView(build());
         render();
@@ -110,6 +110,17 @@ public final class SettingsActivity extends Activity implements VoiceBridgeClien
                 + (s.round > 0 ? (" · 第 " + s.round + " 轮") : "")
                 + (s.listening ? " · 麦克风开启" : "") : "-", Ui.TEXT_DIM);
         row("状态快照", s.present ? ago(s.tsMs) : "从未收到", Ui.TEXT_DIM);
+
+        /* placeholders on purpose: the model configuration (T9-08C) and the long-term memory
+         * manager (T9-08D) are not implemented yet, and saying so is better than an empty page
+         * or a switch that does nothing */
+        section("大模型配置");
+        row("状态", "尚未实现（计划于 T9-08C）", Ui.TEXT_FAINT);
+        row("将提供", "服务商类型 / Base URL / API Key / 模型名 / 连接测试", Ui.TEXT_FAINT);
+
+        section("长期记忆");
+        row("状态", "尚未实现（计划于 T9-08D）", Ui.TEXT_FAINT);
+        row("将提供", "查看 / 添加 / 编辑 / 删除 / 停用 / 清空", Ui.TEXT_FAINT);
 
         section("AI 服务");
         row("提供方", empty(s.provider) ? "-" : (s.provider + (s.mock ? "（离线模拟）" : "")), Ui.TEXT);

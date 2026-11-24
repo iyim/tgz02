@@ -78,7 +78,7 @@ public class ConversationActivity extends Activity
     protected void onCreate(Bundle b)
     {
         super.onCreate(b);
-        client = new VoiceBridgeClient(this);
+        client = new VoiceBridgeClient(this, "conversation");
         store = new SessionStore(getFilesDir());
         View root = buildScreen();
         setContentView(root);

@@ -1,0 +1,30 @@
+﻿# T9-08B live checks (voice turn on the home screen + the migrated text screens)
+# host time : 2026-11-24 21:41:36
+   [PASS] the device is silent before the check
+   [PASS] the voice home is in front
+
+== voice turn on the home screen
+   turn: {"v":1,"seq":139,"ts":"2026-11-24T21:41:55","ts_ms":1795527715349,"kind":"turn","session":"1969666","event_id":"t6-1180-1969666-g31","route":"skill","skill":"time.query","status":"ok","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 21:41","reply_bytes":9,"reply_cut":0,"reason":""}
+   [PASS] a turn was published
+   [PASS] it came from a factory ASR session
+   user=[天猫精灵现在几点] reply=[now 21:41]
+   [PASS] the home screen shows the recognised text
+   [PASS] the home screen shows the answer
+   screenshot: 90_voice_turn.png
+
+== text ask through 更多功能
+   [PASS] 更多 opens the menu
+   [PASS] the entry opens the conversation screen
+   turn: {"v":1,"seq":140,"ts":"2026-11-24T21:42:33","ts_ms":1795527753210,"kind":"turn","session":"","event_id":"ui-1795527751943-2804","route":"ai","skill":"","status":"ok","user":"What is the capital of France","user_bytes":29,"user_cut":0,"reply":"还是巴黎呀，法国首都一直是巴黎。","reply_bytes":48,"reply_cut":0,"reason":""}
+   [PASS] the text ask still goes through the AI
+   [PASS] and produces a real answer
+   screenshot: 91_text_ask.png
+
+== history and new session
+   [PASS] the history dialog still opens
+   screenshot: 92_history.png
+   sessions 10 -> 11
+   [PASS] new session still creates a local session
+   screen_off_timeout restored to 60000
+
+RESULT: PASS (0 failed checks)
