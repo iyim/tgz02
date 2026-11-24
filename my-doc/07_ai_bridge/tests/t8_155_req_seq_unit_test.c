@@ -112,64 +112,98 @@ static void test_parser(const char *dir)
 static void test_accept(void)
 {
     tg_req_state st;
+    /* 真机上的量级：CLOCK_MONOTONIC 毫秒（2026-11-24 实测 ~1.5258e8） */
+    const long long NOW = 152600000LL;
+    const long long SEQ = NOW - 800LL;          /* 800 ms 前刚发出的请求 */
+    int i;
 
     tg_req_state_init(&st);
-    ok(st.last_seq == -1 && st.cand_seq == -1, "B0 init: no baseline, no candidate");
-    ok(strcmp(tg_req_accept(&st, 121635016LL, 1000), "first") == 0,
-       "B1 first valid seq is a request (guard start saw an empty file)");
-    ok(tg_req_accept(&st, 121635016LL, 1100) == NULL, "B2 same seq twice must not fire");
-    ok(strcmp(tg_req_accept(&st, 121635017LL, 1200), "new") == 0, "B3 increasing seq fires");
-    ok(tg_req_accept(&st, 121635016LL, 1300) == NULL, "B4 one-step backwards must not fire");
-    ok(st.last_seq == 121635017LL, "B5 backwards value must not move the baseline");
-    ok(tg_req_accept(&st, 1LL, 1400) == NULL, "B6 tiny seq (truncated prefix) must not fire");
-    ok(tg_req_accept(&st, 0LL, 1500) == NULL, "B7 zero must not fire");
-    ok(tg_req_accept(&st, -1LL, 1600) == NULL, "B8 -1 must not fire");
-    ok(st.cand_seq == -1, "B8b garbage values must not even create a candidate");
+    ok(st.last_seq == -1 && st.last_code == TG_REQ_R_NONE, "B0 init: no baseline");
+    ok(strcmp(tg_req_accept(&st, SEQ, NOW), "first") == 0,
+       "B1 first plausible seq is a request (guard start saw an empty file)");
+    ok(tg_req_accept(&st, SEQ, NOW + 120) == NULL && st.last_code == TG_REQ_R_REPEAT,
+       "B2 same seq twice must not fire");
+    ok(strcmp(tg_req_accept(&st, SEQ + 7000, NOW + 8000), "new") == 0,
+       "B3 increasing seq fires");
+    ok(tg_req_accept(&st, 1LL, NOW + 8100) == NULL && st.last_code == TG_REQ_R_TINY,
+       "B4 tiny seq (truncated prefix) must not fire");
+    ok(tg_req_accept(&st, 0LL, NOW + 8200) == NULL, "B5 zero must not fire");
+    ok(tg_req_accept(&st, -1LL, NOW + 8300) == NULL, "B6 -1 must not fire");
 
-    /* 计时基准重置：有人手工写过 epoch 秒(1.79e9)，worker 用单调毫秒(1.21e8)。
-     * 第一拍只记候选，第二拍确认 —— 这是半截文件挡不住的关键。 */
-    tg_req_state_init(&st);
-    st.last_seq = 1790000000LL;
-    ok(tg_req_accept(&st, 121635016LL, 5000) == NULL,
-       "B9 a backwards jump alone never fires (candidate only)");
-    ok(st.cand_seq == 121635016LL, "B9b candidate recorded");
-    ok(strcmp(tg_req_accept(&st, 121635016LL, 5120), "clock-base reset") == 0,
-       "B10 confirmed on the next poll -> honoured once");
-    ok(st.cand_seq == -1 && st.last_seq == 121635016LL, "B10b state settled");
-    ok(tg_req_accept(&st, 121635016LL, 5200) == NULL, "B11 same value again must not fire");
-    ok(strcmp(tg_req_accept(&st, 121635017LL, 5300), "new") == 0,
-       "B12 after the reset the stream continues normally");
+    /* ---- T8-15.5R 的核心负例：残留的合法旧序号，连续读 5 次仍然不许开麦 ---- */
+    {
+        long long stale = SEQ - 90000;          /* 90 s 前写过一次，文件里留着 */
+        unsigned fires = 0;
+        int first_code = TG_REQ_R_NONE;
 
-    /* 候选过期：半截内容没被完整内容接上就不算数 */
-    tg_req_state_init(&st);
-    st.last_seq = 1790000000LL;
-    ok(tg_req_accept(&st, 121635016LL, 6000) == NULL, "B13 candidate armed");
-    ok(tg_req_accept(&st, 121635016LL, 6000 + TG_REQ_CONFIRM_MS + 100) == NULL,
-       "B14 a candidate that was never confirmed within the window cannot fire");
+        tg_req_state_init(&st);
+        st.last_seq = SEQ;                      /* 基线 = 已受理的新序号 */
+        for (i = 0; i < 5; i++) {
+            if (tg_req_accept(&st, stale, NOW + 1000 + i * 120LL) != NULL) fires++;
+            if (i == 0) first_code = st.last_code;
+        }
+        ok(fires == 0, "B7 a stale but well-formed old seq never fires, even read 5 times (%u)",
+           fires);
+        ok(first_code == TG_REQ_R_BELOW && st.last_seq == stale,
+           "B7b ...the first read only re-baselines silently (code=%d base=%lld)",
+           first_code, st.last_seq);
+        ok(st.last_code == TG_REQ_R_REPEAT,
+           "B7c ...and the later identical reads are counted as repeats (code=%d)",
+           st.last_code);
+    }
 
-    /* 重置节流：3 s 内不能连着放行两个不同的倒退值 */
+    /* 同一个异常旧值重复出现：旧实现(候选+二次确认)在这里会开麦 */
+    {
+        long long odd = SEQ - 30000;
+        unsigned fires = 0;
+
+        tg_req_state_init(&st);
+        st.last_seq = SEQ;
+        for (i = 0; i < 3; i++) {
+            if (tg_req_accept(&st, odd, NOW + 2000 + i * 120LL) != NULL) fires++;
+        }
+        ok(fires == 0, "B8 identical anomalous value repeated 3x never fires (%u)", fires);
+    }
+
+    /* 未来值：手工往请求文件里写 epoch（秒/毫秒）之类的脏数据 */
     tg_req_state_init(&st);
-    st.last_seq = 1790000000LL;
-    ok(tg_req_accept(&st, 100000000LL, 7000) == NULL, "B15 candidate armed (100e6)");
-    ok(strcmp(tg_req_accept(&st, 100000000LL, 7120), "clock-base reset") == 0,
-       "B16 confirmed reset at 7120");
-    ok(tg_req_accept(&st, 50000000LL, 7200) == NULL, "B17 second reset inside 3 s: no candidate");
-    ok(st.cand_seq == -1, "B17b throttled value must not even arm a candidate");
-    ok(tg_req_accept(&st, 50000000LL, 7400) == NULL, "B18 still throttled");
-    ok(tg_req_accept(&st, 50000000LL, 10500) == NULL,
-       "B19 after the gap it only arms a candidate again");
-    ok(strcmp(tg_req_accept(&st, 50000000LL, 10620), "clock-base reset") == 0,
-       "B20 and confirms once");
+    st.last_seq = SEQ;
+    ok(tg_req_accept(&st, 1795477000LL, NOW) == NULL && st.last_code == TG_REQ_R_FUTURE,
+       "B9 epoch seconds must be rejected (in the future)");
+    ok(tg_req_accept(&st, 1795477000000LL, NOW) == NULL && st.last_code == TG_REQ_R_FUTURE,
+       "B10 epoch milliseconds must be rejected");
+    ok(st.last_seq == SEQ, "B10b junk must not move the baseline");
+
+    /* 太旧：不可能是"刚发出"的请求 */
+    ok(tg_req_accept(&st, NOW - TG_REQ_CLOCK_STALE_MS - 5000, NOW) == NULL &&
+       st.last_code == TG_REQ_R_TOO_OLD, "B11 too-old value must be rejected");
+    ok(st.last_seq == SEQ, "B11b too-old value must not move the baseline");
+
+    /* 边界：稍早于 now、在窗口内、且比基线大 -> 受理 */
+    ok(strcmp(tg_req_accept(&st, NOW + 900, NOW + 1000), "new") == 0,
+       "B12 slightly-ahead-but-plausible value is accepted");
+
+    /* 基线被历史脏值抬高过（旧版本遗留 1.79e9）：真请求先静默落地，下一条恢复 */
+    tg_req_state_init(&st);
+    st.last_seq = 1795477000000LL;
+    ok(tg_req_accept(&st, SEQ, NOW) == NULL && st.last_code == TG_REQ_R_BELOW,
+       "B13 real request under a polluted baseline: silent re-baseline, no mic");
+    ok(st.last_seq == SEQ, "B13b baseline healed");
+    ok(strcmp(tg_req_accept(&st, SEQ + 1500, NOW + 1500), "new") == 0,
+       "B14 the next real request fires normally");
 }
 
 /* ---------------- C：竞态直击（旧写法的全部可见前缀） ---------------- */
 static void test_prefix_race(const char *dir)
 {
-    static const char *full = "121635016\n";
+    /* 真机量级：基线 = 已经受理过的 152599100，文件里被写入的完整序号 = 152599200。 */
+    static const char *full = "152599200\n";
+    const long long BASELINE = 152599100LL;
+    const long long NOW = 152600000LL;
     char path[256];
     size_t len = strlen(full);
     size_t i;
-    unsigned singles = 0, fired_single = 0;
+    unsigned singles = 0, fired_partial = 0, fired_complete = 0;
     unsigned unreadable = 0;
 
     snprintf(path, sizeof(path), "%s/c.req", dir);
@@ -182,22 +216,26 @@ static void test_prefix_race(const char *dir)
         cut[i] = '\0';
         write_raw(path, cut);
 
-        /* 真实运行态：守卫已经受理过 9.0e7 的基线 */
         tg_req_state_init(&st);
-        st.last_seq = 1790000000LL;
+        st.last_seq = BASELINE;
 
         if (tg_req_read(path, &v) != 0) { unreadable++; continue; }
         singles++;
-        if (tg_req_accept(&st, v, 8000) != NULL) {
-            fired_single++;
-            printf("  prefix [%s] fired v=%lld\n", cut[0] != '\0' ? cut : "(empty)", v);
+        if (tg_req_accept(&st, v, NOW) != NULL) {
+            if (v == 152599200LL) fired_complete++;
+            else {
+                fired_partial++;
+                printf("  prefix [%s] fired v=%lld\n", cut, v);
+            }
         }
     }
-    printf("  prefixes: total=%u readable=%u unreadable=%u fired_on_single_read=%u\n",
-           (unsigned)len + 1, singles, unreadable, fired_single);
-    ok(fired_single == 0, "C1 no mid-write prefix may fire on a single observation (%u)",
-       fired_single);
-    ok(unreadable == 1, "C2 the empty (truncated) file is unreadable, not seq=-1 (%u)",
+    printf("  prefixes: total=%u readable=%u unreadable=%u fired_partial=%u fired_complete=%u\n",
+           (unsigned)len + 1, singles, unreadable, fired_partial, fired_complete);
+    ok(fired_partial == 0, "C1 no mid-write prefix may fire (%u)", fired_partial);
+    /* i=9（"152599200"，无换行）与 i=10（带 \n）都是完整序号，各自算一次真请求 */
+    ok(fired_complete == 2, "C2 the complete seq does fire, exactly once per read (%u)",
+       fired_complete);
+    ok(unreadable == 1, "C3 the empty (truncated) file is unreadable, not seq=0 (%u)",
        unreadable);
 
     /* 半截被完整内容接上：只开一次麦，而且用的是完整序号 */
@@ -206,23 +244,23 @@ static void test_prefix_race(const char *dir)
         long long v = -1;
         unsigned fires = 0;
 
-        write_raw(path, "1216");                    /* 旧写法截断后的中间态 */
+        write_raw(path, "1525");                    /* 旧写法截断后的中间态 */
         tg_req_state_init(&st);
-        st.last_seq = 1790000000LL;
-        if (tg_req_read(path, &v) == 0 && tg_req_accept(&st, v, 8100) != NULL) fires++;
+        st.last_seq = BASELINE;
+        if (tg_req_read(path, &v) == 0 && tg_req_accept(&st, v, NOW) != NULL) fires++;
         write_raw(path, full);                      /* 完整内容落地 */
-        if (tg_req_read(path, &v) == 0 && tg_req_accept(&st, v, 8220) != NULL) fires++;
-        ok(fires == 1, "C3 partial-then-complete fires exactly once (%u)", fires);
-        ok(st.last_seq == 121635016LL, "C4 and it fires with the complete seq (%lld)", st.last_seq);
+        if (tg_req_read(path, &v) == 0 && tg_req_accept(&st, v, NOW + 120) != NULL) fires++;
+        ok(fires == 1, "C4 partial-then-complete fires exactly once (%u)", fires);
+        ok(st.last_seq == 152599200LL, "C5 and it fires with the complete seq (%lld)", st.last_seq);
     }
 
-    /* 同一条竞态在旧判定下的表现：seq 保持 -1，(last_seq - seq) > 60000 -> 受理 */
+    /* 同一条竞态在 T8-15.4 的旧判定下的表现（空文件 -> seq 保持 -1 -> 受理） */
     {
-        long long last_seq = 1790000000LL;
+        long long last_seq = 152599100LL;
         long long seq = -1;                 /* fgets 读到空文件时的旧代码路径 */
 
         ok(!(seq > last_seq) && (last_seq - seq) > 60000,
-           "C5 control: the old rule does accept seq=-1 (proves the bug was real)");
+           "C6 control: the old rule does accept seq=-1 (proves the bug was real)");
     }
 }
 
@@ -367,19 +405,20 @@ static void test_lifecycle(const char *dir)
 {
     char path[256];
     tg_req_state st;
+    const long long NOW = 152600000LL;
 
     snprintf(path, sizeof(path), "%s/f.req", dir);
 
     /* 守卫重启：文件里已有旧序号 -> 只能当基线，不能开麦 */
-    write_raw(path, "121635016\n");
+    write_raw(path, "152599900\n");
     tg_req_state_init(&st);
-    ok(tg_req_read(path, &st.last_seq) == 0 && st.last_seq == 121635016LL,
+    ok(tg_req_read(path, &st.last_seq) == 0 && st.last_seq == 152599900LL,
        "F1 guard restart re-baselines from the file");
-    ok(tg_req_accept(&st, 121635016LL, 9000) == NULL,
+    ok(tg_req_accept(&st, 152599900LL, NOW) == NULL && st.last_code == TG_REQ_R_REPEAT,
        "F2 the seq that existed before restart must not fire");
 
-    /* worker 重启后写的序号（单调毫秒）仍然更大 -> 正常受理 */
-    ok(strcmp(tg_req_accept(&st, 121635999LL, 9100), "new") == 0,
+    /* worker 重启后写的序号（同一 CLOCK_MONOTONIC 毫秒）更大 -> 正常受理 */
+    ok(strcmp(tg_req_accept(&st, NOW, NOW + 100), "new") == 0,
        "F3 a fresh request after worker restart still fires");
 
     /* 守卫重启 + 文件被清空 -> 不建基线，下一条合法序号就是真请求 */
@@ -387,12 +426,13 @@ static void test_lifecycle(const char *dir)
     tg_req_state_init(&st);
     ok(tg_req_read(path, &st.last_seq) == -1 && st.last_seq == -1,
        "F4 empty file at guard start leaves no baseline");
-    ok(strcmp(tg_req_accept(&st, 121640000LL, 9200), "first") == 0,
+    ok(strcmp(tg_req_accept(&st, NOW + 100, NOW + 600), "first") == 0,
        "F5 the next valid seq after an empty start is a real request");
 
     /* 停止/退出后的迟到请求由 hold 文件与 worker 侧取消负责，这里只确认
      * 受理器本身不会因为"很久没请求"而自行放行任何值。 */
-    ok(tg_req_accept(&st, 121639999LL, 9300) == NULL, "F6 stale seq after long idle stays quiet");
+    ok(tg_req_accept(&st, NOW + 50, NOW + 700) == NULL,
+       "F6 an older seq after the baseline moved stays quiet");
 }
 
 int main(int argc, char **argv)
@@ -402,6 +442,7 @@ int main(int argc, char **argv)
     char probe_path[300];
 
     printf("# T8-15.5 request-seq contract unit test\n");
+    setvbuf(stdout, NULL, _IONBF, 0);   /* 崩在哪一步都要能看见日志 */
 #ifdef _WIN32
     if (argc <= 1) system("rmdir /s /q t8_155_req_unit_dir >nul 2>nul");
 #endif

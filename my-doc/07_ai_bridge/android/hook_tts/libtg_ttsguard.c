@@ -127,8 +127,10 @@
  *     - 读侧先校验：空文件、半截数字、负数、尾巴带脏数据 -> 整条作废、不动基线
  *       （旧实现会把被截断的空文件读成 -1，再被当成"计时基准重置"受理 -> 误开麦）；
  *     - 写侧用"同目录临时文件 + rename"原子替换，读侧永远看不到半截内容；
- *     - 只有严格大于基线的合法序号才消费；合法的大幅倒退按"换计时基准"一次性放行
- *       （>= 1000、倒退 > 60000、3 s 内不重复），其余一律忽略。
+ *     - T8-15.5R：取消"大幅倒退自动当成换计时基准"的受理路径。现在只接受
+ *       "时间上说得通（同一 CLOCK_MONOTONIC，[now-120 s, now+1.5 s]）且严格大于基线"的序号；
+ *       倒退只静默重设基线（绝不触发），重复值一律忽略。
+ *         开麦只剩两种来源：没有基线，或者序号比基线大且时间上成立。
  *   消费后先过三道闸门（停止/退出 hold、原厂正在聆听、800 ms 去抖）：
  *     - 命中 stop/exit hold  -> 立刻丢弃（用户已要求停止，终态，不重试）
  *     - 其它闸门            -> 在 TG_REQ_RETRY_MS 窗口内每 120 ms 重试
@@ -229,8 +231,11 @@ static volatile long long  g_req_at;
 
 static volatile long long  g_req_logged;
 static volatile unsigned long g_req_seen, g_req_fired, g_req_dropped;
-/* T8-15.5：读到空文件/半截/脏数据而被忽略的次数（诊断竞态用） */
+/* T8-15.5：读到空文件/半截/脏数据而被忽略的次数（诊断竞态用）
+ * T8-15.5R：另有"时间上不成立"与"静默重设基线"两个计数 */
 static volatile unsigned long g_req_invalid;
+static volatile unsigned long g_req_span;
+static volatile unsigned long g_req_rebase;
 
 /* ---------------- 调用计数（原子递增，onTtsStart 热路径只读一次） ---------------- */
 static volatile unsigned long g_seen_play;      /* playTts 被调用次数 */
@@ -1006,16 +1011,39 @@ static void *tg_continuity_thread(void *arg)
         const char *why = NULL;
         long long now_m = mono_ms();
 
-        /* ---- T8-15.4/T8-15.5：跨进程续听请求的消费端（契约见文件头 + tg_req_seq.h） ----
-         * 只有 tg_req_read 成功（完整、合法、非负）的序号才允许参与比较。旧版在这里
-         * 直接把 fgets/strtoll 的结果拿来比，读到被截断的空文件时 seq=-1，会被
-         * "(last_seq - seq) > 60000" 当成"计时基准重置"受理 -> 没有用户指令也开麦。 */
+        /* ---- T8-15.4/T8-15.5/T8-15.5R：跨进程续听请求的消费端 ----
+         * 只有 tg_req_read 成功（完整、合法、非负）的序号才允许参与比较；再经 tg_req_accept
+         * 的时间合理性 + 单调性判定。T8-15.5R 起"大幅倒退"不再自动受理（曾经出现"同一个异常
+         * 旧值连续读两次就开麦"），倒退只静默重设基线。 */
         if (tg_req_read(g_cont_file, &seq) == 0) {
+            long long prev_base = req.last_seq;
+
             why = tg_req_accept(&req, seq, now_m);
-            if (why == NULL && seq != req.last_seq && now_m - req_invalid_logged > 2000) {
-                req_invalid_logged = now_m;
-                slog("continuity req: seq=%lld ignored (stale; baseline=%lld, min=%lld)",
-                     seq, req.last_seq, TG_REQ_MIN_SEQ);
+            if (why == NULL && now_m - req_invalid_logged > 2000) {
+                switch (req.last_code) {
+                case TG_REQ_R_BELOW:
+                    req_invalid_logged = now_m;
+                    INC(g_req_rebase);
+                    slog("continuity req: seq=%lld below baseline %lld - baseline reset, "
+                         "NO re-listen (repeat=%lu)", seq, prev_base, GET(g_req_rebase));
+                    break;
+                case TG_REQ_R_FUTURE:
+                case TG_REQ_R_TOO_OLD:
+                    req_invalid_logged = now_m;
+                    INC(g_req_span);
+                    slog("continuity req: seq=%lld rejected (%s; baseline=%lld, now=%lld) - "
+                         "not a request written just now",
+                         seq, req.last_code == TG_REQ_R_FUTURE ? "in the future" : "too old",
+                         req.last_seq, now_m);
+                    break;
+                case TG_REQ_R_TINY:
+                    req_invalid_logged = now_m;
+                    slog("continuity req: seq=%lld rejected (smaller than %lld) - partial write",
+                         seq, TG_REQ_MIN_SEQ);
+                    break;
+                default:
+                    break;      /* REPEAT/NONE：重复值，安静丢掉 */
+                }
             }
         } else {
             g_req_invalid++;
@@ -1669,9 +1697,9 @@ const char *tg_hook_stats(void)
                  g_hooked_pstarttalk, TG_HOLD_FILE_DEFAULT);
         snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
                  " req_seen=%lu req_fired=%lu req_dropped=%lu req_invalid=%lu "
-                 "req_pending=%d req_seq=%lld",
+                 "req_span=%lu req_rebase=%lu req_pending=%d req_seq=%lld",
                  GET(g_req_seen), GET(g_req_fired), GET(g_req_dropped), GET(g_req_invalid),
-                 g_req_pending, g_req_seq);
+                 GET(g_req_span), GET(g_req_rebase), g_req_pending, g_req_seq);
     }
     return buf;
 }

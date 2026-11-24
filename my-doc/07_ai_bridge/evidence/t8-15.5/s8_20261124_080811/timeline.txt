@@ -1,0 +1,12 @@
+﻿[08:08:12.006] scenario=s8 out=D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-15.5\s8_20261124_080811
+[08:08:13.693] continuity.req: 154152713
+[08:08:13.695] core pid: 13250
+[08:08:13.696] worker pid: 21569
+[08:08:13.697] worker log lines: 823  tap lines: 3263
+[08:08:16.870] tap_pids=2 since=11-24 08:08:15.000 ; tap_size=645137 ; tap_lines=3265
+[08:08:17.030] capture -> D:\tgz02\OS\system\my-doc\07_ai_bridge\evidence\t8-15.5\s8_20261124_080811\logcat_tgt_session.txt
+[08:08:17.036] sleep 30000 ms
+[08:08:47.740] capture stopped
+[08:08:49.222] continuity.req after: 154152713
+[08:08:49.223] listen_hold after: 154215429
+[08:08:49.224] worker log lines after: 823  tap lines after: 3265

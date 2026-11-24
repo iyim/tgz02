@@ -1,10 +1,9 @@
-/* tg_req_seq.h -- T8-15.5 续听请求（worker 写 / native 守卫读）的序号契约
+/* tg_req_seq.h -- T8-15.5 / T8-15.5R 续听请求（worker 写 / native 守卫读）的序号契约
  *
- * 为什么把它抽成独立头文件：这份契约有两个坑，两侧必须实现同一套规则，
- * 而且这两个坑都能在 host 上验证（tests/t8_155_req_seq_unit_test.c）。
+ * 为什么把它抽成独立头文件：这份契约有几个坑，两侧必须实现同一套规则，
+ * 而且每个坑都能在 host 上验证（tests/t8_155_req_seq_unit_test.c）。
  *
- *   坑 1（读侧，本次修复的主缺陷）：
- *     旧版 worker 用 fopen(..., "w") 写请求文件 —— 会先把文件截断，再写内容。
+ *   坑 1（读侧）：旧版 worker 用 fopen(..., "w") 写请求文件 —— 会先把文件截断，再写内容。
  *     守卫如果正好在"截断后、写入前"读到，fgets 失败 -> seq 保持 -1 ->
  *     旧判定 `(last_seq - seq) > 60000` 成立 -> 把 -1 当成一次新请求 -> 没有用户
  *     指令也会开麦。所以读侧必须先"校验完整合法"，再参与比较：空文件、半截数字、
@@ -13,14 +12,12 @@
  *   坑 2（写侧）：改成"同目录临时文件 + rename"原子替换，读侧永远只会看到
  *     完整的旧值或完整的新值，不会看到空文件/半截内容。
  *
- * 跨计时基准重置仍然要支持（历史上有人手工往请求文件写过 epoch 秒，把基线抬到
- * 1.79e9，之后所有单调毫秒请求都被当成"过期"静默丢弃，原厂指令后不再开麦），
- * 但只接受同时满足下面几条的倒退，避免任何脏数据都能触发一次开麦：
- *   - 序号本身合法（十进制、非负、无脏尾巴）；
- *   - 倒退量 > TG_REQ_RESET_JUMP；
- *   - 新值 >= TG_REQ_MIN_SEQ（worker 用的是 CLOCK_MONOTONIC 毫秒，真序号不可能是个位/
- *     十位数，这条专门挡住"截断后只剩前几位"的半截文件）；
- *   - 3 s 内不重复受理重置（同一份脏数据不会被反复当成新请求）。
+ *   坑 3（T8-15.5R，审查发现）：曾经允许"大幅倒退 + 下一拍读到不小于候选的值"就当成
+ *     "换了计时基准"受理 —— 于是同一个异常旧值连续出现两次就会开麦。重复读到相同内容
+ *     什么也证明不了。现在**彻底取消自动基准重置**：
+ *       - 只接受时间上说得通的序号（同一 CLOCK_MONOTONIC，[now-120 s, now+1.5 s]）；
+ *       - 倒退一律静默重设基线，绝不触发。
+ *     开麦只剩两种来源："没有基线" 或 "序号比基线大且时间说得通"。
  */
 #ifndef TG_REQ_SEQ_H
 #define TG_REQ_SEQ_H
@@ -32,11 +29,23 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define TG_REQ_BUF          64
-#define TG_REQ_RESET_JUMP   60000LL   /* 倒退量超过它才可能是换了计时基准 */
-#define TG_REQ_MIN_SEQ      1000LL    /* 小于它的一定是半截数字/脏数据，不是真序号 */
-#define TG_REQ_RESET_GAP_MS 3000LL    /* 两次"基准重置"受理之间的最小间隔 */
-#define TG_REQ_CONFIRM_MS    600LL    /* "基准重置"候选的确认窗口 */
+#define TG_REQ_BUF              64
+#define TG_REQ_MIN_SEQ          1000LL     /* 小于它的一定是半截数字/脏数据，不是真序号 */
+/* T8-15.5R：不再有"计时基准重置"这条受理路径。判定依据换成"这个序号像不像刚发出的请求"：
+ * 双方都用 CLOCK_MONOTONIC 毫秒，一个真实请求从写入到被守卫读到只有 ~120 ms，
+ * 所以序号必须落在 [now - STALE, now + SLACK] 内。 */
+#define TG_REQ_CLOCK_SLACK_MS   1500LL     /* 允许对端比守卫"快"这么一点（取整/调度抖动） */
+#define TG_REQ_CLOCK_STALE_MS  120000LL    /* 比这更旧的值不可能是"刚发出的请求" */
+
+/* tg_req_accept 的判定结果（调用方据此打日志/计数，测试据此断言"没触发"的确切原因） */
+#define TG_REQ_R_NONE     0     /* 空指针 */
+#define TG_REQ_R_FIRST    1     /* 没有基线（守卫启动时文件是空的）-> 受理 */
+#define TG_REQ_R_NEW      2     /* 严格递增 -> 受理 */
+#define TG_REQ_R_REPEAT   3     /* 与基线相同：重复值 */
+#define TG_REQ_R_BELOW    4     /* 低于基线：静默重设基线，绝不触发 */
+#define TG_REQ_R_TOO_OLD  5     /* 太旧：不是刚发出的请求 */
+#define TG_REQ_R_FUTURE   6     /* 在未来：脏数据 */
+#define TG_REQ_R_TINY     7     /* 小于 TG_REQ_MIN_SEQ：半截数字 */
 
 #if defined(__ANDROID__) || defined(__linux__)
 #define TG_REQ_FSYNC(fd) fsync(fd)
@@ -52,18 +61,14 @@
 
 typedef struct {
     long long last_seq;    /* 已受理的最大合法序号；-1 = 还没有基线 */
-    long long cand_seq;    /* 待确认的"计时基准重置"候选值；-1 = 没有候选 */
-    long long cand_ms;     /* 候选出现时刻 */
-    long long reset_ms;    /* 上一次受理基准重置的时刻（节流） */
+    int       last_code;   /* 上一次 tg_req_accept 的判定结果（TG_REQ_R_*） */
 } tg_req_state;
 
 static inline void tg_req_state_init(tg_req_state *st)
 {
     if (st == NULL) return;
     st->last_seq = -1;
-    st->cand_seq = -1;
-    st->cand_ms = 0;
-    st->reset_ms = 0;
+    st->last_code = TG_REQ_R_NONE;
 }
 
 /* 读请求文件。返回 0 = 拿到完整、合法、非负的序号；-1 = 不存在/为空/半截/脏数据。
@@ -160,50 +165,53 @@ static inline int tg_req_write_atomic(const char *path, long long seq)
 }
 
 /* 受理判定：返回受理原因（用于日志），NULL = 本次不触发。
- *   "first"            = 还没有基线（守卫启动时请求文件是空的），这条是真正的新请求
- *   "new"              = 序号严格递增
- *   "clock-base reset" = 合法的大幅倒退，且**在下一拍被确认**为换了计时基准
+ *   "first" = 还没有基线（守卫启动时请求文件是空的），这条是真正的新请求
+ *   "new"   = 序号严格递增
  *
- * 为什么倒退要"两次观测"才受理：只靠"倒退很多 + 数值够大"是挡不住半截文件的 ——
- * "121635016" 被截成 "1216" 仍然 >= 1000、倒退量也很大，只看一次就会被当成换了基准。
- * 所以第一拍只记候选，第二拍（>=120 ms 后）如果读到"不小于候选值"的内容才确认：
- *   - 换基准时对端会一直用新基准写，值会稳定或继续增大 -> 确认；
- *   - 旧写法截断产生的半截内容会立刻被完整内容覆盖（值变大）-> 确认后按真实序号开麦；
- *   - 真正的脏数据（空文件、负数、负号）在读侧就被拒，连候选都不会有。
- * 确认窗口 600 ms 内没确认就作废，且重置动作 3 s 内只放行一次。 */
+ * T8-15.5R：**取消"计时基准重置"自动受理**。上一版允许"大幅倒退 + 下一拍读到不小于它的值"
+ * 就开麦，结果是"同一个异常旧值连续出现两次"就能触发一次开麦 —— 重复读到相同内容不能证明
+ * 它是一个新请求。现在改成两条更硬的规则：
+ *
+ *   1) 先看这个序号像不像"刚发出的请求"：双方都用 CLOCK_MONOTONIC 毫秒，真实请求从写入到
+ *      被读到只有 ~120 ms，所以只接受 [now - 120 s, now + 1.5 s] 区间内的值。
+ *      未来值（例如手工写进去的 epoch 秒/毫秒）、太旧的值一律不触发、也不动基线。
+ *   2) 倒退一律**静默重设基线**，绝不触发：这样"文件里残留一个合法格式的旧序号"最多只丢掉
+ *      一条请求，不会在没有用户指令时开麦；而基线被历史脏值抬高过的情况也能自愈
+ *      （第一条真请求静默落地，第二条开始正常触发）。
+ *
+ * 于是"开麦"只剩两种来源：没有基线，或者序号比基线大且时间上说得通。 */
 static inline const char *tg_req_accept(tg_req_state *st, long long seq, long long now_ms)
 {
     if (st == NULL) return NULL;
     if (seq < TG_REQ_MIN_SEQ) {
-        /* 半截数字（"1"/"12"）连候选资格都没有 */
-        if (st->cand_seq >= 0 && now_ms - st->cand_ms > TG_REQ_CONFIRM_MS) st->cand_seq = -1;
+        st->last_code = TG_REQ_R_TINY;          /* 半截数字（"1"/"1525"） */
         return NULL;
     }
-    if (st->cand_seq >= 0) {
-        if (now_ms - st->cand_ms > TG_REQ_CONFIRM_MS) {
-            st->cand_seq = -1;                    /* 候选过期：半截内容没被完整内容接上 */
-        } else if (seq >= st->cand_seq) {
-            st->cand_seq = -1;
-            st->last_seq = seq;
-            st->reset_ms = now_ms;
-            return "clock-base reset";
-        } else {
-            return NULL;                          /* 候选还没确认 */
-        }
+    if (seq > now_ms + TG_REQ_CLOCK_SLACK_MS) {
+        st->last_code = TG_REQ_R_FUTURE;        /* epoch 秒/毫秒之类的脏数据 */
+        return NULL;
+    }
+    if (seq + TG_REQ_CLOCK_STALE_MS < now_ms) {
+        st->last_code = TG_REQ_R_TOO_OLD;       /* 不可能是一个"刚发出"的请求 */
+        return NULL;
     }
     if (st->last_seq < 0) {
         st->last_seq = seq;
+        st->last_code = TG_REQ_R_FIRST;
         return "first";
     }
     if (seq > st->last_seq) {
         st->last_seq = seq;
+        st->last_code = TG_REQ_R_NEW;
         return "new";
     }
-    if ((st->last_seq - seq) > TG_REQ_RESET_JUMP &&
-        (st->reset_ms == 0 || now_ms - st->reset_ms > TG_REQ_RESET_GAP_MS)) {
-        st->cand_seq = seq;                       /* 先记候选，下一拍再确认 */
-        st->cand_ms = now_ms;
+    if (seq == st->last_seq) {
+        st->last_code = TG_REQ_R_REPEAT;        /* 同一个值再读一万次也不会开麦 */
+        return NULL;
     }
+    /* 低于基线：静默重设基线，本拍不触发 */
+    st->last_seq = seq;
+    st->last_code = TG_REQ_R_BELOW;
     return NULL;
 }
 

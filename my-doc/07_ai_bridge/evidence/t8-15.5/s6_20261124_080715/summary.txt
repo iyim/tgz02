@@ -1,0 +1,43 @@
+﻿=== scenario s6 @ 20261124_080715   (failed awaits: 0)
+--- native routes:
+[aiw] 2026-11-24T08:07:32 route=native intent=volume rule=volume.up arg=up event=t6-13250-1971325-g9 seq=364 session=1971325 text_bytes=18 merges=0 held_ms=0 publish_seq=17 (factory answers; AI worker does not)
+[aiw] 2026-11-24T08:07:36 route=native intent=exit rule=exit.keyword arg= event=t6-13250-1971339-g10 seq=365 session=1971339 text_bytes=6 merges=0 held_ms=0 publish_seq=18 (factory answers; AI worker does not)
+--- continuity requests (worker):
+[aiw] 2026-11-24T08:07:33 continuity request: seq=154152713 sent (after native command) n=14 - waiting for factory session
+[aiw] 2026-11-24T08:07:33 continuity request: CONFIRMED by factory session=1971339 (+215 ms)
+--- dialog lifecycle:
+[aiw] 2026-11-24T08:07:27 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T08:07:27 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T08:07:39 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+--- scenario start (device time): 11-24
+--- factory sessions during scenario (tap, filtered by start time):
+11-24 08:07:23.331 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1967224, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 08:07:28.816 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1971325, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 08:07:33.552 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1971339, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+--- factory sessions in delta (unfiltered, includes tap restart backlog):
+11-24 08:07:23.331 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1967224, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 08:07:28.816 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1971325, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 08:07:33.552 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1971339, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+--- guard (tgt) lines:
+11-24 08:06:41.004 I/tgt     (13250): onTtsStart DROP id=1967181 streaming=1 comm=AG-ws-receive text="现在是早上八点六分。" (factory NLU answer)
+11-24 08:06:41.032 I/tgt     (13250): onTtsStart ALLOW id=5243985 by=session_id streaming=1 text_bytes=9
+11-24 08:06:42.493 I/tgt     (13250): continuity: auto-after-tts seq=1795478802448 startTalk(type=1, info+0=1) -> 0 (n=6 ok=0)
+11-24 08:06:45.473 I/tgt     (13250): onTtsStart ALLOW id=1971282 by=native_window intent=volume seq=15 exp_ms=1795478813405 streaming=1 text_bytes=35
+11-24 08:06:46.745 I/tgt     (13250): continuity req: seq=154105970 accepted (new) -> pending (attempt window 2500 ms)
+11-24 08:06:46.745 I/tgt     (13250): continuity req: seq=154105970 firing after 0 ms
+11-24 08:06:46.791 I/tgt     (13250): continuity: worker-request seq=154105970 startTalk(type=1, info+0=1) -> 0 (n=7 ok=0)
+11-24 08:06:49.247 I/tgt     (13250): onTtsStart ALLOW id=1971296 by=native_window intent=volume seq=16 exp_ms=1795478817166 streaming=1 text_bytes=15
+11-24 08:06:50.576 I/tgt     (13250): continuity req: seq=154109733 accepted (new) -> pending (attempt window 2500 ms)
+11-24 08:06:50.576 I/tgt     (13250): continuity req: seq=154109733 firing after 0 ms
+11-24 08:06:50.578 I/tgt     (13250): continuity: worker-request seq=154109733 startTalk(type=1, info+0=1) -> 0 (n=8 ok=0)
+11-24 08:06:54.366 I/tgt     (13250): onTtsStart ALLOW id=1971311 by=native_window intent=volume seq=16 exp_ms=1795478817166 streaming=1 text_bytes=178
+11-24 08:06:56.597 I/tgt     (13250): onTtsStart ALLOW id=5244019 by=session_id streaming=1 text_bytes=66
+11-24 08:07:01.332 I/tgt     (13250): continuity: auto-after-tts seq=1795478821279 startTalk(type=1, info+0=1) -> 0 (n=9 ok=0)
+11-24 08:07:10.173 I/tgt     (13250): onTtsStart DROP id=1971316 streaming=1 comm=AG-ws-receive text="没听清主人的话，可以再说一次吗" (factory NLU answer)
+11-24 08:07:27.176 I/tgt     (13250): onTtsStart DROP id=1967224 streaming=1 comm=AG-ws-receive text="现在是早上八点七分。" (factory NLU answer)
+11-24 08:07:27.213 I/tgt     (13250): onTtsStart ALLOW id=5244028 by=session_id streaming=1 text_bytes=9
+11-24 08:07:28.792 I/tgt     (13250): continuity: auto-after-tts seq=1795478848647 startTalk(type=1, info+0=1) -> 0 (n=10 ok=0)
+11-24 08:07:32.288 I/tgt     (13250): onTtsStart ALLOW id=1971325 by=native_window intent=volume seq=17 exp_ms=1795478860123 streaming=1 text_bytes=29
+11-24 08:07:33.514 I/tgt     (13250): continuity req: seq=154152713 accepted (new) -> pending (attempt window 2500 ms)
+11-24 08:07:33.514 I/tgt     (13250): continuity req: seq=154152713 firing after 0 ms
+11-24 08:07:33.515 I/tgt     (13250): continuity: worker-request seq=154152713 startTalk(type=1, info+0=1) -> 0 (n=11 ok=0)

@@ -1,0 +1,29 @@
+﻿[aiw] 2026-11-24T08:07:23 factory wake (onStartTalk): session=1967224 wake_type=0 listening=1 round=0
+[aiw] 2026-11-24T08:07:27 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T08:07:27 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T08:07:27 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T08:07:27 route=skill skill=time.query event=t6-13250-1967224-g8 session=1967224 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T08:07:27 route=skill event=t6-13250-1967224-g8 seq=363 session=1967224 skill=time.query text_bytes=24
+[aiw] 2026-11-24T08:07:27 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T08:07:27 skill ok: skill=time.query event=t6-13250-1967224-g8 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T08:07:27 tts queued: event=t6-13250-1967224-g8 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T08:07:27 skill tts queued: skill=time.query event=t6-13250-1967224-g8
+[aiw] 2026-11-24T08:07:27 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T08:07:28 factory wake (onStartTalk): session=1971325 wake_type=1 listening=1 round=1
+[aiw] 2026-11-24T08:07:32 factory stop talk (EOU round=1 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T08:07:32 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T08:07:32 factory stop talk (EOU round=1 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T08:07:32 route=native intent=volume rule=volume.up arg=up event=t6-13250-1971325-g9 seq=364 session=1971325 text_bytes=18 merges=0 held_ms=0 publish_seq=17 (factory answers; AI worker does not)
+[aiw] 2026-11-24T08:07:32 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T08:07:32 factory exit talk (platform session closed, round=2): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T08:07:33 continuity request: seq=154152713 sent (after native command) n=14 - waiting for factory session
+[aiw] 2026-11-24T08:07:33 continuity request: CONFIRMED by factory session=1971339 (+215 ms)
+[aiw] 2026-11-24T08:07:33 factory wake (onStartTalk): session=1971339 wake_type=1 listening=1 round=2
+[aiw] 2026-11-24T08:07:36 factory stop talk (EOU round=2 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T08:07:36 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T08:07:36 factory stop talk (EOU round=2 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T08:07:36 dialog end by voice: intent=exit (rounds_done=1 followup_rounds=0 followup_total=14 exit_turns=2)
+[aiw] 2026-11-24T08:07:36 listen hold: auto-listen suppressed for 60000 ms -> /data/local/tmp/t5_bridge/ai_worker/listen_hold
+[aiw] 2026-11-24T08:07:36 route=native intent=exit rule=exit.keyword arg= event=t6-13250-1971339-g10 seq=365 session=1971339 text_bytes=6 merges=0 held_ms=0 publish_seq=18 (factory answers; AI worker does not)
+[aiw] 2026-11-24T08:07:36 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T08:07:39 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)

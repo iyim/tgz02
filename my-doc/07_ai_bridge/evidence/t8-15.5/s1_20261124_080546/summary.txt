@@ -1,0 +1,42 @@
+﻿=== scenario s1 @ 20261124_080546   (failed awaits: 0)
+--- native routes:
+[aiw] 2026-11-24T08:06:02 route=native intent=volume rule=volume.up arg=up event=t6-13250-1971251-g2 seq=357 session=1971251 text_bytes=18 merges=0 held_ms=0 publish_seq=14 (factory answers; AI worker does not)
+--- continuity requests (worker):
+[aiw] 2026-11-24T08:06:03 continuity request: seq=154062793 sent (after native command) n=11 - waiting for factory session
+[aiw] 2026-11-24T08:06:09 continuity request: NOT confirmed within 5000 ms (guard deferred/dropped; see tgt log for req seq reason)
+--- dialog lifecycle:
+[aiw] 2026-11-24T08:05:58 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T08:05:58 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T08:06:07 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T08:06:09 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+--- scenario start (device time): 11-24
+--- factory sessions during scenario (tap, filtered by start time):
+11-24 08:05:54.682 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1967151, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 08:05:58.451 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1971251, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 08:06:02.567 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1971266, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 08:06:15.955 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1971273, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+--- factory sessions in delta (unfiltered, includes tap restart backlog):
+11-24 08:05:54.682 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1967151, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 08:05:58.451 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1971251, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 08:06:02.567 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1971266, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 08:06:15.955 D/SessionManager(13250): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13379] sessionId = 1971273, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+--- guard (tgt) lines:
+11-24 08:05:21.694 I/tgt     (13250): continuity req: seq=153967006 accepted (new) -> pending (attempt window 2500 ms)
+11-24 08:05:21.694 I/tgt     (13250): continuity req: seq=153967006 firing after 0 ms
+11-24 08:05:21.695 I/tgt     (13250): continuity: worker-request seq=153967006 startTalk(type=1, info+0=1) -> 0 (n=2 ok=0)
+11-24 08:05:58.448 I/tgt     (13250): continuity: auto-after-tts seq=1795478758432 startTalk(type=1, info+0=1) -> 0 (n=3 ok=0)
+11-24 08:05:58.574 I/tgt     (13250): onTtsStart DROP id=1967151 streaming=1 comm=AG-ws-receive text="现在是早上八点五分。" (factory NLU answer)
+11-24 08:06:02.117 I/tgt     (13250): onTtsStart ALLOW id=5243958 by=session_id streaming=1 text_bytes=9
+11-24 08:06:02.323 I/tgt     (13250): onTtsStart ALLOW id=1971251 by=native_window intent=volume seq=14 exp_ms=1795478770228 streaming=1 text_bytes=35
+11-24 08:06:02.553 I/tgt     (13250): continuity: auto-after-tts seq=1795478762417 startTalk(type=1, info+0=1) -> 0 (n=4 ok=0)
+11-24 08:06:03.518 I/tgt     (13250): continuity req: seq=154062793 accepted (new) -> pending (attempt window 2500 ms)
+11-24 08:06:03.518 I/tgt     (13250): continuity req: seq=154062793 deferred (factory already listening) +1 ms
+11-24 08:06:04.002 I/tgt     (13250): continuity req: seq=154062793 deferred (factory already listening) +484 ms
+11-24 08:06:04.483 I/tgt     (13250): continuity req: seq=154062793 deferred (factory already listening) +966 ms
+11-24 08:06:04.968 I/tgt     (13250): continuity req: seq=154062793 deferred (factory already listening) +1451 ms
+11-24 08:06:05.450 I/tgt     (13250): continuity req: seq=154062793 deferred (factory already listening) +1932 ms
+11-24 08:06:05.931 I/tgt     (13250): continuity req: seq=154062793 deferred (factory already listening) +2413 ms
+11-24 08:06:06.051 I/tgt     (13250): continuity req: seq=154062793 expired after 2534 ms (factory already listening)
+11-24 08:06:07.426 I/tgt     (13250): onTtsStart ALLOW id=1971266 by=native_window intent=volume seq=14 exp_ms=1795478770228 streaming=1 text_bytes=178
+11-24 08:06:09.598 I/tgt     (13250): onTtsStart ALLOW id=5243974 by=session_id streaming=1 text_bytes=82
+11-24 08:06:15.955 I/tgt     (13250): continuity: auto-after-tts seq=1795478775940 startTalk(type=1, info+0=1) -> 0 (n=5 ok=0)
