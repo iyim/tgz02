@@ -1,0 +1,17 @@
+﻿=== date
+Tue Nov 24 15:12:50 CST 2026
+=== factory :core / our stack
+core_pid=1178
+  /data/local/tmp/t7/libtg_ttsguard_t8156.so
+  /data/local/tmp/t8/libtg_hook.so
+tg_hook_sup=running
+tg_guard_sup=running
+tgb_bridge=1602
+ai_worker=2580
+=== probe apps installed (test artifacts only)
+package:com.tgz02.providerprobe
+package:com.tgz02.aidltest
+=== top / power
+    mResumedActivity: ActivityRecord{1130785 u0 com.tgz02.providerprobe/.ProviderProbe t13}
+  mWakefulness=Awake
+=== END
