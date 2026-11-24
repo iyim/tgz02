@@ -1,0 +1,14 @@
+﻿11-24 11:43:36.094 D/SessionManager( 1151): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1635] sessionId = 1968135, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 11:43:36.101 W/SessionDispatch( 1151): JNI_AILABS SessionDispatch.cpp:onStartTalk:106 [1489] sessionId = 1968135, forground = 
+11-24 11:43:36.111 W/SessionDispatch( 1151): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [1489] sessionId = 1968135
+11-24 11:43:36.860 D/GenieAssistantUIManager( 1151): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147784; data=null
+11-24 11:43:39.651 D/AGSpeechEngine( 1151): onCloudEOUEvent,646
+11-24 11:43:39.668 D/SessionManager( 1151): JNI_AILABS SessionManager.cpp:onStopTalk:697 [1635] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 11:43:39.668 D/SessionManager( 1151): JNI_AILABS SessionManager.cpp:onStopTalk:749 [1635] on stop talk, session=1968135
+11-24 11:43:39.668 D/SessionManager( 1151): JNI_AILABS SessionManager.cpp:onStopTalk:786 [1635] on stop talk, send end frame, sessionId = 1968135
+11-24 11:43:39.671 D/SessionManager( 1151): JNI_AILABS SessionManager.cpp:onStopTalk:842 [1635] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "f8a ...
+11-24 11:43:39.684 W/SessionDispatch( 1151): JNI_AILABS SessionDispatch.cpp:onStopTalk:170 [1489] sessionId = 1968135
+11-24 11:43:40.430 D/GenieAssistantUIManager( 1151): onNotify. type = NOTIFY_TTS_PLAY_TXT; arg1=1; arg2=0; data=鐜板湪鏄笂鍗堝崄涓€鐐瑰洓鍗佷笁鍒嗐€?11-24 11:43:40.430 E/NativeUIManager( 1151): iuiManager what = 1101,sessionId = 10
+11-24 11:43:40.434 D/GenieAssistantUIManager( 1151): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_PLAY; arg2=1968135; data=null
+11-24 11:43:42.861 D/GenieAssistantUIManager( 1151): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=1968135; data=null
+11-24 11:43:42.865 D/GenieAssistantUIManager( 1151): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=1968135; data=null

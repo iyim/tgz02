@@ -1,0 +1,14 @@
+﻿### date
+2026-11-24 11:53:51
+stopped supervisor 12243
+stopped supervisor 12261
+### supervisors left:
+core before=15364
+killed 15364
+core after=18248
+### our libs in :core (expect none)
+0
+### factory speech libs
+### init.svc.tg_supervisor=stopped
+### top activity
+    mResumedActivity: ActivityRecord{cf1a434 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}

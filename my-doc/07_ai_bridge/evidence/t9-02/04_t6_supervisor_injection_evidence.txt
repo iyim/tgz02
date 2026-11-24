@@ -1,0 +1,54 @@
+﻿### t6 supervisor log (the rc-managed one) - first and last lines
+2026-11-21 16:23:06.038 sup: start pid=29762 target=com.alibaba.ailabs.genie.smartapp:core injector=/data/local/tmp/t6/tg_injector agent=/data/local/tmp/t6/libtg_hook.so interval=500ms retry=2000ms max=60000ms
+2026-11-21 16:23:06.066 sup: pidfile=/data/local/tmp/t6/tg_supervisor.pid acquired (single instance)
+2026-11-21 16:23:06.094 sup: target found: pid=29149 starttime=1151797 argv_extra=1 cmdline=com.alibaba.ailabs.genie.smartapp:core
+2026-11-21 16:23:06.126 sup: target ready: pid=29149 libsmartbox.so is mapped
+inj| [inject] tg_injector t6-01 begin
+inj| [inject] so=/data/local/tmp/t6/libtg_hook.so check_only=1
+...
+inj| [inject] dlsym=0xb1e370bf (libdl.so)
+inj| [inject] dlerror=0xb1e370b7 (libdl.so)
+inj| [inject] path_written=0xac93e100 len=33
+inj| [inject] dlopen ok handle=0xccf01c2b flags=0x6
+inj| [inject] dlsym ok install=0x96c5fbb0 prepare=0x96c5f5e4 status=0x96c60c4c
+inj| [inject] tg_hook_prepare() = 0
+inj| [inject] patch_range=[0x97bd553c,0x97bd5544)
+inj| [inject] paused 81 other threads (exec tid=12803); [0x97bd553c,0x97bd5544) is clear
+inj| [inject] tg_hook_install() = -5 (threads resumed)
+inj| [inject] ERROR stage=install rc=-5 last_error=entry not original at 0x97bd553c: e51ff004 b34dd000 (orig e92d4ff0 e28db01c, patched=0, sender=0)
+inj| [inject] detached after error (target thread resumed) exit=19
+2026-11-24 11:46:07.749 sup: inject failed: pid=12803 exit=19 hooked=-1 attempt=4 backoff=16000ms why=exit=19 (no hooked= in output)
+### lines mentioning inject end
+2026-11-22 13:09:59.752 sup: inject end: pid=1173 exit=0 hooked=1 elapsed=795ms ok
+2026-11-22 13:14:19.754 sup: inject end: pid=1159 exit=0 hooked=1 elapsed=372ms ok
+2026-11-22 13:18:37.003 sup: inject end: pid=1155 exit=0 hooked=1 elapsed=394ms ok
+2026-11-22 13:24:27.041 sup: inject end: pid=8342 exit=0 hooked=1 elapsed=211ms ok
+2026-11-24 11:38:08.233 sup: inject end: pid=1151 exit=0 hooked=1 elapsed=1303ms ok
+### boot log
+-rw-r-----    1 system   shell    u:object_r:adb_keys_file:s0            721 Nov 24 11:37 /data/misc/adb/adb_keys
+selinux before: Enforcing
+selinux after : Permissive
+boot_completed=1, restarting adbd
+adbd pid = 1758
+=== done ===
+### rc file state
+-rw-r--r-- 1 root root u:object_r:system_file:s0 2114 2026-11-21 18:34 /system/etc/init/tg_supervisor.rc
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  /system/etc/init/tg_supervisor.rc
+### current init service state
+stopped
+### current pids (final)
+  898   282 com.alibaba.ailabs.genie.osupdate
+ 1062   282 com.alibaba.ailabs.genie.launcher
+ 1210   282 com.alibaba.ailabs.genie.smartapp:business
+ 1564   282 com.alibaba.ailabs.genie.iot:service
+11915   282 com.alibaba.ailabs.genie.smartapp
+12243     1 tg_supervisor
+12261     1 tg_supervisor
+12274     1 tgb_bridge
+12579 12575 app_process
+12597 12579 logcat
+12628     1 ai_worker
+12652     1 logcat
+15364   282 com.alibaba.ailabs.genie.smartapp:core
+15565   282 com.alibaba.ailabs.genie.rtc
+18181 18179 app_process

@@ -1,0 +1,31 @@
+﻿### date
+2026-11-24 11:55:27
+### stale state files
+ls: /data/local/tmp/t5_bridge/ai_worker/listen_hold: No such file or directory
+-rw-rw-rw- 1 root root 7 2026-11-24 11:52 /data/local/tmp/t7/continuity.req
+### supervisors starting
+core before=18248
+core after=18956
+/data/local/tmp/t7/libtg_ttsguard_t8155r.so
+/data/local/tmp/t8/libtg_hook.so
+### processes
+ 1210   282 com.alibaba.ailabs.genie.smartapp:business
+11915   282 com.alibaba.ailabs.genie.smartapp
+12274     1 tgb_bridge
+12579 12575 app_process
+12597 12579 logcat
+12628     1 ai_worker
+12652     1 logcat
+18925 18920 tg_supervisor
+18941 18920 tg_supervisor
+18956   282 com.alibaba.ailabs.genie.smartapp:core
+### init.svc.tg_supervisor=stopped
+### worker status
+running: pid=12628
+{"version":1,"state":"running","pid":12628,"started_at":"2026-11-24T11:45:04","updated_at":"2026-11-24T11:55:44","started_at_ms":1795491904010,"updated_at_ms":1795492544365,"events_file":"/data/local/tmp/t5_bridge/work/events.jsonl","state_file":"/data/local/tmp/t5_bridge/ai_worker/consumer_state.json","offset":20431,"file_size":20431,"dev":45846,"ino":86131,"prefix_hash":"d0eee75378216726","prefix_hash_valid":1,"provider":"deepseek","mock_calls":0,"provider_mock":0,"model":"deepseek-flash","last_http_status":0,"last_curl_code":0,"last_provider_latency_ms":0,"last_resp_bytes":0,"last_error_class":"","counters":{"lines_read":6,"events_accepted":6,"events_processed":3,"duplicates":0,"invalid_lines":0,"oversize_lines":0,"io_errors":0,"truncations":0,"replacements":0,"identity_resets":0,"legacy_rescans":0,"gaps":0,"gap_missing_total":0,"seq_resets":0,"seq_unknown_start":1,"state_saves":6,"state_errors":0,"provider_ok":0,"provider_err":0,"provider_timeout":0,"provider_retries":0,"stuck_attempts":0,"provider_stuck":0,"state_persist_failed":0,"tts_queued":3,"tts_skipped":0,"tts_enqueue_failed":0,"dead_letters":0},"dead_letter":{"failed":0,"event_id":"","io_stage":0,"io_errno":0,"rollback_stage":0,"rollback_errno":0,"pre_len":0,"cur_len":0,"cur_len_valid":0,"marker_state":0,"marker_stage":0,"marker_errno":0},"tts_queue":"/data/local/tmp/t5_bridge/tts","context":{"enabled":1,"max_messages":6,"messages":6,"turns":3,"load_state":2,"saves":0,"save_errors":0,"evicted":0,"file":"/data/local/tmp/t5_bridge/ai_worker/context.json"},"echo":{"enabled":1,"no_command":1,"seen":6,"dropped_echo":0,"dropped_nocmd":0,"kept":6,"kept_in_window":0,"window_hits":0,"state_errors":0,"last_reason":"keep","last_detail":"kept outside playback window","state_file":"/data/local/tmp/t5_bridge/tts/play.public.json"},"last_seq":5,"last_event_id":"t6-15364-1968072-g3","last_event_at":"2026-11-24T11:52:22","last_gap_from":0,"last_gap_to":0,"route":{"enabled":1,"intents":255,"native":3,"ai":0,"volume":3,"weather":0,"screen_off":0,"time":0,"screen_on":0,"media":0,"stop":0,"interrupts":0,"publish_ok":3,"publish_fail":0,"fallback_ai":0,"publish_retry":0,"seq":3,"dup_dropped":0,"incomplete_ai":0,"publish_err":"","dup_same_event":0,"dup_same_report":0,"same_text_new_event":2,"last":"route=native intent=volume rule=volume.down arg=down session=1968081 seq=3","publish_file":"/data/local/tmp/t5_bridge/work/native_route.public.json"},"gate":{"enabled":1,"debounce_ms":450,"max_hold_ms":2500,"cross_session":1,"seen":6,"held":0,"released":6,"merged":0,"cross_merged":0,"dropped_dup":0,"restored":0,"fast_released":6,"last_detail":"fast native intent=volume","hold_file":"/data/local/tmp/t5_bridge/ai_worker/utterance_hold.json"},"session":{"enabled":1,"timeout_ms":12000,"state":"IDLE","turns":0,"followups":0,"opened":0,"closed":3,"detail":"CLOSED->IDLE (back to standby)"},"session_ctrl":{"enabled":1,"state":"IDLE","session":"1968081","request":"","request_active":0,"last_wake_ms":1009847,"last_final_ms":906106,"last_final_event":"t6-15364-1968081-g4","last_transition":"CLOSING->IDLE (closed)","transitions":42,"opens":6,"stale_callbacks":2451,"duplicate_events":156,"timeouts":9,"interrupts":0,"closes":9,"continuous":1,"relisten_ms":12000,"max_rounds":8,"round":0,"max_round_seen":1,"relisten_armed":0,"ctx_valid":0,"device_listening":0,"followup_rounds":0,"rounds_total":6,"session_ends":9,"round_cap_hits":0,"wake_events":80,"talk_stops":79,"listen_starts":0,"exit_talks":29,"end_reason":"deadline reached"},"talk_tap":{"enabled":1,"file":"/data/local/tmp/t5_bridge/ai_worker/factory_talk.log","lines":2518,"recognized":384,"wakes":80,"listen_starts":0,"talk_stops":237,"listen_stops":0,"ignored":2057,"malformed":77,"resets":1,"exit_talks":67,"last_session":"1968441"},"skill_dispatch":{"enabled":1,"device_status":1,"calls":3,"ok":3,"fail":0,"noimpl":0,"claimed":3,"dedup":0,"last_skill":"time.query","last_result":"ok:time.query"},"pending_event_id":"","last_invalid":"","last_error":"","exit_reason":"running"}
+### guard tail
+inj| [inject] detached (target thread resumed)
+2026-11-24 11:55:33.324 sup: inject end: pid=18956 exit=0 hooked=1 elapsed=197ms ok
+### hook tail
+inj| [inject] detached (target thread resumed)
+2026-11-24 11:55:35.938 sup: inject end: pid=18956 exit=0 hooked=1 elapsed=561ms ok

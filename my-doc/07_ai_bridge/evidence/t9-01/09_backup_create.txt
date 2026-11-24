@@ -1,0 +1,69 @@
+﻿### date
+2026-11-24 11:31:43
+### binaries
+OK   /data/local/tmp/t6/tg_supervisor -> /data/local/tmp/t9/backup/bin/tg_supervisor
+OK   /data/local/tmp/t8/tg_injector -> /data/local/tmp/t9/backup/bin/tg_injector
+OK   /data/local/tmp/t7/libtg_ttsguard_t8155r.so -> /data/local/tmp/t9/backup/bin/libtg_ttsguard_t8155r.so
+OK   /data/local/tmp/t8/libtg_hook.so -> /data/local/tmp/t9/backup/bin/libtg_hook.so
+OK   /data/local/tmp/t5_bridge/tgb_bridge -> /data/local/tmp/t9/backup/bin/tgb_bridge
+OK   /data/local/tmp/t5_bridge/bin/ai_worker -> /data/local/tmp/t9/backup/bin/ai_worker
+OK   /data/local/tmp/t5_bridge/tts_exec.dex -> /data/local/tmp/t9/backup/bin/tts_exec.dex
+### scripts
+OK   /data/local/tmp/t5_bridge/run_ai_worker.sh -> /data/local/tmp/t9/backup/sh/run_ai_worker.sh
+OK   /data/local/tmp/t5_bridge/run_bridge.sh -> /data/local/tmp/t9/backup/sh/run_bridge.sh
+OK   /data/local/tmp/t5_bridge/run_tts_exec.sh -> /data/local/tmp/t9/backup/sh/run_tts_exec.sh
+OK   /data/local/tmp/t5_bridge/tts_supervisor.sh -> /data/local/tmp/t9/backup/sh/tts_supervisor.sh
+OK   /data/adb/service.d/a.sh -> /data/local/tmp/t9/backup/sh/a.sh
+### configs
+OK   /data/local/tmp/t7/renew.conf -> /data/local/tmp/t9/backup/conf/renew.conf
+OK   /data/local/tmp/t5_bridge/ai_worker/worker.conf -> /data/local/tmp/t9/backup/conf/worker.conf
+### state
+OK   /data/local/tmp/t7/continuity.req -> /data/local/tmp/t9/backup/state/continuity.req
+OK   /data/local/tmp/t5_bridge/tts/state.json -> /data/local/tmp/t9/backup/state/tts_state.json
+OK   /data/local/tmp/t5_bridge/tts/play.public.json -> /data/local/tmp/t9/backup/state/play.public.json
+OK   /data/local/tmp/t5_bridge/ai_worker/consumer_state.json -> /data/local/tmp/t9/backup/state/consumer_state.json
+OK   /data/local/tmp/t5_bridge/ai_worker/context.json -> /data/local/tmp/t9/backup/state/context.json
+### verification (sizes + sha256) of backup copies
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	0	./MANIFEST.tsv
+208f23660e9e0f3adf5c64fff5fc6dc2c022a781b1161b3d8e48bfeae30830f8	277960	./bin/ai_worker
+5be226901fb11d3ab5ff81410f43d834b72b7f9243d1ded58550bb0ac8138f85	120608	./bin/libtg_hook.so
+d16eefce8655f97185c3dfafc8a0904930d297b078383de03cc28d31b511edf0	41524	./bin/libtg_ttsguard_t8155r.so
+add2c25d6bdd47824c4a9276c1eb81cfd3c71c79cbd06c3adefdc8e0a3412f24	80780	./bin/tg_injector
+17dec6e079d7d2efd74cd6d2c49e04436d1b6d56a648024ca0f1986c646c2fa0	60904	./bin/tg_supervisor
+3d902529efb5594700ae209d7102b1af6605041df066fe55dbddb07ab78d048d	3553180	./bin/tgb_bridge
+c947fa09d975bfc454493e00b118f21162c370718ffe9c98df4cad109dd2b2a8	35264	./bin/tts_exec.dex
+e4c77dc36c53a6fbe65ea70abedbb491fd9c2c7fdbff2e454d0b1b113b2b6a27	208	./conf/renew.conf
+96bd27f28dffcb1d755f0694481851fee74069666f5a5e50444a6c7846440ca7	1620	./conf/worker.conf
+f6feadbdde96a0dbc8f13036d8fc26befd05ba9d0822a5e5d3f5ed8a847bce5c	2112	./sh/a.sh
+01f0652da5209a6ccf1b4ded3d90e764e3e2b940227640b9f6abd7a585e431a0	12365	./sh/run_ai_worker.sh
+c8cdd12962ac55d8021f756cc94815131f24f590a6c779c8e5c86c8aba328d03	4389	./sh/run_bridge.sh
+f4741111847c34b6c21b2e06e4102f11f61dc921f796eb1a8612d991786e060c	4240	./sh/run_tts_exec.sh
+12c1c401f0a86ad8229e5b17b40f2043bb5e6bcea13fcd1088db3e5f17782fcb	869	./sh/tts_supervisor.sh
+3904b12ca956ed6a24effc84896163fb343da61eba864f108e9490f41cead1be	857	./state/consumer_state.json
+3bc8d5b531ef249f0048bbd6e8e5ccada52dfdac4bcd34945495ae2bfe240fc3	520	./state/context.json
+2670fcd81a677defe4c0d3b57359afd0b7213c12dac9b81039f044af26c0ea19	10	./state/continuity.req
+98164e701c84ae0d0d6b8895bccbc1c22937ed455a9a3f473dbad99f2e279fa6	266	./state/play.public.json
+6acc6399a36b5cbcbe95247c4b5ea86d3bdb88c5749a609834a5d24844a90397	537	./state/tts_state.json
+### live-file sha256 (same list, computed from the live paths)
+17dec6e079d7d2efd74cd6d2c49e04436d1b6d56a648024ca0f1986c646c2fa0  /data/local/tmp/t6/tg_supervisor
+add2c25d6bdd47824c4a9276c1eb81cfd3c71c79cbd06c3adefdc8e0a3412f24  /data/local/tmp/t8/tg_injector
+d16eefce8655f97185c3dfafc8a0904930d297b078383de03cc28d31b511edf0  /data/local/tmp/t7/libtg_ttsguard_t8155r.so
+5be226901fb11d3ab5ff81410f43d834b72b7f9243d1ded58550bb0ac8138f85  /data/local/tmp/t8/libtg_hook.so
+3d902529efb5594700ae209d7102b1af6605041df066fe55dbddb07ab78d048d  /data/local/tmp/t5_bridge/tgb_bridge
+208f23660e9e0f3adf5c64fff5fc6dc2c022a781b1161b3d8e48bfeae30830f8  /data/local/tmp/t5_bridge/bin/ai_worker
+c947fa09d975bfc454493e00b118f21162c370718ffe9c98df4cad109dd2b2a8  /data/local/tmp/t5_bridge/tts_exec.dex
+01f0652da5209a6ccf1b4ded3d90e764e3e2b940227640b9f6abd7a585e431a0  /data/local/tmp/t5_bridge/run_ai_worker.sh
+c8cdd12962ac55d8021f756cc94815131f24f590a6c779c8e5c86c8aba328d03  /data/local/tmp/t5_bridge/run_bridge.sh
+f4741111847c34b6c21b2e06e4102f11f61dc921f796eb1a8612d991786e060c  /data/local/tmp/t5_bridge/run_tts_exec.sh
+12c1c401f0a86ad8229e5b17b40f2043bb5e6bcea13fcd1088db3e5f17782fcb  /data/local/tmp/t5_bridge/tts_supervisor.sh
+f6feadbdde96a0dbc8f13036d8fc26befd05ba9d0822a5e5d3f5ed8a847bce5c  /data/adb/service.d/a.sh
+e4c77dc36c53a6fbe65ea70abedbb491fd9c2c7fdbff2e454d0b1b113b2b6a27  /data/local/tmp/t7/renew.conf
+96bd27f28dffcb1d755f0694481851fee74069666f5a5e50444a6c7846440ca7  /data/local/tmp/t5_bridge/ai_worker/worker.conf
+### running-process exe hashes (must match the backup)
+pid=13193 exe=/data/local/tmp/t6/tg_supervisor 17dec6e079d7d2efd74cd6d2c49e04436d1b6d56a648024ca0f1986c646c2fa0  /data/local/tmp/t6/tg_supervisor
+pid=31289 exe=/data/local/tmp/t6/tg_supervisor 17dec6e079d7d2efd74cd6d2c49e04436d1b6d56a648024ca0f1986c646c2fa0  /data/local/tmp/t6/tg_supervisor
+pid=2586 exe=/data/local/tmp/t5_bridge/tgb_bridge 3d902529efb5594700ae209d7102b1af6605041df066fe55dbddb07ab78d048d  /data/local/tmp/t5_bridge/tgb_bridge
+pid=21569 exe=/data/local/tmp/t5_bridge/bin/ai_worker 208f23660e9e0f3adf5c64fff5fc6dc2c022a781b1161b3d8e48bfeae30830f8  /data/local/tmp/t5_bridge/bin/ai_worker
+pid=17257 exe=/system/bin/app_process32 7eba87ffb4192a5f94ac831283f72e07a346368d44f2a1659733b5dc0c8db2c7  /system/bin/app_process32
+### backup total
+4176	/data/local/tmp/t9/backup

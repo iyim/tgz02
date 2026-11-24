@@ -1,0 +1,26 @@
+﻿### date
+2026-11-24 11:46:14
+### init status before
+running
+### stop via init (no file change)
+init.svc.tg_supervisor=stopped
+12243     1 tg_supervisor
+12261     1 tg_supervisor
+### restart :core so only the intended supervisors inject
+core before=12803
+core after=13133
+### injected libs
+/data/local/tmp/t7/libtg_ttsguard_t8155r.so
+/data/local/tmp/t8/libtg_hook.so
+### init.svc now = stopped
+### supervisors
+12243     1 tg_supervisor
+12261     1 tg_supervisor
+### t8 supervisor tail
+inj| [inject] RESULT ok pid=13133 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-24 11:46:17.801 sup: inject end: pid=13133 exit=0 hooked=1 elapsed=197ms ok
+### guard tail
+inj| [inject] RESULT ok pid=13133 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-24 11:46:17.461 sup: inject end: pid=13133 exit=0 hooked=1 elapsed=221ms ok

@@ -1,0 +1,16 @@
+﻿### date
+2026-11-24 11:49:20
+### request file before: [594568]
+### request file cleared: []
+core before=13133
+core after=15364
+/data/local/tmp/t7/libtg_ttsguard_t8155r.so
+/data/local/tmp/t8/libtg_hook.so
+### init.svc.tg_supervisor=stopped
+12243     1 tg_supervisor
+12261     1 tg_supervisor
+12274     1 tgb_bridge
+12579 12575 app_process
+12597 12579 logcat
+12628     1 ai_worker
+12652     1 logcat

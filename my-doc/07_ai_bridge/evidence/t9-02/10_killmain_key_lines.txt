@@ -1,0 +1,25 @@
+﻿11-24 11:42:36.946 D/SessionManager( 1151): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1635] sessionId = 1968129, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 11:42:36.964 W/SessionDispatch( 1151): JNI_AILABS SessionDispatch.cpp:onStartTalk:106 [1489] sessionId = 1968129, forground = 
+11-24 11:42:37.013 W/SessionDispatch( 1151): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [1489] sessionId = 1968129
+11-24 11:42:37.587 D/AGSpeechEngine( 1151): handleListenResult,815
+11-24 11:42:37.587 D/AGSpeechEngine( 1151): handleListenResult,815
+11-24 11:42:37.587 D/AGSpeechEngine( 1151): handleListenResult,815
+11-24 11:42:37.588 D/AGSpeechEngine( 1151): handleListenResult,815
+11-24 11:42:37.593 D/GenieAssistantUIManager( 1151): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147779; data=null
+11-24 11:42:39.473 D/AGSpeechEngine( 1151): handleListenResult,815
+11-24 11:42:39.736 D/AGSpeechEngine( 1151): handleListenResult,815
+11-24 11:42:39.956 D/AGSpeechEngine( 1151): handleListenResult,815
+11-24 11:42:40.240 D/AGSpeechEngine( 1151): handleListenResult,815
+11-24 11:42:40.436 D/AGSpeechEngine( 1151): onCloudEOUEvent,646
+11-24 11:42:40.440 D/SessionManager( 1151): JNI_AILABS SessionManager.cpp:onStopTalk:697 [1635] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 11:42:40.440 D/SessionManager( 1151): JNI_AILABS SessionManager.cpp:onStopTalk:749 [1635] on stop talk, session=1968129
+11-24 11:42:40.440 D/SessionManager( 1151): JNI_AILABS SessionManager.cpp:onStopTalk:786 [1635] on stop talk, send end frame, sessionId = 1968129
+11-24 11:42:40.446 D/SessionManager( 1151): JNI_AILABS SessionManager.cpp:onStopTalk:842 [1635] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "f8a763e6cbfd11241142369270004557", "wakeupWord": "tian mao jing ... [truncated]
+11-24 11:42:40.453 W/SessionDispatch( 1151): JNI_AILABS SessionDispatch.cpp:onStopTalk:170 [1489] sessionId = 1968129
+11-24 11:42:40.466 D/AGSpeechEngine( 1151): handleListenResult,815
+11-24 11:42:40.883 D/GenieAssistantUIManager( 1151): onNotify. type = NOTIFY_TTS_PLAY_TXT; arg1=1; arg2=0; data=鐜板湪鏄笂鍗堝崄涓€鐐瑰洓鍗佷簩鍒嗐€?11-24 11:42:40.883 W/AudioFlinger_Threads(  316): createTrack_l(): mismatch between requested flags (00000104) and output flags (00000004)
+11-24 11:42:40.904 D/GenieAssistantUIManager( 1151): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_PLAY; arg2=1968129; data=null
+11-24 11:42:43.458 D/GenieAssistantUIManager( 1151): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=1968129; data=null
+11-24 11:42:43.459 D/GenieAssistantUIManager( 1151): onNotify. NOTIFY_TTS_STATUS. MESSAGE_SESSION_END.
+11-24 11:42:43.459 D/GenieAssistantUIManager( 1151): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=1968129; data=null
+11-24 11:42:44.498 I/ActivityManager(  608): Killing 5566:com.topjohnwu.magisk/u0a41 (adj 900): stop com.topjohnwu.magisk

@@ -1,0 +1,11 @@
+﻿resolved main=918 core=1151  11:42:28
+SIGKILL sent to 918
+--- ps after kill
+  898   282  35960 com.alibaba.ailabs.genie.osupdate
+ 1062   282  93148 com.alibaba.ailabs.genie.launcher
+ 1151   282  99888 com.alibaba.ailabs.genie.smartapp:core
+ 1210   282  77808 com.alibaba.ailabs.genie.smartapp:business
+ 1564   282  51716 com.alibaba.ailabs.genie.iot:service
+ 2425   282  42800 com.alibaba.ailabs.genie.rtc
+ 7771   282  79416 com.alibaba.ailabs.genie.smartapp
+core 1151 alive

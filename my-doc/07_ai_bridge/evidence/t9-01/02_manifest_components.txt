@@ -1,0 +1,286 @@
+﻿activity     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.task.aicare.ui.MsgShowActivity
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.globalsearch.MainActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=com.alibaba.ailabs.genie.smartapp   exported=None name=com.alibaba.genie.waft.gcs.featurefeedback.activity.FeatureFeedbackActivity
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.activity.TransitionPageActivity
+    filter actions=['android.intent.action.MAIN'] cats=['android.intent.category.LAUNCHER'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.activity.MarketMainActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.activity.DeveloperApplistActivity
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.activity.ApplistActivity
+    filter actions=['android.intent.action.MAIN'] cats=['android.intent.category.LAUNCHER'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.activity.DetailsActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.activity.SkillDetailsActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=None name=com.alibaba.ailabs.appbox.activity.DialogOpenAppActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=None name=com.alibaba.ailabs.appbox.activity.DialogTry2AddAppActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.base.router.MarketBlankActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.activity.SkillActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.activity.MarketVideoActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.activity.GenieSkillRankActivity
+activity     proc=@ref/0x7f0e02b3                     exported=None name=com.alibaba.ailabs.appbox.childmodel.ChildAppMarketActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.searchbox.activity.AppSearchActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.service.ServiceActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.cleaner.activity.CleanerMainActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.childmode.ui.page.ValidateLockActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.childmode.ui.page.MinorModeActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.childmode.ui.page.ApiActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.childmode.ui.page.ChildFaceActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.view.MainGuideActivity
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.MainActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.avatar.TakePhotoActivity
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.details.DetailsActivity
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.add.AddContactsActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.cmd.transform.VoipToPstnActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.add.RelationshipActivity
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.details.DownloadTipsActivity
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.details.DownloadTipsMiniActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.husky.HuskyDetailsActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.cmd.CmdDispatchActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.cmd.selectlist.call.VCallListActivity
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.cmd.selectlist.contacts.VContactListActivity
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.genieboot.activity.BootHomeActivity
+    filter actions=['android.intent.action.MAIN'] cats=['android.intent.category.HOME', 'android.intent.category.DEFAULT', 'android.intent.category.LAUNCHER'] prio=11
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=(main)                              exported=true name=com.alibaba.ailabs.genie.message.ui.MessageCenterActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.message.ui.MessageActivityP0
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.voiceprint.open.activity.VoiceSetUpActivity
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.activity.ShoppingSearchActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintGuideActivity
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintNickCreateActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintGetOneActivity
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintGetTwoActivity
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.activity.OrderPayActivity
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.activity.OrderDetailActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.activity.OrderDetailErrorActivity
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.activity.PayResultActivity
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.activity.ShoppingBlankActivity
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintPayOpenSuccessActivity
+activity     proc=(main)                              exported=None name=com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintAlipayStartActivity
+activity     proc=:business                           exported=None name=com.alibaba.genie.shopping.voiceprint.open.activity.VoicePrintListActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:temp                               exported=None name=com.alibaba.genie.shopping.activity.ShoppingDetailActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:temp                               exported=None name=com.alibaba.genie.shopping.activity.ShoppingDetailVideoActivity
+activity     proc=:temp                               exported=None name=android.taobao.windvane.runtimepermission.PermissionActivity
+activity     proc=(main)                              exported=false name=com.taobao.android.preview.DXTemplatePreviewActivity
+activity     proc=(main)                              exported=false name=com.alibaba.android.ultron.engine.TemplateMockActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=(main)                              exported=false name=com.alibaba.android.ultron.engine.TemplateDownloadActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=(main)                              exported=None name=com.alipay.mobile.verifyidentity.ui.helper.DialogActivity
+activity     proc=(main)                              exported=None name=com.alipay.mobile.verifyidentity.ui.helper.NoticeActivity
+activity     proc=(main)                              exported=None name=com.alipay.mobile.verifyidentity.module.password.pay.ui.PayPwdHalfActivity
+activity     proc=(main)                              exported=None name=com.alipay.mobile.verifyidentity.module.password.pay.ui.PayPwdFullActivity
+activity     proc=(main)                              exported=None name=com.alipay.mobile.verifyidentity.module.menu.ui.MenuActivity
+activity     proc=(main)                              exported=None name=com.alipay.mobile.verifyidentity.module.sms.ui.SmsActivity
+activity     proc=(main)                              exported=None name=com.taobao.android.tbsku.TBXSkuActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=(main)                              exported=false name=com.taobao.android.ultron.common.UltronSwitchActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.pay.activity.MainActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.pay.activity.GeniePayApiActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.pay.activity.GenieProductsActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.pay.activity.GeniePayActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=:h5game                             exported=None name=com.alibaba.ailabs.genie.commonpay.qrcode.QrcodePayActivity
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.commonpay.qrcode.QrcodePayFromWebappsActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.commonpay.activity.MainActivity
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.logger.activity.PermissionActivity
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.musicplayer.activity.MainActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.musicplayer.activity.PlayListActivity
+activity     proc=:business                           exported=true name=com.alibaba.ailabs.genie.musicplayer.tme.TMEMainActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.musicplayer.tme.TMEWebViewActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.genie.musicplayer.activity.SpeedActivity
+activity     proc=(main)                              exported=true name=com.alibaba.ailabs.genie.musicplayer.activity.PayCallBackActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+activity     proc=:core                               exported=None name=com.alibaba.ailabs.genie.assistant.ui.UserInfoActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.custom.contacts.main.MainGuideActivity
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.custom.contacts.main.MainActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.custom.contacts.detail.ContactDetailActivity
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.custom.contacts.detail.CuContactDetailActivity
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.custom.contacts.asr.call.VCallListActivity
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.basedomain.ui.MainActivity
+activity     proc=:business                           exported=None name=com.alibaba.ailabs.basedomain.ui.alarm.OnePixelActivity
+activity     proc=:business                           exported=None name=com.alibaba.genie.alarm.ui.AlarmListActivity
+activity     proc=com.alibaba.ailabs.genie.smartapp   exported=None name=com.alibaba.genie.webshopping.activity.TradePayActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=:temp                               exported=None name=com.alibaba.ailabs.genie.image.viewpager.view.ImagePreviewActivity
+activity     proc=(main)                              exported=true name=com.alibaba.ailabs.genie.authservice.activity.AuthPermissionActivity
+    filter actions=['com.alibaba.ailabs.genie.authservice.intent.action.AuthPermissionActivity'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.router.view.LoadActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=com.alibaba.ailabs.genie.smartapp   exported=None name=com.alibaba.ailabs.childmode.ui.page.HelpActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=com.alibaba.ailabs.genie.smartapp   exported=None name=com.alibaba.ailabs.childmode.ui.page.ShotcutSettingActivity
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+activity     proc=com.alibaba.ailabs.genie.smartapp   exported=None name=com.alibaba.ailabs.genie.nodisturb.NotDisturbActivity
+activity     proc=com.alibaba.ailabs.genie.smartapp   exported=None name=com.alibaba.ailabs.genie.nodisturb.TimeDisturbActivity
+service      proc=(main)                              exported=false name=com.alibaba.analytics.AnalyticsService
+service      proc=(main)                              exported=true name=com.alibaba.ailabs.genie.smartapp.service.GenieManageServerService
+    filter actions=['com.alibaba.ailabs.genie.smartapp.manage.service.action'] cats=[] prio=None
+service      proc=(main)                              exported=true name=com.alibaba.ailabs.genie.smartapp.service.JobWakeUpService
+service      proc=(main)                              exported=false name=anetwork.channel.aidl.NetworkService
+    filter actions=['anetwork.channel.aidl.IRemoteNetworkGetter'] cats=[] prio=None
+service      proc=(main)                              exported=false name=mtopsdk.xstate.XStateService
+    filter actions=['mtopsdk.xstate.aidl.IXState'] cats=[] prio=None
+service      proc=(main)                              exported=None name=com.alibaba.ailabs.genie.smartapp.task.core.ScheduleJobService
+    filter actions=['com.alibaba.ailabs.genie.task.action.SCHEDULE_JOB'] cats=[] prio=None
+service      proc=(main)                              exported=true name=com.alibaba.ailabs.genie.task.TaskService
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.TaskService'] cats=[] prio=None
+service      proc=(main)                              exported=None name=com.alibaba.ailabs.genie.task.AbcService
+    filter actions=['android.accessibilityservice.AccessibilityService'] cats=[] prio=None
+service      proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.service.MarketDownloadService
+    filter actions=['com.alibaba.ailabs.genie.market.preinstall'] cats=[] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+service      proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.searchbox.service.AppSearchService
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+service      proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.service.GenieRouterService
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+service      proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.apkupdate.service.ApkUpdateService
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+service      proc=@ref/0x7f0e02b3                     exported=true name=com.alibaba.ailabs.appbox.service.AccessibilityServiceGesture
+    filter actions=['android.accessibilityservice.AccessibilityService'] cats=[] prio=None
+service      proc=(main)                              exported=false name=androidx.room.MultiInstanceInvalidationService
+service      proc=(main)                              exported=true name=com.alibaba.ailabs.genie.time.service.TimerService
+service      proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.cmd.CmdDispatchService
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+service      proc=(main)                              exported=None name=com.alibaba.ailabs.genie.genieboot.task.AppUpdateJob
+service      proc=(main)                              exported=true name=com.alibaba.ailabs.genie.message.service.MessageCenterService
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['com.alibaba.ailabs.genie.messagecenter.ACTION_NOTIFY'] cats=[] prio=None
+service      proc=(main)                              exported=None name=com.taobao.android.service.AidlBridgeService
+service      proc=(main)                              exported=true name=com.alibaba.ailabs.genie.logger.service.LogService
+    filter actions=['com.alibaba.ailabs.genie.logger.LogService.action'] cats=[] prio=None
+    filter actions=['com.alibaba.ailabs.genie.logger.LogService.upload'] cats=[] prio=None
+service      proc=:sandboxed_process0                 exported=None name=com.taobao.uc.service.SandboxedProcessService0
+service      proc=:sandboxed_privilege_process0       exported=None name=com.taobao.uc.service.SandboxedPrivilegedProcessService0
+service      proc=:gpu_process                        exported=None name=com.taobao.uc.service.GpuProcessService0
+service      proc=:core                               exported=true name=com.alibaba.ailabs.geniesdk.NativeService
+    filter actions=['com.alibaba.ailabs.tg.ACTION_BIND', 'com.yunos.tv.alitvasr.service', 'com.alibaba.ailabs.genie.assistant.autotest'] cats=[] prio=None
+service      proc=:business                           exported=true name=com.alibaba.ailabs.genie.musicplayer.service.MusicService
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+service      proc=(main)                              exported=true name=com.alibaba.ailabs.genie.genieui.GenieAssistantUiService
+    filter actions=['com.alibaba.ailabs.tg.UI_SERVICE'] cats=[] prio=None
+service      proc=(main)                              exported=None name=com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService
+    filter actions=['android.accessibilityservice.AccessibilityService'] cats=[] prio=None
+service      proc=:core                               exported=true name=com.alibaba.ailabs.genie.assistant.vision.AVEManagerService
+service      proc=:core                               exported=true name=com.alibaba.ailabs.genie.assistant.vision.AVEProxyService
+service      proc=:core                               exported=true name=com.alibaba.ailabs.genie.assistant.vision.VisionWakeUpService
+service      proc=:core                               exported=true name=com.alibaba.ailabs.genie.assistant.vision.DistanceDetectService
+service      proc=:core                               exported=true name=com.alibaba.ailabs.genie.assistant.vision.ChildFaceDetectService
+service      proc=:core                               exported=true name=com.alibaba.ailabs.genie.assistant.vision.GestureDetectService
+service      proc=:core                               exported=true name=com.alibaba.ailabs.genie.assistant.vision.VoiceDataProxyService
+service      proc=:core                               exported=None name=com.alibaba.ailabs.genie.assistant.service.AccessibilityMonitorService
+    filter actions=['android.accessibilityservice.AccessibilityService'] cats=[] prio=None
+service      proc=(main)                              exported=None name=com.amap.api.location.APSService
+service      proc=(main)                              exported=None name=com.alibaba.ailabs.genie.custom.contacts.asr.CmdDispatchService
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+service      proc=:business                           exported=true name=com.alibaba.ailabs.basedomain.ui.BaseService
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT'] prio=None
+service      proc=(main)                              exported=true name=com.alibaba.ailabs.genie.authservice.service.AuthPermissionService
+    filter actions=['com.alibaba.ailabs.genie.authservice.intent.action.AuthPermissionService'] cats=['android.intent.category.DEFAULT'] prio=None
+service      proc=(main)                              exported=true name=com.alibaba.ailabs.genie.authservice.service.ProxyService
+    filter actions=['android.intent.action.VIEW'] cats=['android.intent.category.DEFAULT', 'android.intent.category.BROWSABLE'] prio=None
+service      proc=com.alibaba.ailabs.genie.smartapp   exported=true name=com.alibaba.ailabs.genie.datacenter.DataCenterService
+receiver     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.rtc.comon.register.RegisterReceiver
+    filter actions=['com.alibaba.ailabs.genie.assistant.BINDUSER'] cats=[] prio=None
+receiver     proc=@ref/0x7f0e02b3                     exported=None name=com.alibaba.ailabs.appbox.broadcast.MemoryBroadcastReceiver
+    filter actions=['android.intent.action.DEVICE_STORAGE_LOW', 'android.intent.action.DEVICE_STORAGE_OK'] cats=[] prio=1000
+receiver     proc=@ref/0x7f0e02b4                     exported=None name=com.alibaba.ailabs.appbox.common.installafter9.InstallAfter9$InstallResultReceiver
+    filter actions=['com.alibaba.genie.market.AppInstall.SESSION_API_PACKAGE_INSTALLED'] cats=[] prio=None
+receiver     proc=:business                           exported=None name=com.alibaba.ailabs.genie.contacts.app.RegisterReceiver
+    filter actions=['com.alibaba.ailabs.genie.assistant.UNBINDUSER'] cats=[] prio=None
+receiver     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.message.receive.ConnectionStatusReceiver
+    filter actions=['com.alibaba.ailabs.genie.assistant.ONLINE'] cats=[] prio=None
+receiver     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.message.receive.RefreshMessageStatusReceiver
+    filter actions=['com.alibaba.ailabs.genie.message.ACTION_STATUS_NOTIFY'] cats=[] prio=None
+receiver     proc=(main)                              exported=None name=com.taobao.android.ultron.common.UltronTestReceiver
+    filter actions=['com.taobao.mobius'] cats=[] prio=None
+receiver     proc=(main)                              exported=None name=com.alibaba.ailabs.comm.receiver.SystemLaunchForceStopReceiver
+    filter actions=['android.intent.action.BOOT_COMPLETED'] cats=[] prio=None
+    filter actions=['com.alibaba.ailabs.genie.assistant.ONLINE'] cats=[] prio=None
+receiver     proc=:core                               exported=None name=com.alibaba.ailabs.genie.assistant.PackageReceiver
+    filter actions=['android.intent.action.PACKAGE_ADDED', 'android.intent.action.PACKAGE_REMOVED'] cats=[] prio=None
+receiver     proc=(main)                              exported=None name=com.alibaba.ailabs.genie.custom.contacts.common.receiver.RegisterReceiver
+    filter actions=['com.alibaba.ailabs.genie.assistant.BINDUSER', 'com.alibaba.ailabs.genie.assistant.UNBINDUSER'] cats=[] prio=None
+receiver     proc=:business                           exported=None name=com.alibaba.ailabs.basedomain.ui.alarm.AlarmReceiver
+receiver     proc=:business                           exported=true name=com.alibaba.ailabs.basedomain.ui.alarm.AlarmQueryReceiver
+    filter actions=['com.alibaba.ailabs.genie.action.AlarmQuery'] cats=[] prio=None
+receiver     proc=:business                           exported=None name=com.alibaba.ailabs.basedomain.ui.alarm.AlarmScheduleSyncDataReceiver
+receiver     proc=:business                           exported=None name=com.alibaba.ailabs.basedomain.ui.alarm.AutoStartBroadcastReceiver
+    filter actions=['android.intent.action.BOOT_COMPLETED'] cats=['android.intent.category.HOME'] prio=None
+receiver     proc=:business                           exported=None name=com.alibaba.ailabs.basedomain.common.UserInfoChangeReceiver
+    filter actions=['com.alibaba.ailabs.genie.assistant.BINDUSER', 'com.alibaba.ailabs.genie.assistant.UNBINDUSER', 'com.alibaba.ailabs.genie.assistant.ONLINE'] cats=[] prio=None
+receiver     proc=:business                           exported=true name=com.alibaba.ailabs.basedomain.ui.alarm.AlarmDismissReceiver
+    filter actions=['com.android.deskclock.ALARM_DISMISS'] cats=[] prio=None
+receiver     proc=:business                           exported=None name=com.alibaba.ailabs.basedomain.ui.alarm.NetWorkChangeReceiver
+    filter actions=['android.net.conn.CONNECTIVITY_CHANGE', 'android.net.wifi.WIFI_STATE_CHANGED', 'android.net.wifi.STATE_CHANGE'] cats=[] prio=None
+receiver     proc=com.alibaba.ailabs.genie.smartapp   exported=None name=com.alibaba.ailabs.genie.datacenter.DataCenterReceiver
+    filter actions=['android.intent.action.BOOT_COMPLETED', 'android.intent.action.TIME_SET', 'android.net.wifi.STATE_CHANGE', 'com.alibaba.ailabs.genie.assistant.BINDUSER'] cats=[] prio=None
+receiver     proc=com.alibaba.ailabs.genie.smartapp   exported=None name=com.alibaba.ailabs.childmode.common.UserInfoChangeReceiver
+    filter actions=['com.alibaba.ailabs.genie.assistant.BINDUSER', 'com.alibaba.ailabs.genie.assistant.UNBINDUSER', 'com.alibaba.ailabs.genie.assistant.ONLINE'] cats=[] prio=None
+provider     proc=(main)                              exported=true name=com.alibaba.genie.waft.gcs.rpc.GenieServicePublisher auth=com.alibaba.ailabs.genie.smartapp.GenieServicePublisher
+provider     proc=com.alibaba.ailabs.genie.smartapp   exported=true name=com.alibaba.genie.waft.gcs.registry.GenieRegistryInstaller auth=com.alibaba.ailabs.genie.smartapp.GenieRegistryInstaller
+provider     proc=@ref/0x7f0e02b3                     exported=false name=android.support.v4.content.FileProvider auth=com.alibaba.ailabs.genie.smartapp.provider
+provider     proc=@ref/0x7f0e02b4                     exported=true name=com.alibaba.ailabs.appbox.remote.server.MarketServerProvider auth=com.alibaba.ailabs.genie.market.ipc
+provider     proc=:business                           exported=true name=com.alibaba.ailabs.genie.contacts.databases.DataProvider auth=com.alibaba.ailabs.genie.contacts
+provider     proc=(main)                              exported=true name=com.alibaba.ailabs.genie.datacenter.DataCenterProvider auth=com.alibaba.ailabs.genie.datacenter.DataCenterProvider
+provider     proc=(main)                              exported=true name=com.alibaba.genie.dataprovider.GenieContentProvider auth=com.alibaba.ailabs.genie.smartapp.data.provider
+provider     proc=(main)                              exported=true name=com.alibaba.ailabs.genie.second.gcs.service.SecondInstaller auth=com.alibaba.ailabs.genie.smartapp.ipc.second.server
+provider     proc=:core                               exported=true name=com.alibaba.ailabs.geniesdk.provider.StatusProvider auth=com.alibaba.ailabs.genie.assistant.provider
+provider     proc=:core                               exported=true name=com.alibaba.ailabs.geniesdk.AgisProvider auth=com.alibaba.ailabs.genie.assistant.server
+provider     proc=(main)                              exported=false name=android.arch.lifecycle.ProcessLifecycleOwnerInitializer auth=com.alibaba.ailabs.genie.smartapp.lifecycle-trojan
+provider     proc=(main)                              exported=true name=com.alibaba.ailabs.genie.router.service.RouterProvider auth=com.alibaba.ailabs.genie.router.ipc.service
+provider     proc=com.alibaba.ailabs.genie.smartapp   exported=true name=com.alibaba.ailabs.childmode.provider.ChildModeProvider auth=com.alibaba.ailabs.childmode.provider

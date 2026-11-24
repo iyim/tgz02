@@ -1,0 +1,114 @@
+﻿### date
+2026-11-24 11:37:24
+### uptime (s)
+166743.64
+### boot_completed
+1
+### selinux
+Permissive
+### official processes
+system         898   281  48168 com.alibaba.ailabs.genie.osupdate
+system         913   281 104672 com.alibaba.ailabs.genie.smartapp
+system        5224   281  56608 com.alibaba.ailabs.genie.iot:service
+system       13250   281 134216 com.alibaba.ailabs.genie.smartapp:core
+system       14394   281  70624 com.alibaba.ailabs.genie.rtc
+u0_a24       24091   281  95244 com.alibaba.ailabs.genie.launcher
+system       29017   281 102732 com.alibaba.ailabs.genie.smartapp:business
+### process start times (age since boot, seconds)
+  pid=898 age=166730.8s cmd=com.alibaba.ailabs.genie.osupdate                                           
+  threads=30
+  pid=913 age=166730.7s cmd=com.alibaba.ailabs.genie.smartapp                                           
+  threads=105
+  pid=5224 age=44952.1s cmd=com.alibaba.ailabs.genie.iot:service                                        
+  threads=51
+  pid=13250 age=12804.4s cmd=com.alibaba.ailabs.genie.smartapp:core                                      
+  threads=82
+  pid=14394 age=12795.2s cmd=com.alibaba.ailabs.genie.rtc                                                
+  threads=37
+  pid=24091 age=14819.5s cmd=com.alibaba.ailabs.genie.launcher                                           
+  threads=56
+  pid=29017 age=101205.6s cmd=com.alibaba.ailabs.genie.smartapp:business                                  
+  threads=80
+### our processes (should be none right after boot unless something else started them)
+root          2586     1 tgb_bridge
+root         13193     1 tg_supervisor
+root         16501 16497 logcat
+root         17257 17253 app_process
+root         21409 17257 logcat
+root         21569     1 ai_worker
+root         31289     1 tg_supervisor
+### resumed activity / focused window (proof about the UI)
+    mResumedActivity: ActivityRecord{b256937 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}
+  ResumedActivity: ActivityRecord{b256937 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}
+    mFocusedApp=Token{c86bea4 ActivityRecord{b256937 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}}
+  mCurrentFocus=Window{b431b77 u0 com.alibaba.ailabs.genie.launcher/com.alibaba.ailabs.genie.launcher.activity.AdultHomeActivity}
+  mFocusedApp=AppWindowToken{112482f token=Token{c86bea4 ActivityRecord{b256937 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}}}
+### HOME / launcher state
+No activity found
+### is the official app the top task?
+    * TaskRecord{98b334d #2 A=com.alibaba.ailabs.genie.launcher U=0 StackId=0 sz=1}
+      * Hist #0: ActivityRecord{b256937 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}
+          frontOfTask=true task=TaskRecord{98b334d #2 A=com.alibaba.ailabs.genie.launcher U=0 StackId=0 sz=1}
+      TaskRecord{98b334d #2 A=com.alibaba.ailabs.genie.launcher U=0 StackId=0 sz=1}
+### :core bound services (who keeps it alive)
+  * ServiceRecord{b708fbc u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService}
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-3h33m23s188ms restartTime=-1d22h18m49s325ms createdFromFg=true
+  * ServiceRecord{b898335 u0 com.alibaba.ailabs.genie.smartapp/anetwork.channel.aidl.NetworkService}
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-1d22h18m48s364ms restartTime=-1d22h18m48s364ms createdFromFg=true
+  * ServiceRecord{6a9e620 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.time.service.TimerService}
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-1d22h18m41s662ms restartTime=-1d22h18m49s51ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=2
+  * ServiceRecord{e61fa71 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService}
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-1d4h6m36s561ms restartTime=-1d22h18m41s316ms createdFromFg=true
+  * ServiceRecord{8877ed3 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.message.service.MessageCenterService}
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-1d22h18m30s544ms restartTime=-1d22h18m30s577ms createdFromFg=true
+  * ServiceRecord{d1f8e6e u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService}
+    app=ProcessRecord{becf55 13250:com.alibaba.ailabs.genie.smartapp:core/1000}
+    lastActivity=-3h33m24s496ms restartTime=-3h33m25s824ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=9
+  * ServiceRecord{e96db00 u0 com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService}
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-3h33m25s129ms restartTime=-1d22h18m49s626ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=2
+  * ServiceRecord{2542d05 u0 com.alibaba.ailabs.genie.smartapp/mtopsdk.xstate.XStateService}
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-1d4h6m46s164ms restartTime=-1d4h6m46s164ms createdFromFg=true
+  * ServiceRecord{c9befb5 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.service.AccessibilityServiceGesture}
+    app=ProcessRecord{a6aa477 29017:com.alibaba.ailabs.genie.smartapp:business/1000}
+    lastActivity=-1d4h6m46s571ms restartTime=-1d4h6m47s68ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=3
+  * ServiceRecord{e65c576 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.service.MarketDownloadService}
+    app=ProcessRecord{a6aa477 29017:com.alibaba.ailabs.genie.smartapp:business/1000}
+    lastActivity=-4h11m29s806ms restartTime=-22h17m22s719ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=true callStart=true lastStartId=4
+  * ServiceRecord{f63178d u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.task.AbcService}
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-1d22h18m32s253ms restartTime=-1d22h18m49s350ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
+  * ServiceRecord{925b6c1 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.service.AccessibilityMonitorService}
+### speech libs mapped in :core
+--- pid=13250
+/system/app/smartapp/lib/arm/libagspeech.so
+/system/app/smartapp/lib/arm/libsmartbox.so
+/system/app/smartapp/lib/arm/libvad_api.so
+/system/app/smartapp/lib/arm/libvad_bin.so
+/system/app/smartapp/lib/arm/libwakeup_bin_S1L_S3.so
+/system/app/smartapp/lib/arm/libwakeup_sync_api_S1L_S3.so
+### audio devices
+- STREAM_MUSIC:
+11-23 22:07:25:417 setStreamVolume(stream:STREAM_MUSIC index:0 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+11-23 22:07:40:775 setStreamVolume(stream:STREAM_MUSIC index:30 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+11-23 22:09:10:884 setStreamVolume(stream:STREAM_MUSIC index:20 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+11-23 22:20:44:748 setStreamVolume(stream:STREAM_MUSIC index:30 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+11-23 22:21:03:908 setStreamVolume(stream:STREAM_MUSIC index:40 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+11-23 22:25:11:896 setStreamVolume(stream:STREAM_MUSIC index:50 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+11-23 22:26:23:393 setStreamVolume(stream:STREAM_MUSIC index:40 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+11-23 22:34:09:190 setStreamVolume(stream:STREAM_MUSIC index:50 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+11-23 22:35:29:799 adjustSuggestedStreamVolume(sugg:STREAM_MUSIC dir:ADJUST_LOWER flags:0x1011) from android/android uid:1000
+11-23 22:35:29:870 adjustSuggestedStreamVolume(sugg:STREAM_MUSIC dir:ADJUST_SAME flags:0x1010) from android/android uid:1000
+11-23 22:35:30:700 adjustSuggestedStreamVolume(sugg:STREAM_MUSIC dir:ADJUST_LOWER flags:0x1011) from android/android uid:1000

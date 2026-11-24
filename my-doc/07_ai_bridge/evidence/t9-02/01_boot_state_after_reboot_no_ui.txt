@@ -1,0 +1,97 @@
+﻿### date
+2026-11-24 11:38:43
+### uptime (s)
+54.32
+### boot_completed
+1
+### selinux
+Permissive
+### official processes
+system         898   282  70516 com.alibaba.ailabs.genie.osupdate
+system         918   282 153588 com.alibaba.ailabs.genie.smartapp
+u0_a24        1062   282 130448 com.alibaba.ailabs.genie.launcher
+system        1151   282 153328 com.alibaba.ailabs.genie.smartapp:core
+system        1210   282 118308 com.alibaba.ailabs.genie.smartapp:business
+system        1564   282  95504 com.alibaba.ailabs.genie.iot:service
+system        2425   282  88956 com.alibaba.ailabs.genie.rtc
+### process start times (age since boot, seconds)
+  pid=898 age=41.8s cmd=com.alibaba.ailabs.genie.osupdate                                           
+  threads=28
+  pid=918 age=41.7s cmd=com.alibaba.ailabs.genie.smartapp                                           
+  threads=139
+  pid=1062 age=40.2s cmd=com.alibaba.ailabs.genie.launcher                                           
+  threads=58
+  pid=1151 age=39.0s cmd=com.alibaba.ailabs.genie.smartapp:core                                      
+  threads=85
+  pid=1210 age=38.7s cmd=com.alibaba.ailabs.genie.smartapp:business                                  
+  threads=52
+  pid=1564 age=35.6s cmd=com.alibaba.ailabs.genie.iot:service                                        
+  threads=80
+  pid=2425 age=12.0s cmd=com.alibaba.ailabs.genie.rtc                                                
+  threads=43
+### our processes (should be none right after boot unless something else started them)
+root           280     1 tg_supervisor
+### resumed activity / focused window (proof about the UI)
+    mResumedActivity: ActivityRecord{cf1a434 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}
+  ResumedActivity: ActivityRecord{cf1a434 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}
+    mFocusedApp=Token{722f25d ActivityRecord{cf1a434 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}}
+  mCurrentFocus=Window{e4bb70b u0 com.alibaba.ailabs.genie.launcher/com.alibaba.ailabs.genie.launcher.activity.AdultHomeActivity}
+  mFocusedApp=AppWindowToken{fd770a3 token=Token{722f25d ActivityRecord{cf1a434 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}}}
+### HOME / launcher state
+No activity found
+### is the official app the top task?
+    * TaskRecord{ecfcb89 #2 A=com.alibaba.ailabs.genie.launcher U=0 StackId=0 sz=1}
+      * Hist #0: ActivityRecord{cf1a434 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}
+          frontOfTask=true task=TaskRecord{ecfcb89 #2 A=com.alibaba.ailabs.genie.launcher U=0 StackId=0 sz=1}
+      TaskRecord{ecfcb89 #2 A=com.alibaba.ailabs.genie.launcher U=0 StackId=0 sz=1}
+### :core bound services (who keeps it alive)
+  * ServiceRecord{bdbb76d u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService}
+    app=ProcessRecord{abfc38 918:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-35s61ms restartTime=-40s881ms createdFromFg=true
+  * ServiceRecord{3db31a6 u0 com.alibaba.ailabs.genie.smartapp/anetwork.channel.aidl.NetworkService}
+    app=ProcessRecord{abfc38 918:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-39s386ms restartTime=-39s386ms createdFromFg=true
+  * ServiceRecord{499f698 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.time.service.TimerService}
+    app=ProcessRecord{abfc38 918:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-33s960ms restartTime=-40s540ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=2
+  * ServiceRecord{33918b8 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService}
+    app=ProcessRecord{abfc38 918:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-28s464ms restartTime=-33s106ms createdFromFg=true
+  * ServiceRecord{4431d80 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.message.service.MessageCenterService}
+    app=ProcessRecord{abfc38 918:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-19s839ms restartTime=-21s188ms createdFromFg=true
+  * ServiceRecord{df2f60b u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService}
+    app=ProcessRecord{1eba9ef 1151:com.alibaba.ailabs.genie.smartapp:core/1000}
+    lastActivity=-39s400ms restartTime=-39s400ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
+  * ServiceRecord{bb9ad54 u0 com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService}
+    app=ProcessRecord{abfc38 918:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-8s72ms restartTime=-41s28ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=2
+  * ServiceRecord{aed9adc u0 com.alibaba.ailabs.genie.smartapp/mtopsdk.xstate.XStateService}
+    app=ProcessRecord{abfc38 918:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-35s912ms restartTime=-35s912ms createdFromFg=true
+  * ServiceRecord{de55c05 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.service.AccessibilityServiceGesture}
+    app=ProcessRecord{878df23 1210:com.alibaba.ailabs.genie.smartapp:business/1000}
+    lastActivity=-38s502ms restartTime=-40s747ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
+  * ServiceRecord{8f866b5 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.task.AbcService}
+    app=ProcessRecord{abfc38 918:com.alibaba.ailabs.genie.smartapp/1000}
+    lastActivity=-24s243ms restartTime=-40s922ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
+  * ServiceRecord{2895d69 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.service.AccessibilityMonitorService}
+    app=ProcessRecord{1eba9ef 1151:com.alibaba.ailabs.genie.smartapp:core/1000}
+    lastActivity=-33s74ms restartTime=-40s884ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
+  * ServiceRecord{705b1d4 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.vision.AVEManagerService}
+### speech libs mapped in :core
+--- pid=1151
+/system/app/smartapp/lib/arm/libagspeech.so
+/system/app/smartapp/lib/arm/libsmartbox.so
+/system/app/smartapp/lib/arm/libvad_api.so
+/system/app/smartapp/lib/arm/libvad_bin.so
+/system/app/smartapp/lib/arm/libwakeup_bin_S1L_S3.so
+/system/app/smartapp/lib/arm/libwakeup_sync_api_S1L_S3.so
+### audio devices
+- STREAM_MUSIC:

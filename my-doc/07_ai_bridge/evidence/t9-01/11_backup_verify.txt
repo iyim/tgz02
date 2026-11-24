@@ -1,0 +1,97 @@
+﻿### date
+2026-11-24 11:33:35
+### script syntax check on the backup copies
+syntax OK  /data/local/tmp/t9/backup/sh/a.sh
+syntax OK  /data/local/tmp/t9/backup/sh/run_ai_worker.sh
+syntax OK  /data/local/tmp/t9/backup/sh/run_bridge.sh
+syntax OK  /data/local/tmp/t9/backup/sh/run_tts_exec.sh
+syntax OK  /data/local/tmp/t9/backup/sh/tts_supervisor.sh
+### binaries: readable + exec bit + magic (first 4 bytes)
+/data/local/tmp/t9/backup/bin/ai_worker       magic=7f454c46 readable=yes
+/data/local/tmp/t9/backup/bin/libtg_hook.so   magic=7f454c46 readable=yes
+/data/local/tmp/t9/backup/bin/libtg_ttsguard_t8155r.so magic=7f454c46 readable=yes
+/data/local/tmp/t9/backup/bin/tg_injector     magic=7f454c46 readable=yes
+/data/local/tmp/t9/backup/bin/tg_supervisor   magic=7f454c46 readable=yes
+/data/local/tmp/t9/backup/bin/tgb_bridge      magic=7f454c46 readable=yes
+/data/local/tmp/t9/backup/bin/tts_exec.dex    magic=6465780a readable=yes
+### dmz: dex magic
+   d   e   x  \n   0   3   8  \0
+### config parse check (line count + non-empty keys, values masked)
+--- /data/local/tmp/t9/backup/conf/renew.conf
+renew_ms=0
+continuity_enable=1
+continuity_type=1
+continuity_auto=1
+continuity_auto_max=12
+continuity_file=/data/local/tmp/t7/continuity.req
+continuity_play_file=/data/local/tmp/t5_bridge/tts/play.public.json
+--- worker.conf key names only
+provider
+base_url
+model
+api_key_file
+temperature
+max_tokens
+context_enabled
+context_max_messages
+context_file
+skill_dispatch_enabled
+skill_device_status_enabled
+continuous_dialog_enabled
+continuous_relisten_ms
+continuous_max_rounds
+factory_talk_tap_enabled
+factory_talk_log### state snapshots (short files)
+--- /data/local/tmp/t9/backup/state/continuity.req
+154152713
+
+--- /data/local/tmp/t9/backup/state/play.public.json
+{
+  "v": 1,
+  "pid": 17257,
+  "updated_ms": 1795478848647,
+  "state": "idle",
+  "event_id": "t6-13250-1967224-g8",
+  "tts_id": 5244028,
+  "started_ms": 1795478847153,
+  "finished_ms": 1795478848647,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}
+--- /data/local/tmp/t9/backup/state/tts_state.json
+{
+  "v": 1,
+  "pid": 17257,
+  "ts": "2026-11-24T08:07:28.708+0800",
+  "root": "\/data\/local\/tmp\/t5_bridge\/tts",
+  "queue_depth": 0,
+  "inflight_depth": 0,
+  "done_count": 598,
+  "failed_count": 5,
+  "played": 228,
+  "ok": 204,
+  "timeout": 0,
+  "error": 3,
+  "interrupted": 21,
+  "stopped": 126,
+  "skipped": 0,
+  "bad_item": 0,
+  "done_marker_failed": 0,
+  "persist_failed": 0,
+  "recover_failed": 0,
+  "bad_item_stuck": 0,
+  "faults": "",
+  "last_tts_id": 5244028,
+  "last_outcome": "ok",
+  "last_event_id": "t6-13250-1967224-g8"
+}
+### guard/hook .so sanity: ELF header fields
+--- /data/local/tmp/t9/backup/bin/libtg_ttsguard_t8155r.so
+ 7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00
+ 03 00 28 00
+--- /data/local/tmp/t9/backup/bin/libtg_hook.so
+ 7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00
+ 03 00 28 00
+### readelf-ish: section headers via /system/bin/readelf (if present)
+no readelf on device

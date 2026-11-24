@@ -1,0 +1,10 @@
+﻿- STREAM_MUSIC:
+   Muted: false
+   Min: 0
+   Max: 100
+--
+11-24 11:39:35:632 setStreamVolume(stream:STREAM_MUSIC index:1 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+11-24 11:47:42:932 setStreamVolume(stream:STREAM_MUSIC index:1 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+11-24 11:50:42:966 setStreamVolume(stream:STREAM_MUSIC index:1 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+11-24 11:52:55:517 setStreamVolume(stream:STREAM_MUSIC index:1 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+11-24 11:54:43:643 setStreamVolume(stream:STREAM_MUSIC index:1 flags:0x1) from com.alibaba.ailabs.genie.smartapp

@@ -1,0 +1,134 @@
+﻿### date
+2026-11-24 11:30:17
+### data dir top level
+total 60
+drwx------ 14 system system 4096 2026-11-22 13:18 .
+drwxrwx--x 70 system system 4096 2026-11-21 16:34 ..
+drwxrwx--x  3 system system 4096 2018-11-23 08:00 app_SGLib
+drwxrwx--x  2 system system 4096 2026-11-16 22:37 app_download_internal
+drwxrwx--x  2 system system 4096 2026-11-16 22:39 app_sslcache
+drwxrwx--x  2 system system 4096 2026-11-16 22:37 app_textures
+drwxrwx--x  3 system system 4096 2026-11-16 22:38 app_unet_shell
+drwxrwx--x  2 system system 4096 2026-11-16 22:37 app_webview
+drwxrws--x  5 system system 4096 2026-11-24 11:27 cache
+drwxrws--x  2 system system 4096 2026-11-16 22:36 code_cache
+drwx------  4 system system 4096 2026-11-16 22:37 crashsdk
+drwxrwx--x  2 system system 4096 2026-11-19 19:21 databases
+drwxrwx--x 10 system system 4096 2026-11-23 07:30 files
+lrwxrwxrwx  1 root   root     28 2026-11-22 13:18 lib -> /system/app/smartapp/lib/arm
+drwx------  2 system system 4096 2026-11-24 08:04 shared_prefs
+### sizes of data subdirs (KB)
+0	/data/data/com.alibaba.ailabs.genie.smartapp/lib
+4	/data/data/com.alibaba.ailabs.genie.smartapp/app_download_internal
+4	/data/data/com.alibaba.ailabs.genie.smartapp/app_textures
+4	/data/data/com.alibaba.ailabs.genie.smartapp/code_cache
+12	/data/data/com.alibaba.ailabs.genie.smartapp/app_unet_shell
+16	/data/data/com.alibaba.ailabs.genie.smartapp/app_SGLib
+16	/data/data/com.alibaba.ailabs.genie.smartapp/app_sslcache
+36	/data/data/com.alibaba.ailabs.genie.smartapp/app_webview
+124	/data/data/com.alibaba.ailabs.genie.smartapp/shared_prefs
+360	/data/data/com.alibaba.ailabs.genie.smartapp/crashsdk
+556	/data/data/com.alibaba.ailabs.genie.smartapp/databases
+2248	/data/data/com.alibaba.ailabs.genie.smartapp/files
+4748	/data/data/com.alibaba.ailabs.genie.smartapp/cache
+### external app dirs
+total 16
+drwxrwx--x  4 system sdcard_rw 4096 2026-11-21 09:35 .
+drwxrwx--x 21 root   sdcard_rw 4096 2026-11-23 21:20 ..
+drwxrwx--x  4 system sdcard_rw 4096 2026-11-23 10:13 cache
+drwxrwx--x  2 system sdcard_rw 4096 2026-11-16 22:37 files
+4	/sdcard/Android/data/com.alibaba.ailabs.genie.smartapp/files
+20	/sdcard/Android/data/com.alibaba.ailabs.genie.smartapp/cache
+### /data/media/0 top
+total 4260
+drwxrwx--- 30 media_rw media_rw    4096 2026-11-22 16:06 .
+drwxrwx---  4 media_rw media_rw    4096 2026-11-16 22:36 ..
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-24 08:04 .DataStorage
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-21 14:14 .KumiaoConfig
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-16 22:57 .NewTvUuid
+drwxrwxr-x  3 media_rw media_rw    4096 2026-11-16 22:35 .UTSystemConfig
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-20 21:40 .com.taobao.dp
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-21 14:13 .gs_file
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-21 14:13 .gs_fs0
+drwxrwxr-x  3 media_rw media_rw    4096 2026-11-17 20:31 .pns
+drwxrwxr-x  4 media_rw media_rw    4096 2026-11-16 22:57 .system_ktcp
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-16 22:37 Alarms
+drwxrwxr-x  4 media_rw media_rw    4096 2026-11-17 20:27 Android
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-16 22:37 DCIM
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-21 10:49 Download
+-rw-rw-r--  1 media_rw media_rw    2130 2026-11-21 10:51 ESSettings.zip
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-18 19:50 MT2
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-16 22:37 Movies
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-16 22:37 Music
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-16 22:37 Notifications
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-19 19:25 OSSLog
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-16 22:37 Pictures
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-16 22:37 Podcasts
+drwxrwxr-x  2 media_rw media_rw    4096 2026-11-16 22:37 Ringtones
+### candidate model/resource files (size desc, top 40)
+### files named asr/tts/wakeup/vad/speech (size desc)
+### shared_prefs names
+total 132
+drwx------  2 system system 4096 2026-11-24 08:04 .
+drwx------ 14 system system 4096 2026-11-22 13:18 ..
+-rw-rw----  1 system system  258 2026-11-24 07:25 AMSKLG_CFG.xml
+-rw-rw----  1 system system  175 2026-11-22 13:18 Alvin2.xml
+-rw-rw----  1 system system  221 2026-11-22 13:18 ContextData.xml
+-rw-rw----  1 system system  360 2026-11-16 22:37 MtopConfigStore.xml
+-rw-rw----  1 system system  328 2026-11-16 22:37 UTCommon.xml
+-rw-rw----  1 system system  127 2026-11-16 22:37 WebViewChromiumPrefs.xml
+-rw-rw----  1 system system  359 2026-11-21 14:13 app_con_list.xml
+-rw-rw----  1 system system 1414 2026-11-21 09:34 app_open_list.xml
+-rw-rw----  1 system system  699 2026-11-21 10:05 app_pre_list.xml
+-rw-rw----  1 system system  133 2026-11-16 22:37 b2272cdd056b73d27253ad5866ecd484.xml
+-rw-rw----  1 system system  148 2026-11-16 22:37 c0586a10777146560765a69231d89beb.xml
+-rw-rw----  1 system system  299 2026-11-24 07:25 disturb_status.xml
+-rw-rw----  1 system system 1031 2026-11-24 08:04 pref.xml
+-rw-rw----  1 system system  564 2026-11-16 22:37 product_attribute_mirror.xml
+-rw-rw----  1 system system  564 2026-11-16 22:37 product_device_mirror.xml
+-rw-rw----  1 system system 5246 2026-11-24 07:25 runtime.xml
+-rw-rw----  1 system system 7915 2026-11-24 08:04 runtime_device_mirror.xml
+-rw-------  1 system system 1066 2026-11-24 07:38 spMusic.sp
+-rw-------  1 system system 1066 2026-11-24 07:38 spMusic.sp.bak
+-rw-------  1 system system 1103 2018-11-23 08:01 sp_replace_flag.sp
+-rw-------  1 system system 1081 2026-11-17 21:40 sp_replace_flag.sp.bak
+-rw-------  1 system system 1117 2026-11-24 11:30 sp_time.sp
+-rw-------  1 system system 1098 2026-11-24 11:30 sp_time.sp.bak
+-rw-rw----  1 system system 2119 2026-11-19 19:24 tmall_genie.xml
+-rw-------  1 system system   10 2026-11-16 22:37 ulog_flags.sp
+-rw-------  1 system system    0 2026-11-16 22:37 ulog_flags.sp.bak
+-rw-------  1 system system 2281 2026-11-16 22:37 user_data_pres.xml
+-rw-rw----  1 system system  718 2026-11-24 08:04 user_details_pres.xml
+-rw-rw----  1 system system  115 2026-11-22 13:19 ut_setting.xml
+### files dir depth 2
+### native libs in install dir (size desc)
+### voice related assets in apk
+   381131  01-01-2009 00:00   assets/asr_bg.zip
+   184151  01-01-2009 00:00   assets/default.zip
+    65913  01-01-2009 00:00   assets/default2asr.zip
+     4751  01-01-2009 00:00   assets/default_normal.zip
+   337101  01-01-2009 00:00   assets/fuzzylexicon.bin
+     5418  01-01-2009 00:00   assets/mute.zip
+   398534  01-01-2009 00:00   assets/tts.zip
+    64501  01-01-2009 00:00   assets/tts_in.zip
+### apk asset dirs
+     49 data
+     16 template
+     10 dynamic_setting
+      4 script
+      2 voice_thinking
+      2 ultron
+      2 framework_slice
+      2 fonts
+      2 decision_slice
+      1 vision_feature_page_blacklist.json
+      1 video_player_pages.json
+      1 uik_iconfont.ttf
+      1 uik_core_iconfont.ttf
+      1 tts_in.zip
+      1 tts.zip
+      1 task.cfg
+      1 search_result.json
+      1 prodconf.json
+      1 pinyin_used.txt
+      1 phone_dist.txt

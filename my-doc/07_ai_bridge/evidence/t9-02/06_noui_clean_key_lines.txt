@@ -1,0 +1,56 @@
+﻿11-24 11:54:17.034 D/SessionManager(18248): JNI_AILABS SessionManager.cpp:onStartTalk:255 [18313] sessionId = 1968437, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 11:54:17.051 W/SessionDispatch(18248): JNI_AILABS SessionDispatch.cpp:onStartTalk:106 [18277] sessionId = 1968437, forground = 
+11-24 11:54:17.059 W/SessionDispatch(18248): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [18277] sessionId = 1968437
+11-24 11:54:17.108 D/Websocket-gateway(18248): JNI_AILABS WebSocket.cpp:onWebSocketCallback:503 [18347] send text--0::{ "digest": "fc10514b34a451ebbfe4477bb49419dc5d5b3f0416cc8977254ee2dd1b86fd64", "timestamp": "2026-11-24 11:54:17.201", "requestId": "128ec5eb0e72121bc5dd98e969f1ddcb1968437", "versi ... [truncated]
+11-24 11:54:17.716 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:17.716 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:17.716 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:17.717 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:17.733 D/GenieAssistantUIManager(18248): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3148086; data=null
+11-24 11:54:19.931 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:20.128 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:20.384 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:20.612 D/AGSpeechEngine(18248): onCloudEOUEvent,646
+11-24 11:54:20.617 D/SessionManager(18248): JNI_AILABS SessionManager.cpp:onStopTalk:697 [18313] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 11:54:20.617 D/SessionManager(18248): JNI_AILABS SessionManager.cpp:onStopTalk:749 [18313] on stop talk, session=1968437
+11-24 11:54:20.617 D/SessionManager(18248): JNI_AILABS SessionManager.cpp:onStopTalk:786 [18313] on stop talk, send end frame, sessionId = 1968437
+11-24 11:54:20.622 D/SessionManager(18248): JNI_AILABS SessionManager.cpp:onStopTalk:842 [18313] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "f8a763e6cbfd11241154170210001287", "wakeupWord": "tian mao jin ... [truncated]
+11-24 11:54:20.632 W/SessionDispatch(18248): JNI_AILABS SessionDispatch.cpp:onStopTalk:170 [18277] sessionId = 1968437
+11-24 11:54:20.642 D/Websocket-gateway(18248): JNI_AILABS WebSocket.cpp:onWebSocketCallback:503 [18347] send text--0::{ "digest": "1f52e0fd33a9197d3893d0605d407d3e7322e5b9509febc159b81c0149619bac", "timestamp": "2026-11-24 11:54:20.881", "requestId": "99771954d5928c2c020e863665e80a662360", "version" ... [truncated]
+11-24 11:54:20.649 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:21.065 D/AudioManager(18248): JNI_AILABS AudioManager.cpp:processTtsStart:561 [18278] Tts start, id:1968437, text:鐜板湪鏄笂鍗堝崄涓€鐐逛簲鍗佸洓鍒嗐€? pcExt:{ "forcePlay": false, "payloadExt": "{\"index\":1,\"messageId\":\"7eb9668b61b644398b1c70388b0396c9\",\"hasNext\":false}" }, feedback:0, needSuspen ... [truncated]
+11-24 11:54:21.103 D/PreResultScreenMode(18248): data:ProtocolData{code=CONTINUE, type=0, question='null', domain='null', intent='null', spokenText='鐜板湪鏄笂鍗堝崄涓€鐐逛簲鍗佸洓鍒嗐€?, writtenText='鐜板湪鏄笂鍗堝崄涓€鐐逛簲鍗佸洓鍒嗐€?, emotion=0, data=null, extraData=ProtocolExtra{, nlgResultJSON=, nluResultJSON=, dmResultJson ... [truncated]
+11-24 11:54:21.254 D/GenieAssistantUIManager(18248): onRecognizeResult. sessionId:1968437, data:ProtocolData{code=CONTINUE, type=0, question='null', domain='null', intent='null', spokenText='鐜板湪鏄笂鍗堝崄涓€鐐逛簲鍗佸洓鍒嗐€?, writtenText='鐜板湪鏄笂鍗堝崄涓€鐐逛簲鍗佸洓鍒嗐€?, emotion=0, data=null, extraData=ProtocolExtra{, nl ... [truncated]
+11-24 11:54:21.260 D/GenieAssistantUIManager(18248): onNotify. type = NOTIFY_TTS_PLAY_TXT; arg1=1; arg2=0; data=鐜板湪鏄笂鍗堝崄涓€鐐逛簲鍗佸洓鍒嗐€?11-24 11:54:21.260 D/AliTVASR(18248): AliTVASR(AccessibilityMonitorService)->(2)->TYPE_WINDOW_CONTENT_CHANGED   EventType: TYPE_WINDOW_CONTENT_CHANGED; EventTime: 9918 ... [truncated]
+11-24 11:54:21.263 D/GenieAssistantUIManager(18248): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_PLAY; arg2=1968437; data=null
+11-24 11:54:23.700 D/GenieAssistantUIManager(18248): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=1968437; data=null
+11-24 11:54:23.701 D/GenieAssistantUIManager(18248): onNotify. NOTIFY_TTS_STATUS. MESSAGE_SESSION_END.
+11-24 11:54:23.701 D/GenieAssistantUIManager(18248): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=1968437; data=null
+11-24 11:54:38.989 D/SessionManager(18248): JNI_AILABS SessionManager.cpp:onStartTalk:255 [18313] sessionId = 1968441, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 11:54:38.997 W/SessionDispatch(18248): JNI_AILABS SessionDispatch.cpp:onStartTalk:106 [18277] sessionId = 1968441, forground = 
+11-24 11:54:39.005 W/SessionDispatch(18248): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [18277] sessionId = 1968441
+11-24 11:54:39.124 D/Websocket-gateway(18248): JNI_AILABS WebSocket.cpp:onWebSocketCallback:503 [18347] send text--0::{ "digest": "afd67044b4cab9ea713fadd6fb5bbfd0406b86a20c3a526dc92824bdd93c1d7d", "timestamp": "2026-11-24 11:54:39.942", "requestId": "ccac46a20b152bce1b7fad8d16cac40c1968441", "versi ... [truncated]
+11-24 11:54:39.291 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:39.300 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:39.308 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:39.429 D/GenieAssistantUIManager(18248): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3148090; data=null
+11-24 11:54:41.614 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:41.838 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:42.307 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:42.574 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:42.813 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:43.301 D/AGSpeechEngine(18248): onCloudEOUEvent,646
+11-24 11:54:43.307 D/SessionManager(18248): JNI_AILABS SessionManager.cpp:onStopTalk:697 [18313] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 11:54:43.308 D/SessionManager(18248): JNI_AILABS SessionManager.cpp:onStopTalk:749 [18313] on stop talk, session=1968441
+11-24 11:54:43.308 D/SessionManager(18248): JNI_AILABS SessionManager.cpp:onStopTalk:786 [18313] on stop talk, send end frame, sessionId = 1968441
+11-24 11:54:43.309 D/SessionManager(18248): JNI_AILABS SessionManager.cpp:onStopTalk:842 [18313] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "active", "speechContexts": { "recordId": "f8a763e6cbfd11241154389820002211", "wakeupWord": "tian mao jin ... [truncated]
+11-24 11:54:43.313 W/SessionDispatch(18248): JNI_AILABS SessionDispatch.cpp:onStopTalk:170 [18277] sessionId = 1968441
+11-24 11:54:43.319 D/Websocket-gateway(18248): JNI_AILABS WebSocket.cpp:onWebSocketCallback:503 [18347] send text--0::{ "digest": "d20813c780b6c10880d9f62dbd165943072f6b51fc2ce865269d72d886beb39f", "timestamp": "2026-11-24 11:54:43.041", "requestId": "86dfb4ecf938fe053e670e5fc22f09e62364", "version" ... [truncated]
+11-24 11:54:43.334 D/AGSpeechEngine(18248): handleListenResult,815
+11-24 11:54:43.603 D/AudioManager(18248): JNI_AILABS AudioManager.cpp:processTtsStart:561 [18278] Tts start, id:1968441, text:褰撳墠璁惧浠呮敮鎸?鍒?00鐨勯煶閲忚皟鏁达紝鐜板湪宸蹭负鎮ㄨ皟鑷虫渶浣? pcExt:{ "forcePlay": false }, feedback:0, needSuspend:1, sessionFlag:1 wakeupType:(null)
+11-24 11:54:43.674 D/GenieAssistantUIManager(18248): onRecognizeResult. sessionId:1968441, data:ProtocolData{code=CONTINUE, type=0, question='null', domain='null', intent='null', spokenText='褰撳墠璁惧浠呮敮鎸?鍒?00鐨勯煶閲忚皟鏁达紝鐜板湪宸蹭负鎮ㄨ皟鑷虫渶浣?, writtenText='褰撳墠璁惧浠呮敮鎸?鍒?00鐨勯煶閲忚皟鏁达紝鐜板湪宸蹭负鎮ㄨ皟鑷虫渶浣?, emotion=0, data= ... [truncated]
+11-24 11:54:43.732 D/GenieAssistantUIManager(18248): onNotify. type = NOTIFY_TTS_PLAY_TXT; arg1=1; arg2=0; data=褰撳墠璁惧浠呮敮鎸?鍒?00鐨勯煶閲忚皟鏁达紝鐜板湪宸蹭负鎮ㄨ皟鑷虫渶浣?11-24 11:54:43.732 E/AudioService.PlaybackActivityMonitor(  608): Error updating audio attributes
+11-24 11:54:43.780 D/GenieAssistantUIManager(18248): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_PLAY; arg2=1968441; data=null
+11-24 11:54:48.347 D/GenieAssistantUIManager(18248): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=1968441; data=null
+11-24 11:54:48.353 D/GenieAssistantUIManager(18248): onNotify. NOTIFY_TTS_STATUS. MESSAGE_SESSION_END.
+11-24 11:54:48.353 D/GenieAssistantUIManager(18248): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=1968441; data=null

@@ -1,0 +1,308 @@
+﻿### date
+2026-11-24 11:28:08
+### path
+package:/system/app/smartapp/smartapp.apk
+### version
+852:    sharedUser=SharedUserSetting{c074ecb android.uid.system/1000}
+854:    codePath=/system/app/smartapp
+855:    resourcePath=/system/app/smartapp
+856:    legacyNativeLibraryDir=/system/app/smartapp/lib
+857:    primaryCpuAbi=armeabi-v7a
+858:    secondaryCpuAbi=null
+859:    versionCode=2102087118 minSdk=19 targetSdk=27
+860:    versionName=8.7.1.18
+864:    flags=[ SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA LARGE_HEAP ]
+865:    privateFlags=[ HAS_DOMAIN_URLS PARTIALLY_DIRECT_BOOT_AWARE PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION ]
+866:    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+869:    firstInstallTime=2009-01-01 00:00:00
+870:    lastUpdateTime=2026-11-17 19:45:18
+873:    pkgFlags=[ SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA LARGE_HEAP ]
+1193:        android.permission.ACCESS_FINE_LOCATION: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+1194:        android.permission.ACCESS_COARSE_LOCATION: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+1195:        android.permission.CALL_PHONE: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+1196:        android.permission.WRITE_CONTACTS: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+1197:        android.permission.CAMERA: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+1198:        android.permission.GET_ACCOUNTS: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+1199:        android.permission.RECORD_AUDIO: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+1200:        android.permission.READ_CONTACTS: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+### signatures
+    signatures=PackageSignatures{ab785c1 [8f5cc29c]}
+    installPermissionsFixed=true installStatus=1
+    pkgFlags=[ SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA LARGE_HEAP ]
+    declared permissions:
+      android.permission.BIND_DREAM_SERVICE: prot=normal
+      com.alibaba.genie.waft.gcs.rpc.SERVICE_REGISTRY: prot=normal, INSTALLED
+      com.alibaba.ailabs.genie.contacts.course.read: prot=normal, INSTALLED
+      com.alibaba.ailabs.genie.datacenter.permission: prot=normal, INSTALLED
+      com.yunos.tv.alitvasr.permission.SESSION_INFO: prot=signature|privileged, INSTALLED
+      com.yunos.tv.alitvasr.permission.CONTROL: prot=signature|privileged, INSTALLED
+      com.yunos.cloudapp.permission.SERVER_RECEIVER: prot=normal, INSTALLED
+    requested permissions:
+      android.permission.RECEIVE_BOOT_COMPLETED
+      android.permission.INTERNET
+      android.permission.ACCESS_NETWORK_STATE
+      android.permission.ACCESS_WIFI_STATE
+      android.permission.WRITE_EXTERNAL_STORAGE
+      android.permission.WAKE_LOCK
+      android.permission.READ_PHONE_STATE
+      android.permission.GET_TASKS
+### requested permissions count
+    requested permissions:
+      android.permission.RECEIVE_BOOT_COMPLETED
+      android.permission.INTERNET
+      android.permission.ACCESS_NETWORK_STATE
+      android.permission.ACCESS_WIFI_STATE
+      android.permission.WRITE_EXTERNAL_STORAGE
+      android.permission.WAKE_LOCK
+      android.permission.READ_PHONE_STATE
+      android.permission.GET_TASKS
+      android.permission.FORCE_STOP_PACKAGES
+      android.permission.KILL_BACKGROUND_PROCESSES
+      android.permission.INTERACT_ACROSS_USERS
+      android.permission.PACKAGE_USAGE_STATS
+      android.permission.READ_NETWORK_USAGE_HISTORY
+      android.permission.READ_EXTERNAL_STORAGE
+      android.permission.INJECT_EVENTS
+      android.permission.BIND_DREAM_SERVICE
+      android.permission.INSTALL_PACKAGES
+      android.permission.BIND_ACCESSIBILITY_SERVICE
+      android.permission.MODIFY_ACCESSIBILITY_DATA
+      com.alibaba.ailabs.genie.intent.permission.RtcReceiver
+      com.yunos.tv.alitvasr.permission.SERVICE_LISTEN
+      com.yunos.tv.alitvasr.permission.CONTROL
+      android.permission.RECORD_AUDIO
+      android.permission.VIBRATE
+      android.permission.BROADCAST_STICKY
+      android.permission.SYSTEM_ALERT_WINDOW
+      android.hardware.sensor.accelerometer
+      android.permission.WRITE_SECURE_SETTINGS
+      android.permission.GET_PACKAGE_SIZE
+      android.permission.DELETE_PACKAGES
+      android.permission.CAMERA
+      android.permission.CHANGE_WIFI_STATE
+      android.permission.FLASHLIGHT
+      com.aliyun.permission.TYID_SERVICE
+      android.permission.WRITE_SETTINGS
+      android.permission.FOREGROUND_SERVICE
+      android.permission.READ_LOGS
+      android.permission.BLUETOOTH
+      android.permission.ACCESS_FINE_LOCATION
+      android.permission.ACCESS_COARSE_LOCATION
+      android.permission.READ_SETTINGS
+      android.permission.ACCESS_NOTIFICATION_POLICY
+      android.permission.READ_CONTACTS
+      android.permission.DISABLE_KEYGUARD
+      android.permission.GET_ACCOUNTS
+      android.permission.USE_CREDENTIALS
+      android.permission.MANAGE_ACCOUNTS
+      android.permission.MODIFY_AUDIO_SETTINGS
+      android.permission.BLUETOOTH_ADMIN
+      android.permission.READ_FRAME_BUFFER
+      android.permission.INSTALL_LOCATION_PROVIDER
+      android.permission.READ_DREAM_STATE
+      android.permission.INTERACT_ACROSS_USERS_FULL
+      android.permission.BROADCAST_PACKAGE_REMOVED
+      android.permission.STOP_APP_SWITCHES
+      android.permission.SET_ACTIVITY_WATCHER
+      android.permission.EXPAND_STATUS_BAR
+      android.permission.REAL_GET_TASKS
+      android.permission.DEVICE_POWER
+      android.permission.WRITE_CONTACTS
+      android.hardware.usb.host
+      android.hardware.usb.accessory
+      android.permission.STATUS_BAR
+      android.permission.CHANGE_NETWORK_STATE
+      com.alibaba.ailabs.genie.setting.SWITCH_REGISTRY
+      com.yunos.cloudapp.permission.SERVER_RECEIVER
+      com.yunos.tv.permission.InterDeviceCommunicatorService
+      com.yunos.tv.homeshell.permission.RECV_ITEMKEYS
+      com.yunos.tv.advertise.pushcenter.Provider.permission.DiTingMessage
+      android.permission.ACCESS_LOCATION_EXTRA_COMMANDS
+      com.yunos.tv.settings.permission.QUERY_CURRENT_LOCATION
+      com.yunos.tv.homeshell.permission.SWITCH_MODE
+      com.alibaba.genie.waft.gcs.rpc.SERVICE_REGISTRY
+      android.permission.GET_TOP_ACTIVITY_INFO
+    install permissions:
+### declared permissions
+    declared permissions:
+      android.permission.BIND_DREAM_SERVICE: prot=normal
+      com.alibaba.genie.waft.gcs.rpc.SERVICE_REGISTRY: prot=normal, INSTALLED
+      com.alibaba.ailabs.genie.contacts.course.read: prot=normal, INSTALLED
+      com.alibaba.ailabs.genie.datacenter.permission: prot=normal, INSTALLED
+      com.yunos.tv.alitvasr.permission.SESSION_INFO: prot=signature|privileged, INSTALLED
+      com.yunos.tv.alitvasr.permission.CONTROL: prot=signature|privileged, INSTALLED
+      com.yunos.cloudapp.permission.SERVER_RECEIVER: prot=normal, INSTALLED
+    requested permissions:
+      android.permission.RECEIVE_BOOT_COMPLETED
+      android.permission.INTERNET
+      android.permission.ACCESS_NETWORK_STATE
+      android.permission.ACCESS_WIFI_STATE
+      android.permission.WRITE_EXTERNAL_STORAGE
+      android.permission.WAKE_LOCK
+      android.permission.READ_PHONE_STATE
+      android.permission.GET_TASKS
+      android.permission.FORCE_STOP_PACKAGES
+      android.permission.KILL_BACKGROUND_PROCESSES
+      android.permission.INTERACT_ACROSS_USERS
+      android.permission.PACKAGE_USAGE_STATS
+      android.permission.READ_NETWORK_USAGE_HISTORY
+      android.permission.READ_EXTERNAL_STORAGE
+      android.permission.INJECT_EVENTS
+      android.permission.BIND_DREAM_SERVICE
+      android.permission.INSTALL_PACKAGES
+      android.permission.BIND_ACCESSIBILITY_SERVICE
+      android.permission.MODIFY_ACCESSIBILITY_DATA
+      com.alibaba.ailabs.genie.intent.permission.RtcReceiver
+      com.yunos.tv.alitvasr.permission.SERVICE_LISTEN
+      com.yunos.tv.alitvasr.permission.CONTROL
+      android.permission.RECORD_AUDIO
+      android.permission.VIBRATE
+      android.permission.BROADCAST_STICKY
+      android.permission.SYSTEM_ALERT_WINDOW
+      android.hardware.sensor.accelerometer
+      android.permission.WRITE_SECURE_SETTINGS
+      android.permission.GET_PACKAGE_SIZE
+      android.permission.DELETE_PACKAGES
+      android.permission.CAMERA
+      android.permission.CHANGE_WIFI_STATE
+      android.permission.FLASHLIGHT
+      com.aliyun.permission.TYID_SERVICE
+      android.permission.WRITE_SETTINGS
+      android.permission.FOREGROUND_SERVICE
+      android.permission.READ_LOGS
+      android.permission.BLUETOOTH
+      android.permission.ACCESS_FINE_LOCATION
+      android.permission.ACCESS_COARSE_LOCATION
+      android.permission.READ_SETTINGS
+      android.permission.ACCESS_NOTIFICATION_POLICY
+      android.permission.READ_CONTACTS
+      android.permission.DISABLE_KEYGUARD
+      android.permission.GET_ACCOUNTS
+      android.permission.USE_CREDENTIALS
+      android.permission.MANAGE_ACCOUNTS
+      android.permission.MODIFY_AUDIO_SETTINGS
+      android.permission.BLUETOOTH_ADMIN
+      android.permission.READ_FRAME_BUFFER
+      android.permission.INSTALL_LOCATION_PROVIDER
+Failed to write while dumping service package: Broken pipe
+### users
+    User 0: ceDataInode=-4294959359 installed=true hidden=false suspended=false stopped=false notLaunched=false enabled=0 instant=false virtual=false
+    overlay paths:
+      /vendor/overlay/framework-res__auto_generated_rro.apk
+
+    User 0: 
+      gids=[2001, 3002, 3003, 3001, 1004, 2002, 1007, 3006]
+      runtime permissions:
+        android.permission.ACCESS_FINE_LOCATION: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+        android.permission.ACCESS_COARSE_LOCATION: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+        android.permission.CALL_PHONE: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+        android.permission.WRITE_CONTACTS: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+        android.permission.CAMERA: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+        android.permission.GET_ACCOUNTS: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+        android.permission.RECORD_AUDIO: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+        android.permission.READ_CONTACTS: granted=true, flags=[ SYSTEM_FIXED GRANTED_BY_DEFAULT ]
+
+### enabled state
+package:com.alibaba.ailabs.genie.smartapp
+### oat / lib
+/system/app/smartapp/:
+total 24760
+drwxr-xr-x  4 root root     4096 2026-11-17 19:45 .
+drwxr-xr-x 34 root root     4096 2026-11-21 16:31 ..
+drwxr-xr-x  3 root root     4096 2026-11-17 19:45 lib
+drwxr-xr-x  3 root root     4096 2026-11-17 19:45 oat
+-rw-r--r--  1 root root 25336386 2026-11-17 19:45 smartapp.apk
+
+/system/app/smartapp/lib/arm/:
+total 36672
+drwxr-xr-x 2 root root    4096 2026-11-17 19:45 .
+drwxr-xr-x 3 root root    4096 2026-11-17 19:45 ..
+-rw-r--r-- 1 root root  272096 2026-11-17 19:45 libAGUtilsExt.so
+-rw-r--r-- 1 root root  403180 2026-11-17 19:45 libGenieCommon.so
+-rw-r--r-- 1 root root  304872 2026-11-17 19:45 libGenieJson.so
+-rw-r--r-- 1 root root 1645976 2026-11-17 19:45 libace.so
+-rw-r--r-- 1 root root  493288 2026-11-17 19:45 libaceAsr.so
+-rw-r--r-- 1 root root  640828 2026-11-17 19:45 libaceNlu.so
+-rw-r--r-- 1 root root   34376 2026-11-17 19:45 libagaudio.so
+-rw-r--r-- 1 root root   34376 2026-11-17 19:45 libagaudio_system.so
+-rw-r--r-- 1 root root   13852 2026-11-17 19:45 libaginput.so
+-rw-r--r-- 1 root root   17996 2026-11-17 19:45 libagjni.so
+-rw-r--r-- 1 root root   13852 2026-11-17 19:45 libaglight.so
+-rw-r--r-- 1 root root   26584 2026-11-17 19:45 libaglight_common.so
+-rw-r--r-- 1 root root   17996 2026-11-17 19:45 libaglog.so
+-rw-r--r-- 1 root root  198348 2026-11-17 19:45 libagmc.so
+-rw-r--r-- 1 root root  841956 2026-11-17 19:45 libagmmi.so
+-rw-r--r-- 1 root root   54912 2026-11-17 19:45 libagpal.so
+-rw-r--r-- 1 root root   13896 2026-11-17 19:45 libagsigmesh.so
+-rw-r--r-- 1 root root  149112 2026-11-17 19:45 libagspeech.so
+-rw-r--r-- 1 root root   13896 2026-11-17 19:45 libagsystem.so
+-rw-r--r-- 1 root root  231272 2026-11-17 19:45 libagui.so
+-rw-r--r-- 1 root root  378656 2026-11-17 19:45 libagutils.so
+-rw-r--r-- 1 root root   22144 2026-11-17 19:45 libagutils_hack.so
+-rw-r--r-- 1 root root    9756 2026-11-17 19:45 libagwifi.so
+-rw-r--r-- 1 root root  386900 2026-11-17 19:45 libalibabacloud-oss-cpp-sdk.so
+-rw-r--r-- 1 root root 2693116 2026-11-17 19:45 libapolloffmpeg.so
+-rw-r--r-- 1 root root   54948 2026-11-17 19:45 libautotestframework.so
+-rw-r--r-- 1 root root   91720 2026-11-17 19:45 libautotestutils.so
+-rw-r--r-- 1 root root    9928 2026-11-17 19:45 libbluetooth_delegate.so
+-rw-r--r-- 1 root root  274340 2026-11-17 19:45 libcapem.so
+-rw-r--r-- 1 root root  835691 2026-11-17 19:45 libconfigure.bin.so
+-rw-r--r-- 1 root root  120388 2026-11-17 19:45 libconnectivity.so
+-rw-r--r-- 1 root root  491764 2026-11-17 19:45 libcrashsdk.so
+-rw-r--r-- 1 root root   46728 2026-11-17 19:45 libcunit.so
+-rw-r--r-- 1 root root  226080 2026-11-17 19:45 libcurl.so
+-rw-r--r-- 1 root root    9928 2026-11-17 19:45 libdisplay_delegate.so
+-rw-r--r-- 1 root root   54904 2026-11-17 19:45 libev.so
+-rw-r--r-- 1 root root   22140 2026-11-17 19:45 libframesequence.so
+-rw-r--r-- 1 root root  157388 2026-11-17 19:45 libgcs_ali.so
+-rw-r--r-- 1 root root   26016 2026-11-17 19:45 libgiflib.so
+-rw-r--r-- 1 root root   71320 2026-11-17 19:45 libhttpdns.so
+-rw-r--r-- 1 root root    5764 2026-11-17 19:45 libinput_delegate.so
+-rw-r--r-- 1 root root   18120 2026-11-17 19:45 libinteraction_delegate.so
+-rw-r--r-- 1 root root    9928 2026-11-17 19:45 libiot_delegate.so
+-rw-r--r-- 1 root root   42660 2026-11-17 19:45 libjson_c_ali.so
+-rw-r--r-- 1 root root   83636 2026-11-17 19:45 liblogProducer.so
+-rw-r--r-- 1 root root  210596 2026-11-17 19:45 libmarsulog.so
+-rw-r--r-- 1 root root  100068 2026-11-17 19:45 libmarsxlog.so
+-rw-r--r-- 1 root root    9928 2026-11-17 19:45 libmb_delegate.so
+-rw-r--r-- 1 root root 3260775 2026-11-17 19:45 libmodel.bin.so
+-rw-r--r-- 1 root root  132792 2026-11-17 19:45 libmodelmanager.so
+-rw-r--r-- 1 root root  173720 2026-11-17 19:45 libnghttp2.so
+-rw-r--r-- 1 root root  173760 2026-11-17 19:45 libnghttp2_ali.so
+-rw-r--r-- 1 root root  390808 2026-11-17 19:45 libopus-ogg.so
+-rw-r--r-- 1 root root  181092 2026-11-17 19:45 libortp.so
+-rw-r--r-- 1 root root    9928 2026-11-17 19:45 libota_delegate.so
+-rw-r--r-- 1 root root   46812 2026-11-17 19:45 libpl_droidsonroids_gif.so
+-rw-r--r-- 1 root root  923480 2026-11-17 19:45 librecheck_api.so
+-rw-r--r-- 1 root root  932613 2026-11-17 19:45 librecheck_bin.so
+-rw-r--r-- 1 root root   50760 2026-11-17 19:45 libsaladapter.so
+-rw-r--r-- 1 root root  566964 2026-11-17 19:45 libsed_api.so
+-rw-r--r-- 1 root root   89747 2026-11-17 19:45 libsed_bin.so
+-rw-r--r-- 1 root root   18120 2026-11-17 19:45 libserveradapter_delegate.so
+-rw-r--r-- 1 root root   42608 2026-11-17 19:45 libservicemanager.so
+-rw-r--r-- 1 root root  304964 2026-11-17 19:45 libshoppingSdk.so
+-rw-r--r-- 1 root root  104052 2026-11-17 19:45 libsmartaudioplayer.so
+-rw-r--r-- 1 root root 2047772 2026-11-17 19:45 libsmartbox.so
+-rw-r--r-- 1 root root  248856 2026-11-17 19:45 libspeex-ogg.so
+-rw-r--r-- 1 root root 2185932 2026-11-17 19:45 libsqlcipher.so
+-rw-r--r-- 1 root root  792200 2026-11-17 19:45 libu3player.so
+-rw-r--r-- 1 root root 2400552 2026-11-17 19:45 libunet.so
+-rw-r--r-- 1 root root   83660 2026-11-17 19:45 libusertrace.so
+-rw-r--r-- 1 root root  566964 2026-11-17 19:45 libvad_api.so
+-rw-r--r-- 1 root root   59028 2026-11-17 19:45 libvad_bin.so
+-rw-r--r-- 1 root root   14024 2026-11-17 19:45 libvoip_delegate.so
+-rw-r--r-- 1 root root 3232178 2026-11-17 19:45 libwakeup_bin_S1.so
+-rw-r--r-- 1 root root 3246393 2026-11-17 19:45 libwakeup_bin_S1L_S3.so
+-rw-r--r-- 1 root root 1226596 2026-11-17 19:45 libwakeup_sync_api_S1.so
+-rw-r--r-- 1 root root 1132388 2026-11-17 19:45 libwakeup_sync_api_S1L_S3.so
+-rw-r--r-- 1 root root  104064 2026-11-17 19:45 libwebsockets.so
+-rw-r--r-- 1 root root   91784 2026-11-17 19:45 libz.so
+-rw-r--r-- 1 root root  632768 2026-11-17 19:45 libzcachecore.so
+
+/system/app/smartapp/oat/arm/:
+total 28796
+drwxr-xr-x 2 root root     4096 2026-11-17 19:45 .
+drwxr-xr-x 3 root root     4096 2026-11-17 19:45 ..
+-rw-r--r-- 1 root root   569824 2026-11-17 19:45 smartapp.odex
+-rw-r--r-- 1 root root 28902724 2026-11-17 19:45 smartapp.vdex
+### dex in apk

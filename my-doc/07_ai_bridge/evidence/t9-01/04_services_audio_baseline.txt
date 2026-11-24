@@ -1,0 +1,773 @@
+﻿### date
+2026-11-24 11:29:43
+### activity services (com.alibaba.ailabs.genie.smartapp)
+ACTIVITY MANAGER SERVICES (dumpsys activity services)
+  User 0 active services:
+  * ServiceRecord{b708fbc u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService}
+    intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    permission=android.permission.BIND_ACCESSIBILITY_SERVICE
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-1d22h11m6s520ms startingBgTimeout=--
+    lastActivity=-3h25m40s383ms restartTime=-1d22h11m6s520ms createdFromFg=true
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    Bindings:
+    * IntentBindRecord{f8c8908 CREATE}:
+      intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService}
+      binder=android.os.BinderProxy@4c6f8a1
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{5ff1ac6 ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}}
+        Per-process Connections:
+          ConnectionRecord{408860e u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService:@b016409}
+      * Client AppBindRecord{2eaea87 ProcessRecord{bb7858e 701:system/1000}}
+        Per-process Connections:
+          ConnectionRecord{aadefaf u0 CR FGSA com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService:@593db8e}
+    All Connections:
+      ConnectionRecord{aadefaf u0 CR FGSA com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService:@593db8e}
+      ConnectionRecord{408860e u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService:@b016409}
+
+  * ServiceRecord{b898335 u0 com.alibaba.ailabs.genie.smartapp/anetwork.channel.aidl.NetworkService}
+    intent={act=anetwork.channel.aidl.IRemoteNetworkGetter cat=[android.intent.category.DEFAULT] cmp=com.alibaba.ailabs.genie.smartapp/anetwork.channel.aidl.NetworkService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-1d22h11m5s560ms startingBgTimeout=--
+    lastActivity=-1d22h11m5s560ms restartTime=-1d22h11m5s560ms createdFromFg=true
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    Bindings:
+    * IntentBindRecord{ce52db4 CREATE}:
+      intent={act=anetwork.channel.aidl.IRemoteNetworkGetter cat=[android.intent.category.DEFAULT] cmp=com.alibaba.ailabs.genie.smartapp/anetwork.channel.aidl.NetworkService}
+      binder=android.os.BinderProxy@eb97ddd
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{f421d52 ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}}
+        Per-process Connections:
+          ConnectionRecord{c77116c u0 CR com.alibaba.ailabs.genie.smartapp/anetwork.channel.aidl.NetworkService:@37baa1f}
+    All Connections:
+      ConnectionRecord{c77116c u0 CR com.alibaba.ailabs.genie.smartapp/anetwork.channel.aidl.NetworkService:@37baa1f}
+
+  * ServiceRecord{6a9e620 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.time.service.TimerService}
+    intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.time.service.TimerService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-1d22h11m6s247ms startingBgTimeout=--
+    lastActivity=-1d22h10m58s858ms restartTime=-1d22h11m6s247ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=2
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+
+  * ServiceRecord{e61fa71 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService}
+    intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-1d22h10m58s511ms startingBgTimeout=--
+    lastActivity=-1d3h58m53s756ms restartTime=-1d22h10m58s511ms createdFromFg=true
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    Bindings:
+    * IntentBindRecord{381a823 CREATE}:
+      intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService}
+      binder=android.os.BinderProxy@d817120
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{f551ad9 ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}}
+        Per-process Connections:
+          ConnectionRecord{3ae3018 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService:@7aea7fb}
+      * Client AppBindRecord{240bc9e ProcessRecord{a6aa477 29017:com.alibaba.ailabs.genie.smartapp:business/1000}}
+        Per-process Connections:
+          ConnectionRecord{6344e5f u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService:@7b2c6fe}
+    All Connections:
+      ConnectionRecord{3ae3018 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService:@7aea7fb}
+      ConnectionRecord{6344e5f u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService:@7b2c6fe}
+
+  * ServiceRecord{8877ed3 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.message.service.MessageCenterService}
+    intent={act=com.alibaba.ailabs.genie.messagecenter.ACTION_NOTIFY pkg=com.alibaba.ailabs.genie.smartapp}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-1d22h10m47s772ms startingBgTimeout=--
+    lastActivity=-1d22h10m47s739ms restartTime=-1d22h10m47s772ms createdFromFg=true
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    Bindings:
+    * IntentBindRecord{f3ca37f CREATE}:
+      intent={act=com.alibaba.ailabs.genie.messagecenter.ACTION_NOTIFY pkg=com.alibaba.ailabs.genie.smartapp}
+      binder=android.os.BinderProxy@9dc7f4c
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{2738b95 ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}}
+        Per-process Connections:
+          ConnectionRecord{bd360c2 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.message.service.MessageCenterService:@8e0e90d}
+          ConnectionRecord{d400909 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.message.service.MessageCenterService:@4877a10}
+    All Connections:
+      ConnectionRecord{d400909 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.message.service.MessageCenterService:@4877a10}
+      ConnectionRecord{bd360c2 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.message.service.MessageCenterService:@8e0e90d}
+
+  * ServiceRecord{d1f8e6e u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService}
+    intent={act=com.yunos.tv.alitvasr.service pkg=com.alibaba.ailabs.genie.smartapp}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp:core
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{becf55 13250:com.alibaba.ailabs.genie.smartapp:core/1000}
+    createTime=-1d22h11m6s773ms startingBgTimeout=--
+    lastActivity=-3h25m41s691ms restartTime=-3h25m43s19ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=9
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    restartCount=0 restartDelay=-- nextRestartTime=-3h25m42s251ms crashCount=0
+    Bindings:
+    * IntentBindRecord{9f804aa}:
+      intent={act=com.yunos.tv.alitvasr.service pkg=com.alibaba.ailabs.genie.smartapp}
+      binder=android.os.BinderProxy@581f89b
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{4f84438 ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}}
+        Per-process Connections:
+          ConnectionRecord{14534e6 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+          ConnectionRecord{2969074 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+          ConnectionRecord{aab2948 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+          ConnectionRecord{d18635b u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+          ConnectionRecord{f038b2d u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+    All Connections:
+      ConnectionRecord{aab2948 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+      ConnectionRecord{14534e6 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+      ConnectionRecord{d18635b u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+      ConnectionRecord{f038b2d u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+      ConnectionRecord{2969074 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+
+  * ServiceRecord{e96db00 u0 com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService}
+    intent={pkg=com.alibaba.ailabs.genie.smartapp cmp=com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    isForeground=true foregroundId=1 foregroundNoti=Notification(channel=genie_service_monitor pri=0 contentView=null vibrate=null sound=null defaults=0x0 flags=0x62 color=0xff607d8b vis=PRIVATE)
+    createTime=-1d22h11m6s823ms startingBgTimeout=--
+    lastActivity=-3h25m42s326ms restartTime=-1d22h11m6s823ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=2
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    Bindings:
+    * IntentBindRecord{dce4c11 CREATE}:
+      intent={act=com.alibaba.ailabs.genie.smartapp.manage.service.action pkg=com.alibaba.ailabs.genie.smartapp}
+      binder=android.os.BinderProxy@229c176
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{bfd8377 ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}}
+        Per-process Connections:
+          ConnectionRecord{6df0ae1 u0 CR com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService:@c0c7c48}
+      * Client AppBindRecord{e096be4 ProcessRecord{becf55 13250:com.alibaba.ailabs.genie.smartapp:core/1000}}
+        Per-process Connections:
+          ConnectionRecord{8a2425b u0 CR com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService:@5285d6a}
+      * Client AppBindRecord{f3a984d ProcessRecord{a6aa477 29017:com.alibaba.ailabs.genie.smartapp:business/1000}}
+        Per-process Connections:
+          ConnectionRecord{bdb1113 u0 CR com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService:@34cd402}
+    All Connections:
+      ConnectionRecord{bdb1113 u0 CR com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService:@34cd402}
+      ConnectionRecord{8a2425b u0 CR com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService:@5285d6a}
+      ConnectionRecord{6df0ae1 u0 CR com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService:@c0c7c48}
+
+  * ServiceRecord{2542d05 u0 com.alibaba.ailabs.genie.smartapp/mtopsdk.xstate.XStateService}
+    intent={act=mtopsdk.xstate.aidl.IXState cat=[android.intent.category.DEFAULT] pkg=com.alibaba.ailabs.genie.smartapp cmp=com.alibaba.ailabs.genie.smartapp/mtopsdk.xstate.XStateService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-1d3h59m3s363ms startingBgTimeout=--
+    lastActivity=-1d3h59m3s363ms restartTime=-1d3h59m3s363ms createdFromFg=true
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    Bindings:
+    * IntentBindRecord{ee87f02 CREATE}:
+      intent={act=mtopsdk.xstate.aidl.IXState cat=[android.intent.category.DEFAULT] pkg=com.alibaba.ailabs.genie.smartapp cmp=com.alibaba.ailabs.genie.smartapp/mtopsdk.xstate.XStateService}
+      binder=android.os.BinderProxy@d3ce013
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{e36250 ProcessRecord{a6aa477 29017:com.alibaba.ailabs.genie.smartapp:business/1000}}
+        Per-process Connections:
+          ConnectionRecord{b9e007c u0 CR com.alibaba.ailabs.genie.smartapp/mtopsdk.xstate.XStateService:@ddbab6f}
+    All Connections:
+      ConnectionRecord{b9e007c u0 CR com.alibaba.ailabs.genie.smartapp/mtopsdk.xstate.XStateService:@ddbab6f}
+
+  * ServiceRecord{c9befb5 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.service.AccessibilityServiceGesture}
+    intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.service.AccessibilityServiceGesture}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp:business
+    permission=android.permission.BIND_ACCESSIBILITY_SERVICE
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{a6aa477 29017:com.alibaba.ailabs.genie.smartapp:business/1000}
+    createTime=-1d22h11m6s547ms startingBgTimeout=--
+    lastActivity=-1d3h59m3s770ms restartTime=-1d3h59m4s267ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=3
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    restartCount=1 restartDelay=-1d22h11m1s847ms nextRestartTime=-1d3h59m4s329ms crashCount=0
+    Bindings:
+    * IntentBindRecord{2a56c49 CREATE}:
+      intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.service.AccessibilityServiceGesture}
+      binder=android.os.BinderProxy@e3894e
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{50b6a6f ProcessRecord{bb7858e 701:system/1000}}
+        Per-process Connections:
+          ConnectionRecord{d385a90 u0 CR FGSA com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.service.AccessibilityServiceGesture:@e59153}
+    All Connections:
+      ConnectionRecord{d385a90 u0 CR FGSA com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.service.AccessibilityServiceGesture:@e59153}
+
+  * ServiceRecord{e65c576 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.service.MarketDownloadService}
+    intent={act=android.intent.action.VIEW dat=genie://com.alibaba.ailabs.genie.market/checkapp pkg=com.alibaba.ailabs.genie.smartapp}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp:business
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{a6aa477 29017:com.alibaba.ailabs.genie.smartapp:business/1000}
+    createTime=-22h9m39s919ms startingBgTimeout=--
+    lastActivity=-4h3m47s5ms restartTime=-22h9m39s918ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=true callStart=true lastStartId=4
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+
+  * ServiceRecord{f63178d u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.task.AbcService}
+    intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.task.AbcService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    permission=android.permission.BIND_ACCESSIBILITY_SERVICE
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-1d22h11m6s550ms startingBgTimeout=--
+    lastActivity=-1d22h10m49s453ms restartTime=-1d22h11m6s550ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    Bindings:
+    * IntentBindRecord{124537c CREATE}:
+      intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.task.AbcService}
+      binder=android.os.BinderProxy@bcf8405
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{272ec5a ProcessRecord{bb7858e 701:system/1000}}
+        Per-process Connections:
+          ConnectionRecord{136024 u0 CR FGSA com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.task.AbcService:@f61a0b7}
+    All Connections:
+      ConnectionRecord{136024 u0 CR FGSA com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.task.AbcService:@f61a0b7}
+
+  * ServiceRecord{925b6c1 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.service.AccessibilityMonitorService}
+    intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.service.AccessibilityMonitorService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp:core
+    permission=android.permission.BIND_ACCESSIBILITY_SERVICE
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{becf55 13250:com.alibaba.ailabs.genie.smartapp:core/1000}
+    createTime=-1d22h11m6s516ms startingBgTimeout=--
+    lastActivity=-3h25m39s976ms restartTime=-3h25m43s25ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=9
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    restartCount=1 restartDelay=-1d22h11m11s569ms nextRestartTime=-3h25m32s258ms crashCount=0
+    Bindings:
+    * IntentBindRecord{68e3e8b CREATE}:
+      intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.service.AccessibilityMonitorService}
+      binder=android.os.BinderProxy@c212b68
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{fc95b81 ProcessRecord{bb7858e 701:system/1000}}
+        Per-process Connections:
+          ConnectionRecord{694eba8 u0 CR FGSA com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.service.AccessibilityMonitorService:@5f3d7cb}
+    All Connections:
+      ConnectionRecord{694eba8 u0 CR FGSA com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.service.AccessibilityMonitorService:@5f3d7cb}
+
+  * ServiceRecord{3596110 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.vision.AVEManagerService}
+    intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.vision.AVEManagerService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp:core
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{becf55 13250:com.alibaba.ailabs.genie.smartapp:core/1000}
+    isForeground=true foregroundId=1 foregroundNoti=Notification(channel=MiscService pri=0 contentView=null vibrate=null sound=null defaults=0x0 flags=0x62 color=0xff607d8b vis=PRIVATE)
+    createTime=-3h25m40s405ms startingBgTimeout=--
+    lastActivity=-3h25m40s405ms restartTime=-3h25m40s405ms createdFromFg=true
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    Bindings:
+    * IntentBindRecord{9637426 CREATE}:
+      intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.vision.AVEManagerService}
+      binder=android.os.BinderProxy@8203867
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{d919614 ProcessRecord{becf55 13250:com.alibaba.ailabs.genie.smartapp:core/1000}}
+        Per-process Connections:
+          ConnectionRecord{f64a1d3 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.vision.AVEManagerService:@b332fc2}
+    All Connections:
+      ConnectionRecord{f64a1d3 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.vision.AVEManagerService:@b332fc2}
+
+  * ServiceRecord{746dcaf u0 com.alibaba.ailabs.genie.smartapp/.service.JobWakeUpService}
+    intent={pkg=com.alibaba.ailabs.genie.smartapp cmp=com.alibaba.ailabs.genie.smartapp/.service.JobWakeUpService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    permission=android.permission.BIND_JOB_SERVICE
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-1d22h10m33s469ms startingBgTimeout=--
+    lastActivity=-20s767ms restartTime=-1d22h10m33s469ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
+    callerPackageName=android
+    Bindings:
+    * IntentBindRecord{a2f2ebd}:
+      intent={cmp=com.alibaba.ailabs.genie.smartapp/.service.JobWakeUpService}
+      binder=android.os.BinderProxy@982acb2
+      requested=true received=true hasBound=false doRebind=false
+
+  * ServiceRecord{af38462 u0 com.alibaba.ailabs.genie.smartapp/.task.core.ScheduleJobService}
+    intent={act=com.alibaba.ailabs.genie.task.action.SCHEDULE_JOB pkg=com.alibaba.ailabs.genie.smartapp}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-1d22h10m2s493ms startingBgTimeout=--
+    lastActivity=-4h3m47s12ms restartTime=-1d22h10m2s477ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=8
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+
+  * ServiceRecord{5ab8455 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.datacenter.DataCenterService}
+    intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.datacenter.DataCenterService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-1d22h10m49s91ms startingBgTimeout=--
+    lastActivity=-3h25m34s488ms restartTime=-1d22h10m49s91ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=20
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+
+  * ServiceRecord{39c5412 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.vision.AVEProxyService}
+    intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.vision.AVEProxyService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp:core
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{becf55 13250:com.alibaba.ailabs.genie.smartapp:core/1000}
+    createTime=-1d22h11m1s289ms startingBgTimeout=--
+    lastActivity=-3h25m40s439ms restartTime=-3h25m43s26ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=9
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    restartCount=1 restartDelay=-1d22h11m1s571ms nextRestartTime=-3h25m22s260ms crashCount=0
+
+  * ServiceRecord{ffcd3c9 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.musicplayer.service.MusicService}
+    intent={act=android.intent.action.VIEW dat=genie://com.alibaba.ailabs.genie.musicplayer.service pkg=com.alibaba.ailabs.genie.smartapp}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp:business
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{a6aa477 29017:com.alibaba.ailabs.genie.smartapp:business/1000}
+    isForeground=true foregroundId=1 foregroundNoti=Notification(channel=playing_notification pri=0 contentView=com.alibaba.ailabs.genie.smartapp/0x7f0b005e vibrate=null sound=null defaults=0x0 flags=0x62 color=0x00000000 vis=PUBLIC)
+    createTime=-3h41m31s159ms startingBgTimeout=--
+    lastActivity=-3h41m31s157ms restartTime=-3h41m31s157ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=true callStart=true lastStartId=1
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+
+  * ServiceRecord{b1ae2e u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService}
+    intent={pkg=com.alibaba.ailabs.genie.smartapp cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-1d22h11m6s788ms startingBgTimeout=--
+    lastActivity=-3h59m17s379ms restartTime=-1d22h11m6s788ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=2
+    callerPackageName=com.alibaba.ailabs.genie.launcher
+    Bindings:
+    * IntentBindRecord{edf403 CREATE}:
+      intent={act=com.alibaba.ailabs.genie.logger.LogService.action pkg=com.alibaba.ailabs.genie.smartapp}
+      binder=android.os.BinderProxy@2fbff80
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{a24f9b9 ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}}
+        Per-process Connections:
+          ConnectionRecord{d8601b9 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@29c2780}
+      * Client AppBindRecord{3eae1fe ProcessRecord{7df186e 5224:com.alibaba.ailabs.genie.iot:service/1000}}
+        Per-process Connections:
+          ConnectionRecord{4ab479c u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@6831b0f}
+      * Client AppBindRecord{451cd5f ProcessRecord{83d13e4 1496:com.android.settings:SettingsProvider/1000}}
+        Per-process Connections:
+          ConnectionRecord{1286702 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@469204d}
+      * Client AppBindRecord{9e193ac ProcessRecord{94e12c6 24091:com.alibaba.ailabs.genie.launcher/u0a24}}
+        Per-process Connections:
+          ConnectionRecord{978e5b4 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@b1a8287}
+          ConnectionRecord{e2f374c u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@b1a8287}
+      * Client AppBindRecord{3127875 ProcessRecord{a6aa477 29017:com.alibaba.ailabs.genie.smartapp:business/1000}}
+        Per-process Connections:
+          ConnectionRecord{1d7214d u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@88e78e4}
+    All Connections:
+      ConnectionRecord{d8601b9 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@29c2780}
+      ConnectionRecord{1286702 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@469204d}
+      ConnectionRecord{4ab479c u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@6831b0f}
+      ConnectionRecord{1d7214d u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@88e78e4}
+      ConnectionRecord{978e5b4 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@b1a8287}
+      ConnectionRecord{e2f374c u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@b1a8287}
+
+  * ServiceRecord{38a937 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.GenieAssistantUiService}
+    intent={act=com.alibaba.ailabs.tg.UI_SERVICE pkg=com.alibaba.ailabs.genie.smartapp}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-3h25m40s438ms startingBgTimeout=--
+    lastActivity=-3h25m40s420ms restartTime=-3h25m40s438ms createdFromFg=true
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+    Bindings:
+    * IntentBindRecord{f0f200a CREATE}:
+      intent={act=com.alibaba.ailabs.tg.UI_SERVICE pkg=com.alibaba.ailabs.genie.smartapp}
+      binder=android.os.BinderProxy@6efe07b
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{4aa3e98 ProcessRecord{becf55 13250:com.alibaba.ailabs.genie.smartapp:core/1000}}
+        Per-process Connections:
+          ConnectionRecord{e6e636 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.GenieAssistantUiService:@dea0bd1}
+          ConnectionRecord{3b2940d u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.GenieAssistantUiService:@338fea4}
+    All Connections:
+      ConnectionRecord{3b2940d u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.GenieAssistantUiService:@338fea4}
+      ConnectionRecord{e6e636 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.GenieAssistantUiService:@dea0bd1}
+
+  * ServiceRecord{9b0f8c8 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.task.TaskService}
+    intent={cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.task.TaskService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{ae7f3a 913:com.alibaba.ailabs.genie.smartapp/1000}
+    createTime=-1d22h10m49s469ms startingBgTimeout=--
+    lastActivity=-1d22h10m49s468ms restartTime=-1d22h10m49s468ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
+    callerPackageName=com.alibaba.ailabs.genie.smartapp
+
+  Connection bindings to services:
+  * ConnectionRecord{d385a90 u0 CR FGSA com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.service.AccessibilityServiceGesture:@e59153}
+    binding=AppBindRecord{50b6a6f com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.service.AccessibilityServiceGesture:system}
+    conn=android.app.LoadedApk$ServiceDispatcher$InnerConnection@e59153 flags=0x2000001
+  * ConnectionRecord{d8601b9 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@29c2780}
+    binding=AppBindRecord{a24f9b9 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@29c2780 flags=0x1
+  * ConnectionRecord{3b2940d u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.GenieAssistantUiService:@338fea4}
+    binding=AppBindRecord{4aa3e98 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.GenieAssistantUiService:com.alibaba.ailabs.genie.smartapp:core}
+    conn=android.os.BinderProxy@338fea4 flags=0x1
+  * ConnectionRecord{bdb1113 u0 CR com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService:@34cd402}
+    binding=AppBindRecord{f3a984d com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService:com.alibaba.ailabs.genie.smartapp:business}
+    conn=android.os.BinderProxy@34cd402 flags=0x1
+  * ConnectionRecord{c77116c u0 CR com.alibaba.ailabs.genie.smartapp/anetwork.channel.aidl.NetworkService:@37baa1f}
+    binding=AppBindRecord{f421d52 com.alibaba.ailabs.genie.smartapp/anetwork.channel.aidl.NetworkService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@37baa1f flags=0x1
+  * ConnectionRecord{1286702 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@469204d}
+    binding=AppBindRecord{451cd5f com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:com.android.settings:SettingsProvider}
+    conn=android.os.BinderProxy@469204d flags=0x1
+  * ConnectionRecord{d400909 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.message.service.MessageCenterService:@4877a10}
+    binding=AppBindRecord{2738b95 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.message.service.MessageCenterService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@4877a10 flags=0x1
+  * ConnectionRecord{8a2425b u0 CR com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService:@5285d6a}
+    binding=AppBindRecord{e096be4 com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService:com.alibaba.ailabs.genie.smartapp:core}
+    conn=android.os.BinderProxy@5285d6a flags=0x1
+  * ConnectionRecord{aadefaf u0 CR FGSA com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService:@593db8e}
+    binding=AppBindRecord{2eaea87 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService:system}
+    conn=android.app.LoadedApk$ServiceDispatcher$InnerConnection@593db8e flags=0x2000001
+  * ConnectionRecord{aab2948 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+    binding=AppBindRecord{4f84438 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@5ec07eb flags=0x40
+  * ConnectionRecord{14534e6 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+    binding=AppBindRecord{4f84438 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@5ec07eb flags=0x40
+  * ConnectionRecord{d18635b u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+    binding=AppBindRecord{4f84438 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@5ec07eb flags=0x40
+  * ConnectionRecord{f038b2d u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+    binding=AppBindRecord{4f84438 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@5ec07eb flags=0x40
+  * ConnectionRecord{2969074 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@5ec07eb}
+    binding=AppBindRecord{4f84438 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@5ec07eb flags=0x40
+  * ConnectionRecord{694eba8 u0 CR FGSA com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.service.AccessibilityMonitorService:@5f3d7cb}
+    binding=AppBindRecord{fc95b81 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.service.AccessibilityMonitorService:system}
+    conn=android.app.LoadedApk$ServiceDispatcher$InnerConnection@5f3d7cb flags=0x2000001
+  * ConnectionRecord{4ab479c u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@6831b0f}
+    binding=AppBindRecord{3eae1fe com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:com.alibaba.ailabs.genie.iot:service}
+    conn=android.os.BinderProxy@6831b0f flags=0x1
+  * ConnectionRecord{3ae3018 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService:@7aea7fb}
+    binding=AppBindRecord{f551ad9 com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@7aea7fb flags=0x1
+  * ConnectionRecord{6344e5f u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService:@7b2c6fe}
+    binding=AppBindRecord{240bc9e com.alibaba.ailabs.genie.smartapp/com.alibaba.analytics.AnalyticsService:com.alibaba.ailabs.genie.smartapp:business}
+    conn=android.os.BinderProxy@7b2c6fe flags=0x1
+  * ConnectionRecord{1d7214d u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@88e78e4}
+    binding=AppBindRecord{3127875 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:com.alibaba.ailabs.genie.smartapp:business}
+    conn=android.os.BinderProxy@88e78e4 flags=0x1
+  * ConnectionRecord{bd360c2 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.message.service.MessageCenterService:@8e0e90d}
+    binding=AppBindRecord{2738b95 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.message.service.MessageCenterService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@8e0e90d flags=0x1
+  * ConnectionRecord{408860e u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService:@b016409}
+    binding=AppBindRecord{5ff1ac6 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.service.AccessibilityMonitorService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@b016409 flags=0x1
+  * ConnectionRecord{978e5b4 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@b1a8287}
+    binding=AppBindRecord{9e193ac com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:com.alibaba.ailabs.genie.launcher}
+    conn=android.os.BinderProxy@b1a8287 flags=0x1
+  * ConnectionRecord{e2f374c u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@b1a8287}
+    binding=AppBindRecord{9e193ac com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:com.alibaba.ailabs.genie.launcher}
+    conn=android.os.BinderProxy@b1a8287 flags=0x1
+  * ConnectionRecord{f64a1d3 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.vision.AVEManagerService:@b332fc2}
+    binding=AppBindRecord{d919614 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.vision.AVEManagerService:com.alibaba.ailabs.genie.smartapp:core}
+    conn=android.os.BinderProxy@b332fc2 flags=0x1
+  * ConnectionRecord{6df0ae1 u0 CR com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService:@c0c7c48}
+    binding=AppBindRecord{bfd8377 com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@c0c7c48 flags=0x1
+  * ConnectionRecord{b9e007c u0 CR com.alibaba.ailabs.genie.smartapp/mtopsdk.xstate.XStateService:@ddbab6f}
+    binding=AppBindRecord{e36250 com.alibaba.ailabs.genie.smartapp/mtopsdk.xstate.XStateService:com.alibaba.ailabs.genie.smartapp:business}
+    conn=android.os.BinderProxy@ddbab6f flags=0x1
+  * ConnectionRecord{e6e636 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.GenieAssistantUiService:@dea0bd1}
+    binding=AppBindRecord{4aa3e98 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.GenieAssistantUiService:com.alibaba.ailabs.genie.smartapp:core}
+    conn=android.os.BinderProxy@dea0bd1 flags=0x1
+  * ConnectionRecord{136024 u0 CR FGSA com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.task.AbcService:@f61a0b7}
+    binding=AppBindRecord{272ec5a com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.task.AbcService:system}
+    conn=android.app.LoadedApk$ServiceDispatcher$InnerConnection@f61a0b7 flags=0x2000001
+### activity processes (com.alibaba.ailabs.genie.smartapp)
+3:  *APP* UID 1000 ProcessRecord{7df186e 5224:com.alibaba.ailabs.genie.iot:service/1000}
+6:    class=com.alibaba.ailabs.genie.iot.App
+7:    dir=/system/app/GenieIoT/GenieIoT.apk publicDir=/system/app/GenieIoT/GenieIoT.apk data=/data/user/0/com.alibaba.ailabs.genie.iot
+8:    packageList={com.alibaba.ailabs.genie.iot}
+24:    callerPackage=com.alibaba.ailabs.genie.rtc
+26:      - ServiceRecord{21ac3fc u0 com.alibaba.ailabs.genie.iot/.house.HouseService}
+27:      - ServiceRecord{de9c90b u0 com.alibaba.ailabs.genie.iot/com.alibaba.analytics.AnalyticsService}
+29:      - ConnectionRecord{4ab479c u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@6831b0f}
+30:      - ConnectionRecord{83410da u0 CR com.alibaba.ailabs.genie.iot/com.alibaba.analytics.AnalyticsService:@e046a85}
+33:        -> ContentProviderRecord{3b6b785 u0 com.alibaba.ailabs.genie.iot/com.aliyun.alink.linksdk.tmp.geniebox.service.TMPGenieboxServiceProvider}
+34:      - com.alibaba.ailabs.iot.smartapp_genie_platform_implement.service.IoTConnectionLayerProvider
+35:        -> ContentProviderRecord{694d9da u0 com.alibaba.ailabs.genie.iot/com.alibaba.ailabs.iot.smartapp_genie_platform_implement.service.IoTConnectionLayerProvider}
+36:      - com.alibaba.ailabs.genie.iot.IOTProvider
+37:        -> ContentProviderRecord{5d5e0b u0 com.alibaba.ailabs.genie.iot/.IOTProvider}
+38:      - com.alibaba.ailabs.iot.iotservicesdk.IoTLocalExecuteProvider
+39:        -> ContentProviderRecord{1ea94e8 u0 com.alibaba.ailabs.genie.iot/com.alibaba.ailabs.iot.iotservicesdk.IoTLocalExecuteProvider}
+40:      - com.alibaba.ailabs.genie.second.gcs.service.SecondInstaller
+41:        -> ContentProviderRecord{db04701 u0 com.alibaba.ailabs.genie.iot/com.alibaba.ailabs.genie.second.gcs.service.SecondInstaller}
+42:      - com.alibaba.ailabs.iot.palette.channel.agui.PaletteProvider
+43:        -> ContentProviderRecord{576b9a6 u0 com.alibaba.ailabs.genie.iot/com.alibaba.ailabs.iot.palette.channel.agui.PaletteProvider}
+45:      - c81cfe7/com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.router.service.RouterProvider->5224:com.alibaba.ailabs.genie.iot:service/1000 s0/0 u1/1 +12h21m30s567ms
+46:      - 4481794/com.android.providers.settings/.SettingsProvider->5224:com.alibaba.ailabs.genie.iot:service/1000 s1/1 u0/0 +12h21m29s550ms
+47:      - a59523d/com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.AgisProvider->5224:com.alibaba.ailabs.genie.iot:service/1000 s0/0 u1/1 +3h25m42s786ms
+48:      - 744ca32/com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.provider.StatusProvider->5224:com.alibaba.ailabs.genie.iot:service/1000 s0/0 u1/1 +3h25m38s237ms
+50:      - ReceiverList{3eee34 5224 com.alibaba.ailabs.genie.iot:service/1000/u0 remote:5895d07}
+51:      - ReceiverList{2f8791e 5224 com.alibaba.ailabs.genie.iot:service/1000/u0 remote:a5bf959}
+52:      - ReceiverList{5944c64 5224 com.alibaba.ailabs.genie.iot:service/1000/u0 remote:e5d95f7}
+53:      - ReceiverList{6be1cb8 5224 com.alibaba.ailabs.genie.iot:service/1000/u0 remote:acde31b}
+54:      - ReceiverList{74365ce 5224 com.alibaba.ailabs.genie.iot:service/1000/u0 remote:e60eac9}
+55:      - ReceiverList{9d4c2a3 5224 com.alibaba.ailabs.genie.iot:service/1000/u0 remote:ddf11d2}
+56:      - ReceiverList{aa62a01 5224 com.alibaba.ailabs.genie.iot:service/1000/u0 remote:14e23e8}
+57:      - ReceiverList{d49d215 5224 com.alibaba.ailabs.genie.iot:service/1000/u0 remote:59dcfcc}
+58:      - ReceiverList{dcb9a93 5224 com.alibaba.ailabs.genie.iot:service/1000/u0 remote:2eb9382}
+76:  *APP* UID 1000 ProcessRecord{becf55 13250:com.alibaba.ailabs.genie.smartapp:core/1000}
+79:    class=com.alibaba.ailabs.genie.smartapp.SmartAppApplication
+80:    dir=/system/app/smartapp/smartapp.apk publicDir=/system/app/smartapp/smartapp.apk data=/data/user/0/com.alibaba.ailabs.genie.smartapp
+81:    packageList={com.alibaba.ailabs.genie.smartapp}
+97:      - ServiceRecord{3596110 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.vision.AVEManagerService}
+98:      - ServiceRecord{39c5412 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.vision.AVEProxyService}
+99:      - ServiceRecord{925b6c1 u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.assistant.service.AccessibilityMonitorService}
+Failed to write while dumping service activity: Broken pipe
+### dumpsys activity top
+      * Hist #0: ActivityRecord{b256937 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}
+### service list (audio/binder related)
+0	GpuAppSpectatorService: [com.mediatek.GpuAppSpectatorService]
+5	search_engine_service: [com.mediatek.search.ISearchEngineManagerService]
+8	media.camera.proxy: [android.hardware.ICameraServiceProxy]
+9	media_projection: [android.media.projection.IMediaProjectionManager]
+12	media_router: [android.media.IMediaRouterService]
+13	media_session: [android.media.session.ISessionManager]
+23	voiceinteraction: [com.android.internal.app.IVoiceInteractionManagerService]
+32	midi: [android.media.midi.IMidiManager]
+34	audio: [android.media.IAudioService]
+103	media.sound_trigger_hw: [android.hardware.ISoundTriggerHwService]
+104	media.audio_policy: [android.media.IAudioPolicyService]
+107	media.extractor: [android.media.IMediaExtractorService]
+110	media.resource_manager: [android.media.IResourceManagerService]
+111	media.player: [android.media.IMediaPlayerService]
+112	media.camera: [android.hardware.ICameraService]
+114	media.audio_flinger: [android.media.IAudioFlinger]
+119	alibaba.ailabs.genie.resm: [com.alibaba.ailabs.genie.resmanager.IResManager]
+### audio
+
+MediaFocusControl dump time: 上午11:29:43
+
+Audio Focus stack entries (last is top of stack):
+
+
+No external focus policy
+
+
+
+ Notify on duck:  true
+
+ In ring or call: false
+
+
+
+Audio event log: focus commands as seen by MediaFocusControl
+11-24 07:48:32:365 requestAudioFocus() from uid/pid 1000/21638 clientId=android.media.AudioManager@adeb7b8com.alibaba.ailabs.geniesdk.focus.FocusMgr$1@d1e7991 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 07:48:47:011 requestAudioFocus() from uid/pid 1000/21638 clientId=android.media.AudioManager@adeb7b8com.alibaba.ailabs.geniesdk.focus.FocusMgr$1@d1e7991 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:04:32:787 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:04:32:986 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:04:43:634 abandonAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115
+11-24 08:05:21:719 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:05:21:801 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:05:33:629 abandonAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115
+11-24 08:05:54:687 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:05:54:702 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:05:58:456 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:05:58:510 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:02:167 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:02:337 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:02:574 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:02:845 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:07:439 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:07:471 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:10:079 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:15:958 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:16:363 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:37:130 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:37:170 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:41:089 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:42:527 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:42:801 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:45:488 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:45:603 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:46:832 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:47:399 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:49:262 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:49:395 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:50:619 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:50:806 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:54:397 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:54:434 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:06:57:215 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:07:01:218 abandonAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115
+11-24 08:07:01:372 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:07:01:611 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:07:23:333 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:07:23:417 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:07:27:300 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:07:28:822 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:07:29:012 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:07:32:331 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:07:32:344 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:07:33:559 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:07:34:183 requestAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115 callingPack=com.alibaba.ailabs.genie.smartapp req=2 flags=0x0 sdk=27
+11-24 08:07:38:253 abandonAudioFocus() from uid/pid 1000/13250 clientId=android.media.AudioManager@35abacccom.alibaba.ailabs.geniesdk.focus.FocusMgr$1@853e115
+
+Stream volumes (device: index)
+- STREAM_VOICE_CALL:
+   Muted: false
+   Min: 1
+   Max: 100
+   Current: 2 (speaker): 10, 40000000 (default): 50
+   Devices: speaker
+- STREAM_SYSTEM:
+   Muted: false
+   Min: 0
+   Max: 100
+   Current: 2 (speaker): 10, 40000000 (default): 50
+   Devices: speaker
+- STREAM_RING:
+   Muted: false
+   Min: 0
+   Max: 100
+   Current: 2 (speaker): 10, 40000000 (default): 50
+   Devices: speaker
+- STREAM_MUSIC:
+   Muted: false
+   Min: 0
+   Max: 100
+   Current: 2 (speaker): 10, 40000000 (default): 50
+   Devices: speaker
+- STREAM_ALARM:
+   Muted: false
+   Min: 0
+   Max: 100
+   Current: 40000000 (default): 8
+   Devices: speaker
+- STREAM_NOTIFICATION:
+Failed to write while dumping service audio: Broken pipe
+### audio flinger (tracks)
+76:Global session refs:
+77:  session   pid count
+82:Standby Time mSec: 3000
+84:Output thread 0xabf16bc0, name AudioOut_D, tid 19779, type 0 (MIXER):
+86:  Standby: yes
+109:  Standby delay ns=3000000000
+120:  1 Tracks of which 0 are active
+121:    T Name Active Client Session S  Flags   Format Chn mask  SRate ST  L dB  R dB  VS dB   Server FrmCnt  FrmRdy F Underruns  Flushed Main Buf  Aux Buf
+127:   11-24 08:05:54.688 removeTrack_l (0xab9f0000)      0     no  13250    5137 T  0x600 00000003 00000003  48000  3     0     0     0  0000C600   6152       0 f      4614     4032 AC67B000 00000000
+130:   11-24 08:05:58.456 removeTrack_l (0xab9f0000)      0     no  13250    5145 T  0x600 00000003 00000003  48000  3     0     0     0  0000A200   6152       0 f      6152     3168 AC67B000 00000000
+133:   11-24 08:06:02.801 removeTrack_l (0xab9f0000)      0     no  13250    5153 T  0x600 00000003 00000003  48000  3     0     0     0  0000C000   6152       0 f      1538     5568 AC67B000 00000000
+138:   11-24 08:06:16.349 removeTrack_l (0xab9f0000)      0     no  13250    5169 T  0x600 00000003 00000003  48000  3     0     0     0  0000C000   6152       0 f      7690     5568 AC67B000 00000000
+141:   11-24 08:06:37.129 removeTrack_l (0xab9f0000)      0     no  13250    5193 T  0x600 00000003 00000003  48000  3     0     0     0  0000C600   6152       0 f      3076     4032 AC67B000 00000000
+144:   11-24 08:06:42.722 removeTrack_l (0xab9f0000)      0     no  13250    5201 T  0x600 00000003 00000003  48000  3     0     0     0  0000A200   6152       0 f     16918     3168 AC67B000 00000000
+147:   11-24 08:06:47.387 removeTrack_l (0xab9f0000)      0     no  13250    5217 T  0x600 00000003 00000003  48000  3     0     0     0  0000C000   6152       0 f      3076     5568 AC67B000 00000000
+150:   11-24 08:06:50.753 removeTrack_l (0xab9f0000)      0     no  13250    5233 T  0x600 00000003 00000003  48000  3     0     0     0  0000C000   6152       0 f     10766     5568 AC67B000 00000000
+153:   11-24 08:07:01.572 removeTrack_l (0xab9f0000)      0     no  13250    5249 T  0x600 00000003 00000003  48000  3     0     0     0  0000C000   6152       0 f      9228     5568 AC67B000 00000000
+156:   11-24 08:07:23.337 removeTrack_l (0xab9f0000)      0     no  13250    5273 T  0x600 00000003 00000003  48000  3     0     0     0  0000C000   6152       0 f      4614     5568 AC67B000 00000000
+159:   11-24 08:07:28.982 removeTrack_l (0xab9f0000)      0     no  13250    5281 T  0x600 00000003 00000003  48000  3     0     0     0  00009000   6152       0 f      4614     5616 AC67B000 00000000
+162:   11-24 08:07:34.126 removeTrack_l (0xab9f0000)      0     no  13250    5297 T  0x600 00000003 00000003  48000  3     0     0     0  0000C600   6152       0 f      3076     4032 AC67B000 00000000
+166:Output thread 0xab983800, name AudioOut_15, tid 19781, type 0 (MIXER):
+168:  Standby: yes
+191:  Standby delay ns=3000000000
+201:            numTracks=1 writeErrors=0 underruns=9 overruns=10
+209:  Fast tracks: sMaxFastTracks=8 activeMask=0x1
+210:  Index Active Full Partial Empty  Recent Ready    Written
+221:  2 Tracks of which 0 are active
+222:    T Name Active Client Session S  Flags   Format Chn mask  SRate ST  L dB  R dB  VS dB   Server FrmCnt  FrmRdy F Underruns  Flushed Main Buf  Aux Buf
+233:   11-24 08:06:41.044 removeTrack_l (0xab9f0180) F    1     no  13250    5185 T  0x600 00000003 00000003  48000  3     0     0     0  00048200   2048       0 f         0     1936 ABF12800 00000000
+238:   11-24 08:06:45.495 removeTrack_l (0xab9f0180) F    1     no  13250    5209 T  0x600 00000003 00000003  48000  3     0     0     0  00012500   2048       0 f       256     2032 ABF12800 00000000
+243:   11-24 08:06:49.279 removeTrack_l (0xab9f0180) F    1     no  13250    5225 T  0x600 00000003 00000003  48000  3     0     0     0  00013400   2048       0 f         0     1792 ABF12800 00000000
+253:   11-24 08:06:54.389 removeTrack_l (0xab9f0180) F    1     no  13250    5241 T  0x600 00000003 00000003  48000  3     0     0     0  0000F800   2048       0 f         0     2032 ABF12800 00000000
+258:   11-24 08:06:57.173 removeTrack_l (0xab9f0180) F    1     no  13250    5257 T  0x600 00000003 00000003  48000  3     0     0     0  0001DF00   2048       0 f         0     1936 ABF12800 00000000
+270:   11-24 08:07:27.234 removeTrack_l (0xab9f0780) F    2     no  13250    5265 T  0x600 00000003 00000003  48000  3     0     0     0  00032000   2048       0 f         0     1840 ABF12800 00000000
+282:   11-24 08:07:32.336 removeTrack_l (0xab9f0300) F    1     no  13250    5289 T  0x600 00000003 00000003  48000  3     0     0     0  00012500   2048       0 f         0     2032 ABF12800 00000000
+293:Input thread 0xab683f80, name AudioIn_3E, tid 13383, type 3 (RECORD):
+295:  Standby: no
+313:  1 Tracks of which 1 are active
+314:    Active Client Session S  Flags   Format Chn mask  SRate   Server FrmCnt
+### media session
+MEDIA SESSION SERVICE (dumpsys media_session)
+
+2 sessions listeners.
+Global priority session is null
+User Records:
+Record for full_user=0
+  Volume key long-press listener: null
+  Volume key long-press listener package: 
+  Media key listener: null
+  Media key listener package: 
+  Callback: android.media.session.ICallback$Stub$Proxy@f6b9d18
+  Last MediaButtonReceiver: null
+  Restored MediaButtonReceiver: null
+  Media button session is null
+  Sessions Stack - have 2 sessions:
+    MusicService com.alibaba.ailabs.genie.smartapp/MusicService (userId=0)
+      ownerPid=29017, ownerUid=1000, userId=0
+      package=com.alibaba.ailabs.genie.smartapp
+      launchIntent=null
+      mediaButtonReceiver=null
+      active=true
+      flags=3
+      rating type=0
+      controllers: 0
+      state=PlaybackState {state=2, position=0, buffered position=0, speed=1.0, updated=153848878, actions=0, custom actions=[], active item id=-1, error=null}
+      audioAttrs=AudioAttributes: usage=USAGE_MEDIA content=CONTENT_TYPE_MUSIC flags=0x0 tags= bundle=null
+      volumeType=1, controlType=2, max=0, current=0
+      metadata:size=19, description=下辈子投胎计划表！, 薯条酱, null
+      queueTitle=null, size=0
+
+    A2dpMediaBrowserService com.android.bluetooth/A2dpMediaBrowserService (userId=0)
+      ownerPid=1133, ownerUid=1002, userId=0
+      package=com.android.bluetooth
+      launchIntent=null
+      mediaButtonReceiver=null
+      active=true
+      flags=3
+      rating type=0
+      controllers: 6
+      state=null

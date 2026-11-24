@@ -1,0 +1,30 @@
+﻿### date
+2026-11-24 11:45:50
+stale t6 supervisor pidfile=280
+killed stale supervisor 280
+core before=1151
+killed core 1151
+core after=12803
+### injected libs in new core
+/data/local/tmp/t6/libtg_hook.so
+/data/local/tmp/t7/libtg_ttsguard_t8155r.so
+/data/local/tmp/t8/libtg_hook.so
+### supervisors
+12243     1 tg_supervisor
+12261     1 tg_supervisor
+12779     1 tg_supervisor
+### hook supervisor log
+inj| [inject] stats=state=0 hooked=1 sender=1 spawns=1 seen=0 final=0 queued=0 sent=0 acked=0 dup=0 rejected=0 dropped=0 reconn=0 overflow=0 drop_empty=0 drop_utf8=0 drop_long=0 drop_control=0 conn_open=0 conn_fail=0 ack_timeout=0
+inj| [inject] RESULT ok pid=12803 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-24 11:45:52.294 sup: inject end: pid=12803 exit=0 hooked=1 elapsed=214ms ok
+### guard supervisor log
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 play=1 start=1 func_play=97be1afc func_start=97be1110 play_seen=0 ours=0 not_ours=0 start_seen=0 allowed=0 dropped=0 hit_id=0 hit_text=0 empty=0 native_allowed=0 native_session=0 native_window=0 native_miss=0 native_reads=0 native_expired=0 native_bad=0 native_seq=0 native_file=/data/local/tmp/t5_brid
+inj| [inject] RESULT ok pid=12803 already_mapped=0 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-24 11:45:51.977 sup: inject end: pid=12803 exit=0 hooked=1 elapsed=138ms ok
+### guard check
+libtg_hook.so
+libtg_ttsguard_t8155r.so

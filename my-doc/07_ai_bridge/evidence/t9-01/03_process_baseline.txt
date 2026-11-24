@@ -1,0 +1,486 @@
+﻿### date
+2026-11-24 11:30:08
+### ps all
+USER           PID  PPID     VSZ    RSS WCHAN      ADDR S NAME                       
+root             1     0   18464   1552 SyS_epoll_wait b53fc S init
+root             2     0       0      0 kthreadd      0 S [kthreadd]
+root             3     2       0      0 smpboot_thread_fn 0 S [ksoftirqd/0]
+root             5     2       0      0 worker_thread 0 S [kworker/0:0H]
+root             7     2       0      0 rcu_gp_kthread 0 S [rcu_preempt]
+root             8     2       0      0 rcu_gp_kthread 0 S [rcu_sched]
+root             9     2       0      0 rcu_gp_kthread 0 S [rcu_bh]
+root            10     2       0      0 smpboot_thread_fn 0 S [migration/0]
+root            11     2       0      0 smpboot_thread_fn 0 S [migration/1]
+root            12     2       0      0 smpboot_thread_fn 0 S [ksoftirqd/1]
+root            14     2       0      0 worker_thread 0 S [kworker/1:0H]
+root            15     2       0      0 smpboot_thread_fn 0 S [migration/2]
+root            16     2       0      0 smpboot_thread_fn 0 S [ksoftirqd/2]
+root            18     2       0      0 worker_thread 0 S [kworker/2:0H]
+root            19     2       0      0 smpboot_thread_fn 0 S [migration/3]
+root            20     2       0      0 smpboot_thread_fn 0 S [ksoftirqd/3]
+root            22     2       0      0 worker_thread 0 S [kworker/3:0H]
+root            23     2       0      0 rescuer_thread 0 S [perf]
+root            24     2       0      0 down          0 D [GCPU]
+root            25     2       0      0 update_counter_thread 0 S [update_tz_count]
+root            26     2       0      0 rescuer_thread 0 S [writeback]
+root            27     2       0      0 rescuer_thread 0 S [crypto]
+root            28     2       0      0 rescuer_thread 0 S [bioset]
+root            29     2       0      0 rescuer_thread 0 S [kblockd]
+root            30     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            31     2       0      0 rescuer_thread 0 S [cmdq_task]
+root            32     2       0      0 rescuer_thread 0 S [cmdq_resource]
+root            33     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            34     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            35     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            36     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            37     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            38     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            39     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            40     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            41     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            42     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            43     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            44     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            45     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            46     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            47     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            48     2       0      0 rescuer_thread 0 S [cmdq_auto_relea]
+root            50     2       0      0 mem_reclaim_thread 0 S [rtmm_reclaim]
+root            51     2       0      0 rescuer_thread 0 S [cfg80211]
+root            52     2       0      0 cpufreq_interactive_speedchange_task 0 S [cfinteractive]
+root            53     2       0      0 ion_heap_deferred_free 0 S [ion_mm_heap]
+root            54     2       0      0 ion_heap_deferred_free 0 S [ion_mm_heap_for]
+root            55     2       0      0 ion_heap_deferred_free 0 S [ion_mm_heap_for]
+root            56     2       0      0 msleep        0 R [ion_history]
+root            71     2       0      0 kswapd        0 S [kswapd0]
+root            72     2       0      0 rescuer_thread 0 S [vmstat]
+root            73     2       0      0 fsnotify_mark_destroy 0 S [fsnotify_mark]
+root            74     2       0      0 kthread       0 D [fuse_log]
+root           104     2       0      0 rescuer_thread 0 S [bioset]
+root           105     2       0      0 rescuer_thread 0 S [bioset]
+root           106     2       0      0 rescuer_thread 0 S [bioset]
+root           107     2       0      0 rescuer_thread 0 S [bioset]
+root           108     2       0      0 rescuer_thread 0 S [bioset]
+root           109     2       0      0 rescuer_thread 0 S [bioset]
+root           110     2       0      0 rescuer_thread 0 S [bioset]
+root           111     2       0      0 rescuer_thread 0 S [bioset]
+root           112     2       0      0 rescuer_thread 0 S [bioset]
+root           113     2       0      0 _hps_task_main 0 S [hps_main]
+root           114     2       0      0 rescuer_thread 0 S [ged_notify_sw_v]
+root           115     2       0      0 rescuer_thread 0 S [ged_dump_fw_log]
+root           116     2       0      0 btif_rx_thread 0 S [btif_rxd]
+root           117     2       0      0 ktp_thread    0 S [kthermp]
+root           118     2       0      0 msleep        0 D [hang_detect]
+root           119     2       0      0 hang_detect_dump_thread 0 S [hang_detect1]
+root           120     2       0      0 irq_thread    0 S [irq/124-mt6397-]
+root           121     2       0      0 rescuer_thread 0 S [uether]
+root           122     2       0      0 rescuer_thread 0 S [uether_rx1]
+root           123     2       0      0 rescuer_thread 0 S [kpsmoused]
+root           124     2       0      0 rescuer_thread 0 S [dm_bufio_cache]
+root           125     2       0      0 irq_thread    0 S [irq/203-sdio-ei]
+root           127     2       0      0 rescuer_thread 0 S [binder]
+root           133     2       0      0 rescuer_thread 0 S [ipv6_addrconf]
+root           142     2       0      0 rescuer_thread 0 S [deferwq]
+root           143     2       0      0 mt_gpufreq_input_boost_task 0 S [mt_gpufreq_inpu]
+root           144     2       0      0 sched_hint_thread 0 S [ksched_hint]
+root           146     2       0      0 rescuer_thread 0 S [accel_polling]
+root           147     2       0      0 rescuer_thread 0 S [usb20_st_wq]
+root           149     2       0      0 disp_irq_log_kthread_func 0 S [ddp_irq_log_kth]
+root           150     2       0      0 kthread       0 D [display_esd_che]
+root           151     2       0      0 _dpmgr_wait_event 0 S [display_check_a]
+root           152     2       0      0 _dpmgr_wait_event 0 S [present_fence_w]
+root           153     2       0      0 primary_display_frame_update_kthread 0 S [frame_update_wo]
+root           154     2       0      0 decouple_fence_release_kthread 0 S [decouple_fence_]
+root           155     2       0      0 rescuer_thread 0 S [bioset]
+root           157     2       0      0 ion_heap_deferred_free 0 S [ion_fb_heap]
+root           158     2       0      0 mmc_queue_thread 0 S [mmcqd/0]
+root           159     2       0      0 rescuer_thread 0 S [bioset]
+root           160     2       0      0 mmc_queue_thread 0 S [mmcqd/0boot0]
+root           161     2       0      0 rescuer_thread 0 S [bioset]
+root           162     2       0      0 mmc_queue_thread 0 S [mmcqd/0boot1]
+root           163     2       0      0 rescuer_thread 0 S [bioset]
+root           164     2       0      0 mmc_queue_thread 0 S [mmcqd/0rpmb]
+root           165     2       0      0 rescuer_thread 0 S [pvr_timer]
+root           166     2       0      0 LinuxEventObjectWait 0 S [pvr_defer_free]
+root           167     2       0      0 LinuxEventObjectWait 0 S [pvr_device_wdg]
+root           168     2       0      0 LinuxEventObjectWait 0 S [pvr_cacheop]
+root           169     2       0      0 rescuer_thread 0 S [mwp]
+root           170     2       0      0 rescuer_thread 0 S [pvr_sync_defer_]
+root           171     2       0      0 rescuer_thread 0 S [pvr_sync_check_]
+root           172     2       0      0 down          0 D [entropy_thread]
+root           173     2       0      0 rescuer_thread 0 S [mtk-tpd]
+root           174     2       0      0 rescuer_thread 0 S [gtp-workqueue]
+root           176     2       0      0 touch_event_handler 0 S [mtk-tpd]
+root           177     2       0      0 rescuer_thread 0 S [touch_resume]
+root           179     2       0      0 ptp_volt_thread_handler 0 S [PTP_CTRL_MCUSYS]
+root           180     2       0      0 worker_thread 0 S [kworker/3:1H]
+root           184     2       0      0 kjournald2    0 S [jbd2/mmcblk0p19]
+root           185     2       0      0 rescuer_thread 0 S [ext4-rsv-conver]
+root           187     2       0      0 worker_thread 0 S [kworker/2:1H]
+root           188     2       0      0 rescuer_thread 0 S [bioset]
+root           189     2       0      0 rescuer_thread 0 S [kdmflush]
+root           190     2       0      0 kjournald2    0 S [jbd2/mmcblk0p11]
+root           191     2       0      0 rescuer_thread 0 S [ext4-rsv-conver]
+root           192     2       0      0 worker_thread 0 S [kworker/0:1H]
+root           193     1    2976   1608 poll_schedule_timeout a8954 S ueventd
+root           201     2       0      0 worker_thread 0 S [kworker/1:1H]
+root           207     2       0      0 kjournald2    0 S [jbd2/mmcblk0p22]
+root           208     2       0      0 rescuer_thread 0 S [ext4-rsv-conver]
+root           212     2       0      0 kjournald2    0 S [jbd2/mmcblk0p20]
+root           213     2       0      0 rescuer_thread 0 S [ext4-rsv-conver]
+root           217     2       0      0 kjournald2    0 S [jbd2/mmcblk0p21]
+root           218     2       0      0 rescuer_thread 0 S [ext4-rsv-conver]
+logd           221     1   33732  20544 sigsuspend a8b614c8 S logd
+system         222     1    5704   2700 binder_thread_read b3c0c2f8 S servicemanager
+system         223     1    8832   3396 SyS_epoll_wait b47d61b8 S hwservicemanager
+system         224     1    5536   2244 binder_thread_read b17182f8 S vndservicemanager
+root           231     2       0      0 kauditd_thread 0 S [kauditd]
+system         232     1    8464   2152 binder_thread_read b4b992f8 S android.hardware.keymaster@3.0-service
+root           233     1   14264   3184 sigsuspend aa6cb4c8 S vold
+root           243     1   14280   2640 poll_schedule_timeout b2c67390 S magiskd
+root           280     1   25068   2816 binder_thread_read b11d82f8 S netd
+root           281     1  972900  14776 poll_schedule_timeout b4dd7390 S zygote
+root           282   280    4976   1644 pipe_wait ae5ad198 S iptables-restore
+root           283   280    4984   1692 pipe_wait b251d198 S ip6tables-restore
+system         300     1    7260   2104 binder_thread_read b0c492f8 S android.hidl.allocator@1.0-service
+bluetooth      302     1   28404   2300 binder_thread_read b54d92f8 S android.hardware.bluetooth@1.0-service-mediatek
+audioserver    303     1    7688   2304 binder_thread_read b3f4b2f8 S android.hardware.broadcastradio@1.1-service
+media          304     1    9048   2120 binder_thread_read ae91a2f8 S android.hardware.cas@1.0-service
+system         305     1    9492   2252 binder_thread_read b03612f8 S android.hardware.configstore@1.0-service
+system         306     1    7344   2120 binder_thread_read ad3632f8 S android.hardware.gatekeeper@1.0-service
+system         307     1   29068   3544 binder_thread_read b5f672f8 S android.hardware.graphics.composer@2.1-service
+wifi           308     1    9824   2696 binder_thread_read b2b892f8 S android.hardware.wifi@1.0-service
+system         309     1   25344   3296 futex_wait_queue_me b1d7ace8 S merged_hal_service
+system         310     1    7408   2172 binder_thread_read ad98c2f8 S vendor.mediatek.hardware.keymanage@1.0-service
+root           311     1    8476   2184 SyS_epoll_wait b668c1b8 S healthd
+root           312     1    4580   1892 wait_woken b6919198 S sh
+root           313     1    2336   1020 hrtimer_nanosleep a8ee0 S watchdogd
+root           317     1    5040   2380 SyS_epoll_wait a85f01b8 S lmkd
+media          318     1   62396   4176 binder_thread_read a735d2f8 S mediaserver
+system         319     1   71552   9484 SyS_epoll_wait aebee1b8 S surfaceflinger
+root           320     1    8904   2416 binder_thread_read b6a6b2f8 S thermalserviced
+system         327     1    4776   2112 poll_schedule_timeout b2b64390 S wmt_launcher
+root           328     2       0      0 rescuer_thread 0 S [f_mtp]
+root           332     1   32876   3808 poll_schedule_timeout a7ed0390 S ras-daemon
+root           338     1   16228   4604 do_wait b10a1a30 S idsd
+root           340     1   30548   2952 binder_thread_read ac3312f8 S guardians
+root           341     1   11192   2656 binder_thread_read adc542f8 S resource_manager
+system         342     1    9952   2864 binder_thread_read b65942f8 S aal
+system         343     1    5576   2276 hrtimer_nanosleep b2a2b030 S batterywarning
+cameraserver   344     1   23776   3792 binder_thread_read a61cc2f8 S cameraserver
+system         345     1    8320   2600 binder_thread_read b56aa2f8 S dm_agent_binder
+root           346     2       0      0 osal_wait_for_event 0 S [mtk_stp_psm]
+drm            349     1   16796   3728 binder_thread_read b595d2f8 S drmserver
+root           350     2       0      0 osal_wait_for_event 0 S [mtk_stp_btm]
+system         351     1    5832   2192 hrtimer_nanosleep b4bd0030 S thermald
+root           352     2       0      0 osal_thread_wait_for_event 0 S [mtk_wmtd]
+root           353     1   15496   3192 binder_thread_read b3d1f2f8 S installd
+keystore       354     1   11424   2760 binder_thread_read b1ef02f8 S keystore
+mediaex        355     1   34232   3520 binder_thread_read ae1492f8 S media.extractor
+root           356     2       0      0 osal_thread_wait_for_event 0 S [mtk_wmtd_worker]
+system         357     1    7048   2256 sigsuspend b2eed4c8 S mobile_log_d
+shell          359     1    7372   2532 futex_wait_queue_me a743dce8 S netdiag
+root           361     1    9360   2940 binder_thread_read b33b12f8 S storaged
+wifi           365     1    9776   2612 SyS_epoll_wait a6e211b8 S wificond
+mediacodec     366     1   41052   4640 binder_thread_read a98c92f8 S media.codec
+system         372     1    9968   2152 poll_schedule_timeout afd63390 S android.hardware.sensors@1.0-service-mediatek
+cameraserver   373     1   56740   9636 binder_thread_read b34d02f8 S camerahalserver
+system         374     1    4656   1780 hrtimer_nanosleep a7b91030 S thermal
+system         377     1    4660   1880 __skb_recv_datagram a902b270 S sysenv_daemon
+system         378     1   11796   2676 binder_thread_read a8b8b2f8 S vendor.mediatek.hardware.pq@2.0-service
+system         380     1    9952   2924 binder_thread_read aceac2f8 S gatekeeperd
+tombstoned     383     1    4760   2304 SyS_epoll_wait aa1dd1b8 S tombstoned
+system         384     1    8328   1972 hrtimer_nanosleep aeaa7030 S netdagent
+system         385     1    4668   2008 down_interruptible aed262f8 S rpmb_svc
+root           406     2       0      0 rescuer_thread 0 S [pvr_workqueue]
+root           407     2       0      0 rescuer_thread 0 S [pvr_workqueue]
+root           408     2       0      0 rescuer_thread 0 S [pvr_workqueue]
+root           485   340    4580   1948 sigsuspend b4c6a4c8 S sh
+root           585     1    6248   2404 poll_schedule_timeout a6e8e390 S aee_aed
+system         701   281 1151544  74880 SyS_epoll_wait b4dd71b8 S system_server
+u0_a12         847   281 1120056  53104 SyS_epoll_wait b4dd71b8 S com.android.systemui
+system         898   281 1077456  48420 SyS_epoll_wait b4dd71b8 S com.alibaba.ailabs.genie.osupdate
+system         913   281 1249300  98692 SyS_epoll_wait b4dd71b8 S com.alibaba.ailabs.genie.smartapp
+root           996     2       0      0 0             0 R [tx_thread]
+wifi          1017     1   10940   3556 poll_schedule_timeout af0953e0 S wpa_supplicant
+root          1034     1    6320   2272 poll_schedule_timeout ae0e1390 S aee_aedv
+bluetooth     1133   281 1093140  24868 SyS_epoll_wait b4dd71b8 S com.android.bluetooth
+system        1154     1   14824   2940 sigsuspend affb14c8 S ged_srv
+u0_a40        1189   281 1067312  26136 SyS_epoll_wait b4dd71b8 S com.shere.assistivetouch
+system        1255   281 1132208  42384 SyS_epoll_wait b4dd71b8 S com.aligenie.ags
+system        1496   281 1077992  29776 SyS_epoll_wait b4dd71b8 S com.android.settings:SettingsProvider
+shell         1782     1   20952   2640 poll_schedule_timeout aa7e3390 S adbd
+root          1904   338   33248   3716 __skb_recv_datagram b10a1228 S idsd
+root          2586     1    4404    440 poll_schedule_timeout 15b80 S tgb_bridge
+system        5224   281 1131116  56772 SyS_epoll_wait b4dd71b8 S com.alibaba.ailabs.genie.iot:service
+u0_a40        7042   281 1097476  61728 SyS_epoll_wait b4dd71b8 S com.shere.assistivetouch.service
+u0_a4         9497   281 1051996  33052 SyS_epoll_wait b4dd71b8 S android.process.media
+root         13193     1    4508   2036 hrtimer_nanosleep a93a4030 S tg_supervisor
+system       13250   281 1222644 129928 SyS_epoll_wait b4dd71b8 S com.alibaba.ailabs.genie.smartapp:core
+system       14394   281 1125052  72388 SyS_epoll_wait b4dd71b8 S com.alibaba.ailabs.genie.rtc
+root         14833     2       0      0 worker_thread 0 S [kworker/1:2]
+root         16401     2       0      0 worker_thread 0 S [kworker/3:0]
+root         16497     1    4580   2260 sigsuspend abd5d4c8 S sh
+root         16501 16497    4912   2464 __skb_recv_datagram a8ead228 S logcat
+root         16705     2       0      0 worker_thread 0 S [kworker/3:2]
+u0_a54       16733   281 1116780  90360 futex_wait_queue_me b4da6ce8 S app.orchard.tv
+root         17253     1    4580   1824 sigsuspend b0bd94c8 S sh
+root         17257 17253  868624  24152 futex_wait_queue_me a6dfcce8 S app_process
+audioserver  19758     1   43060   6072 binder_thread_read acf622f8 S audioserver
+audioserver  19759     1   39440   8092 binder_thread_read acae62f8 S android.hardware.audio@2.0-service-mediatek
+root         21409 17257    4912   1936 __skb_recv_datagram a6eb0228 S logcat
+root         21569     1    7156   3028 hrtimer_nanosleep b6a51030 S ai_worker
+root         23020     2       0      0 worker_thread 0 S [kworker/u8:6]
+root         23406     2       0      0 worker_thread 0 S [kworker/u8:2]
+root         23630     2       0      0 cmdqCoreWaitResultAndReleaseTask 0 D [kworker/u8:1]
+u0_a24       24091   281 1164452  92552 SyS_epoll_wait b4dd71b8 S com.alibaba.ailabs.genie.launcher
+root         24748     2       0      0 worker_thread 0 S [kworker/u8:0]
+root         24749     2       0      0 worker_thread 0 S [kworker/2:2]
+root         24814     2       0      0 worker_thread 0 S [kworker/1:0]
+root         24868     2       0      0 cmdqCoreWaitResultAndReleaseTask 0 D [kworker/u8:3]
+root         24935     2       0      0 worker_thread 0 S [kworker/0:1]
+root         25084   485    5688   2680 hrtimer_nanosleep ae71b030 S sleep
+root         25087     2       0      0 worker_thread 0 S [kworker/u8:5]
+root         25152     2       0      0 worker_thread 0 S [kworker/0:3]
+u0_a41       25358   281 1082316  72588 SyS_epoll_wait b4dd71b8 S com.topjohnwu.magisk
+u0_a41       25376 25358    4552   2144 unix_stream_read_generic b1da6198 S su
+root         25384   243    3412   1428 pipe_wait 985c8 S libbusybox.so
+root         25388 25384  858172  67332 SyS_epoll_wait a9c8b1b8 S com.topjohnwu.magisk:root:0
+root         26655     2       0      0 worker_thread 0 S [kworker/0:0]
+root         26659     2       0      0 worker_thread 0 S [kworker/u8:4]
+shell        26834  1782    4580   2380 sigsuspend aadd84c8 S sh
+shell        26836 26834    4552   2220 unix_stream_read_generic af671198 S su
+root         26838     1   14280   1200 do_wait b2c68a30 S magiskd
+root         26839   243    4580   2388 sigsuspend b0c634c8 S sh
+root         26840 26838   41496  18164 0      b1ef6d36 R app_process
+root         26843 26839    5688   2676 0      abd32198 R ps
+u0_a30       28931   281 1082648  35964 SyS_epoll_wait b4dd71b8 S com.google.android.inputmethod.pinyin
+system       29017   281 1240368 101556 SyS_epoll_wait b4dd71b8 S com.alibaba.ailabs.genie.smartapp:business
+root         30494     2       0      0 worker_thread 0 S [kworker/2:0]
+root         31046     2       0      0 worker_thread 0 S [kworker/3:1]
+root         31289     1    4508   1724 hrtimer_nanosleep ad94c030 S tg_supervisor
+### official pids (per-process detail)
+--- pid=898
+cmdline: com.alibaba.ailabs.genie.osupdate                                           
+Name:	.genie.osupdate
+State:	S (sleeping)
+PPid:	281
+Uid:	1000	1000	1000	1000
+Gid:	1000	1000	1000	1000
+Threads:	30
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/898/exe -> /system/bin/app_process32
+cwd: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/898/cwd -> /
+--- pid=913
+cmdline: com.alibaba.ailabs.genie.smartapp                                           
+Name:	.genie.smartapp
+State:	S (sleeping)
+PPid:	281
+Uid:	1000	1000	1000	1000
+Gid:	1000	1000	1000	1000
+Threads:	99
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/913/exe -> /system/bin/app_process32
+cwd: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/913/cwd -> /
+--- pid=1255
+cmdline: com.aligenie.ags                                                            
+Name:	om.aligenie.ags
+State:	S (sleeping)
+PPid:	281
+Uid:	1000	1000	1000	1000
+Gid:	1000	1000	1000	1000
+Threads:	45
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/1255/exe -> /system/bin/app_process32
+cwd: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/1255/cwd -> /
+--- pid=5224
+cmdline: com.alibaba.ailabs.genie.iot:service                                        
+Name:	nie.iot:service
+State:	S (sleeping)
+PPid:	281
+Uid:	1000	1000	1000	1000
+Gid:	1000	1000	1000	1000
+Threads:	51
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/5224/exe -> /system/bin/app_process32
+cwd: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/5224/cwd -> /
+--- pid=13250
+cmdline: com.alibaba.ailabs.genie.smartapp:core                                      
+Name:	e.smartapp:core
+State:	S (sleeping)
+PPid:	281
+Uid:	1000	1000	1000	1000
+Gid:	1000	1000	1000	1000
+Threads:	80
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/13250/exe -> /system/bin/app_process32
+cwd: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/13250/cwd -> /
+--- pid=14394
+cmdline: com.alibaba.ailabs.genie.rtc                                                
+Name:	ilabs.genie.rtc
+State:	S (sleeping)
+PPid:	281
+Uid:	1000	1000	1000	1000
+Gid:	1000	1000	1000	1000
+Threads:	37
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/14394/exe -> /system/bin/app_process32
+cwd: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/14394/cwd -> /
+--- pid=24091
+cmdline: com.alibaba.ailabs.genie.launcher                                           
+Name:	.genie.launcher
+State:	S (sleeping)
+PPid:	281
+Uid:	10024	10024	10024	10024
+Gid:	10024	10024	10024	10024
+Threads:	55
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/24091/exe -> /system/bin/app_process32
+cwd: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/24091/cwd -> /
+--- pid=29017
+cmdline: com.alibaba.ailabs.genie.smartapp:business                                  
+Name:	UIThread
+State:	S (sleeping)
+PPid:	281
+Uid:	1000	1000	1000	1000
+Gid:	1000	1000	1000	1000
+Threads:	80
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/29017/exe -> /system/bin/app_process32
+cwd: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/29017/cwd -> /
+### thread names of :core
+--- pid=13250 threads
+80
+13250:e.smartapp:core
+13259:Jit thread pool
+13260:Signal Catcher
+13261:ReferenceQueueD
+13262:FinalizerDaemon
+13263:FinalizerWatchd
+13264:HeapTaskDaemon
+13267:Binder:13250_1
+13268:Binder:13250_2
+13269:Binder:13250_3
+13275:Profile Saver
+13277:ipc_core
+13278:Binder:13250_4
+13279:Binder:13250_5
+13281:CrashSDKAnrHand
+13283:CrashSDKNormalH
+13284:CrashSDKBkgdHan
+13285:e.smartapp:core
+13303:e.smartapp:core
+13304:Binder:13250_6
+13319:HwBinder:13250_
+13320:AG-DataCenter
+13321:relTimerEngineL
+13322:absTimerEngineL
+13323:AG-session
+13325:AG-AudioManager
+13326:AG-orange
+13328:AG-systemModepo
+13342:AG-contextTrace
+13343:AG-AuthRedoActi
+13347:AG-handleAuthAc
+13348:AG-handleStatus
+13349:GnAlarmClk
+13356:Jit thread pool
+13361:operationLoop
+13362:e.smartapp:core
+13363:AG-GnAudioServi
+13364:AG-ApolloRender
+13365:AG-ApolloRender
+13366:AG-ApolloRender
+13368:AG-GnAudioState
+13369:AG-GnSystemStat
+13370:AG-wifiMonitorL
+13371:ConnectivityThr
+13372:wku_event_proce
+13373:xengine_main
+13374:ali_vad
+13376:ali_unconvWakeu
+13378:AG-speech_dispa
+13379:AG-speech_engin
+13380:AudioRecord
+13384:AG-audio_record
+13385:UploadAudioThre
+13388:NetworkMeasurem
+13398:JNI_JAVA
+13400:AgmcMediaServic
+13406:xengine_main
+13407:xengine_main
+13409:xengine_main
+13437:AG-ws-send
+13439:AG-ws-receive
+13450:pama#1
+13614:background
+13729:AG-pong
+13734:queued-work-loo
+13743:Okio Watchdog
+13760:AG-net
+13761:AVEHandlerThrea
+13787:Binder:13250_7
+13793:Binder:13250_8
+13826:Binder:13250_9
+13856:Binder:13250_A
+14408:Binder:13250_B
+14458:Binder:13250_C
+14471:NativeResponseC
+14548:DefaultLooper
+14573:DefaultLooper
+16184:AudioTrack
+16221:AudioTrack
+22693:Binder:13250_D
+### our daemons
+--- pid=2586
+cmdline: /data/local/tmp/t5_bridge/tgb_bridge --sock tgz2_asr_bridge --work-dir /data/local/tmp/t5_bridge/work 
+Name:	tgb_bridge
+State:	S (sleeping)
+PPid:	1
+Uid:	0	0	0	0
+Threads:	1
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/2586/exe -> /data/local/tmp/t5_bridge/tgb_bridge
+fds:
+l-wx------ 1 root root 64 2026-11-24 11:30 1 -> /data/local/tmp/t5_bridge/tgb_bridge.log
+l-wx------ 1 root root 64 2026-11-24 11:30 2 -> /data/local/tmp/t5_bridge/tgb_bridge.log
+lrwx------ 1 root root 64 2026-11-24 11:30 4 -> socket:[37619]
+lrwx------ 1 root root 64 2026-11-24 11:30 5 -> socket:[5153333]
+--- pid=13193
+cmdline: /data/local/tmp/t6/tg_supervisor --injector /data/local/tmp/t8/tg_injector --so /data/local/tmp/t7/libtg_ttsguard_t8155r.so --name com.alibaba.ailabs.genie.smartapp:core --pidfile /data/local/tmp/t7/ttsguard.sup.pid --log /data/local/tmp/t7/ttsguard.sup.log 
+Name:	tg_supervisor
+State:	S (sleeping)
+PPid:	1
+Uid:	0	0	0	0
+Threads:	1
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/13193/exe -> /data/local/tmp/t6/tg_supervisor
+fds:
+l-wx------ 1 root root 64 2026-11-24 11:30 3 -> /data/local/tmp/t7/ttsguard.sup.log
+lrwx------ 1 root root 64 2026-11-24 11:30 4 -> /data/local/tmp/t7/ttsguard.sup.pid
+--- pid=17257
+cmdline: app_process /system com.tgz02.tts.TtsExec --root /data/local/tmp/t5_bridge/tts --idle-ms 0 --timeout-ms 60000 --verbose 
+Name:	main
+State:	S (sleeping)
+PPid:	17253
+Uid:	0	0	0	0
+Threads:	14
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/17257/exe -> /system/bin/app_process32
+fds:
+l-wx------ 1 root root 64 2026-11-24 11:30 1 -> /data/local/tmp/t5_bridge/tts/tts_exec.log
+l-wx------ 1 root root 64 2026-11-24 11:30 2 -> /data/local/tmp/t5_bridge/tts/tts_exec.log
+lrwx------ 1 root root 64 2026-11-24 11:30 3 -> socket:[214335]
+lrwx------ 1 root root 64 2026-11-24 11:30 38 -> /data/local/tmp/t5_bridge/tts/tts_exec.lock
+l-wx------ 1 root root 64 2026-11-24 11:30 7 -> /data/local/tmp/t5_bridge/tts/tts_exec.log
+l-wx------ 1 root root 64 2026-11-24 11:30 8 -> /data/local/tmp/t5_bridge/tts/tts_exec.log
+--- pid=21569
+cmdline: /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts 
+Name:	ai_worker
+State:	S (sleeping)
+PPid:	1
+Uid:	0	0	0	0
+Threads:	1
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/21569/exe -> /data/local/tmp/t5_bridge/bin/ai_worker
+fds:
+l-wx------ 1 root root 64 2026-11-24 11:30 1 -> /data/local/tmp/t5_bridge/ai_worker/ai_worker.log
+l-wx------ 1 root root 64 2026-11-24 11:30 2 -> /data/local/tmp/t5_bridge/ai_worker/ai_worker.log
+--- pid=31289
+cmdline: /data/local/tmp/t6/tg_supervisor --injector /data/local/tmp/t8/tg_injector --so /data/local/tmp/t8/libtg_hook.so --name com.alibaba.ailabs.genie.smartapp:core --pidfile /data/local/tmp/t8/tg_supervisor.pid --log /data/local/tmp/t8/supervisor.log 
+Name:	tg_supervisor
+State:	S (sleeping)
+PPid:	1
+Uid:	0	0	0	0
+Threads:	1
+exe: lrwxrwxrwx 1 root root 0 2026-11-24 11:30 /proc/31289/exe -> /data/local/tmp/t6/tg_supervisor
+fds:
+l-wx------ 1 root root 64 2026-11-24 11:30 3 -> /data/local/tmp/t8/supervisor.log
