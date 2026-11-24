@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>TG-Z02 · T9-UI-01 原型总览</title>
+<link rel="stylesheet" href="ds.css">
+<style>
+  body { background: #05070A; }
+  .wrap { padding: 22px 22px 40px 22px; }
+  h1 { font: 700 20px/1.4 var(--font); color: #E9EEF5; margin-bottom: 4px; }
+  .lead { font: 13px/1.7 var(--font); color: #8B95A4; max-width: 980px; }
+  h2 { font: 700 15px/1.4 var(--font); color: #4C8DFF; margin: 26px 0 10px 0;
+       border-bottom: 1px solid #1b2430; padding-bottom: 8px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 520px); gap: 16px; }
+  figure { background: #0A0D11; border: 1px solid #1b2430; border-radius: 10px; padding: 8px; }
+  .shot { width: 504px; height: 295px; overflow: hidden; position: relative; border-radius: 6px; }
+  .shot iframe { width: 1024px; height: 600px; border: 0;
+                 transform: scale(0.4921875); transform-origin: top left; }
+  figcaption { font: 12px/1.6 var(--font); color: #8B95A4; padding: 8px 2px 2px 2px; }
+  figcaption b { color: #E9EEF5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>TG-Z02 · T9-UI-01 产品 UI 原型</h1>
+  <div class="lead">
+    全部画面按设备真实画布 1024×600（mdpi，1dp = 1px）绘制，尺寸、字号、间距与 UI_DESIGN_SYSTEM.md 中的 token
+    一一对应。此页只是总览，逐张原图见 evidence/t9-ui-01/。
+  </div>
+  <div id="out"></div>
+</div>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<script>
+const GROUPS = [
+  ['一、首页：语音交互的九个状态', [
+    ['home.standby',   '待机', '唤醒词提示 + 常用技能入口 + 空对话位'],
+    ['home.wake',      '唤醒', '唤醒词命中，准备收音'],
+    ['home.listening', '正在聆听', '波形 + 自动结束说明 + 结束收音'],
+    ['home.asr',       'ASR 识别', '识别结果落地，等待提交'],
+    ['home.thinking',  'AI 思考', '状态色转为警示色，显示厂商与等待时长'],
+    ['home.speaking',  '正在播报', '回答 + 停止播报（唯一控制）'],
+    ['home.stopped',   '播报停止', '明确「不会重播」，给继续说完'],
+    ['home.cont',      '连续对话', '倒计时环 + 轮次'],
+    ['home.error',     '异常 / 中断', '错误分类原文 + 重试'],
+  ]],
+  ['二、技能中心与统一技能页', [
+    ['skills',        '技能中心', '已启用 / 可添加 两段式，扩展入口唯一'],
+    ['spec.skill',    '技能页模板', '5 个区域固定，任何新技能照此摆放'],
+    ['skill.alarm',   '示例技能：闹钟', '列表 + 技能设置 + 底部主操作'],
+    ['skill.calendar','示例技能：日程', '月历 + 当日列表'],
+    ['skill.music',   '示例技能：音乐', '播放器 + 播放列表 + 未接入提示'],
+  ]],
+  ['三、长期记忆 / 设置 / 关于', [
+    ['memory',              '记忆中心', '分类筛选 + 待确认 + 每条可编辑删除'],
+    ['settings',            '设置', '四个分组，只放配置'],
+    ['settings.models',     '设置 · 大模型配置', '承接 T9-08C-R2：明文 Key、测试、默认']
+    ,['settings.voice',     '设置 · 语音', '唤醒 / 连续对话 / 音量 / 打断'],
+    ['settings.appearance', '设置 · 外观', '主题、字号、导航样式'],
+    ['settings.system',     '设置 · 系统', '自启、服务、存储、日志'],
+    ['about',               '关于', '版本 + 运行状态 + 诊断'],
+  ]],
+  ['四、适配验证', [
+    ['home.light', '浅色主题', '同一套 token 换值，布局不动'],
+    ['home.mini',  '窄宽度导航', '窗口不足 900dp 时导航收成 72dp 图标条'],
+  ]]
+];
+
+const out = document.getElementById('out');
+out.innerHTML = GROUPS.map(([title, screens]) => `
+  <h2>${title}</h2>
+  <div class="grid2">
+    ${screens.map(([id, name, cap]) => `
+      <figure>
+        <div class="shot"><iframe src="app.html?s=${id}" loading="lazy" scrolling="no"></iframe></div>
+        <figcaption><b>${name}</b> · ${id}<br>${cap}</figcaption>
+      </figure>`).join('')}
+  </div>`).join('');
+</script>
+</body>
+</html>
