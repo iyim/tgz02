@@ -1,18 +1,25 @@
 /*
- * tg_inbox.h -- T9-06: the UI -> worker submit channel.
+ * tg_inbox.h -- T9-06R1: the UI -> worker submit channel (resource-bounded).
  *
- * A normal unprivileged app cannot write into the accepted TTS queue (0700 root), so the UI
- * drops a request file into a separate, strictly validated inbox; the worker (root) validates
- * it and re-enqueues it through the EXISTING durable path (tts_enqueue). The queue, its
- * permissions, the protocol of its items and the echo filter are untouched.
+ * Design change from T9-06 (review finding P1): the inbox is NO LONGER a world-writable
+ * directory. It is owned by the UI uid and mode 0700, so only that app (and root) can create
+ * anything in it; every other app is excluded by the filesystem, not by a rejection loop.
  *
- * Threat model for the inbox directory (01733 root:root, sticky):
- *   - any app can create a file there, so every file is checked: regular file (no symlink,
- *     no hardlink farm), owner uid in the allowlist, size cap, flat JSON with v==1,
- *     event_id == filename, UTF-8 text within the length cap, and a per-uid rate limit.
- *   - a rejection is never silent: it is answered with a result file the UI can read.
+ *   /data/local/tmp/t9_ui            0755 root:root   traversable, nothing writable here
+ *   /data/local/tmp/t9_ui/inbox      0700 <ui-uid>    the UI writes <event_id>.json (tmp+rename)
+ *   /data/local/tmp/t9_ui/result     0755 root:root   answers, 0644, pruned to a cap
+ *   /data/local/tmp/t9_ui/rejected   0700 root:root   parked refusals, pruned to a cap
+ *   /data/local/tmp/t9_ui/allowed_uids 0644 root      the uid allowlist (defence in depth)
  *
- * This module is pure POSIX (no Android APIs) so it can be host-tested with gcc.
+ * Defence in depth on top of the directory mode (all bounded, all host-tested):
+ *   - every file is re-checked: regular file, no symlink, nlink==1, owner in the allowlist;
+ *   - a file from a foreign uid is DROPPED (unlinked), never archived and never answered, so
+ *     it cannot make the worker create root-owned files;
+ *   - one poll handles at most max_scan_per_poll entries, so a burst cannot stall the loop;
+ *   - rejected/ and result/ are pruned to fixed file counts;
+ *   - rate limiting is per submitting uid (the header lied about this in T9-06).
+ *
+ * Pure POSIX: the same file runs in the worker on the device and in the host test.
  */
 #ifndef TG_INBOX_H
 #define TG_INBOX_H
@@ -26,16 +33,19 @@
 #define TI_MAX_UIDS        8
 
 typedef struct {
-    char  inbox_dir[256];      /* where the UI drops <event_id>.json                    */
-    char  result_dir[256];     /* where we answer: <event_id>.json (0644)               */
-    char  rejected_dir[256];   /* forensic parking for refused files (0700)             */
+    char  inbox_dir[256];      /* where the UI drops <event_id>.json (0700 ui-uid)      */
+    char  result_dir[256];     /* where we answer: <event_id>.json (0644, pruned)       */
+    char  rejected_dir[256];   /* parked refusals (0700, pruned)                        */
     char  queue_dir[256];      /* accepted TTS queue  (counted for the depth cap)       */
     char  inflight_dir[256];   /* accepted TTS inflight (counted for the depth cap)     */
     int   queue_cap;           /* refuse when queue+inflight >= cap (0 = no cap)        */
-    int   rate_max;            /* max accepted submissions per window per uid (0 = off) */
+    int   rate_max;            /* max accepted submissions per window PER UID (0 = off) */
     int   rate_window_ms;
     int   max_file_bytes;
     int   max_text_bytes;
+    int   max_scan_per_poll;   /* entries handled in one poll (0 = unlimited)           */
+    int   rejected_max_files;  /* files kept in rejected/ (0 = no pruning)              */
+    int   result_max_files;    /* files kept in result/   (0 = no pruning)              */
     int   enforce_uid;         /* 1 = owner uid must be in allowed_uids                 */
     int   verbose;
     unsigned int allowed_uids[TI_MAX_UIDS];
@@ -43,11 +53,19 @@ typedef struct {
 } ti_cfg;
 
 typedef struct {
+    unsigned int uid;
+    long long    win_start_ms;
+    int          count;
+} ti_rate_slot;
+
+typedef struct {
     long long seen, accepted, idempotent, rejected, tmp_cleaned, bad_name, nofollow;
     long long empty_skipped, stuck;
+    long long foreign_dropped;      /* files from a uid outside the allowlist (unlinked)   */
+    long long pruned_rejected, pruned_result;
     char      last_reject[128];
-    long long rate_win_start_ms;
-    int       rate_win_count;
+    ti_rate_slot rate[TI_MAX_UIDS];
+    int       rate_slots;
 } ti_stats;
 
 /*
@@ -59,7 +77,7 @@ typedef int (*ti_enqueue_fn)(void *ctx, const char *event_id, const char *text,
 
 void ti_cfg_defaults(ti_cfg *c);
 
-/* one scan of the inbox; returns the number of files handled (>=0) or -1 on a fatal error */
+/* one scan of the inbox; returns the number of entries handled (>=0) or -1 on a fatal error */
 int  ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx);
 
 /* pending items in queue_dir + inflight_dir (0 when the dirs are absent) */
@@ -68,6 +86,9 @@ int  ti_count_pending(const ti_cfg *cfg);
 /* write <result_dir>/<event_id>.json atomically (tmp + rename), 0644 */
 int  ti_result_write(const ti_cfg *cfg, const char *event_id, int ok,
                      const char *stage, const char *reason);
+
+/* keep at most `max_files` entries in `dir` (oldest removed first); returns removed count */
+int  ti_prune_dir(const char *dir, int max_files, ti_stats *st, long long *counter);
 
 /* strict, flat-JSON message parser (exported for the host test) */
 typedef struct {
@@ -83,4 +104,3 @@ int  ti_valid_event_id(const char *id);
 int  ti_utf8_valid(const char *s, size_t n);
 
 #endif /* TG_INBOX_H */
-

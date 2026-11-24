@@ -1,0 +1,34 @@
+﻿=== date
+Tue Nov 24 16:18:37 CST 2026
+=== 0. keep the T9-06 worker for this round's rollback too
+05c54271528f03597cd0d1e830577c80f20f63a94b93edc0f629623a695f8184  /data/local/tmp/t5_bridge/bin/ai_worker
+99dd4fcdf0231fa2a2fa8c7906b8ff55edbf0eff2568030753ad97f52f17489e  /data/local/tmp/t9/t9_06/backup/ai_worker.t8156
+05c54271528f03597cd0d1e830577c80f20f63a94b93edc0f629623a695f8184  /data/local/tmp/t9/t9_06/backup/ai_worker.t906
+=== 1. install the hardened worker
+6d03c281a60d1429a270d07c264abd54db99239801d89e20a7fb55904bc90d76  /data/local/tmp/t5_bridge/bin/ai_worker
+=== 2. private inbox for uid 10057
+== layout ==
+drwxr-xr-x 5 root   root    4096 2026-11-24 15:39 /data/local/tmp/t9_ui
+drwx------ 2 u0_a57 u0_a57  4096 2026-11-24 15:50 /data/local/tmp/t9_ui/inbox
+drwx------ 2 root   root   69632 2026-11-24 15:52 /data/local/tmp/t9_ui/rejected
+drwxr-xr-x 2 root   root    4096 2026-11-24 15:50 /data/local/tmp/t9_ui/result
+-rw-r--r-- 1 root root 6 2026-11-24 16:18 /data/local/tmp/t9_ui/allowed_uids
+== allowed ==
+10057
+EXIT=0
+=== 3. restart the worker
+started: pid=11995 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T16:18:41 lock acquired; previous owner pid=8593 no longer holding it
+[aiw] 2026-11-24T16:18:41 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T16:18:41 system prompt: 689 bytes, placed at messages[0] (role=system, outside context eviction)
+worker pid=11995
+/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10057 
+=== 4. permission proof: a NON-allowed app must not be able to create anything
+--- as uid 10056 (com.tgz02.providerprobe):
+sh: can't create /data/local/tmp/t9_ui/inbox/from_other_app.json: Permission denied
+write_as_10056_exit=1
+ls: /data/local/tmp/t9_ui/inbox: Permission denied
+--- as uid 10057 (com.tgz02.uibridge), the allowed one:
+write_ok
+{"v":1,"event_id":"perm-proof","ok":true,"stage":"queue","reason":"","ts_ms":1795508327011}
+=== END

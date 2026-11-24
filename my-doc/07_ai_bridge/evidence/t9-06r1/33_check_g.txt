@@ -1,0 +1,18 @@
+﻿=== worker: native route + continuity
+[aiw] 2026-11-24T16:22:43 route=native intent=volume rule=volume.down arg=down event=t6-1178-1968836-g3 seq=3 session=1968836 text_bytes=30 merges=0 held_ms=0 publish_seq=1 (factory answers; AI worker does not)
+[aiw] 2026-11-24T16:22:43 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T16:22:44 continuity request: seq=12568808 sent (after native command) n=1 - waiting for factory session
+[aiw] 2026-11-24T16:22:49 continuity request: NOT confirmed within 5000 ms (guard deferred/dropped; see tgt log for req seq reason)
+[aiw] 2026-11-24T16:24:05 route=native intent=volume rule=volume.down arg=down event=t6-1178-1968844-g4 seq=4 session=1968844 text_bytes=30 merges=0 held_ms=0 publish_seq=2 (factory answers; AI worker does not)
+[aiw] 2026-11-24T16:24:05 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T16:24:07 continuity request: seq=12651021 sent (after native command) n=2 - waiting for factory session
+[aiw] 2026-11-24T16:24:12 continuity request: NOT confirmed within 5000 ms (guard deferred/dropped; see tgt log for req seq reason)
+=== factory sessions in the capture
+11-24 16:24:01.666 D/SessionManager( 1178): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1665] sessionId = 1968844, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 16:24:05.721 D/AGSpeechEngine( 1178): onCloudEOUEvent,646
+11-24 16:24:07.162 D/SessionManager( 1178): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1665] sessionId = 1972944, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 16:24:17.389 D/AGSpeechEngine( 1178): onCloudEOUEvent,646
+=== tap log tail
+--------- beginning of system
+--------- beginning of main
+=== END

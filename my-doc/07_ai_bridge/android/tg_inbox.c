@@ -57,8 +57,57 @@ void ti_cfg_defaults(ti_cfg *c)
     c->rate_window_ms = 10000;
     c->max_file_bytes = TI_MAX_FILE_BYTES;
     c->max_text_bytes = TI_MAX_TEXT_BYTES;
+    c->max_scan_per_poll = 16;      /* a burst cannot stall the worker loop            */
+    c->rejected_max_files = 32;     /* parked refusals are pruned to this many files   */
+    c->result_max_files = 128;      /* answers are pruned to this many files           */
     c->enforce_uid = 1;
     c->verbose = 0;
+}
+
+/* ------------------------------------------------------------- housekeeping */
+
+int ti_prune_dir(const char *dir, int max_files, ti_stats *st, long long *counter)
+{
+    int removed = 0;
+    int guard = 0;
+
+    (void)st;   /* counters are passed explicitly; st kept for signature symmetry */
+    if (dir == NULL || dir[0] == '\0' || max_files <= 0) return 0;
+
+    for (;;) {
+        DIR *dp;
+        struct dirent *de;
+        char oldest[320];
+        time_t oldest_mtime = 0;
+        int count = 0;
+
+        if (++guard > 256) break;   /* never spin forever */
+        dp = opendir(dir);
+        if (dp == NULL) break;
+        oldest[0] = '\0';
+        while ((de = readdir(dp)) != NULL) {
+            char path[512];
+            struct stat stbuf;
+            if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) continue;
+            snprintf(path, sizeof(path), "%s/%s", dir, de->d_name);
+            if (ti_lstat(path, &stbuf) != 0 || !S_ISREG(stbuf.st_mode)) continue;
+            count++;
+            if (oldest[0] == '\0' || stbuf.st_mtime < oldest_mtime) {
+                oldest_mtime = stbuf.st_mtime;
+                snprintf(oldest, sizeof(oldest), "%s", de->d_name);
+            }
+        }
+        closedir(dp);
+        if (count <= max_files || oldest[0] == '\0') break;
+        {
+            char path[512];
+            snprintf(path, sizeof(path), "%s/%s", dir, oldest);
+            if (unlink(path) != 0) break;
+        }
+        removed++;
+        if (counter != NULL) (*counter)++;
+    }
+    return removed;
 }
 
 /* --------------------------------------------------------------- primitives */
@@ -440,6 +489,28 @@ int ti_count_pending(const ti_cfg *cfg)
     return total;
 }
 
+/* ------------------------------------------------------------- rate limiting */
+
+/*
+ * T9-06R1: per submitting uid. The table is small on purpose (at most TI_MAX_UIDS distinct
+ * submitters); when it is full the last slot is shared, which can only make the limit stricter
+ * for the surplus uids and never looser for the real UI.
+ */
+static ti_rate_slot *ti_rate_slot_for(ti_stats *st, unsigned int uid)
+{
+    int i;
+    if (st == NULL) return NULL;
+    for (i = 0; i < st->rate_slots; i++)
+        if (st->rate[i].uid == uid) return &st->rate[i];
+    if (st->rate_slots < TI_MAX_UIDS) {
+        st->rate[st->rate_slots].uid = uid;
+        st->rate[st->rate_slots].win_start_ms = 0;
+        st->rate[st->rate_slots].count = 0;
+        return &st->rate[st->rate_slots++];
+    }
+    return &st->rate[TI_MAX_UIDS - 1];
+}
+
 /* ---------------------------------------------------------------- the poll */
 
 static void ti_reject(const ti_cfg *cfg, ti_stats *st, const char *event_id,
@@ -466,7 +537,7 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
 {
     DIR *dp;
     struct dirent *de;
-    int handled = 0;
+    int handled = 0, examined = 0;
     long long now;
 
     if (cfg == NULL || st == NULL || fn == NULL) return -1;
@@ -485,6 +556,14 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
         ssize_t got;
         size_t off = 0;
         ti_msg msg;
+        ti_rate_slot *slot = NULL;
+
+        /* T9-06R1: bound the work one poll may do, so a burst cannot stall the loop */
+        examined++;
+        if (cfg->max_scan_per_poll > 0) {
+            if (handled >= cfg->max_scan_per_poll) break;
+            if (examined > cfg->max_scan_per_poll * 8) break;
+        }
 
         if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) continue;
         if (strncmp(de->d_name, "rejected", 8) == 0 && nlen == 8) continue;
@@ -555,9 +634,15 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
             for (i = 0; i < cfg->allowed_count; i++)
                 if ((unsigned int)fst.st_uid == cfg->allowed_uids[i]) allowed = 1;
             if (!allowed) {
+                /*
+                 * T9-06R1: a file from a foreign uid is DROPPED here. It is not answered and
+                 * not archived, so an unprivileged app cannot make the worker create root-owned
+                 * files (and cannot fill rejected/). With the 0700 inbox this branch is already
+                 * unreachable for other apps; it stays as defence in depth.
+                 */
                 close(fd);
-                ti_reject(cfg, st, event_id, "uid not allowed", path);
-                handled++;
+                (void)unlink(path);
+                st->foreign_dropped++;
                 continue;
             }
         }
@@ -639,14 +724,18 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
 
         now = ti_now_ms();
         if (cfg->rate_max > 0) {
-            if (st->rate_win_start_ms == 0 || now - st->rate_win_start_ms >= cfg->rate_window_ms) {
-                st->rate_win_start_ms = now;
-                st->rate_win_count = 0;
-            }
-            if (st->rate_win_count >= cfg->rate_max) {
-                ti_reject(cfg, st, event_id, "rate limited", path);
-                handled++;
-                continue;
+            /* T9-06R1: the window is per submitting uid, as the header always claimed */
+            slot = ti_rate_slot_for(st, (unsigned int)fst.st_uid);
+            if (slot != NULL) {
+                if (slot->win_start_ms == 0 || now - slot->win_start_ms >= cfg->rate_window_ms) {
+                    slot->win_start_ms = now;
+                    slot->count = 0;
+                }
+                if (slot->count >= cfg->rate_max) {
+                    ti_reject(cfg, st, event_id, "rate limited", path);
+                    handled++;
+                    continue;
+                }
             }
         }
 
@@ -657,7 +746,7 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
             handled++;
             continue;
         }
-        if (cfg->rate_max > 0) st->rate_win_count++;
+        if (cfg->rate_max > 0 && slot != NULL) slot->count++;
         if (rc == 1) {
             st->idempotent++;
             (void)ti_result_write(cfg, event_id, 1, "existing", "already queued or played");
@@ -665,10 +754,13 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
             st->accepted++;
             (void)ti_result_write(cfg, event_id, 1, "queue", "");
         }
+        (void)ti_prune_dir(cfg->result_dir, cfg->result_max_files, st, &st->pruned_result);
         (void)unlink(path);
         handled++;
+        if (cfg->max_scan_per_poll > 0 && handled >= cfg->max_scan_per_poll) break;
     }
     closedir(dp);
+    (void)ti_prune_dir(cfg->rejected_dir, cfg->rejected_max_files, st, &st->pruned_rejected);
     return handled;
 }
 

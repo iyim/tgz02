@@ -1,0 +1,99 @@
+﻿=== date
+Tue Nov 24 16:19:04 CST 2026
+=== A: one submit from the UI (real playback expected)
+Starting: Intent { cmp=com.tgz02.uibridge/.UiBridgeActivity (has extras) }
+=== B: the other app cannot write, and cannot affect the worker
+sh: can't create /data/local/tmp/t9_ui/inbox/spam.json: Permission denied
+other_exit=1
+ls: /data/local/tmp/t9_ui/inbox: Permission denied
+--- inbox as root: 0 files
+--- worker counters:
+[aiw] 2026-11-24T16:18:47 inbox: handled=1 accepted=1 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 foreign_dropped=0 pruned_rejected=0 pruned_result=0 tmp_cleaned=0
+[aiw] 2026-11-24T16:19:11 inbox: handled=1 accepted=2 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 foreign_dropped=0 pruned_rejected=0 pruned_result=0 tmp_cleaned=0
+=== C: three submits in a row
+Starting: Intent { cmp=com.tgz02.uibridge/.UiBridgeActivity (has extras) }
+adb : Warning: Activity not started, its current task has been brought to the front
+所在位置 行:1 字符: 299
++ ... -Null; $o = adb -s $d shell "su 0 sh -c 'sh /data/local/tmp/t9/t9_06/ ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Warning: Activi...ht to the front:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Starting: Intent { cmp=com.tgz02.uibridge/.UiBridgeActivity (has extras) }
+Warning: Activity not started, its current task has been brought to the front
+Starting: Intent { cmp=com.tgz02.uibridge/.UiBridgeActivity (has extras) }
+Warning: Activity not started, its current task has been brought to the front
+=== D: stop during playback
+Starting: Intent { cmp=com.tgz02.uibridge/.UiBridgeActivity (has extras) }
+Warning: Activity not started, its current task has been brought to the front
+Starting: Intent { cmp=com.tgz02.uibridge/.UiBridgeActivity (has extras) }
+Warning: Activity not started, its current task has been brought to the front
+=== E: submit with the UI in the background
+Starting: Intent { cmp=com.tgz02.uibridge/.UiBridgeActivity (has extras) }
+Warning: Activity not started, its current task has been brought to the front
+=== UI log
+--- test hook: auto submit in 800 ms
+--- submit event_id=ui-1795508367743 bytes=19
+已写入 inbox，等待 worker 应答…
+worker 应答: {"v":1,"event_id":"ui-1795508367743","ok":true,"stage":"queue","reason":"","ts_ms":1795508367956}
+status tts_id=5245610 status=2 (complete)  <== ours
+play.public.json: event_id=ui-1795508366510 tts_id=5245611 state=playing
+status tts_id=5245610 status=3 (stop/interrupted/error)
+status tts_id=5245610 status=3 (stop/interrupted/error)
+status tts_id=5245611 status=1 (play)  <== ours
+status tts_id=5245611 status=2 (complete)  <== ours
+play.public.json: event_id=ui-1795508367743 tts_id=5245612 state=playing
+status tts_id=5245611 status=3 (stop/interrupted/error)
+status tts_id=5245611 status=3 (stop/interrupted/error)
+status tts_id=5245612 status=1 (play)  <== ours
+status tts_id=5245612 status=2 (complete)  <== ours
+play.public.json: 播报结束 outcome=ok
+status tts_id=5245612 status=3 (stop/interrupted/error)  <== ours
+play.public.json 在超时内没有给出该 event_id 的播报状态
+play.public.json 在超时内没有给出该 event_id 的播报状态
+--- test hook: auto submit in 800 ms
+--- submit event_id=ui-1795508391932 bytes=73
+已写入 inbox，等待 worker 应答…
+worker 应答: {"v":1,"event_id":"ui-1795508391932","ok":true,"stage":"queue","reason":"","ts_ms":1795508392130}
+status tts_id=5245617 status=1 (play)
+play.public.json: event_id=ui-1795508391932 tts_id=5245617 state=playing
+--- test hook: stop in 800 ms
+status tts_id=5245617 status=3 (stop/interrupted/error)  <== ours
+stop 已发出 tts_id=5245617 (insert 返回 null)
+status tts_id=5245617 status=3 (stop/interrupted/error)  <== ours
+play.public.json: 播报结束 outcome=interrupted
+status tts_id=5245617 status=3 (stop/interrupted/error)  <== ours
+--- test hook: auto submit in 800 ms
+--- submit event_id=ui-1795508402335 bytes=21
+已写入 inbox，等待 worker 应答…
+worker 应答: {"v":1,"event_id":"ui-1795508402335","ok":true,"stage":"queue","reason":"","ts_ms":1795508402535}
+play.public.json: event_id=ui-1795508402335 tts_id=5245621 state=playing
+status tts_id=5245621 status=1 (play)  <== ours
+status tts_id=5245621 status=2 (complete)  <== ours
+play.public.json: 播报结束 outcome=ok
+status tts_id=5245621 status=3 (stop/interrupted/error)  <== ours
+=== worker inbox lines
+[aiw] 2026-11-24T16:18:47 inbox: handled=1 accepted=1 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 foreign_dropped=0 pruned_rejected=0 pruned_result=0 tmp_cleaned=0
+[aiw] 2026-11-24T16:19:11 inbox: handled=1 accepted=2 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 foreign_dropped=0 pruned_rejected=0 pruned_result=0 tmp_cleaned=0
+[aiw] 2026-11-24T16:19:25 inbox: handled=1 accepted=3 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 foreign_dropped=0 pruned_rejected=0 pruned_result=0 tmp_cleaned=0
+[aiw] 2026-11-24T16:19:26 inbox: handled=1 accepted=4 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 foreign_dropped=0 pruned_rejected=0 pruned_result=0 tmp_cleaned=0
+[aiw] 2026-11-24T16:19:27 inbox: handled=1 accepted=5 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 foreign_dropped=0 pruned_rejected=0 pruned_result=0 tmp_cleaned=0
+[aiw] 2026-11-24T16:19:52 inbox: handled=1 accepted=6 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 foreign_dropped=0 pruned_rejected=0 pruned_result=0 tmp_cleaned=0
+[aiw] 2026-11-24T16:20:02 inbox: handled=1 accepted=7 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 foreign_dropped=0 pruned_rejected=0 pruned_result=0 tmp_cleaned=0
+=== journal (last 6)
+{"ts":"2026-11-24T16:19:14.382+0800","kind":"tts","event_id":"ui-1795508351568","tts_id":5245605,"outcome":"ok","dur_ms":2675,"text_bytes":25,"attempts":1}
+{"ts":"2026-11-24T16:19:28.090+0800","kind":"tts","event_id":"ui-1795508365379","tts_id":5245610,"outcome":"ok","dur_ms":2535,"text_bytes":19,"attempts":1}
+{"ts":"2026-11-24T16:19:30.800+0800","kind":"tts","event_id":"ui-1795508366510","tts_id":5245611,"outcome":"ok","dur_ms":2660,"text_bytes":19,"attempts":1}
+{"ts":"2026-11-24T16:19:33.539+0800","kind":"tts","event_id":"ui-1795508367743","tts_id":5245612,"outcome":"ok","dur_ms":2667,"text_bytes":19,"attempts":1}
+{"ts":"2026-11-24T16:19:55.231+0800","kind":"tts","event_id":"ui-1795508391932","tts_id":5245617,"outcome":"interrupted","dur_ms":3045,"text_bytes":73,"attempts":1}
+{"ts":"2026-11-24T16:20:05.105+0800","kind":"tts","event_id":"ui-1795508402335","tts_id":5245621,"outcome":"ok","dur_ms":2543,"text_bytes":21,"attempts":1}
+=== result files
+-rw-r--r-- 1 root root  95 2026-11-24 15:50 f3-1795506602.json
+-rw-r--r-- 1 root root  92 2026-11-24 16:18 perm-proof.json
+-rw-r--r-- 1 root root  98 2026-11-24 16:19 ui-1795508351568.json
+-rw-r--r-- 1 root root  98 2026-11-24 16:19 ui-1795508365379.json
+-rw-r--r-- 1 root root  98 2026-11-24 16:19 ui-1795508366510.json
+-rw-r--r-- 1 root root  98 2026-11-24 16:19 ui-1795508367743.json
+-rw-r--r-- 1 root root  98 2026-11-24 16:19 ui-1795508391932.json
+-rw-r--r-- 1 root root  98 2026-11-24 16:20 ui-1795508402335.json
+=== END

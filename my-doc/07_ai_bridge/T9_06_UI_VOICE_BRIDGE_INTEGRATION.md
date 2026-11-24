@@ -242,3 +242,79 @@ su -c "sh /data/local/tmp/t9/t9_06/t9_06_restore.sh"
 1. 若 T9-07 要做正式 UI：把 §3 的提交/回执/停止封装成一个 ~100 行的 `VoiceBridgeClient`（普通 App 侧），UI 只调它；通道本身不需要再改。
 2. 加快捷的运维动作：`sh t9_06_restore.sh` 之外，建议加一个 `--cap N`、`--rate N` 的调参入口（现在靠环境变量 + 重启）。
 3. 若要彻底摆脱 logcat：把 TtsExec 的完成判定迁到 `ContentObserver`（T9-05 已证明可行），单独立项、单独立回滚点。
+
+---
+
+# T9-06R1：私有 inbox（资源耗尽修复）+ 真实语音回归
+
+基线 `74e5d412`。本轮只做两件事：把入口从"全设备可写"改成"UI 专属私有目录"，并补做真实语音闭环。
+
+## R1.1 P1 的修复：入口不再对全设备开放
+
+| 项 | T9-06 | T9-06R1 |
+|---|---|---|
+| `inbox/` | `01733 root:root`（任何 App 可创建） | **`0700 <ui_uid>`**（只有 UI 能进；root 照读） |
+| 其他 App 投放 | 能写，靠 worker 逐个拒绝 | **连 `ls` 都 `Permission denied`**，根本到不了 worker |
+| 外来 uid 文件 | 写回执 + 归档到 `rejected/` | **直接 unlink，不回执、不归档**（不再制造 root 文件） |
+| 单轮处理量 | 无上限 | `--inbox-scan-cap`（默认 16） |
+| `rejected/` | 无上限 | 裁剪到 `--inbox-rejected-max`（默认 32，按 mtime 删最旧） |
+| `result/` | 无上限 | 裁剪到 `--inbox-result-max`（默认 128） |
+| 限速 | 全局单窗口（注释却写按 UID） | **按提交 UID**（`ti_rate_slot`，表满时共享最后槽，只会更严） |
+
+真机权限核验（`evidence/t9-06r1/10_deploy.txt`）：
+
+```
+drwx------ 2 u0_a57 u0_a57  inbox          <- 归属 UI uid，0700
+--- as uid 10056 (other app):
+sh: can't create /data/local/tmp/t9_ui/inbox/from_other_app.json: Permission denied
+ls: /data/local/tmp/t9_ui/inbox: Permission denied
+--- as uid 10057 (the UI):
+write_ok
+{"v":1,"event_id":"perm-proof","ok":true,"stage":"queue",...}
+```
+
+目录权限收紧后 **uid 白名单仍然保留**（纵深防御）：即使哪天有人把目录改宽了，外来 uid 的文件也只会被 unlink。
+
+## R1.2 Host 测试：46 → 70 项
+
+新增（`tests/t9_06_inbox_unit_test.c`）：
+
+- **17** 外来 uid 一次投放 20 个文件 → 0 次回执、`rejected/` 空、全部 unlink、且按 scan cap 分批清空（不阻塞）
+- **18** 40 个正常请求 + `scan_cap=8` → 每轮恰好 8 条，后续轮次不饿死，最终 40/40 全部入队
+- **19** 10 个坏文件 + `rejected_max=3` → 拒绝 10 次、`rejected/` 被裁到 ≤3、计数 `pruned_rejected>0`
+- **20** 10 个正常请求 + `result_max=3` → 接受 10 次、`result/` 被裁到 ≤3
+- **21** 先 6 个垃圾文件再一个正常请求 → 正常请求仍被接受、文本正确、回执 `ok:true`
+- 原 15（uid 白名单）改为断言"丢弃而非归档"，其余 45 项原样保留
+
+```
+T9-06 inbox unit tests: 70 passed, 0 failed
+```
+
+## R1.3 真机验收 A–G
+
+| 项 | 结果 | 证据 |
+|---|---|---|
+| A 单条闭环 | 提交 `ui-…367743` → 回执 `ok:true stage=queue` → `status=1/2` → journal `ok 2667 ms` | `20_acceptance_ae.txt` |
+| B 非白名单 UID | 10056 `Permission denied`（写与列目录都不行），worker 计数不变 | `10_deploy.txt`、`20_acceptance_ae.txt` |
+| C 三条顺序 | 连续三次提交，按序播报 | `20_acceptance_ae.txt` |
+| D 指定停止 | `stop` → `status=3`，journal `outcome=interrupted 3045 ms` | `20_acceptance_ae.txt` |
+| E 后台提交 | HOME 之后提交仍 `ok`，状态照收 | `20_acceptance_ae.txt` |
+| F **真实语音** | 主机播放 `r1.wake_time.wav` → 原厂 `onStartTalk session=1968827 wakeupWord=tian mao jing ling` → ASR → `skill=time.query` → 原厂 TTS `tts_id=5245631 outcome=ok 2063 ms` → 12 s 续听窗口 → CLOSED | `30_voice.txt` |
+| G **原厂指令后续听** | 播放 `wake_voldown.wav` → `route=native intent=volume rule=volume.down` → 守卫 `continuity req seq=12715009 accepted (new) → firing after 1 ms → startTalk(type=1)` → **6 ms 后原厂 `onStartTalk session=1972952 wakeupType=1`**，会话持续约 8.3 s 后 `abortListen (continuity)` | `35_g_run3.txt` |
+
+G 的两种观测值说明：worker 侧那行 `NOT confirmed within 5000 ms` 是它靠 `factory_talk.log` 做的**保守记账**；本轮该 tap 文件在 16:20 之后被日志轮转清空（重启 tap 后仍未恢复写入），所以记账模块看不到会话。能力本身由守卫日志 + 原厂会话日志双重证明：请求被接受、1 ms 内触发、6 ms 后原厂开出 continuity 会话。这是既有的可观测性脆弱点（T8-15.6 已记录过同类现象），**不是本轮引入的退化**。
+
+## R1.4 回滚
+
+- 新增 `android/t9_06r1_inbox_perms.sh`（权限部署，带 uid 参数）
+- 回滚仍是一条命令：`sh /data/local/tmp/t9/t9_06/t9_06_restore.sh` —— 恢复 `ai_worker.t8156` + 原启动器，删掉 `/data/local/tmp/t9_ui`，重启 worker
+- 本轮部署前额外保留了 `backup/ai_worker.t906`（T9-06 那版），需要只回退到 T9-06 时可用
+
+## R1.5 仍然未验证 / 已知限制
+
+| 项 | 状态 |
+|---|---|
+| `result/`、`rejected/` 的数量上限是**按文件数**，不是按字节 | 已知；单文件 ≤4 KB、上限 128/32，最坏约 0.5 MB |
+| 白名单只允许一个 uid（`allowed_uids` 支持多行，但当前只写 10057） | 设计如此 |
+| factory_talk tap 在日志轮转后可能停止写入，导致 worker 的 `CONFIRMED` 记账缺失 | 既有问题，本轮未改；能力本身有守卫/原厂双重日志证明 |
+| 进程被系统回收后 observer 是否还收状态、多 App 并发公平性 | 未测（与 T9-06 相同） |

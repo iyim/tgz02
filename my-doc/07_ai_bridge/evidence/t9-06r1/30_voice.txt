@@ -1,0 +1,52 @@
+﻿=== date
+Tue Nov 24 16:20:34 CST 2026
+=== wav present?
+-rw-rw-rw- 1 shell shell 366676 2026-11-23 12:28 /data/local/tmp/wake_time_only.wav
+-rw-rw-rw- 1 shell shell 378144 2026-11-23 17:40 /data/local/tmp/wake_vol.wav
+=== volume state
+- STREAM_MUSIC:
+   Muted: false
+   Min: 0
+--
+11-24 12:54:38:719 setStreamVolume(stream:STREAM_MUSIC index:1 flags:0x1) from com.alibaba.ailabs.genie.smartapp
+=== worker/journal baseline
+134
+872
+=== F: wake + question
+adb : Unable to open PCM device 0 (cannot set hw params: Invalid argument)
+所在位置 行:1 字符: 291
++ ... -Null; $o = adb -s $d shell "su 0 sh -c 'sh /data/local/tmp/t9/t9_06/ ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Unable to open ...valid argument):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+--- factory session lines:
+--- worker reply / tts lines:
+[aiw] 2026-11-24T16:20:05 factory wake (onStartTalk): session=1972919 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T16:20:07 dialog closed: reason=deadline reached rounds_done=0 followup_rounds=0 max_round=0 listening=1 followup_rounds_total=0 exit_turns=0
+[aiw] 2026-11-24T16:20:13 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T16:20:13 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T16:20:13 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T16:20:14 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+--- journal tail:
+{"ts":"2026-11-24T16:19:33.539+0800","kind":"tts","event_id":"ui-1795508367743","tts_id":5245612,"outcome":"ok","dur_ms":2667,"text_bytes":19,"attempts":1}
+{"ts":"2026-11-24T16:19:55.231+0800","kind":"tts","event_id":"ui-1795508391932","tts_id":5245617,"outcome":"interrupted","dur_ms":3045,"text_bytes":73,"attempts":1}
+{"ts":"2026-11-24T16:20:05.105+0800","kind":"tts","event_id":"ui-1795508402335","tts_id":5245621,"outcome":"ok","dur_ms":2543,"text_bytes":21,"attempts":1}
+=== G: wake + factory native command (volume) and automatic re-listen
+Unable to open PCM device 0 (cannot set hw params: Invalid argument)
+--- factory session lines:
+--- worker re-listen lines:
+[aiw] 2026-11-24T16:18:42 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T16:18:42 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T16:18:42 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T16:18:58 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T16:19:24 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T16:19:43 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T16:20:03 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T16:20:14 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+--- journal tail:
+{"ts":"2026-11-24T16:19:33.539+0800","kind":"tts","event_id":"ui-1795508367743","tts_id":5245612,"outcome":"ok","dur_ms":2667,"text_bytes":19,"attempts":1}
+{"ts":"2026-11-24T16:19:55.231+0800","kind":"tts","event_id":"ui-1795508391932","tts_id":5245617,"outcome":"interrupted","dur_ms":3045,"text_bytes":73,"attempts":1}
+{"ts":"2026-11-24T16:20:05.105+0800","kind":"tts","event_id":"ui-1795508402335","tts_id":5245621,"outcome":"ok","dur_ms":2543,"text_bytes":21,"attempts":1}
+--- guard:
+=== END

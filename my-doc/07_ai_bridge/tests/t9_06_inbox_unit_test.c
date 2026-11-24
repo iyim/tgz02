@@ -481,10 +481,139 @@ int main(void)
     path_join(p, sizeof(p), INBOX, "ui-0030.json"); write_file(p,
                "{\"v\":1,\"event_id\":\"ui-0030\",\"text\":\"x\"}");
     one_poll(&cfg, &st, &q);
-    ck(q.calls == 0, "15 foreign owner never enqueued");
-    ckc(st.last_reject, "uid not allowed", "15 refused for owner uid");
+    ck(q.calls == 0, "16 foreign owner never enqueued");
+    /* T9-06R1: dropped, not archived and not answered (an unprivileged app must not be able to
+     * make the worker create root-owned files) */
+    ck(st.foreign_dropped == 1, "16 foreign owner counted as dropped");
+    ck(st.rejected == 0, "16 foreign file is not counted as a rejection");
+    ck(count_files(INBOX, ".json") == 0, "16 foreign file is unlinked");
+    ck(count_files(REJECTED, ".rejected") == 0, "16 nothing is parked in rejected/");
+    path_join(p, sizeof(p), RESULT, "ui-0030.json");
+    ck(read_all(p, body, sizeof(body)) < 0, "16 no result file for a foreign owner");
 
-    /* -------------------------------------------------------- 16 parser */
+    /* ------------------------------------- 17 T9-06R1 foreign-uid mass drop */
+    {
+        int i;
+        fresh_tree();
+        cfg_for(&cfg);
+        cfg.enforce_uid = 1;
+        cfg.allowed_uids[0] = 424242;          /* our own uid is therefore "foreign" */
+        cfg.allowed_count = 1;
+        memset(&q, 0, sizeof(q));
+        for (i = 0; i < 20; i++) {
+            snprintf(p, sizeof(p), "%s/spam%02d.json", INBOX, i);
+            snprintf(body, sizeof(body),
+                     "{\"v\":1,\"event_id\":\"spam%02d\",\"text\":\"x\"}", i);
+            write_file(p, body);
+        }
+        one_poll(&cfg, &st, &q);
+        ck(q.calls == 0, "17 foreign burst never enqueued");
+        ck(st.rejected == 0, "17 foreign burst creates no rejections");
+        ck(count_files(REJECTED, ".rejected") == 0, "17 foreign burst leaves rejected/ empty");
+        ck(count_files(RESULT, ".json") == 0, "17 foreign burst writes no results");
+        /* the drop is per file but bounded by the scan cap, so drain with a few polls */
+        {
+            int rounds = 0;
+            while (count_files(INBOX, ".json") > 0 && rounds < 10) { one_poll(&cfg, &st, &q); rounds++; }
+            ck(count_files(INBOX, ".json") == 0, "17 the whole foreign burst is dropped");
+            ck(rounds <= 10, "17 dropping is bounded by the scan cap, not one giant pass");
+        }
+    }
+
+    /* --------------------------------------- 18 T9-06R1 per-poll scan limit */
+    {
+        int i, first, second;
+        fresh_tree();
+        cfg_for(&cfg);
+        cfg.max_scan_per_poll = 8;
+        cfg.rate_max = 0;
+        memset(&q, 0, sizeof(q));
+        for (i = 0; i < 40; i++) {
+            snprintf(p, sizeof(p), "%s/scan%02d.json", INBOX, i);
+            snprintf(body, sizeof(body),
+                     "{\"v\":1,\"event_id\":\"scan%02d\",\"text\":\"t%d\"}", i, i);
+            write_file(p, body);
+        }
+        memset(&st, 0, sizeof(st));
+        first = ti_poll(&cfg, &st, fake_enqueue, &q);
+        memset(&st, 0, sizeof(st));
+        second = ti_poll(&cfg, &st, fake_enqueue, &q);
+        ck(first == 8, "18 first poll stops at the scan cap");
+        ck(second == 8, "18 second poll takes the next batch");
+        ck(q.calls == 16, "18 two polls handled exactly 16 requests");
+        {
+            int rounds = 2;
+            while (count_files(INBOX, ".json") > 0 && rounds < 12) {
+                memset(&st, 0, sizeof(st));
+                (void)ti_poll(&cfg, &st, fake_enqueue, &q);
+                rounds++;
+            }
+            ck(count_files(INBOX, ".json") == 0, "18 every request is eventually handled");
+            ck(q.calls == 40, "18 no request is starved by the cap");
+        }
+    }
+
+    /* ------------------------------------------ 19 T9-06R1 rejected/ pruning */
+    {
+        int i;
+        fresh_tree();
+        cfg_for(&cfg);
+        cfg.rejected_max_files = 3;
+        memset(&q, 0, sizeof(q));
+        for (i = 0; i < 10; i++) {
+            snprintf(p, sizeof(p), "%s/bad%02d.json", INBOX, i);
+            write_file(p, "{\"v\":1,\"event_id\":");
+        }
+        one_poll(&cfg, &st, &q);
+        ck(st.rejected >= 10, "19 all broken requests were refused");
+        ck(count_files(REJECTED, ".rejected") <= 3, "19 rejected/ is pruned to its cap");
+        ck(st.pruned_rejected > 0, "19 pruning actually removed files");
+    }
+
+    /* -------------------------------------------- 20 T9-06R1 result/ pruning */
+    {
+        int i;
+        fresh_tree();
+        cfg_for(&cfg);
+        cfg.result_max_files = 3;
+        cfg.max_scan_per_poll = 0;
+        memset(&q, 0, sizeof(q));
+        for (i = 0; i < 10; i++) {
+            snprintf(p, sizeof(p), "%s/res%02d.json", INBOX, i);
+            snprintf(body, sizeof(body),
+                     "{\"v\":1,\"event_id\":\"res%02d\",\"text\":\"t\"}", i);
+            write_file(p, body);
+        }
+        one_poll(&cfg, &st, &q);
+        ck(st.accepted == 10, "20 all ten requests were accepted");
+        ck(count_files(RESULT, ".json") <= 3, "20 result/ is pruned to its cap");
+        ck(st.pruned_result > 0, "20 result pruning actually removed files");
+    }
+
+    /* ----------------------- 21 T9-06R1 normal request still works after a storm */
+    {
+        int i;
+        fresh_tree();
+        cfg_for(&cfg);
+        cfg.rejected_max_files = 2;
+        memset(&q, 0, sizeof(q));
+        for (i = 0; i < 6; i++) {
+            snprintf(p, sizeof(p), "%s/junk%02d.json", INBOX, i);
+            write_file(p, "garbage");
+        }
+        one_poll(&cfg, &st, &q);
+        path_join(p, sizeof(p), INBOX, "ui-good.json");
+        write_file(p, "{\"v\":1,\"event_id\":\"ui-good\",\"text\":\"still works\"}");
+        memset(&st, 0, sizeof(st));
+        one_poll(&cfg, &st, &q);
+        ck(st.accepted == 1, "21 the normal request is still accepted after the junk");
+        cks(q.last_text, "still works", "21 its text reaches the queue callback");
+        path_join(p, sizeof(p), RESULT, "ui-good.json");
+        read_all(p, body, sizeof(body));
+        ckc(body, "\"ok\":true", "21 its receipt is written");
+    }
+
+
     {
         ti_msg m;
         char err[128];

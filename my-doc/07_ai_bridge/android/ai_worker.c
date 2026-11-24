@@ -1386,9 +1386,11 @@ static void aiw_inbox_poll(t6b_worker *w)
     last_acc = g_inbox_st.accepted;
     last_idem = g_inbox_st.idempotent;
     always("inbox: handled=%d accepted=%lld idempotent=%lld rejected=%lld bad_name=%lld"
-           " symlink=%lld empty_skipped=%lld stuck=%lld tmp_cleaned=%lld%s%s",
+           " symlink=%lld empty_skipped=%lld stuck=%lld foreign_dropped=%lld"
+           " pruned_rejected=%lld pruned_result=%lld tmp_cleaned=%lld%s%s",
            handled, g_inbox_st.accepted, g_inbox_st.idempotent, g_inbox_st.rejected,
            g_inbox_st.bad_name, g_inbox_st.nofollow, g_inbox_st.empty_skipped, g_inbox_st.stuck,
+           g_inbox_st.foreign_dropped, g_inbox_st.pruned_rejected, g_inbox_st.pruned_result,
            g_inbox_st.tmp_cleaned,
            g_inbox_st.last_reject[0] ? " last_reject=" : "", g_inbox_st.last_reject);
 }
@@ -3736,6 +3738,9 @@ int main(int argc, char **argv)
         else if (strcmp(a, "--inbox-rate-window-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.inbox.rate_window_ms = atoi(v); i++; }
         else if (strcmp(a, "--inbox-allowed-uid") == 0) { if (need_str(argc, argv, i, &v)) goto bad; if (cfg.inbox.allowed_count < TI_MAX_UIDS) { cfg.inbox.allowed_uids[cfg.inbox.allowed_count] = (unsigned int)strtoul(v, NULL, 10); cfg.inbox.allowed_count++; } i++; }
         else if (strcmp(a, "--inbox-no-uid-check") == 0) { cfg.inbox.enforce_uid = 0; continue; }
+        else if (strcmp(a, "--inbox-scan-cap") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.inbox.max_scan_per_poll = atoi(v); i++; }
+        else if (strcmp(a, "--inbox-rejected-max") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.inbox.rejected_max_files = atoi(v); i++; }
+        else if (strcmp(a, "--inbox-result-max") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.inbox.result_max_files = atoi(v); i++; }
         else if (strcmp(a, "--conf") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.conf_path, sizeof(cfg.conf_path), "%s", v); i++; }
         else if (strcmp(a, "--temperature") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.temperature = atof(v); i++; }
         else if (strcmp(a, "--max-tokens") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.max_tokens = atoi(v); i++; }

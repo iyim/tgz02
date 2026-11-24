@@ -1,0 +1,33 @@
+﻿=== date
+Tue Nov 24 16:26:06 CST 2026
+worker_pid=11995
+/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10057 
+core_pid=1178  libtg_mappings=6
+tg_hook_sup=running
+tg_guard_sup=running
+tgb_bridge=1602
+ai_worker=11995
+=== inbox layout (private)
+drwxr-xr-x 5 root   root    4096 2026-11-24 15:39 /data/local/tmp/t9_ui
+drwx------ 2 u0_a57 u0_a57  4096 2026-11-24 16:20 /data/local/tmp/t9_ui/inbox
+drwx------ 2 root   root   69632 2026-11-24 15:52 /data/local/tmp/t9_ui/rejected
+drwxr-xr-x 2 root   root    4096 2026-11-24 16:20 /data/local/tmp/t9_ui/result
+allowed_uids=10057
+
+inbox=0 result=10 rejected=20
+=== accepted queue perms untouched
+drwx------ 2 root root 36864 2026-11-24 16:22 /data/local/tmp/t5_bridge/tts/done
+drwx------ 2 root root  4096 2026-11-24 16:22 /data/local/tmp/t5_bridge/tts/queue
+=== backups for rollback
+total 576
+-rwxr-xr-x 1 root root 278168 2026-11-24 15:38 ai_worker.t8156
+-rwxr-xr-x 1 root root 291540 2026-11-24 16:18 ai_worker.t906
+-rwxr-xr-x 1 root root  12365 2026-11-24 15:38 run_ai_worker.sh.pre_t9_06
+=== worker inbox counters
+[aiw] 2026-11-24T16:19:27 inbox: handled=1 accepted=5 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 foreign_dropped=0 pruned_rejected=0 pruned_result=0 tmp_cleaned=0
+[aiw] 2026-11-24T16:19:52 inbox: handled=1 accepted=6 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 foreign_dropped=0 pruned_rejected=0 pruned_result=0 tmp_cleaned=0
+[aiw] 2026-11-24T16:20:02 inbox: handled=1 accepted=7 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 foreign_dropped=0 pruned_rejected=0 pruned_result=0 tmp_cleaned=0
+=== top / power
+    mResumedActivity: ActivityRecord{1d98c93 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}
+  mWakefulness=Awake
+=== END

@@ -1,0 +1,15 @@
+﻿=== guard (tgt) continuity lines
+11-24 16:25:11.168 I/tgt     ( 1178): continuity req: seq=12715009 accepted (new) -> pending (attempt window 2500 ms)
+11-24 16:25:11.169 I/tgt     ( 1178): continuity req: seq=12715009 firing after 1 ms
+11-24 16:25:11.169 I/tgt     ( 1178): continuity: worker-request seq=12715009 startTalk(type=1, info+0=1) -> 0 (n=25 ok=0)
+11-24 16:25:19.543 D/SessionManager( 1178): JNI_AILABS SessionManager.cpp:onStopTalk:842 [1665] on stop talk, send end frame with payload:{ "action": "UpdateContext", "payload": { "wakeupType": "continuity", "speechContexts": { "recordId": "f8a763e6cbfd11241625111690030071", "wakeupWord": "", "doa": "{\"param_arr\":[92.500000,0.395473,87.500000,0.353920,97.500000,0.250607],\"score_arr\":[2997653.750000,2998224.750000,2999942,3002817.500000,3006865.500000,3012096.250000,3018507.250000,3026070.250000,3034719.750000,3044340,3054753,3065715,3076909.250000,3087959,3098438,3107896.500000,3115890,3122014.500000,3125939,3127436.750000,3126405.250000,3122877.500000,3117018.500000,3109109.500000,3099526.500000,3088708.500000,3077125,3065245.500000,3053514.500000,3042331.750000,3032041,3022924.750000,3015204.500000,3009047.250000,3004572.250000,3001858.250000,3000948.750000,92.500000]}", "confidence": 0, "listenDuration": 8320, "voiceDuration": 8320, "duplexDialogRenew": 0, "asr": { "wakeupWordAudioLength": 6500, "codec": "speex", "container": "ogg", "channel"
+11-24 16:25:24.585 D/AGSpeechEngine( 1178): abortListen,395,wakeup type is continuity
+=== factory sessions
+11-24 16:25:05.804 D/SessionManager( 1178): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1665] sessionId = 1968852, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 16:25:11.175 D/SessionManager( 1178): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1665] sessionId = 1972952, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+=== worker
+[aiw] 2026-11-24T16:25:09 route=native intent=volume rule=volume.down arg=down event=t6-1178-1968852-g5 seq=5 session=1968852 text_bytes=30 merges=0 held_ms=0 publish_seq=3 (factory answers; AI worker does not)
+[aiw] 2026-11-24T16:25:09 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T16:25:11 continuity request: seq=12715009 sent (after native command) n=3 - waiting for factory session
+[aiw] 2026-11-24T16:25:16 continuity request: NOT confirmed within 5000 ms (guard deferred/dropped; see tgt log for req seq reason)
+=== END
