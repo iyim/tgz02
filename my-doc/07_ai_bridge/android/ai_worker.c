@@ -55,6 +55,20 @@ typedef struct {
 #define T6B_UTT_QUEUE 4
 #define T6B_ROUTE_TEXT_MAX 256
 
+/*
+ * T9-07R1: a text request from the UI that must be answered by the AI. It is kept in its own
+ * small FIFO instead of being answered inside the inbox callback, because answering means a
+ * network call: the inbox scan must return immediately (so the receipt and the next request
+ * are not stuck behind a model call), and the answer must go through the same provider +
+ * context + TTS queue path the voice turns use.
+ */
+#define T6B_TXTQ 4
+typedef struct {
+    char event_id[T6B_ID_MAX + 1];
+    char text[T6B_TEXT_MAX + 1];
+    int  text_bytes;
+} t6b_txt;
+
 typedef struct {
     t6b_config   cfg;
     char         events_path[T6B_PATH_MAX];
@@ -103,6 +117,12 @@ typedef struct {
     int          uttq_head;
     int          uttq_count;
     unsigned long uttq_dropped;
+    /* T9-07R1：UI 文字提问（kind=ask）的待答队列，按 FIFO 由主循环逐条送 Provider */
+    t6b_txt      txtq[T6B_TXTQ];
+    int          txtq_head;
+    int          txtq_count;
+    unsigned long txtq_answered;
+    unsigned long txtq_failed;
     int          play_playing;            /* 最近一次读到的播报状态：1=playing */
     int          play_known;              /* 1 = 至少读到过一次播报状态 */
     /* T7-05：最近一次真正执行过的 native 指令（仅用于状态展示） */
@@ -1336,11 +1356,23 @@ static ti_stats g_inbox_st;
 /* T9-07: defined further down; the inbox path (below) also publishes an event */
 static void aiw_ui_publish_turn(t6b_worker *w, const char *kind, const char *session,
                                 const char *event_id, const char *user, const char *reply,
-                                const char *route, const char *skill, int reply_bytes);
+                                const char *route, const char *skill, int reply_bytes,
+                                const char *status, const char *reason);
 static void aiw_ui_publish_status(t6b_worker *w, int force);
+static void aiw_text_turn(t6b_worker *w);
 
+/*
+ * T9-07R1: one inbox request.
+ *
+ *   kind = "ask"  -> queue it for the AI turn pipeline (aiw_text_turn): the answer is produced
+ *                    by the same provider + context + TTS queue the voice turns use, then
+ *                    published as a "turn" event with the submitted text and the answer.
+ *   kind = "say"  -> unchanged T9-06 semantics: the text goes straight into the TTS queue and
+ *                    is spoken verbatim. Requests without a kind field land here, so nothing
+ *                    written before this stage changes meaning.
+ */
 static int aiw_inbox_enqueue(void *ctx, const char *event_id, const char *text,
-                             int text_bytes, char *err, size_t errlen)
+                             int text_bytes, const char *kind, char *err, size_t errlen)
 {
     t6b_worker *w = (t6b_worker *)ctx;
     t6b_reply rep;
@@ -1352,6 +1384,25 @@ static int aiw_inbox_enqueue(void *ctx, const char *event_id, const char *text,
     if ((size_t)text_bytes >= sizeof(rep.text)) {
         if (err && errlen) snprintf(err, errlen, "text does not fit the reply buffer");
         return -1;
+    }
+
+    if (kind != NULL && strcmp(kind, TI_KIND_ASK) == 0) {
+        int slot;
+
+        if (w->txtq_count >= T6B_TXTQ) {
+            if (err && errlen) snprintf(err, errlen,
+                                        "AI turn queue is full (%d waiting)", T6B_TXTQ);
+            return -1;
+        }
+        slot = (w->txtq_head + w->txtq_count) % T6B_TXTQ;
+        snprintf(w->txtq[slot].event_id, sizeof(w->txtq[slot].event_id), "%s", event_id);
+        memcpy(w->txtq[slot].text, text, (size_t)text_bytes);
+        w->txtq[slot].text[text_bytes] = '\0';
+        w->txtq[slot].text_bytes = text_bytes;
+        w->txtq_count++;
+        always("inbox ask queued: event=%s bytes=%d waiting=%d (answer comes from the provider)",
+               event_id, text_bytes, w->txtq_count);
+        return 0;   /* accepted: the AI turn will run in the worker loop */
     }
 
     memset(&rep, 0, sizeof(rep));
@@ -1371,11 +1422,122 @@ static int aiw_inbox_enqueue(void *ctx, const char *event_id, const char *text,
     if (rc == 1) {
         /* T9-07: the UI can see its own submit in the product event stream too (one record
          * per accepted text, and none for an idempotent re-submit). */
-        aiw_ui_publish_turn(w, "submit", "", event_id, text, NULL, "submit", "", 0);
+        aiw_ui_publish_turn(w, "submit", "", event_id, text, NULL, "submit", "", 0, "ok", "");
+        /* the device may hear what it just read out: register it so the echo filter cannot
+         * mistake our own playback for a new user utterance */
+        ef_note_enqueue(&w->ef, event_id, rep.text, wu_wall_ms());
         return 0;
     }
     if (rc == 0) return 1;
     return -1;
+}
+
+/*
+ * T9-07R1: answer one queued UI text request through the SAME pipeline the voice turns use:
+ * conv_context builds the messages (so a text question sees earlier voice and text turns),
+ * the configured provider produces the answer, tts_enqueue hands it to the existing executor,
+ * and only then is the turn published (user text + answer, one event_id).
+ *
+ * On failure nothing is invented: the turn is published with status="failed" and a short
+ * reason, the UI shows it as a failure, no TTS is queued and the context is not touched.
+ *
+ * One request per call, and never while an ASR event is pending, so the existing single
+ * threaded ordering (one request at a time) is preserved.
+ */
+static void aiw_text_turn(t6b_worker *w)
+{
+    t6b_txt t;
+    t6b_reply rep;
+    char merr[CV_ERR_MAX];
+    char terr[96];
+    char saved_id[sizeof(w->pend.event_id)];
+    const char *stage = NULL;
+    const char *sys;
+    long long t0;
+    int nmsg, rc, q;
+
+    if (!w->cfg.inbox_enabled) return;
+    if (w->txtq_count <= 0) return;
+    if (w->have_pend) return;
+
+    memset(&t, 0, sizeof(t));
+    t = w->txtq[w->txtq_head];
+    w->txtq_head = (w->txtq_head + 1) % T6B_TXTQ;
+    w->txtq_count--;
+
+    memset(&rep, 0, sizeof(rep));
+    snprintf(saved_id, sizeof(saved_id), "%s", w->pend.event_id);
+    snprintf(w->pend.event_id, sizeof(w->pend.event_id), "%s", t.event_id);
+    t0 = wu_now_ms();
+
+    sys = (w->cfg.deepseek.system_prompt[0] != '\0') ? w->cfg.deepseek.system_prompt
+                                                    : T6B_DS_SYSTEM_PROMPT_DEFAULT;
+    merr[0] = '\0';
+    nmsg = cv_build_messages(&w->cv, sys, t.text, w->msg_json, sizeof(w->msg_json),
+                             merr, sizeof(merr));
+    if (nmsg <= 0) {
+        w->st.provider_err++;
+        w->txtq_failed++;
+        t6b_status_note_error(&w->st, "text turn: context build failed");
+        always("text turn FAILED: event=%s context build failed (%s) - no answer is faked",
+               t.event_id, merr[0] != '\0' ? merr : "no messages");
+        aiw_ui_publish_turn(w, "turn", "", t.event_id, t.text, NULL, "ai", "", 0,
+                            "failed", "context build failed");
+        snprintf(w->pend.event_id, sizeof(w->pend.event_id), "%s", saved_id);
+        return;
+    }
+
+    rc = t6b_provider_complete_msgs(&w->prov, w->msg_json, t.text, &rep);
+    if (rc != 0 || rep.status != T6B_P_OK || rep.text_bytes <= 0) {
+        const char *why = (rep.message[0] != '\0') ? rep.message : "provider unavailable";
+        if (rep.status == T6B_P_TIMEOUT) w->st.provider_timeout++;
+        else                             w->st.provider_err++;
+        w->txtq_failed++;
+        t6b_status_note_error(&w->st, "text turn: %s", why);
+        always("text turn FAILED: event=%s provider=%s %s took=%lldms "
+               "(nothing queued, nothing faked)",
+               t.event_id, w->prov.ops != NULL ? w->prov.ops->name : "none",
+               why, wu_now_ms() - t0);
+        aiw_ui_publish_turn(w, "turn", "", t.event_id, t.text, NULL, "ai", "", 0,
+                            "failed", why);
+        snprintf(w->pend.event_id, sizeof(w->pend.event_id), "%s", saved_id);
+        return;
+    }
+
+    terr[0] = '\0';
+    q = tts_enqueue(w, &rep, terr, sizeof(terr), &stage);
+    if (q < 0) {
+        w->st.tts_enqueue_failed++;
+        w->txtq_failed++;
+        t6b_status_note_error(&w->st, "text turn: tts enqueue failed: %s", terr);
+        always("text turn FAILED: event=%s answer ready but tts enqueue failed (%s) "
+               "- nothing is faked", t.event_id, terr);
+        aiw_ui_publish_turn(w, "turn", "", t.event_id, t.text, NULL, "ai", "", 0,
+                            "failed", "TTS queue rejected the answer");
+        snprintf(w->pend.event_id, sizeof(w->pend.event_id), "%s", saved_id);
+        return;
+    }
+    if (q > 0) w->st.tts_queued++;
+    else       w->st.tts_skipped++;
+
+    w->st.provider_ok++;
+    w->txtq_answered++;
+    /* the answer we just queued must not be mistaken for a new user utterance by the echo filter */
+    ef_note_enqueue(&w->ef, t.event_id, rep.text, wu_wall_ms());
+    /* the turn becomes part of the conversation history, exactly like a voice turn */
+    if (w->cv.cfg.enabled && rep.text_bytes > 0) {
+        int cvc = cv_commit_turn(&w->cv, t.text, rep.text);
+        if (cvc == 0) {
+            always("text turn: context commit event=%s turns=%d msgs=%d",
+                   t.event_id, cv_turn_count(&w->cv), w->cv.count);
+        }
+    }
+    always("text turn ok: event=%s provider=%s user_bytes=%d reply_bytes=%d ok=%d took=%lldms",
+           t.event_id, w->prov.ops != NULL ? w->prov.ops->name : "none",
+           t.text_bytes, rep.text_bytes, q > 0, wu_now_ms() - t0);
+    aiw_ui_publish_turn(w, "turn", "", t.event_id, t.text, rep.text, "ai", "",
+                        rep.text_bytes, "ok", "");
+    snprintf(w->pend.event_id, sizeof(w->pend.event_id), "%s", saved_id);
 }
 
 /* one inbox scan; logged on change and at most every 3 s, so a noisy entry point cannot flood
@@ -1450,7 +1612,8 @@ static void aiw_ui_note_error(t6b_worker *w, const char *what)
 static void aiw_ui_publish_turn(t6b_worker *w, const char *kind,
                                 const char *session, const char *event_id,
                                 const char *user, const char *reply,
-                                const char *route, const char *skill, int reply_bytes)
+                                const char *route, const char *skill, int reply_bytes,
+                                const char *status, const char *reason)
 {
     ue_turn t;
 
@@ -1464,6 +1627,8 @@ static void aiw_ui_publish_turn(t6b_worker *w, const char *kind,
     t.route = route;
     t.skill = skill;
     t.reply_bytes = reply_bytes;
+    t.status = status;
+    t.reason = reason;
     if (ue_publish(&w->ue, &t) != 0) aiw_ui_note_error(w, "publish failed");
 }
 
@@ -1896,7 +2061,7 @@ static int provider_attempt(t6b_worker *w)
                             (w->pend_skill_id != 0) ? "skill" : "ai",
                             (w->pend_skill_id != 0)
                                 ? t8_skill_name((t8_skill_id)w->pend_skill_id) : "",
-                            rep.text_bytes);
+                            rep.text_bytes, "ok", "");
         /*
          * T7-01：上下文提交放在"偏移已持久化"之后。
          *   - 只有走到这里才说明本轮真的成功了（Provider OK + 回答已入队 + 偏移已落盘）；
@@ -3026,6 +3191,8 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
 
         /* T9-06: the UI submit channel is serviced on every loop pass (no-op when disabled) */
         aiw_inbox_poll(w);
+        /* T9-07R1: answer one queued UI text question through the provider (no-op when idle) */
+        aiw_text_turn(w);
         /* T9-07: refresh the UI status snapshot (throttled inside; no-op when disabled) */
         aiw_ui_publish_status(w, 0);
 

@@ -34,11 +34,14 @@ final class SessionStore {
     static final String ROLE_ASST = "assistant";
 
     static final String S_PENDING = "pending";
+    static final String S_ASKED   = "asked";      /* submitted, the AI answer is being produced */
     static final String S_QUEUED  = "queued";
     static final String S_PLAYING = "playing";
     static final String S_PLAYED  = "played";
     static final String S_STOPPED = "stopped";
     static final String S_FAILED  = "failed";
+    /* T9-07R1: the AI turn itself failed (the request was accepted, the answer was not) */
+    static final String S_TURN_FAILED = "turn_failed";
 
     static final class Msg {
         String role = ROLE_USER;
@@ -120,6 +123,18 @@ final class SessionStore {
     boolean hasEvent(String eventId)
     {
         return eventId != null && eventId.length() > 0 && seenEvents.contains(eventId);
+    }
+
+    /** does this event already have a message with this role in the open session? */
+    boolean hasRole(String eventId, String role)
+    {
+        if (eventId == null || eventId.length() == 0) return false;
+        Session s = current();
+        for (int i = 0; i < s.msgs.size(); i++) {
+            Msg m = s.msgs.get(i);
+            if (eventId.equals(m.eventId) && role.equals(m.role)) return true;
+        }
+        return false;
     }
 
     /** append a message to the open session; returns the stored copy */

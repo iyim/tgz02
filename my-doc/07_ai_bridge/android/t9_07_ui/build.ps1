@@ -5,12 +5,16 @@
 # Same verified toolchain as T9-04/T9-06: javac --release 8 + d8 (build-tools 35.0.1) +
 # aapt2 + zipalign + apksigner. No res/ tree by design, so aapt2 only links the manifest.
 # The signing key is the shared probe key (one throw-away key covers all local builds).
+#   -Test  also compiles src_test/ and links AndroidManifest.test.xml: that build contains the
+#          automation driver (TestConversationActivity). The default build has no test entry
+#          point at all -- ConversationActivity never reads an Intent.
 param(
     [string]$Sdk = "$env:LOCALAPPDATA\Android\Sdk",
     [string]$BuildTools = "35.0.1",
     [string]$Platform = "android-35",
     [string]$Jdk = "C:\Program Files\Java\jdk-21",
-    [string]$Keystore = ""
+    [string]$Keystore = "",
+    [switch]$Test
 )
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -29,8 +33,21 @@ if (Test-Path $build) { Remove-Item -Recurse -Force $build }
 $classes = Join-Path $build 'classes'
 New-Item -ItemType Directory -Force $classes | Out-Null
 
+$manifest = Join-Path $here 'AndroidManifest.xml'
+$apkName = 'voice_ui.apk'
+$vn = '1.1.0'
+if ($Test) {
+    $manifest = Join-Path $here 'AndroidManifest.test.xml'
+    $apkName = 'voice_ui_test.apk'
+    $vn = '1.1.0-test'
+    Write-Host "== TEST BUILD: src_test/ included, the automation driver is in this APK"
+}
+
 Write-Host "== sources"
 $srcFiles = @(Get-ChildItem -Recurse -Filter *.java (Join-Path $here 'src') | ForEach-Object FullName)
+if ($Test) {
+    $srcFiles += @(Get-ChildItem -Recurse -Filter *.java (Join-Path $here 'src_test') | ForEach-Object FullName)
+}
 $srcFiles | ForEach-Object { Write-Host ("   " + $_.Substring($here.Length + 1)) }
 
 Write-Host "== javac (release 8, utf-8 sources, android.jar)"
@@ -48,8 +65,8 @@ $dex = Join-Path $dexOut 'classes.dex'
 Write-Host "== aapt2 link"
 $baseApk = Join-Path $build 'base.apk'
 & (Join-Path $bt 'aapt2.exe') link -o $baseApk -I $androidJar `
-    --manifest (Join-Path $here 'AndroidManifest.xml') `
-    --min-sdk-version 21 --target-sdk-version 27 --version-code 1 --version-name 1.0.0
+    --manifest $manifest `
+    --min-sdk-version 21 --target-sdk-version 27 --version-code 2 --version-name $vn
 if ($LASTEXITCODE -ne 0) { throw "aapt2 link failed" }
 
 Write-Host "== add classes.dex"
@@ -68,13 +85,17 @@ Write-Host "== zipalign + apksigner"
 $aligned = Join-Path $build 'aligned.apk'
 & (Join-Path $bt 'zipalign.exe') -f 4 $unsigned $aligned
 if ($LASTEXITCODE -ne 0) { throw "zipalign failed" }
-$signed = Join-Path $build 'voice_ui.apk'
+$signed = Join-Path $build $apkName
 & (Join-Path $bt 'apksigner.bat') sign --ks $Keystore --ks-pass pass:android --key-pass pass:android `
     --min-sdk-version 21 --out $signed $aligned
 if ($LASTEXITCODE -ne 0) { throw "apksigner failed" }
 
 Write-Host "== artifacts"
-foreach ($f in @($dex, $signed)) {
+# keep a copy outside build/ so "production" and "test" APKs can coexist (build/ is wiped)
+$dist = Join-Path $here 'dist'
+New-Item -ItemType Directory -Force $dist | Out-Null
+Copy-Item $signed (Join-Path $dist $apkName) -Force
+foreach ($f in @($dex, $signed, (Join-Path $dist $apkName))) {
     $h = (Get-FileHash $f -Algorithm SHA256).Hash.ToLower()
     Write-Host ("   {0}  {1,8:N0} B  sha256={2}" -f (Split-Path -Leaf $f), (Get-Item $f).Length, $h)
 }

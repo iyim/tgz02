@@ -31,6 +31,11 @@
 #define TI_MAX_FILE_BYTES  4096    /* hard cap on the request file                          */
 #define TI_MAX_RESULT      256
 #define TI_MAX_UIDS        8
+/* T9-07R1: what the request asks for. The field is optional and defaults to "say", so every
+ * request written before this stage keeps its exact old meaning (speak the text verbatim). */
+#define TI_KIND_SAY        "say"
+#define TI_KIND_ASK        "ask"
+#define TI_KIND_MAX        8
 
 typedef struct {
     char  inbox_dir[256];      /* where the UI drops <event_id>.json (0700 ui-uid)      */
@@ -73,7 +78,8 @@ typedef struct {
  * -1 = refused (err filled).
  */
 typedef int (*ti_enqueue_fn)(void *ctx, const char *event_id, const char *text,
-                             int text_bytes, char *err, size_t errlen);
+                             int text_bytes, const char *kind,
+                             char *err, size_t errlen);
 
 void ti_cfg_defaults(ti_cfg *c);
 
@@ -92,8 +98,9 @@ int  ti_prune_dir(const char *dir, int max_files, ti_stats *st, long long *count
 
 /* strict, flat-JSON message parser (exported for the host test) */
 typedef struct {
-    int  has_v, has_event_id, has_text;
+    int  has_v, has_event_id, has_text, has_kind;
     long v;
+    char kind[TI_KIND_MAX + 1];             /* "say" (default) or "ask"                    */
     char event_id[TI_MAX_ID + 1];
     char text[TI_MAX_TEXT_BYTES * 2 + 2];   /* raw bytes after unescaping, NUL terminated */
     int  text_bytes;

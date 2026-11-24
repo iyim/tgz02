@@ -1,0 +1,15 @@
+﻿== submitted kind=say id=probe-184632 text=legacy-say-request
+receipt: {"v":1,"event_id":"probe-184632","ok":true,"stage":"queue","reason":"","ts_ms":1795517193390}
+== waiting for the turn ==
+== events (last 4) ==
+-- 000000000087.json
+{"v":1,"seq":87,"ts":"2026-11-24T18:42:55","ts_ms":1795516975148,"kind":"turn","session":"1969182","event_id":"t6-1180-1969182-g5","route":"skill","skill":"time.query","status":"ok","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 18:42","reply_bytes":9,"reply_cut":0,"reason":""}
+-- 000000000088.json
+{"v":1,"seq":88,"ts":"2026-11-24T18:43:21","ts_ms":1795517001281,"kind":"turn","session":"","event_id":"ui-1795517001114-93a5","route":"ai","skill":"","status":"failed","user":"Tell么啊story about the sea","user_bytes":29,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"deepseek timeout after 103ms"}
+-- 000000000089.json
+{"v":1,"seq":89,"ts":"2026-11-24T18:44:09","ts_ms":1795517049123,"kind":"turn","session":"","event_id":"ui-1795517047693-1727","route":"ai","skill":"","status":"ok","user":"请用一句话介绍巴黎","user_bytes":27,"user_cut":0,"reply":"巴黎是法国的首都，以埃菲尔铁塔、卢浮宫和浪漫的塞纳河风光闻名。","reply_bytes":93,"reply_cut":0,"reason":""}
+-- 000000000090.json
+{"v":1,"seq":90,"ts":"2026-11-24T18:46:33","ts_ms":1795517193381,"kind":"submit","session":"","event_id":"probe-184632","route":"submit","skill":"","status":"ok","user":"legacy-say-request","user_bytes":18,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":""}
+== journal delta ==
+== worker log (text turn lines) ==
+EXIT=0

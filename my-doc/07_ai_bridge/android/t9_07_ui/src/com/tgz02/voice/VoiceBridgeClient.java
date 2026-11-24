@@ -72,6 +72,10 @@ public final class VoiceBridgeClient {
         public String kind = "", session = "", eventId = "", route = "", skill = "";
         public String user = "", reply = "";
         public int replyBytes;
+        /** "ok" or "failed": a failed turn carries a reason and no answer */
+        public String status = "ok";
+        public String reason = "";
+        public boolean failed() { return "failed".equals(status); }
     }
 
     /** one observation of play.public.json */
@@ -156,6 +160,12 @@ public final class VoiceBridgeClient {
 
     /**
      * Writes one request into the private inbox of this app's uid.
+     *
+     * T9-07R1: the request carries {"kind":"ask"}, which tells the worker to answer it through
+     * the AI pipeline (provider + context + the existing TTS executor) instead of reading the
+     * text out loud. The old "read this out" semantics still exists on the worker side for
+     * requests without a kind field, so nothing written before this stage changes meaning.
+     *
      * Returns the event_id, or null when the file cannot be written (the reason is logged).
      */
     String submit(String text)
@@ -165,6 +175,7 @@ public final class VoiceBridgeClient {
         try {
             JSONObject o = new JSONObject();
             o.put("v", 1);
+            o.put("kind", "ask");
             o.put("event_id", eventId);
             o.put("text", text);
             byte[] body = o.toString().getBytes("UTF-8");
@@ -424,6 +435,8 @@ public final class VoiceBridgeClient {
             t.user = o.optString("user", "");
             t.reply = o.optString("reply", "");
             t.replyBytes = o.optInt("reply_bytes", 0);
+            t.status = o.optString("status", "ok");
+            t.reason = o.optString("reason", "");
             return t.seq > 0 ? t : null;
         } catch (Throwable t) {
             return null;

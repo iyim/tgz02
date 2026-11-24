@@ -335,3 +335,19 @@ powershell -ExecutionPolicy Bypass -File ..\tests\run_t9_07_ui_events_tests.ps1
 powershell -ExecutionPolicy Bypass -File ..\tests\t9_07_device_acceptance.ps1
 su -c 'sh /data/local/tmp/t9/t9_07/t9_07_restore.sh' [--purge-events]    # 回滚
 ```
+### 提交通道的请求类型（T9-07R1）
+
+`inbox/<event_id>.json` 多了一个可选字段 `kind`：
+
+```json
+{"v":1,"kind":"ask","event_id":"ui-...","text":"用户的问题"}
+```
+
+| `kind` | 行为 | 回执 stage |
+|---|---|---|
+| 省略 / `"say"` | T9-06 语义：文本直接进 TTS 队列，照念 | `queue` |
+| `"ask"` | 走 AI：`conv_context` + Provider + `tts_enqueue`，回答再播报 | `ai` |
+| 其它 / 非字符串 | 拒绝（`unsupported kind` / `kind must be a string`），归档到 `rejected/` | `rejected` |
+
+`ask` 的失败不会被伪装成回答：worker 发布 `events` 记录 `status:"failed"` + `reason`，
+`reply` 为空，且不会入队播报。

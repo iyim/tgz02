@@ -304,6 +304,9 @@ int ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errle
 
     if (m == NULL) return -1;
     memset(m, 0, sizeof(*m));
+    /* T9-07R1: "say" is the default request type; only an explicit "kind":"ask" asks the worker
+     * for an AI answer. Old requests (no kind field) therefore keep their old semantics. */
+    snprintf(m->kind, sizeof(m->kind), "%s", TI_KIND_SAY);
     if (err && errlen) err[0] = '\0';
     if (buf == NULL || len == 0) {
         if (err && errlen) snprintf(err, errlen, "empty request");
@@ -354,6 +357,15 @@ int ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errle
                 m->text[vlen] = '\0';
                 m->text_bytes = (int)vlen;
                 m->has_text = 1;
+            } else if (strcmp(key, "kind") == 0) {
+                /* unknown types are refused instead of being guessed: a typo must not silently
+                 * turn "ask" into "speak it verbatim" */
+                if (strcmp(val, TI_KIND_SAY) != 0 && strcmp(val, TI_KIND_ASK) != 0) {
+                    if (err && errlen) snprintf(err, errlen, "unsupported kind");
+                    return -1;
+                }
+                snprintf(m->kind, sizeof(m->kind), "%s", val);
+                m->has_kind = 1;
             }
         } else if ((*p >= '0' && *p <= '9') || *p == '-') {
             long v = 0;
@@ -374,6 +386,11 @@ int ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errle
             if (strcmp(key, "v") == 0) {
                 m->v = neg ? -v : v;
                 m->has_v = 1;
+            } else if (strcmp(key, "kind") == 0) {
+                /* T9-07R1: the request type is a string; a numeric one is a protocol error,
+                 * not something to guess at */
+                if (err && errlen) snprintf(err, errlen, "kind must be a string");
+                return -1;
             }
         } else if (*p == '{' || *p == '[') {
             if (err && errlen) snprintf(err, errlen, "nested value not allowed");
@@ -740,7 +757,7 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
         }
 
         err[0] = '\0';
-        rc = fn(ctx, event_id, msg.text, msg.text_bytes, err, sizeof(err));
+        rc = fn(ctx, event_id, msg.text, msg.text_bytes, msg.kind, err, sizeof(err));
         if (rc < 0) {
             ti_reject(cfg, st, event_id, err[0] ? err : "enqueue failed", path);
             handled++;
@@ -752,7 +769,9 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
             (void)ti_result_write(cfg, event_id, 1, "existing", "already queued or played");
         } else {
             st->accepted++;
-            (void)ti_result_write(cfg, event_id, 1, "queue", "");
+            /* the stage names what was accepted: an AI turn still has to be answered */
+            (void)ti_result_write(cfg, event_id, 1,
+                                  (strcmp(msg.kind, TI_KIND_ASK) == 0) ? "ai" : "queue", "");
         }
         (void)ti_prune_dir(cfg->result_dir, cfg->result_max_files, st, &st->pruned_result);
         (void)unlink(path);

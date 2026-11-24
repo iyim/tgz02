@@ -20,6 +20,10 @@ ls "$UI/events" 2>/dev/null | tail -3 | while read -r f; do
     echo "-- $f"
     cat "$UI/events/$f"
 done
+NEW=$(ls "$UI/events" 2>/dev/null | grep -E '^[0-9]+\.json$' | tail -1)
+echo "newest_event=$NEW"
+echo "newest_json=$(cat "$UI/events/$NEW" 2>/dev/null)"
+echo "events_total=$(ls "$UI/events" 2>/dev/null | wc -l | tr -d ' ')"
 echo "== queue / inflight =="
 ls "$TTS/queue" 2>/dev/null | head -5
 echo "inflight: $(ls "$TTS/inflight" 2>/dev/null | tr '\n' ' ')"

@@ -4,7 +4,10 @@
 `2b0d5883` 只是 F 项证据的文档提交）。设备：TG-Z02 / `AILABS_S1L`，Android 8.1（API 27），
 armeabi-v7a，1024×600 mdpi，Magisk root。
 
-结论：**T9-07 交付物齐备，真机验收 30 项检查全部通过（含重启）**。原厂 KWS / ASR / TTS /
+结论：**T9-07 交付物齐备，真机验收 30 项检查全部通过（含重启）**。
+
+> **T9-07R1（本轮）**：文字输入已接入 AI 对话，生产 APK 里的测试入口已移出。细节见文末
+> 「T9-07R1 补章」；本文第十节第 1 条限制已被 R1 修复。原厂 KWS / ASR / TTS /
 `:core` 与已验收的 T9-06R1 通道均未替换、未重构：Inbox 语义、Worker 队列、TTS 执行路径、
 守卫与 hook 一行未改，只新增了一个"只写、只给 UI 读"的事件出口。
 
@@ -207,7 +210,7 @@ ai_worker         305,520 B   sha256=94870a4b4a0c42443cdd30b17bb880b35b9e1965bff
 
 ## 十、明确未完成 / 已知限制（不得算作已通过）
 
-1. **文字消息只有"照读"，没有 AI 回答。** 沿用 T9-06 通道语义：UI 的文本被 worker 直接塞进 TTS 队列念出来。
+1. ~~**文字消息只有"照读"，没有 AI 回答。**~~ **已在 T9-07R1 修复**（`kind:"ask"` 走 AI，见文末补章）。原文如下，仅作历史记录：UI 的文本被 worker 直接塞进 TTS 队列念出来。
    要让它走 AI，需要给 Inbox 加"请模型回答"的新语义——那属于改已验收通道，本轮按禁止项没做。
    因此文字消息只显示用户气泡 + 播报状态，**不伪造助手回复**。
 2. **助手回复的文案来自现有技能。** 例：`time.query` 的文案是英文 `now 17:29`（T8-14 技能自带），
@@ -289,3 +292,120 @@ android/README.md         + T9-07 小节
 
 未改动：`session_ctrl` / `utterance_gate` / `intent_route` / `skill_dispatch` / `tg_inbox` /
 `tts_exec` / `hook_tts` / `hook_dialog` / 任何 init.rc 与 boot 脚本。
+
+---
+
+# T9-07R1 补章：文字输入接入 AI + 生产 APK 移除测试入口
+
+基线：`a9b419093d3478608849028529d3911a73eeb1a6`。本轮只修两件事，界面、语音链路、
+TTS Guard/Hook/`:core` 全部未动。
+
+## 一、结论
+
+- **文字输入现在真的走 AI**：UI → 私有 Inbox（`kind:"ask"`）→ Worker 复用
+  `conv_context` + DeepSeek Provider + `tts_enqueue` → 原厂 TTS。UI 同时显示问题与回答，
+  同一 `event_id` 贯穿 events / journal / play.public.json。
+- **生产 APK 不再有任何测试入口**：`ConversationActivity` 不读 Intent、没有 `onNewIntent`、
+  `handleIntent()` 已删除；自动化驱动 `TestConversationActivity` 只存在于 `-Test` 构建。
+- 真机 **43 项检查全部通过（0 失败）**：`evidence/t9-07r1/60_acceptance.txt`。
+
+## 二、请求类型协议（可校验，旧请求语义不变）
+
+```json
+{"v":1,"kind":"ask","event_id":"ui-1795516920210-d2d1","text":"What is the capital of France"}
+```
+
+| 字段 | 语义 |
+|---|---|
+| `kind` 省略 | **`say`**：T9-06 的语义——照念文本，不进模型。旧请求零变化 |
+| `kind:"say"` | 同上（显式） |
+| `kind:"ask"` | 让 Worker 用现有 AI 链路回答，回答再交给原厂 TTS |
+| 其它值 / 非字符串 | **拒绝**（`unsupported kind` / `kind must be a string`），回执 `ok:false` 并归档到 `rejected/` |
+
+回执（`result/<event_id>.json`）的 `stage` 直接说明这次被接受成了什么：
+`queue`（say）/ `ai`（ask）/ `existing`（幂等命中）。设备实测：
+`kind=say` → `{"ok":true,"stage":"queue"}` 且 tts_id 5246001 照念成功（`evidence/t9-07r1/80_legacy_say.txt`）。
+
+## 三、Worker 内的文字轮（复用，不复制）
+
+```
+inbox(ask) → aiw_inbox_enqueue：只入 FIFO（深度 4，满则明确拒绝），立刻回执
+           → 主循环 aiw_text_turn()（have_pend 时不抢语音轮，仍是一次一条）：
+                cv_build_messages(&w->cv, system_prompt, text, …)   ← 与语音同一份上下文
+                t6b_provider_complete_msgs(&w->prov, …)             ← 与语音同一个 Provider 配置
+                tts_enqueue(&rep)                                   ← 与语音同一个 TTS 队列/执行器
+                ef_note_enqueue(...)                                ← 自己的播报不会被回声过滤器当用户说话
+                cv_commit_turn(&w->cv, text, reply)                 ← 这一轮进入对话历史
+             → 发布 events：kind=turn, route=ai, status=ok, user=问题, reply=回答
+```
+
+失败（超时 / 网络 / 上下文构建失败 / TTS 入队失败）一律发布
+`status:"failed"`、`reply:""`、`reason:"..."`：**不入队、不写上下文、不伪造回答**，
+UI 显示为"回答失败：<真实原因>"。
+
+事件记录新增两个字段（`ui_events`）：`status`（`ok`/`failed`）与 `reason`。旧的读侧不受影响。
+
+## 四、UI 改动
+
+- 提交带 `kind:"ask"`；回执 `stage=ai` → 用户气泡显示"AI 正在回答…"；
+- `turn` 到达 → 追加助手气泡（同一 `event_id`，用户气泡已存在则不重复追加）；
+- `failed` → 助手气泡"回答失败：<reason>"，同时用户气泡状态改为"回答失败"（不会永远停在"正在回答"）；
+- 输入框增加 IME 发送键（`IME_ACTION_SEND`），真实键盘可以直接发送；
+- **删除** `handleIntent()` / `onNewIntent()`：生产代码里没有任何读 Intent 的路径。
+
+## 五、测试入口隔离
+
+| | 生产 `voice_ui.apk` | 测试 `voice_ui_test.apk` |
+|---|---|---|
+| 构建命令 | `build.ps1` | `build.ps1 -Test` |
+| 源码 | `src/` | `src/` + `src_test/` |
+| Manifest | `AndroidManifest.xml` | `AndroidManifest.test.xml` |
+| 含 `TestConversationActivity` | **否**（dexdump 验证） | 是 |
+| 响应 `--es text/--ez auto/--es action stop` | **否**（实测无请求、无停止） | 是（含中文预填） |
+
+真机证据：`[PASS] the production dex contains no driver class` / `[PASS] the test dex does contain it` /
+`[PASS] passing --es text/--ez auto to the production APK produced no request` /
+`[PASS] the driver activity does not exist in the production APK` /
+`[PASS] in the test build the driver prefills and sends (Chinese included)`（截图 `77_f_test_build.png`）。
+
+## 六、Host 测试
+
+| 套件 | 结果 |
+|---|---|
+| **T9-07R1 新增**（kind 协议 / `status`+`reason`）`run_t9_07r1_kind_tests.ps1` | **43 / 43** `evidence/t9_07r1_kind_unit_test.log` |
+| T9-07 回归（ui_events） | 60 / 60 |
+| T9-06 回归（inbox 70 项） | 70 / 70 |
+
+## 七、真机验收（43 项，全过）
+
+`tests/t9_07r1_device_acceptance.ps1`：A–E 全程用**生产 APK**，问题用真实键盘输入、发送是真实点击。
+
+| 项 | 结论 | 关键证据（`evidence/t9-07r1/60_acceptance.txt`） |
+|---|---|---|
+| A 文字 → AI → 原厂 TTS | 通过 | 问 "What is the capital of France" → 答 "Paris is the capital of France."；`text turn ok provider=deepseek`；journal 同一 event_id `outcome=ok`；UI 两条气泡（`71_a_text_ai.png`） |
+| B 连续两问、上下文 | 通过 | "Remember the codeword ORANGE." → "What is the code word" → 答 "The code word is ORANGE."，两轮事件不同、顺序正确（`72_b_context.png`） |
+| C 语音回归 | 通过 | 唤醒词 → 原厂 ASR（session 1969182）→ 答 "now 18:42" → 原厂 TTS；UI 显示识别文本与回答（`73_c_voice.png`） |
+| D 真实失败 | 通过 | Worker 以 100 ms 超时重启后提问 → `status:"failed"`、`reply:""`、`reason:"deepseek timeout after 103ms"`，未入队；UI 显示"回答失败：…"（`74_d_failure.png`） |
+| E 安全 | 通过 | 测试 Intent 无效；`dumpsys` 与 `aapt2` 均无任何权限；shell uid 写 Inbox → `Permission denied`；root 造的"外 uid"请求被丢弃且不产生事件 |
+| F 构建隔离 | 通过 | dex/manifest 对比 + 测试构建实跑中文提问（"请用一句话介绍巴黎" → "巴黎是法国的首都，…"）后恢复生产 APK，仍不响应 Intent |
+
+## 八、构建产物
+
+| 产物 | 大小 | SHA256 |
+|---|---|---|
+| `out/ai_worker`（ARM32，0 warning） | 309,968 B | `f9bc834cd6b9e0ce9fab2c4a7fc3fbc333cef86c30811ee9ef57a35c24b11bf7` |
+| `out/libtg_ttsguard.so`（未改） | 42,712 B | `67d96b38870bb540a9d7f11b6e902739e5b2fcb92eaacb095e5d3d7bde0cf9e0` |
+| `t9_07_ui/dist/voice_ui.apk`（生产） | 33,165 B | `9eb6444c1dbe185e00f535a204cbc4e216f495dcfd9cd7acd9f9a42d0e3f7714` |
+| `t9_07_ui/dist/voice_ui_test.apk`（测试） | 33,165 B | `89541045f18cb4bca684aed0db5e31d85f4252072e46a577d8290c2185b93a96` |
+
+## 九、本轮仍未做到 / 需要知道的事
+
+1. **文字轮不重试**：ASR 轮失败会退避重试，文字轮失败会把 `failed` 直接交给 UI（用户重发即可）。
+   这是有意的：重试会让 UI 的"失败"状态变得不可信。
+2. **设备输入法是拼音 IME**：`input text` 会把部分英文单词转成中文（本轮验收里
+   出现过 `Tell么啊story about the sea`）。这是设备侧输入法行为，不是应用问题；
+   验收脚本因此对"问题文本是否原样到达"做校验并在被改写时重试，失败项（D）只依赖 Worker 的结论。
+   真实用户用键盘打字不受影响。
+3. **`say` 通道保留但不被产品 UI 使用**：UI 只发 `ask`；`say` 留给旧脚本/回归，语义未变。
+4. 其余限制（无 barge-in、第三方覆盖层、重装 APK 会变 uid 需重新绑定、事件目录只保留最近 512 条、
+   UI 首次启动不回放旧事件）与 T9-07 第十节一致，本轮未改变。

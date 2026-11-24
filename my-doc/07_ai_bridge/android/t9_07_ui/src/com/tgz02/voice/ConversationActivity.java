@@ -48,7 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class ConversationActivity extends Activity
+public class ConversationActivity extends Activity
         implements VoiceBridgeClient.Listener {
 
     static final String TAG = "T907UI";
@@ -87,15 +87,6 @@ public final class ConversationActivity extends Activity
         root.setFocusableInTouchMode(true);
         root.requestFocus();
         renderSession(store.current());
-        handleIntent(getIntent());
-    }
-
-    @Override
-    protected void onNewIntent(Intent it)
-    {
-        super.onNewIntent(it);
-        setIntent(it);
-        handleIntent(it);
     }
 
     @Override
@@ -111,26 +102,6 @@ public final class ConversationActivity extends Activity
     {
         client.stopPolling();
         super.onStop();
-    }
-
-    /**
-     * Test hooks (the device acceptance script drives the real widgets through them):
-     *   --es text "..."  prefill the input
-     *   --ez auto true   press 发送 700 ms after the activity is up
-     *   --es action stop press 停止 700 ms after the activity is up
-     * Everything else is what a normal tap does.
-     */
-    void handleIntent(Intent it)
-    {
-        if (it == null) return;
-        String text = it.getStringExtra("text");
-        if (text != null) input.setText(text);
-        String action = it.getStringExtra("action");
-        if ("stop".equals(action)) {
-            h.postDelayed(new Runnable() { public void run() { onStopClicked(); } }, 700);
-        } else if (it.getBooleanExtra("auto", false)) {
-            h.postDelayed(new Runnable() { public void run() { onSendClicked(); } }, 700);
-        }
     }
 
     /* ---------------------------------------------------------------------- views */
@@ -215,6 +186,7 @@ public final class ConversationActivity extends Activity
         input.setTextColor(Ui.TEXT);
         input.setTextSize(15f);
         input.setSingleLine(true);
+        input.setImeOptions(EditorInfo.IME_ACTION_SEND);
         input.setBackground(Ui.round(this, Ui.BUBBLE_ASST, 10f));
         input.setPadding(Ui.dp(this, 12), Ui.dp(this, 8), Ui.dp(this, 12), Ui.dp(this, 8));
         input.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -348,6 +320,8 @@ public final class ConversationActivity extends Activity
         String tail = "";
         if (SessionStore.ROLE_USER.equals(m.role)) {
             if (SessionStore.S_PENDING.equals(st)) tail = " · 提交中…";
+            else if (SessionStore.S_ASKED.equals(st)) tail = " · AI 正在回答…";
+            else if (SessionStore.S_TURN_FAILED.equals(st)) tail = " · 回答失败";
             else if (SessionStore.S_QUEUED.equals(st)) tail = " · 已提交";
             else if (SessionStore.S_FAILED.equals(st)) tail = " · 未接受";
             else if (SessionStore.S_PLAYED.equals(st)) tail = " · 已播报";
@@ -357,7 +331,7 @@ public final class ConversationActivity extends Activity
             else if (SessionStore.S_PLAYING.equals(st)) tail = " · 正在播报…";
             else if (SessionStore.S_PLAYED.equals(st)) tail = " · 已播报";
             else if (SessionStore.S_STOPPED.equals(st)) tail = " · 已停止";
-            else if (SessionStore.S_FAILED.equals(st)) tail = " · 播报失败";
+            else if (SessionStore.S_FAILED.equals(st)) tail = " · 回答失败";
         }
         return when + tail;
     }
@@ -449,7 +423,12 @@ public final class ConversationActivity extends Activity
     {
         h.post(new Runnable() {
             public void run() {
-                store.setState(r.eventId, r.ok ? SessionStore.S_QUEUED : SessionStore.S_FAILED, -1);
+                /* stage "ai" means the worker took the question and will answer it through the
+                 * provider; "queue"/"existing" means the text itself was queued for playback */
+                String st = !r.ok ? SessionStore.S_FAILED
+                           : ("ai".equals(r.stage) ? SessionStore.S_ASKED
+                                                   : SessionStore.S_QUEUED);
+                store.setState(r.eventId, st, -1);
                 refreshMeta(r.eventId);
                 if (!r.ok) {
                     toast("未接受：" + (r.reason.length() > 0 ? r.reason : r.stage));
@@ -464,19 +443,39 @@ public final class ConversationActivity extends Activity
     {
         h.post(new Runnable() {
             public void run() {
-                boolean known = store.hasEvent(t.eventId);
-                if (!known && "turn".equals(t.kind)) {
-                    if (t.user.length() > 0) {
-                        store.append(SessionStore.ROLE_USER, t.user, t.eventId, SessionStore.S_PLAYED);
+                if ("turn".equals(t.kind)) {
+                    /* The user bubble may already exist (a text question this app submitted);
+                     * the answer bubble never does, so both paths converge here. */
+                    boolean haveUser = store.hasRole(t.eventId, SessionStore.ROLE_USER);
+                    boolean haveAsst = store.hasRole(t.eventId, SessionStore.ROLE_ASST);
+                    if (!haveUser && t.user.length() > 0) {
+                        store.append(SessionStore.ROLE_USER, t.user, t.eventId,
+                                     SessionStore.S_PLAYED);
                         addBubble(lastMsg());
                     }
-                    if (t.reply.length() > 0) {
-                        store.append(SessionStore.ROLE_ASST, t.reply, t.eventId, SessionStore.S_QUEUED);
-                        addBubble(lastMsg());
+                    if (!haveAsst) {
+                        if (t.failed()) {
+                            /* the question was accepted but the answer never came: say so on the
+                             * question as well, instead of leaving it at "AI 正在回答…" forever */
+                            store.setState(t.eventId, SessionStore.S_TURN_FAILED, -1);
+                            refreshMeta(t.eventId);
+                            /* a real failure is shown as a failure; nothing is presented as an answer */
+                            String why = t.reason.length() > 0 ? t.reason : "unknown error";
+                            store.append(SessionStore.ROLE_ASST, "回答失败：" + why, t.eventId,
+                                         SessionStore.S_FAILED);
+                            addBubble(lastMsg());
+                        } else if (t.reply.length() > 0) {
+                            store.setState(t.eventId, SessionStore.S_QUEUED, -1);
+                            refreshMeta(t.eventId);
+                            store.append(SessionStore.ROLE_ASST, t.reply, t.eventId,
+                                         SessionStore.S_QUEUED);
+                            addBubble(lastMsg());
+                            activeEventId = t.eventId;
+                        }
                     }
                     updateSubtitle();
-                    if (t.reply.length() > 0) activeEventId = t.eventId;
-                } else if (!known && "submit".equals(t.kind) && t.user.length() > 0) {
+                } else if ("submit".equals(t.kind) && t.user.length() > 0
+                           && !store.hasRole(t.eventId, SessionStore.ROLE_USER)) {
                     /* a submit from another UI instance: show it, nobody local owns it */
                     store.append(SessionStore.ROLE_USER, t.user, t.eventId, SessionStore.S_QUEUED);
                     addBubble(lastMsg());

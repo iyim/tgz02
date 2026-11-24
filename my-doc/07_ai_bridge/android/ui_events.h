@@ -67,6 +67,9 @@ typedef struct {
     const char *route;         /* "ai" | "skill" | "submit"                             */
     const char *skill;         /* skill name when route=skill (may be NULL)             */
     int         reply_bytes;
+    /* T9-07R1: a failed AI turn is published as a failed turn, never as an answer. */
+    const char *status;        /* "ok" (default) | "failed"                             */
+    const char *reason;        /* short reason when status=failed (may be NULL)         */
 } ue_turn;
 
 void ue_defaults(ue_ctx *u);

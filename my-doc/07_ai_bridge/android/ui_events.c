@@ -242,6 +242,8 @@ int ue_publish(ue_ctx *u, const ue_turn *t)
     static char ev_esc[UE_MAX_ID * 6 + 16];
     static char route_esc[48];
     static char skill_esc[64];
+    static char status_esc[16];
+    static char reason_esc[96 * 6 + 16];
     static char user_raw[UE_MAX_TEXT + 1];
     static char reply_raw[UE_MAX_TEXT + 1];
     static char sess_raw[UE_MAX_ID + 1];
@@ -265,12 +267,15 @@ int ue_publish(ue_ctx *u, const ue_turn *t)
     (void)ue_copy_trunc(ev_raw, sizeof(ev_raw), t->event_id != NULL ? t->event_id : "");
     (void)ue_copy_trunc(route_esc, sizeof(route_esc), t->route != NULL ? t->route : "");
     (void)ue_copy_trunc(skill_esc, sizeof(skill_esc), t->skill != NULL ? t->skill : "");
+    (void)ue_copy_trunc(status_esc, sizeof(status_esc),
+                        (t->status != NULL) ? t->status : "ok");
 
     /* the short fields are already truncated, so escaping them cannot overflow */
     wu_json_escape(sess_esc, sizeof(sess_esc), sess_raw);
     wu_json_escape(ev_esc, sizeof(ev_esc), ev_raw);
     wu_json_escape(user_esc, sizeof(user_esc), user_raw);
     wu_json_escape(reply_esc, sizeof(reply_esc), reply_raw);
+    wu_json_escape(reason_esc, sizeof(reason_esc), t->reason != NULL ? t->reason : "");
 
     seq = u->seq + 1;
     wu_time_str(ts, sizeof(ts));
@@ -278,16 +283,16 @@ int ue_publish(ue_ctx *u, const ue_turn *t)
     n = snprintf(js, sizeof(js),
                  "{\"v\":1,\"seq\":%lld,\"ts\":\"%s\",\"ts_ms\":%lld,"
                  "\"kind\":\"%s\",\"session\":\"%s\",\"event_id\":\"%s\","
-                 "\"route\":\"%s\",\"skill\":\"%s\","
+                 "\"route\":\"%s\",\"skill\":\"%s\",\"status\":\"%s\","
                  "\"user\":\"%s\",\"user_bytes\":%d,\"user_cut\":%d,"
-                 "\"reply\":\"%s\",\"reply_bytes\":%d,\"reply_cut\":%d}\n",
+                 "\"reply\":\"%s\",\"reply_bytes\":%d,\"reply_cut\":%d,\"reason\":\"%s\"}\n",
                  seq, ts, wu_wall_ms(),
                  (t->kind != NULL) ? t->kind : "turn",
                  sess_esc, ev_esc,
-                 route_esc, skill_esc,
+                 route_esc, skill_esc, status_esc,
                  user_esc, (int)strlen(user_raw), user_cut,
                  reply_esc, (t->reply_bytes > 0) ? t->reply_bytes : (int)strlen(reply_raw),
-                 reply_cut);
+                 reply_cut, reason_esc);
     if (n <= 0 || n >= (int)sizeof(js)) {
         ue_set_error(u, "record too large", "");
         u->publish_err++;
