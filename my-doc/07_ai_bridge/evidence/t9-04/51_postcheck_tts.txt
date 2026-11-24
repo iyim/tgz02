@@ -1,0 +1,14 @@
+﻿=== date
+Tue Nov 24 14:59:17 CST 2026
+=== play through the accepted provider channel
+tts_exec: enqueued event=t904postcheck bytes=31 queue=/data/local/tmp/t5_bridge/tts/queue ok=true
+=== play / complete feedback
+11-24 14:59:23.080 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsStart:141 [1765] sessionId = 5245513, isStreaming = 1, tts = 设备状态自检 播放正常
+11-24 14:59:23.140 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandleTtsFeedback:389 [1645] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = play,type = tts,agmcId(tts_id) =5245513
+11-24 14:59:23.148 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsEnd:220 [1765] sessionId = 5245513
+11-24 14:59:25.548 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandleTtsFeedback:389 [1645] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = complete,type = tts,agmcId(tts_id) =5245513
+11-24 14:59:25.984 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandleTtsFeedback:389 [1645] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = interupt,type = tts,agmcId(tts_id) =5245513
+=== worker journal tail (did the AI side see it?)
+{"ts":"2026-11-24T14:45:24.548+0800","kind":"tts","event_id":"t904ctrl","tts_id":5245496,"outcome":"ok","dur_ms":2575,"text_bytes":25,"attempts":1}
+{"ts":"2026-11-24T14:59:25.569+0800","kind":"tts","event_id":"t904postcheck","tts_id":5245513,"outcome":"ok","dur_ms":2549,"text_bytes":31,"attempts":1}
+=== END

@@ -1,0 +1,42 @@
+﻿=== date
+Tue Nov 24 14:59:04 CST 2026
+=== boot / power
+  mWakefulness=Dreaming
+=== factory :core
+core_pid=1178
+  /data/local/tmp/t7/libtg_ttsguard_t8156.so
+  /data/local/tmp/t8/libtg_hook.so
+=== init services
+tg_hook_sup=running
+tg_guard_sup=running
+tg_stack=stopped
+tg_supervisor=
+=== our resident stack
+tgb_bridge=1602
+ai_worker=2580
+root          2388  2373  863396  34184 futex_wait_queue_me b0433ce8 S app_process
+root         19254 19252  752516  30828 0            ab59accc R app_process
+=== boot config on /system
+-rw-r--r-- 1 root root 2486 2026-11-24 14:34 /system/etc/init/tg_stack.rc
+/dev/block/mmcblk0p19 on /system type ext4 (ro,seclabel,relatime,data=ordered)
+=== rollback material
+total 16
+-rw-r--r-- 1 root root  262 2026-11-24 14:34 deploy.log
+-rw-r--r-- 1 root root  150 2026-11-24 14:34 deploy.stamp
+-rw-r--r-- 1 root root   83 2026-11-24 14:34 sha256.before
+-rw-r--r-- 1 root root    0 2026-11-24 12:52 sha256.before.damaged.20261124_143427
+-rw-r--r-- 1 root root 2114 2026-11-24 12:26 tg_supervisor.rc
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  tg_supervisor.rc
+=== factory app still installed and enabled
+package:com.alibaba.ailabs.genie.smartapp
+    User 0: ceDataInode=-4294959359 installed=true hidden=false suspended=false stopped=false notLaunched=false enabled=0 instant=false virtual=false
+adb : Failed to write while dumping service package: Broken pipe
+所在位置 行:1 字符: 296
++ ... -Null; $o = adb -s $d shell "su 0 sh -c 'sh /data/local/tmp/t9/t9_04/ ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Failed to write...ge: Broken pipe:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+=== our probe app (test artifact, removable)
+    userId=10055
+=== END
