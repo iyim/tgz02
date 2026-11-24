@@ -70,35 +70,27 @@
 
 ---
 
-## 四、本轮发现的一个缺陷（不属于 T9-08B 范围，必须记录）
+## 四、停止播报的缺陷（KF-1）：定位见独立文档，**证据已更正**
 
-**主屏的 `停止播报` 按一次会被"重播"顶回来。**
+`停止播报` 目前不能算"终止操作"：UI 的停止只走 provider `insert(method=5)`，执行器不知道这是
+用户主动停止；工厂反馈若落成 `onNotify status=3 → "error"`，`TtsExec` 会把它当成可重试的播放失败，
+把**同一个 event_id** 重新入队，2 秒后再播一遍。
 
-原始事实（`evidence/t9-08b/83_after_stop.png` 与 journal）：
+**证据更正（审查发现的）**：本报告上一版引用的 `error → retry → interrupted` 来自 21:04 的一次
+**手动运行**，不在本次提交的验收日志里。本次 `evidence/t9-08b/60_acceptance.txt` 中停止测试的
+事件是：
 
 ```
-{"kind":"tts","event_id":"ui-1795525441851-96be","tts_id":5246192,"outcome":"error","dur_ms":16120,"attempts":1}
-{"kind":"retry","event_id":"ui-1795525441851-96be","attempts":1,"outcome":"error"}
-{"kind":"tts","event_id":"ui-1795525441851-96be","tts_id":5246196,"outcome":"interrupted","dur_ms":23265,"attempts":2}
+{"kind":"tts","event_id":"saystop-214431","tts_id":5246480,"outcome":"interrupted","dur_ms":8695,"attempts":1}
 ```
 
-- UI 的停止走 T9-05 已验收的 provider `insert(method=5)`；
-- 原厂把这次中断报成 `error`（不是 `interrupted`/`stopped`），`TtsExec` 因此把该条目**回队列重播**
-  （`TtsExec.java` 的 `retry_*` 路径），所以第一次按停止之后文本会再念一遍；
-- 第二次按停止落在重播里，得到 `interrupted`，才真正结束。
+即本次**没有重现**重播。正确表述是：机制存在且有一次完整 journal 可证（21:04 那次），但不是每次
+都发生（`interrupted` 与 `error` 两条日志谁先到，决定终态还是重试）。因此既不能说已修复，也不能
+把"这次没重播"当成通过。
 
-这不是 T9-08B 引入的（T9-07R1 的停止验收走同一条路径，当时也出现过 `retry` 行），但现在
-"停止播报"是主屏唯一的人机控制，所以它必须被修。两个候选修法（不在本轮改动）：
-
-1. `TtsExec`：当这次播放是被 stop 请求或 provider 明确报 `interrupted` 时，**不回队列**；
-   只在"开播前就失败"时重试；
-2. 或给 UI 一个受控的 stop 通道（如 `cfg/inbox` 增加 `op:stop`），由 worker 写
-   `<queue>/control/stop` —— 这条路径在 worker 里本来就会"跳过后续项"。
-
-建议放到 T9-08B-R1 或 T9-08C 一起做，二选一即可。
-
----
-
+完整定位（三条停止路径、outcome 映射、终态/重试分岔、三个缺陷点的行号、两个可选修复落点、
+修复后的 7 条验收）见 **[T9_08B_R1_STOP_TRACE.md](T9_08B_R1_STOP_TRACE.md)**。本轮只定位，
+未改代码。
 ## 五、未做 / 仍然是占位
 
 - 大模型配置、长期记忆：设置页里只有"尚未实现（计划于 T9-08C / T9-08D）"的占位行；
