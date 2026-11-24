@@ -21,6 +21,7 @@
 #include "provider.h"
 #include "skill_dispatch.h"
 #include "tg_inbox.h"
+#include "ui_events.h"
 #include "utterance_gate.h"
 #include "worker_status.h"
 
@@ -77,6 +78,15 @@ typedef struct {
     /* T9-06：UI 提交通道（--inbox 打开；默认关闭 = 行为与 T8-15.6 完全一致） */
     int         inbox_enabled;
     ti_cfg      inbox;
+    /* T9-07：产品 UI 的只读事件/状态出口（--ui-events 打开；默认关闭）。
+     * 打开后 worker 额外写出 <dir>/events/<seq>.json 与 <dir>/status.public.json，
+     * 内容只有"用户说了什么 / 回答是什么 / 状态如何"，绝不含 API key、请求体、
+     * 也不改变播报与消费行为。写失败只记计数，不阻塞主循环。 */
+    int         ui_events_enabled;
+    char        ui_events_dir[T6B_PATH_MAX];   /* 空 = /data/local/tmp/t9_ui          */
+    int         ui_events_gid;                 /* 事件目录/文件的属组（UI 的 gid）      */
+    int         ui_events_max_files;           /* 保留的事件文件数                     */
+    int         ui_status_interval_ms;         /* status.public.json 刷新间隔           */
     /* T7-01 */
     char        conf_path[T6B_PATH_MAX];     /* 可选：配置文件路径（空 = 没有） */
     char        context_file[T6B_PATH_MAX];  /* 上下文文件（空 = state_dir/context.json） */

@@ -1,0 +1,2 @@
+﻿# device-side shell scripts must stay LF in the repository: a stray CR breaks `sh` on Android
+*.sh text eol=lf

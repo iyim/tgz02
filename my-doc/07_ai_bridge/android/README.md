@@ -310,3 +310,28 @@ su -c 'sh /data/local/tmp/t7/run_t7_05.sh guard-start'
 su -c 'sh /data/local/tmp/t7/run_t7_05.sh guard-status'
 su -c 'sh /data/local/tmp/t7/run_t7_05.sh rollback'
 ```
+## 产品 UI 的事件出口（T9-07）
+
+worker 侧新增两个只写、且只对 UI 应用可读的产物（默认关闭，显式 `--ui-events DIR` 才打开）：
+
+| 产物 | 内容 | 权限 |
+|---|---|---|
+| `<DIR>/events/<12 位序号>.json` | 每条事件：`kind`（`turn` / `submit`）、`session`、`event_id`、`user`（原厂 ASR 原文或 UI 提交的文本）、`reply`（本轮回答）、`route`、`skill` | 目录 `0750 root:<gid>`，文件 `0640 root:<gid>` |
+| `<DIR>/status.public.json` | worker / AI / 会话状态的对外子集（不含 key、请求体、消息正文） | 同上 |
+
+- 原子性：tmp + fsync + rename（再 fsync 目录），读侧永远看不到半条记录；
+- 序号：从目录里已有的最大序号继续，跨重启单调；上限于 `--ui-events-max-files`（默认 512，按序号淘汰最旧）；
+- 文本：按码点截断到 1024 B，被截断时记录 `user_cut` / `reply_cut` = 1；
+- 归属：`--ui-events-gid` 取 UI 应用的 gid，设备上其他应用读不到会话内容；chown 失败则整个出口拒绝启动（不降级成世界可读）；
+- 语义：只在"回答已入队 + 消费偏移已落盘"之后发布；发布失败只记计数，不推进偏移、不阻塞主循环；
+- 关闭时行为与 T8-15.6 一致（既有回归用例不变）。
+
+UI 只读这些文件，不解析 worker 日志：
+
+```
+su -c 'sh /data/local/tmp/t9/t9_07/t9_07_deploy.sh'                     # 装新 worker + wrapper
+su -c 'sh /data/local/tmp/t9/t9_07/dev_30_channel_owner.sh'              # 把 inbox/事件属主绑到 com.tgz02.voice 的 uid
+powershell -ExecutionPolicy Bypass -File ..\tests\run_t9_07_ui_events_tests.ps1
+powershell -ExecutionPolicy Bypass -File ..\tests\t9_07_device_acceptance.ps1
+su -c 'sh /data/local/tmp/t9/t9_07/t9_07_restore.sh' [--purge-events]    # 回滚
+```

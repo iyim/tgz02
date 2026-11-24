@@ -31,4 +31,16 @@ if [ -d "$UI/inbox" ]; then
     [ -n "${AIW_INBOX_RATE:-}" ] && A="$A --inbox-rate $AIW_INBOX_RATE"
 fi
 
+# T9-07: the product UI needs to READ what the worker saw (ASR text) and answered.
+# The events live in $UI/events, group-owned by the UI app's gid so that no other app
+# on the device can read the conversation, and root still writes them.
+if [ -d "$UI" ]; then
+    A="$A --ui-events $UI"
+    if [ -f "$UI/allowed_uids" ]; then
+        G=$(head -n 1 "$UI/allowed_uids" 2>/dev/null | tr -dc '0-9')
+        [ -n "$G" ] && A="$A --ui-events-gid $G"
+    fi
+    [ -n "${AIW_UI_STATUS_MS:-}" ] && A="$A --ui-status-every-ms $AIW_UI_STATUS_MS"
+fi
+
 exec sh "$D/run_ai_worker.sh.accepted" "$cmd" $A "$@"

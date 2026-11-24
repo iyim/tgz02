@@ -1,0 +1,437 @@
+﻿# T9-07 real-device acceptance
+# host time : 2026-11-24 17:26:16
+# serial    : 192.168.1.9:5555
+# apk       : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t9_07_ui\build\voice_ui.apk  sha256=15a5e1c5a09263d662487d50d9b278cf8c134f4727fd1f6b83910936aa9dd3be
+
+================================================================
+== 0 precondition: device, worker, channel owner
+================================================================
+AILABS_S1L
+
+== worker ==
+pid=2546
+cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10060 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10060 
+== play.public.json ==
+{
+  "v": 1,
+  "pid": 2423,
+  "updated_ms": 1795512336254,
+  "state": "idle",
+  "event_id": "ui-1795512332143-c459",
+  "tts_id": 5244146,
+  "started_ms": 1795512332466,
+  "finished_ms": 1795512336254,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}
+stop_requests=0
+0
+== status.public.json ==
+{"v":1,"ts":"2026-11-24T17:26:17","ts_ms":1795512377729,"pid":2546,"worker":"running","uptime_ms":80565,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"idle","sc":"IDLE","round":0,"session":"","listening":0,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":1,"inbox_rejected":0,"gate_released":0,"route_native":0,"ui_published":1,"ui_errors":0}}
+== events (last 3) ==
+-- 000000000041.json
+{"v":1,"seq":41,"ts":"2026-11-24T17:23:16","ts_ms":1795512196514,"kind":"turn","session":"1969116","event_id":"t6-1178-1969116-g15","route":"skill","skill":"time.query","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 17:23","reply_bytes":9,"reply_cut":0}
+-- 000000000042.json
+{"v":1,"seq":42,"ts":"2026-11-24T17:23:52","ts_ms":1795512232417,"kind":"turn","session":"1969125","event_id":"t6-1178-1969125-g16","route":"skill","skill":"time.query","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 17:23","reply_bytes":9,"reply_cut":0}
+-- 000000000043.json
+{"v":1,"seq":43,"ts":"2026-11-24T17:25:32","ts_ms":1795512332349,"kind":"submit","session":"","event_id":"ui-1795512332143-c459","route":"submit","skill":"","user":"T9-07 验收八 重启后仍然可用","user_bytes":37,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+== queue / inflight ==
+inflight: 
+== journal (last 6, total 921) ==
+{"ts":"2026-11-24T17:23:00.841+0800","kind":"tts","event_id":"ui-1795512173628-f0ea","tts_id":5245910,"outcome":"error","dur_ms":6993,"text_bytes":155,"attempts":1}
+{"ts":"2026-11-24T17:23:00.883+0800","kind":"retry","event_id":"ui-1795512173628-f0ea","attempts":1,"outcome":"error"}
+{"ts":"2026-11-24T17:23:12.674+0800","kind":"tts","event_id":"ui-1795512173628-f0ea","tts_id":5245914,"outcome":"interrupted","dur_ms":9757,"text_bytes":155,"attempts":2}
+{"ts":"2026-11-24T17:23:18.533+0800","kind":"tts","event_id":"t6-1178-1969116-g15","tts_id":5245920,"outcome":"ok","dur_ms":1935,"text_bytes":9,"attempts":1}
+{"ts":"2026-11-24T17:23:54.535+0800","kind":"tts","event_id":"t6-1178-1969125-g16","tts_id":5245929,"outcome":"ok","dur_ms":2055,"text_bytes":9,"attempts":1}
+{"ts":"2026-11-24T17:25:36.231+0800","kind":"tts","event_id":"ui-1795512332143-c459","tts_id":5244146,"outcome":"ok","dur_ms":3753,"text_bytes":37,"attempts":1}
+== app ==
+uid_of_voice=    userId=10060
+inbox=drwx------ 2 u0_a60 u0_a60 4096 2026-11-24 17:25 /data/local/tmp/t9_ui/inbox
+events=drwxr-x--- 2 root u0_a60 4096 2026-11-24 17:25 /data/local/tmp/t9_ui/events
+EXIT=0
+
+   [PASS] worker is running
+   [PASS] the channel owner is the installed app (uid 10060)
+   [PASS] worker publishes the UI event outlet
+   [PASS] event files are readable by the app group only
+
+================================================================
+== 1 install and launch: the product conversation screen
+================================================================
+Performing Streamed Install
+Success
+   [PASS] APK installs on top of the existing one
+   (app data cleared: the history starts empty for this run)
+   resolved com.tgz02.voice uid=10060
+== T9-07 channel owner = new uid 10060 ==
+   inbox: drwx------ 2 u0_a60 u0_a60 4096 2026-11-24 17:25 /data/local/tmp/t9_ui/inbox
+   allowed_uids: 10060
+   restarting worker pid=2546 so it reads the new allowlist
+started: pid=4372 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T17:26:25 lock acquired; previous owner pid=2546 no longer holding it
+[aiw] 2026-11-24T17:26:25 ui events: dir=/data/local/tmp/t9_ui events=/data/local/tmp/t9_ui/events gid=10060 perms=0640 root:<gid> / 0750 keep=512 seq=43
+[aiw] 2026-11-24T17:26:25 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+   worker pid=4372
+   cmdline: /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10060 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10060 
+   events dir: drwxr-x--- 2 root u0_a60 4096 2026-11-24 17:25 /data/local/tmp/t9_ui/events
+== done ==
+EXIT=0
+
+   app uid=10060  allowed_uids=10060
+   [PASS] the app uid is 10060
+mCurrentFocus=Window{7216f76 u0 com.tgz02.voice/com.tgz02.voice.ConversationActivity}
+   [PASS] the conversation screen is foreground
+   screenshot: 60_a_home.png
+
+================================================================
+== 2 one typed message -> worker -> factory TTS
+================================================================
+   journal baseline = 921
+   [PASS] the send button on the real screen accepted the message
+== worker ==
+pid=4372
+cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10060 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10060 
+== play.public.json ==
+{
+  "v": 1,
+  "pid": 2423,
+  "updated_ms": 1795512403172,
+  "state": "idle",
+  "event_id": "ui-1795512399345-abdc",
+  "tts_id": 5244152,
+  "started_ms": 1795512399500,
+  "finished_ms": 1795512403172,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}
+stop_requests=0
+0
+== status.public.json ==
+{"v":1,"ts":"2026-11-24T17:26:49","ts_ms":1795512409960,"pid":4372,"worker":"running","uptime_ms":24914,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"listening","sc":"WAKE_PENDING","round":0,"session":"","listening":1,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":1,"inbox_rejected":0,"gate_released":0,"route_native":0,"ui_published":1,"ui_errors":0}}
+== events (last 3) ==
+-- 000000000042.json
+{"v":1,"seq":42,"ts":"2026-11-24T17:23:52","ts_ms":1795512232417,"kind":"turn","session":"1969125","event_id":"t6-1178-1969125-g16","route":"skill","skill":"time.query","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 17:23","reply_bytes":9,"reply_cut":0}
+-- 000000000043.json
+{"v":1,"seq":43,"ts":"2026-11-24T17:25:32","ts_ms":1795512332349,"kind":"submit","session":"","event_id":"ui-1795512332143-c459","route":"submit","skill":"","user":"T9-07 验收八 重启后仍然可用","user_bytes":37,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+-- 000000000044.json
+{"v":1,"seq":44,"ts":"2026-11-24T17:26:39","ts_ms":1795512399439,"kind":"submit","session":"","event_id":"ui-1795512399345-abdc","route":"submit","skill":"","user":"T9-07 验收二 一条文字消息","user_bytes":34,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+== queue / inflight ==
+inflight: 
+== journal (last 6, total 922) ==
+{"ts":"2026-11-24T17:26:43.167+0800","kind":"tts","event_id":"ui-1795512399345-abdc","tts_id":5244152,"outcome":"ok","dur_ms":3653,"text_bytes":34,"attempts":1}
+== app ==
+uid_of_voice=    userId=10060
+inbox=drwx------ 2 u0_a60 u0_a60 4096 2026-11-24 17:26 /data/local/tmp/t9_ui/inbox
+events=drwxr-x--- 2 root u0_a60 4096 2026-11-24 17:26 /data/local/tmp/t9_ui/events
+EXIT=0
+
+   [PASS] the worker published the submitted text as an event
+   [PASS] the factory TTS reported outcome=ok for that text
+   screenshot: 61_b_send.png
+
+================================================================
+== 3 three messages keep their order
+================================================================
+   [PASS] message 1 of the burst was accepted
+   (attempt 0: no new event after the tap, retrying)
+   [PASS] message 2 of the burst was accepted
+   (attempt 0: no new event after the tap, retrying)
+   [PASS] message 3 of the burst was accepted
+== worker ==
+pid=4372
+cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10060 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10060 
+== play.public.json ==
+{
+  "v": 1,
+  "pid": 2423,
+  "updated_ms": 1795512483290,
+  "state": "idle",
+  "event_id": "ui-1795512479779-b2df",
+  "tts_id": 5244169,
+  "started_ms": 1795512479884,
+  "finished_ms": 1795512483290,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}
+stop_requests=0
+0
+== status.public.json ==
+{"v":1,"ts":"2026-11-24T17:28:27","ts_ms":1795512507229,"pid":4372,"worker":"running","uptime_ms":122183,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"idle","sc":"IDLE","round":0,"session":"","listening":0,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":4,"inbox_rejected":0,"gate_released":0,"route_native":0,"ui_published":4,"ui_errors":0}}
+== events (last 3) ==
+-- 000000000045.json
+{"v":1,"seq":45,"ts":"2026-11-24T17:26:58","ts_ms":1795512418281,"kind":"submit","session":"","event_id":"ui-1795512418168-eae7","route":"submit","skill":"","user":"T9-07 验收三 第一条","user_bytes":25,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+-- 000000000046.json
+{"v":1,"seq":46,"ts":"2026-11-24T17:27:26","ts_ms":1795512446511,"kind":"submit","session":"","event_id":"ui-1795512446437-a6f4","route":"submit","skill":"","user":"T9-07 验收三 第二条","user_bytes":25,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+-- 000000000047.json
+{"v":1,"seq":47,"ts":"2026-11-24T17:27:59","ts_ms":1795512479861,"kind":"submit","session":"","event_id":"ui-1795512479779-b2df","route":"submit","skill":"","user":"T9-07 验收三 第三条","user_bytes":25,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+== queue / inflight ==
+inflight: 
+== journal (last 6, total 925) ==
+{"ts":"2026-11-24T17:27:01.616+0800","kind":"tts","event_id":"ui-1795512418168-eae7","tts_id":5244157,"outcome":"ok","dur_ms":3295,"text_bytes":25,"attempts":1}
+{"ts":"2026-11-24T17:27:29.856+0800","kind":"tts","event_id":"ui-1795512446437-a6f4","tts_id":5244164,"outcome":"ok","dur_ms":3277,"text_bytes":25,"attempts":1}
+{"ts":"2026-11-24T17:28:03.280+0800","kind":"tts","event_id":"ui-1795512479779-b2df","tts_id":5244169,"outcome":"ok","dur_ms":3386,"text_bytes":25,"attempts":1}
+== app ==
+uid_of_voice=    userId=10060
+inbox=drwx------ 2 u0_a60 u0_a60 4096 2026-11-24 17:27 /data/local/tmp/t9_ui/inbox
+events=drwxr-x--- 2 root u0_a60 4096 2026-11-24 17:27 /data/local/tmp/t9_ui/events
+EXIT=0
+
+   journal entries in this step: 3
+   [PASS] three TTS executions are recorded
+   [PASS] tts_ids increase in execution order (no reordering in the queue)
+   [PASS] every message in the burst finished with outcome=ok
+   screenshot: 62_c_order.png
+
+================================================================
+== 4 stop the current playback from the UI
+================================================================
+   [PASS] the long message was accepted before the stop test
+   screenshot: 63_d_before_stop.png
+== worker ==
+pid=4372
+cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10060 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10060 
+== play.public.json ==
+{
+  "v": 1,
+  "pid": 2423,
+  "updated_ms": 1795512521407,
+  "state": "idle",
+  "event_id": "ui-1795512514422-c97c",
+  "tts_id": 5244175,
+  "started_ms": 1795512514588,
+  "finished_ms": 1795512521407,
+  "last_outcome": "interrupted",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}
+stop_requests=0
+0
+== status.public.json ==
+{"v":1,"ts":"2026-11-24T17:28:49","ts_ms":1795512529012,"pid":4372,"worker":"running","uptime_ms":143966,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"listening","sc":"WAKE_PENDING","round":0,"session":"","listening":1,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":5,"inbox_rejected":0,"gate_released":0,"route_native":0,"ui_published":5,"ui_errors":0}}
+== events (last 3) ==
+-- 000000000046.json
+{"v":1,"seq":46,"ts":"2026-11-24T17:27:26","ts_ms":1795512446511,"kind":"submit","session":"","event_id":"ui-1795512446437-a6f4","route":"submit","skill":"","user":"T9-07 验收三 第二条","user_bytes":25,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+-- 000000000047.json
+{"v":1,"seq":47,"ts":"2026-11-24T17:27:59","ts_ms":1795512479861,"kind":"submit","session":"","event_id":"ui-1795512479779-b2df","route":"submit","skill":"","user":"T9-07 验收三 第三条","user_bytes":25,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+-- 000000000048.json
+{"v":1,"seq":48,"ts":"2026-11-24T17:28:34","ts_ms":1795512514539,"kind":"submit","session":"","event_id":"ui-1795512514422-c97c","route":"submit","skill":"","user":"T9-07 验收四 停止测试 这一句话故意写得很长 让播报持续足够久 才好在中间按下停止按钮 这样才说明停止是真的生效","user_bytes":155,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+== queue / inflight ==
+inflight: 
+== journal (last 6, total 926) ==
+{"ts":"2026-11-24T17:28:41.378+0800","kind":"tts","event_id":"ui-1795512514422-c97c","tts_id":5244175,"outcome":"interrupted","dur_ms":6779,"text_bytes":155,"attempts":1}
+== app ==
+uid_of_voice=    userId=10060
+inbox=drwx------ 2 u0_a60 u0_a60 4096 2026-11-24 17:28 /data/local/tmp/t9_ui/inbox
+events=drwxr-x--- 2 root u0_a60 4096 2026-11-24 17:28 /data/local/tmp/t9_ui/events
+EXIT=0
+
+   journal records for this step: 1
+   [PASS] the long message reached the executor
+   [PASS] the executor did not finish it as ok (the stop cut it short)
+   factory stop lines in this window: 7
+   [PASS] the official audio state machine processed a STOP_TTS
+   [PASS] the factory really started speaking that text
+   screenshot: 63_d_stop.png
+
+================================================================
+== 5 real microphone wake -> ASR -> worker -> factory TTS, shown in the UI
+================================================================
+   journal baseline = 926
+   playing D:\tgz02\OS\_analysis\t815\wav\r1.wake_time.wav on the HOST speakers (the device mic hears it)
+== worker ==
+pid=4372
+cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10060 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10060 
+== play.public.json ==
+{
+  "v": 1,
+  "pid": 2423,
+  "updated_ms": 1795512540211,
+  "state": "idle",
+  "event_id": "t6-1145-1967380-g1",
+  "tts_id": 5244184,
+  "started_ms": 1795512538002,
+  "finished_ms": 1795512540211,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}
+stop_requests=0
+0
+== status.public.json ==
+{"v":1,"ts":"2026-11-24T17:29:04","ts_ms":1795512544534,"pid":4372,"worker":"running","uptime_ms":159488,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"idle","sc":"FOLLOWUP","round":1,"session":"1967380","listening":1,"tap":1},"counters":{"events_processed":1,"tts_queued":1,"inbox_accepted":5,"inbox_rejected":0,"gate_released":1,"route_native":0,"ui_published":6,"ui_errors":0}}
+== events (last 3) ==
+-- 000000000047.json
+{"v":1,"seq":47,"ts":"2026-11-24T17:27:59","ts_ms":1795512479861,"kind":"submit","session":"","event_id":"ui-1795512479779-b2df","route":"submit","skill":"","user":"T9-07 验收三 第三条","user_bytes":25,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+-- 000000000048.json
+{"v":1,"seq":48,"ts":"2026-11-24T17:28:34","ts_ms":1795512514539,"kind":"submit","session":"","event_id":"ui-1795512514422-c97c","route":"submit","skill":"","user":"T9-07 验收四 停止测试 这一句话故意写得很长 让播报持续足够久 才好在中间按下停止按钮 这样才说明停止是真的生效","user_bytes":155,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+-- 000000000049.json
+{"v":1,"seq":49,"ts":"2026-11-24T17:28:57","ts_ms":1795512537944,"kind":"turn","session":"1967380","event_id":"t6-1145-1967380-g1","route":"skill","skill":"time.query","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 17:28","reply_bytes":9,"reply_cut":0}
+== queue / inflight ==
+inflight: 
+== journal (last 6, total 927) ==
+{"ts":"2026-11-24T17:29:00.206+0800","kind":"tts","event_id":"t6-1145-1967380-g1","tts_id":5244184,"outcome":"ok","dur_ms":2195,"text_bytes":9,"attempts":1}
+== app ==
+uid_of_voice=    userId=10060
+inbox=drwx------ 2 u0_a60 u0_a60 4096 2026-11-24 17:28 /data/local/tmp/t9_ui/inbox
+events=drwxr-x--- 2 root u0_a60 4096 2026-11-24 17:28 /data/local/tmp/t9_ui/events
+EXIT=0
+
+   [PASS] the worker published a completed turn (ASR text + reply)
+   [PASS] the turn was routed (skill or AI)
+   screenshot: 64_e_voice.png
+
+================================================================
+== 6 new session, history list, and persistence across an app restart
+================================================================
+   sessions before: 1
+   sessions after : 2
+   [PASS] the new-session button created a new local session
+   screenshot: 65_f_newsession.png
+   screenshot: 66_f_history.png
+   screenshot: 67_f_after_restart.png
+total 8
+-rw------- 1 u0_a60 u0_a60 1226 2026-11-24 17:29 s1795512391014.json
+-rw------- 1 u0_a60 u0_a60   98 2026-11-24 17:29 s1795512553346.json
+   [PASS] the session files survived the app restart
+   [PASS] more than one session is stored (the history list has something to show)
+
+================================================================
+== 7 the worker and the factory voice chain do not need the UI to be open
+================================================================
+== worker ==
+pid=4372
+cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10060 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10060 
+== play.public.json ==
+{
+  "v": 1,
+  "pid": 2423,
+  "updated_ms": 1795512581233,
+  "state": "idle",
+  "event_id": "t6-1145-1967392-g2",
+  "tts_id": 5244196,
+  "started_ms": 1795512579162,
+  "finished_ms": 1795512581233,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}
+stop_requests=0
+0
+== status.public.json ==
+{"v":1,"ts":"2026-11-24T17:29:45","ts_ms":1795512585094,"pid":4372,"worker":"running","uptime_ms":200048,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"idle","sc":"FOLLOWUP","round":1,"session":"1967392","listening":1,"tap":1},"counters":{"events_processed":2,"tts_queued":2,"inbox_accepted":5,"inbox_rejected":0,"gate_released":2,"route_native":0,"ui_published":7,"ui_errors":0}}
+== events (last 3) ==
+-- 000000000048.json
+{"v":1,"seq":48,"ts":"2026-11-24T17:28:34","ts_ms":1795512514539,"kind":"submit","session":"","event_id":"ui-1795512514422-c97c","route":"submit","skill":"","user":"T9-07 验收四 停止测试 这一句话故意写得很长 让播报持续足够久 才好在中间按下停止按钮 这样才说明停止是真的生效","user_bytes":155,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+-- 000000000049.json
+{"v":1,"seq":49,"ts":"2026-11-24T17:28:57","ts_ms":1795512537944,"kind":"turn","session":"1967380","event_id":"t6-1145-1967380-g1","route":"skill","skill":"time.query","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 17:28","reply_bytes":9,"reply_cut":0}
+-- 000000000050.json
+{"v":1,"seq":50,"ts":"2026-11-24T17:29:39","ts_ms":1795512579068,"kind":"turn","session":"1967392","event_id":"t6-1145-1967392-g2","route":"skill","skill":"time.query","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 17:29","reply_bytes":9,"reply_cut":0}
+== queue / inflight ==
+inflight: 
+== journal (last 6, total 928) ==
+{"ts":"2026-11-24T17:29:41.228+0800","kind":"tts","event_id":"t6-1145-1967392-g2","tts_id":5244196,"outcome":"ok","dur_ms":2061,"text_bytes":9,"attempts":1}
+== app ==
+uid_of_voice=    userId=10060
+inbox=drwx------ 2 u0_a60 u0_a60 4096 2026-11-24 17:28 /data/local/tmp/t9_ui/inbox
+events=drwxr-x--- 2 root u0_a60 4096 2026-11-24 17:29 /data/local/tmp/t9_ui/events
+EXIT=0
+
+   [PASS] with the UI closed the worker still answered and spoke
+   [PASS] the UI process is really gone
+   screenshot: 68_g_ui_closed.png
+
+================================================================
+== 8 the chain still works after a device reboot
+================================================================
+   rebooting the device ...
+   [PASS] the worker came back by itself after the reboot
+== worker ==
+pid=2632
+cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10060 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10060 
+== play.public.json ==
+{
+  "v": 1,
+  "pid": 2516,
+  "updated_ms": 1795512645289,
+  "state": "idle",
+  "event_id": "",
+  "tts_id": -1,
+  "started_ms": 0,
+  "finished_ms": 0,
+  "last_outcome": "",
+  "queue_depth": 0,
+  "inflight_depth": 0
+}
+stop_requests=0
+0
+== status.public.json ==
+{"v":1,"ts":"2026-11-24T17:31:09","ts_ms":1795512669989,"pid":2632,"worker":"running","uptime_ms":22868,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"idle","sc":"IDLE","round":0,"session":"","listening":0,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":0,"inbox_rejected":0,"gate_released":0,"route_native":0,"ui_published":0,"ui_errors":0}}
+== events (last 3) ==
+-- 000000000048.json
+{"v":1,"seq":48,"ts":"2026-11-24T17:28:34","ts_ms":1795512514539,"kind":"submit","session":"","event_id":"ui-1795512514422-c97c","route":"submit","skill":"","user":"T9-07 验收四 停止测试 这一句话故意写得很长 让播报持续足够久 才好在中间按下停止按钮 这样才说明停止是真的生效","user_bytes":155,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+-- 000000000049.json
+{"v":1,"seq":49,"ts":"2026-11-24T17:28:57","ts_ms":1795512537944,"kind":"turn","session":"1967380","event_id":"t6-1145-1967380-g1","route":"skill","skill":"time.query","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 17:28","reply_bytes":9,"reply_cut":0}
+-- 000000000050.json
+{"v":1,"seq":50,"ts":"2026-11-24T17:29:39","ts_ms":1795512579068,"kind":"turn","session":"1967392","event_id":"t6-1145-1967392-g2","route":"skill","skill":"time.query","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 17:29","reply_bytes":9,"reply_cut":0}
+== queue / inflight ==
+inflight: 
+== journal (last 6, total 928) ==
+{"ts":"2026-11-24T17:27:01.616+0800","kind":"tts","event_id":"ui-1795512418168-eae7","tts_id":5244157,"outcome":"ok","dur_ms":3295,"text_bytes":25,"attempts":1}
+{"ts":"2026-11-24T17:27:29.856+0800","kind":"tts","event_id":"ui-1795512446437-a6f4","tts_id":5244164,"outcome":"ok","dur_ms":3277,"text_bytes":25,"attempts":1}
+{"ts":"2026-11-24T17:28:03.280+0800","kind":"tts","event_id":"ui-1795512479779-b2df","tts_id":5244169,"outcome":"ok","dur_ms":3386,"text_bytes":25,"attempts":1}
+{"ts":"2026-11-24T17:28:41.378+0800","kind":"tts","event_id":"ui-1795512514422-c97c","tts_id":5244175,"outcome":"interrupted","dur_ms":6779,"text_bytes":155,"attempts":1}
+{"ts":"2026-11-24T17:29:00.206+0800","kind":"tts","event_id":"t6-1145-1967380-g1","tts_id":5244184,"outcome":"ok","dur_ms":2195,"text_bytes":9,"attempts":1}
+{"ts":"2026-11-24T17:29:41.228+0800","kind":"tts","event_id":"t6-1145-1967392-g2","tts_id":5244196,"outcome":"ok","dur_ms":2061,"text_bytes":9,"attempts":1}
+== app ==
+uid_of_voice=    userId=10060
+inbox=drwx------ 2 u0_a60 u0_a60 4096 2026-11-24 17:28 /data/local/tmp/t9_ui/inbox
+events=drwxr-x--- 2 root u0_a60 4096 2026-11-24 17:29 /data/local/tmp/t9_ui/events
+EXIT=0
+
+   screenshot: 69_h_after_reboot.png
+== worker ==
+pid=2632
+cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10060 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10060 
+== play.public.json ==
+{
+  "v": 1,
+  "pid": 2516,
+  "updated_ms": 1795512682517,
+  "state": "idle",
+  "event_id": "ui-1795512678430-b6a6",
+  "tts_id": 5245772,
+  "started_ms": 1795512678607,
+  "finished_ms": 1795512682516,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}
+stop_requests=0
+0
+== status.public.json ==
+{"v":1,"ts":"2026-11-24T17:31:28","ts_ms":1795512688055,"pid":2632,"worker":"running","uptime_ms":40934,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"listening","sc":"WAKE_PENDING","round":0,"session":"","listening":1,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":1,"inbox_rejected":0,"gate_released":0,"route_native":0,"ui_published":1,"ui_errors":0}}
+== events (last 3) ==
+-- 000000000049.json
+{"v":1,"seq":49,"ts":"2026-11-24T17:28:57","ts_ms":1795512537944,"kind":"turn","session":"1967380","event_id":"t6-1145-1967380-g1","route":"skill","skill":"time.query","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 17:28","reply_bytes":9,"reply_cut":0}
+-- 000000000050.json
+{"v":1,"seq":50,"ts":"2026-11-24T17:29:39","ts_ms":1795512579068,"kind":"turn","session":"1967392","event_id":"t6-1145-1967392-g2","route":"skill","skill":"time.query","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 17:29","reply_bytes":9,"reply_cut":0}
+-- 000000000051.json
+{"v":1,"seq":51,"ts":"2026-11-24T17:31:18","ts_ms":1795512678509,"kind":"submit","session":"","event_id":"ui-1795512678430-b6a6","route":"submit","skill":"","user":"T9-07 验收八 重启后仍然可用","user_bytes":37,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+== queue / inflight ==
+inflight: 
+== journal (last 6, total 929) ==
+{"ts":"2026-11-24T17:31:22.503+0800","kind":"tts","event_id":"ui-1795512678430-b6a6","tts_id":5245772,"outcome":"ok","dur_ms":3886,"text_bytes":37,"attempts":1}
+== app ==
+uid_of_voice=    userId=10060
+inbox=drwx------ 2 u0_a60 u0_a60 4096 2026-11-24 17:31 /data/local/tmp/t9_ui/inbox
+events=drwxr-x--- 2 root u0_a60 4096 2026-11-24 17:31 /data/local/tmp/t9_ui/events
+EXIT=0
+
+   [PASS] after a reboot a new message is still spoken by the factory TTS
+
+================================================================
+RESULT: PASS (0 failed checks)
+================================================================

@@ -89,6 +89,9 @@ typedef struct {
     tt_ctx       tap;                    /* T8-15：原厂会话事件观察（只读 logcat 输出） */
     char         tap_path[T6B_PATH_MAX];
     int          tap_err_logged;         /* 只记一次 tap 读失败，避免刷日志 */
+    ue_ctx       ue;                     /* T9-07：产品 UI 的只读事件/状态出口 */
+    long long    last_ui_status_ms;      /* status.public.json 的上次刷新时刻 */
+    long long    wall_started_ms;        /* 启动墙钟（uptime 只能同一个时钟相减） */
     t8_skill_registry sk;                /* T8-14.1：自有技能注册表（默认不接管任何意图） */
     t8_dev_ctx   dev;                    /* T8-14.2：device.status 的数据源路径 */
     /* T8-14.1：本轮 pend 由哪个技能执行（0 = 走 Provider）。放在 pend 之外是因为它
@@ -1330,6 +1333,12 @@ static int tts_enqueue(t6b_worker *w, const t6b_reply *rep, char *err, size_t er
  */
 static ti_stats g_inbox_st;
 
+/* T9-07: defined further down; the inbox path (below) also publishes an event */
+static void aiw_ui_publish_turn(t6b_worker *w, const char *kind, const char *session,
+                                const char *event_id, const char *user, const char *reply,
+                                const char *route, const char *skill, int reply_bytes);
+static void aiw_ui_publish_status(t6b_worker *w, int force);
+
 static int aiw_inbox_enqueue(void *ctx, const char *event_id, const char *text,
                              int text_bytes, char *err, size_t errlen)
 {
@@ -1359,7 +1368,12 @@ static int aiw_inbox_enqueue(void *ctx, const char *event_id, const char *text,
 
     /* tts_enqueue: 1 = new item persisted, 0 = idempotent hit. ti_poll wants the opposite
      * convention (0 = queued now, 1 = already there), so map it here instead of guessing. */
-    if (rc == 1) return 0;
+    if (rc == 1) {
+        /* T9-07: the UI can see its own submit in the product event stream too (one record
+         * per accepted text, and none for an idempotent re-submit). */
+        aiw_ui_publish_turn(w, "submit", "", event_id, text, NULL, "submit", "", 0);
+        return 0;
+    }
     if (rc == 0) return 1;
     return -1;
 }
@@ -1393,6 +1407,131 @@ static void aiw_inbox_poll(t6b_worker *w)
            g_inbox_st.foreign_dropped, g_inbox_st.pruned_rejected, g_inbox_st.pruned_result,
            g_inbox_st.tmp_cleaned,
            g_inbox_st.last_reject[0] ? " last_reject=" : "", g_inbox_st.last_reject);
+}
+
+/* ---------------- T9-07：产品 UI 的只读事件/状态出口 ---------------- */
+
+/*
+ * 这一层只做两件事，且都是"只写、只读、不改行为"：
+ *   1) 把每一轮的"用户说了什么 + 回答是什么"落成 <ui>/events/<seq>.json（原子发布）；
+ *   2) 把可对外展示的状态子集刷新到 <ui>/status.public.json。
+ *
+ * 明确不在里面：API key、请求体、模型原文、上下文正文、任何权限放开。写失败只记计数，
+ * 不影响播报、不推进消费偏移、不让主循环停下来。
+ */
+
+/* sc 状态 -> UI 的四个稳定档位。播报状态以 TTS 执行器发布的 play.public.json 为准，
+ * 因为 sc 只在"我方入队"时进入 SPEAKING，而原厂的播报事实要以执行器为准。 */
+static const char *aiw_dialog_state(const t6b_worker *w)
+{
+    if (w->play_playing) return "speaking";
+    switch (w->sc.state) {
+    case SC_WAKE_PENDING:
+    case SC_LISTENING:   return "listening";
+    case SC_PROCESSING:  return "thinking";
+    case SC_SPEAKING:    return "speaking";
+    case SC_INTERRUPTED: return "interrupted";
+    default:             return "idle";
+    }
+}
+
+static void aiw_ui_note_error(t6b_worker *w, const char *what)
+{
+    static long long last_log_ms = 0;
+    long long now = wu_wall_ms();
+
+    if (now - last_log_ms < 60000 && last_log_ms != 0) return;
+    last_log_ms = now;
+    always("ui events: %s (%s) published=%llu errors=%llu",
+           what, w->ue.last_error[0] != '\0' ? w->ue.last_error : "?",
+           w->ue.published, w->ue.publish_err);
+}
+
+static void aiw_ui_publish_turn(t6b_worker *w, const char *kind,
+                                const char *session, const char *event_id,
+                                const char *user, const char *reply,
+                                const char *route, const char *skill, int reply_bytes)
+{
+    ue_turn t;
+
+    if (!w->cfg.ui_events_enabled) return;
+    memset(&t, 0, sizeof(t));
+    t.kind = kind;
+    t.session = session;
+    t.event_id = event_id;
+    t.user = user;
+    t.reply = reply;
+    t.route = route;
+    t.skill = skill;
+    t.reply_bytes = reply_bytes;
+    if (ue_publish(&w->ue, &t) != 0) aiw_ui_note_error(w, "publish failed");
+}
+
+static void aiw_ui_publish_status(t6b_worker *w, int force)
+{
+    static char js[2048];
+    static char err_esc[240];
+    static char cls_esc[120];
+    static char model_esc[160];
+    static char sess_esc[160];
+    static char ev_esc[200];
+    static char prov_esc[48];
+    long long now = wu_now_ms();
+    int n;
+    const char *ev = "";
+    const char *sess = "";
+
+    if (!w->cfg.ui_events_enabled) return;
+    if (!force && now - w->last_ui_status_ms < (long long)w->cfg.ui_status_interval_ms) return;
+    w->last_ui_status_ms = now;
+
+    if (w->have_pend) {
+        ev = w->pend.event_id;
+        sess = w->pend.session_id;
+    } else {
+        ev = w->st.pending_event_id;
+        sess = w->sc.session;
+    }
+    wu_json_escape(prov_esc, sizeof(prov_esc), w->st.provider);
+    wu_json_escape(model_esc, sizeof(model_esc), w->st.model);
+    wu_json_escape(err_esc, sizeof(err_esc), w->st.last_error);
+    wu_json_escape(cls_esc, sizeof(cls_esc), w->st.last_error_class);
+    wu_json_escape(sess_esc, sizeof(sess_esc), sess);
+    wu_json_escape(ev_esc, sizeof(ev_esc), ev);
+
+    n = snprintf(js, sizeof(js),
+                 "{\"v\":1,\"ts\":\"%s\",\"ts_ms\":%lld,\"pid\":%lld,"
+                 "\"worker\":\"%s\",\"uptime_ms\":%lld,\"event_id\":\"%s\","
+                 "\"provider\":{\"name\":\"%s\",\"model\":\"%s\",\"mock\":%d,"
+                 "\"ok\":%llu,\"err\":%llu,\"timeout\":%llu,\"last_http\":%d,"
+                 "\"last_error\":\"%s\",\"last_class\":\"%s\","
+                 "\"last_latency_ms\":%lld},"
+                 "\"dialog\":{\"state\":\"%s\",\"sc\":\"%s\",\"round\":%d,"
+                 "\"session\":\"%s\",\"listening\":%d,\"tap\":%d},"
+                 "\"counters\":{\"events_processed\":%llu,\"tts_queued\":%llu,"
+                 "\"inbox_accepted\":%lld,\"inbox_rejected\":%lld,"
+                 "\"gate_released\":%llu,\"route_native\":%llu,"
+                 "\"ui_published\":%llu,\"ui_errors\":%llu}}",
+                 w->st.updated_at[0] != '\0' ? w->st.updated_at : "-", wu_wall_ms(),
+                 wu_self_pid(),
+                 w->st.state[0] != '\0' ? w->st.state : "starting",
+                 (long long)((wu_wall_ms() >= w->wall_started_ms && w->wall_started_ms > 0)
+                                 ? (wu_wall_ms() - w->wall_started_ms) : 0),
+                 ev_esc,
+                 prov_esc, model_esc, w->st.provider_mock,
+                 w->st.provider_ok, w->st.provider_err, w->st.provider_timeout,
+                 w->st.last_http_status, err_esc, cls_esc, w->st.last_provider_latency_ms,
+                 aiw_dialog_state(w), sc_state_name(w->sc.state), w->sc.round,
+                 sess_esc, w->sc.device_listening,
+                 (w->tap_path[0] != '\0') ? 1 : 0,
+                 w->st.events_processed, w->st.tts_queued,
+                 g_inbox_st.accepted, g_inbox_st.rejected,
+                 w->st.gate_released, w->st.route_native,
+                 w->ue.published, w->ue.publish_err);    if (n <= 0 || n >= (int)sizeof(js)) {
+        aiw_ui_note_error(w, "status record too large");
+        return;
+    }
+    if (ue_status_write(&w->ue, js, (size_t)n) != 0) aiw_ui_note_error(w, "status write failed");
 }
 
 /* ---------------- T8-14.1：自有技能调度（默认关闭） ---------------- */
@@ -1747,6 +1886,17 @@ static int provider_attempt(t6b_worker *w)
             if (cr == -2) return -4;      /* 指纹推进失败：致命 */
             if (cr != 0) return -3;       /* 状态落盘失败 */
         }
+        /*
+         * T9-07：回答已入队、消费偏移已落盘 —— 现在把这轮"用户说了什么 + 回答是什么"
+         * 发给产品 UI。放在偏移提交之后，所以正常运行时同一个 event_id 不会被发布两次；
+         * 发布失败只记计数，不影响任何播报与消费语义。
+         */
+        aiw_ui_publish_turn(w, "turn", w->pend.session_id, w->pend.event_id,
+                            w->pend.text, rep.text,
+                            (w->pend_skill_id != 0) ? "skill" : "ai",
+                            (w->pend_skill_id != 0)
+                                ? t8_skill_name((t8_skill_id)w->pend_skill_id) : "",
+                            rep.text_bytes);
         /*
          * T7-01：上下文提交放在"偏移已持久化"之后。
          *   - 只有走到这里才说明本轮真的成功了（Provider OK + 回答已入队 + 偏移已落盘）；
@@ -2876,6 +3026,8 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
 
         /* T9-06: the UI submit channel is serviced on every loop pass (no-op when disabled) */
         aiw_inbox_poll(w);
+        /* T9-07: refresh the UI status snapshot (throttled inside; no-op when disabled) */
+        aiw_ui_publish_status(w, 0);
 
         if (rc == 0) {
             if (w->cfg.idle_exit_ms > 0 && wu_now_ms() - w->last_activity_ms >= w->cfg.idle_exit_ms) {
@@ -2920,6 +3072,12 @@ void t6b_config_defaults(t6b_config *c)
     snprintf(c->tts_queue, sizeof(c->tts_queue), "%s", T6B_TTS_QUEUE_DEFAULT);
     ti_cfg_defaults(&c->inbox);
     c->inbox_enabled = 0;
+    /* T9-07：产品 UI 的事件出口默认关闭；打开时写到 T9-06 的 UI 根目录 */
+    c->ui_events_enabled = 0;
+    c->ui_events_dir[0] = '\0';
+    c->ui_events_gid = 0;
+    c->ui_events_max_files = UE_MAX_FILES;
+    c->ui_status_interval_ms = 1000;
     /* T7-01：上下文默认关闭（= T5-06C 行为），打开时默认 3 轮完整对话 */
     c->context_enabled = 0;
     c->context_max_messages = CV_DEFAULT_MAX_MESSAGES;
@@ -2997,6 +3155,42 @@ int t6b_config_check(const t6b_config *c, char *err, size_t errlen)
     if (c->status_interval_ms < 100 || c->status_interval_ms > 600000) {
         if (err) snprintf(err, errlen, "status-every-ms out of range [100,600000]");
         return -1;
+    }
+    /* ---- T9-07：UI 事件出口（只在显式打开时校验；关闭时不改变任何既有行为） ---- */
+    if (c->ui_events_enabled) {
+        if (c->ui_events_dir[0] != '\0') {
+            int abs_path = (c->ui_events_dir[0] == '/' || c->ui_events_dir[0] == '.');
+#ifdef _WIN32
+            if (!abs_path && strlen(c->ui_events_dir) > 2 &&
+                c->ui_events_dir[1] == ':') {
+                abs_path = 1;
+            }
+#endif
+            if (!abs_path) {
+                if (err) snprintf(err, errlen, "ui-events-dir must be an absolute path");
+                return -1;
+            }
+            if (strpbrk(c->ui_events_dir, "\r\n\t") != NULL) {
+                if (err) snprintf(err, errlen, "ui-events-dir must not contain control chars");
+                return -1;
+            }
+            if (strlen(c->ui_events_dir) >= sizeof(c->ui_events_dir) - 24) {
+                if (err) snprintf(err, errlen, "ui-events-dir too long");
+                return -1;
+            }
+        }
+        if (c->ui_events_gid < 0 || c->ui_events_gid > 99999) {
+            if (err) snprintf(err, errlen, "ui-events-gid out of range [0,99999]");
+            return -1;
+        }
+        if (c->ui_events_max_files < 8 || c->ui_events_max_files > 8192) {
+            if (err) snprintf(err, errlen, "ui-events-max-files out of range [8,8192]");
+            return -1;
+        }
+        if (c->ui_status_interval_ms < 200 || c->ui_status_interval_ms > 60000) {
+            if (err) snprintf(err, errlen, "ui-status-every-ms out of range [200,60000]");
+            return -1;
+        }
     }
     if (c->max_record_bytes < 256 || c->max_record_bytes > T6B_READ_CHUNK) {
         if (err) snprintf(err, errlen, "max-record-bytes out of range [256,65536]");
@@ -3154,6 +3348,7 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
     if (c == NULL) return 4;
     memset(&w, 0, sizeof(w));
     w.cfg = *c;
+    w.wall_started_ms = wu_wall_ms();
     w.rd.fd = -1;
     w.lock.fd = -1;
     t6b_state_init(&w.state);
@@ -3184,6 +3379,24 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
             out->pid = wu_self_pid();
         }
         return 3;
+    }
+
+    /* T9-07：产品 UI 的事件/状态出口（默认关闭；打开后只是多写两个文件，不是数据通路）。
+     * 初始化失败不能拖垮 Worker：降级为"不发布"，并把原因写进日志与状态。 */
+    if (c->ui_events_enabled) {
+        const char *uedir = (c->ui_events_dir[0] != '\0') ? c->ui_events_dir
+                                                          : "/data/local/tmp/t9_ui";
+        if (ue_init(&w.ue, uedir, c->ui_events_gid, c->ui_events_max_files,
+                    UE_MAX_TEXT) != 0) {
+            always("ui events: NOT publishing - %s", w.ue.last_error);
+            w.cfg.ui_events_enabled = 0;
+        } else {
+            always("ui events: dir=%s events=%s gid=%d perms=%s keep=%d seq=%lld",
+                   uedir, w.ue.events_dir, w.ue.gid,
+                   w.ue.gid_ok ? "0640 root:<gid> / 0750" : "0644 / 0755",
+                   w.ue.max_files, w.ue.seq);
+            aiw_ui_publish_status(&w, 1);
+        }
     }
 
     /* T7-01：初始化对话上下文（独立模块）。文件损坏只留档清空，绝不影响启动。
@@ -3604,6 +3817,11 @@ static void usage(void)
         "  --inbox-rate N        max accepted submissions per rate window\n"
         "  --inbox-allowed-uid N owner uid allowed to submit (repeatable)\n"
         "                        (local persistent queue, idempotent per event_id; default off)\n"
+        "  --ui-events DIR       T9-07: publish read-only UI events + status under DIR\n"
+        "                        (one file per turn, no key, no request body; default off)\n"
+        "  --ui-events-gid N     group owner of the event files (the UI app's gid; 0 = root)\n"
+        "  --ui-events-max-files N  keep at most N event files (default 512)\n"
+        "  --ui-status-every-ms N   status.public.json refresh interval (default 1000)\n"
         "  --conf PATH           load provider/context settings from a key=value file\n"
         "                        (CLI options still win; no credential is stored there)\n"
         "  --temperature X       sampling temperature 0.0-2.0 (default %.1f)\n"
@@ -3741,6 +3959,10 @@ int main(int argc, char **argv)
         else if (strcmp(a, "--inbox-scan-cap") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.inbox.max_scan_per_poll = atoi(v); i++; }
         else if (strcmp(a, "--inbox-rejected-max") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.inbox.rejected_max_files = atoi(v); i++; }
         else if (strcmp(a, "--inbox-result-max") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.inbox.result_max_files = atoi(v); i++; }
+else if (strcmp(a, "--ui-events") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.ui_events_dir, sizeof(cfg.ui_events_dir), "%s", v); cfg.ui_events_enabled = 1; i++; }
+else if (strcmp(a, "--ui-events-gid") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.ui_events_gid = atoi(v); i++; }
+else if (strcmp(a, "--ui-events-max-files") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.ui_events_max_files = atoi(v); i++; }
+else if (strcmp(a, "--ui-status-every-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.ui_status_interval_ms = atoi(v); i++; }
         else if (strcmp(a, "--conf") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.conf_path, sizeof(cfg.conf_path), "%s", v); i++; }
         else if (strcmp(a, "--temperature") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.temperature = atof(v); i++; }
         else if (strcmp(a, "--max-tokens") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.max_tokens = atoi(v); i++; }

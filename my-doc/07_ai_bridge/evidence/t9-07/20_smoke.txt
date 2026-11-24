@@ -1,0 +1,15 @@
+﻿== request ==
+-rw-r----- 1 u0_a57 u0_a57 78 2026-11-24 16:52 /data/local/tmp/t9_ui/inbox/t9r7-smoke-165222.json
+== wait for the worker ==
+result: {"v":1,"event_id":"t9r7-smoke-165222","ok":true,"stage":"queue","reason":"","ts_ms":1795510343124}
+== events dir ==
+total 4
+-rw-r----- 1 root u0_a57 263 2026-11-24 16:52 000000000001.json
+== newest event ==
+file=000000000001.json
+{"v":1,"seq":1,"ts":"2026-11-24T16:52:23","ts_ms":1795510343118,"kind":"submit","session":"","event_id":"t9r7-smoke-165222","route":"submit","skill":"","user":"第七阶段事件出口冒烟","user_bytes":30,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0}
+== status ==
+{"v":1,"ts":"2026-11-24T16:52:23","ts_ms":1795510343128,"pid":21262,"worker":"running","uptime_ms":90649,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"idle","sc":"IDLE","round":0,"session":"","listening":0,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":1,"inbox_rejected":0,"gate_released":0,"route_native":0,"ui_published":1,"ui_errors":0}}
+== queue ==
+total 0
+EXIT=0

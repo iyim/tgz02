@@ -1,0 +1,9 @@
+﻿# T9-07 UI event outlet unit test log (host)
+# host time: 2026-11-24 16:48:41
+cc: C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t9_07_ui_events_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t9_07_ui_events_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ui_events.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c
+(no compiler output: 0 warning, 0 error)
+
+
+T9-07 ui events unit tests: 60 passed, 0 failed
+
+# result: PASS

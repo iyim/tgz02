@@ -1,4 +1,4 @@
-﻿# build_t8_15.ps1 -- T8-15 杩炵画瀵硅瘽闃舵锛欰RM32 鏋勫缓锛堝畧鍗?+ worker锛?#
+# build_t8_15.ps1 -- T8-15 杩炵画瀵硅瘽闃舵锛欰RM32 鏋勫缓锛堝畧鍗?+ worker锛?#
 #   powershell -ExecutionPolicy Bypass -File build_t8_15.ps1 [-LogName t8_15_5_ndk_build.log]
 #
 # 涓轰粈涔堝崟鐙竴涓剼鏈細T8-15 闃舵 worker 鐨勬簮鏂囦欢闆嗗悎宸茬粡姣?build_t7_02.ps1 澶?# 锛坕ntent_route / utterance_gate / conv_session / session_ctrl / skill_dispatch /
@@ -38,7 +38,7 @@ $WorkerSources = @(
     "intent_route.c", "utterance_gate.c", "conv_session.c", "t7_dup.c",
     "session_ctrl.c", "skill_dispatch.c", "dead_letter.c",
     "provider.c", "mock_provider.c", "deepseek_provider.c",
-    "talk_tap.c", "tg_inbox.c", "ai_worker.c"
+    "talk_tap.c", "tg_inbox.c", "ui_events.c", "ai_worker.c"
 ) | ForEach-Object { Join-Path $Here $_ }
 
 $GuardSources = @(

@@ -1,0 +1,125 @@
+--------- beginning of main
+11-24 16:57:11.719 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=14635649) - not a request written just now
+11-24 16:57:13.767 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=14637697) - not a request written just now
+--------- beginning of system
+11-24 16:57:15.814 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=14639744) - not a request written just now
+11-24 16:57:16.478 I/T907VOICE(23436): submitted ui-1795510636471-2495 bytes=91
+11-24 16:57:16.479 I/T907UI  (23436): submitted ui-1795510636471-2495 bytes=91
+11-24 16:57:16.701 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:playTts:295 [2928] isInterrupted, sessionId = 0
+11-24 16:57:16.702 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [49:ALI_STUB_CMD_STOP_TTS]
+11-24 16:57:16.702 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[49]
+11-24 16:57:16.702 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_stop_tts_msg:1956 [1645] sm_process_stop_tts_msg:tts_exist: 0,current_id = 5245671,stop_id: -1
+11-24 16:57:16.702 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:16.703 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:playTts:388 [2928] tts = T9-07 第一阶段验收，文字播报, asrLogId = NULL
+11-24 16:57:16.703 I/tgt     ( 1178): playTts -> allow-listed id=5245679 comm=Binder:1178_10 text_bytes=39
+11-24 16:57:16.758 I/tgt     ( 1178): onTtsStart ALLOW id=5245679 by=session_id streaming=1 text_bytes=39
+11-24 16:57:16.758 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsStart:141 [1765] sessionId = 5245679, isStreaming = 1, tts = T9-07 第一阶段验收，文字播报
+11-24 16:57:16.758 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsStart:152 [1765] TTS_TIME receive command with stream, report TtsStreamCmdReceived.
+11-24 16:57:16.761 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [58:ALI_STUB_CMD_SM_PROCESS_UTP_LIST]
+11-24 16:57:16.761 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[58]
+11-24 16:57:16.761 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_player_exist_playing:928 [1645] bt 0,uri 0, prompt 0 , tts 0
+11-24 16:57:16.761 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_play_list:2451 [1645] playlist is empty !
+11-24 16:57:16.761 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_play_list:2454 [1645] sm_is_uri_suspend:0,speech_interactive:0,audio_state.b_suspend_from_server:0, micStatus:unmute
+11-24 16:57:16.761 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:playbackStatusFeedback:233 [1645] send player status change to AM, agmc=-1, type:4  status:playback_list_empty
+11-24 16:57:16.761 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:16.767 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [35:ALI_STUB_CMD_SPEECH_FINISH]
+11-24 16:57:16.767 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[35]
+11-24 16:57:16.767 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_player_exist_playing:928 [1645] bt 0,uri 0, prompt 0 , tts 0
+11-24 16:57:16.768 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_speech_finish:2539 [1645] sm_is_uri_suspend:0,audio_state.b_suspend_from_server:0 !
+11-24 16:57:16.768 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:16.768 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [39:ALI_STUB_CMD_SUSPEND]
+11-24 16:57:16.768 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[39]
+11-24 16:57:16.768 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_suspend_msg:1866 [1645] _sm_process_suspend_msg: suspend command recevied!
+11-24 16:57:16.768 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:16.768 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [14:ALI_STUB_CMD_PLAY_TTS]
+11-24 16:57:16.768 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[14]
+11-24 16:57:16.768 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_player_exist_playing:928 [1645] bt 0,uri 0, prompt 0 , tts 0
+11-24 16:57:16.768 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_tts_play:2273 [1645] speech_start=0, exist_playing = 0,playlist_empty=1,prompt_playing=0,tts_mix=0
+11-24 16:57:16.769 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_player_exist_playing:928 [1645] bt 0,uri 0, prompt 0 , tts 0
+11-24 16:57:16.769 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_permit_tts_play:2228 [1645] ttsid 5245679 
+11-24 16:57:16.769 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_send_permit_to_tts:1054 [1645] permit tts play, id:[38], needMix:[0]!
+11-24 16:57:16.769 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:playbackStatusFeedback:233 [1645] send player status change to AM, agmc=5245679, type:1  status:prepared
+11-24 16:57:16.769 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_send_permit_to_source:985 [1645] audio_service,data 0x8fee9d30, type 2 cmd 10400026
+11-24 16:57:16.769 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:16.802 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsData:205 [1765] TTS_TIME receive stream data actually.
+11-24 16:57:16.812 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:161 [1645] SOURCE_TTS
+11-24 16:57:16.812 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandleTtsFeedback:389 [1645] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = play,type = tts,agmcId(tts_id) =5245679
+11-24 16:57:16.812 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:playbackStatusFeedback:233 [1645] send player status change to AM, agmc=5245679, type:1  status:play
+11-24 16:57:16.825 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:174 [1645] [asm] msg_id: [4:MSG_TYPE_ID_AS] grp:0x0 body: [0:SM_BODY_STOP] source: [3:SOURCE_TTS] ext_id: [63:ALI_STUB_CMD_TTS_FEEDBACK]
+11-24 16:57:16.825 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_state_msg:1836 [1645] group 0 
+11-24 16:57:16.825 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:16.825 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:174 [1645] [asm] msg_id: [2:MSG_TYPE_ID_SM] grp:0x3 body: [1:SM_BODY_PLAY] source: [3:SOURCE_TTS] ext_id: [38:ALI_STUB_CMD_PAUSE]
+11-24 16:57:16.825 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_state_msg:1836 [1645] group 3 
+11-24 16:57:16.825 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_inform_play_msg:1515 [1645] ui4_sender_id 3,msg_id 38 
+11-24 16:57:16.825 W/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_inform_play_msg:1556 [1645] [source switch]Unknown source type=3
+11-24 16:57:16.825 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:16.863 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsEnd:220 [1765] sessionId = 5245679
+11-24 16:57:17.927 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=14641857) - not a request written just now
+11-24 16:57:19.982 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=14643912) - not a request written just now
+11-24 16:57:20.281 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:161 [1645] SOURCE_TTS
+11-24 16:57:20.281 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandleTtsFeedback:389 [1645] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = complete,type = tts,agmcId(tts_id) =5245679
+11-24 16:57:20.281 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:playbackStatusFeedback:233 [1645] send player status change to AM, agmc=5245679, type:1  status:complete
+11-24 16:57:20.281 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:174 [1645] [asm] msg_id: [4:MSG_TYPE_ID_AS] grp:0x0 body: [0:SM_BODY_STOP] source: [3:SOURCE_TTS] ext_id: [63:ALI_STUB_CMD_TTS_FEEDBACK]
+11-24 16:57:20.281 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_state_msg:1836 [1645] group 0 
+11-24 16:57:20.281 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:20.352 I/tgt     ( 1178): continuity: auto-after-tts seq=1795510640337 startTalk(type=1, info+0=1) -> 0 (n=28 ok=0)
+11-24 16:57:20.376 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [32:ALI_STUB_CMD_SPEECH_START]
+11-24 16:57:20.376 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[32]
+11-24 16:57:20.377 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_clear_tts:1384 [1645] stop tts!
+11-24 16:57:20.377 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:20.377 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [13:ALI_STUB_CMD_PLAY_VOICE_PROMPT]
+11-24 16:57:20.377 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[13]
+11-24 16:57:20.377 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_player_exist_playing:928 [1645] bt 0,uri 0, prompt 0 , tts 1
+11-24 16:57:20.377 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_normal_prompt:2182 [1645] speech_start=1, exist_playing = 1,playlist_empty=1
+11-24 16:57:20.377 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_normal_prompt:2204 [1645] Push prompt message to the front of the queue !
+11-24 16:57:20.377 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:20.708 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:174 [1645] [asm] msg_id: [2:MSG_TYPE_ID_SM] grp:0x3 body: [0:SM_BODY_STOP] source: [3:SOURCE_TTS] ext_id: [38:ALI_STUB_CMD_PAUSE]
+11-24 16:57:20.708 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_state_msg:1836 [1645] group 3 
+11-24 16:57:20.708 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_inform_stop_msg:1680 [1645] stop msg comming, sender id:[3] msg id:[38]
+11-24 16:57:20.708 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_inform_stop_msg:1697 [1645] [source switch]tts is stop now!
+11-24 16:57:20.708 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_player_exist_playing:928 [1645] bt 0,uri 0, prompt 0 , tts 0
+11-24 16:57:20.708 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_play_list:2439 [1645] speech starting and dequeue wakeup prompt, return!
+11-24 16:57:20.708 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_dequeue_playlist:2413 [1645] Message type is  PLAY_PROMPT, permit prompt to play !
+11-24 16:57:20.708 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_send_permit_to_prompt:1043 [1645] permit prompt play, id:[34]!
+11-24 16:57:20.708 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:playbackStatusFeedback:233 [1645] send player status change to AM, agmc=3148529, type:0  status:prepared
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_send_permit_to_source:985 [1645] audio_service,data 0x8fee9824, type 2 cmd 10400022
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:161 [1645] SOURCE_TTS
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandleTtsFeedback:389 [1645] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = interupt,type = tts,agmcId(tts_id) =5245679
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:playbackStatusFeedback:233 [1645] send player status change to AM, agmc=5245679, type:1  status:interupt
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:174 [1645] [asm] msg_id: [4:MSG_TYPE_ID_AS] grp:0x0 body: [0:SM_BODY_STOP] source: [3:SOURCE_TTS] ext_id: [63:ALI_STUB_CMD_TTS_FEEDBACK]
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_state_msg:1836 [1645] group 0 
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:174 [1645] [asm] msg_id: [2:MSG_TYPE_ID_SM] grp:0x3 body: [0:SM_BODY_STOP] source: [3:SOURCE_TTS] ext_id: [38:ALI_STUB_CMD_PAUSE]
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_state_msg:1836 [1645] group 3 
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_inform_stop_msg:1680 [1645] stop msg comming, sender id:[3] msg id:[38]
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_inform_stop_msg:1697 [1645] [source switch]tts is stop now!
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_player_exist_playing:928 [1645] bt 0,uri 0, prompt 1 , tts 0
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_play_list:2442 [1645] speech starting or enable continue chat, return!
+11-24 16:57:20.709 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:20.723 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:156 [1645] SOURCE_PROMPT
+11-24 16:57:20.723 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandlePromptFeedback:255 [1645] <ALI_STUB_APP> agmcId is:3148529, status:play, type:normal, index:17, errorInfo:0, feedback:0
+11-24 16:57:20.723 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:playbackStatusFeedback:233 [1645] send player status change to AM, agmc=3148529, type:0  status:play
+11-24 16:57:20.724 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:174 [1645] [asm] msg_id: [4:MSG_TYPE_ID_AS] grp:0x0 body: [0:SM_BODY_STOP] source: [4:SOURCE_PROMPT] ext_id: [64:ALI_STUB_CMD_PROMPT_FEEDBACK]
+11-24 16:57:20.724 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_state_msg:1836 [1645] group 0 
+11-24 16:57:20.724 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:20.724 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:174 [1645] [asm] msg_id: [2:MSG_TYPE_ID_SM] grp:0x3 body: [1:SM_BODY_PLAY] source: [4:SOURCE_PROMPT] ext_id: [34:ALI_STUB_CMD_SPEECH_FEEDBACK]
+11-24 16:57:20.724 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_state_msg:1836 [1645] group 3 
+11-24 16:57:20.724 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_inform_play_msg:1515 [1645] ui4_sender_id 4,msg_id 34 
+11-24 16:57:20.724 W/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_inform_play_msg:1556 [1645] [source switch]Unknown source type=4
+11-24 16:57:20.724 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:21.351 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:156 [1645] SOURCE_PROMPT
+11-24 16:57:21.351 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandlePromptFeedback:255 [1645] <ALI_STUB_APP> agmcId is:3148529, status:complete, type:normal, index:17, errorInfo:0, feedback:0
+11-24 16:57:21.352 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:playbackStatusFeedback:233 [1645] send player status change to AM, agmc=3148529, type:0  status:complete
+11-24 16:57:21.352 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:174 [1645] [asm] msg_id: [4:MSG_TYPE_ID_AS] grp:0x0 body: [0:SM_BODY_STOP] source: [4:SOURCE_PROMPT] ext_id: [64:ALI_STUB_CMD_PROMPT_FEEDBACK]
+11-24 16:57:21.352 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_state_msg:1836 [1645] group 0 
+11-24 16:57:21.352 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:21.738 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:174 [1645] [asm] msg_id: [2:MSG_TYPE_ID_SM] grp:0x3 body: [0:SM_BODY_STOP] source: [4:SOURCE_PROMPT] ext_id: [34:ALI_STUB_CMD_SPEECH_FEEDBACK]
+11-24 16:57:21.738 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_state_msg:1836 [1645] group 3 
+11-24 16:57:21.738 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_inform_stop_msg:1680 [1645] stop msg comming, sender id:[4] msg id:[34]
+11-24 16:57:21.738 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_inform_stop_msg:1691 [1645] [source switch]prompt is stop now!
+11-24 16:57:21.738 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_player_exist_playing:928 [1645] bt 0,uri 0, prompt 0 , tts 0
+11-24 16:57:21.738 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_play_list:2439 [1645] speech starting and dequeue wakeup prompt, return!
+11-24 16:57:21.738 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 16:57:22.046 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=14645976) - not a request written just now
+11-24 16:57:24.102 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=14648032) - not a request written just now

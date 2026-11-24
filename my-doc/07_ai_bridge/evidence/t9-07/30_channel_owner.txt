@@ -1,0 +1,13 @@
+﻿== T9-07 channel owner = new uid 10058 ==
+   inbox: drwx------ 2 u0_a58 u0_a58 4096 2026-11-24 16:52 /data/local/tmp/t9_ui/inbox
+   allowed_uids: 10058
+   restarting worker pid=21262 so it reads the new allowlist
+started: pid=22377 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T16:55:00 lock acquired; previous owner pid=21262 no longer holding it
+[aiw] 2026-11-24T16:55:00 ui events: dir=/data/local/tmp/t9_ui events=/data/local/tmp/t9_ui/events gid=10058 perms=0640 root:<gid> / 0750 keep=512 seq=1
+[aiw] 2026-11-24T16:55:00 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+   worker pid=22377
+   cmdline: /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10058 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10058 
+   events dir: drwxr-x--- 2 root u0_a58 4096 2026-11-24 16:52 /data/local/tmp/t9_ui/events
+== done ==
+EXIT=0

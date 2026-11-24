@@ -1,0 +1,21 @@
+﻿== T9-07 deploy ==
+   backup kept       -> /data/local/tmp/t9/t9_07/backup/ai_worker.t9_06r1 (not overwritten)
+   launcher backup kept -> /data/local/tmp/t9/t9_07/backup/run_ai_worker.sh.t9_06r1 (not overwritten)
+   backup sha256 6d03c281a60d1429a270d07c264abd54db99239801d89e20a7fb55904bc90d76  /data/local/tmp/t9/t9_07/backup/ai_worker.t9_06r1
+   backup sha256 d4267a3167d08aa0bbdacaae9a345b579a09c4df7fd66c8a429b0d35b017181b  /data/local/tmp/t9/t9_07/backup/run_ai_worker.sh.t9_06r1
+   stopping worker pid=21154
+   installed:
+     sha256 94870a4b4a0c42443cdd30b17bb880b35b9e1965bffa4babbdb78feb6fa88b23  /data/local/tmp/t5_bridge/bin/ai_worker
+     sha256 c90d15cd8e0f85a69efc386338e4ec2ff1aa2683ce6489c73ab34c6b59e99e25  /data/local/tmp/t5_bridge/run_ai_worker.sh
+started: pid=21262 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T16:50:52 lock acquired; previous owner pid=21154 no longer holding it
+[aiw] 2026-11-24T16:50:52 ui events: dir=/data/local/tmp/t9_ui events=/data/local/tmp/t9_ui/events gid=10057 perms=0640 root:<gid> / 0750 keep=512 seq=0
+[aiw] 2026-11-24T16:50:52 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+   worker pid=21262
+   cmdline: /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10057 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10057 
+   events dir: drwxr-x--- 2 root u0_a57 4096 2026-11-24 16:50 /data/local/tmp/t9_ui/events
+   status    : -rw-r----- 1 root u0_a57 512 2026-11-24 16:50 /data/local/tmp/t9_ui/status.public.json
+   status JSON:
+{"v":1,"ts":"2026-11-24T16:50:56","ts_ms":1795510256788,"pid":21262,"worker":"running","uptime_ms":4309,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"idle","sc":"IDLE","round":0,"session":"","listening":0,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":0,"inbox_rejected":0,"gate_released":0,"route_native":0,"ui_published":0,"ui_errors":0}}
+== deploy done ==
+EXIT=0
