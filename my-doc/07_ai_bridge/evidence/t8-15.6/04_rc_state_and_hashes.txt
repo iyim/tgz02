@@ -1,0 +1,40 @@
+﻿### date
+2026-11-24 12:32:48
+### rc file in /system/etc/init
+-rw-r--r-- 1 root root 2486 2026-11-24 12:26 /system/etc/init/tg_stack.rc
+190f611ca8e9e1aa8fe9729fdd23da58da76cd87984c44736de940fa53fd2b15  /system/etc/init/tg_stack.rc
+### backup of the removed T6 entry
+total 8
+-rw-r--r-- 1 root root  100 2026-11-24 12:26 sha256.before
+-rw-r--r-- 1 root root 2114 2026-11-24 12:26 tg_supervisor.rc
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  /system/etc/init/tg_supervisor.rc
+### init service state (old T6 service must be gone)
+
+running
+running
+stopped
+### /system mount
+/dev/block/mmcblk0p19 on /system type ext4 (ro,seclabel,relatime,data=ordered)
+### :core and injected libs
+core=1150
+/data/local/tmp/t7/libtg_ttsguard_t8156.so
+/data/local/tmp/t8/libtg_hook.so
+### supervisors and runtime
+ 1146     1 tg_supervisor
+ 1147     1 tg_supervisor
+ 1602     1 tgb_bridge
+ 2331  2311 app_process
+ 2425  2331 logcat
+ 2639     1 logcat
+ 6072     1 ai_worker
+ 6154  6153 app_process
+### guard binaries in use
+67d96b38870bb540a9d7f11b6e902739e5b2fcb92eaacb095e5d3d7bde0cf9e0  /data/local/tmp/t7/libtg_ttsguard_t8156.so
+99dd4fcdf0231fa2a2fa8c7906b8ff55edbf0eff2568030753ad97f52f17489e  /data/local/tmp/t5_bridge/bin/ai_worker
+5be226901fb11d3ab5ff81410f43d834b72b7f9243d1ded58550bb0ac8138f85  /data/local/tmp/t8/libtg_hook.so
+### guard boot-scope lines (logcat tag tgt, first 6)
+--------- beginning of system
+--------- beginning of main
+### current request/hold state
+continuity.req = [205108]
+listen_hold    = []

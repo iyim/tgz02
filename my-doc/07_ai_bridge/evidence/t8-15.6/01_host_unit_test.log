@@ -1,0 +1,9 @@
+﻿# T8-15.6 boot-scope contract unit test log (host)
+# host time: 2026-11-24 12:25:32
+cc: C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t8_156_boot_scope_unit_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t8_156_boot_scope_unit_test.c
+(no compiler output: 0 warning, 0 error)
+
+
+T8-15.6 boot-scope unit test: 47 passed, 0 failed
+
+# result: PASS

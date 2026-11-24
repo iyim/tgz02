@@ -1,0 +1,32 @@
+﻿### stale seq written: 150289540 (now=289540)
+### restart core (guard re-injects and restarts its continuity thread)
+core before=1150 after=6231
+/data/local/tmp/t7/libtg_ttsguard_t8156.so
+/data/local/tmp/t8/libtg_hook.so
+### guard's start-up decision + first polls
+--------- beginning of system
+--------- beginning of main
+11-24 12:33:01.642 I/tgt     ( 1150): continuity req: seq=150289540 rejected (in the future; baseline=205108, now=289639) - not a request written just now
+11-24 12:33:02.646 I/tgt     ( 6231): libtg_ttsguard.so loaded (pid=6231); waiting for tg_hook_install() (native_allow=1 file=/data/local/tmp/t5_bridge/work/native_route.public.json)
+11-24 12:33:02.650 I/tgt     ( 6231): renew: conf=/data/local/tmp/t7/renew.conf renew_ms=0 renew_max=0 continuity_enable=1 file=/data/local/tmp/t7/continuity.req auto=1 play_file=/data/local/tmp/t5_bridge/tts/play.public.json auto_max=12
+11-24 12:33:02.653 I/tgt     ( 6231): prepare ok: base=0x96304000 playTts=0x96423afc onTtsStart=0x96423110 onStopTalk=0x96417918 (renew_ms=0 continuity=1 startTalk=0x96400ff8 proxyStartTalk=0x963ed0a8)
+11-24 12:33:02.669 I/tgt     ( 6231): installed: onTtsStart patch=96423110 stub=b1f7e100 tramp=b1f7e180 ; playTts patch=96423afc stub=b1f7e000 tramp=b1f7e080
+11-24 12:33:02.669 I/tgt     ( 6231): installed: onStopTalk hook patch=96417918 stub=b1f7e200 tramp=b1f7e280 renew_ms=0 (also listening marker)
+11-24 12:33:02.669 I/tgt     ( 6231): installed: proxy startTalk marker patch=963ed0a8 stub=b1f7e300 tramp=b1f7e380
+11-24 12:33:02.669 I/tgt     ( 6231): continuity: armed, watching /data/local/tmp/t7/continuity.req (startTalk@96400ff8 type=1 auto=1 play=/data/local/tmp/t5_bridge/tts/play.public.json max=12)
+11-24 12:33:02.670 I/tgt     ( 6231): continuity: request baseline 150289540 ignored (implausible now=290667: written before this boot) - first valid seq will fire
+11-24 12:33:02.670 I/tgt     ( 6231): continuity req: seq=150289540 rejected (in the future; baseline=-1, now=290667) - not a request written just now
+11-24 12:33:02.670 I/tgt     ( 6231): continuity: auto baseline finished_ms=1795494666246
+11-24 12:33:04.736 I/tgt     ( 6231): continuity req: seq=150289540 rejected (in the future; baseline=-1, now=292730) - not a request written just now
+11-24 12:33:06.783 I/tgt     ( 6231): continuity req: seq=150289540 rejected (in the future; baseline=-1, now=294780) - not a request written just now
+11-24 12:33:08.845 I/tgt     ( 6231): continuity req: seq=150289540 rejected (in the future; baseline=-1, now=296842) - not a request written just now
+11-24 12:33:10.918 I/tgt     ( 6231): continuity req: seq=150289540 rejected (in the future; baseline=-1, now=298915) - not a request written just now
+11-24 12:33:12.961 I/tgt     ( 6231): continuity req: seq=150289540 rejected (in the future; baseline=-1, now=300958) - not a request written just now
+### now write a plausible request and see it accepted
+wrote 303220 at now=302020
+11-24 12:33:08.845 I/tgt     ( 6231): continuity req: seq=150289540 rejected (in the future; baseline=-1, now=296842) - not a request written just now
+11-24 12:33:10.918 I/tgt     ( 6231): continuity req: seq=150289540 rejected (in the future; baseline=-1, now=298915) - not a request written just now
+11-24 12:33:12.961 I/tgt     ( 6231): continuity req: seq=150289540 rejected (in the future; baseline=-1, now=300958) - not a request written just now
+11-24 12:33:14.165 I/tgt     ( 6231): continuity req: seq=303220 accepted (first) -> pending (attempt window 2500 ms)
+11-24 12:33:14.165 I/tgt     ( 6231): continuity req: seq=303220 firing after 1 ms
+11-24 12:33:14.165 I/tgt     ( 6231): continuity: worker-request seq=303220 startTalk(type=1, info+0=1) -> 0 (n=1 ok=0)

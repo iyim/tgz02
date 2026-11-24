@@ -5,6 +5,7 @@
 - 设备：TG-Z02 / AILABS_S1L，Android 8.1（SDK 27），`armeabi-v7a`，Magisk root，`192.168.1.9:5555`
 - 采集时间：2026-11-24 11:26 – 11:57（CST）
 - 本阶段只做取证、备份、只读校验，不改动任何程序；未 `pm disable` / `pm uninstall` / `am force-stop` 官方包。
+- **后续**：本文 §8 记录的两个缺陷已在 `T8-15.6` 修掉并通过真机验证，见 `T8_15_6_BOOT_SCOPE_AND_AUTOSTART.md`；本文保持为修复前的取证快照。
 
 ---
 

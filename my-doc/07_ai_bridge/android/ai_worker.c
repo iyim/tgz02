@@ -2300,6 +2300,36 @@ static void aiw_write_listen_hold(t6b_worker *w, int hold_ms, long long now_ms)
     always("listen hold: auto-listen suppressed for %d ms -> %s", hold_ms, path);
 }
 
+/* T8-15.6：开机作用域清理。
+ * listen_hold 里存的是"CLOCK_MONOTONIC 毫秒 + 时长"，重启后单调时钟回零，上一开机的
+ * 截止时间就变成一个几天后的未来值，守卫会把自动续听一直按 "stop/exit hold" 丢掉。
+ * 守卫侧已按 tg_hold_value_stale() 忽略这种值；worker 启动时顺手把它删掉，让磁盘状态
+ * 和现实一致（否则日志里永远躺着一条假 hold）。 */
+static void aiw_clear_stale_hold(t6b_worker *w)
+{
+    char path[T6B_PATH_MAX];
+    char buf[64];
+    long long until = 0;
+    FILE *f;
+
+    join_path(path, sizeof(path),
+              (w->cfg.state_dir[0] != '\0') ? w->cfg.state_dir : T6B_STATE_DIR_DEFAULT,
+              "listen_hold");
+    f = fopen(path, "r");
+    if (f == NULL) return;
+    if (fgets(buf, sizeof(buf), f) == NULL) {
+        fclose(f);
+        return;
+    }
+    fclose(f);
+    until = strtoll(buf, NULL, 10);
+    if (tg_hold_value_stale(until, wu_now_ms())) {
+        if (unlink(path) == 0) {
+            always("listen hold: removed stale expiry %lld (written before this boot)", until);
+        }
+    }
+}
+
 /* T8-15.3：向 native 守卫"请求开麦"（守卫轮询这个文件里的数字，变化即触发一次）。
  * 只写数字、不需要守卫回写，方向与 listen_hold 一致（worker 写 / 守卫读）。
  * T8-15.5：改成"临时文件 + rename"原子替换。旧的 fopen(...,"w") 会先把文件截断，
@@ -3249,6 +3279,8 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
                w.gate_hold_path);
         always("session: enabled=%d timeout=%dms (follow-up window after playback)",
                w.cs.cfg.enabled, w.cs.cfg.timeout_ms);
+        /* T8-15.6：开机作用域 —— 上一开机的 listen_hold 截止时间在这里清掉 */
+        aiw_clear_stale_hold(&w);
         always("skill dispatch: enabled=%d registered=%d time_query=%d "
                "(off = native routing untouched)",
                c->skill_dispatch,

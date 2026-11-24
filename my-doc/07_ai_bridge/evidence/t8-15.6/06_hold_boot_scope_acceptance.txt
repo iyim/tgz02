@@ -1,0 +1,14 @@
+﻿### now_mono_ms=108070  2026-11-24 12:30:00
+### write a stale hold (now + 150,000,000 ms ~ 1.7 days)
+150108070
+### write a plausible request (now + 1200 ms)
+109270
+### wakeupType=1 lines before=3
+### wakeupType=1 lines after=3
+### guard decision
+11-24 12:30:00.303 I/tgt     ( 1150): continuity req: seq=109270 accepted (new) -> pending (attempt window 2500 ms)
+11-24 12:30:00.303 I/tgt     ( 1150): continuity: hold value 150108070 is stale (41.7 h ahead of now) - ignoring, it was written before this boot
+11-24 12:30:00.303 I/tgt     ( 1150): continuity req: seq=109270 firing after 0 ms
+11-24 12:30:00.304 I/tgt     ( 1150): continuity: worker-request seq=109270 startTalk(type=1, info+0=1) -> 0 (n=3 ok=0)
+### result
+FAIL: no new factory session (stale hold still suppressing?)

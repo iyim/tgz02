@@ -911,6 +911,21 @@ static int hold_active(void)
     }
     fclose(f);
     until = strtoll(buf, NULL, 10);
+    if (tg_hold_value_stale(until, mono_ms())) {
+        static long long logged_stale;
+        long long now = mono_ms();
+
+        /* T8-15.6: the expiry lies far beyond any hold we write -> it was written before the
+         * last boot (CLOCK_MONOTONIC restarted). Ignoring it is the safe direction here:
+         * an expired hold only costs one extra re-listen, a stuck one disables the feature. */
+        if (now - logged_stale > 5000) {
+            logged_stale = now;
+            slog("continuity: hold value %lld is stale (%.1f h ahead of now) - ignoring, "
+                 "it was written before this boot", until,
+                 (double)(until - now) / 3600000.0);
+        }
+        return 0;
+    }
     active = (until > mono_ms());
     if (active) {
         static long long logged;
@@ -999,12 +1014,27 @@ static void *tg_continuity_thread(void *arg)
          g_cont_file, g_func_starttalk, g_cont_type, g_cont_auto, g_play_file, g_cont_auto_max);
     /* 先把当前请求序号读进来：启动时已有的序号不算新请求。
      * T8-15.5：只有"完整合法"的序号才能当基线；空文件/半截内容不建基线（守卫启动时
-     * 文件为空 = 还没有任何请求，下一条合法序号就是真请求）。 */
-    if (tg_req_read(g_cont_file, &req.last_seq) == 0) {
-        slog("continuity: request baseline seq=%lld", req.last_seq);
-    } else {
-        slog("continuity: request baseline: %s empty/invalid at start - first valid seq will fire",
-             g_cont_file);
+     * 文件为空 = 还没有任何请求，下一条合法序号就是真请求）。
+     * T8-15.6：还要"时间上说得通"才当基线。重启后文件里留着上一开机的单调时钟毫秒
+     * （例如 166673741，而本次开机 now 只有 5.4e5），若照抄成基线，接下来 worker 写的
+     * 小序号就落进 "below baseline" 被静默 rebase ——真机上表现为"重启后续听永久失效"。
+     * 所以起始基线只在 [now-120s, now+1.5s] 内才采纳；范围外的旧值不建基线、只记日志。 */
+    {
+        long long boot_seq = 0;
+
+        if (tg_req_read(g_cont_file, &boot_seq) == 0) {
+            if (tg_req_plausible(boot_seq, mono_ms())) {
+                req.last_seq = boot_seq;
+                slog("continuity: request baseline seq=%lld", boot_seq);
+            } else {
+                slog("continuity: request baseline %lld ignored (implausible now=%lld: "
+                     "written before this boot) - first valid seq will fire",
+                     boot_seq, mono_ms());
+            }
+        } else {
+            slog("continuity: request baseline: %s empty/invalid at start - first valid seq will fire",
+                 g_cont_file);
+        }
     }
     while (g_cont_run) {
         long long seq = -1;

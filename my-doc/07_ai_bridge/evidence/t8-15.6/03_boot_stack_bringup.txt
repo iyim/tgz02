@@ -1,0 +1,38 @@
+﻿### boot_stack.log (unattended bring-up after reboot)
+[2026-11-24 12:28:26] === boot_stack start pid=1148 ===
+[2026-11-24 12:28:26] core=1150 after 0s
+[2026-11-24 12:28:30] our .so mapping lines in :core = 6
+[2026-11-24 12:28:32] bridge: started: pid=1602 sock=abstract:tgz2_asr_bridge work=/data/local/tmp/t5_bridge/work {"type":"CONFIG","sock":"abstract:tgz2_asr_bridge","work_dir":"/data/local/tmp/t5_bridge/work","max_clients":8,"dedup_cap":8192,"fault_after_writes":-1,"text_max_bytes":511,"body_max":1024} {"type":"READY","pid":1602,"events_stored":0,"replay_lines":70,"bad_lines":0,"truncated_bytes":0,"dedup_size":70} 
+[2026-11-24 12:28:49] tts:    started: supervisor=2311 executor=2331 
+[2026-11-24 12:28:52] worker: started: pid=2543 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker [aiw] 2026-11-24T12:28:51 lock acquired; previous owner pid=23795 no longer holding it [aiw] 2026-11-24T12:28:51 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json [aiw] 2026-11-24T12:28:51 system prompt: 689 bytes, placed at messages[0] (role=system, outside context eviction) 
+[2026-11-24 12:28:54] tap:    tap started: pid=2639 file=/data/local/tmp/t5_bridge/ai_worker/factory_talk.log 
+[2026-11-24 12:28:57] processes:  1146 tg_supervisor| 1147 tg_supervisor| 1602 tgb_bridge| 2331 app_process| 2425 logcat| 2543 ai_worker| 2639 logcat|
+[2026-11-24 12:28:57] === boot_stack done ===
+
+### worker log, boot window 12:28:40 - 12:29:40
+
+### factory tap, boot window
+11-24 12:28:48.009 D/SessionManager( 1150): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1610] sessionId = 1970986, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 12:28:56.964 D/SessionManager( 1150): JNI_AILABS SessionManager.cpp:onStopTalk:697 [1610] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 12:29:29.923 D/SessionManager( 1150): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1610] sessionId = 1966899, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 12:29:33.967 D/SessionManager( 1150): JNI_AILABS SessionManager.cpp:onStopTalk:697 [1610] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 12:29:35.533 D/SessionManager( 1150): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1610] sessionId = 1970999, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 12:29:45.854 D/SessionManager( 1150): JNI_AILABS SessionManager.cpp:onStopTalk:697 [1610] onStopTalk, mStopTalkReason = 1, reason = silenceTimeout
+
+### guard lines from the boot window (logcat ring buffer)
+
+### current state
+init.svc.tg_hook_sup=running
+init.svc.tg_guard_sup=running
+init.svc.tg_stack=stopped
+core=6231
+/data/local/tmp/t7/libtg_ttsguard_t8156.so
+/data/local/tmp/t8/libtg_hook.so
+ 1146     1 tg_supervisor
+ 1147     1 tg_supervisor
+ 1602     1 tgb_bridge
+ 2331  2311 app_process
+ 2425  2331 logcat
+ 2639     1 logcat
+ 6072     1 ai_worker
+ 6551  6550 app_process

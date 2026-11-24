@@ -1,0 +1,8 @@
+﻿wrote stale hold=150255250 (now=255250)
+150255250
+### worker log lines mentioning listen hold
+[aiw] 2026-11-24T12:32:31 listen hold: removed stale expiry 150255250 (written before this boot)
+### hold file now
+ls: /data/local/tmp/t5_bridge/ai_worker/listen_hold: No such file or directory
+### worker pid
+ 6072 ai_worker

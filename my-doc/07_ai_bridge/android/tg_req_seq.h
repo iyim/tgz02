@@ -180,6 +180,40 @@ static inline int tg_req_write_atomic(const char *path, long long seq)
  *      （第一条真请求静默落地，第二条开始正常触发）。
  *
  * 于是"开麦"只剩两种来源：没有基线，或者序号比基线大且时间上说得通。 */
+/* T8-15.6: boot scope.
+ *
+ * Both the request seq (ai_worker) and the listen hold expiry (ai_worker -> guard) are
+ * CLOCK_MONOTONIC milliseconds, which restart from ~0 on every boot. The guard used to
+ * take whatever the request file already held as its baseline at start-up, so after a
+ * reboot the previous boot's value became the baseline: the new (much smaller) seq then
+ * fell into "below baseline" and was rebased silently instead of firing. Holding the old
+ * hold value blocked auto-listening for the remainder of the old expiry (~ days).
+ *
+ * Fix without weakening T8-15.5R: at start-up (and only there) a value is taken as the
+ * baseline when it is plausible *right now*; anything older than TG_REQ_CLOCK_STALE_MS or
+ * further in the future than TG_REQ_CLOCK_SLACK_MS cannot have been written in this boot
+ * and is ignored, so the next real request is accepted as "first". The mid-run rules in
+ * tg_req_accept() are untouched.
+ */
+static inline int tg_req_plausible(long long seq, long long now_ms)
+{
+    if (seq < TG_REQ_MIN_SEQ) return 0;
+    if (seq > now_ms + TG_REQ_CLOCK_SLACK_MS) return 0;
+    if (seq + TG_REQ_CLOCK_STALE_MS < now_ms) return 0;
+    return 1;
+}
+
+/* T8-15.6: a hold written in a previous boot points at an expiry that is many times
+ * further out than any hold we ever write (stop = 20 s, exit = 60 s). Anything beyond
+ * TG_HOLD_HORIZON_MS is treated as stale and must not suppress auto-listening. */
+#define TG_HOLD_HORIZON_MS  300000LL   /* 5 min: 8x the longest hold we write */
+
+static inline int tg_hold_value_stale(long long until_ms, long long now_ms)
+{
+    if (until_ms <= 0) return 0;                 /* empty / junk: hold_active() already ignores it */
+    return (until_ms - now_ms > TG_HOLD_HORIZON_MS);
+}
+
 static inline const char *tg_req_accept(tg_req_state *st, long long seq, long long now_ms)
 {
     if (st == NULL) return NULL;

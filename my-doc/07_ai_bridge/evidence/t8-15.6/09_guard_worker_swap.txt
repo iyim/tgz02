@@ -1,0 +1,43 @@
+﻿### date
+2026-11-24 12:26:54
+### keep the previous worker for rollback
+saved ai_worker.t8155r
+### stop worker, install the new one
+stopped: pid=12628
+[aiw] 2026-11-24T12:26:55 file identity: reason=first_open offset=20739 prefix_hash=4ca265bae7506380 resets=0 legacy_rescans=0 replacements=0 truncations=0
+[aiw] 2026-11-24T12:26:55 provider summary: name=deepseek model=deepseek-flash calls=0 ok=0 err=0 timeout=0 last_http=0 last_curl=0 last_class= last_latency=0ms last_resp_bytes=0
+worker installed
+99dd4fcdf0231fa2a2fa8c7906b8ff55edbf0eff2568030753ad97f52f17489e  /data/local/tmp/t5_bridge/bin/ai_worker
+67d96b38870bb540a9d7f11b6e902739e5b2fcb92eaacb095e5d3d7bde0cf9e0  /data/local/tmp/t7/libtg_ttsguard_t8156.so
+### restart the guard supervisor at the new .so
+stopped old guard supervisor 18941
+### restart :core
+core before=18956
+core after=23509
+/data/local/tmp/t7/libtg_ttsguard_t8156.so
+/data/local/tmp/t8/libtg_hook.so
+### start worker + tap
+started: pid=23795 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T12:27:11 lock acquired; previous owner pid=12628 no longer holding it
+[aiw] 2026-11-24T12:27:11 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+tap already running: pid=12652
+### processes
+12274     1 tgb_bridge
+12579 12575 app_process
+12597 12579 logcat
+12652     1 logcat
+18925     1 tg_supervisor
+23498 23468 tg_supervisor
+23795     1 ai_worker
+### guard log tail
+inj| [inject] tg_hook_install() = 0 (threads resumed)
+inj| [inject] hook_status=0 hooked=1
+inj| [inject] stats=state=0 hooked=1 play=1 start=1 func_play=97720afc func_start=97720110 play_seen=0 ours=0 not_ours=0 start_seen=0 allowed=0 dropped=0 hit_id=0 hit_text=0 empty=0 native_allowed=0 native_session=0 native_window=0 native_miss=0 native_reads=0 native_expired=0 native_bad=0 native_seq=0 native_file=/data/local/tmp/t5_brid
+inj| [inject] RESULT ok pid=23509 already_mapped=1 check_only=0
+inj| [inject] detached (target thread resumed)
+2026-11-24 12:27:04.096 sup: inject end: pid=23509 exit=0 hooked=1 elapsed=1725ms ok
+### worker log tail
+[aiw] 2026-11-24T12:27:12 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T12:27:12 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T12:27:12 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T12:27:12 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0

@@ -5,6 +5,7 @@
 - 实验窗口：2026-11-24 11:35 – 11:56（CST）
 - 前置条件：T9-01 备份与恢复材料已校验（19/19 SHA256 一致），见 `T9_01_DEVICE_BASELINE_AND_RECOVERY.md`
 - 本阶段**未使用** `pm disable` / `pm uninstall` / `am force-stop`；未修改原厂任何文件、未删除数据、未改 `shared_prefs`
+- **后续**：§7 提到的两个跨重启缺陷已在 `T8-15.6` 修掉并通过真机验证（含重启后整套栈自启），见 `T8_15_6_BOOT_SCOPE_AND_AUTOSTART.md`；本文保持为修复前的实验快照。
 
 ---
 
