@@ -1,0 +1,40 @@
+﻿=== date
+Tue Nov 24 15:09:49 CST 2026
+=== the accepted TTS executor
+ai_worker=2580
+tts_exec=
+root          2388  2373  863396  33988 futex_wait_queue_me b0433ce8 S app_process
+root         22416 22415   41496  17996 0            aa719ab4 R app_process
+--- cmdline / uid of each app_process
+pid=2388 uid= cmd=app_process /system com.tgz02.tts.TtsExec --root /data/local/tmp/t5_bridge/tts --idle-ms 0 --timeout-ms 60000 --verbose 
+pid=22416 uid= cmd=/system/bin/app_process /system/bin com.android.commands.content.Content call --uri content://com.topjohnwu.magisk.provider --user 0 --method log --extra from.uid:i:2000 --extra to.uid:i:0 --extra pid:i:22412 --extra policy:i:2 --extra target:i:-1 --extra context:s: --extra gids:s: --extra command:s:sh /data/local/tmp/t9/t9_05/dev_20_device_facts.sh --extra notify:b:true 
+=== tts tree permissions (can a normal app write here?)
+drwxrwx--x 21 shell shell 4096 2026-11-24 11:27 /data/local/tmp
+drwxrwxrwx 11 shell shell 4096 2026-11-24 14:59 /data/local/tmp/t5_bridge
+drwxrwxrwx  8 shell shell 4096 2026-11-24 14:59 /data/local/tmp/t5_bridge/tts
+drwx------ 2 root root 36864 2026-11-24 14:59 /data/local/tmp/t5_bridge/tts/done
+drwx------ 2 root root  4096 2026-11-24 14:59 /data/local/tmp/t5_bridge/tts/queue
+-rw-r--r-- 1 root root 259 2026-11-24 14:59 /data/local/tmp/t5_bridge/tts/play.public.json
+{
+  "v": 1,
+  "pid": 2388,
+  "updated_ms": 1795503565595,
+  "state": "idle",
+  "event_id": "t904postcheck",
+  "tts_id": 5245513,
+  "started_ms": 1795503563015,
+  "finished_ms": 1795503565595,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}=== probe app uid vs those dirs
+uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0
+=== provider declared state (runtime)
+    authority=com.alibaba.ailabs.genie.assistant.provider
+    externals: w/token=1
+    Connections:
+--
+  com.alibaba.ailabs.genie.assistant.provider: 60306d4/com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.provider.StatusProvider
+  com.shere.assistivetouch.settings: dc4d358/com.shere.assistivetouch/com.shere.easytouch.module.service.model.db.EasytouchProvider
+  com.android.contacts.dumpfile: ea123ac/com.android.providers.contacts/.debug.DumpFileProvider
+=== END

@@ -1,0 +1,26 @@
+﻿=== date
+Tue Nov 24 15:10:04 CST 2026
+=== app uid
+uid=10056(u0_a56) gid=10056(u0_a56) groups=10056(u0_a56) context=u:r:untrusted_app:s0:c512,c768
+=== read play.public.json (completion state of the accepted executor)
+{
+  "v": 1,
+  "pid": 2388,
+  "updated_ms": 1795503565595,
+  "state": "idle",
+  "event_id": "t904postcheck",
+  "tts_id": 5245513,
+  "started_ms": 1795503563015,
+  "finished_ms": 1795503565595,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}=== try to WRITE into the accepted queue (this is the submit path)
+sh: can't create /data/local/tmp/t5_bridge/tts/queue/probe_from_ui.json: Permission denied
+write_exit=1
+total 0
+=== try to READ the journal (正文/统计?)
+head: /data/local/tmp/t5_bridge/tts/journal.jsonl: Permission denied
+=== can the app resolve the provider URI at all?
+No shell command implementation.
+=== END

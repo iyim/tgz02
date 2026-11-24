@@ -1,0 +1,27 @@
+﻿=== date
+Tue Nov 24 15:10:26 CST 2026
+=== launch the probe app (its own phases run, then it just sits there observing)
+=== wait for the probe phases to finish
+=== now let the ROOT executor speak
+tts_exec: enqueued event=t905worker bytes=33 queue=/data/local/tmp/t5_bridge/tts/queue ok=true
+=== observer lines from the app (uid     userId=10056)
+11-24 15:10:39.391 I/T905    (23505): OBSERVER onChange uri=content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245524?status=1 t=+9938ms
+11-24 15:10:40.791 I/T905    (23505): OBSERVER onChange uri=content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245524?status=3 t=+11338ms
+11-24 15:10:40.827 I/T905    (23505): OBSERVER onChange uri=content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245524?status=3 t=+11374ms
+11-24 15:11:12.803 I/T905    (23505): OBSERVER onChange uri=content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245525?status=1 t=+43350ms
+11-24 15:11:15.670 I/T905    (23505): OBSERVER onChange uri=content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245525?status=2 t=+46217ms
+11-24 15:11:16.114 I/T905    (23505): OBSERVER onChange uri=content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245525?status=3 t=+46661ms
+=== the worker's own tts id (play.public.json)
+{
+  "v": 1,
+  "pid": 2388,
+  "updated_ms": 1795504275710,
+  "state": "idle",
+  "event_id": "t905worker",
+  "tts_id": 5245525,
+  "started_ms": 1795504272681,
+  "finished_ms": 1795504275710,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}=== END

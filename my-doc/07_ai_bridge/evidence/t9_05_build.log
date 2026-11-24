@@ -1,0 +1,23 @@
+﻿== sources
+   src\com\tgz02\providerprobe\ProviderProbe.java
+== javac (release 8, android.jar)
+powershell : ע: D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t9_05_provider\src\com\tgz02\providerprobe\ProviderProbe
+.javaʹ�û򸲸����ѹ�ʱ�� API��
+所在位置 行:1 字符: 272
++ ... 5_provider; powershell -ExecutionPolicy Bypass -File build.ps1 2>&1 | ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ע: D:\tgz02\OS\...����ѹ�ʱ�� API��:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ע: �й���ϸ��Ϣ, ��ʹ�� -Xlint:deprecation ���±��롣
+== d8 (min-api 27)
+== aapt2 link
+== add classes.dex
+== keystore (shared with the T9-04 probe)
+== zipalign + apksigner
+== artifacts
+   classes.dex    12,040 B  sha256=e41756f5069dd91b7d1d6925a95cb52909e8eec1c511d798c4684e4e72df6099
+   provider_probe.apk    16,781 B  sha256=ec16f6747804082c1434cd5073e3d316bfea445767172aeea1735ec9c8d20c92
+Signer #1 certificate DN: CN=TGZ02-T904-probe, O=tgz02, C=CN
+Signer #1 certificate SHA-256 digest: d990074678488d78a6f1bdf06944d14180ed39dcf6e73ea36da35d4369e14ad7
+EXIT=0
