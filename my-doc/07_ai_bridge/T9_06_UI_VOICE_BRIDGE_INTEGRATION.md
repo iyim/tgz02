@@ -299,7 +299,7 @@ T9-06 inbox unit tests: 70 passed, 0 failed
 | C 三条顺序 | 连续三次提交，按序播报 | `20_acceptance_ae.txt` |
 | D 指定停止 | `stop` → `status=3`，journal `outcome=interrupted 3045 ms` | `20_acceptance_ae.txt` |
 | E 后台提交 | HOME 之后提交仍 `ok`，状态照收 | `20_acceptance_ae.txt` |
-| F **真实语音** | 主机播放 `r1.wake_time.wav` → 原厂 `onStartTalk session=1968827 wakeupWord=tian mao jing ling` → ASR → `skill=time.query` → 原厂 TTS `tts_id=5245631 outcome=ok 2063 ms` → 12 s 续听窗口 → CLOSED | `30_voice.txt` |
+| F **真实语音** | 见 §R1-F：一次干净的单轮 `wake → ASR → AI → 原厂 TTS`（`session=1968861` / `tts_id=5245665` / `outcome=ok 1938 ms`） | `evidence/t9-06r1-f/40_f_voice.txt` |
 | G **原厂指令后续听** | 播放 `wake_voldown.wav` → `route=native intent=volume rule=volume.down` → 守卫 `continuity req seq=12715009 accepted (new) → firing after 1 ms → startTalk(type=1)` → **6 ms 后原厂 `onStartTalk session=1972952 wakeupType=1`**，会话持续约 8.3 s 后 `abortListen (continuity)` | `35_g_run3.txt` |
 
 G 的两种观测值说明：worker 侧那行 `NOT confirmed within 5000 ms` 是它靠 `factory_talk.log` 做的**保守记账**；本轮该 tap 文件在 16:20 之后被日志轮转清空（重启 tap 后仍未恢复写入），所以记账模块看不到会话。能力本身由守卫日志 + 原厂会话日志双重证明：请求被接受、1 ms 内触发、6 ms 后原厂开出 continuity 会话。这是既有的可观测性脆弱点（T8-15.6 已记录过同类现象），**不是本轮引入的退化**。
@@ -318,3 +318,55 @@ G 的两种观测值说明：worker 侧那行 `NOT confirmed within 5000 ms` 是
 | 白名单只允许一个 uid（`allowed_uids` 支持多行，但当前只写 10057） | 设计如此 |
 | factory_talk tap 在日志轮转后可能停止写入，导致 worker 的 `CONFIRMED` 记账缺失 | 既有问题，本轮未改；能力本身有守卫/原厂双重日志证明 |
 | 进程被系统回收后 observer 是否还收状态、多 App 并发公平性 | 未测（与 T9-06 相同） |
+
+---
+
+# T9-06R1-FINAL：F 项真实语音闭环（补证，不改代码）
+
+基线 `7cf5e8e2`。本轮**只补 F 项证据**：Inbox/Worker/TTS 队列/权限方案一行未动（`git show --stat 7cf5e8e2..HEAD` 只有文档与证据）。
+
+## 更正上一轮的错误
+
+上一轮 `evidence/t9-06r1/30_voice.txt` 里的
+`Unable to open PCM device 0 (cannot set hw params: Invalid argument)`
+是 **设备端 `tinyplay` 失败的尝试**（wav 采样参数与 PCM 设备不匹配）。该文件里同时混进了 16:21 那次"主机播放"的间接痕迹，但没有给出同一次运行的原厂 TTS 状态链路——所以审查判它证据不成立是正确的。**本轮不再使用 tinyplay**，改为与 T8-15.x 里程碑一致的、已验证可行的方法：**主机扬声器播放唤醒音频，设备麦克风拾音**。
+
+## 本轮这一次（16:38:54 → 16:39:16，单轮，无历史拼接）
+
+采集方式：设备端重新起一个 `logcat`（`SessionManager/AGSpeechEngine/AudioStateManager/VoiceManager/TtsManager/tgt`）写入 `f_capture.log`；同时记录 `ai_worker.log` 与 `tts/journal.jsonl` 的**行号基线**（158 / 873），结束时空文件按基线只打印新增行。原始记录：`evidence/t9-06r1-f/40_f_voice.txt`。
+
+刺激：主机播放 `r1.wake_time.wav`（229,232 B，唤醒词 + 询问时间），主机播放窗口 16:38:56 → 16:39:02。
+
+| 时间 | 来源 | 事件 |
+|---|---|---|
+| 16:38:58.391 | 原厂 KWS | `onStartTalk session=1968861 wakeupType=0 wakeupWord=tian mao jing ling` |
+| 16:39:02.158 | 原厂 ASR | `onCloudEOUEvent`（一句话说完） |
+| 16:39:02.162 | 原厂 | `onStopTalk reason=normal`（session 1968861） |
+| 16:39:02 | AI worker | `route=skill skill=time.query event=t6-1178-1968861-g6 session=1968861 rule=time.keyword` |
+| 16:39:02 | AI worker | `skill ok code=OK took=0ms reply_bytes=9` → `tts queued` |
+| 16:39:02.472 | 原厂 TTS | `TtsManager playTts tts = "now 16:39"` |
+| 16:39:02.528 | 原厂 TTS | `onTtsStart sessionId=5245665 isStreaming=1` |
+| 16:39:02.571 / .581 | Provider | `tts_feedback status = play agmcId=5245665` / `onNotify id=5245665 status=1` |
+| 16:39:04.399 / .401 | Provider | `status = complete agmcId=5245665` / `onNotify id=5245665 status=2` |
+| 16:39:04.407 | TtsExec | `journal event_id=t6-1178-1968861-g6 tts_id=5245665 outcome=ok dur_ms=1938` |
+| 16:39:04.442 | 原厂 | `onStartTalk session=1972962 wakeupType=1`（12 s 续听窗口） |
+| 16:39:13.668 | 原厂 | `onCloudEOUEvent`，会话正常收尾 |
+
+同一轮里三处独立证据互相指向同一个 `tts_id`：原厂 TTS（5245665 开始/结束）、Provider 状态（`status=1`→`status=2`）、TtsExec journal（`event_id=t6-1178-1968861-g6` → `tts_id=5245665` → `outcome=ok`），再加 `play.public.json` 的 `event_id ↔ tts_id` 映射。
+
+守卫侧同轮记录（`tgt`）：
+
+```
+16:39:02.472 tgt: playTts -> allow-listed id=5245665 comm=Binder:1178_F text_bytes=9
+16:39:02.528 tgt: onTtsStart ALLOW id=5245665 by=session_id streaming=1 text_bytes=9
+```
+
+## 一处顺带观察（未修，记录在案）
+
+本轮采集窗口开头（16:38:46 → 16:39:01）守卫每 ~2 s 打一行
+`continuity req: seq=12715009 rejected (too old; baseline=12715009, now=…)`：
+这是 **G 项（16:25）留下的旧 `t7/continuity.req` 文件**被守卫反复读到。守卫拒绝它是正确行为（旧序号不得触发开麦），只是重复输出日志、略吵。属于既有行为，不在本轮修复范围（本轮按要求不改代码），已记录供后续清理。
+
+## 结论
+
+F 项满足要求：原厂唤醒词被识别 → 原厂 ASR 收到问题 → AI worker 处理 → 原厂 TTS 真实播报 → Provider 状态与 worker journal 关联到同一轮。T9-06 的全部验收项到齐。

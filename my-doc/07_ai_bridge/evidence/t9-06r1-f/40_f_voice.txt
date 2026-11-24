@@ -1,0 +1,100 @@
+﻿=== run window
+t0=2026-11-24 16:38:54   t1=2026-11-24 16:40:00
+worker_lines_before=158 journal_lines_before=873
+
+=== [1] factory wake / ASR / EOU / NLP (logcat, this run only)
+11-24 16:38:58.391 D/SessionManager( 1178): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1665] sessionId = 1968861, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 16:39:02.158 D/AGSpeechEngine( 1178): onCloudEOUEvent,646
+11-24 16:39:02.162 D/SessionManager( 1178): JNI_AILABS SessionManager.cpp:onStopTalk:697 [1665] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 16:39:04.442 D/SessionManager( 1178): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1665] sessionId = 1972962, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-24 16:39:13.668 D/AGSpeechEngine( 1178): onCloudEOUEvent,646
+11-24 16:39:13.677 D/SessionManager( 1178): JNI_AILABS SessionManager.cpp:onStopTalk:697 [1665] onStopTalk, mStopTalkReason = 0, reason = normal
+
+=== [2] factory TTS engine (this run only)
+11-24 16:39:02.470 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:playTts:295 [2801] isInterrupted, sessionId = 0
+11-24 16:39:02.472 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:playTts:388 [2801] tts = now 16:39, asrLogId = NULL
+11-24 16:39:02.528 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsStart:141 [1765] sessionId = 5245665, isStreaming = 1, tts = now 16:39
+11-24 16:39:02.528 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsStart:152 [1765] TTS_TIME receive command with stream, report TtsStreamCmdReceived.
+11-24 16:39:02.601 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsEnd:220 [1765] sessionId = 5245665
+11-24 16:39:02.627 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsEnd:220 [1765] sessionId = 1968861
+11-24 16:39:13.915 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsEnd:220 [1765] sessionId = 1972962
+
+=== [3] provider status as seen by the framework (VoiceManager onNotify / AudioStateManager)
+11-24 16:39:02.571 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandleTtsFeedback:389 [1645] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = play,type = tts,agmcId(tts_id) =5245665
+11-24 16:39:02.581 D/VoiceManager( 1178): onNotify id= 5245665 ,status = 1, uri = content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245665?status=1
+11-24 16:39:04.399 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandleTtsFeedback:389 [1645] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = complete,type = tts,agmcId(tts_id) =5245665
+11-24 16:39:04.401 D/VoiceManager( 1178): onNotify id= 5245665 ,status = 2, uri = content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245665?status=2
+11-24 16:39:04.838 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandleTtsFeedback:389 [1645] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = interupt,type = tts,agmcId(tts_id) =5245665
+11-24 16:39:05.195 D/VoiceManager( 1178): onNotify id= 5245665 ,status = 3, uri = content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245665?status=3
+
+=== [4] guard (tgt) lines
+11-24 16:38:46.676 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=13530606) - not a request written just now
+11-24 16:38:48.729 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=13532659) - not a request written just now
+11-24 16:38:50.779 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=13534709) - not a request written just now
+11-24 16:38:52.834 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=13536764) - not a request written just now
+11-24 16:38:54.897 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=13538827) - not a request written just now
+11-24 16:38:56.982 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=13540912) - not a request written just now
+11-24 16:38:59.051 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=13542981) - not a request written just now
+11-24 16:39:01.148 I/tgt     ( 1178): continuity req: seq=12715009 rejected (too old; baseline=12715009, now=13545078) - not a request written just now
+11-24 16:39:02.472 I/tgt     ( 1178): playTts -> allow-listed id=5245665 comm=Binder:1178_F text_bytes=9
+11-24 16:39:02.528 I/tgt     ( 1178): onTtsStart ALLOW id=5245665 by=session_id streaming=1 text_bytes=9
+
+=== [5] AI worker log, lines after the baseline (159+ )
+[aiw] 2026-11-24T16:39:02 route=skill skill=time.query event=t6-1178-1968861-g6 session=1968861 rule=time.keyword arg=- (native routing skipped for this utterance)
+[aiw] 2026-11-24T16:39:02 route=skill event=t6-1178-1968861-g6 seq=6 session=1968861 skill=time.query text_bytes=24
+[aiw] 2026-11-24T16:39:02 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T16:39:02 skill ok: skill=time.query event=t6-1178-1968861-g6 code=OK took=0ms reply_bytes=9
+[aiw] 2026-11-24T16:39:02 tts queued: event=t6-1178-1968861-g6 reply_bytes=9 queue=/data/local/tmp/t5_bridge/tts
+[aiw] 2026-11-24T16:39:02 skill tts queued: skill=time.query event=t6-1178-1968861-g6
+[aiw] 2026-11-24T16:39:02 session: state=WAIT_NEXT turns=0 followups=0 wait=12000ms (follow-up works only if factory keeps the listen session alive)
+[aiw] 2026-11-24T16:39:14 session: state=CLOSED (WAIT_NEXT->CLOSED (timeout)) turns=0 followups=0 (back to wake-word standby)
+[aiw] 2026-11-24T16:39:16 dialog closed: reason=relisten window expired rounds_done=0 followup_rounds=0 max_round=1 listening=0 followup_rounds_total=0 exit_turns=0
+
+=== [6] TTS journal, entries after the baseline
+{"ts":"2026-11-24T16:39:04.407+0800","kind":"tts","event_id":"t6-1178-1968861-g6","tts_id":5245665,"outcome":"ok","dur_ms":1938,"text_bytes":9,"attempts":1}
+
+=== [7] play.public.json (authoritative event_id -> tts_id)
+{
+  "v": 1,
+  "pid": 2388,
+  "updated_ms": 1795509544416,
+  "state": "idle",
+  "event_id": "t6-1178-1968861-g6",
+  "tts_id": 5245665,
+  "started_ms": 1795509542463,
+  "finished_ms": 1795509544416,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}
+=== [8] device / stack state
+core_pid=1178 libtg_mappings=6
+worker_pid=11995 cap_worker_pid=1602
+=== END
+
+=== [9] host side (this run, for the record)
+stimulus : D:\tgz02\OS\_analysis\t815\wav\r1.wake_time.wav  (229232 B, the T8-15.x fixture:
+           wake word "tian mao jing ling" followed by a spoken question asking the time)
+method   : played on the HOST speakers (System.Media.SoundPlayer), the device mic hears it.
+           tinyplay on the device was abandoned after it failed with
+           "Unable to open PCM device 0 (cannot set hw params: Invalid argument)" -
+           that error belongs to the EARLIER attempt and is not part of this run.
+host play: 16:38:56 -> 16:39:02 (CST)
+device t0: see "run window" above; capture started fresh, worker/journal filtered by baseline.
+
+=== one-round chain, all timestamps from THIS run
+16:38:58.391  factory KWS   onStartTalk session=1968861 wakeupType=0 wakeupWord=tian mao jing ling
+16:39:02.158  factory ASR   onCloudEOUEvent (end of utterance)
+16:39:02.162  factory       onStopTalk reason=normal (session 1968861)
+16:39:02      AI worker     route=skill skill=time.query event=t6-1178-1968861-g6 session=1968861
+16:39:02      AI worker     skill ok code=OK reply_bytes=9 -> tts queued
+16:39:02.472  factory TTS   playTts  tts = "now 16:39"
+16:39:02.528  factory TTS   onTtsStart sessionId=5245665 isStreaming=1
+16:39:02.571  provider      tts_feedback status = play     agmcId=5245665
+16:39:02.581  provider      onNotify id=5245665 status=1
+16:39:04.399  provider      tts_feedback status = complete agmcId=5245665
+16:39:04.401  provider      onNotify id=5245665 status=2
+16:39:04.407  TtsExec       journal event_id=t6-1178-1968861-g6 tts_id=5245665 outcome=ok dur_ms=1938
+16:39:04.442  factory       onStartTalk session=1972962 wakeupType=1 (the 12 s re-listen window)
+16:39:13.668  factory       onCloudEOUEvent, session closed normal
+=== END
