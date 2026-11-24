@@ -93,6 +93,15 @@ public final class VoiceBridgeClient {
         public long ok, err, timeout, inboxAccepted, inboxRejected, uiPublished, uiErrors;
         public boolean listening, tap, mock;
         public boolean present;
+        /* T9-08C: 模型配置面板需要的东西（都是明文配置值；key 不在里面） */
+        public boolean modelsEnabled, modelsActive;
+        public String modelsId = "", modelsVendor = "", modelsLabel = "", modelsModel = "", modelsMode = "";
+        public int modelsCount;
+        public long modelsReloads, modelsCalls, modelsOk, modelsErr, modelsTimeout, modelsLastMs;
+        public String modelsError = "", modelsLastClass = "", modelsLastError = "";
+        public String testId = "", testReason = "";
+        public boolean testRan, testOk;
+        public long testMs;
     }
 
     /** a submit that has not been answered yet */
@@ -236,6 +245,35 @@ public final class VoiceBridgeClient {
         } catch (Throwable t) {
             diag("stop request failed: " + t);
             return "停止请求没有写进去";
+        }
+    }
+
+    /**
+     * T9-08C: "测试连接" —— 让 worker 用指定的模型配置发一次最小请求。
+     *
+     * 为什么由 worker 发而不是 App 自己发：真正回答用户的是 worker 里的适配器（同样的 key、
+     * 同样的 base URL、同样的超时）。在这里另写一套 HTTP 只能证明"App 能联网"，证明不了
+     * "这个模型配置能用"。结果通过 status.public.json 的 models.test 回来（onStatus 会刷新）。
+     *
+     * modelId 为空 = 测当前生效的配置。返回 null = 请求已发出。
+     */
+    String requestModelTest(String modelId)
+    {
+        String eventId = newEventId("mt");
+        try {
+            JSONObject o = new JSONObject();
+            o.put("v", 1);
+            o.put("kind", "modeltest");
+            o.put("event_id", eventId);
+            if (modelId != null && modelId.length() > 0) o.put("model_id", modelId);
+            byte[] body = o.toString().getBytes("UTF-8");
+            if (!writeInbox(eventId, body)) return "测试请求没有写进去";
+            diag("model test requested id=" + (modelId == null ? "(active)" : modelId)
+                    + " event=" + eventId);
+            return null;
+        } catch (Throwable t) {
+            diag("model test request failed: " + t);
+            return "测试请求没有写进去";
         }
     }
 
@@ -502,6 +540,29 @@ public final class VoiceBridgeClient {
         lastStatus.inboxRejected = s.inboxRejected;
         lastStatus.uiPublished = s.uiPublished;
         lastStatus.uiErrors = s.uiErrors;
+        /* T9-08C：模型配置面板的字段也要同步到 lastStatus，否则界面读到的永远是初始值 */
+        lastStatus.modelsEnabled = s.modelsEnabled;
+        lastStatus.modelsActive = s.modelsActive;
+        lastStatus.modelsId = s.modelsId;
+        lastStatus.modelsVendor = s.modelsVendor;
+        lastStatus.modelsLabel = s.modelsLabel;
+        lastStatus.modelsModel = s.modelsModel;
+        lastStatus.modelsMode = s.modelsMode;
+        lastStatus.modelsCount = s.modelsCount;
+        lastStatus.modelsReloads = s.modelsReloads;
+        lastStatus.modelsError = s.modelsError;
+        lastStatus.modelsCalls = s.modelsCalls;
+        lastStatus.modelsOk = s.modelsOk;
+        lastStatus.modelsErr = s.modelsErr;
+        lastStatus.modelsTimeout = s.modelsTimeout;
+        lastStatus.modelsLastMs = s.modelsLastMs;
+        lastStatus.modelsLastClass = s.modelsLastClass;
+        lastStatus.modelsLastError = s.modelsLastError;
+        lastStatus.testId = s.testId;
+        lastStatus.testRan = s.testRan;
+        lastStatus.testOk = s.testOk;
+        lastStatus.testMs = s.testMs;
+        lastStatus.testReason = s.testReason;
         lastStatus.present = true;
     }
 
@@ -568,9 +629,37 @@ public final class VoiceBridgeClient {
                 s.uiPublished = c.optLong("ui_published", 0);
                 s.uiErrors = c.optLong("ui_errors", 0);
             }
+            /* T9-08C: 多厂商模型配置的现状（明文配置值，不含 key） */
+            JSONObject mm = o.optJSONObject("models");
+            if (mm != null) {
+                s.modelsEnabled = mm.optInt("enabled", 0) == 1;
+                s.modelsActive = mm.optInt("active", 0) == 1;
+                s.modelsId = mm.optString("id", "");
+                s.modelsVendor = mm.optString("vendor", "");
+                s.modelsLabel = mm.optString("label", "");
+                s.modelsModel = mm.optString("model", "");
+                s.modelsMode = mm.optString("mode", "");
+                s.modelsCount = mm.optInt("count", 0);
+                s.modelsReloads = mm.optLong("reloads", 0);
+                s.modelsError = mm.optString("error", "");
+                s.modelsCalls = mm.optLong("calls", 0);
+                s.modelsOk = mm.optLong("ok", 0);
+                s.modelsErr = mm.optLong("err", 0);
+                s.modelsTimeout = mm.optLong("timeout", 0);
+                s.modelsLastMs = mm.optLong("last_ms", 0);
+                s.modelsLastClass = mm.optString("last_class", "");
+                s.modelsLastError = mm.optString("last_error", "");
+                JSONObject t = mm.optJSONObject("test");
+                if (t != null) {
+                    s.testId = t.optString("id", "");
+                    s.testRan = t.optInt("ran", 0) == 1;
+                    s.testOk = t.optInt("ok", 0) == 1;
+                    s.testMs = t.optLong("ms", 0);
+                    s.testReason = t.optString("reason", "");
+                }
+            }
             s.present = true;
-            return s;
-        } catch (Throwable t) {
+            return s;        } catch (Throwable t) {
             return null;
         }
     }

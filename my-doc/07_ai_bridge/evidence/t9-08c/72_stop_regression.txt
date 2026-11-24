@@ -1,0 +1,2 @@
+﻿{"ts":"2026-11-24T23:44:11.551+0800","kind":"stop_targeted","event_id":"r2-08c-stop2","tts_id":5246827,"note":"playback of tts_id=5246827 stopped by the user"}
+{"ts":"2026-11-24T23:44:11.572+0800","kind":"tts","event_id":"r2-08c-stop2","tts_id":5246827,"outcome":"stopped","dur_ms":2559,"text_bytes":216,"attempts":1}

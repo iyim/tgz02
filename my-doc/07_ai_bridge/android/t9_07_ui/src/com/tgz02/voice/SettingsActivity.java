@@ -111,12 +111,34 @@ public final class SettingsActivity extends Activity implements VoiceBridgeClien
                 + (s.listening ? " · 麦克风开启" : "") : "-", Ui.TEXT_DIM);
         row("状态快照", s.present ? ago(s.tsMs) : "从未收到", Ui.TEXT_DIM);
 
-        /* placeholders on purpose: the model configuration (T9-08C) and the long-term memory
-         * manager (T9-08D) are not implemented yet, and saying so is better than an empty page
-         * or a switch that does nothing */
         section("大模型配置");
-        row("状态", "尚未实现（计划于 T9-08C）", Ui.TEXT_FAINT);
-        row("将提供", "服务商类型 / Base URL / API Key / 模型名 / 连接测试", Ui.TEXT_FAINT);
+        LinearLayout modelRow = new LinearLayout(this);
+        modelRow.setOrientation(LinearLayout.HORIZONTAL);
+        modelRow.setGravity(Gravity.CENTER_VERTICAL);
+        modelRow.setPadding(0, Ui.dp(this, 7), 0, Ui.dp(this, 7));
+        TextView ml = Ui.text(this, "接口配置", 14f, Ui.TEXT_DIM);
+        ml.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(this, 150),
+                                                         ViewGroup.LayoutParams.WRAP_CONTENT));
+        modelRow.addView(ml);
+        TextView mv = Ui.text(this, s.modelsActive
+                ? (ModelStore.vendorName(s.modelsVendor) + " · " + s.modelsModel
+                   + "（" + s.modelsCount + " 套）")
+                : (s.present ? ("未配置（已保存 " + s.modelsCount + " 套）") : "-"),
+                14f, s.modelsActive ? Ui.TEXT : Ui.WARN);
+        modelRow.addView(mv, new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        modelRow.addView(Ui.action(Ui.text(this, "配置", 14f, Ui.ACCENT), new Runnable() {
+            public void run() {
+                startActivity(new android.content.Intent(SettingsActivity.this,
+                        ModelConfigActivity.class));
+            }
+        }));
+        box.addView(modelRow);
+        row("最近调用", s.modelsCalls == 0 ? "尚无调用"
+                : (s.modelsOk + " 成功 / " + s.modelsErr + " 失败 / " + s.modelsTimeout + " 超时"),
+            s.modelsErr > 0 ? Ui.WARN : Ui.TEXT_DIM);
+        if (s.modelsLastError.length() > 0) row("最近错误", s.modelsLastError, Ui.ERR);
+        row("明文说明", "API Key 明文保存在 App 私有目录，可在配置页查看/修改", Ui.TEXT_FAINT);
 
         section("长期记忆");
         row("状态", "尚未实现（计划于 T9-08D）", Ui.TEXT_FAINT);

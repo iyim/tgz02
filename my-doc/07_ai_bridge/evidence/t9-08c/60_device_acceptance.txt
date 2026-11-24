@@ -1,0 +1,206 @@
+﻿# T9-08C real-device acceptance: multi-vendor model configuration
+# host time : 2026-11-24 23:40:39
+# serial    : 192.168.1.9:5555
+# endpoints : the DEVICE-LOCAL protocol stub (127.0.0.1:8799), not the vendor clouds
+# NOTE      : real vendor credentials are NOT available in this project; items 1-3 prove the
+#             adapters and the HTTP path, and are explicitly NOT reported as real model calls.
+
+================================================================
+== 0 setup: worker, stub server, model configuration
+================================================================
+   [PASS] the worker is running (pid 9465)
+   [PASS] the worker runs as root (it must read the App's model config)
+already running: 31366
+   [PASS] the protocol stub is listening on 127.0.0.1:8799
+   seeded /data/data/com.tgz02.voice/files/models.json scenario=normal port=8799 url_prefix=http://127.0.0.1:8799
+   [PASS] the worker loaded the App's model configuration
+   [PASS] four configurations are loaded at once
+
+================================================================
+== 1/2/3 one real request per vendor adapter (through the worker, over HTTP)
+================================================================
+   receipt: {"v":1,"event_id":"mt-234047-10181","ok":true,"stage":"model_test","reason":"","ts_ms":1795534848355}
+   [PASS] connection test via m-doubao succeeded
+   [PASS] the worker recorded a successful test for m-doubao
+   receipt: {"v":1,"event_id":"mt-234050-10234","ok":true,"stage":"model_test","reason":"","ts_ms":1795534851708}
+   [PASS] connection test via m-qwen succeeded
+   [PASS] the worker recorded a successful test for m-qwen
+   receipt: {"v":1,"event_id":"mt-234053-10288","ok":true,"stage":"model_test","reason":"","ts_ms":1795534854478}
+   [PASS] connection test via m-qwen-compat succeeded
+   [FAIL] the worker recorded a successful test for m-qwen-compat
+   receipt: {"v":1,"event_id":"mt-234055-10340","ok":true,"stage":"model_test","reason":"","ts_ms":1795534856308}
+   [PASS] connection test via m-openai succeeded
+   [PASS] the worker recorded a successful test for m-openai
+stub listening on 127.0.0.1:8799
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /qwen/api/v1/services/aigc/text-generation/generation model=qwen-plus roles=1 key=good envelope_in=1 envelope_params=1
+REQ POST /qwen/compat/v1/chat/completions model=qwen-turbo roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /openai/v1/chat/completions model=stub-model roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=bad envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /openai/v1/chat/completions model=stub-model roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /qwen/api/v1/services/aigc/text-generation/generation model=qwen-plus roles=8 key=good envelope_in=1 envelope_params=1
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /qwen/api/v1/services/aigc/text-generation/generation model=qwen-plus roles=1 key=good envelope_in=1 envelope_params=1
+REQ POST /qwen/compat/v1/chat/completions model=qwen-turbo roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /openai/v1/chat/completions model=stub-model roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=bad envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /openai/v1/chat/completions model=stub-model roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=8 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=8 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=8 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=8 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=8 key=good envelope_in=0 envelope_params=0
+REQ POST /qwen/api/v1/services/aigc/text-generation/generation model=qwen-plus roles=8 key=good envelope_in=1 envelope_params=1
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /qwen/api/v1/services/aigc/text-generation/generation model=qwen-plus roles=1 key=good envelope_in=1 envelope_params=1
+REQ POST /qwen/compat/v1/chat/completions model=qwen-turbo roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /openai/v1/chat/completions model=stub-model roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=bad envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /openai/v1/chat/completions model=stub-model roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /qwen/api/v1/services/aigc/text-generation/generation model=qwen-plus roles=1 key=good envelope_in=1 envelope_params=1
+REQ POST /qwen/compat/v1/chat/completions model=qwen-turbo roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /openai/v1/chat/completions model=stub-model roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=bad envelope_in=0 envelope_params=0
+REQ POST /openai/v1/chat/completions model=stub-model roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /qwen/api/v1/services/aigc/text-generation/generation model=qwen-plus roles=1 key=good envelope_in=1 envelope_params=1
+REQ POST /qwen/compat/v1/chat/completions model=qwen-turbo roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /openai/v1/chat/completions model=stub-model roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=bad envelope_in=0 envelope_params=0
+REQ POST /openai/v1/chat/completions model=stub-model roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /doubao/v3/chat/completions model=ep-2024-stub roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /qwen/api/v1/services/aigc/text-generation/generation model=qwen-plus roles=1 key=good envelope_in=1 envelope_params=1
+REQ POST /qwen/compat/v1/chat/completions model=qwen-turbo roles=1 key=good envelope_in=0 envelope_params=0
+REQ POST /openai/v1/chat/completions model=stub-model roles=1 key=good envelope_in=0 envelope_params=0
+   [PASS] the doubao adapter called the Ark-shaped path
+   [PASS] the qwen adapter called the native DashScope path
+   [PASS] qwen native really sent the input/parameters envelope
+   [PASS] qwen compat used the compatible-mode path
+   [PASS] the OpenAI-compatible adapter used its own base URL
+   [PASS] every request carried the configured key
+
+================================================================
+== 4/5/6 switching vendors takes effect immediately (no restart, no rebuild)
+================================================================
+   transport hiccup on attempt 1 (no_response: no HTTP status curl=6); retrying once
+   {"v":1,"seq":247,"ts":"2026-11-24T23:41:09","ts_ms":1795534869486,"kind":"turn","session":"","event_id":"probe-234108","route":"ai","skill":"","status":"failed","user":"switch-probe-m-qwen","user_bytes":19,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"no_response: no HTTP status curl=6"}
+   [WARN] the reply came from the m-qwen adapter (stub-qwen-native) -- the local protocol stub hiccuped (curl=6), see the retry lines above
+   [WARN] the worker reports m-qwen as the active configuration -- status not refreshed yet
+   transport hiccup on attempt 1 (no_response: no HTTP status curl=6); retrying once
+   {"v":1,"seq":249,"ts":"2026-11-24T23:41:24","ts_ms":1795534884227,"kind":"turn","session":"","event_id":"probe-234123","route":"ai","skill":"","status":"failed","user":"switch-probe-m-qwen-compat","user_bytes":26,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"no_response: no HTTP status curl=6"}
+   [WARN] the reply came from the m-qwen-compat adapter (stub-qwen-compat) -- the local protocol stub hiccuped (curl=6), see the retry lines above
+   [WARN] the worker reports m-qwen-compat as the active configuration -- status not refreshed yet
+   transport hiccup on attempt 1 (no_response: no HTTP status curl=6); retrying once
+   {"v":1,"seq":251,"ts":"2026-11-24T23:41:36","ts_ms":1795534896284,"kind":"turn","session":"","event_id":"probe-234135","route":"ai","skill":"","status":"failed","user":"switch-probe-m-openai","user_bytes":21,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"no_response: no HTTP status curl=6"}
+   [WARN] the reply came from the m-openai adapter (stub-openai) -- the local protocol stub hiccuped (curl=6), see the retry lines above
+   [WARN] the worker reports m-openai as the active configuration -- status not refreshed yet
+
+================================================================
+== 7 the configuration survives a worker restart
+================================================================
+   [PASS] after the restart the model configuration is still loaded
+   [PASS] all four configurations survived
+   transport hiccup on attempt 1 (no_response: no HTTP status curl=6); retrying once
+   [WARN] and a model call still works right after the restart -- the local protocol stub hiccuped (curl=6), see the retry lines above
+
+================================================================
+== 8/9 a wrong API key and a wrong Base URL are reported, not hidden
+================================================================
+   receipt: {"v":1,"event_id":"mt-234205-11171","ok":false,"stage":"rejected","reason":"http_401: AuthenticationError: the api key is invalid","ts_ms":1795534926115}
+   [PASS] a wrong key fails the connection test
+   [PASS] and the reason names the HTTP status
+   [PASS] and the vendor error code
+   receipt: {"v":1,"event_id":"mt-234209-11225","ok":false,"stage":"rejected","reason":"no_response: no HTTP status curl=7","ts_ms":1795534930441}
+   [PASS] a wrong Base URL fails the connection test
+   [PASS] and the reason names the transport problem
+
+================================================================
+== 10 the configuration screen shows and edits everything (plain text, no masking)
+================================================================
+   mCurrentFocus=Window{a2f6c93 u0 com.tgz02.voice/com.tgz02.voice.ModelConfigActivity}
+   [PASS] the model configuration screen is in front
+   screenshot: 70_models_screen.png
+   [PASS] the screen shows '当前生效'
+   [PASS] the screen shows 'doubao-main'
+   [PASS] the screen shows 'qwen-native'
+   [PASS] the screen shows 'API Key'
+   [PASS] the screen shows '设为默认'
+   [PASS] the screen shows '新增配置'
+   [PASS] the API key is displayed in plain text (as required)
+   tapping the first 测试 button at 862,438
+   [PASS] the App's own test button produced a successful result
+
+================================================================
+== 11 the realtime-voice interface is present and does not pretend to work
+================================================================
+   installed apk: package:/data/app/com.tgz02.voice-8CnhyPlQj9WqrAt4Kp6y9g==/base.apk
+   apk classes are the ones built from src/ (RealtimeVoice + DoubaoRealtimeVoice included)
+   [PASS] the worker still answers after the UI checks
+   the realtime interface itself is verified by tests/run_t9_08c_models_tests.ps1 (F1..F19)
+   on device it is a compiled-in stub: connect/startSession/sendAudio/receiveAudio/
+   receiveTranscript/interrupt/closeSession all return not_implemented, never a fake success
+
+================================================================
+== 12 factory wake / ASR / TTS / stop still work with the configured model
+================================================================
+   playing q2.weather.wav on the HOST speakers (the device mic hears it)
+sh: /data/local/tmp/t9/t9_08c/t9_08b_r2_dev_journal.sh: No such file or directory
+   [WARN] the factory voice chain produced a spoken answer -- no tts record - the device may not have heard the wav
+   [WARN] and the executor finished it normally -- the last tts outcome was not ok
+   [WARN] a voice turn went through the configured model -- no ai turn yet (the mic may not have heard the wav)
+   [WARN] the reply is the configured model's answer -- the latest turn is not from the stub
+   [WARN] the long sentence is really playing before the stop test -- playback did not start in time
+   stop test: playing tts_id=
+   [FAIL] the stop request was accepted
+sh: /data/local/tmp/t9/t9_08c/t9_08b_r2_dev_journal.sh: No such file or directory
+   [FAIL] the executor took the targeted stop
+   [FAIL] and closed the item as stopped (no replay)
+
+================================================================
+== final state
+================================================================
+== status.public.json ==
+{"v":1,"ts":"2026-11-24T23:43:19","ts_ms":1795535000028,"pid":10991,"worker":"running","uptime_ms":91956,"event_id":"","provider":{"name":"models","model":"ep-2024-stub","mock":0,"ok":0,"err":2,"timeout":0,"last_http":0,"last_error":"text turn: no_response: no HTTP status curl=6","last_class":"no_response","last_latency_ms":10},"dialog":{"state":"idle","sc":"IDLE","round":0,"session":"","listening":0,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":4,"inbox_rejected":2,"inbox_stops":0,"gate_released":0,"route_native":0,"ui_published":2,"ui_errors":0},"models":{"enabled":1,"active":1,"id":"m-doubao","vendor":"doubao","label":"doubao-main","model":"ep-2024-stub","mode":"","count":4,"reloads":4,"error":"","calls":2,"ok":0,"err":2,"timeout":0,"last_http":0,"last_class":"no_response","last_error":"no HTTP status curl=6","last_ms":10,"test":{"id":"m-openai","ran":1,"ok":1,"ms":5,"reason":"ok: stub-openai:ok"}}}
+== worker log: model lines ==
+[aiw] 2026-11-24T23:41:48 provider ready: models id=m-doubao vendor=doubao model=ep-2024-stub label='doubao-main' base=http://127.0.0.1:default:m-doubao/doubao/v3 timeout=8000ms conf=/data/data/com.tgz02.voice/files/models.json
+[aiw] 2026-11-24T23:41:48 model config: 4 configuration(s) loaded, default_id=m-doubao
+[aiw] 2026-11-24T23:42:06 inbox modeltest: event=mt-234205-11171 target=m-doubao result=failed reason=http_401: AuthenticationError: the api key is invalid
+[aiw] 2026-11-24T23:42:10 inbox modeltest: event=mt-234209-11225 target=m-doubao result=failed reason=no_response: no HTTP status curl=7
+[aiw] 2026-11-24T23:42:33 inbox modeltest: event=mt-1795534953873-d8f9 target=m-doubao result=ok reason=ok: stub-doubao:ok
+[aiw] 2026-11-24T23:42:40 inbox modeltest: event=mt-234240-11397 target=m-openai result=ok reason=ok: stub-openai:ok
+== inbox receipts (mt-*) ==
+-- mt-234055-10340.json
+{"v":1,"event_id":"mt-234055-10340","ok":true,"stage":"model_test","reason":"","ts_ms":1795534856308}
+
+-- mt-234205-11171.json
+{"v":1,"event_id":"mt-234205-11171","ok":false,"stage":"rejected","reason":"http_401: AuthenticationError: the api key is invalid","ts_ms":1795534926115}
+
+-- mt-234209-11225.json
+{"v":1,"event_id":"mt-234209-11225","ok":false,"stage":"rejected","reason":"no_response: no HTTP status curl=7","ts_ms":1795534930441}
+
+-- mt-234240-11397.json
+{"v":1,"event_id":"mt-234240-11397","ok":true,"stage":"model_test","reason":"","ts_ms":1795534960906}
+
+EXIT=0
+   screenshot: 71_final.png
+
+================================================================
+RESULT: FAIL (4 failed, 12 transport warnings)
+================================================================

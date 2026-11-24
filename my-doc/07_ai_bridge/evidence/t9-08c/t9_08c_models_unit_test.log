@@ -1,0 +1,11 @@
+﻿# T9-08C multi-vendor model host unit test log
+# host time: 2026-11-24 23:08:28
+# note: the HTTP transport here is a scripted stub -> protocol/decision logic only,
+#       NOT a real vendor call (real calls need real credentials, see the report)
+cc: C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t9_08c_models_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t9_08c_models_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\model_json.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\model_cfg.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\model_call.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\doubao_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\qwen_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\openai_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\model_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\realtime_voice.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\doubao_realtime_provider.c
+(no compiler output: 0 warning, 0 error)
+
+
+T9-08C model tests: 151 passed, 0 failed
+
+# result: PASS

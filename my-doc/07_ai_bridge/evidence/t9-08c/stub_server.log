@@ -1,0 +1,2 @@
+stub listening on 0.0.0.0:8799
+REQ {"path": "/openai/v1/chat/completions", "key": "good-openai", "model": "x", "roles": ["user"], "keys": ["messages", "model"]}

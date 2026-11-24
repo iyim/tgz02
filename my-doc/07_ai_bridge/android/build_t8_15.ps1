@@ -38,7 +38,12 @@ $WorkerSources = @(
     "intent_route.c", "utterance_gate.c", "conv_session.c", "t7_dup.c",
     "session_ctrl.c", "skill_dispatch.c", "dead_letter.c",
     "provider.c", "mock_provider.c", "deepseek_provider.c",
-    "talk_tap.c", "tg_inbox.c", "ui_events.c", "ai_worker.c"
+    "talk_tap.c", "tg_inbox.c", "ui_events.c", "ai_worker.c",
+    # T9-08C: multi-vendor model access (config + 3 adapters + unified entry) and the
+    # realtime-voice interface with its Doubao stub.
+    "tg_http.c", "model_json.c", "model_cfg.c", "model_call.c",
+    "doubao_provider.c", "qwen_provider.c", "openai_provider.c", "model_provider.c",
+    "realtime_voice.c", "doubao_realtime_provider.c"
 ) | ForEach-Object { Join-Path $Here $_ }
 
 $GuardSources = @(

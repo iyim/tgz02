@@ -361,7 +361,7 @@ int ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errle
                 /* unknown types are refused instead of being guessed: a typo must not silently
                  * turn "ask" into "speak it verbatim", and it must never turn "stop" into one */
                 if (strcmp(val, TI_KIND_SAY) != 0 && strcmp(val, TI_KIND_ASK) != 0 &&
-                    strcmp(val, TI_KIND_STOP) != 0) {
+                    strcmp(val, TI_KIND_STOP) != 0 && strcmp(val, TI_KIND_MODELTEST) != 0) {
                     if (err && errlen) snprintf(err, errlen, "unsupported kind");
                     return -1;
                 }
@@ -371,6 +371,15 @@ int ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errle
                 /* T9-08B-R2: "tts_id":"12" is a protocol error, not a 12 */
                 if (err && errlen) snprintf(err, errlen, "tts_id must be a number");
                 return -1;
+            } else if (strcmp(key, "model_id") == 0) {
+                /* T9-08C: 哪一套模型配置（空 = 当前生效配置） */
+                if (vlen > TI_MAX_ID) {
+                    if (err && errlen) snprintf(err, errlen, "model_id too long");
+                    return -1;
+                }
+                memcpy(m->model_id, val, vlen);
+                m->model_id[vlen] = '\0';
+                m->has_model_id = 1;
             }
         } else if ((*p >= '0' && *p <= '9') || *p == '-') {
             long v = 0;
@@ -463,6 +472,23 @@ int ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errle
         }
     } else if (m->has_tts_id) {
         if (err && errlen) snprintf(err, errlen, "tts_id is only valid with kind stop");
+        return -1;
+    }
+    if (strcmp(m->kind, TI_KIND_MODELTEST) == 0) {
+        if (m->has_tts_id) {
+            if (err && errlen) snprintf(err, errlen, "modeltest does not take a tts_id");
+            return -1;
+        }
+        if (m->has_model_id && !ti_valid_event_id(m->model_id)) {
+            if (err && errlen) snprintf(err, errlen, "model_id is not a valid id");
+            return -1;
+        }
+        if (m->has_text && m->text_bytes > 0) {
+            if (err && errlen) snprintf(err, errlen, "modeltest does not take text");
+            return -1;
+        }
+    } else if (m->has_model_id) {
+        if (err && errlen) snprintf(err, errlen, "model_id is only valid with kind modeltest");
         return -1;
     }
     return 0;
@@ -621,6 +647,7 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
         ti_msg msg;
         ti_rate_slot *slot = NULL;
         int is_stop = 0;
+        int is_modeltest = 0;
 
         /* T9-06R1: bound the work one poll may do, so a burst cannot stall the loop */
         examined++;
@@ -770,7 +797,8 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
          * be a way to make the stop button silently do nothing).
          */
         is_stop = (strcmp(msg.kind, TI_KIND_STOP) == 0);
-        if (!is_stop) {
+        is_modeltest = (strcmp(msg.kind, TI_KIND_MODELTEST) == 0);
+        if (!is_stop && !is_modeltest) {
             if (!msg.has_text || msg.text_bytes <= 0) {
                 ti_reject(cfg, st, event_id, "empty text", path);
                 handled++;
@@ -812,7 +840,8 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
 
         err[0] = '\0';
         rc = fn(ctx, event_id, msg.text, msg.text_bytes, msg.kind,
-                is_stop ? msg.tts_id : 0L, err, sizeof(err));
+                is_stop ? msg.tts_id : 0L,
+                is_modeltest ? msg.model_id : "", err, sizeof(err));
         if (rc < 0) {
             ti_reject(cfg, st, event_id, err[0] ? err : "enqueue failed", path);
             handled++;
@@ -829,7 +858,8 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
              * stop only counts as accepted once the worker has written the control file */
             (void)ti_result_write(cfg, event_id, 1,
                                   is_stop ? TI_KIND_STOP
-                                          : ((strcmp(msg.kind, TI_KIND_ASK) == 0) ? "ai" : "queue"),
+                                  : is_modeltest ? "model_test"
+                                  : ((strcmp(msg.kind, TI_KIND_ASK) == 0) ? "ai" : "queue"),
                                   "");
         }
         (void)ti_prune_dir(cfg->result_dir, cfg->result_max_files, st, &st->pruned_result);

@@ -25,6 +25,10 @@
 #include "talk_tap.h"
 #include "tg_req_seq.h"
 #include "tg_inbox.h"
+#include "model_provider.h"
+
+/* T9-08C: App 私有目录下的多厂商模型配置（App 写、worker 读；root 可读 app 私有文件）。 */
+#define T6B_MODELS_PATH_DEFAULT "/data/data/com.tgz02.voice/files/models.json"
 #include "worker_conf.h"
 #include "worker_util.h"
 
@@ -83,6 +87,11 @@ typedef struct {
     t6b_mock     mock;
     t6b_ds       ds;
     int          prov_deepseek;         /* 1 = 当前 provider 是 deepseek（真实网络） */
+    /* T9-08C: the unified model entry (multi-vendor config written by the App).
+     * It IS a provider, so the /turn code is untouched: switching vendor only changes
+     * the config, never the program. */
+    model_provider mp;
+    int          prov_models;           /* 1 = provider is the App's models.json config */
     t6b_gaptrack gaps;
     wu_lockfile  lock;
     cv_ctx       cv;                     /* T7-01：多轮上下文（独立模块） */
@@ -467,7 +476,7 @@ static void publish_status(t6b_worker *w, const char *state)
 
     /* Provider 观测：真实 Provider 才有 http/latency/resp_bytes；
      * 这些字段只放数字与短枚举，绝不含 key / 用户文本 / 上游正文。 */
-    w->st.provider_mock = w->prov_deepseek ? 0 : 1;
+    w->st.provider_mock = (w->prov_deepseek || w->prov_models) ? 0 : 1;
     if (w->prov_deepseek) {
         w->st.last_http_status = w->ds.last_http_status;
         w->st.last_curl_code = w->ds.last_curl_code;
@@ -475,6 +484,14 @@ static void publish_status(t6b_worker *w, const char *state)
         w->st.last_resp_bytes = w->ds.last_resp_bytes;
         snprintf(w->st.last_error_class, sizeof(w->st.last_error_class), "%s",
                  w->ds.last_class);
+    } else if (w->prov_models) {
+        /* T9-08C：统一模型入口的观测（多厂商里同一个字段，厂商差异在 last_error_class 里） */
+        w->st.last_http_status = w->mp.last_http;
+        w->st.last_curl_code = 0;
+        w->st.last_provider_latency_ms = w->mp.last_latency_ms;
+        w->st.last_resp_bytes = w->mp.last_resp_bytes;
+        snprintf(w->st.last_error_class, sizeof(w->st.last_error_class), "%s",
+                 w->mp.last_class);
     } else {
         w->st.last_http_status = 0;
         w->st.last_curl_code = 0;
@@ -1381,7 +1398,7 @@ static int tts_request_stop_id(t6b_worker *w, const char *why, long tts_id);
  */
 static int aiw_inbox_enqueue(void *ctx, const char *event_id, const char *text,
                              int text_bytes, const char *kind, long tts_id,
-                             char *err, size_t errlen)
+                             const char *model_id, char *err, size_t errlen)
 {
     t6b_worker *w = (t6b_worker *)ctx;
     t6b_reply rep;
@@ -1390,6 +1407,31 @@ static int aiw_inbox_enqueue(void *ctx, const char *event_id, const char *text,
     int rc;
 
     if (w == NULL || event_id == NULL) return -1;
+
+    /*
+     * T9-08C: kind = "modeltest" -> App 的"测试连接"。
+     * 用**真正回答用户的那条调用路径**发一次最小请求（同样的 adapter、同样的 key、同样的超时），
+     * 所以"测试通过"就意味着真实回合也能通；失败原因原样回给 App（回执 + status 里的 last_test）。
+     */
+    if (kind != NULL && strcmp(kind, TI_KIND_MODELTEST) == 0) {
+        char reason[MCALL_DETAIL_MAX + 64];
+        int trc;
+
+        if (!w->cfg.models_enabled) {
+            if (err && errlen) snprintf(err, errlen, "model config is disabled (--no-models)");
+            return -1;
+        }
+        reason[0] = '\0';
+        trc = mp_test_connection(&w->mp, model_id != NULL ? model_id : "", reason, sizeof(reason));
+        always("inbox modeltest: event=%s target=%s result=%s reason=%s",
+               event_id, (model_id != NULL && model_id[0] != '\0') ? model_id : "(active)",
+               trc == 0 ? "ok" : "failed", reason);
+        if (trc != 0) {
+            if (err && errlen) snprintf(err, errlen, "%s", reason);
+            return -1;
+        }
+        return 0;
+    }
 
     if (kind != NULL && strcmp(kind, TI_KIND_STOP) == 0) {
         if (tts_id <= 0 || tts_id > TI_MAX_TTS_ID) {
@@ -1566,9 +1608,50 @@ static void aiw_text_turn(t6b_worker *w)
     snprintf(w->pend.event_id, sizeof(w->pend.event_id), "%s", saved_id);
 }
 
+/*
+ * T9-08C：模型配置热加载。
+ *
+ * App 保存 models.json 后，下一个请求就该用新配置 —— 不重启 worker、不重编译。
+ * 这里每拍检查一次文件（mtime+size），变了就重新读：
+ *   - 首次配置好（启动时还没有可用配置）-> 直接把 provider 换成统一模型入口；
+ *   - 换默认模型/换厂商    -> 下一次调用自动用新的（complete_msgs 每次都读当前配置）；
+ *   - 配置被删空          -> 留在入口上，调用会明确返回 no_model，**不**悄悄退回 mock，
+ *                            否则用户会以为"换了个模型"其实是在跟 mock 说话。
+ */
+static void aiw_model_poll(t6b_worker *w)
+{
+    int rc;
+
+    if (!w->cfg.models_enabled) return;
+    rc = mp_poll(&w->mp);
+    if (rc < 0) {
+        always("model config reload failed: %s (keeping the last working configuration)",
+               w->mp.cfg_error[0] != '\0' ? w->mp.cfg_error : "unknown");
+        return;
+    }
+    if (w->mp.active && !w->prov_models) {
+        mp_provider_open(&w->prov, &w->mp);
+        w->prov_models = 1;
+        snprintf(w->st.provider, sizeof(w->st.provider), "%s",
+                 w->prov.ops != NULL ? w->prov.ops->name : "models");
+        always("model config became usable: provider switched to models (%s/%s)",
+               w->mp.info.vendor, w->mp.info.model);
+    }
+    if (w->mp.active) {
+        /* 状态里报告的"当前模型"必须跟真的在用的一致（热切换后不能还写着老模型名） */
+        snprintf(w->st.provider, sizeof(w->st.provider), "%s",
+                 w->prov.ops != NULL ? w->prov.ops->name : "models");
+        snprintf(w->st.model, sizeof(w->st.model), "%s", w->mp.info.model);
+    }
+    if (rc > 0 && w->mp.active) {
+        always("model config reloaded: id=%s vendor=%s model=%s label='%s' configs=%d",
+               w->mp.info.id, w->mp.info.vendor, w->mp.info.model, w->mp.info.label,
+               w->mp.list.count);
+    }
+}
+
 /* one inbox scan; logged on change and at most every 3 s, so a noisy entry point cannot flood
- * the worker log (it did during T9-06 bring-up: one rejected file produced >1200 lines) */
-static void aiw_inbox_poll(t6b_worker *w)
+ * the worker log (it did during T9-06 bring-up: one rejected file produced >1200 lines) */static void aiw_inbox_poll(t6b_worker *w)
 {
     static long long last_log_ms = 0;
     static long long last_acc = -1, last_idem = -1;
@@ -1660,13 +1743,23 @@ static void aiw_ui_publish_turn(t6b_worker *w, const char *kind,
 
 static void aiw_ui_publish_status(t6b_worker *w, int force)
 {
-    static char js[2048];
+    static char js[4096];
     static char err_esc[240];
     static char cls_esc[120];
     static char model_esc[160];
     static char sess_esc[160];
     static char ev_esc[200];
     static char prov_esc[48];
+    static char m_id_esc[MC_ID_MAX * 2];
+    static char m_vendor_esc[MC_VENDOR_MAX * 2];
+    static char m_label_esc[MC_LABEL_MAX * 2];
+    static char m_model_esc[MC_MODEL_MAX * 2];
+    static char m_mode_esc[MC_MODE_MAX * 2];
+    static char m_err_esc[MC_ERR_MAX * 2];
+    static char m_cls_esc[MCALL_CLASS_MAX * 2];
+    static char m_last_esc[MCALL_DETAIL_MAX * 2];
+    static char m_tid_esc[MC_ID_MAX * 2];
+    static char m_treason_esc[(MCALL_DETAIL_MAX + 64) * 2];
     long long now = wu_now_ms();
     int n;
     const char *ev = "";
@@ -1689,6 +1782,17 @@ static void aiw_ui_publish_status(t6b_worker *w, int force)
     wu_json_escape(cls_esc, sizeof(cls_esc), w->st.last_error_class);
     wu_json_escape(sess_esc, sizeof(sess_esc), sess);
     wu_json_escape(ev_esc, sizeof(ev_esc), ev);
+    /* T9-08C: 模型配置面板需要的东西（都是明文可见的配置值，key 不在其中） */
+    wu_json_escape(m_id_esc, sizeof(m_id_esc), w->mp.info.id);
+    wu_json_escape(m_vendor_esc, sizeof(m_vendor_esc), w->mp.info.vendor);
+    wu_json_escape(m_label_esc, sizeof(m_label_esc), w->mp.info.label);
+    wu_json_escape(m_model_esc, sizeof(m_model_esc), w->mp.info.model);
+    wu_json_escape(m_mode_esc, sizeof(m_mode_esc), w->mp.info.api_mode);
+    wu_json_escape(m_err_esc, sizeof(m_err_esc), w->mp.cfg_error);
+    wu_json_escape(m_cls_esc, sizeof(m_cls_esc), w->mp.last_class);
+    wu_json_escape(m_last_esc, sizeof(m_last_esc), w->mp.last_error);
+    wu_json_escape(m_tid_esc, sizeof(m_tid_esc), w->mp.test_id);
+    wu_json_escape(m_treason_esc, sizeof(m_treason_esc), w->mp.test_reason);
 
     n = snprintf(js, sizeof(js),
                  "{\"v\":1,\"ts\":\"%s\",\"ts_ms\":%lld,\"pid\":%lld,"
@@ -1702,7 +1806,13 @@ static void aiw_ui_publish_status(t6b_worker *w, int force)
                  "\"counters\":{\"events_processed\":%llu,\"tts_queued\":%llu,"
                  "\"inbox_accepted\":%lld,\"inbox_rejected\":%lld,\"inbox_stops\":%lld,"
                  "\"gate_released\":%llu,\"route_native\":%llu,"
-                 "\"ui_published\":%llu,\"ui_errors\":%llu}}",
+                 "\"ui_published\":%llu,\"ui_errors\":%llu},"
+                 "\"models\":{\"enabled\":%d,\"active\":%d,\"id\":\"%s\",\"vendor\":\"%s\","
+                 "\"label\":\"%s\",\"model\":\"%s\",\"mode\":\"%s\",\"count\":%d,"
+                 "\"reloads\":%lld,\"error\":\"%s\",\"calls\":%lu,\"ok\":%lu,\"err\":%lu,"
+                 "\"timeout\":%lu,\"last_http\":%d,\"last_class\":\"%s\",\"last_error\":\"%s\","
+                 "\"last_ms\":%lld,\"test\":{\"id\":\"%s\",\"ran\":%d,\"ok\":%d,\"ms\":%lld,"
+                 "\"reason\":\"%s\"}}}",
                  w->st.updated_at[0] != '\0' ? w->st.updated_at : "-", wu_wall_ms(),
                  wu_self_pid(),
                  w->st.state[0] != '\0' ? w->st.state : "starting",
@@ -1718,7 +1828,13 @@ static void aiw_ui_publish_status(t6b_worker *w, int force)
                  w->st.events_processed, w->st.tts_queued,
                  g_inbox_st.accepted, g_inbox_st.rejected, g_inbox_st.stop_accepted,
                  w->st.gate_released, w->st.route_native,
-                 w->ue.published, w->ue.publish_err);    if (n <= 0 || n >= (int)sizeof(js)) {
+                 w->ue.published, w->ue.publish_err,
+                 w->cfg.models_enabled, w->mp.active,
+                 m_id_esc, m_vendor_esc, m_label_esc, m_model_esc, m_mode_esc,
+                 w->mp.list.count, (long long)w->mp.reloads, m_err_esc,
+                 w->mp.calls, w->mp.ok, w->mp.err, w->mp.timeouts, w->mp.last_http,
+                 m_cls_esc, m_last_esc, w->mp.last_latency_ms,
+                 m_tid_esc, w->mp.test_ran, w->mp.test_ok, w->mp.test_ms, m_treason_esc);    if (n <= 0 || n >= (int)sizeof(js)) {
         aiw_ui_note_error(w, "status record too large");
         return;
     }
@@ -3287,6 +3403,8 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
 
         /* T9-06: the UI submit channel is serviced on every loop pass (no-op when disabled) */
         aiw_inbox_poll(w);
+        /* T9-08C: pick up a model config the App just saved (no-op when unchanged) */
+        aiw_model_poll(w);
         /* T9-07R1: answer one queued UI text question through the provider (no-op when idle) */
         aiw_text_turn(w);
         /* T9-07: refresh the UI status snapshot (throttled inside; no-op when disabled) */
@@ -3373,6 +3491,9 @@ void t6b_config_defaults(t6b_config *c)
     cs_defaults(&c->session);
     t6b_mock_defaults(&c->mock);
     t6b_ds_defaults(&c->deepseek);
+    /* T9-08C：默认就读 App 的多厂商配置；文件不存在时自动退回 provider=（老行为） */
+    c->models_enabled = 1;
+    c->models_path[0] = '\0';
 }
 
 int t6b_config_check(const t6b_config *c, char *err, size_t errlen)
@@ -3927,9 +4048,49 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
                t6b_open_reason_name(w.rd.last_reason));
     }
 
+    /*
+     * T9-08C：先看 App 写的 models.json。
+     *   - 里面有可用配置 -> 用统一模型入口（多厂商），provider= 这些老配置项被忽略；
+     *   - 没有/坏了     -> 打到日志里，然后照旧回落到 provider=（mock/deepseek），
+     *                      这样已有部署不会因为"App 还没配置模型"而停止工作。
+     */
+    if (c->models_enabled) {
+        const char *mpath = (c->models_path[0] != '\0') ? c->models_path : T6B_MODELS_PATH_DEFAULT;
+        char cerr[128];
+
+        cerr[0] = '\0';
+        if (tg_http_libcurl_init(cerr, sizeof(cerr)) != 0) {
+            always("model config: libcurl unavailable (%s) - HTTP models will fail", cerr);
+        } else {
+            always("libcurl: dlopen ok, version=%s", tg_http_libcurl_version());
+        }
+        mp_init(&w.mp, mpath, tg_http_libcurl_xport(), NULL);
+        if (mp_reload(&w.mp) >= 0 && w.mp.active) {
+            mp_provider_open(&w.prov, &w.mp);
+            if (t6b_provider_init(&w.prov, err, sizeof(err)) != 0) {
+                always("provider init failed (models): %s", err);
+                status_init_failure(&w, "provider_init_failed", err);
+                mp_provider_close(&w.prov);
+                t6b_reader_free(&w.rd);
+                lock_release(&w);
+                return 4;
+            }
+            w.prov_models = 1;
+            always("provider ready: models id=%s vendor=%s model=%s label='%s' base=%s "
+                   "timeout=%dms conf=%s",
+                   w.mp.info.id, w.mp.info.vendor, w.mp.info.model, w.mp.info.label,
+                   w.mp.info.base_url, w.mp.info.timeout_ms, mpath);
+            always("model config: %d configuration(s) loaded, default_id=%s",
+                   w.mp.list.count, w.mp.list.default_id);
+        } else {
+            always("model config: %s has no usable model (%s) - falling back to provider=%s",
+                   mpath, w.mp.cfg_error[0] != '\0' ? w.mp.cfg_error : "not readable",
+                   c->provider_name);
+        }
+    }
     /* Provider 选择（T5-06C）：mock = 零网络；deepseek = 真实 HTTPS。
      * 真实 Provider 初始化失败必须退出（退出码 4），绝不悄悄退回 mock。 */
-    if (strcmp(c->provider_name, T6B_PROVIDER_DEEPSEEK) == 0) {
+    if (!w.prov_models && strcmp(c->provider_name, T6B_PROVIDER_DEEPSEEK) == 0) {
         if (t6b_ds_open(&w.prov, &w.ds, &c->deepseek) != 0) {
             always("provider setup failed (deepseek)");
             t6b_reader_free(&w.rd);
@@ -3957,7 +4118,7 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
             always("WARNING: deepseek base url uses plain http (no TLS): %s", w.ds.url);
         }
         always("libcurl: dlopen ok, version=%s", t6b_ds_libcurl_version());
-    } else {
+    } else if (!w.prov_models) {
         if (t6b_mock_open(&w.prov, &w.mock, &c->mock) != 0) {
             always("provider setup failed (mock)");
             t6b_reader_free(&w.rd);
@@ -3982,8 +4143,9 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
     snprintf(w.st.state_file, sizeof(w.st.state_file), "%s", w.state_path);
     snprintf(w.st.provider, sizeof(w.st.provider), "%s",
              w.prov.ops != NULL ? w.prov.ops->name : "none");
-    w.st.provider_mock = w.prov_deepseek ? 0 : 1;
+    w.st.provider_mock = (w.prov_deepseek || w.prov_models) ? 0 : 1;
     if (w.prov_deepseek) snprintf(w.st.model, sizeof(w.st.model), "%s", w.ds.cfg.model);
+    else if (w.prov_models) snprintf(w.st.model, sizeof(w.st.model), "%s", w.mp.info.model);
     else w.st.model[0] = '\0';
     snprintf(w.st.exit_reason, sizeof(w.st.exit_reason), "running");
 
@@ -4065,7 +4227,10 @@ static void usage(void)
         "  --provider-backoff-max-ms N retry backoff cap (default 2000)\n"
         "  --state-retry-ms N    state persist retry interval (default 100)\n"
         "  --state-fail-exit-ms N give up consuming after N ms of failed persists (default 3000)\n"
-        "  --provider mock|deepseek  provider implementation (default mock)\n"
+        "  --provider mock|deepseek  provider implementation used when models.json is absent\n"
+        "  --models PATH         T9-08C: multi-vendor model config written by the App\n"
+        "                        (default /data/data/com.tgz02.voice/files/models.json)\n"
+        "  --no-models           ignore the App model config, use --provider only\n"
         "  --api-key-file PATH   API key file (default %s), only for provider=deepseek\n"
         "  --deepseek-model M    model name (default %s)\n"
         "  --deepseek-base-url U base url (default %s); %s is appended once\n"
@@ -4203,6 +4368,8 @@ int main(int argc, char **argv)
         else if (strcmp(a, "--mock-fail-from") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.mock.fail_from_call = atoi(v); i++; }
         else if (strcmp(a, "--mock-fail-times") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.mock.fail_first_calls = atoi(v); i++; }
         else if (strcmp(a, "--mock-timeout-from") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.mock.timeout_from_call = atoi(v); i++; }
+        else if (strcmp(a, "--models") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.models_path, sizeof(cfg.models_path), "%s", v); cfg.models_enabled = 1; i++; }
+        else if (strcmp(a, "--no-models") == 0) { cfg.models_enabled = 0; continue; }
         else if (strcmp(a, "--provider") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.provider_name, sizeof(cfg.provider_name), "%s", v); i++; }
         else if (strcmp(a, "--api-key-file") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.deepseek.api_key_file, sizeof(cfg.deepseek.api_key_file), "%s", v); i++; }
         else if (strcmp(a, "--deepseek-model") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.deepseek.model, sizeof(cfg.deepseek.model), "%s", v); i++; }

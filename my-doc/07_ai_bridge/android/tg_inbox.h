@@ -46,7 +46,13 @@
  * has to be taken there. The UI writing kind=stop is the only way a user stop enters the system.
  */
 #define TI_KIND_STOP       "stop"
-#define TI_KIND_MAX        8
+/*
+ * T9-08C: "modeltest" 是"用某套模型配置发一次最小请求"的请求（App 的配置页 - 测试连接）。
+ * 它和 stop 一样不是播报：不带正文，可以带一个可选的 model_id（空 = 当前生效配置）。
+ * 走 Inbox 而不是让 App 自己发 HTTP：这样"测试连接"用的就是真正回答用户的那条调用路径。
+ */
+#define TI_KIND_MODELTEST  "modeltest"
+#define TI_KIND_MAX        12
 
 /* tts_id is a positive 32-bit id; the parser refuses anything outside this range. */
 #define TI_MAX_TTS_ID      2147483647L
@@ -98,7 +104,7 @@ typedef struct {
  */
 typedef int (*ti_enqueue_fn)(void *ctx, const char *event_id, const char *text,
                              int text_bytes, const char *kind, long tts_id,
-                             char *err, size_t errlen);
+                             const char *model_id, char *err, size_t errlen);
 
 void ti_cfg_defaults(ti_cfg *c);
 
@@ -125,6 +131,8 @@ typedef struct {
     int  text_bytes;
     int  has_tts_id;                        /* T9-08B-R2: kind=stop must carry one         */
     long tts_id;                            /* > 0, <= TI_MAX_TTS_ID                       */
+    int  has_model_id;                      /* T9-08C: kind=modeltest 可选的目标配置        */
+    char model_id[TI_MAX_ID + 1];
 } ti_msg;
 
 int  ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errlen);

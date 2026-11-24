@@ -125,6 +125,10 @@ typedef struct {
     cs_config   session;
     t6b_mock_cfg mock;
     t6b_ds_cfg   deepseek;                   /* 只有 provider=deepseek 时才使用 */
+    /* T9-08C：App 配置的多厂商模型（models.json）。有可用配置时优先于上面的 provider=。
+     * 换厂商/换模型只改这份配置，不重编译、不改 worker.conf。 */
+    int         models_enabled;              /* 1 = 读 models.json（默认 1）                */
+    char        models_path[T6B_PATH_MAX];   /* 空 = /data/data/com.tgz02.voice/files/models.json */
 } t6b_config;
 
 void t6b_config_defaults(t6b_config *c);

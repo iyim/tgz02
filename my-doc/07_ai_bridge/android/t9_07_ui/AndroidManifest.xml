@@ -47,5 +47,12 @@
             android:name=".SettingsActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <!-- T9-08C: multi-vendor model configuration (plain-text keys, editable, hot applied) -->
+        <activity
+            android:name=".ModelConfigActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
     </application>
 </manifest>
