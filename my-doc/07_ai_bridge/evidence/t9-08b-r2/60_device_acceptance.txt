@@ -1,0 +1,272 @@
+﻿# T9-08B-R2 real-device acceptance: the controlled stop path
+# host time : 2026-11-24 22:41:52
+# serial    : 192.168.1.9:5555
+# apk       : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t9_07_ui\dist\voice_ui.apk
+# apk sha256: 9d3d136b0661a3fc0b5258e508cbf4989e9643947ac1b331cbf695b5139f098d
+
+================================================================
+== 0 preconditions: device, worker, executor, deployed artifacts
+================================================================
+AILABS_S1L
+   [PASS] the worker is running (pid 2879)
+   [PASS] the TTS executor is running (pid 15651)
+== play.public.json ==
+{
+  "v": 1,
+  "pid": 15651,
+  "updated_ms": 1795531291186,
+  "state": "idle",
+  "event_id": "r2baseline1",
+  "tts_id": 5246674,
+  "started_ms": 1795531275705,
+  "finished_ms": 1795531291186,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}
+== depths ==
+queue=0 inflight=0 control=[] journal_lines=1074
+== journal delta (from line 0) ==
+{"ts":"2026-11-24T22:39:15.810+0800","kind":"tts","event_id":"r2-223733-timeout","tts_id":5246645,"outcome":"timeout","dur_ms":1592,"text_bytes":216,"attempts":2}
+{"ts":"2026-11-24T22:39:15.847+0800","kind":"retry","event_id":"r2-223733-timeout","attempts":2,"outcome":"timeout"}
+{"ts":"2026-11-24T22:39:19.489+0800","kind":"tts","event_id":"r2-223733-timeout","tts_id":5246649,"outcome":"timeout","dur_ms":1596,"text_bytes":216,"attempts":3}
+{"ts":"2026-11-24T22:39:19.507+0800","kind":"give_up","event_id":"r2-223733-timeout","attempts":3,"outcome":"timeout"}
+{"ts":"2026-11-24T22:40:05.609+0800","kind":"tts","event_id":"t6-1180-1969855-g37","tts_id":5246659,"outcome":"ok","dur_ms":1714,"text_bytes":9,"attempts":1}
+{"ts":"2026-11-24T22:40:22.519+0800","kind":"tts","event_id":"r2-223733-interrupt","tts_id":5246664,"outcome":"interrupted","dur_ms":1936,"text_bytes":216,"attempts":1}
+{"ts":"2026-11-24T22:40:28.054+0800","kind":"tts","event_id":"t6-1180-1969865-g38","tts_id":5246669,"outcome":"ok","dur_ms":1709,"text_bytes":9,"attempts":1}
+{"ts":"2026-11-24T22:41:31.179+0800","kind":"tts","event_id":"r2baseline1","tts_id":5246674,"outcome":"ok","dur_ms":15428,"text_bytes":216,"attempts":1}
+== worker log: stop lines ==
+[aiw] 2026-11-24T22:38:18 tts stop requested id=5246623 (ui stop)
+[aiw] 2026-11-24T22:38:18 inbox stop accepted: event=stop-1795531098446-4d40 target_tts_id=5246623
+[aiw] 2026-11-24T22:38:42 tts stop requested id=5246628 (ui stop)
+[aiw] 2026-11-24T22:38:42 inbox stop accepted: event=stop-223841-14791 target_tts_id=5246628
+[aiw] 2026-11-24T22:38:44 tts stop requested id=5246628 (ui stop)
+[aiw] 2026-11-24T22:38:44 inbox stop accepted: event=stop-223843-14827 target_tts_id=5246628
+[aiw] 2026-11-24T22:38:45 tts stop requested id=5246628 (ui stop)
+[aiw] 2026-11-24T22:38:45 inbox stop accepted: event=stop-223845-14862 target_tts_id=5246628
+[aiw] 2026-11-24T22:38:56 tts stop requested id=5246634 (ui stop)
+[aiw] 2026-11-24T22:38:56 inbox stop accepted: event=stop-223855-15031 target_tts_id=5246634
+== executor log: stop lines ==
+tts_exec: control: stale targeted stop for tts_id=5246540 dropped (nothing is playing)
+tts_exec: control: stale targeted stop for tts_id=5246540 dropped (nothing is playing)
+tts_exec: stop: targeted stop honoured tts_id=5246546 event=r2-pair-A
+tts_exec: control: stale targeted stop for tts_id=100 dropped (nothing is playing)
+tts_exec: control: stale targeted stop for tts_id=100 dropped (nothing is playing)
+tts_exec: stop: targeted stop honoured tts_id=5246623 event=r2-223733-stoponce
+tts_exec: stop: targeted stop honoured tts_id=5246628 event=r2-223733-triA
+tts_exec: stop: targeted stop for tts_id=5246628 dropped (this item is 5246629), playback continues
+tts_exec: control: stale targeted stop for tts_id=5246628 dropped (nothing is playing)
+tts_exec: stop: targeted stop honoured tts_id=5246634 event=r2-223733-pairA
+== counters ==
+"stopped": 0
+"inbox_stops":14
+EXIT=0
+   [PASS] the worker publishes the stop counter
+   APK installed; app uid=10071
+
+================================================================
+== 0b a stop request with no matching playback does not cancel the next item
+================================================================
+   submitted stop-224204-16439 target=100 | receipt: {"v":1,"event_id":"stop-224204-16439","ok":true,"stage":"stop","reason":"","ts_ms":1795531324576}
+   [PASS] the worker accepts a well-formed stop request (receipt ok, stage stop)
+   submitted r2-224152-idle (short, 20 chars)
+   [PASS] a short request submitted right after that stop
+{"ts":"2026-11-24T22:42:04.678+0800","kind":"stop_stale_idle","tts_id":100,"note":"targeted stop arrived with nothing playing"}
+{"ts":"2026-11-24T22:42:07.549+0800","kind":"tts","event_id":"r2-224152-idle","tts_id":5246679,"outcome":"ok","dur_ms":1724,"text_bytes":20,"attempts":1}
+   [PASS] the following item still played normally
+   [PASS] the unrelated stop did not cancel it
+
+================================================================
+== 1 normal playback is unaffected
+================================================================
+   submitted r2-224152-normal (long, 216 chars)
+   [PASS] one long say request was accepted by the inbox
+{"ts":"2026-11-24T22:42:33.494+0800","kind":"tts","event_id":"r2-224152-normal","tts_id":5246683,"outcome":"ok","dur_ms":19559,"text_bytes":216,"attempts":1}
+   its natural duration on this device: 19559 ms
+   [PASS] it played through with outcome=ok
+   [PASS] and it was played on its first attempt (no retry)
+   [PASS] no stop was involved
+   [PASS] the sentence is long enough to press stop against
+
+================================================================
+== 2 press 鍋滄鎾姤 once during playback (real button), it stops immediately
+================================================================
+   focus: mCurrentFocus=Window{a8a7039 u0 com.tgz02.voice/com.tgz02.voice.VoiceHomeActivity}
+   stop button centre: 955 573
+   submitted r2-224152-stoponce (long, 216 chars)
+   [PASS] a long sentence is playing
+   [PASS] the executor reports state=playing with a tts_id
+   playing event=r2-224152-stoponce tts_id=5246689
+   the app itself wrote the stop request (stop_receipts=16)
+   [PASS] the stop request the APP wrote was accepted
+   wall clock from the press to the UI showing idle: 6487 ms (includes adb round trips)
+   [PASS] playback ended
+   [PASS] the outcome is stopped (got stopped)
+   screenshot: 61_b_ui_stop.png
+{"ts":"2026-11-24T22:42:51.412+0800","kind":"stop_targeted","event_id":"r2-224152-stoponce","tts_id":5246689,"note":"playback of tts_id=5246689 stopped by the user"}
+{"ts":"2026-11-24T22:42:51.421+0800","kind":"tts","event_id":"r2-224152-stoponce","tts_id":5246689,"outcome":"stopped","dur_ms":5605,"text_bytes":216,"attempts":1}
+   the sentence needs 19559 ms; it was cut at 5605 ms
+   the executor's own reaction (stop file -> stopped record): 9 ms
+   [PASS] it stopped long before the sentence would have ended
+   [PASS] the executor acted on the stop within a fraction of a second
+
+================================================================
+== 3 nothing is spoken again within 10 s after the stop
+================================================================
+   waiting 10 s without touching anything ...
+{"ts":"2026-11-24T22:42:51.412+0800","kind":"stop_targeted","event_id":"r2-224152-stoponce","tts_id":5246689,"note":"playback of tts_id=5246689 stopped by the user"}
+{"ts":"2026-11-24T22:42:51.421+0800","kind":"tts","event_id":"r2-224152-stoponce","tts_id":5246689,"outcome":"stopped","dur_ms":5605,"text_bytes":216,"attempts":1}
+   [PASS] exactly one playback record for the stopped event (got 1)
+   [PASS] it was not requeued
+   [PASS] it was not replayed to the end
+   [PASS] the journal did not grow during those 10 s
+   [PASS] nothing is left in queue/ or inflight/
+   [PASS] the stop control file was consumed
+
+================================================================
+== 4 three rapid presses do not stop the next queued item
+================================================================
+   submitted r2-224152-triA (long, 216 chars)
+   [PASS] the first (long) item is submitted
+   submitted r2-224152-triB (short, 20 chars)
+   [PASS] the second (short) item is queued behind it
+   playing r2-224152-triA tts_id=5246694; pressing stop three times
+   submitted stop-224316-17496 target=5246694 | receipt: {"v":1,"event_id":"stop-224316-17496","ok":true,"stage":"stop","reason":"","ts_ms":1795531397774}
+   submitted stop-224319-17541 target=5246694 | receipt: {"v":1,"event_id":"stop-224319-17541","ok":true,"stage":"stop","reason":"","ts_ms":1795531399968}
+   submitted stop-224320-17568 target=5246694 | receipt: {"v":1,"event_id":"stop-224320-17568","ok":true,"stage":"stop","reason":"","ts_ms":1795531401676}
+{"ts":"2026-11-24T22:43:17.817+0800","kind":"stop_targeted","event_id":"r2-224152-triA","tts_id":5246694,"note":"playback of tts_id=5246694 stopped by the user"}
+{"ts":"2026-11-24T22:43:17.856+0800","kind":"tts","event_id":"r2-224152-triA","tts_id":5246694,"outcome":"stopped","dur_ms":4223,"text_bytes":216,"attempts":1}
+{"ts":"2026-11-24T22:43:19.885+0800","kind":"tts","event_id":"r2-224152-triB","tts_id":5246697,"outcome":"ok","dur_ms":1870,"text_bytes":20,"attempts":1}
+{"ts":"2026-11-24T22:43:20.061+0800","kind":"stop_stale_idle","tts_id":5246694,"note":"targeted stop arrived with nothing playing"}
+{"ts":"2026-11-24T22:43:21.788+0800","kind":"stop_stale_idle","tts_id":5246694,"note":"targeted stop arrived with nothing playing"}
+   [PASS] the first item was stopped
+   [PASS] the second item still played to the end
+   [PASS] no queued item was cancelled by the extra presses
+   screenshot: 62_c_triple.png
+
+================================================================
+== 5 two queued items: stop the first, the second plays normally
+================================================================
+   submitted r2-224152-pairA (long, 216 chars)
+   [PASS] item A (long) is submitted
+   submitted r2-224152-pairB (short, 20 chars)
+   [PASS] item B (short) is queued behind A
+   stopping A only (tts_id=5246700)
+   submitted stop-224332-17736 target=5246700 | receipt: {"v":1,"event_id":"stop-224332-17736","ok":true,"stage":"stop","reason":"","ts_ms":1795531413440}
+   [PASS] the stop for A was accepted
+{"ts":"2026-11-24T22:43:33.519+0800","kind":"stop_targeted","event_id":"r2-224152-pairA","tts_id":5246700,"note":"playback of tts_id=5246700 stopped by the user"}
+{"ts":"2026-11-24T22:43:33.537+0800","kind":"tts","event_id":"r2-224152-pairA","tts_id":5246700,"outcome":"stopped","dur_ms":4309,"text_bytes":216,"attempts":1}
+{"ts":"2026-11-24T22:43:45.836+0800","kind":"tts","event_id":"r2-224152-pairB","tts_id":5246704,"outcome":"ok","dur_ms":11931,"text_bytes":20,"attempts":1}
+   [PASS] A was stopped
+   [PASS] B played to the end afterwards
+   [PASS] both items were executed once each (got 2)
+
+================================================================
+== 6 a REAL playback timeout still retries (the stop fix must not swallow failures)
+================================================================
+fixture executor pid=18030 timeout_ms=1500
+app_process /system com.tgz02.tts.TtsExec --root /data/local/tmp/t5_bridge/tts --idle-ms 0 --timeout-ms 1500 --verbose 
+EXIT=0
+   [PASS] a real executor deadline of 1.5 s is running (no injected fault)
+   submitted r2-224152-timeout (long, 216 chars)
+   [PASS] a long sentence is submitted
+   waiting for the attempts to expire (3 attempts + 2 s backoff each) ...
+{"ts":"2026-11-24T22:44:00.338+0800","kind":"tts","event_id":"r2-224152-timeout","tts_id":5246710,"outcome":"timeout","dur_ms":1589,"text_bytes":216,"attempts":1}
+{"ts":"2026-11-24T22:44:00.367+0800","kind":"retry","event_id":"r2-224152-timeout","attempts":1,"outcome":"timeout"}
+{"ts":"2026-11-24T22:44:04.037+0800","kind":"tts","event_id":"r2-224152-timeout","tts_id":5246714,"outcome":"timeout","dur_ms":1604,"text_bytes":216,"attempts":2}
+{"ts":"2026-11-24T22:44:04.071+0800","kind":"retry","event_id":"r2-224152-timeout","attempts":2,"outcome":"timeout"}
+{"ts":"2026-11-24T22:44:07.695+0800","kind":"tts","event_id":"r2-224152-timeout","tts_id":5246715,"outcome":"timeout","dur_ms":1593,"text_bytes":216,"attempts":3}
+{"ts":"2026-11-24T22:44:07.719+0800","kind":"give_up","event_id":"r2-224152-timeout","attempts":3,"outcome":"timeout"}
+   [PASS] it was retried after the real timeout (3 attempts recorded)
+   [PASS] the accepted retry path ran (journal kind=retry)
+   [PASS] it ended as a failure after the accepted number of attempts
+   [PASS] no stop was involved in this path
+started: supervisor=18494 executor=18498
+accepted executor restored pid=18498
+app_process /system com.tgz02.tts.TtsExec --root /data/local/tmp/t5_bridge/tts --idle-ms 0 --timeout-ms 60000 --verbose 
+EXIT=0
+   [PASS] the accepted executor configuration is back (--timeout-ms 60000)
+
+================================================================
+== 7 factory wake -> ASR -> AI -> TTS still completes
+================================================================
+   playing r1.wake_time.wav on the HOST speakers (the device mic hears it)
+{"ts":"2026-11-24T22:44:58.266+0800","kind":"tts","event_id":"t6-1180-1969921-g39","tts_id":5246725,"outcome":"ok","dur_ms":2119,"text_bytes":9,"attempts":1}
+   [PASS] the factory voice chain produced a spoken answer
+   [PASS] and the executor reported it
+   newest turn records: 644
+   [PASS] the turn was published to the UI channel
+   screenshot: 63_d_voice.png
+
+================================================================
+== 8 a voice interruption is not replayed afterwards
+================================================================
+   submitted r2-224152-interrupt (long, 216 chars)
+   [PASS] a long sentence is playing
+   [PASS] playback is running
+   waking the device while it speaks (the factory takes the audio channel)
+{"ts":"2026-11-24T22:45:12.767+0800","kind":"tts","event_id":"r2-224152-interrupt","tts_id":5246730,"outcome":"interrupted","dur_ms":2018,"text_bytes":216,"attempts":1}
+{"ts":"2026-11-24T22:45:18.299+0800","kind":"tts","event_id":"t6-1180-1969931-g40","tts_id":5246735,"outcome":"ok","dur_ms":1948,"text_bytes":9,"attempts":1}
+   [PASS] the interrupted sentence was executed exactly once (got 1)
+   [PASS] it was closed as interrupted, not retried
+   screenshot: 64_e_interrupt.png
+
+================================================================
+== 9 final state
+================================================================
+== play.public.json ==
+{
+  "v": 1,
+  "pid": 18498,
+  "updated_ms": 1795531518303,
+  "state": "idle",
+  "event_id": "t6-1180-1969931-g40",
+  "tts_id": 5246735,
+  "started_ms": 1795531516342,
+  "finished_ms": 1795531518303,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}
+== depths ==
+queue=0 inflight=0 control=[] journal_lines=1096
+== journal delta (from line 0) ==
+{"ts":"2026-11-24T22:44:00.367+0800","kind":"retry","event_id":"r2-224152-timeout","attempts":1,"outcome":"timeout"}
+{"ts":"2026-11-24T22:44:04.037+0800","kind":"tts","event_id":"r2-224152-timeout","tts_id":5246714,"outcome":"timeout","dur_ms":1604,"text_bytes":216,"attempts":2}
+{"ts":"2026-11-24T22:44:04.071+0800","kind":"retry","event_id":"r2-224152-timeout","attempts":2,"outcome":"timeout"}
+{"ts":"2026-11-24T22:44:07.695+0800","kind":"tts","event_id":"r2-224152-timeout","tts_id":5246715,"outcome":"timeout","dur_ms":1593,"text_bytes":216,"attempts":3}
+{"ts":"2026-11-24T22:44:07.719+0800","kind":"give_up","event_id":"r2-224152-timeout","attempts":3,"outcome":"timeout"}
+{"ts":"2026-11-24T22:44:58.266+0800","kind":"tts","event_id":"t6-1180-1969921-g39","tts_id":5246725,"outcome":"ok","dur_ms":2119,"text_bytes":9,"attempts":1}
+{"ts":"2026-11-24T22:45:12.767+0800","kind":"tts","event_id":"r2-224152-interrupt","tts_id":5246730,"outcome":"interrupted","dur_ms":2018,"text_bytes":216,"attempts":1}
+{"ts":"2026-11-24T22:45:18.299+0800","kind":"tts","event_id":"t6-1180-1969931-g40","tts_id":5246735,"outcome":"ok","dur_ms":1948,"text_bytes":9,"attempts":1}
+== worker log: stop lines ==
+[aiw] 2026-11-24T22:42:51 tts stop requested id=5246689 (ui stop)
+[aiw] 2026-11-24T22:42:51 inbox stop accepted: event=stop-1795531371161-8be2 target_tts_id=5246689
+[aiw] 2026-11-24T22:43:17 tts stop requested id=5246694 (ui stop)
+[aiw] 2026-11-24T22:43:17 inbox stop accepted: event=stop-224316-17496 target_tts_id=5246694
+[aiw] 2026-11-24T22:43:19 tts stop requested id=5246694 (ui stop)
+[aiw] 2026-11-24T22:43:19 inbox stop accepted: event=stop-224319-17541 target_tts_id=5246694
+[aiw] 2026-11-24T22:43:21 tts stop requested id=5246694 (ui stop)
+[aiw] 2026-11-24T22:43:21 inbox stop accepted: event=stop-224320-17568 target_tts_id=5246694
+[aiw] 2026-11-24T22:43:33 tts stop requested id=5246700 (ui stop)
+[aiw] 2026-11-24T22:43:33 inbox stop accepted: event=stop-224332-17736 target_tts_id=5246700
+== executor log: stop lines ==
+tts_exec: stop: targeted stop honoured tts_id=5246628 event=r2-223733-triA
+tts_exec: stop: targeted stop for tts_id=5246628 dropped (this item is 5246629), playback continues
+tts_exec: control: stale targeted stop for tts_id=5246628 dropped (nothing is playing)
+tts_exec: stop: targeted stop honoured tts_id=5246634 event=r2-223733-pairA
+tts_exec: control: stale targeted stop for tts_id=100 dropped (nothing is playing)
+tts_exec: stop: targeted stop honoured tts_id=5246689 event=r2-224152-stoponce
+tts_exec: stop: targeted stop honoured tts_id=5246694 event=r2-224152-triA
+tts_exec: control: stale targeted stop for tts_id=5246694 dropped (nothing is playing)
+tts_exec: control: stale targeted stop for tts_id=5246694 dropped (nothing is playing)
+tts_exec: stop: targeted stop honoured tts_id=5246700 event=r2-224152-pairA
+== counters ==
+"stopped": 0
+"inbox_stops":20
+EXIT=0
+   screenshot: 65_f_final.png
+
+================================================================
+RESULT: PASS (0 failed checks)
+================================================================

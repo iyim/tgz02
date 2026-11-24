@@ -10,7 +10,9 @@ param(
 
 $ErrorActionPreference = "Continue"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$src = Join-Path $here "tts_exec\TtsExec.java"
+# T9-08B-R2: tts_exec/ now holds TtsExec.java and StopControl.java (the stop decision table,
+# Android-free so the host can test it). Compile every .java in that directory.
+$srcs = @(Get-ChildItem (Join-Path $here "tts_exec") -Filter *.java | Sort-Object Name | ForEach-Object FullName)
 $out = Join-Path $here "_build_tts"
 $log = Join-Path $here $LogName
 
@@ -46,7 +48,7 @@ Rec "== T5-06D tts_exec build $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') =="
 # 1) javac（对 android.jar 编译；ActivityThread 等隐藏 API 全部走反射，源码里不 import）
 $jcArgs = @("-J-Duser.language=en", "-J-Duser.country=US", "-nowarn", "-Xlint:-options",
               "-encoding", "UTF-8", "-source", "8", "-target", "8",
-              "-bootclasspath", $androidJar.FullName, "-d", $classes, $src)
+              "-bootclasspath", $androidJar.FullName, "-d", $classes) + $srcs
 $jcOut = & javac @jcArgs 2>&1
 $jcRc = $LASTEXITCODE
 $jcOut | ForEach-Object { Rec "javac: $_" }

@@ -359,13 +359,18 @@ int ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errle
                 m->has_text = 1;
             } else if (strcmp(key, "kind") == 0) {
                 /* unknown types are refused instead of being guessed: a typo must not silently
-                 * turn "ask" into "speak it verbatim" */
-                if (strcmp(val, TI_KIND_SAY) != 0 && strcmp(val, TI_KIND_ASK) != 0) {
+                 * turn "ask" into "speak it verbatim", and it must never turn "stop" into one */
+                if (strcmp(val, TI_KIND_SAY) != 0 && strcmp(val, TI_KIND_ASK) != 0 &&
+                    strcmp(val, TI_KIND_STOP) != 0) {
                     if (err && errlen) snprintf(err, errlen, "unsupported kind");
                     return -1;
                 }
                 snprintf(m->kind, sizeof(m->kind), "%s", val);
                 m->has_kind = 1;
+            } else if (strcmp(key, "tts_id") == 0) {
+                /* T9-08B-R2: "tts_id":"12" is a protocol error, not a 12 */
+                if (err && errlen) snprintf(err, errlen, "tts_id must be a number");
+                return -1;
             }
         } else if ((*p >= '0' && *p <= '9') || *p == '-') {
             long v = 0;
@@ -376,16 +381,23 @@ int ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errle
                 return -1;
             }
             while (p < end && *p >= '0' && *p <= '9') {
-                v = v * 10 + (*p - '0');
-                if (v > 100000000L) {
+                int d = (int)(*p - '0');
+                /* T9-08B-R2: overflow-safe (long is 32-bit on the host build), and the ceiling
+                 * is the tts_id range so that a stop request cannot name an impossible id */
+                if (v > (TI_MAX_TTS_ID - d) / 10) {
                     if (err && errlen) snprintf(err, errlen, "number out of range");
                     return -1;
                 }
+                v = v * 10 + d;
                 p++;
             }
             if (strcmp(key, "v") == 0) {
                 m->v = neg ? -v : v;
                 m->has_v = 1;
+            } else if (strcmp(key, "tts_id") == 0) {
+                /* T9-08B-R2: the target of a controlled stop; always a bare positive integer */
+                m->tts_id = neg ? -v : v;
+                m->has_tts_id = 1;
             } else if (strcmp(key, "kind") == 0) {
                 /* T9-07R1: the request type is a string; a numeric one is a protocol error,
                  * not something to guess at */
@@ -398,9 +410,14 @@ int ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errle
         } else if (*p == 't' || *p == 'f' || *p == 'n') {
             /* tolerate true/false/null by skipping the bare word -- except for "kind", which is
              * only ever a string: kind:true/false/null is a protocol error, not a silent "say"
-             * (T9-07R1F: the numeric branch already refused, the literal branch did not) */
+             * (T9-07R1F: the numeric branch already refused, the literal branch did not).
+             * T9-08B-R2: same for "tts_id", which is only ever a number. */
             if (strcmp(key, "kind") == 0) {
                 if (err && errlen) snprintf(err, errlen, "kind must be a string");
+                return -1;
+            }
+            if (strcmp(key, "tts_id") == 0) {
+                if (err && errlen) snprintf(err, errlen, "tts_id must be a number");
                 return -1;
             }
             while (p < end && ((*p >= 'a' && *p <= 'z'))) p++;
@@ -423,6 +440,29 @@ int ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errle
     }
     if (depth != 0) {
         if (err && errlen) snprintf(err, errlen, "unbalanced object");
+        return -1;
+    }
+
+    /*
+     * T9-08B-R2: the fields must match the kind. A "stop" without a usable target is refused
+     * here (never guessed, never downgraded to a global stop), and a tts_id on anything else is
+     * refused too, so a malformed request cannot silently turn into "speak this" or "stop all".
+     */
+    if (strcmp(m->kind, TI_KIND_STOP) == 0) {
+        if (!m->has_tts_id) {
+            if (err && errlen) snprintf(err, errlen, "stop requires a positive tts_id");
+            return -1;
+        }
+        if (m->tts_id <= 0 || m->tts_id > TI_MAX_TTS_ID) {
+            if (err && errlen) snprintf(err, errlen, "stop requires a positive tts_id");
+            return -1;
+        }
+        if (m->has_text && m->text_bytes > 0) {
+            if (err && errlen) snprintf(err, errlen, "stop does not take text");
+            return -1;
+        }
+    } else if (m->has_tts_id) {
+        if (err && errlen) snprintf(err, errlen, "tts_id is only valid with kind stop");
         return -1;
     }
     return 0;
@@ -580,6 +620,7 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
         size_t off = 0;
         ti_msg msg;
         ti_rate_slot *slot = NULL;
+        int is_stop = 0;
 
         /* T9-06R1: bound the work one poll may do, so a burst cannot stall the loop */
         examined++;
@@ -723,26 +764,33 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
             handled++;
             continue;
         }
-        if (!msg.has_text || msg.text_bytes <= 0) {
-            ti_reject(cfg, st, event_id, "empty text", path);
-            handled++;
-            continue;
-        }
-        if (msg.text_bytes > cfg->max_text_bytes) {
-            ti_reject(cfg, st, event_id, "text too long", path);
-            handled++;
-            continue;
-        }
-        if (!ti_utf8_valid(msg.text, (size_t)msg.text_bytes)) {
-            ti_reject(cfg, st, event_id, "text is not valid UTF-8", path);
-            handled++;
-            continue;
-        }
-
-        if (cfg->queue_cap > 0 && ti_count_pending(cfg) >= cfg->queue_cap) {
-            ti_reject(cfg, st, event_id, "queue full", path);
-            handled++;
-            continue;
+        /*
+         * T9-08B-R2: a controlled stop is not a queue item -- it carries no text, and it must
+         * still get through when the speech queue is already full (otherwise "queue full" would
+         * be a way to make the stop button silently do nothing).
+         */
+        is_stop = (strcmp(msg.kind, TI_KIND_STOP) == 0);
+        if (!is_stop) {
+            if (!msg.has_text || msg.text_bytes <= 0) {
+                ti_reject(cfg, st, event_id, "empty text", path);
+                handled++;
+                continue;
+            }
+            if (msg.text_bytes > cfg->max_text_bytes) {
+                ti_reject(cfg, st, event_id, "text too long", path);
+                handled++;
+                continue;
+            }
+            if (!ti_utf8_valid(msg.text, (size_t)msg.text_bytes)) {
+                ti_reject(cfg, st, event_id, "text is not valid UTF-8", path);
+                handled++;
+                continue;
+            }
+            if (cfg->queue_cap > 0 && ti_count_pending(cfg) >= cfg->queue_cap) {
+                ti_reject(cfg, st, event_id, "queue full", path);
+                handled++;
+                continue;
+            }
         }
 
         now = ti_now_ms();
@@ -763,7 +811,8 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
         }
 
         err[0] = '\0';
-        rc = fn(ctx, event_id, msg.text, msg.text_bytes, msg.kind, err, sizeof(err));
+        rc = fn(ctx, event_id, msg.text, msg.text_bytes, msg.kind,
+                is_stop ? msg.tts_id : 0L, err, sizeof(err));
         if (rc < 0) {
             ti_reject(cfg, st, event_id, err[0] ? err : "enqueue failed", path);
             handled++;
@@ -775,9 +824,13 @@ int ti_poll(const ti_cfg *cfg, ti_stats *st, ti_enqueue_fn fn, void *ctx)
             (void)ti_result_write(cfg, event_id, 1, "existing", "already queued or played");
         } else {
             st->accepted++;
-            /* the stage names what was accepted: an AI turn still has to be answered */
+            if (is_stop) st->stop_accepted++;
+            /* the stage names what was accepted: an AI turn still has to be answered, and a
+             * stop only counts as accepted once the worker has written the control file */
             (void)ti_result_write(cfg, event_id, 1,
-                                  (strcmp(msg.kind, TI_KIND_ASK) == 0) ? "ai" : "queue", "");
+                                  is_stop ? TI_KIND_STOP
+                                          : ((strcmp(msg.kind, TI_KIND_ASK) == 0) ? "ai" : "queue"),
+                                  "");
         }
         (void)ti_prune_dir(cfg->result_dir, cfg->result_max_files, st, &st->pruned_result);
         (void)unlink(path);

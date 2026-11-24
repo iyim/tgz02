@@ -182,8 +182,9 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
     void onStopClicked()
     {
         int id = activeTtsId;
-        String why = client.stop(id);
-        if (why != null) { toast(why); return; }
+        if (id <= 0) { toast("现在没有在播报"); return; }
+        String err = client.requestStop(id);
+        if (err != null) { toast(err); return; }
         toast("已请求停止播报");
     }
 
@@ -220,7 +221,15 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
     {
         h.post(new Runnable() {
             public void run() {
-                if (p.ttsId > 0) activeTtsId = p.ttsId;
+                /*
+                 * T9-08B-R2: activeTtsId means "the tts_id that is being spoken right now",
+                 * so it is only set while play.public.json says playing AND carries an id, and
+                 * it is cleared the moment playback ends (ok / stopped / interrupted / error).
+                 * Keeping a stale id around is how a stop press used to be sent to the previous
+                 * announcement.
+                 */
+                if ("playing".equals(p.state) && p.ttsId > 0) activeTtsId = p.ttsId;
+                else activeTtsId = -1;
                 updateChip();
             }
         });

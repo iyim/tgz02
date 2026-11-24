@@ -1360,6 +1360,9 @@ static void aiw_ui_publish_turn(t6b_worker *w, const char *kind, const char *ses
                                 const char *status, const char *reason);
 static void aiw_ui_publish_status(t6b_worker *w, int force);
 static void aiw_text_turn(t6b_worker *w);
+/* T9-08B-R2: the controlled stop (kind=stop). Defined next to tts_request_stop() further down;
+ * declared here because the inbox callback below needs it. */
+static int tts_request_stop_id(t6b_worker *w, const char *why, long tts_id);
 
 /*
  * T9-07R1: one inbox request.
@@ -1370,9 +1373,15 @@ static void aiw_text_turn(t6b_worker *w);
  *   kind = "say"  -> unchanged T9-06 semantics: the text goes straight into the TTS queue and
  *                    is spoken verbatim. Requests without a kind field land here, so nothing
  *                    written before this stage changes meaning.
+ *   kind = "stop" -> T9-08B-R2, the ONE controlled stop path. The request names the tts_id it
+ *                    wants stopped and carries no text; we write that target into the executor's
+ *                    control file and only then acknowledge it. Nothing is queued, and no queue
+ *                    item is cancelled here: the executor decides, because only it knows which
+ *                    item is playing right now.
  */
 static int aiw_inbox_enqueue(void *ctx, const char *event_id, const char *text,
-                             int text_bytes, const char *kind, char *err, size_t errlen)
+                             int text_bytes, const char *kind, long tts_id,
+                             char *err, size_t errlen)
 {
     t6b_worker *w = (t6b_worker *)ctx;
     t6b_reply rep;
@@ -1380,7 +1389,24 @@ static int aiw_inbox_enqueue(void *ctx, const char *event_id, const char *text,
     const char *stage = NULL;
     int rc;
 
-    if (w == NULL || event_id == NULL || text == NULL || text_bytes <= 0) return -1;
+    if (w == NULL || event_id == NULL) return -1;
+
+    if (kind != NULL && strcmp(kind, TI_KIND_STOP) == 0) {
+        if (tts_id <= 0 || tts_id > TI_MAX_TTS_ID) {
+            if (err && errlen) snprintf(err, errlen, "stop requires a positive tts_id");
+            return -1;
+        }
+        /* the executor only ever sees a stop that is really on disk, so the receipt cannot
+         * claim success for a request that never reached it */
+        if (tts_request_stop_id(w, "ui stop", tts_id) != 0) {
+            if (err && errlen) snprintf(err, errlen, "cannot write the stop control file");
+            return -1;
+        }
+        always("inbox stop accepted: event=%s target_tts_id=%ld", event_id, tts_id);
+        return 0;   /* accepted: the executor will act on it during the current playback */
+    }
+
+    if (text == NULL || text_bytes <= 0) return -1;
     if ((size_t)text_bytes >= sizeof(rep.text)) {
         if (err && errlen) snprintf(err, errlen, "text does not fit the reply buffer");
         return -1;
@@ -1563,11 +1589,11 @@ static void aiw_inbox_poll(t6b_worker *w)
     last_idem = g_inbox_st.idempotent;
     always("inbox: handled=%d accepted=%lld idempotent=%lld rejected=%lld bad_name=%lld"
            " symlink=%lld empty_skipped=%lld stuck=%lld foreign_dropped=%lld"
-           " pruned_rejected=%lld pruned_result=%lld tmp_cleaned=%lld%s%s",
+           " pruned_rejected=%lld pruned_result=%lld tmp_cleaned=%lld stops=%lld%s%s",
            handled, g_inbox_st.accepted, g_inbox_st.idempotent, g_inbox_st.rejected,
            g_inbox_st.bad_name, g_inbox_st.nofollow, g_inbox_st.empty_skipped, g_inbox_st.stuck,
            g_inbox_st.foreign_dropped, g_inbox_st.pruned_rejected, g_inbox_st.pruned_result,
-           g_inbox_st.tmp_cleaned,
+           g_inbox_st.tmp_cleaned, g_inbox_st.stop_accepted,
            g_inbox_st.last_reject[0] ? " last_reject=" : "", g_inbox_st.last_reject);
 }
 
@@ -1674,7 +1700,7 @@ static void aiw_ui_publish_status(t6b_worker *w, int force)
                  "\"dialog\":{\"state\":\"%s\",\"sc\":\"%s\",\"round\":%d,"
                  "\"session\":\"%s\",\"listening\":%d,\"tap\":%d},"
                  "\"counters\":{\"events_processed\":%llu,\"tts_queued\":%llu,"
-                 "\"inbox_accepted\":%lld,\"inbox_rejected\":%lld,"
+                 "\"inbox_accepted\":%lld,\"inbox_rejected\":%lld,\"inbox_stops\":%lld,"
                  "\"gate_released\":%llu,\"route_native\":%llu,"
                  "\"ui_published\":%llu,\"ui_errors\":%llu}}",
                  w->st.updated_at[0] != '\0' ? w->st.updated_at : "-", wu_wall_ms(),
@@ -1690,7 +1716,7 @@ static void aiw_ui_publish_status(t6b_worker *w, int force)
                  sess_esc, w->sc.device_listening,
                  (w->tap_path[0] != '\0') ? 1 : 0,
                  w->st.events_processed, w->st.tts_queued,
-                 g_inbox_st.accepted, g_inbox_st.rejected,
+                 g_inbox_st.accepted, g_inbox_st.rejected, g_inbox_st.stop_accepted,
                  w->st.gate_released, w->st.route_native,
                  w->ue.published, w->ue.publish_err);    if (n <= 0 || n >= (int)sizeof(js)) {
         aiw_ui_note_error(w, "status record too large");
@@ -2770,6 +2796,76 @@ static void tts_request_stop(t6b_worker *w, const char *why)
     }
     wu_close(fd);
     always("tts stop requested (%s)", why != NULL ? why : "-");
+}
+
+/*
+ * T9-08B-R2：受控停止（唯一入口，带目标 tts_id）。
+ *
+ * 用户按"停止播报"时 UI 只做一件事：往 Inbox 写 {"kind":"stop","tts_id":N}。UI 不再自己调
+ * 原厂 method=5 —— 否则"让它停"就有两个互相独立的来源，执行器可能先看到原厂的 status=3
+ * 而把这一条当成普通错误重播，这正是 T9-08B 的缺陷。停止的最终决定只发生在执行器里，
+ * 因为只有它知道自己此刻在播哪一条。
+ *
+ * 这里负责把目标 id 落到 <tts_queue>/control/stop：
+ *     stop_tts_id=<id>
+ *     why=<原因>
+ * 执行器在"当前条目的播放轮询"里读这个文件：id 匹配才调原厂 stopTts(id)，并把本条记成
+ * stopped（终态、不重试）；不匹配就丢掉这条请求，绝不停错下一条。
+ *
+ * 返回 0 = 控制文件已落盘（可以给 UI 回成功回执），-1 = 写不下去（必须拒绝这个请求）。
+ */
+static int tts_request_stop_id(t6b_worker *w, const char *why, long tts_id)
+{
+    char path[T6B_PATH_MAX];
+    char body[192];
+    char whybuf[96];
+    char existing[256];
+    size_t n = 0, i, o = 0;
+    int fd, len;
+
+    if (w == NULL || w->cfg.tts_queue[0] == '\0') return -1;
+    if (tts_id <= 0 || tts_id > TI_MAX_TTS_ID) return -1;
+    join_path(path, sizeof(path), w->cfg.tts_queue, "control/stop");
+
+    /* 原因字段进的是同一个文本文件：换行/回车一律压成空格，别让它在文件里造出第二行 */
+    for (i = 0; why != NULL && why[i] != '\0' && o + 1 < sizeof(whybuf); i++) {
+        char c = why[i];
+        whybuf[o++] = (c == '\n' || c == '\r') ? ' ' : c;
+    }
+    whybuf[o] = '\0';
+    if (o == 0) snprintf(whybuf, sizeof(whybuf), "%s", "ui stop");
+
+    /*
+     * 已经有一个未处理的停止请求时不要瞎覆盖：
+     *   - 旧的是"全局停止"（文件里没有 stop_tts_id 行）→ 它已经涵盖本次请求，保持不动即算成功；
+     *   - 旧的是"单条停止"（用户连按了几下）→ 以最新的目标覆盖，否则后一次按键会被前一次的
+     *     目标挡住，最后一条永远等不到停止。
+     */
+    existing[0] = '\0';
+    if (wu_read_file(path, existing, sizeof(existing), &n) == 0 && n > 0) {
+        if (strstr(existing, "stop_tts_id=") == NULL) {
+            always("tts stop: a global stop is already pending (id=%ld is covered by it)", tts_id);
+            return 0;
+        }
+        (void)wu_unlink(path);
+    }
+
+    len = snprintf(body, sizeof(body), "stop_tts_id=%ld\nwhy=%s\n", tts_id, whybuf);
+    if (len <= 0 || (size_t)len >= sizeof(body)) return -1;
+    fd = wu_open_wo(path);
+    if (fd < 0) {
+        always("tts stop request failed (id=%ld): cannot open %s", tts_id, path);
+        return -1;
+    }
+    if (wu_write_all(fd, body, (size_t)len) != 0) {
+        wu_close(fd);
+        (void)wu_unlink(path);
+        always("tts stop request write failed (id=%ld): %s", tts_id, path);
+        return -1;
+    }
+    wu_close(fd);
+    always("tts stop requested id=%ld (%s)", tts_id, whybuf);
+    return 0;
 }
 
 /* 播报中来了新的一句话：先打断当前播报（真人对话里用户插话优先），再正常走路由。 */

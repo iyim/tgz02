@@ -133,7 +133,7 @@ typedef struct {
 } cap_q;
 
 static int cap_enqueue(void *ctx, const char *event_id, const char *text,
-                       int text_bytes, const char *kind, char *err, size_t errlen)
+                       int text_bytes, const char *kind, long tts_id, char *err, size_t errlen)
 {
     cap_q *q = (cap_q *)ctx;
     q->calls++;
@@ -143,7 +143,7 @@ static int cap_enqueue(void *ctx, const char *event_id, const char *text,
         q->last_text[text_bytes] = '\0';
     }
     snprintf(q->last_kind, sizeof(q->last_kind), "%s", kind != NULL ? kind : "(null)");
-    (void)err; (void)errlen;
+    (void)err; (void)errlen; (void)tts_id;
     return q->rc;
 }
 

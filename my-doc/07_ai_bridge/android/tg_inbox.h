@@ -35,7 +35,21 @@
  * request written before this stage keeps its exact old meaning (speak the text verbatim). */
 #define TI_KIND_SAY        "say"
 #define TI_KIND_ASK        "ask"
+/*
+ * T9-08B-R2: "stop" is the ONE controlled stop path. The request names the tts_id it wants
+ * stopped and carries NO text:
+ *
+ *   {"v":1,"kind":"stop","event_id":"stop-...","tts_id":5246498}
+ *
+ * Why a request and not a direct provider call from the UI: the executor is the only party that
+ * knows which item it is playing right now, so the stop decision ("this id, and only this id")
+ * has to be taken there. The UI writing kind=stop is the only way a user stop enters the system.
+ */
+#define TI_KIND_STOP       "stop"
 #define TI_KIND_MAX        8
+
+/* tts_id is a positive 32-bit id; the parser refuses anything outside this range. */
+#define TI_MAX_TTS_ID      2147483647L
 
 typedef struct {
     char  inbox_dir[256];      /* where the UI drops <event_id>.json (0700 ui-uid)      */
@@ -68,6 +82,7 @@ typedef struct {
     long long empty_skipped, stuck;
     long long foreign_dropped;      /* files from a uid outside the allowlist (unlinked)   */
     long long pruned_rejected, pruned_result;
+    long long stop_accepted;        /* T9-08B-R2: kind=stop requests the worker accepted   */
     char      last_reject[128];
     ti_rate_slot rate[TI_MAX_UIDS];
     int       rate_slots;
@@ -76,9 +91,13 @@ typedef struct {
 /*
  * Enqueue callback supplied by the worker: 0 = queued, 1 = already exists (idempotent),
  * -1 = refused (err filled).
+ *
+ * T9-08B-R2: `tts_id` is 0 for say/ask and the requested target for kind=stop. A stop request
+ * must only be accepted (0) once the worker has really written the control file, so the caller
+ * decides that before returning.
  */
 typedef int (*ti_enqueue_fn)(void *ctx, const char *event_id, const char *text,
-                             int text_bytes, const char *kind,
+                             int text_bytes, const char *kind, long tts_id,
                              char *err, size_t errlen);
 
 void ti_cfg_defaults(ti_cfg *c);
@@ -100,10 +119,12 @@ int  ti_prune_dir(const char *dir, int max_files, ti_stats *st, long long *count
 typedef struct {
     int  has_v, has_event_id, has_text, has_kind;
     long v;
-    char kind[TI_KIND_MAX + 1];             /* "say" (default) or "ask"                    */
+    char kind[TI_KIND_MAX + 1];             /* "say" (default) | "ask" | "stop"            */
     char event_id[TI_MAX_ID + 1];
     char text[TI_MAX_TEXT_BYTES * 2 + 2];   /* raw bytes after unescaping, NUL terminated */
     int  text_bytes;
+    int  has_tts_id;                        /* T9-08B-R2: kind=stop must carry one         */
+    long tts_id;                            /* > 0, <= TI_MAX_TTS_ID                       */
 } ti_msg;
 
 int  ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errlen);

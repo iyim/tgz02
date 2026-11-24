@@ -737,6 +737,43 @@ public final class TtsExec {
         long deadline = t0 + playTimeoutMs;
         String outcome = null;
         while (nowMs() < deadline) {
+            /*
+             * T9-08B-R2：受控停止就在这里生效。
+             *
+             * 只有"目标 id == 本条 id"才真的停：执行器是唯一知道自己正在播哪一条的人，所以由它
+             * 决定，而不是让 UI 一边调原厂 method=5、一边再发一条 Inbox 请求（那样两个来源会
+             * 互相竞争：原厂的 status=3 先到，本条就会被判成普通错误重播）。
+             *
+             * 目标 id 不是本条 → 这条停止请求已经过期（那一条早播完了，或者下一条已经开始），
+             * 立刻丢掉：既不停错条目，也不会留到下一次播报上。
+             *
+             * 旧式"全局停止"（文件里没有 stop_tts_id）故意不在这里消费：它的语义是"清空队列"，
+             * 由主循环的 handleControl 处理，和 T7-04 完全一致。
+             */
+            int target = StopControl.parse(readControlStop());
+            if (target > 0) {
+                controlStopFile().delete();
+                if (StopControl.matches(target, id)) {
+                    try {
+                        stopTts(id);
+                    } catch (Throwable t) {
+                        out("stop: the factory stop call failed for tts_id=" + id + ": " + t);
+                    }
+                    journalStop(it, id, "stop_targeted",
+                            "playback of tts_id=" + id + " stopped by the user");
+                    out("stop: targeted stop honoured tts_id=" + id + " event=" + it.eventId);
+                    outcome = StopControl.STOPPED;
+                    break;
+                }
+                journalStop(it, id, "stop_stale_target",
+                        "targeted stop for tts_id=" + target + " dropped: this item is " + id);
+                out("stop: targeted stop for tts_id=" + target
+                        + " dropped (this item is " + id + "), playback continues");
+            } else if (target == StopControl.INVALID) {
+                controlStopFile().delete();
+                journalStop(it, id, "stop_malformed", "control/stop had an unusable tts_id");
+                out("stop: control/stop carried an unusable tts_id, dropped");
+            }
             if (stopRequest) {
                 try { stopTts(stopId); } catch (Throwable ignored) { }
                 outcome = "stopped";
@@ -753,6 +790,37 @@ public final class TtsExec {
         if (outcome.equals("complete")) outcome = "ok";
         journalEvent(it, id, outcome, t0, nowMs(), it.textBytes, attempts, "");
         return outcome;
+    }
+
+    /** control/stop；没有 control/ 目录时也返回一个不存在的 File，读取一律返回 null */
+    static File controlStopFile() {
+        return new File(controlDir, "stop");
+    }
+
+    /** 读 control/stop 的内容；不存在/读不到 = null（= StopControl.NONE） */
+    static String readControlStop() {
+        File f = controlStopFile();
+        if (!f.isFile()) return null;
+        RandomAccessFile raf = null;
+        try {
+            raf = new RandomAccessFile(f, "r");
+            long n = raf.length();
+            if (n <= 0) return "";
+            if (n > 512) n = 512;
+            byte[] b = new byte[(int) n];
+            raf.readFully(b);
+            return new String(b, UTF8);
+        } catch (Throwable t) {
+            return null;
+        } finally {
+            if (raf != null) try { raf.close(); } catch (Throwable ignored) { }
+        }
+    }
+
+    /** 一条停止判定（谁停了谁、为什么丢掉），只记 id 和结论，不含正文 */
+    static void journalStop(Item it, int ttsId, String kind, String note) {
+        journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"" + esc(kind) + "\",\"event_id\":\""
+                + esc(it.eventId) + "\",\"tts_id\":" + ttsId + ",\"note\":\"" + esc(note) + "\"}");
     }
 
     static void journalEvent(Item it, int ttsId, String outcome, long t0, long t1,
@@ -876,12 +944,19 @@ public final class TtsExec {
             nPlayed++;
             processed++;
 
-            if (outcome.equals("ok") || outcome.equals("stopped") || outcome.equals("interrupted")) {
+            if (StopControl.isTerminal(outcome)) {
                 /* T7-04：interrupted 也是终态。它来自"用户唤醒/插话把播报打断"，
-                 * 重播一遍等于把用户刚打断的那段话又说回去（真机实测：唤醒后回答又续上）。 */
-                if (outcome.equals("ok")) nOk++;
-                else if (outcome.equals("stopped")) { nStopped++; stopRequest = false; }
-                else { nInterrupted++; stopRequest = false; }
+                 * 重播一遍等于把用户刚打断的那段话又说回去（真机实测：唤醒后回答又续上）。
+                 * T9-08B-R2：stop/complete 同样在这里 —— 原厂报的"停止"是这条真的结束了，
+                 * 不是失败；以前它掉进下面的重试分支，于是"停止后又重新播报"。 */
+                if (outcome.equals("ok") || outcome.equals("complete")) nOk++;
+                else if (outcome.equals("stopped") || outcome.equals("stop")) {
+                    nStopped++;
+                    stopRequest = false;
+                } else {
+                    nInterrupted++;
+                    stopRequest = false;
+                }
                 if (!markDone(it)) {
                     /* done 标记没落盘：回答正文还在 inflight/，绝不删除；重启后重放（可能重复播一次） */
                     nDoneFailed++;
@@ -895,7 +970,8 @@ public final class TtsExec {
                 }
                 if (!claimed.delete()) out("payload delete failed: " + claimed.getName());
             } else {
-                /* timeout / error / interrupted / rejected / provider_error：不丢正文，回到队列重试 */
+                /* T9-08B-R2：只有真正的失败走到这里 —— timeout / error / rejected / provider_error。
+                 * 它们不丢正文，回到队列重试；"用户停止"永远不在这个集合里（见 StopControl）。 */
                 if (outcome.equals("timeout")) nTimeout++;
                 else nError++;
 
@@ -939,14 +1015,34 @@ public final class TtsExec {
     /* ==================================================================== stop */
 
     static void handleControl() {
-        File stopFile = new File(controlDir, "stop");
-        if (stopFile.isFile()) {
-            stopRequest = true;
-            stopId = -1;
+        File stopFile = controlStopFile();
+        if (!stopFile.isFile()) return;
+        int target = StopControl.parse(readControlStop());
+        if (target > 0) {
+            /*
+             * T9-08B-R2：带目标的停止请求走到这里，说明它要停的那一条已经播完了（播放是在
+             * playItem 里阻塞完成的，主循环这一轮没有条目在播）。直接丢掉这条请求：如果把它
+             * 当全局停止处理，就会取消队列里下一条 —— 那正是"按一下停止，结果下一条也没了"。
+             */
             stopFile.delete();
-            out("control: stop requested");
-            journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"stop_request\"}");
+            journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"stop_stale_idle\",\"tts_id\":"
+                    + target + ",\"note\":\"targeted stop arrived with nothing playing\"}");
+            out("control: stale targeted stop for tts_id=" + target
+                    + " dropped (nothing is playing)");
+            return;
         }
+        if (target == StopControl.INVALID) {
+            stopFile.delete();
+            journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"stop_malformed\","
+                    + "\"note\":\"control/stop had an unusable tts_id\"}");
+            out("control: control/stop carried an unusable tts_id, dropped");
+            return;
+        }
+        stopRequest = true;
+        stopId = -1;
+        stopFile.delete();
+        out("control: stop requested");
+        journal("{\"ts\":\"" + isoNow() + "\",\"kind\":\"stop_request\"}");
     }
 
     /* ==================================================================== main */

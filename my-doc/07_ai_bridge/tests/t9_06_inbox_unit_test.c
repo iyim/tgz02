@@ -166,10 +166,11 @@ typedef struct {
 } fake_q;
 
 static int fake_enqueue(void *ctx, const char *event_id, const char *text,
-                        int text_bytes, const char *kind, char *err, size_t errlen)
+                        int text_bytes, const char *kind, long tts_id, char *err, size_t errlen)
 {
     fake_q *q = (fake_q *)ctx;
     (void)kind;   /* T9-07R1 added the request kind; this suite only exercises "say" */
+    (void)tts_id; /* T9-08B-R2 added the stop target; this suite never sends kind=stop */
     q->calls++;
     snprintf(q->last_id, sizeof(q->last_id), "%s", event_id);
     if (text_bytes > 0 && (size_t)text_bytes < sizeof(q->last_text)) {

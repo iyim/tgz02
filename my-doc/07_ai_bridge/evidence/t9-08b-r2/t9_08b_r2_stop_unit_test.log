@@ -1,0 +1,9 @@
+﻿# T9-08B-R2 controlled-stop host unit test log
+# host time: 2026-11-24 22:21:10
+cc: C:\TDM-GCC-64\bin\gcc.exe -O2 -Wall -Wextra -std=gnu99 -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t9_08b_r2_stop_test.exe D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t9_08b_r2_stop_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\tg_inbox.c
+(no compiler output: 0 warning, 0 error)
+
+
+T9-08B-R2 controlled-stop unit tests: 47 passed, 0 failed
+
+# result: PASS

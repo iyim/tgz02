@@ -4,21 +4,24 @@
  *
  * What it does (and nothing more):
  *
- *   submit(text)  -> <ui>/inbox/<event_id>.json      (atomic tmp + rename, as in T9-06)
- *                 <- <ui>/result/<event_id>.json     (accepted / refused + reason)
- *   subscribe     <- <ui>/events/<seq>.json          (what the user said, what was answered)
- *                 <- <ui>/status.public.json         (worker + AI + dialog status)
- *                 <- <tts>/play.public.json          (event_id -> tts_id, playing/idle, outcome)
- *   stop()         -> provider insert method=5 on the current tts_id  (T9-05, verified)
+ *   submit(text)   -> <ui>/inbox/<event_id>.json      (atomic tmp + rename, as in T9-06)
+ *                  <- <ui>/result/<event_id>.json     (accepted / refused + reason)
+ *   requestStop(id)-> <ui>/inbox/<event_id>.json      ({"kind":"stop","tts_id":id}, T9-08B-R2)
+ *   subscribe      <- <ui>/events/<seq>.json          (what the user said, what was answered)
+ *                  <- <ui>/status.public.json         (worker + AI + dialog status)
+ *                  <- <tts>/play.public.json          (event_id -> tts_id, playing/idle, outcome)
  *
  * The UI never touches queue directories, never parses the worker log, never runs as root.
- * Everything here is read-only for the app except the inbox submit and the stop insert.
+ * Everything here is read-only for the app except those two inbox writes.
+ *
+ * T9-08B-R2: the UI does NOT call the factory provider's method=5 any more. Stopping is a single
+ * request through the same validated inbox, and the executor (the only party that knows which
+ * item is playing) issues the factory stop. Two independent stop commands were the race that
+ * made a stopped answer come back.
  */
 package com.tgz02.voice;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.net.Uri;
 import android.util.Log;
 
 import org.json.JSONObject;
@@ -43,9 +46,6 @@ public final class VoiceBridgeClient {
     static final String EVENTS_DIR   = UI_ROOT + "/events";
     static final String STATUS_FILE  = UI_ROOT + "/status.public.json";
     static final String PLAY_PUBLIC  = "/data/local/tmp/t5_bridge/tts/play.public.json";
-
-    static final String PROVIDER_AUTH = "com.alibaba.ailabs.genie.assistant.provider";
-    static final Uri    PROVIDER_API  = Uri.parse("content://" + PROVIDER_AUTH + "/GenieApi");
 
     static final long POLL_MS         = 250;
     static final long RECEIPT_WAIT_MS = 8000;
@@ -103,6 +103,8 @@ public final class VoiceBridgeClient {
 
     private final Context appCtx;
     private final Map<String, Pending> pending = new HashMap<String, Pending>();
+    /** T9-08B-R2: stop requests are receipts-checked here, never mixed into the conversation */
+    private final Map<String, Pending> stopPending = new HashMap<String, Pending>();
 
     private Listener listener;
     private Thread poller;
@@ -182,8 +184,7 @@ public final class VoiceBridgeClient {
      */
     String submit(String text)
     {
-        String eventId = "ui-" + System.currentTimeMillis() + "-"
-                + Integer.toHexString((int) (Math.random() * 0xFFFF));
+        String eventId = newEventId("ui");
         try {
             JSONObject o = new JSONObject();
             o.put("v", 1);
@@ -191,6 +192,57 @@ public final class VoiceBridgeClient {
             o.put("event_id", eventId);
             o.put("text", text);
             byte[] body = o.toString().getBytes("UTF-8");
+            if (!writeInbox(eventId, body)) return null;
+            track(eventId);
+            diag("submitted " + eventId + " bytes=" + body.length);
+            return eventId;
+        } catch (Throwable t) {
+            diag("submit failed: " + t);
+            return null;
+        }
+    }
+
+    /**
+     * T9-08B-R2: the ONE way the user stops a playback.
+     *
+     * The request goes through the same validated inbox as a submit and names the tts_id it wants
+     * stopped. The worker writes that target into the executor's control file, and the executor --
+     * the only party that knows which item is playing -- issues the factory stop and marks that
+     * item "stopped" (terminal, never retried).
+     *
+     * Calling the factory provider directly from here is gone on purpose: two independent stop
+     * commands were exactly the race that let a stopped answer start again.
+     *
+     * Returns a message for the user when nothing was sent, null when the request is on its way.
+     */
+    String requestStop(int ttsId)
+    {
+        if (ttsId <= 0) return "现在没有在播报";
+        String eventId = newEventId("stop");
+        try {
+            JSONObject o = new JSONObject();
+            o.put("v", 1);
+            o.put("kind", "stop");
+            o.put("event_id", eventId);
+            o.put("tts_id", ttsId);
+            byte[] body = o.toString().getBytes("UTF-8");
+            if (!writeInbox(eventId, body)) return "停止请求没有写进去";
+            Pending p = new Pending();
+            p.eventId = eventId;
+            p.deadlineMs = System.currentTimeMillis() + RECEIPT_WAIT_MS;
+            synchronized (stopPending) { stopPending.put(eventId, p); }
+            diag("stop requested tts_id=" + ttsId + " event=" + eventId);
+            return null;
+        } catch (Throwable t) {
+            diag("stop request failed: " + t);
+            return "停止请求没有写进去";
+        }
+    }
+
+    /** atomic tmp + fsync + rename into the inbox; false when the channel is not writable */
+    private boolean writeInbox(String eventId, byte[] body)
+    {
+        try {
             File dir = new File(INBOX_DIR);
             File tmp = new File(dir, "." + eventId + ".json.tmp");
             File dst = new File(dir, eventId + ".json");
@@ -205,44 +257,27 @@ public final class VoiceBridgeClient {
             if (!tmp.renameTo(dst)) {
                 tmp.delete();
                 diag("rename failed: " + dst);
-                return null;
+                return false;
             }
-            Pending p = new Pending();
-            p.eventId = eventId;
-            p.deadlineMs = System.currentTimeMillis() + RECEIPT_WAIT_MS;
-            synchronized (pending) { pending.put(eventId, p); }
-            diag("submitted " + eventId + " bytes=" + body.length);
-            return eventId;
+            return true;
         } catch (Throwable t) {
-            diag("submit failed: " + t);
-            return null;
+            diag("inbox write failed: " + t);
+            return false;
         }
     }
 
-    /**
-     * Stop the current playback through the official provider. T9-05 established that an
-     * ordinary app may do exactly this and that it is the only supported stop path.
-     * Returns an explanation for the UI (shown as a short toast), null when nothing was sent.
-     */
-    String stop(final int ttsId)
+    private static String newEventId(String prefix)
     {
-        if (ttsId <= 0) return "还没有可停止的播报";
-        Thread t = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    ContentValues cv = new ContentValues();
-                    cv.put("method", 5);
-                    cv.put("sessionId", ttsId);
-                    Uri u = appCtx.getContentResolver().insert(PROVIDER_API, cv);
-                    diag("stop sent tts_id=" + ttsId + " insert=" + (u == null ? "null" : u.toString()));
-                } catch (Throwable e) {
-                    diag("stop failed: " + e);
-                }
-            }
-        }, "voicebridge-stop");
-        t.setDaemon(true);
-        t.start();
-        return null;
+        return prefix + "-" + System.currentTimeMillis() + "-"
+                + Integer.toHexString((int) (Math.random() * 0xFFFF));
+    }
+
+    private void track(String eventId)
+    {
+        Pending p = new Pending();
+        p.eventId = eventId;
+        p.deadlineMs = System.currentTimeMillis() + RECEIPT_WAIT_MS;
+        synchronized (pending) { pending.put(eventId, p); }
     }
 
     /* ------------------------------------------------------------------- poller */
@@ -352,6 +387,7 @@ public final class VoiceBridgeClient {
 
     private void pollReceipts()
     {
+        pollStopReceipts();
         List<String> ids;
         synchronized (pending) { ids = new ArrayList<String>(pending.keySet()); }
         if (ids.isEmpty()) return;
@@ -387,6 +423,45 @@ public final class VoiceBridgeClient {
                 synchronized (pending) { pending.remove(id); }
                 Listener l = listener;
                 if (l != null) l.onReceipt(r);
+            }
+        }
+    }
+
+    /**
+     * T9-08B-R2: a stop request has its own receipt ("stage":"stop"). It is reported through the
+     * diagnostic log only -- a refused stop must not create or modify a conversation message, so
+     * the screens' onReceipt() contract stays exactly what it was.
+     */
+    private void pollStopReceipts()
+    {
+        List<String> ids;
+        synchronized (stopPending) { ids = new ArrayList<String>(stopPending.keySet()); }
+        if (ids.isEmpty()) return;
+        for (int i = 0; i < ids.size(); i++) {
+            String id = ids.get(i);
+            Pending p;
+            synchronized (stopPending) { p = stopPending.get(id); }
+            if (p == null) continue;
+            String raw = readAll(new File(RESULT_DIR, id + ".json"));
+            if (raw != null) {
+                boolean ok = false;
+                String stage = "", reason = "";
+                try {
+                    JSONObject o = new JSONObject(raw);
+                    ok = o.optBoolean("ok", false);
+                    stage = o.optString("stage", "");
+                    reason = o.optString("reason", "");
+                } catch (Throwable t) {
+                    reason = "unreadable receipt";
+                }
+                synchronized (stopPending) { stopPending.remove(id); }
+                if (ok) diag("stop accepted: " + id + " stage=" + stage);
+                else    diag("stop REFUSED: " + id + " stage=" + stage + " reason=" + reason);
+                continue;
+            }
+            if (System.currentTimeMillis() > p.deadlineMs) {
+                synchronized (stopPending) { stopPending.remove(id); }
+                diag("stop: no receipt for " + id + " (the worker did not take it)");
             }
         }
     }

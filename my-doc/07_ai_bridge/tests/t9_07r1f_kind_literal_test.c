@@ -128,10 +128,10 @@ static int count_files(const char *dir)
 typedef struct { int calls; char last_kind[16]; } cap_q;
 
 static int cap_enqueue(void *ctx, const char *event_id, const char *text,
-                       int text_bytes, const char *kind, char *err, size_t errlen)
+                       int text_bytes, const char *kind, long tts_id, char *err, size_t errlen)
 {
     cap_q *q = (cap_q *)ctx;
-    (void)event_id; (void)text; (void)text_bytes; (void)err; (void)errlen;
+    (void)event_id; (void)text; (void)text_bytes; (void)err; (void)errlen; (void)tts_id;
     q->calls++;
     snprintf(q->last_kind, sizeof(q->last_kind), "%s", kind != NULL ? kind : "(null)");
     return 0;

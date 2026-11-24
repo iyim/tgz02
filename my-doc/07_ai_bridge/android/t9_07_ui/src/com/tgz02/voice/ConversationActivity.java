@@ -378,8 +378,9 @@ public class ConversationActivity extends Activity
     void onStopClicked()
     {
         int id = activeTtsId;
-        String why = client.stop(id);
-        if (why != null) { toast(why); return; }
+        if (id <= 0) { toast("现在没有在播报"); return; }
+        String err = client.requestStop(id);
+        if (err != null) { toast(err); return; }
         toast("已请求停止播报");
     }
 
@@ -491,13 +492,17 @@ public class ConversationActivity extends Activity
     {
         h.post(new Runnable() {
             public void run() {
-                if (p.ttsId > 0) activeTtsId = p.ttsId;
+                /* T9-08B-R2: only a tts_id that is playing right now may be stopped; the id is
+                 * cleared as soon as playback ends, so a stop press can never target the item
+                 * that finished before (that stale id was half of the stop-replay defect). */
+                if ("playing".equals(p.state) && p.ttsId > 0) activeTtsId = p.ttsId;
+                else activeTtsId = -1;
                 if (p.eventId.length() > 0) {
                     if ("playing".equals(p.state)) {
                         store.setState(p.eventId, SessionStore.S_PLAYING, p.ttsId);
                         activeEventId = p.eventId;
                     } else if ("idle".equals(p.state)) {
-                        String st = "interrupted".equals(p.outcome)
+                        String st = ("interrupted".equals(p.outcome) || "stopped".equals(p.outcome))
                                   ? SessionStore.S_STOPPED
                                   : SessionStore.S_PLAYED;
                         store.setState(p.eventId, st, p.ttsId);
