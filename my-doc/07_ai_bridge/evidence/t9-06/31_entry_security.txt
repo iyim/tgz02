@@ -1,0 +1,43 @@
+﻿=== date
+Tue Nov 24 15:47:29 CST 2026
+=== 0. normal submit as the app uid
+result: {"v":1,"event_id":"ui-ok1","ok":true,"stage":"existing","reason":"already queued or played","ts_ms":1795506449551}
+=== 1. broken json
+result: {"v":1,"event_id":"ui-e1","ok":false,"stage":"rejected","reason":"truncated value","ts_ms":1795506451944}
+=== 2. oversize text (2000 bytes > 1024)
+put ui-e2 exit=0
+result: {"v":1,"event_id":"ui-e2","ok":false,"stage":"rejected","reason":"text too long","ts_ms":1795506454339}
+=== 3. event_id mismatch (filename vs content)
+result: {"v":1,"event_id":"ui-e3","ok":false,"stage":"rejected","reason":"file size out of range","ts_ms":1795506456485}
+=== 4. illegal filename
+result(ui-e4 expected missing): 
+--- rejected dir:
+-rw-r--r-- 1 u0_a57 u0_a57    5 2026-11-24 15:47 ui-e6.1795506460773.rejected
+-rw-r--r-- 1 u0_a57 u0_a57    3 2026-11-24 15:47 ui-e6.1795506460981.rejected
+-rw-r--r-- 1 u0_a57 u0_a57   40 2026-11-24 15:44 unknown.1795506261203.rejected
+-rw-r--r-- 1 u0_a57 u0_a57   40 2026-11-24 15:47 unknown.1795506458823.rejected
+=== 5. duplicate event_id
+first : {"v":1,"event_id":"ui-dup1","ok":true,"stage":"existing","reason":"already queued or played","ts_ms":1795506461395}
+second: {"v":1,"event_id":"ui-dup1","ok":true,"stage":"existing","reason":"already queued or played","ts_ms":1795506465629}
+=== 6. oversize file (5036 bytes > 4096)
+put ui-e6 exit=0
+result: {"v":1,"event_id":"ui-e6","ok":false,"stage":"rejected","reason":"not a json object","ts_ms":1795506469872}
+=== worker inbox summary
+[aiw] 2026-11-24T15:47:48 inbox: handled=1 accepted=2 idempotent=4 rejected=1258 bad_name=2 symlink=0 tmp_cleaned=0 last_reject=ui-e6: not a json object
+[aiw] 2026-11-24T15:47:48 inbox: handled=1 accepted=2 idempotent=4 rejected=1259 bad_name=2 symlink=0 tmp_cleaned=0 last_reject=ui-e6: not a json object
+[aiw] 2026-11-24T15:47:48 inbox: handled=1 accepted=2 idempotent=4 rejected=1260 bad_name=2 symlink=0 tmp_cleaned=0 last_reject=ui-e6: not a json object
+[aiw] 2026-11-24T15:47:48 inbox: handled=1 accepted=2 idempotent=4 rejected=1261 bad_name=2 symlink=0 tmp_cleaned=0 last_reject=ui-e6: not a json object
+[aiw] 2026-11-24T15:47:49 inbox: handled=1 accepted=2 idempotent=4 rejected=1262 bad_name=2 symlink=0 tmp_cleaned=0 last_reject=ui-e6: not a json object
+[aiw] 2026-11-24T15:47:49 inbox: handled=1 accepted=2 idempotent=4 rejected=1263 bad_name=2 symlink=0 tmp_cleaned=0 last_reject=ui-e6: not a json object
+[aiw] 2026-11-24T15:47:49 inbox: handled=1 accepted=2 idempotent=4 rejected=1264 bad_name=2 symlink=0 tmp_cleaned=0 last_reject=ui-e6: not a json object
+[aiw] 2026-11-24T15:47:49 inbox: handled=1 accepted=2 idempotent=4 rejected=1265 bad_name=2 symlink=0 tmp_cleaned=0 last_reject=ui-e6: not a json object
+[aiw] 2026-11-24T15:47:49 inbox: handled=1 accepted=2 idempotent=4 rejected=1266 bad_name=2 symlink=0 tmp_cleaned=0 last_reject=ui-e6: not a json object
+[aiw] 2026-11-24T15:47:50 inbox: handled=1 accepted=2 idempotent=4 rejected=1267 bad_name=2 symlink=0 tmp_cleaned=0 last_reject=ui-e6: not a json object
+=== inbox left behind
+total 0
+-rw-r--r-- 1 u0_a57 u0_a57 0 2026-11-24 15:47 ui-e6.json
+=== playback journal (last 3)
+{"ts":"2026-11-24T15:41:34.328+0800","kind":"tts","event_id":"ui-1795506089310","tts_id":5245552,"outcome":"ok","dur_ms":4843,"text_bytes":37,"attempts":1}
+{"ts":"2026-11-24T15:43:06.344+0800","kind":"tts","event_id":"ui-ok1","tts_id":5245558,"outcome":"ok","dur_ms":1217,"text_bytes":12,"attempts":1}
+{"ts":"2026-11-24T15:44:24.917+0800","kind":"tts","event_id":"ui-dup1","tts_id":5245563,"outcome":"ok","dur_ms":1218,"text_bytes":12,"attempts":1}
+=== END

@@ -1,4 +1,4 @@
-# run_host_tests.ps1 -- build + run the T5-06B host test suite (Windows + TDM-GCC + Python)
+﻿# run_host_tests.ps1 -- build + run the T5-06B host test suite (Windows + TDM-GCC + Python)
 #
 #   powershell -ExecutionPolicy Bypass -File run_host_tests.ps1
 #
@@ -28,7 +28,7 @@ $LibSrc = @(
     "mock_provider.c", "worker_status.c", "worker_util.c", "seq_gap.c",
     "conv_context.c", "worker_conf.c", "dead_letter.c"
 ) | ForEach-Object { Join-Path $Android $_ }
-$WorkerSrc = @((Join-Path $Android "ai_worker.c")) + $LibSrc
+$WorkerSrc = @((Join-Path $Android "tg_inbox.c"), (Join-Path $Android "ai_worker.c")) + $LibSrc
 
 $Base = @("-O2", "-Wall", "-Wextra", "-std=gnu99", "-I", $Android)
 
@@ -73,7 +73,7 @@ Pop-Location
 $pyOut -split "`r?`n" | Where-Object { $_ -match '^(PASS|FAIL|cases|RESULT)' } | ForEach-Object { Write-Host $_ }
 Write-Host ("integration exit: " + $rcIt + "  (log: " + $itLog + ")")
 
-# 按主题再跑几个子集，各自的日志单独落盘（验收要求逐项证据）
+# 鎸変富棰樺啀璺戝嚑涓瓙闆嗭紝鍚勮嚜鐨勬棩蹇楀崟鐙惤鐩橈紙楠屾敹瑕佹眰閫愰」璇佹嵁锛?
 function Run-Subset([string]$filter, [string]$logName) {
     Push-Location $Here
     $out = & py -3 (Join-Path $Here "worker_integration_test.py") --only $filter `
@@ -113,4 +113,5 @@ if ($rcUnit -ne 0 -or $rcIt -ne 0 -or $rcSub -ne 0 -or $rcLock -ne 0) {
 }
 Write-Host "`nRESULT: PASS (host unit + integration + subsets + 100-round lock stress, Mock only)"
 exit 0
+
 

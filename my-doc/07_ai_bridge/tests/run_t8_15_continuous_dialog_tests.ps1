@@ -59,7 +59,7 @@ $LibSrc = @(
     "intent_route.c", "session_ctrl.c", "conv_session.c", "skill_dispatch.c", "talk_tap.c",
     "t7_dup.c", "utterance_gate.c"
 ) | ForEach-Object { Join-Path $Android $_ }
-$WorkerSrc = @((Join-Path $Android "ai_worker.c")) + $LibSrc
+$WorkerSrc = @((Join-Path $Android "tg_inbox.c"), (Join-Path $Android "ai_worker.c")) + $LibSrc
 
 $WorkerExe = Join-Path $Out "ai_worker.exe"
 Log "=== build ai_worker (host) ==="
@@ -350,3 +350,4 @@ if ($script:Fail -ne 0) {
 Log "# result: OK"
 $script:Lines | Out-File -FilePath $Log -Encoding utf8
 exit 0
+

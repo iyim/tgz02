@@ -1,0 +1,11 @@
+﻿=== date
+Tue Nov 24 15:49:04 CST 2026
+old_pid=29838
+started: pid=7097 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T15:49:07 lock acquired; previous owner pid=29838 no longer holding it
+[aiw] 2026-11-24T15:49:07 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T15:49:07 system prompt: 689 bytes, placed at messages[0] (role=system, outside context eviction)
+new_pid=7097
+05c54271528f03597cd0d1e830577c80f20f63a94b93edc0f629623a695f8184  /data/local/tmp/t5_bridge/bin/ai_worker
+cmdline: /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10057 
+=== END

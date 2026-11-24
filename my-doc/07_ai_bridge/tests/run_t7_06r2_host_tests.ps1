@@ -42,7 +42,8 @@ $WorkerSrc = @(
     "ai_worker.c", "deepseek_provider.c", "event_reader.c", "consumer_state.c", "provider.c",
     "mock_provider.c", "worker_status.c", "worker_util.c", "seq_gap.c",
     "conv_context.c", "worker_conf.c", "dead_letter.c",
-    "echo_filter.c", "intent_route.c", "utterance_gate.c", "conv_session.c", "t7_dup.c"
+    "echo_filter.c", "intent_route.c", "utterance_gate.c", "conv_session.c", "t7_dup.c",
+    "tg_inbox.c"
 ) | ForEach-Object { Join-Path $Android $_ }
 
 $script:Fail = 0
@@ -430,3 +431,5 @@ if ($script:Fail -ne 0) {
 Log "# result: OK (unit + parser + concurrency + e2e A/B + source assertions, Mock only)"
 $script:Lines | Out-File -FilePath $Log -Encoding utf8
 exit 0
+
+

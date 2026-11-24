@@ -1,0 +1,25 @@
+﻿=== date
+Tue Nov 24 15:50:02 CST 2026
+=== cap=1, then two submissions in the same burst
+started: pid=7442 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T15:50:05 lock acquired; previous owner pid=7097 no longer holding it
+[aiw] 2026-11-24T15:50:05 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T15:50:05 system prompt: 689 bytes, placed at messages[0] (role=system, outside context eviction)
+worker pid=7442 cap=1
+inbox-queue-cap 1
+f1: {"v":1,"event_id":"f1-1795506602","ok":true,"stage":"queue","reason":"","ts_ms":1795506609577}
+f2: {"v":1,"event_id":"f2-1795506602","ok":false,"stage":"rejected","reason":"queue full","ts_ms":1795506609787}
+--- queue depth now: 0 queue, 0 inflight
+--- worker log:
+[aiw] 2026-11-24T15:50:09 inbox: handled=1 accepted=1 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 tmp_cleaned=0
+=== wait for the queued item to finish, then submit once more (cap must not be sticky)
+--- queue depth: 0 queue, 0 inflight
+f3: {"v":1,"event_id":"f3-1795506602","ok":true,"stage":"queue","reason":"","ts_ms":1795506624205}
+=== back to the default (no cap argument)
+started: pid=8435 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T15:50:31 lock acquired; previous owner pid=7442 no longer holding it
+[aiw] 2026-11-24T15:50:31 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T15:50:31 system prompt: 689 bytes, placed at messages[0] (role=system, outside context eviction)
+worker pid=8435 cap=none
+(no inbox-queue-cap arg)
+=== END

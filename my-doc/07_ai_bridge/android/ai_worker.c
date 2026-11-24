@@ -24,6 +24,7 @@
 #include "t7_dup.h"
 #include "talk_tap.h"
 #include "tg_req_seq.h"
+#include "tg_inbox.h"
 #include "worker_conf.h"
 #include "worker_util.h"
 
@@ -1317,6 +1318,79 @@ static int tts_enqueue(t6b_worker *w, const t6b_reply *rep, char *err, size_t er
     }
 
     return 1;
+}
+
+/* ---------------- T9-06: UI -> worker inbox (the submit channel) ---------------- */
+
+/*
+ * The UI drops <event_id>.json into a strictly validated inbox; we re-enqueue it through the
+ * EXISTING durable path (tts_enqueue), so queue/, done/, journal, play.public.json and the
+ * echo filter keep working exactly as before. Disabled unless --inbox is given, so a start
+ * without the new flag behaves exactly like the accepted T8-15.6 worker.
+ */
+static ti_stats g_inbox_st;
+
+static int aiw_inbox_enqueue(void *ctx, const char *event_id, const char *text,
+                             int text_bytes, char *err, size_t errlen)
+{
+    t6b_worker *w = (t6b_worker *)ctx;
+    t6b_reply rep;
+    char saved_id[sizeof(w->pend.event_id)];
+    const char *stage = NULL;
+    int rc;
+
+    if (w == NULL || event_id == NULL || text == NULL || text_bytes <= 0) return -1;
+    if ((size_t)text_bytes >= sizeof(rep.text)) {
+        if (err && errlen) snprintf(err, errlen, "text does not fit the reply buffer");
+        return -1;
+    }
+
+    memset(&rep, 0, sizeof(rep));
+    memcpy(rep.text, text, (size_t)text_bytes);
+    rep.text[text_bytes] = '\0';
+    rep.text_bytes = text_bytes;
+
+    snprintf(saved_id, sizeof(saved_id), "%s", w->pend.event_id);
+    snprintf(w->pend.event_id, sizeof(w->pend.event_id), "%s", event_id);
+
+    rc = tts_enqueue(w, &rep, err, errlen, &stage);
+
+    snprintf(w->pend.event_id, sizeof(w->pend.event_id), "%s", saved_id);
+
+    /* tts_enqueue: 1 = new item persisted, 0 = idempotent hit. ti_poll wants the opposite
+     * convention (0 = queued now, 1 = already there), so map it here instead of guessing. */
+    if (rc == 1) return 0;
+    if (rc == 0) return 1;
+    return -1;
+}
+
+/* one inbox scan; logged on change and at most every 3 s, so a noisy entry point cannot flood
+ * the worker log (it did during T9-06 bring-up: one rejected file produced >1200 lines) */
+static void aiw_inbox_poll(t6b_worker *w)
+{
+    static long long last_log_ms = 0;
+    static long long last_acc = -1, last_idem = -1;
+    int handled;
+    long long now;
+    int changed;
+
+    if (!w->cfg.inbox_enabled) return;
+    handled = ti_poll(&w->cfg.inbox, &g_inbox_st, aiw_inbox_enqueue, w);
+    if (handled <= 0) return;
+
+    now = wu_wall_ms();
+    changed = (g_inbox_st.accepted != last_acc) || (g_inbox_st.idempotent != last_idem);
+    if (!changed && now - last_log_ms < 3000) return;
+
+    last_log_ms = now;
+    last_acc = g_inbox_st.accepted;
+    last_idem = g_inbox_st.idempotent;
+    always("inbox: handled=%d accepted=%lld idempotent=%lld rejected=%lld bad_name=%lld"
+           " symlink=%lld empty_skipped=%lld stuck=%lld tmp_cleaned=%lld%s%s",
+           handled, g_inbox_st.accepted, g_inbox_st.idempotent, g_inbox_st.rejected,
+           g_inbox_st.bad_name, g_inbox_st.nofollow, g_inbox_st.empty_skipped, g_inbox_st.stuck,
+           g_inbox_st.tmp_cleaned,
+           g_inbox_st.last_reject[0] ? " last_reject=" : "", g_inbox_st.last_reject);
 }
 
 /* ---------------- T8-14.1：自有技能调度（默认关闭） ---------------- */
@@ -2798,6 +2872,9 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
             publish_status(w, "running");
         }
 
+        /* T9-06: the UI submit channel is serviced on every loop pass (no-op when disabled) */
+        aiw_inbox_poll(w);
+
         if (rc == 0) {
             if (w->cfg.idle_exit_ms > 0 && wu_now_ms() - w->last_activity_ms >= w->cfg.idle_exit_ms) {
                 *exit_reason = "idle_timeout";
@@ -2839,6 +2916,8 @@ void t6b_config_defaults(t6b_config *c)
     c->state_fail_exit_ms = 3000;
     c->verbose = 0;
     snprintf(c->tts_queue, sizeof(c->tts_queue), "%s", T6B_TTS_QUEUE_DEFAULT);
+    ti_cfg_defaults(&c->inbox);
+    c->inbox_enabled = 0;
     /* T7-01：上下文默认关闭（= T5-06C 行为），打开时默认 3 轮完整对话 */
     c->context_enabled = 0;
     c->context_max_messages = CV_DEFAULT_MAX_MESSAGES;
@@ -3516,6 +3595,12 @@ static void usage(void)
         "  --deepseek-timeout-ms N          total timeout (default %d)\n"
         "  --reply-log PATH      append each successful answer as one JSON line (default off)\n"
         "  --tts-queue-dir DIR   hand each successful answer to the factory TTS executor\n"
+        "  --inbox DIR           T9-06: validated UI submit channel (<event_id>.json)\n"
+        "  --inbox-result DIR    where accepted/refused requests are answered\n"
+        "  --inbox-rejected DIR  where refused request files are parked\n"
+        "  --inbox-queue-cap N   refuse when the accepted TTS queue already holds N items\n"
+        "  --inbox-rate N        max accepted submissions per rate window\n"
+        "  --inbox-allowed-uid N owner uid allowed to submit (repeatable)\n"
         "                        (local persistent queue, idempotent per event_id; default off)\n"
         "  --conf PATH           load provider/context settings from a key=value file\n"
         "                        (CLI options still win; no credential is stored there)\n"
@@ -3643,6 +3728,14 @@ int main(int argc, char **argv)
         else if (strcmp(a, "--deepseek-timeout-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.total_timeout_ms = atoi(v); i++; }
         else if (strcmp(a, "--reply-log") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.reply_log, sizeof(cfg.reply_log), "%s", v); i++; }
         else if (strcmp(a, "--tts-queue-dir") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.tts_queue, sizeof(cfg.tts_queue), "%s", v); i++; }
+        else if (strcmp(a, "--inbox") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.inbox.inbox_dir, sizeof(cfg.inbox.inbox_dir), "%s", v); cfg.inbox_enabled = 1; i++; }
+        else if (strcmp(a, "--inbox-result") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.inbox.result_dir, sizeof(cfg.inbox.result_dir), "%s", v); i++; }
+        else if (strcmp(a, "--inbox-rejected") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.inbox.rejected_dir, sizeof(cfg.inbox.rejected_dir), "%s", v); i++; }
+        else if (strcmp(a, "--inbox-queue-cap") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.inbox.queue_cap = atoi(v); i++; }
+        else if (strcmp(a, "--inbox-rate") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.inbox.rate_max = atoi(v); i++; }
+        else if (strcmp(a, "--inbox-rate-window-ms") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.inbox.rate_window_ms = atoi(v); i++; }
+        else if (strcmp(a, "--inbox-allowed-uid") == 0) { if (need_str(argc, argv, i, &v)) goto bad; if (cfg.inbox.allowed_count < TI_MAX_UIDS) { cfg.inbox.allowed_uids[cfg.inbox.allowed_count] = (unsigned int)strtoul(v, NULL, 10); cfg.inbox.allowed_count++; } i++; }
+        else if (strcmp(a, "--inbox-no-uid-check") == 0) { cfg.inbox.enforce_uid = 0; continue; }
         else if (strcmp(a, "--conf") == 0) { if (need_str(argc, argv, i, &v)) goto bad; snprintf(cfg.conf_path, sizeof(cfg.conf_path), "%s", v); i++; }
         else if (strcmp(a, "--temperature") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.temperature = atof(v); i++; }
         else if (strcmp(a, "--max-tokens") == 0) { if (need_str(argc, argv, i, &v)) goto bad; cfg.deepseek.max_tokens = atoi(v); i++; }
@@ -3697,6 +3790,12 @@ bad:
         fprintf(stderr, "option needs a value: %s\n", a);
         usage();
         return 2;
+    }
+
+    if (cfg.inbox_enabled && cfg.tts_queue[0] != '\0') {
+        /* the depth cap counts the accepted queue, so follow --tts-queue-dir */
+        snprintf(cfg.inbox.queue_dir, sizeof(cfg.inbox.queue_dir), "%s/queue", cfg.tts_queue);
+        snprintf(cfg.inbox.inflight_dir, sizeof(cfg.inbox.inflight_dir), "%s/inflight", cfg.tts_queue);
     }
 
     if (t6b_config_check(&cfg, err, sizeof(err)) != 0) {

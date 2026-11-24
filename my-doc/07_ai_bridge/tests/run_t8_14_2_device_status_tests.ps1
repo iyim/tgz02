@@ -1,4 +1,4 @@
-# run_t8_14_2_device_status_tests.ps1 -- T8-14.2 device.status wiring (real ai_worker.exe, host only)
+﻿# run_t8_14_2_device_status_tests.ps1 -- T8-14.2 device.status wiring (real ai_worker.exe, host only)
 #
 #   powershell -ExecutionPolicy Bypass -File run_t8_14_2_device_status_tests.ps1
 #
@@ -8,7 +8,7 @@
 #   2) master ON + device switch ON  : device.status runs, the message goes through the
 #      real tts_enqueue(), the queue item is named after the event_id.
 #      The host has no /proc/uptime -> the skill must degrade to battery-only
-#      ("电量 77%"), never invent an uptime number.
+#      ("鐢甸噺 77%"), never invent an uptime number.
 #   3) master OFF                    : device question goes to the model, skill counters stay 0.
 #   4) replay of the same event_id (fresh state dir): no second execution, no second item.
 #   5) TTS enqueue failure           : consumption offset must NOT advance.
@@ -53,7 +53,7 @@ $LibSrc = @(
     "intent_route.c", "session_ctrl.c", "conv_session.c", "skill_dispatch.c", "talk_tap.c",
     "t7_dup.c", "utterance_gate.c"
 ) | ForEach-Object { Join-Path $Android $_ }
-$WorkerSrc = @((Join-Path $Android "ai_worker.c")) + $LibSrc
+$WorkerSrc = @((Join-Path $Android "tg_inbox.c"), (Join-Path $Android "ai_worker.c")) + $LibSrc
 
 function Build([string]$exe, [string[]]$sources) {
     $argv = $Base + @("-o", $exe) + $sources
@@ -349,3 +349,4 @@ if ($script:Fail -ne 0) {
 Log "# result: OK"
 $script:Lines | Out-File -FilePath $Log -Encoding utf8
 exit 0
+

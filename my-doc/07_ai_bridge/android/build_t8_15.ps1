@@ -1,13 +1,11 @@
-# build_t8_15.ps1 -- T8-15 连续对话阶段：ARM32 构建（守卫 + worker）
-#
+﻿# build_t8_15.ps1 -- T8-15 杩炵画瀵硅瘽闃舵锛欰RM32 鏋勫缓锛堝畧鍗?+ worker锛?#
 #   powershell -ExecutionPolicy Bypass -File build_t8_15.ps1 [-LogName t8_15_5_ndk_build.log]
 #
-# 为什么单独一个脚本：T8-15 阶段 worker 的源文件集合已经比 build_t7_02.ps1 大
-# （intent_route / utterance_gate / conv_session / session_ctrl / skill_dispatch /
-#  talk_tap / t7_dup），用旧脚本链接会缺符号。这里固定住这一阶段的构建命令，
-# 让"提交里能查到究竟编了哪些文件、编出什么"。产物：
-#   android/out/libtg_ttsguard.so   (ELF32 / ARM / armeabi-v7a / API 26，动态)
-#   android/out/ai_worker           (同上，PIE 可执行)
+# 涓轰粈涔堝崟鐙竴涓剼鏈細T8-15 闃舵 worker 鐨勬簮鏂囦欢闆嗗悎宸茬粡姣?build_t7_02.ps1 澶?# 锛坕ntent_route / utterance_gate / conv_session / session_ctrl / skill_dispatch /
+#  talk_tap / t7_dup锛夛紝鐢ㄦ棫鑴氭湰閾炬帴浼氱己绗﹀彿銆傝繖閲屽浐瀹氫綇杩欎竴闃舵鐨勬瀯寤哄懡浠わ紝
+# 璁?鎻愪氦閲岃兘鏌ュ埌绌剁珶缂栦簡鍝簺鏂囦欢銆佺紪鍑轰粈涔?銆備骇鐗╋細
+#   android/out/libtg_ttsguard.so   (ELF32 / ARM / armeabi-v7a / API 26锛屽姩鎬?
+#   android/out/ai_worker           (鍚屼笂锛孭IE 鍙墽琛?
 param([string]$LogName = "t8_15_5_ndk_build.log")
 $ErrorActionPreference = "Stop"
 
@@ -40,7 +38,7 @@ $WorkerSources = @(
     "intent_route.c", "utterance_gate.c", "conv_session.c", "t7_dup.c",
     "session_ctrl.c", "skill_dispatch.c", "dead_letter.c",
     "provider.c", "mock_provider.c", "deepseek_provider.c",
-    "talk_tap.c", "ai_worker.c"
+    "talk_tap.c", "tg_inbox.c", "ai_worker.c"
 ) | ForEach-Object { Join-Path $Here $_ }
 
 $GuardSources = @(
@@ -95,3 +93,4 @@ $script:Lines | Out-File -FilePath $Log -Encoding utf8
 Write-Host ("artifacts: " + $Out + "\libtg_ttsguard.so , " + $Out + "\ai_worker")
 Write-Host ("log: " + $Log)
 exit $rcAll
+

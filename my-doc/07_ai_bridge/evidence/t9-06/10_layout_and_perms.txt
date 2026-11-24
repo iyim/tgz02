@@ -1,0 +1,22 @@
+﻿=== layout
+drwxr-xr-x 5 root root 4096 2026-11-24 15:36 /data/local/tmp/t9_ui
+drwx-wx-wt 2 root root 4096 2026-11-24 15:36 /data/local/tmp/t9_ui/inbox
+drwx------ 2 root root 4096 2026-11-24 15:36 /data/local/tmp/t9_ui/rejected
+drwxr-xr-x 2 root root 4096 2026-11-24 15:36 /data/local/tmp/t9_ui/result
+=== normal app uid
+uid=10056(u0_a56) gid=10056(u0_a56) groups=10056(u0_a56) context=u:r:untrusted_app:s0:c512,c768
+=== app creates a request file (atomic pattern)
+create_ok
+create_exit=0
+total 4
+-rw-r--r-- 1 u0_a56 u0_a56 42 2026-11-24 15:36 probe-perm.json
+=== app reads the result directory
+total 0
+=== app tries to write into result/ (must fail)
+sh: can't create /data/local/tmp/t9_ui/result/hack.json: Permission denied
+=== app tries to delete another app's file (sticky)
+=== app tries to write into the accepted queue (must fail)
+sh: can't create /data/local/tmp/t5_bridge/tts/queue/x.json: Permission denied
+=== cleanup
+total 0
+=== END

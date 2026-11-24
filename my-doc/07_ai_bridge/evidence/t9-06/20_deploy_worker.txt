@@ -1,0 +1,50 @@
+﻿adb : chown: /data/local/tmp/t9_ui/allowed_uids: No such file or directory
+所在位置 行:7 字符: 6
++ $o = adb -s $d shell "su 0 sh -c 'chown 0:0 /data/local/tmp/t9_ui/all ...
++      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (chown: /data/lo...le or directory:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+chmod: /data/local/tmp/t9_ui/allowed_uids: No such file or directory
+=== date
+Tue Nov 24 15:38:35 CST 2026
+=== backup (accepted T8-15.6 worker)
+99dd4fcdf0231fa2a2fa8c7906b8ff55edbf0eff2568030753ad97f52f17489e  /data/local/tmp/t9/t9_06/backup/ai_worker.t8156
+99dd4fcdf0231fa2a2fa8c7906b8ff55edbf0eff2568030753ad97f52f17489e  /data/local/tmp/t5_bridge/bin/ai_worker
+total 288
+-rwxr-xr-x 1 root root 278168 2026-11-24 15:38 ai_worker.t8156
+-rwxr-xr-x 1 root root  12365 2026-11-24 15:38 run_ai_worker.sh.pre_t9_06
+=== install the new worker + launcher
+51f5c806a6d782e99b49405ea7a84ec1d291e4468ad6540c1ded14583c98c7e1  /data/local/tmp/t5_bridge/bin/ai_worker
+cc529ddc61ca23ca41d8e48f2a93d0b24be47515011f44bde5d96d6f61c9ffad  /data/local/tmp/t5_bridge/run_ai_worker.sh
+/data/local/tmp/t5_bridge/run_ai_worker.sh[212]: syntax error: unexpected 'else'
+=== allowed uids (root-owned list, read by the launcher)
+=== restart the worker
+/data/local/tmp/t5_bridge/run_ai_worker.sh[212]: syntax error: unexpected 'else'
+/data/local/tmp/t5_bridge/run_ai_worker.sh[212]: syntax error: unexpected 'else'
+=== new worker
+pid=27996
+worker not running - log tail:
+[aiw] 2026-11-24T14:45:33 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T14:45:33 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T14:45:33 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T14:45:36 dialog closed: reason=deadline reached rounds_done=0 followup_rounds=0 max_round=1 listening=0 followup_rounds_total=0 exit_turns=0
+[aiw] 2026-11-24T14:59:25 factory wake (onStartTalk): session=1972810 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T14:59:35 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T14:59:35 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T14:59:35 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T14:59:35 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T14:59:37 dialog closed: reason=deadline reached rounds_done=0 followup_rounds=0 max_round=1 listening=0 followup_rounds_total=0 exit_turns=0
+[aiw] 2026-11-24T15:11:15 factory wake (onStartTalk): session=1972822 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T15:11:25 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T15:11:25 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T15:11:25 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T15:11:26 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T15:11:28 dialog closed: reason=deadline reached rounds_done=0 followup_rounds=0 max_round=1 listening=0 followup_rounds_total=0 exit_turns=0
+[aiw] 2026-11-24T15:38:36 another ai_worker is running: pid=2580 (flock held)
+already running (flock held)
+[aiw] 2026-11-24T15:38:39 another ai_worker is running: pid=2580 (flock held)
+already running (flock held)
+=== inbox stats line in the log
+0
+=== END

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * ai_worker.h -- 独立 AI Worker 进程（T5-06B 基础框架）
  *
  * 职责边界（一句话）：只读消费 events.jsonl、维护消费进度、校验/去重/缺口检测、
@@ -20,6 +20,7 @@
 #include "intent_route.h"
 #include "provider.h"
 #include "skill_dispatch.h"
+#include "tg_inbox.h"
 #include "utterance_gate.h"
 #include "worker_status.h"
 
@@ -73,6 +74,9 @@ typedef struct {
     int         verbose;
     char        reply_log[T6B_PATH_MAX];     /* 可选：成功回答的落盘文件（默认关闭） */
     char        tts_queue[T6B_PATH_MAX];     /* 可选：TTS 队列根目录（默认关闭） */
+    /* T9-06：UI 提交通道（--inbox 打开；默认关闭 = 行为与 T8-15.6 完全一致） */
+    int         inbox_enabled;
+    ti_cfg      inbox;
     /* T7-01 */
     char        conf_path[T6B_PATH_MAX];     /* 可选：配置文件路径（空 = 没有） */
     char        context_file[T6B_PATH_MAX];  /* 上下文文件（空 = state_dir/context.json） */

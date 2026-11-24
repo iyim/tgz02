@@ -1,0 +1,21 @@
+﻿=== date
+Tue Nov 24 15:39:41 CST 2026
+=== old worker
+old_pid=2580
+old worker stopped
+=== start (wrapper -> accepted launcher + inbox args)
+started: pid=28203 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T15:39:42 lock acquired; previous owner pid=2580 no longer holding it
+[aiw] 2026-11-24T15:39:42 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T15:39:42 system prompt: 689 bytes, placed at messages[0] (role=system, outside context eviction)
+new_pid=28203
+cmdline: /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10057 
+uid: 
+--- worker log tail
+[aiw] 2026-11-24T15:39:43 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T15:39:43 factory wake (onStartTalk): session=1972822 wake_type=1 listening=1 round=0
+[aiw] 2026-11-24T15:39:43 factory stop talk (EOU round=0 reason=0): listening=0, dialog stays open
+[aiw] 2026-11-24T15:39:43 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T15:39:43 factory stop talk (EOU round=0 reason=-1): listening=0, dialog stays open
+[aiw] 2026-11-24T15:39:43 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+=== END

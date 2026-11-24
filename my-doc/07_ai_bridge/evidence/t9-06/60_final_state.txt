@@ -1,0 +1,34 @@
+﻿=== date
+Tue Nov 24 15:52:15 CST 2026
+worker_pid=8593
+/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10057 
+core_pid=1178
+libtg mappings in :core: 6
+  /data/local/tmp/t7/libtg_ttsguard_t8156.so
+  /data/local/tmp/t8/libtg_hook.so
+=== init services
+tg_hook_sup=running
+tg_guard_sup=running
+tgb_bridge=1602
+ai_worker=8593
+=== UI channel tree
+drwxr-xr-x 5 root root  4096 2026-11-24 15:39 /data/local/tmp/t9_ui
+drwx-wx-wt 2 root root  4096 2026-11-24 15:50 /data/local/tmp/t9_ui/inbox
+drwx------ 2 root root 69632 2026-11-24 15:50 /data/local/tmp/t9_ui/rejected
+drwxr-xr-x 2 root root  4096 2026-11-24 15:50 /data/local/tmp/t9_ui/result
+allowed_uids=10057
+inbox: 0 files, result: 3 files
+=== accepted queue perms (must still be 0700 root)
+drwx------ 2 root root 36864 2026-11-24 15:50 /data/local/tmp/t5_bridge/tts/done
+drwx------ 2 root root  4096 2026-11-24 15:50 /data/local/tmp/t5_bridge/tts/queue
+=== probe apps
+package:com.tgz02.providerprobe
+package:com.tgz02.aidltest
+package:com.tgz02.uibridge
+=== backup for rollback
+total 288
+-rwxr-xr-x 1 root root 278168 2026-11-24 15:38 ai_worker.t8156
+-rwxr-xr-x 1 root root  12365 2026-11-24 15:38 run_ai_worker.sh.pre_t9_06
+=== top / power
+  mWakefulness=Dreaming
+=== END

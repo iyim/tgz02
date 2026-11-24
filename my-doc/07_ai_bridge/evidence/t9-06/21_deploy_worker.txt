@@ -1,0 +1,28 @@
+﻿=== date
+Tue Nov 24 15:39:15 CST 2026
+=== 0. restore the accepted launcher from the backup (undo the failed edit)
+accepted launcher syntax OK
+=== 1. the accepted launcher, kept verbatim as .accepted
+01f0652da5209a6ccf1b4ded3d90e764e3e2b940227640b9f6abd7a585e431a0  /data/local/tmp/t9/t9_06/backup/run_ai_worker.sh.pre_t9_06
+01f0652da5209a6ccf1b4ded3d90e764e3e2b940227640b9f6abd7a585e431a0  /data/local/tmp/t5_bridge/run_ai_worker.sh.accepted
+=== 2. the wrapper takes the public name
+wrapper syntax OK
+-rwxr-xr-x 1 shell shell  1246 2026-11-24 15:39 /data/local/tmp/t5_bridge/run_ai_worker.sh
+-rwxr-xr-x 1 root  root  12365 2026-11-24 15:39 /data/local/tmp/t5_bridge/run_ai_worker.sh.accepted
+=== 3. worker binary
+99dd4fcdf0231fa2a2fa8c7906b8ff55edbf0eff2568030753ad97f52f17489e  /data/local/tmp/t9/t9_06/backup/ai_worker.t8156
+51f5c806a6d782e99b49405ea7a84ec1d291e4468ad6540c1ded14583c98c7e1  /data/local/tmp/t5_bridge/bin/ai_worker
+=== 4. allowed uids
+allowed_uids: 10057
+-rw-r--r-- 1 root root 5 2026-11-24 15:39 /data/local/tmp/t9_ui/allowed_uids
+=== 5. restart the worker
+stale pid file; no signal sent
+failed to start (worker exited); log:
+[aiw] 2026-11-24T15:39:18 another ai_worker is running: pid=2580 (flock held)
+already running (flock held)
+=== 6. verify
+pid=
+worker not running - log tail:
+[aiw] 2026-11-24T15:39:18 another ai_worker is running: pid=2580 (flock held)
+already running (flock held)
+=== END

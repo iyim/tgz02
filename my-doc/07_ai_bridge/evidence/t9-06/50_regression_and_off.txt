@@ -1,0 +1,38 @@
+﻿=== date
+Tue Nov 24 15:50:47 CST 2026
+=== 1. accepted path: TtsExec plays a line without going through the inbox
+tts_exec: enqueued event=t906regress bytes=31 queue=/data/local/tmp/t5_bridge/tts/queue ok=true
+11-24 15:50:50.382 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsStart:141 [1765] sessionId = 5245589, isStreaming = 1, tts = 回归测试 原厂播报正常
+11-24 15:50:50.426 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandleTtsFeedback:389 [1645] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = play,type = tts,agmcId(tts_id) =5245589
+11-24 15:50:52.964 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandleTtsFeedback:389 [1645] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = complete,type = tts,agmcId(tts_id) =5245589
+11-24 15:50:53.400 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:audioHandleTtsFeedback:389 [1645] <ALI_STUB_APP> _ali_stub_json_handle_tts_feedback:status = interupt,type = tts,agmcId(tts_id) =5245589
+{"ts":"2026-11-24T15:50:26.734+0800","kind":"tts","event_id":"f3-1795506602","tts_id":5245584,"outcome":"ok","dur_ms":2418,"text_bytes":31,"attempts":1}
+{"ts":"2026-11-24T15:50:52.999+0800","kind":"tts","event_id":"t906regress","tts_id":5245589,"outcome":"ok","dur_ms":2682,"text_bytes":31,"attempts":1}
+=== 2. worker health
+0
+[aiw] 2026-11-24T15:50:36 factory exit talk (platform session closed, round=0): dialog stays open, relisten_armed=0
+[aiw] 2026-11-24T15:50:43 dialog closed: reason=deadline reached rounds_done=0 followup_rounds=0 max_round=0 listening=0 followup_rounds_total=0 exit_turns=0
+[aiw] 2026-11-24T15:50:53 factory wake (onStartTalk): session=1972886 wake_type=1 listening=1 round=0
+-rw------- 1 root root 3804 2026-11-24 15:51 /data/local/tmp/t5_bridge/ai_worker/ai_worker_status.json
+=== 3. factory :core and our injection are untouched
+core_pid=1178
+  /data/local/tmp/t7/libtg_ttsguard_t8156.so
+  /data/local/tmp/t8/libtg_hook.so
+tg_hook_sup=running
+tg_guard_sup=running
+tgb_bridge=1602
+ai_worker=8435
+=== 4. additive proof: remove the inbox tree -> worker starts without the channel
+started: pid=8565 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T15:51:07 lock acquired; previous owner pid=8435 no longer holding it
+[aiw] 2026-11-24T15:51:07 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T15:51:07 system prompt: 689 bytes, placed at messages[0] (role=system, outside context eviction)
+worker pid=8565 (channel off)
+0
+/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts === 5. restore the channel
+started: pid=8593 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T15:51:15 lock acquired; previous owner pid=8565 no longer holding it
+[aiw] 2026-11-24T15:51:15 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+[aiw] 2026-11-24T15:51:15 system prompt: 689 bytes, placed at messages[0] (role=system, outside context eviction)
+worker pid=8593 (channel on)
+/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10057 === END

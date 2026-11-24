@@ -1,0 +1,50 @@
+﻿=== date
+Tue Nov 24 15:49:24 CST 2026
+ts=1795506564
+=== 0. normal submit (must be stage=queue)
+submit ok-1795506564 exit=0
+result ok-1795506564: {"v":1,"event_id":"ok-1795506564","ok":true,"stage":"queue","reason":"","ts_ms":1795506564876}
+=== 1. broken json
+submit e1-1795506564 exit=0
+result e1-1795506564: {"v":1,"event_id":"e1-1795506564","ok":false,"stage":"rejected","reason":"truncated value","ts_ms":1795506568129}
+=== 2. oversize text (2036 bytes > 1024)
+submit e2-1795506564 exit=0
+result e2-1795506564: {"v":1,"event_id":"e2-1795506564","ok":false,"stage":"rejected","reason":"text too long","ts_ms":1795506570359}
+=== 3. event_id mismatch (filename vs content)
+submit e3-1795506564 exit=0
+result e3-1795506564: {"v":1,"event_id":"e3-1795506564","ok":false,"stage":"rejected","reason":"event_id mismatch","ts_ms":1795506572597}
+=== 4. illegal filename (space)
+submit bad-name exit=0
+--- rejected dir:
+-rw-r--r-- 1 u0_a57 u0_a57    4 2026-11-24 15:47 ui-e6.1795506476475.rejected
+-rw-r--r-- 1 u0_a57 u0_a57   40 2026-11-24 15:44 unknown.1795506261203.rejected
+-rw-r--r-- 1 u0_a57 u0_a57   40 2026-11-24 15:47 unknown.1795506458823.rejected
+-rw-r--r-- 1 u0_a57 u0_a57   40 2026-11-24 15:49 unknown.1795506574846.rejected
+=== 5. duplicate event_id (first queued, second idempotent)
+submit dup-1795506564 exit=0
+result dup-1795506564: {"v":1,"event_id":"dup-1795506564","ok":true,"stage":"queue","reason":"","ts_ms":1795506577133}
+submit dup-1795506564 exit=0
+result dup-1795506564: {"v":1,"event_id":"dup-1795506564","ok":true,"stage":"existing","reason":"already queued or played","ts_ms":1795506580405}
+=== 6. oversize file (5036 bytes > 4096)
+submit e6-1795506564 exit=0
+result e6-1795506564: {"v":1,"event_id":"e6-1795506564","ok":false,"stage":"rejected","reason":"file size out of range","ts_ms":1795506582635}
+=== 7. strict uid check: a file owned by root is refused even though it is well formed
+result root-1795506564: {"v":1,"event_id":"root-1795506564","ok":false,"stage":"rejected","reason":"uid not allowed","ts_ms":1795506584663}
+-rw-r--r-- 1 u0_a57 u0_a57   40 2026-11-24 15:47 unknown.1795506458823.rejected
+-rw-r--r-- 1 u0_a57 u0_a57   40 2026-11-24 15:49 unknown.1795506574846.rejected
+=== worker inbox summary (throttled log)
+[aiw] 2026-11-24T15:49:24 inbox: handled=1 accepted=1 idempotent=0 rejected=0 bad_name=0 symlink=0 empty_skipped=0 stuck=0 tmp_cleaned=0
+[aiw] 2026-11-24T15:49:28 inbox: handled=1 accepted=1 idempotent=0 rejected=1 bad_name=0 symlink=0 empty_skipped=0 stuck=0 tmp_cleaned=0 last_reject=e1-1795506564: truncated value
+[aiw] 2026-11-24T15:49:32 inbox: handled=1 accepted=1 idempotent=0 rejected=3 bad_name=0 symlink=0 empty_skipped=0 stuck=0 tmp_cleaned=0 last_reject=e3-1795506564: event_id mismatch
+[aiw] 2026-11-24T15:49:37 inbox: handled=1 accepted=2 idempotent=0 rejected=4 bad_name=1 symlink=0 empty_skipped=0 stuck=0 tmp_cleaned=0 last_reject=?: event_id invalid
+[aiw] 2026-11-24T15:49:40 inbox: handled=1 accepted=2 idempotent=1 rejected=4 bad_name=1 symlink=0 empty_skipped=0 stuck=0 tmp_cleaned=0 last_reject=?: event_id invalid
+[aiw] 2026-11-24T15:49:44 inbox: handled=1 accepted=2 idempotent=1 rejected=6 bad_name=1 symlink=0 empty_skipped=0 stuck=0 tmp_cleaned=0 last_reject=root-1795506564: uid not allowed
+inbox_log_lines_total=6
+=== inbox left behind
+total 0
+=== journal (last 4)
+{"ts":"2026-11-24T15:43:06.344+0800","kind":"tts","event_id":"ui-ok1","tts_id":5245558,"outcome":"ok","dur_ms":1217,"text_bytes":12,"attempts":1}
+{"ts":"2026-11-24T15:44:24.917+0800","kind":"tts","event_id":"ui-dup1","tts_id":5245563,"outcome":"ok","dur_ms":1218,"text_bytes":12,"attempts":1}
+{"ts":"2026-11-24T15:49:27.364+0800","kind":"tts","event_id":"ok-1795506564","tts_id":5245569,"outcome":"ok","dur_ms":2450,"text_bytes":25,"attempts":1}
+{"ts":"2026-11-24T15:49:38.770+0800","kind":"tts","event_id":"dup-1795506564","tts_id":5245573,"outcome":"ok","dur_ms":1597,"text_bytes":12,"attempts":1}
+=== END
