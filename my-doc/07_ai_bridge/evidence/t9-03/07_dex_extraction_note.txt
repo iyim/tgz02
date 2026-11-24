@@ -1,0 +1,31 @@
+# T9-03 evidence: how the official dex was obtained for static analysis
+# (recorded because the first attempt silently produced "0 classes" in jadx)
+
+## 1. official APK has no classes.dex (T9-01)
+/system/app/smartapp/smartapp.apk  25,336,386 B  sha256 1506719b63a3a5592731f80d1eca39db05537388f515f5ff69ea08b69093da00
+  -> code lives in /system/app/smartapp/oat/arm/smartapp.vdex  (28,902,724 B) + smartapp.odex (569,824 B)
+
+## 2. extracted dex files (existing scratch tooling, _analysis/vdex-dex/)
+classes.dex   9,726,492 B
+classes2.dex  5,045,328 B
+classes3.dex  6,182,104 B
+classes4.dex  5,817,564 B
+header magic dex\n035, header_size=112, header file_size == real size (valid)
+
+## 3. the trap: Adler-32 checksum was stale
+for every file:  adler32(bytes[12:]) != header.checksum    (SHA-1 signature of bytes[32:] WAS correct)
+=> jadx loaded the apk but reported class_count = 0 and listed every class query as empty
+
+## 4. fix used for the ANALYSIS COPIES only
+recompute adler32 over bytes[12:] and write it back at offset 8..12
+  classes.dex   -> 0xd49b29a3
+  classes2.dex  -> 0x161a50b9
+  classes3.dex  -> 0xc835b2db
+  classes4.dex  -> 0x8b85a13e
+then repack as a zip (STORE) -> _analysis/t9/smartapp_dexonly.apk (26,771,908 B)
+jadx: class_count = 12,091
+
+## 5. note
+the patched dex files are analysis artifacts only. They were never pushed to the device and
+never replace anything under /system or /data. The device keeps running the untouched
+official APK/vdex.

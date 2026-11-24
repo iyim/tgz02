@@ -1,0 +1,63 @@
+﻿### date
+2026-11-24 12:57:37
+### NativeService onBind log lines (Log.e(TAG,"action = ..."))
+--------- beginning of system
+--------- beginning of main
+### binder services matching asr/genie/alitv
+116	alibaba.ailabs.genie.resm: [com.alibaba.ailabs.genie.resmanager.IResManager]
+### NativeService ServiceRecord
+  * ServiceRecord{e3ee27c u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService}
+    intent={act=com.yunos.tv.alitvasr.service pkg=com.alibaba.ailabs.genie.smartapp}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp:core
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{abb3a0b 1178:com.alibaba.ailabs.genie.smartapp:core/1000}
+    createTime=-4m6s377ms startingBgTimeout=--
+    lastActivity=-4m4s429ms restartTime=-4m4s429ms createdFromFg=true
+--
+          ConnectionRecord{ce68811 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@49bf038}
+    All Connections:
+      ConnectionRecord{ce68811 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@49bf038}
+
+  * ServiceRecord{2e279dd u0 com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService}
+    intent={pkg=com.alibaba.ailabs.genie.smartapp cmp=com.alibaba.ailabs.genie.smartapp/.service.GenieManageServerService}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp
+    baseDir=/system/app/smartapp/smartapp.apk
+    dataDir=/data/user/0/com.alibaba.ailabs.genie.smartapp
+    app=ProcessRecord{bf8d49b 919:com.alibaba.ailabs.genie.smartapp/1000}
+--
+  * ConnectionRecord{ce68811 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@49bf038}
+    binding=AppBindRecord{5e25015 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@49bf038 flags=0x40
+  * ConnectionRecord{12d092b u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.GenieAssistantUiService:@4b9bd7a}
+    binding=AppBindRecord{43d7cf5 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieui.GenieAssistantUiService:com.alibaba.ailabs.genie.smartapp:core}
+    conn=android.os.BinderProxy@4b9bd7a flags=0x1
+  * ConnectionRecord{738bd09 u0 CR com.alibaba.ailabs.genie.smartapp/anetwork.channel.aidl.NetworkService:@4e27e10}
+    binding=AppBindRecord{24e6b07 com.alibaba.ailabs.genie.smartapp/anetwork.channel.aidl.NetworkService:com.alibaba.ailabs.genie.smartapp}
+    conn=android.os.BinderProxy@4e27e10 flags=0x1
+  * ConnectionRecord{dd9e5d4 u0 CR com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.logger.service.LogService:@79cef27}
+### exported providers of the package
+Registered ContentProviders:
+    Provider{4e7976 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.second.gcs.service.SecondInstaller}
+  com.alibaba.ailabs.genie.smartapp/com.alibaba.genie.dataprovider.GenieContentProvider:
+    Provider{1afdb77 com.alibaba.ailabs.genie.smartapp/com.alibaba.genie.dataprovider.GenieContentProvider}
+    Provider{1c8e3e4 com.alibaba.ailabs.genie.smartapp/com.alibaba.genie.waft.gcs.registry.GenieRegistryInstaller}
+    Provider{e50b04d com.alibaba.ailabs.genie.smartapp/com.alibaba.genie.waft.gcs.rpc.GenieServicePublisher}
+    Provider{6a0b702 com.alibaba.ailabs.genie.smartapp/android.arch.lifecycle.ProcessLifecycleOwnerInitializer}
+  com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.datacenter.DataCenterProvider:
+    Provider{7bcb813 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.datacenter.DataCenterProvider}
+  com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.remote.server.MarketServerProvider:
+    Provider{d225a50 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.remote.server.MarketServerProvider}
+  com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.router.service.RouterProvider:
+    Provider{9050449 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.router.service.RouterProvider}
+  com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.provider.StatusProvider:
+    Provider{7e7414e com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.provider.StatusProvider}
+  com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.contacts.databases.DataProvider:
+    Provider{3b0c26f com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.contacts.databases.DataProvider}
+  com.alibaba.ailabs.genie.smartapp/android.support.v4.content.FileProvider:
+    Provider{e5acb7c com.alibaba.ailabs.genie.smartapp/android.support.v4.content.FileProvider}
+  com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.childmode.provider.ChildModeProvider:
+### process of :core and its providers
+ 1178 com.alibaba.ailabs.genie.smartapp:core

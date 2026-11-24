@@ -1,0 +1,32 @@
+# T9-03 evidence: our TTS executor's real call chain (repo source, device-verified since T5-06D)
+# file: android/tts_exec/TtsExec.java
+
+    static final String AUTHORITY = "com.alibaba.ailabs.genie.assistant.provider";
+    static final String GENIE_URI = "content://" + AUTHORITY + "/GenieApi";
+    static final int METHOD_PLAY_TTS = 4;
+    static final int METHOD_STOP_TTS = 5;      /* insert 路径 */
+
+## header comment (author's own description of the verified chain)
+ * 调用链（真机验证过的原厂入口）：
+ *   app_process + 本 dex
+ *     -> IActivityManager.getContentProviderExternal("com.alibaba.ailabs.genie.assistant.provider")
+ *     -> ContentProviderClient.query(content://.../GenieApi, selection=JSON{method:4,...})
+ *     -> :core 进程 GenieTable.query -> VoiceManager.playTts -> AiLabsCore.playTts (native)
+ *     -> 原厂 TtsManager 走原厂 websocket 会话取云 TTS 流
+ *     -> UTPPlayer / ApolloRenderAdapter / OpenSL ES -> 原厂扬声器
+ *
+ * 状态反馈：原厂在 AudioStateManager 里给每条 TTS 打印
+ *   "_ali_stub_json_handle_tts_feedback:status = play|complete,type = tts,agmcId(tts_id) =<id>"
+ * 本执行器按 tts_id 过滤这些行（行内不含回答正文），得到开始/完成。
+
+## reflection entry points used (hidden APIs, root needed)
+Class.forName("android.app.IActivityManager") -> getContentProviderExternal / removeContentProviderExternal
+Class.forName("android.app.ContentProviderHolder")
+Class.forName("android.content.IContentProvider")
+Class.forName("android.app.ActivityThread").systemMain() -> getSystemContext()
+
+## manifest side (official package)
+provider com.alibaba.ailabs.geniesdk.provider.StatusProvider  process=:core  exported=true
+    authorities=com.alibaba.ailabs.genie.assistant.provider   permission=(none)
+provider com.alibaba.ailabs.geniesdk.AgisProvider             process=:core  exported=true
+    authorities=com.alibaba.ailabs.genie.assistant.server     permission=(none)

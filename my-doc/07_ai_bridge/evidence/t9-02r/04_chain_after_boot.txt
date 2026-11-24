@@ -1,0 +1,10 @@
+﻿### live post-reboot chain (after the T9-02R reboot, no manual step)
+--- worker log 12:54:2x-3x
+[aiw] 2026-11-24T12:54:38 route=native intent=volume rule=volume.down arg=down event=t6-1178-1968663-g1 seq=1 session=1968663 text_bytes=30 merges=0 held_ms=0 publish_seq=1 (factory answers; AI worker does not)
+[aiw] 2026-11-24T12:54:38 native command (volume): continuity re-listen scheduled in 1200 ms
+[aiw] 2026-11-24T12:54:39 continuity request: seq=83510 sent (after native command) n=1 - waiting for factory session
+[aiw] 2026-11-24T12:54:39 continuity request: CONFIRMED by factory session=1972763 (+206 ms)
+--- factory tap 12:54:3x
+11-24 12:54:34.193 D/SessionManager( 1178): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1665] sessionId = 1968663, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-24 12:54:38.251 D/SessionManager( 1178): JNI_AILABS SessionManager.cpp:onStopTalk:697 [1665] onStopTalk, mStopTalkReason = 0, reason = normal
+11-24 12:54:39.668 D/SessionManager( 1178): JNI_AILABS SessionManager.cpp:onStartTalk:255 [1665] sessionId = 1972763, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0

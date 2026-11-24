@@ -1,0 +1,54 @@
+# T9-03 evidence: NativeService (jadx, official dex 8.7.1.18)
+# artifact: _analysis/t9/smartapp_dexonly.apk (analysis-only rebuild of the 4 dex extracted
+#           from /system/app/smartapp/oat/arm/smartapp.vdex; never deployed to the device)
+# class: com.alibaba.ailabs.geniesdk.NativeService   (process :core, exported=true, no android:permission)
+
+## fields
+ACTION_AUTOTEST, ACTION_HDMI_PLUGGED, ACTION_TEST, ASR_SERVER_ACTION, LOW_BATTERY_ACTION,
+LOW_BATTERY_LEVEL, MUTE_CHANGE_ACTION, MUTE_CHANGE_KEY, MSG_RETRY_NETWORK_STATUS,
+RETRY_NETWORK_TIMEOUT, TAG, mBrightnessObserver, mHandler, mWakeLock, mWifiStatusData, receiver
+
+## methods
+<init>()V
+access$000(NativeService)V
+acquirePartialWakeLock()V
+handleMessage(Message)Z
+notifyWifiStatus()V
+onBind(Intent)IBinder            <-- 关键
+onCreate()V
+onDestroy()V
+onStartCommand(Intent,int,int)I
+parserAutoTestCmd(Intent)String
+releasePartialWakeLock()V
+
+## onBind (jadx java)
+    @Override // android.app.Service
+    public IBinder onBind(Intent intent) {
+        AguiCtx aguiCtx;
+        String action = intent != null ? intent.getAction() : null;
+        Log.e(TAG, "action = " + action);
+        if (!TextUtils.equals(action, ASR_SERVER_ACTION) || (aguiCtx = AguiCtx.getInstance()) == null) {
+            return null;
+        }
+        return aguiCtx.getClientManager().getIAliTVASR();
+    }
+
+## ClientManager.getIAliTVASR (jadx java)
+    public IAliTVASR.Stub getIAliTVASR() {
+        return this.mIAliTVASR;
+    }
+
+## ClientManager fields (relevant)
+    mAsrSvr      : com.alibaba.ailabs.geniesdk.client.AsrSvrEx
+    mIAliTVASR   : com.yunos.tv.alitvasr.IAliTVASR$Stub
+    ID_GET_MEDIA_POLICY / ID_IS_FOREGROUND / ID_ON_FOCUS_CHANGE / ID_ON_NOTIFY_EVENT
+    ID_SET_BACKGROUND_SERVICE / ID_SET_WINDOW_TYPE / ID_CHECK_USER_BIND
+    KEY_BIND / KEY_BIND_TYPE / KEY_PACKAGENAME / KEY_TYPE / KEY_DATA / KEY_ARG1
+
+## string literals found in the dex (grep on dex_fixed/*.dex)
+com.yunos.tv.alitvasr.service              (== ASR_SERVER_ACTION, confirmed at runtime)
+com.alibaba.ailabs.tg.UI_SERVICE
+com.yunos.tv.alitvasr.permission.CONTROL
+com.yunos.tv.alitvasr.permission.SESSION_INFO
+com.alibaba.ailabs.tg.base / .baseutils / .mtopfaas
+ACTION_BIND_USR / USER_ACTION_BIND / ACTION_BIND_SIDE_CHANNEL

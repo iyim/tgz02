@@ -1,0 +1,40 @@
+# T9-03 evidence: the factory AIDL surface (com.yunos.tv.alitvasr.*)
+# source: jadx on the analysis-only dex rebuild (official dex 8.7.1.18)
+
+## com.yunos.tv.alitvasr.IAliTVASR   (14 methods, inner class Stub)
+clientToAsr(int, android.os.Bundle): android.os.Bundle
+getService(int, android.os.Bundle): android.os.IBinder
+onFarDeviceData(android.os.Bundle): android.os.Bundle
+playTTS(java.lang.String): boolean
+playTTSWithCallback(java.lang.String, com.yunos.tv.alitvasr.IAliTVASRTTSCallback): boolean
+registerCallback(java.lang.String, com.yunos.tv.alitvasr.IAliTVASRCallback, boolean): void
+sendEventToServer(java.lang.String, java.lang.String, java.lang.String,
+                  com.yunos.tv.alitvasr.IAliTVASRResponseCallback): int
+setASRMode(java.lang.String, int): void
+setAliTVASREnable(java.lang.String, boolean): void
+setResultMode(java.lang.String, int): void
+showASRUI(java.lang.String, boolean): void
+stopTTS(): void
+unregisterCallback(java.lang.String): void
+updateAppScene(android.os.Bundle): android.os.Bundle
+
+## com.yunos.tv.alitvasr.IAliTVASRTTSCallback   (3 methods, inner class Stub)
+onException(java.lang.String): void
+onTtsStart(java.lang.String): void
+onTtsStop(): void
+
+## 相关的另外两个 AIDL（同样在 dex 中）
+com.yunos.tv.alitvasr.IAliTVASRCallback
+com.yunos.tv.alitvasr.IAliTVASRResponseCallback
+com.yunos.tv.alitvasr.IInputDevice
+
+## 运行时确认（dumpsys activity services）
+* ServiceRecord{… com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService}
+    intent={act=com.yunos.tv.alitvasr.service pkg=com.alibaba.ailabs.genie.smartapp}
+    processName=com.alibaba.ailabs.genie.smartapp:core
+    createdFromFg=true
+    ConnectionRecord{… u0 IMP …NativeService}   binding=AppBindRecord{…:com.alibaba.ailabs.genie.smartapp}
+=> 官方自己用 act=com.yunos.tv.alitvasr.service 绑定，与 onBind 里的 ASR_SERVER_ACTION 判断一致
+
+## service list（ASR 不是系统服务）
+116  alibaba.ailabs.genie.resm: [com.alibaba.ailabs.genie.resmanager.IResManager]

@@ -1,0 +1,19 @@
+﻿deploy_boot_rc.sh      SYNTAX_OK
+rollback_boot_rc.sh    SYNTAX_OK
+boot_stack.sh          SYNTAX_OK
+### run the (idempotent) deploy with the hardened script
+== T9-02R deploy start 20261124_125253 ==
+   init dir : /system/etc/init
+   new rc   : /data/local/tmp/t9/tg_stack.rc
+   backup   : /data/local/tmp/t9/rc_backup
+   new rc sha256: 190f611ca8e9e1aa8fe9729fdd23da58da76cd87984c44736de940fa53fd2b15
+   entries to replace: (none)
+   installed /data/local/tmp/t5_bridge/boot_stack.sh (6f72f3f878e16c6096f0dbd2f4a69090c5b7522d0eca0ee34872b05f81ed840e)
+   installed /system/etc/init/tg_stack.rc (190f611ca8e9e1aa8fe9729fdd23da58da76cd87984c44736de940fa53fd2b15)
+   /system is read-only
+== read back ==
+-rw-r--r-- 1 root root 2486 2026-11-24 12:52 /system/etc/init/tg_stack.rc
+   tg_stack.rc sha256=190f611ca8e9e1aa8fe9729fdd23da58da76cd87984c44736de940fa53fd2b15
+/dev/block/mmcblk0p19 on /system type ext4 (ro,seclabel,relatime,data=ordered)
+== deploy done ==
+EXIT=0
