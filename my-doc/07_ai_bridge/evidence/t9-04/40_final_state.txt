@@ -1,0 +1,47 @@
+﻿=== date
+Tue Nov 24 14:52:08 CST 2026
+=== probe artifacts on device
+total 140
+-rw-rw-rw- 1 shell shell 20877 2026-11-24 14:39 aidl_probe.apk
+-rw-rw-rw- 1 shell shell 23560 2026-11-24 14:49 aidl_probe.dex
+-rw-r--r-- 1 root  root    759 2026-11-24 14:43 app_probe.log
+-rw-r--r-- 1 root  root   9663 2026-11-24 14:50 app_probe_fg.log
+-rw-r--r-- 1 root  root   8209 2026-11-24 14:51 app_probe_final.log
+-rw-r--r-- 1 root  root  22134 2026-11-24 14:45 control_provider.log
+-rw-r--r-- 1 root  root     25 2026-11-24 14:45 ctrl.txt
+-rw-rw-rw- 1 shell shell   744 2026-11-24 14:39 dev_10_root_probe.sh
+-rw-rw-rw- 1 shell shell  1302 2026-11-24 14:42 dev_20_app_probe.sh
+-rw-rw-rw- 1 shell shell   441 2026-11-24 14:41 dev_21_dump_log.sh
+-rw-rw-rw- 1 shell shell   606 2026-11-24 14:41 dev_22_logd_state.sh
+-rw-rw-rw- 1 shell shell  1037 2026-11-24 14:43 dev_23_app_probe_fresh.sh
+-rw-rw-rw- 1 shell shell  1385 2026-11-24 14:50 dev_25_app_probe_wake.sh
+-rw-rw-rw- 1 shell shell   915 2026-11-24 14:45 dev_30_control_provider.sh
+-rw-rw-rw- 1 shell shell   993 2026-11-24 14:52 dev_40_final_state.sh
+drwx--x--x 3 root  root   4096 2026-11-24 14:39 oat
+769ba7af4cb1b0ebf7901e5bb38882a7d852fe8ab07c6305f93109dd0eab2451  /data/local/tmp/t9/t9_04/aidl_probe.dex
+3dbbbee577146b5910c5f59b135f2a374ae376370b7686c1b73aa07d83878e31  /data/local/tmp/t9/t9_04/aidl_probe.apk
+=== installed probe package
+    userId=10055
+    versionName=1.0
+    lastUpdateTime=2026-11-24 14:49:36
+package:/data/app/com.tgz02.aidltest-n_XyLEJu0OHAc9PalMMr5A==/base.apk
+=== the accepted runtime stack is untouched
+core_pid=1178
+  /data/local/tmp/t7/libtg_ttsguard_t8156.so
+  /data/local/tmp/t8/libtg_hook.so
+tg_hook_sup=running
+tg_guard_sup=running
+tgb_bridge=1602
+ai_worker=2580
+=== top activity / power now
+    mResumedActivity: ActivityRecord{1d98c93 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}
+  mWakefulness=Awake
+=== factory rollback material (from the T9-02R2 work)
+total 16
+-rw-r--r-- 1 root root  262 2026-11-24 14:34 deploy.log
+-rw-r--r-- 1 root root  150 2026-11-24 14:34 deploy.stamp
+-rw-r--r-- 1 root root   83 2026-11-24 14:34 sha256.before
+-rw-r--r-- 1 root root    0 2026-11-24 12:52 sha256.before.damaged.20261124_143427
+-rw-r--r-- 1 root root 2114 2026-11-24 12:26 tg_supervisor.rc
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  tg_supervisor.rc
+=== END

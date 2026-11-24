@@ -1,0 +1,23 @@
+﻿=== date
+Tue Nov 24 14:39:54 CST 2026
+=== whoami
+uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0
+=== target service present?
+  * ServiceRecord{e3ee27c u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService}
+=== logcat marker
+=== running the probe (uid 0)
+T904: system context = android.app.ContextImpl@732df27
+T904: === BEGIN mode=root pid=11026 uid=0 app=android process=app_process sdk=27
+T904: env top=app.orchard.tv/.MainActivity screenOn=true
+T904: bind intent: #Intent;action=com.yunos.tv.alitvasr.service;component=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService;end
+T904: bindService threw java.lang.SecurityException: Unable to find app for caller android.app.IApplicationThread$Stub$Proxy@68218f5 (pid=11026) when binding service Intent { act=com.yunos.tv.alitvasr.service cmp=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService }
+T904: RESULT bindService=false
+T904: === DONE verdict=bind_failed elapsed=34ms
+T904: === EXIT
+probe_exit=0
+=== date
+Tue Nov 24 14:39:57 CST 2026
+=== factory TTS/ASR log during the run
+--------- beginning of main
+--------- beginning of system
+=== END

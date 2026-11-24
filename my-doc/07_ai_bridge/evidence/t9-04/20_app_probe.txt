@@ -1,0 +1,35 @@
+﻿=== date
+Tue Nov 24 14:42:22 CST 2026
+=== uid of the probe app
+    userId=10020
+=== start the live capture
+=== launch (foreground test)
+Starting: Intent { cmp=com.tgz02.aidltest/.ProbeActivity }
+adb : Warning: Activity not started, its current task has been brought to the front
+所在位置 行:1 字符: 293
++ ... -Null; $o = adb -s $d shell "su 0 sh -c 'sh /data/local/tmp/t9/t9_04/ ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Warning: Activi...ht to the front:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+--- top / screen while our UI is up
+    mResumedActivity: ActivityRecord{31eff0 u0 com.tgz02.aidltest/.ProbeActivity t5}
+  mWakefulness=Awake
+=== send the app to the background (control experiment)
+--- top after HOME
+    mResumedActivity: ActivityRecord{1d98c93 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}
+=== captured probe / factory log
+--------- beginning of system
+--------- beginning of main
+11-24 14:42:24.163 D/AGSpeechEngine( 1178): threadLoop,988: begin to process 3
+11-24 14:42:24.163 D/AGSpeechEngine( 1178): threadLoop,1090: end to process 3
+11-24 14:43:02.523 D/AGSpeechEngine( 1178): threadLoop,988: begin to process 3
+11-24 14:43:02.524 D/AGSpeechEngine( 1178): threadLoop,1090: end to process 3
+11-24 14:43:02.855 I/T904    (12173): --- went to background, probing in 3 s ---
+11-24 14:43:05.901 I/T904    (12173): === background probe: env top=com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity screenOn=true
+11-24 14:43:05.904 I/T904    (12173): RESULT playTTSWithCallback(9) background=false
+11-24 14:43:17.940 I/T904    (12173): RESULT background start=0 stop=0 exc=0
+=== factory :core untouched
+core_pid=1178
+6
+=== END

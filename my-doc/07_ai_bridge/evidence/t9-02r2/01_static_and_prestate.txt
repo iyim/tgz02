@@ -1,0 +1,22 @@
+﻿=== date
+Tue Nov 24 14:34:14 CST 2026
+=== sh -n (syntax)
+OK   /data/local/tmp/t9/deploy_boot_rc.sh
+OK   /data/local/tmp/t9/rollback_boot_rc.sh
+OK   /data/local/tmp/t9/repair_rc_manifest.sh
+OK   /data/local/tmp/t9/boot_stack.sh
+=== rollback material BEFORE any action
+total 8
+-rw-r--r-- 1 root root  122 2026-11-24 12:52 deploy.stamp
+-rw-r--r-- 1 root root    0 2026-11-24 12:52 sha256.before
+-rw-r--r-- 1 root root 2114 2026-11-24 12:26 tg_supervisor.rc
+manifest_bytes=0
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  /data/local/tmp/t9/rc_backup/tg_supervisor.rc
+deploy.stamp: deployed_at=20261124_125253 new_rc_sha256=190f611ca8e9e1aa8fe9729fdd23da58da76cd87984c44736de940fa53fd2b15 replaced= none 
+=== init dir BEFORE
+-rw-r--r-- 1 root root 2486 2026-11-24 12:52 /system/etc/init/tg_stack.rc
+=== what the pre-T9-02R2 rollback says about this state (dry read only)
+== T9-02R2 rollback ==
+ERROR: /data/local/tmp/t9/rc_backup/sha256.before is empty - refusing to touch /system/etc/init
+EXIT=1
+=== END

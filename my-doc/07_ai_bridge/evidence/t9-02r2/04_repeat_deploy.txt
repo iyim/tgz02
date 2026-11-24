@@ -1,0 +1,56 @@
+﻿=== date
+Tue Nov 24 14:34:34 CST 2026
+=== before
+2e91054e514256b364ad83c1869d614ee525e535a3aca9811911f8509e37d6da  /data/local/tmp/t9/rc_backup/sha256.before
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  /data/local/tmp/t9/rc_backup/tg_supervisor.rc
+-rw-r--r-- 1 root root 2486 2026-11-24 12:52 /system/etc/init/tg_stack.rc
+=== repeat deploy
+== T9-02R2 deploy start 20261124_143434 ==
+   init dir : /system/etc/init
+   new rc   : /data/local/tmp/t9/tg_stack.rc
+   backup   : /data/local/tmp/t9/rc_backup
+   new rc sha256: 190f611ca8e9e1aa8fe9729fdd23da58da76cd87984c44736de940fa53fd2b15
+   entries to replace: (none)
+   existing rollback set verified: 1 entries in /data/local/tmp/t9/rc_backup/sha256.before
+   reuse: (none)  capture: (none)
+   nothing new to capture - the existing rollback set is left untouched
+   installed /data/local/tmp/t5_bridge/boot_stack.sh (6f72f3f878e16c6096f0dbd2f4a69090c5b7522d0eca0ee34872b05f81ed840e)
+   installed /system/etc/init/tg_stack.rc (190f611ca8e9e1aa8fe9729fdd23da58da76cd87984c44736de940fa53fd2b15)
+   /system is read-only
+== read back ==
+-rw-r--r-- 1 root root 2486 2026-11-24 14:34 /system/etc/init/tg_stack.rc
+   tg_stack.rc sha256=190f611ca8e9e1aa8fe9729fdd23da58da76cd87984c44736de940fa53fd2b15
+   rollback manifest /data/local/tmp/t9/rc_backup/sha256.before (1 entries):
+     tg_supervisor.rc cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34
+/dev/block/mmcblk0p19 on /system type ext4 (ro,seclabel,relatime,data=ordered)
+== deploy done ==
+EXIT=0
+exit=0
+=== after
+2e91054e514256b364ad83c1869d614ee525e535a3aca9811911f8509e37d6da  /data/local/tmp/t9/rc_backup/sha256.before
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  /data/local/tmp/t9/rc_backup/tg_supervisor.rc
+manifest_bytes=83
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  tg_supervisor.rc
+deployed_at=20261124_143434
+new_rc_sha256=190f611ca8e9e1aa8fe9729fdd23da58da76cd87984c44736de940fa53fd2b15
+replaced= none
+captured= none
+reused= none
+-rw-r--r-- 1 root root 2486 2026-11-24 14:34 /system/etc/init/tg_stack.rc
+/dev/block/mmcblk0p19 on /system type ext4 (ro,seclabel,relatime,data=ordered)
+=== second repeat deploy (idempotence)
+   nothing new to capture - the existing rollback set is left untouched
+   installed /data/local/tmp/t5_bridge/boot_stack.sh (6f72f3f878e16c6096f0dbd2f4a69090c5b7522d0eca0ee34872b05f81ed840e)
+   installed /system/etc/init/tg_stack.rc (190f611ca8e9e1aa8fe9729fdd23da58da76cd87984c44736de940fa53fd2b15)
+   /system is read-only
+== read back ==
+-rw-r--r-- 1 root root 2486 2026-11-24 14:34 /system/etc/init/tg_stack.rc
+   tg_stack.rc sha256=190f611ca8e9e1aa8fe9729fdd23da58da76cd87984c44736de940fa53fd2b15
+   rollback manifest /data/local/tmp/t9/rc_backup/sha256.before (1 entries):
+     tg_supervisor.rc cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34
+/dev/block/mmcblk0p19 on /system type ext4 (ro,seclabel,relatime,data=ordered)
+== deploy done ==
+EXIT=0
+2e91054e514256b364ad83c1869d614ee525e535a3aca9811911f8509e37d6da  /data/local/tmp/t9/rc_backup/sha256.before
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  /data/local/tmp/t9/rc_backup/tg_supervisor.rc
+=== END

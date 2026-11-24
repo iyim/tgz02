@@ -1,0 +1,20 @@
+﻿=== date
+Tue Nov 24 14:34:26 CST 2026
+=== repair with the recorded hash
+== T9-02R2 repair rollback manifest 20261124_143427 ==
+   manifest is damaged - it will be archived, not edited
+   accept tg_supervisor.rc (cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34)
+   archived the damaged manifest to /data/local/tmp/t9/rc_backup/sha256.before.damaged.20261124_143427
+   rebuilt /data/local/tmp/t9/rc_backup/sha256.before: 1 entries
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  tg_supervisor.rc
+EXIT=0
+exit=0
+=== after
+total 12
+-rw-r--r-- 1 root root  122 2026-11-24 12:52 deploy.stamp
+-rw-r--r-- 1 root root   83 2026-11-24 14:34 sha256.before
+-rw-r--r-- 1 root root    0 2026-11-24 12:52 sha256.before.damaged.20261124_143427
+-rw-r--r-- 1 root root 2114 2026-11-24 12:26 tg_supervisor.rc
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  tg_supervisor.rc
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  /data/local/tmp/t9/rc_backup/tg_supervisor.rc
+=== END

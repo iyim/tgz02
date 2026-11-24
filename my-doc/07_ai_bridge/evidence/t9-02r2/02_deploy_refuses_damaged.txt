@@ -1,0 +1,26 @@
+﻿=== date
+Tue Nov 24 14:34:20 CST 2026
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  /data/local/tmp/t9/rc_backup/sha256.before
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  /data/local/tmp/t9/rc_backup/tg_supervisor.rc
+=== deploy run
+== T9-02R2 deploy start 20261124_143420 ==
+   init dir : /system/etc/init
+   new rc   : /data/local/tmp/t9/tg_stack.rc
+   backup   : /data/local/tmp/t9/rc_backup
+   new rc sha256: 190f611ca8e9e1aa8fe9729fdd23da58da76cd87984c44736de940fa53fd2b15
+   entries to replace: (none)
+   DAMAGED rollback set in /data/local/tmp/t9/rc_backup (manifest/backup/ hash mismatch)
+ERROR: existing rollback material does not verify - refusing to touch it or /system/etc/init. Inspect /data/local/tmp/t9/rc_backup (TG_FORCE_REBAK=1 archives it and captures a new set)
+EXIT=1
+exit=1
+=== after
+total 8
+-rw-r--r-- 1 root root  122 2026-11-24 12:52 deploy.stamp
+-rw-r--r-- 1 root root    0 2026-11-24 12:52 sha256.before
+-rw-r--r-- 1 root root 2114 2026-11-24 12:26 tg_supervisor.rc
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  /data/local/tmp/t9/rc_backup/sha256.before
+cdd947509c15b3b5facc0794529294ff94ab069ec1f0c20164fd27cfe414ec34  /data/local/tmp/t9/rc_backup/tg_supervisor.rc
+manifest_bytes=0
+-rw-r--r-- 1 root root 2486 2026-11-24 12:52 /system/etc/init/tg_stack.rc
+/dev/block/mmcblk0p19 on /system type ext4 (ro,seclabel,relatime,data=ordered)
+=== END

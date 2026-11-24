@@ -1,0 +1,49 @@
+﻿== sources
+   src\com\tgz02\aidltest\AidlProbe.java
+   src\com\tgz02\aidltest\Probe.java
+   src\com\tgz02\aidltest\ProbeActivity.java
+   src\com\yunos\tv\alitvasr\IAliTVASR.java
+   src\com\yunos\tv\alitvasr\IAliTVASRCallback.java
+   src\com\yunos\tv\alitvasr\IAliTVASRResponseCallback.java
+   src\com\yunos\tv\alitvasr\IAliTVASRTTSCallback.java
+== javac (release 8, android.jar)
+powershell : ע: ĳЩ�����ļ�ʹ�û򸲸����ѹ�ʱ�� API��
+所在位置 行:1 字符: 695
++ ... t9_04_aidl; powershell -ExecutionPolicy Bypass -File build.ps1 2>&1 | ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ע: ĳЩ�����ļ�ʹ�û򸲸����ѹ�ʱ�� API��:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ע: �й���ϸ��Ϣ, ��ʹ�� -Xlint:deprecation ���±��롣
+== transaction code assertion (javap -constants vs the official artifact)
+   OK    setASRMode             want=7   got=7   com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    unregisterCallback     want=2   got=2   com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    clientToAsr            want=12  got=12  com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    onFarDeviceData        want=11  got=11  com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    playTTSWithCallback    want=9   got=9   com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    playTTS                want=4   got=4   com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    setResultMode          want=6   got=6   com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    showASRUI              want=8   got=8   com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    sendEventToServer      want=14  got=14  com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    stopTTS                want=5   got=5   com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    setAliTVASREnable      want=3   got=3   com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    registerCallback       want=1   got=1   com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    updateAppScene         want=10  got=10  com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    getService             want=13  got=13  com.yunos.tv.alitvasr.IAliTVASR$Stub
+   OK    onTtsStart             want=1   got=1   com.yunos.tv.alitvasr.IAliTVASRTTSCallback$Stub
+   OK    onTtsStop              want=2   got=2   com.yunos.tv.alitvasr.IAliTVASRTTSCallback$Stub
+   OK    onException            want=3   got=3   com.yunos.tv.alitvasr.IAliTVASRTTSCallback$Stub
+== d8 (min-api 27)
+   classes.dex 23,560 B
+== aapt2 link
+== add classes.dex
+== keystore
+== zipalign + apksigner
+== artifacts
+   aidl_probe.dex      23,560 B  sha256=769ba7af4cb1b0ebf7901e5bb38882a7d852fe8ab07c6305f93109dd0eab2451
+   aidl_probe.apk      20,877 B  sha256=c9c519886f5528f953ce355707cb1d191042bdb2cfd84de2ae79ae69d0d79e94
+Signer #1 certificate DN: CN=TGZ02-T904-probe, O=tgz02, C=CN
+Signer #1 certificate SHA-256 digest: 63f0758f87923a2f4fe61795ef677fb3c9414c734fa5801e7eda4e569f440839
+Signer #1 certificate SHA-1 digest: 32a80e67ff486fab974eadda4260b117695225e8
+Signer #1 certificate MD5 digest: 725f405f38f06982e8d40cddf53a06c9
+EXIT=0

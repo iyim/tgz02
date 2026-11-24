@@ -1,0 +1,20 @@
+﻿=== date
+Tue Nov 24 14:41:51 CST 2026
+=== logcat -d -s T904
+--------- beginning of system
+--------- beginning of main
+=== grep t9 aidl in whole buffer
+=== app pid / process activity
+12173
+    mResumedActivity: ActivityRecord{1d98c93 u0 com.alibaba.ailabs.genie.launcher/.activity.AdultHomeActivity t2}
+=== recent app log lines
+11-24 14:40:30.255   730  4121 I ActivityManager: START u0 {flg=0x10000000 cmp=com.tgz02.aidltest/.ProbeActivity} from uid 0
+11-24 14:40:30.370   730  1217 I ActivityManager: Start proc 12173:com.tgz02.aidltest/u0a20 for activity com.tgz02.aidltest/.ProbeActivity caller=null
+11-24 14:40:30.995   730   936 I WindowManager: Relayout Window{c945826 u0 com.tgz02.aidltest/com.tgz02.aidltest.ProbeActivity}: oldVis=4 newVis=0 focusMayChange = true
+11-24 14:40:31.001   730   936 D WindowManager: Input focus has changed to Window{c945826 u0 com.tgz02.aidltest/com.tgz02.aidltest.ProbeActivity}
+11-24 14:40:31.008   730   752 I WindowManager: Focus moving from null to Window{c945826 u0 com.tgz02.aidltest/com.tgz02.aidltest.ProbeActivity}
+11-24 14:40:31.009   730   752 I WindowManager: Gaining focus: Window{c945826 u0 com.tgz02.aidltest/com.tgz02.aidltest.ProbeActivity}
+11-24 14:40:40.678   730   761 D PackageManager: FirstUseActivity packageName = com.tgz02.aidltest is compiled using filter = bg-filter:speed-profile, success = true
+11-24 14:41:06.880   730   752 I WindowManager: Focus moving from Window{c945826 u0 com.tgz02.aidltest/com.tgz02.aidltest.ProbeActivity} to null
+11-24 14:41:06.882   730   752 I WindowManager: Losing focus: Window{c945826 u0 com.tgz02.aidltest/com.tgz02.aidltest.ProbeActivity}
+=== END

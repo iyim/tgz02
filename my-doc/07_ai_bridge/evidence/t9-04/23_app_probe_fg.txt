@@ -1,0 +1,76 @@
+﻿=== date
+Tue Nov 24 14:43:43 CST 2026
+=== our own package, restart it cleanly
+=== start live capture
+=== launch
+Starting: Intent { cmp=com.tgz02.aidltest/.ProbeActivity }
+--- top / screen while our UI is up
+    mResumedActivity: ActivityRecord{ff0bc56 u0 com.tgz02.aidltest/.ProbeActivity t6}
+  mWakefulness=Awake
+=== captured probe / factory log
+--------- beginning of system
+--------- beginning of main
+11-24 14:43:46.319 D/AGSpeechEngine( 1178): threadLoop,988: begin to process 3
+11-24 14:43:46.319 D/AGSpeechEngine( 1178): threadLoop,1090: end to process 3
+11-24 14:43:46.674 I/T904    (13671): T9-04 AIDL probe ready, uid=10020
+11-24 14:43:46.738 I/T904    (13671): --- begin ---
+11-24 14:43:46.743 I/T904    (13671): === BEGIN mode=app pid=13671 uid=10020 app=com.tgz02.aidltest process=com.tgz02.aidltest sdk=27
+11-24 14:43:46.748 I/T904    (13671): env top=com.tgz02.aidltest/.ProbeActivity screenOn=true
+11-24 14:43:46.749 I/T904    (13671): bind intent: #Intent;action=com.yunos.tv.alitvasr.service;component=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService;end
+11-24 14:43:46.752 I/T904    (13671): RESULT bindService=true
+11-24 14:43:46.804 I/T904    (13671): onServiceConnected component=com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService binder=android.os.BinderProxy alive=true
+11-24 14:43:46.805 I/T904    (13671): binder.descriptor=com.yunos.tv.alitvasr.IAliTVASR
+11-24 14:43:46.806 I/T904    (13671): RESULT asInterface=com.yunos.tv.alitvasr.IAliTVASR$Stub$Proxy
+11-24 14:43:47.308 I/T904    (13671): RESULT playTTS(4)=true
+11-24 14:43:47.808 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:stopTts:398 [1178] stop tts, id = 5245490
+11-24 14:43:47.811 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [49:ALI_STUB_CMD_STOP_TTS]
+11-24 14:43:47.811 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[49]
+11-24 14:43:47.811 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_stop_tts_msg:1956 [1645] sm_process_stop_tts_msg:tts_exist: 0,current_id = 1968663,stop_id: 5245490
+11-24 14:43:47.811 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 14:43:47.836 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:playTts:295 [1178] isInterrupted, sessionId = 0
+11-24 14:43:47.837 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [49:ALI_STUB_CMD_STOP_TTS]
+11-24 14:43:47.837 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[49]
+11-24 14:43:47.837 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_stop_tts_msg:1956 [1645] sm_process_stop_tts_msg:tts_exist: 0,current_id = 1968663,stop_id: -1
+11-24 14:43:47.837 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 14:43:47.842 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:playTts:388 [1178] tts = T9 AIDL plain TTS test, asrLogId = NULL
+11-24 14:43:47.846 D/VoiceManager( 1178): onNotify id= 5245490 ,status = 3, uri = content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245490?status=3
+11-24 14:43:47.982 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsEnd:220 [1765] sessionId = 5245492
+11-24 14:43:50.312 I/T904    (13671): RESULT playTTSWithCallback(9) round=1 = true
+11-24 14:43:50.813 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:stopTts:398 [1178] stop tts, id = 5245492
+11-24 14:43:50.814 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [49:ALI_STUB_CMD_STOP_TTS]
+11-24 14:43:50.814 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[49]
+11-24 14:43:50.814 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_stop_tts_msg:1956 [1645] sm_process_stop_tts_msg:tts_exist: 0,current_id = 1968663,stop_id: 5245492
+11-24 14:43:50.814 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 14:43:50.816 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:playTts:295 [1178] isInterrupted, sessionId = 0
+11-24 14:43:50.818 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [49:ALI_STUB_CMD_STOP_TTS]
+11-24 14:43:50.818 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[49]
+11-24 14:43:50.818 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_stop_tts_msg:1956 [1645] sm_process_stop_tts_msg:tts_exist: 0,current_id = 1968663,stop_id: -1
+11-24 14:43:50.818 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 14:43:50.820 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:playTts:388 [1178] tts = T9 AIDL 回调测试 第一轮, asrLogId = NULL
+11-24 14:43:50.821 D/VoiceManager( 1178): onNotify id= 5245492 ,status = 3, uri = content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245492?status=3
+11-24 14:43:50.954 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsEnd:220 [1765] sessionId = 5245493
+11-24 14:44:02.325 I/T904    (13671): after round 1: onTtsStart=0 onTtsStop=0 onException=0
+11-24 14:44:02.327 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:stopTts:398 [1907] stop tts, id = 5245493
+11-24 14:44:02.328 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [49:ALI_STUB_CMD_STOP_TTS]
+11-24 14:44:02.328 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[49]
+11-24 14:44:02.328 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_stop_tts_msg:1956 [1645] sm_process_stop_tts_msg:tts_exist: 0,current_id = 1968663,stop_id: 5245493
+11-24 14:44:02.329 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 14:44:02.329 I/T904    (13671): RESULT stopTTS(5)=ok
+11-24 14:44:02.330 D/VoiceManager( 1178): onNotify id= 5245493 ,status = 3, uri = content://com.alibaba.ailabs.genie.assistant.provider/GenieApi/5245493?status=3
+11-24 14:44:04.334 I/T904    (13671): RESULT playTTSWithCallback(9) round=2 = true
+11-24 14:44:04.834 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:playTts:295 [1178] isInterrupted, sessionId = 0
+11-24 14:44:04.835 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:131 [1645] [asm] msg_id: [1:MSG_TYPE_ID_PB] grp:0x0 cmd: [49:ALI_STUB_CMD_STOP_TTS]
+11-24 14:44:04.835 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:_sm_process_ali_msg:2552 [1645] ali msg cmd:[49]
+11-24 14:44:04.835 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:sm_process_stop_tts_msg:1956 [1645] sm_process_stop_tts_msg:tts_exist: 0,current_id = 1968663,stop_id: -1
+11-24 14:44:04.835 D/AudioStateManager( 1178): JNI_AILABS AudioStateManager.cpp:msgProcessLoop:183 [1645] [asm exit]
+11-24 14:44:04.835 W/TtsManager( 1178): JNI_AILABS TtsManager.cpp:playTts:388 [1178] tts = T9 AIDL 回调测试 第二轮, asrLogId = NULL
+11-24 14:44:04.973 D/TtsManager( 1178): JNI_AILABS TtsManager.cpp:onTtsEnd:220 [1765] sessionId = 5245494
+11-24 14:44:16.340 I/T904    (13671): RESULT round1 start=0 stop=0 exc=0
+11-24 14:44:16.340 I/T904    (13671): RESULT round2 start=0 stop=0 exc=0
+11-24 14:44:16.341 I/T904    (13671): === DONE verdict=complete elapsed=29666ms
+=== our process still alive?
+13671
+=== factory :core untouched
+core_pid=1178
+6
+=== END

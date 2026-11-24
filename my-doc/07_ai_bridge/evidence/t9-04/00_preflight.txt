@@ -1,0 +1,37 @@
+﻿=== date
+Tue Nov 24 14:35:41 CST 2026
+=== factory :core
+core_pid=1178
+libtg mappings in :core:
+  /data/local/tmp/t7/libtg_ttsguard_t8156.so
+  /data/local/tmp/t8/libtg_hook.so
+=== init services
+tg_hook_sup=running
+tg_guard_sup=running
+tg_stack=stopped
+tg_supervisor=
+=== our resident processes
+tgb_bridge=1602
+ai_worker=2580
+tts_exec.t5=
+root          2388  2373  863396  30904 futex_wait_queue_me b0433ce8 S app_process
+root         10786 10785  752516  30596 0            a3aa2a08 R app_process
+=== top activity / screen
+    mResumedActivity: ActivityRecord{50771d3 u0 app.orchard.tv/.MainActivity t3}
+  mWakefulness=Awake
+=== factory NativeService record
+  * ServiceRecord{e3ee27c u0 com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService}
+    intent={act=com.yunos.tv.alitvasr.service pkg=com.alibaba.ailabs.genie.smartapp}
+    packageName=com.alibaba.ailabs.genie.smartapp
+    processName=com.alibaba.ailabs.genie.smartapp:core
+--
+          ConnectionRecord{ce68811 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@49bf038}
+    All Connections:
+      ConnectionRecord{ce68811 u0 IMP com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.geniesdk.NativeService:@49bf038}
+
+  * ServiceRecord{8e971bd u0 com.aligenie.ags/.analytics.AliicxService}
+    intent={cmp=com.aligenie.ags/.analytics.AliicxService}
+--
+=== our t9_04 dir
+(absent)
+=== END
