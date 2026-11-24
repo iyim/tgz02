@@ -230,7 +230,7 @@ public class ConversationActivity extends Activity
         box.setTag("empty");
         TextView a = Ui.text(this, "说出唤醒词「天猫精灵」，我就在听", 16f, Ui.TEXT_DIM);
         a.setGravity(Gravity.CENTER);
-        TextView b2 = Ui.text(this, "也可以直接输入文字，我会用原厂语音念出来", 13f, Ui.TEXT_FAINT);
+        TextView b2 = Ui.text(this, "也可以直接输入文字向我提问", 13f, Ui.TEXT_FAINT);
         b2.setGravity(Gravity.CENTER);
         b2.setPadding(0, Ui.dp(this, 8), 0, 0);
         box.addView(a);

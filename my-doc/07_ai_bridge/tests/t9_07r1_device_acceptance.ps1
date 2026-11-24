@@ -343,6 +343,24 @@ if (-not $SkipTestBuild) {
     Shot "78_g_prod_restored.png"
 }
 
+# ------------------------------------------------------------------ G inbox protocol on device
+Step "G inbox protocol on the device: legacy say, non-string kind, uid protection"
+$legacy = RootScript "/data/local/tmp/t9/t9_07/dev_70_submit.sh" "say legacy-say-request"
+Say $legacy
+Check ($legacy -match '"ok":true') "a legacy request (no kind) is still accepted"
+Check ($legacy -match '"stage":"queue"') "and it is still a plain speak request (stage=queue)"
+$bad = RootScript "/data/local/tmp/t9/t9_07/dev_83_bad_kind.sh" "true"
+Say $bad
+Check ($bad -match '"ok":false') "kind:true is refused"
+Check ($bad -match "kind must be a string") "the refusal names the real problem"
+Check ($bad -match "rejected: 1") "the bad request is parked in rejected/"
+$bad2 = RootScript "/data/local/tmp/t9/t9_07/dev_83_bad_kind.sh" "null"
+Say $bad2
+Check ($bad2 -match '"ok":false') "kind:null is refused as well"
+$nG = EventTotal
+Start-Sleep -Seconds 2
+Check ((EventTotal) -eq $nG) "none of the refused requests produced a conversation event"
+Shot "79_g_inbox_protocol.png"
 Say ""
 Say "================================================================"
 Say ("RESULT: " + $(if ($script:Fail -eq 0) { "PASS (0 failed checks)" } else { "FAIL (" + $script:Fail + " failed checks)" }))

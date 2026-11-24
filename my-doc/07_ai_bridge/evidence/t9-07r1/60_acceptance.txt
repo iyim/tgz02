@@ -1,7 +1,7 @@
 ﻿# T9-07R1 real-device acceptance (text AI + production APK hardening)
-# host time : 2026-11-24 18:41:29
+# host time : 2026-11-24 19:01:22
 # serial    : 192.168.1.9:5555
-# apk       : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t9_07_ui\dist\voice_ui.apk  sha256=9eb6444c1dbe185e00f535a204cbc4e216f495dcfd9cd7acd9f9a42d0e3f7714
+# apk       : D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t9_07_ui\dist\voice_ui.apk  sha256=8d493226052eb3822fac87991a2cab635f05b9bccc0c782d6cd5d498971b6122
 
 ================================================================
 == 0 precondition: worker, channel owner, production APK installed
@@ -9,18 +9,18 @@
 AILABS_S1L
 
 == worker ==
-pid=12504
-cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10065 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10065 
+pid=30439
+cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10069 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10069 
 == play.public.json ==
 {
   "v": 1,
   "pid": 2516,
-  "updated_ms": 1795516800838,
+  "updated_ms": 1795518044650,
   "state": "idle",
-  "event_id": "ui-1795516794071-72bc",
-  "tts_id": 5245960,
-  "started_ms": 1795516795397,
-  "finished_ms": 1795516800838,
+  "event_id": "probe-190042",
+  "tts_id": 5246045,
+  "started_ms": 1795518042935,
+  "finished_ms": 1795518044650,
   "last_outcome": "ok",
   "queue_depth": 0,
   "inflight_depth": 1
@@ -28,34 +28,34 @@ cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_br
 stop_requests=0
 0
 == status.public.json ==
-{"v":1,"ts":"2026-11-24T18:41:31","ts_ms":1795516891189,"pid":12504,"worker":"running","uptime_ms":87455,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"idle","sc":"IDLE","round":0,"session":"","listening":0,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":0,"inbox_rejected":0,"gate_released":0,"route_native":0,"ui_published":0,"ui_errors":0}}
+{"v":1,"ts":"2026-11-24T19:01:24","ts_ms":1795518084060,"pid":30439,"worker":"running","uptime_ms":59099,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"idle","sc":"IDLE","round":0,"session":"","listening":0,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":1,"inbox_rejected":3,"gate_released":0,"route_native":0,"ui_published":1,"ui_errors":0}}
 == events (last 3) ==
--- 000000000081.json
-{"v":1,"seq":81,"ts":"2026-11-24T18:38:46","ts_ms":1795516726536,"kind":"turn","session":"1969148","event_id":"t6-1180-1969148-g4","route":"skill","skill":"time.query","status":"ok","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 18:38","reply_bytes":9,"reply_cut":0,"reason":""}
--- 000000000082.json
-{"v":1,"seq":82,"ts":"2026-11-24T18:39:10","ts_ms":1795516750378,"kind":"turn","session":"","event_id":"ui-1795516750193-1a03","route":"ai","skill":"","status":"failed","user":"Tell么啊story about the sea","user_bytes":29,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"deepseek timeout after 101ms"}
--- 000000000083.json
-{"v":1,"seq":83,"ts":"2026-11-24T18:39:55","ts_ms":1795516795318,"kind":"turn","session":"","event_id":"ui-1795516794071-72bc","route":"ai","skill":"","status":"ok","user":"请用一句话介绍巴黎","user_bytes":27,"user_cut":0,"reply":"巴黎是法国首都，以埃菲尔铁塔、卢浮宫和浪漫的塞纳河闻名。","reply_bytes":84,"reply_cut":0,"reason":""}
-newest_event=000000000083.json
-newest_json={"v":1,"seq":83,"ts":"2026-11-24T18:39:55","ts_ms":1795516795318,"kind":"turn","session":"","event_id":"ui-1795516794071-72bc","route":"ai","skill":"","status":"ok","user":"请用一句话介绍巴黎","user_bytes":27,"user_cut":0,"reply":"巴黎是法国首都，以埃菲尔铁塔、卢浮宫和浪漫的塞纳河闻名。","reply_bytes":84,"reply_cut":0,"reason":""}
-events_total=83
+-- 000000000095.json
+{"v":1,"seq":95,"ts":"2026-11-24T18:59:26","ts_ms":1795517966972,"kind":"turn","session":"","event_id":"ui-1795517966685-c751","route":"ai","skill":"","status":"failed","user":"Tell么啊story about the sea","user_bytes":29,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"deepseek timeout after 101ms"}
+-- 000000000096.json
+{"v":1,"seq":96,"ts":"2026-11-24T19:00:13","ts_ms":1795518013705,"kind":"turn","session":"","event_id":"ui-1795518011229-8917","route":"ai","skill":"","status":"ok","user":"请用一句话介绍巴黎","user_bytes":27,"user_cut":0,"reply":"巴黎是法国首都，也是以艺术、时尚和浪漫闻名的世界名城。","reply_bytes":81,"reply_cut":0,"reason":""}
+-- 000000000097.json
+{"v":1,"seq":97,"ts":"2026-11-24T19:00:42","ts_ms":1795518042890,"kind":"submit","session":"","event_id":"probe-190042","route":"submit","skill":"","status":"ok","user":"legacy-say-request","user_bytes":18,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":""}
+newest_event=000000000097.json
+newest_json={"v":1,"seq":97,"ts":"2026-11-24T19:00:42","ts_ms":1795518042890,"kind":"submit","session":"","event_id":"probe-190042","route":"submit","skill":"","status":"ok","user":"legacy-say-request","user_bytes":18,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":""}
+events_total=97
 == queue / inflight ==
 inflight: 
-== journal (last 6, total 958) ==
-{"ts":"2026-11-24T18:36:56.193+0800","kind":"tts","event_id":"ui-1795516609133-1b0f","tts_id":5245926,"outcome":"ok","dur_ms":5668,"text_bytes":87,"attempts":1}
-{"ts":"2026-11-24T18:37:53.689+0800","kind":"tts","event_id":"ui-1795516669614-9e31","tts_id":5245933,"outcome":"ok","dur_ms":2655,"text_bytes":31,"attempts":1}
-{"ts":"2026-11-24T18:38:17.816+0800","kind":"tts","event_id":"ui-1795516693256-c3b","tts_id":5245938,"outcome":"ok","dur_ms":3261,"text_bytes":38,"attempts":1}
-{"ts":"2026-11-24T18:38:36.343+0800","kind":"tts","event_id":"ui-1795516713228-151e","tts_id":5245943,"outcome":"ok","dur_ms":1954,"text_bytes":24,"attempts":1}
-{"ts":"2026-11-24T18:38:48.398+0800","kind":"tts","event_id":"t6-1180-1969148-g4","tts_id":5245952,"outcome":"ok","dur_ms":1830,"text_bytes":9,"attempts":1}
-{"ts":"2026-11-24T18:40:00.835+0800","kind":"tts","event_id":"ui-1795516794071-72bc","tts_id":5245960,"outcome":"ok","dur_ms":5432,"text_bytes":84,"attempts":1}
+== journal (last 6, total 970) ==
+{"ts":"2026-11-24T18:58:09.746+0800","kind":"tts","event_id":"ui-1795517886317-4d32","tts_id":5246011,"outcome":"ok","dur_ms":1824,"text_bytes":27,"attempts":1}
+{"ts":"2026-11-24T18:58:36.424+0800","kind":"tts","event_id":"ui-1795517910421-ca74","tts_id":5246016,"outcome":"ok","dur_ms":4462,"text_bytes":46,"attempts":1}
+{"ts":"2026-11-24T18:58:51.949+0800","kind":"tts","event_id":"ui-1795517927944-1487","tts_id":5246021,"outcome":"ok","dur_ms":2785,"text_bytes":22,"attempts":1}
+{"ts":"2026-11-24T18:59:02.435+0800","kind":"tts","event_id":"t6-1180-1969226-g6","tts_id":5246030,"outcome":"ok","dur_ms":2065,"text_bytes":9,"attempts":1}
+{"ts":"2026-11-24T19:00:19.032+0800","kind":"tts","event_id":"ui-1795518011229-8917","tts_id":5246038,"outcome":"ok","dur_ms":5324,"text_bytes":81,"attempts":1}
+{"ts":"2026-11-24T19:00:44.640+0800","kind":"tts","event_id":"probe-190042","tts_id":5246045,"outcome":"ok","dur_ms":1696,"text_bytes":18,"attempts":1}
 == app ==
-uid_of_voice=    userId=10065
-inbox=drwx------ 2 u0_a65 u0_a65 4096 2026-11-24 18:39 /data/local/tmp/t9_ui/inbox
-events=drwxr-x--- 2 root u0_a65 4096 2026-11-24 18:39 /data/local/tmp/t9_ui/events
+uid_of_voice=    userId=10069
+inbox=drwx------ 2 u0_a69 u0_a69 4096 2026-11-24 19:01 /data/local/tmp/t9_ui/inbox
+events=drwxr-x--- 2 root u0_a69 4096 2026-11-24 19:00 /data/local/tmp/t9_ui/events
 EXIT=0
 
    [PASS] worker is running
-   [PASS] the channel owner is the installed app (uid 10065)
+   [PASS] the channel owner is the installed app (uid 10069)
 Performing Streamed Install
 Success
    [PASS] the production APK installs
@@ -66,22 +66,22 @@ Success
 == A typed question -> AI provider -> factory TTS -> both sides in the UI (production APK)
 ================================================================
    [PASS] the question reached the worker with the typed text
-   event_id=ui-1795516920210-d2d1  status=ok  reply=[Paris is the capital of France.]
+   event_id=ui-1795518112345-a1a0  status=ok  reply=[法国首都是巴黎。]
    [PASS] the turn succeeded
    [PASS] the turn carries a real answer
    [PASS] the answer is not the question read back
 == text_turns
-[aiw] 2026-11-24T18:42:00 inbox ask queued: event=ui-1795516920210-d2d1 bytes=29 waiting=1 (answer comes from the provider)
-[aiw] 2026-11-24T18:42:01 text turn ok: event=ui-1795516920210-d2d1 provider=deepseek user_bytes=29 reply_bytes=31 ok=1 took=1106ms
+[aiw] 2026-11-24T19:01:52 inbox ask queued: event=ui-1795518112345-a1a0 bytes=29 waiting=1 (answer comes from the provider)
+[aiw] 2026-11-24T19:01:53 text turn ok: event=ui-1795518112345-a1a0 provider=deepseek user_bytes=29 reply_bytes=24 ok=1 took=1392ms
 == journal_tail
-{"ts":"2026-11-24T18:37:53.689+0800","kind":"tts","event_id":"ui-1795516669614-9e31","tts_id":5245933,"outcome":"ok","dur_ms":2655,"text_bytes":31,"attempts":1}
-{"ts":"2026-11-24T18:38:17.816+0800","kind":"tts","event_id":"ui-1795516693256-c3b","tts_id":5245938,"outcome":"ok","dur_ms":3261,"text_bytes":38,"attempts":1}
-{"ts":"2026-11-24T18:38:36.343+0800","kind":"tts","event_id":"ui-1795516713228-151e","tts_id":5245943,"outcome":"ok","dur_ms":1954,"text_bytes":24,"attempts":1}
-{"ts":"2026-11-24T18:38:48.398+0800","kind":"tts","event_id":"t6-1180-1969148-g4","tts_id":5245952,"outcome":"ok","dur_ms":1830,"text_bytes":9,"attempts":1}
-{"ts":"2026-11-24T18:40:00.835+0800","kind":"tts","event_id":"ui-1795516794071-72bc","tts_id":5245960,"outcome":"ok","dur_ms":5432,"text_bytes":84,"attempts":1}
-{"ts":"2026-11-24T18:42:03.899+0800","kind":"tts","event_id":"ui-1795516920210-d2d1","tts_id":5245967,"outcome":"ok","dur_ms":2539,"text_bytes":31,"attempts":1}
+{"ts":"2026-11-24T18:58:36.424+0800","kind":"tts","event_id":"ui-1795517910421-ca74","tts_id":5246016,"outcome":"ok","dur_ms":4462,"text_bytes":46,"attempts":1}
+{"ts":"2026-11-24T18:58:51.949+0800","kind":"tts","event_id":"ui-1795517927944-1487","tts_id":5246021,"outcome":"ok","dur_ms":2785,"text_bytes":22,"attempts":1}
+{"ts":"2026-11-24T18:59:02.435+0800","kind":"tts","event_id":"t6-1180-1969226-g6","tts_id":5246030,"outcome":"ok","dur_ms":2065,"text_bytes":9,"attempts":1}
+{"ts":"2026-11-24T19:00:19.032+0800","kind":"tts","event_id":"ui-1795518011229-8917","tts_id":5246038,"outcome":"ok","dur_ms":5324,"text_bytes":81,"attempts":1}
+{"ts":"2026-11-24T19:00:44.640+0800","kind":"tts","event_id":"probe-190042","tts_id":5246045,"outcome":"ok","dur_ms":1696,"text_bytes":18,"attempts":1}
+{"ts":"2026-11-24T19:01:55.525+0800","kind":"tts","event_id":"ui-1795518112345-a1a0","tts_id":5246051,"outcome":"ok","dur_ms":1581,"text_bytes":24,"attempts":1}
 == journal_eid
-{"ts":"2026-11-24T18:42:03.899+0800","kind":"tts","event_id":"ui-1795516920210-d2d1","tts_id":5245967,"outcome":"ok","dur_ms":2539,"text_bytes":31,"attempts":1}
+{"ts":"2026-11-24T19:01:55.525+0800","kind":"tts","event_id":"ui-1795518112345-a1a0","tts_id":5246051,"outcome":"ok","dur_ms":1581,"text_bytes":24,"attempts":1}
 EXIT=0
 
    [PASS] the worker answered it as a text turn
@@ -106,7 +106,7 @@ EXIT=0
 ================================================================
 == C voice regression: wake word -> factory ASR -> answer -> factory TTS
 ================================================================
-{"v":1,"seq":87,"ts":"2026-11-24T18:42:55","ts_ms":1795516975148,"kind":"turn","session":"1969182","event_id":"t6-1180-1969182-g5","route":"skill","skill":"time.query","status":"ok","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 18:42","reply_bytes":9,"reply_cut":0,"reason":""}
+{"v":1,"seq":101,"ts":"2026-11-24T19:02:46","ts_ms":1795518166802,"kind":"turn","session":"1969266","event_id":"t6-1180-1969266-g7","route":"skill","skill":"time.query","status":"ok","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 19:02","reply_bytes":9,"reply_cut":0,"reason":""}
    [PASS] a voice turn was published
    [PASS] the turn came from a factory ASR session
    [PASS] the turn carries the recognised text
@@ -117,35 +117,35 @@ EXIT=0
 == D a real provider failure is shown as a failure, never as an answer
 ================================================================
 == restart worker with a 100 ms provider timeout ==
-started: pid=16855 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
-[aiw] 2026-11-24T18:43:00 lock acquired; previous owner pid=12504 no longer holding it
-[aiw] 2026-11-24T18:43:00 ui events: dir=/data/local/tmp/t9_ui events=/data/local/tmp/t9_ui/events gid=10065 perms=0640 root:<gid> / 0750 keep=512 seq=87
-[aiw] 2026-11-24T18:43:00 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
-worker pid=16855
-/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10065 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10065 --deepseek-timeout-ms 100 --deepseek-connect-timeout-ms 100 
+started: pid=3466 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T19:02:51 lock acquired; previous owner pid=30439 no longer holding it
+[aiw] 2026-11-24T19:02:51 ui events: dir=/data/local/tmp/t9_ui events=/data/local/tmp/t9_ui/events gid=10069 perms=0640 root:<gid> / 0750 keep=512 seq=101
+[aiw] 2026-11-24T19:02:51 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+worker pid=3466
+/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10069 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10069 --deepseek-timeout-ms 100 --deepseek-connect-timeout-ms 100 
 EXIT=0
 
    [PASS] the question reached the worker (with the broken provider)
-   record: {"v":1,"seq":88,"ts":"2026-11-24T18:43:21","ts_ms":1795517001281,"kind":"turn","session":"","event_id":"ui-1795517001114-93a5","route":"ai","skill":"","status":"failed","user":"Tell么啊story about the sea","user_bytes":29,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"deepseek timeout after 103ms"}
+   record: {"v":1,"seq":102,"ts":"2026-11-24T19:03:11","ts_ms":1795518191952,"kind":"turn","session":"","event_id":"ui-1795518191688-dcee","route":"ai","skill":"","status":"failed","user":"Tell么啊story about the sea","user_bytes":29,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"deepseek timeout after 102ms"}
    [PASS] the turn is published as failed
    [PASS] a failed turn publishes no answer
-   [PASS] the record carries the real reason [deepseek timeout after 103ms]
+   [PASS] the record carries the real reason [deepseek timeout after 102ms]
    [PASS] a failed turn was never queued for playback
    screenshot: 74_d_failure.png
 == restart worker with the normal configuration ==
-started: pid=17126 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
-[aiw] 2026-11-24T18:43:27 lock acquired; previous owner pid=16855 no longer holding it
-[aiw] 2026-11-24T18:43:27 ui events: dir=/data/local/tmp/t9_ui events=/data/local/tmp/t9_ui/events gid=10065 perms=0640 root:<gid> / 0750 keep=512 seq=88
-[aiw] 2026-11-24T18:43:27 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
-worker pid=17126
-/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10065 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10065 
+started: pid=3735 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T19:03:17 lock acquired; previous owner pid=3466 no longer holding it
+[aiw] 2026-11-24T19:03:17 ui events: dir=/data/local/tmp/t9_ui events=/data/local/tmp/t9_ui/events gid=10069 perms=0640 root:<gid> / 0750 keep=512 seq=102
+[aiw] 2026-11-24T19:03:17 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+worker pid=3735
+/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10069 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10069 
 EXIT=0
 
 
 ================================================================
 == E the production APK has no test entry point and no extra privileges
 ================================================================
-   events before=88 after=88
+   events before=102 after=102
    [PASS] passing --es text/--ez auto to the production APK produced no request
    [PASS] that text never entered the conversation
    [PASS] the driver activity does not exist in the production APK
@@ -163,18 +163,18 @@ At D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\t9_07r1_device_acceptance.ps1:49
    [PASS] another uid cannot write into the inbox
 
 == worker ==
-pid=17126
-cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10065 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10065 
+pid=3735
+cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10069 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10069 
 == play.public.json ==
 {
   "v": 1,
   "pid": 2516,
-  "updated_ms": 1795516977082,
+  "updated_ms": 1795518168570,
   "state": "idle",
-  "event_id": "t6-1180-1969182-g5",
-  "tts_id": 5245986,
-  "started_ms": 1795516975180,
-  "finished_ms": 1795516977082,
+  "event_id": "t6-1180-1969266-g7",
+  "tts_id": 5246070,
+  "started_ms": 1795518166818,
+  "finished_ms": 1795518168570,
   "last_outcome": "ok",
   "queue_depth": 0,
   "inflight_depth": 1
@@ -182,30 +182,30 @@ cmdline=/data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_br
 stop_requests=0
 0
 == status.public.json ==
-{"v":1,"ts":"2026-11-24T18:43:50","ts_ms":1795517030287,"pid":17126,"worker":"running","uptime_ms":22711,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"idle","sc":"IDLE","round":0,"session":"","listening":0,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":0,"inbox_rejected":0,"gate_released":0,"route_native":0,"ui_published":0,"ui_errors":0}}
+{"v":1,"ts":"2026-11-24T19:03:38","ts_ms":1795518218226,"pid":3735,"worker":"running","uptime_ms":20508,"event_id":"","provider":{"name":"deepseek","model":"deepseek-flash","mock":0,"ok":0,"err":0,"timeout":0,"last_http":0,"last_error":"","last_class":"","last_latency_ms":0},"dialog":{"state":"idle","sc":"IDLE","round":0,"session":"","listening":0,"tap":1},"counters":{"events_processed":0,"tts_queued":0,"inbox_accepted":0,"inbox_rejected":0,"gate_released":0,"route_native":0,"ui_published":0,"ui_errors":0}}
 == events (last 3) ==
--- 000000000086.json
-{"v":1,"seq":86,"ts":"2026-11-24T18:42:43","ts_ms":1795516963398,"kind":"turn","session":"","event_id":"ui-1795516962016-e1fb","route":"ai","skill":"","status":"ok","user":"What is the code word","user_bytes":21,"user_cut":0,"reply":"The code word is ORANGE.","reply_bytes":24,"reply_cut":0,"reason":""}
--- 000000000087.json
-{"v":1,"seq":87,"ts":"2026-11-24T18:42:55","ts_ms":1795516975148,"kind":"turn","session":"1969182","event_id":"t6-1180-1969182-g5","route":"skill","skill":"time.query","status":"ok","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 18:42","reply_bytes":9,"reply_cut":0,"reason":""}
--- 000000000088.json
-{"v":1,"seq":88,"ts":"2026-11-24T18:43:21","ts_ms":1795517001281,"kind":"turn","session":"","event_id":"ui-1795517001114-93a5","route":"ai","skill":"","status":"failed","user":"Tell么啊story about the sea","user_bytes":29,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"deepseek timeout after 103ms"}
-newest_event=000000000088.json
-newest_json={"v":1,"seq":88,"ts":"2026-11-24T18:43:21","ts_ms":1795517001281,"kind":"turn","session":"","event_id":"ui-1795517001114-93a5","route":"ai","skill":"","status":"failed","user":"Tell么啊story about the sea","user_bytes":29,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"deepseek timeout after 103ms"}
-events_total=88
+-- 000000000100.json
+{"v":1,"seq":100,"ts":"2026-11-24T19:02:34","ts_ms":1795518154693,"kind":"turn","session":"","event_id":"ui-1795518153556-f51c","route":"ai","skill":"","status":"ok","user":"What is the code word","user_bytes":21,"user_cut":0,"reply":"The code word is ORANGE.","reply_bytes":24,"reply_cut":0,"reason":""}
+-- 000000000101.json
+{"v":1,"seq":101,"ts":"2026-11-24T19:02:46","ts_ms":1795518166802,"kind":"turn","session":"1969266","event_id":"t6-1180-1969266-g7","route":"skill","skill":"time.query","status":"ok","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 19:02","reply_bytes":9,"reply_cut":0,"reason":""}
+-- 000000000102.json
+{"v":1,"seq":102,"ts":"2026-11-24T19:03:11","ts_ms":1795518191952,"kind":"turn","session":"","event_id":"ui-1795518191688-dcee","route":"ai","skill":"","status":"failed","user":"Tell么啊story about the sea","user_bytes":29,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"deepseek timeout after 102ms"}
+newest_event=000000000102.json
+newest_json={"v":1,"seq":102,"ts":"2026-11-24T19:03:11","ts_ms":1795518191952,"kind":"turn","session":"","event_id":"ui-1795518191688-dcee","route":"ai","skill":"","status":"failed","user":"Tell么啊story about the sea","user_bytes":29,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"deepseek timeout after 102ms"}
+events_total=102
 == queue / inflight ==
 inflight: 
-== journal (last 6, total 962) ==
-{"ts":"2026-11-24T18:38:48.398+0800","kind":"tts","event_id":"t6-1180-1969148-g4","tts_id":5245952,"outcome":"ok","dur_ms":1830,"text_bytes":9,"attempts":1}
-{"ts":"2026-11-24T18:40:00.835+0800","kind":"tts","event_id":"ui-1795516794071-72bc","tts_id":5245960,"outcome":"ok","dur_ms":5432,"text_bytes":84,"attempts":1}
-{"ts":"2026-11-24T18:42:03.899+0800","kind":"tts","event_id":"ui-1795516920210-d2d1","tts_id":5245967,"outcome":"ok","dur_ms":2539,"text_bytes":31,"attempts":1}
-{"ts":"2026-11-24T18:42:28.756+0800","kind":"tts","event_id":"ui-1795516942164-d7d0","tts_id":5245972,"outcome":"ok","dur_ms":4263,"text_bytes":43,"attempts":1}
-{"ts":"2026-11-24T18:42:45.432+0800","kind":"tts","event_id":"ui-1795516962016-e1fb","tts_id":5245977,"outcome":"ok","dur_ms":1956,"text_bytes":24,"attempts":1}
-{"ts":"2026-11-24T18:42:57.079+0800","kind":"tts","event_id":"t6-1180-1969182-g5","tts_id":5245986,"outcome":"ok","dur_ms":1895,"text_bytes":9,"attempts":1}
+== journal (last 6, total 974) ==
+{"ts":"2026-11-24T19:00:19.032+0800","kind":"tts","event_id":"ui-1795518011229-8917","tts_id":5246038,"outcome":"ok","dur_ms":5324,"text_bytes":81,"attempts":1}
+{"ts":"2026-11-24T19:00:44.640+0800","kind":"tts","event_id":"probe-190042","tts_id":5246045,"outcome":"ok","dur_ms":1696,"text_bytes":18,"attempts":1}
+{"ts":"2026-11-24T19:01:55.525+0800","kind":"tts","event_id":"ui-1795518112345-a1a0","tts_id":5246051,"outcome":"ok","dur_ms":1581,"text_bytes":24,"attempts":1}
+{"ts":"2026-11-24T19:02:22.454+0800","kind":"tts","event_id":"ui-1795518135973-ee7f","tts_id":5246056,"outcome":"ok","dur_ms":4463,"text_bytes":46,"attempts":1}
+{"ts":"2026-11-24T19:02:36.366+0800","kind":"tts","event_id":"ui-1795518153556-f51c","tts_id":5246061,"outcome":"ok","dur_ms":1576,"text_bytes":24,"attempts":1}
+{"ts":"2026-11-24T19:02:48.566+0800","kind":"tts","event_id":"t6-1180-1969266-g7","tts_id":5246070,"outcome":"ok","dur_ms":1743,"text_bytes":9,"attempts":1}
 == app ==
-uid_of_voice=    userId=10065
-inbox=drwx------ 2 u0_a65 u0_a65 4096 2026-11-24 18:43 /data/local/tmp/t9_ui/inbox
-events=drwxr-x--- 2 root u0_a65 4096 2026-11-24 18:43 /data/local/tmp/t9_ui/events
+uid_of_voice=    userId=10069
+inbox=drwx------ 2 u0_a69 u0_a69 4096 2026-11-24 19:03 /data/local/tmp/t9_ui/inbox
+events=drwxr-x--- 2 root u0_a69 4096 2026-11-24 19:03 /data/local/tmp/t9_ui/events
 EXIT=0
 
    [PASS] a request owned by a foreign uid is dropped, not answered
@@ -223,46 +223,84 @@ Success
 Performing Streamed Install
 Success
    [PASS] the test APK installs
-   resolved com.tgz02.voice uid=10066
-== T9-07 channel owner = new uid 10066 ==
-   inbox: drwx------ 2 u0_a66 u0_a66 4096 2026-11-24 18:43 /data/local/tmp/t9_ui/inbox
-   allowed_uids: 10066
-   restarting worker pid=17126 so it reads the new allowlist
-started: pid=17648 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
-[aiw] 2026-11-24T18:44:00 lock acquired; previous owner pid=17126 no longer holding it
-[aiw] 2026-11-24T18:44:00 ui events: dir=/data/local/tmp/t9_ui events=/data/local/tmp/t9_ui/events gid=10066 perms=0640 root:<gid> / 0750 keep=512 seq=88
-[aiw] 2026-11-24T18:44:00 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
-   worker pid=17648
-   cmdline: /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10066 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10066 
-   events dir: drwxr-x--- 2 root u0_a66 4096 2026-11-24 18:43 /data/local/tmp/t9_ui/events
+   resolved com.tgz02.voice uid=10070
+== T9-07 channel owner = new uid 10070 ==
+   inbox: drwx------ 2 u0_a70 u0_a70 4096 2026-11-24 19:03 /data/local/tmp/t9_ui/inbox
+   allowed_uids: 10070
+   restarting worker pid=3735 so it reads the new allowlist
+started: pid=4337 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T19:03:48 lock acquired; previous owner pid=3735 no longer holding it
+[aiw] 2026-11-24T19:03:48 ui events: dir=/data/local/tmp/t9_ui events=/data/local/tmp/t9_ui/events gid=10070 perms=0640 root:<gid> / 0750 keep=512 seq=102
+[aiw] 2026-11-24T19:03:48 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+   worker pid=4337
+   cmdline: /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10070 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10070 
+   events dir: drwxr-x--- 2 root u0_a70 4096 2026-11-24 19:03 /data/local/tmp/t9_ui/events
 == done ==
 EXIT=0
 
-{"v":1,"seq":89,"ts":"2026-11-24T18:44:09","ts_ms":1795517049123,"kind":"turn","session":"","event_id":"ui-1795517047693-1727","route":"ai","skill":"","status":"ok","user":"请用一句话介绍巴黎","user_bytes":27,"user_cut":0,"reply":"巴黎是法国的首都，以埃菲尔铁塔、卢浮宫和浪漫的塞纳河风光闻名。","reply_bytes":93,"reply_cut":0,"reason":""}
+{"v":1,"seq":103,"ts":"2026-11-24T19:03:57","ts_ms":1795518237857,"kind":"turn","session":"","event_id":"ui-1795518236029-a3d9","route":"ai","skill":"","status":"ok","user":"请用一句话介绍巴黎","user_bytes":27,"user_cut":0,"reply":"巴黎是法国首都，以埃菲尔铁塔、卢浮宫和浪漫的塞纳河风光闻名。","reply_bytes":90,"reply_cut":0,"reason":""}
    [PASS] in the test build the driver prefills and sends (Chinese included)
    screenshot: 77_f_test_build.png
    (restoring the production build and re-binding the channel)
 Performing Streamed Install
 Success
    [PASS] the production APK is installed again
-   resolved com.tgz02.voice uid=10067
-== T9-07 channel owner = new uid 10067 ==
-   inbox: drwx------ 2 u0_a67 u0_a67 4096 2026-11-24 18:44 /data/local/tmp/t9_ui/inbox
-   allowed_uids: 10067
-   restarting worker pid=17648 so it reads the new allowlist
-started: pid=18007 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
-[aiw] 2026-11-24T18:44:16 lock acquired; previous owner pid=17648 no longer holding it
-[aiw] 2026-11-24T18:44:16 ui events: dir=/data/local/tmp/t9_ui events=/data/local/tmp/t9_ui/events gid=10067 perms=0640 root:<gid> / 0750 keep=512 seq=89
-[aiw] 2026-11-24T18:44:16 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
-   worker pid=18007
-   cmdline: /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10067 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10067 
-   events dir: drwxr-x--- 2 root u0_a67 4096 2026-11-24 18:44 /data/local/tmp/t9_ui/events
+   resolved com.tgz02.voice uid=10071
+== T9-07 channel owner = new uid 10071 ==
+   inbox: drwx------ 2 u0_a71 u0_a71 4096 2026-11-24 19:03 /data/local/tmp/t9_ui/inbox
+   allowed_uids: 10071
+   restarting worker pid=4337 so it reads the new allowlist
+started: pid=5633 work=/data/local/tmp/t5_bridge/work state=/data/local/tmp/t5_bridge/ai_worker
+[aiw] 2026-11-24T19:04:07 lock acquired; previous owner pid=4337 no longer holding it
+[aiw] 2026-11-24T19:04:07 ui events: dir=/data/local/tmp/t9_ui events=/data/local/tmp/t9_ui/events gid=10071 perms=0640 root:<gid> / 0750 keep=512 seq=103
+[aiw] 2026-11-24T19:04:07 context: enabled=1 max_msgs=6 restored_msgs=6 restored_turns=3 load=restored file=/data/local/tmp/t5_bridge/ai_worker/context.json
+   worker pid=5633
+   cmdline: /data/local/tmp/t5_bridge/bin/ai_worker --work-dir /data/local/tmp/t5_bridge/work --state-dir /data/local/tmp/t5_bridge/ai_worker --conf /data/local/tmp/t5_bridge/ai_worker/worker.conf --tts-queue-dir /data/local/tmp/t5_bridge/tts --inbox /data/local/tmp/t9_ui/inbox --inbox-result /data/local/tmp/t9_ui/result --inbox-rejected /data/local/tmp/t9_ui/rejected --inbox-allowed-uid 10071 --ui-events /data/local/tmp/t9_ui --ui-events-gid 10071 
+   events dir: drwxr-x--- 2 root u0_a71 4096 2026-11-24 19:03 /data/local/tmp/t9_ui/events
 == done ==
 EXIT=0
 
    [PASS] after the reinstall the production APK still ignores test intents
    [PASS] the production conversation screen is up again
    screenshot: 78_g_prod_restored.png
+
+================================================================
+== G inbox protocol on the device: legacy say, non-string kind, uid protection
+================================================================
+== submitted kind=say id=probe-190425 text=legacy-say-request
+receipt: {"v":1,"event_id":"probe-190425","ok":true,"stage":"queue","reason":"","ts_ms":1795518265889}
+== waiting for the turn ==
+== events (last 4) ==
+-- 000000000101.json
+{"v":1,"seq":101,"ts":"2026-11-24T19:02:46","ts_ms":1795518166802,"kind":"turn","session":"1969266","event_id":"t6-1180-1969266-g7","route":"skill","skill":"time.query","status":"ok","user":"天猫精灵现在几点","user_bytes":24,"user_cut":0,"reply":"now 19:02","reply_bytes":9,"reply_cut":0,"reason":""}
+-- 000000000102.json
+{"v":1,"seq":102,"ts":"2026-11-24T19:03:11","ts_ms":1795518191952,"kind":"turn","session":"","event_id":"ui-1795518191688-dcee","route":"ai","skill":"","status":"failed","user":"Tell么啊story about the sea","user_bytes":29,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":"deepseek timeout after 102ms"}
+-- 000000000103.json
+{"v":1,"seq":103,"ts":"2026-11-24T19:03:57","ts_ms":1795518237857,"kind":"turn","session":"","event_id":"ui-1795518236029-a3d9","route":"ai","skill":"","status":"ok","user":"请用一句话介绍巴黎","user_bytes":27,"user_cut":0,"reply":"巴黎是法国首都，以埃菲尔铁塔、卢浮宫和浪漫的塞纳河风光闻名。","reply_bytes":90,"reply_cut":0,"reason":""}
+-- 000000000104.json
+{"v":1,"seq":104,"ts":"2026-11-24T19:04:25","ts_ms":1795518265867,"kind":"submit","session":"","event_id":"probe-190425","route":"submit","skill":"","status":"ok","user":"legacy-say-request","user_bytes":18,"user_cut":0,"reply":"","reply_bytes":0,"reply_cut":0,"reason":""}
+== journal delta ==
+== worker log (text turn lines) ==
+EXIT=0
+
+   [PASS] a legacy request (no kind) is still accepted
+   [PASS] and it is still a plain speak request (stage=queue)
+== submitted kind=true id=badi-190427
+receipt: {"v":1,"event_id":"badi-190427","ok":false,"stage":"rejected","reason":"kind must be a string","ts_ms":1795518268123}
+rejected: 1
+EXIT=0
+
+   [PASS] kind:true is refused
+   [PASS] the refusal names the real problem
+   [PASS] the bad request is parked in rejected/
+== submitted kind=null id=badi-190429
+receipt: {"v":1,"event_id":"badi-190429","ok":false,"stage":"rejected","reason":"kind must be a string","ts_ms":1795518269646}
+rejected: 1
+EXIT=0
+
+   [PASS] kind:null is refused as well
+   [PASS] none of the refused requests produced a conversation event
+   screenshot: 79_g_inbox_protocol.png
 
 ================================================================
 RESULT: PASS (0 failed checks)

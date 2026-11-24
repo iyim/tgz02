@@ -409,3 +409,79 @@ UI 显示为"回答失败：<真实原因>"。
 3. **`say` 通道保留但不被产品 UI 使用**：UI 只发 `ask`；`say` 留给旧脚本/回归，语义未变。
 4. 其余限制（无 barge-in、第三方覆盖层、重装 APK 会变 uid 需重新绑定、事件目录只保留最近 512 条、
    UI 首次启动不回放旧事件）与 T9-07 第十节一致，本轮未改变。
+
+---
+
+# T9-07R1F 收尾：kind 类型校验一致 + 首页文案
+
+基线 `7fec4cff2c59cd02dccef4d1e563e4ca629edf91`。只改两处，AI 对话流程、Inbox 权限/限速/
+队列保护、原厂 KWS/ASR/TTS、Guard、Hook、`:core` 全部未动。
+
+## 一、Inbox 的 kind 校验补齐
+
+`ti_parse_msg()` 里 `kind` 有三条取值路径，原来只有两条被校验：
+
+| 写法 | 之前 | 现在 |
+|---|---|---|
+| `"kind":"ask"` / `"kind":"say"` | 接受 | 接受 |
+| `"kind":1` | 拒绝（数字分支已有判断） | 拒绝 |
+| `"kind":true` / `false` / `null` | **落到通用字面量分支被跳过 → 退化成默认 `say`** | **拒绝：`kind must be a string`** |
+| `"kind":""` / `"kind":"speak"` | 拒绝 | 拒绝 |
+| 不带 `kind` | `say`（T9-06 语义） | 不变 |
+
+修复点在裸字面量分支里显式判 `key == "kind"`；其它键上的裸字面量仍然容忍
+（`{"extra":true,"note":null}` 这种旧请求照样解析），所以旧请求的校验与行为没有任何变化。
+被拒请求一律：回执 `{"ok":false,"stage":"rejected","reason":"kind must be a string"}`，
+文件归档为 `rejected/<event_id>.<ts>.rejected`，不产生事件、不入队、不播报。
+
+## 二、首页提示
+
+`ConversationActivity` 空状态第二行：
+"也可以直接输入文字，我会用原厂语音念出来" → **"也可以直接输入文字向我提问"**。
+布局与其它文案未动。
+
+## 三、Host 测试
+
+| 套件 | 结果 | 日志 |
+|---|---|---|
+| **T9-07R1F 新增 30 项**（true/false/null/数字/空串/未知值拒绝、ask/say 接受、无 kind 仍 say、其它键裸字面量仍容忍、端到端回执与归档） | **30 / 30** | `evidence/t9_07r1f_kind_literal_unit_test.log` |
+| T9-07R1 kind/status 43 项 | 43 / 43 | `evidence/t9_07r1_kind_unit_test.log` |
+| T9-07 ui_events 60 项 | 60 / 60 | `evidence/t9_07_ui_events_unit_test.log` |
+| T9-06 inbox 70 项 | 70 / 70 | （随本轮重跑，见提交说明） |
+
+## 四、构建产物
+
+| 产物 | 大小 | SHA256 |
+|---|---|---|
+| `out/ai_worker`（ARM32，0 warning） | 309,968 B | `9c237ae193377091eb26783666c5298b1561979762e2e9142646861a4cbee4a0` |
+| `out/libtg_ttsguard.so`（未改） | 42,712 B | `67d96b38870bb540a9d7f11b6e902739e5b2fcb92eaacb095e5d3d7bde0cf9e0` |
+| `t9_07_ui/dist/voice_ui.apk`（生产） | 33,165 B | `8d493226052eb3822fac87991a2cab635f05b9bccc0c782d6cd5d498971b6122` |
+| `t9_07_ui/dist/voice_ui_test.apk`（测试） | 33,165 B | `becfe86661bd46422a7216fd641727e393023412f22b075cd7a9cd6894733d19` |
+
+生产 APK 静态检查（本轮重做）：
+
+- `dexdump`：**未出现** `TestConversationActivity`（测试 APK 里出现）；
+- `dexdump`：生产 dex 里**没有任何 `getStringExtra`** —— 不是"读了但忽略"，而是根本没有这条路；
+- `aapt2 dump xmltree`：只有 `.ConversationActivity` 与 `.SettingsActivity`；
+- `aapt2 dump permissions`：没有任何 `uses-permission`。
+
+## 五、真机验收（50 项检查，全过）
+
+`tests/t9_07r1_device_acceptance.ps1`（A–G），原始日志 `evidence/t9-07r1/60_acceptance.txt`：
+
+| 项 | 结论 | 关键事实 |
+|---|---|---|
+| A 文字 AI 问答 | 通过 | 键盘提问 → `provider=deepseek` → 回答由原厂 TTS 播报（journal 同一 event_id `ok`） |
+| B 连续两轮上下文 | 通过 | "Remember the codeword ORANGE." → "What is the code word" → "The code word is ORANGE." |
+| C 语音回归 | 通过 | 唤醒词 → 原厂 ASR → 回答 → 原厂 TTS |
+| D 真实失败 | 通过 | `status:"failed"`、`reply:""`、`reason:"deepseek timeout after 102ms"`，未入队 |
+| E 生产 APK 加固 | 通过 | 测试 Intent 无效；无权限；shell uid 写 Inbox → `Permission denied`；外 uid 请求被丢弃 |
+| F 构建隔离 | 通过 | dex 对比 + 测试构建实跑中文提问后恢复生产 APK，仍不响应 Intent |
+| **G Inbox 协议（本轮新增）** | 通过 | 旧请求（无 kind）→ `ok:true, stage:"queue"`；`kind:true` → `ok:false, kind must be a string`，`rejected: 1`；`kind:null` 同样被拒；被拒请求不产生任何事件（截图 `79_g_inbox_protocol.png`） |
+
+## 六、本轮未改变的东西
+
+- Inbox 的 0700 属主、uid 白名单、速率限制、队列上限、扫描上限、归档/裁剪：一行未改；
+- AI 对话流程（`aiw_text_turn`）、事件出口格式、UI 布局与其它文案：未改；
+- 语音链路、Guard、Hook、`:core`、TTS 执行器：未改；
+- 回滚仍是一条命令回到 T9-06R1（`t9_07_restore.sh`，备份 `ai_worker.t9_06r1` 未被覆盖）。

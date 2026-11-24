@@ -396,7 +396,13 @@ int ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errle
             if (err && errlen) snprintf(err, errlen, "nested value not allowed");
             return -1;
         } else if (*p == 't' || *p == 'f' || *p == 'n') {
-            /* tolerate true/false/null by skipping the bare word */
+            /* tolerate true/false/null by skipping the bare word -- except for "kind", which is
+             * only ever a string: kind:true/false/null is a protocol error, not a silent "say"
+             * (T9-07R1F: the numeric branch already refused, the literal branch did not) */
+            if (strcmp(key, "kind") == 0) {
+                if (err && errlen) snprintf(err, errlen, "kind must be a string");
+                return -1;
+            }
             while (p < end && ((*p >= 'a' && *p <= 'z'))) p++;
         } else {
             if (err && errlen) snprintf(err, errlen, "unsupported value");
