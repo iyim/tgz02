@@ -1,0 +1,41 @@
+# T9-12 probe image build (device, 2026-11-25)
+
+Command:
+  make_ext4fs -l 64M -a /system -L t912probe /cache/t912/probe.img /cache/t912/root
+
+Output (device):
+  SELinux: Loaded file_contexts
+  Creating filesystem with parameters:
+      Size: 67108864
+      Block size: 4096
+      Blocks per group: 32768
+      Inodes per group: 4096
+      Inode size: 256
+      Journal blocks: 1024
+      Label: t912probe
+      Blocks: 16384
+      Block groups: 1
+      Reserved block group size: 7
+  Created filesystem with 16/4096 inodes and 1299/16384 blocks
+
+Result: /cache/t912/probe.img  67,108,864 B
+sha256 (device) = b1d09ea42da948c80567ef52c9f91371eb5113e32c812116e2986d293ac0cdf5
+sha256 (host, after pull) = b1d09ea42da948c80567ef52c9f91371eb5113e32c812116e2986d293ac0cdf5
+
+tune2fs -l (device):
+  label t912probe, magic 0xEF53
+  features: has_journal ext_attr resize_inode filetype extent sparse_super large_file uninit_bg
+  (identical feature set to the live /system partition)
+
+Notes:
+  * make_ext4fs -s produces a sparse image that tune2fs cannot read -> build raw (no -s).
+  * mount -o loop is not usable on this device (losetup failed 1), so verification is
+    tune2fs + build log + host sha256.
+  * the 64 MiB image itself is NOT committed (binary); this record plus the script
+    (android/t9_12_image/t912_probe.sh) is what is kept.
+
+Space facts that blocked the full-size build:
+  /system used      871 MB
+  /data available   175 MB
+  /cache available  563 MB
+  build needs       ~871 MB tree + 976 MB image  ~= 1.85 GB
