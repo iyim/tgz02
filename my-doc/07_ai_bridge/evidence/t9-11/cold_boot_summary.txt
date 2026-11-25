@@ -1,0 +1,4 @@
+﻿boot2 : top=mResumedActivity: ActivityRecord{62f7ce7 u0 com.tgz02.voice/.VoiceHomeActivity t136} | first_start=5s | reasserts=4
+boot3 : top=mResumedActivity: ActivityRecord{84555a4 u0 com.tgz02.voice/.VoiceHomeActivity t140} | first_start=6s | reasserts=4
+boot4 : top=mResumedActivity: ActivityRecord{afb0bc6 u0 com.tgz02.voice/.VoiceHomeActivity t134} | first_start=5s | reasserts=5
+boot5 : top=mResumedActivity: ActivityRecord{c56a042 u0 com.tgz02.voice/.VoiceHomeActivity t141} | first_start=6s | reasserts=6

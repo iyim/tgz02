@@ -1,0 +1,75 @@
+# package	codePath	signature	pkgFlags	classification
+android	/system/framework/framework-res.apk	8f5cc29c	 SYSTEM PERSISTENT ALLOW_BACKUP 	factory /system
+android.auto_generated_rro__	/vendor/overlay/framework-res__auto_generated_rro.apk	8f5cc29c	 SYSTEM 	third-party /data/app
+android.ext.services	/system/priv-app/ExtServices	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+android.ext.shared	/system/app/ExtShared	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+app.orchard.tv	/data/app/app.orchard.tv-8gjIxHEKhytVFO3Hcr0BdQ==	6a331e6b	 HAS_CODE ALLOW_CLEAR_USER_DATA LARGE_HEAP 	third-party /data/app
+bin.mt.plus	/data/app/bin.mt.plus-xXCsOzsoTVa2gpDlsM2gnw==	2f23ec2f	 HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP LARGE_HEAP 	third-party /data/app
+cn.cmvideo.car.play	/data/app/cn.cmvideo.car.play-rXE7I_aOXH-S5W4RaZvDvQ==	de2a26f4	 HAS_CODE ALLOW_CLEAR_USER_DATA 	third-party /data/app
+com.ailabs.emode	/system/app/Emode	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.ailabs.youku.iot	/system/app/AliVideoPlayer	38661667	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA LARGE_HEAP 	factory /system
+com.alibaba.ailabs.ar.monitor	/system/app/GenieMonitor	8f5cc29c	 SYSTEM DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.alibaba.ailabs.genie.aicare	/system/app/GenieAicare		 SYSTEM 	factory /system
+com.alibaba.ailabs.genie.aicare	/data/app/com.alibaba.ailabs.genie.aicare-zsBAkMuEJlOe5ygOiDbDbw==	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA UPDATED_SYSTEM_APP 	third-party /data/app
+com.alibaba.ailabs.genie.albums	/system/app/GenieAlbums	8f5cc29c	 SYSTEM DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.alibaba.ailabs.genie.browser	/system/app/GenieBrowser	8f5cc29c	 SYSTEM DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA LARGE_HEAP 	factory /system
+com.alibaba.ailabs.genie.camera	/data/app/com.alibaba.ailabs.genie.camera-UeTOZTBElqLiL9Nv3eKTVg==	8f5cc29c	 HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	third-party /data/app
+com.alibaba.ailabs.genie.children	/system/app/GenieChildren	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA LARGE_HEAP 	factory /system
+com.alibaba.ailabs.genie.cook	/data/app/com.alibaba.ailabs.genie.cook-Y0W26Dha2xaf2E1WkY6NpA==	8f5cc29c	 HAS_CODE ALLOW_CLEAR_USER_DATA 	third-party /data/app
+com.alibaba.ailabs.genie.guide	/system/app/Guide	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.alibaba.ailabs.genie.intermediary	/data/app/com.alibaba.ailabs.genie.intermediary-8l6RlrQNzUbivvclgDAAMg==	8f5cc29c	 DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA 	third-party /data/app
+com.alibaba.ailabs.genie.iot	/system/app/GenieIoT	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.alibaba.ailabs.genie.launcher	/system/app/GenieLauncher	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.alibaba.ailabs.genie.osupdate	/system/app/Osupdate	8f5cc29c	 SYSTEM HAS_CODE PERSISTENT ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.alibaba.ailabs.genie.rtc	/system/app/GenieRTC		 SYSTEM 	factory /system
+com.alibaba.ailabs.genie.rtc	/data/app/com.alibaba.ailabs.genie.rtc-iD7ciUfp9lpYBtIqAEiqeA==	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA UPDATED_SYSTEM_APP 	third-party /data/app
+com.alibaba.ailabs.genie.screensaver	/system/app/GenieScreensaver	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.alibaba.ailabs.genie.smartapp	/system/app/smartapp	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA LARGE_HEAP 	factory /system
+com.alibaba.genie.waft	/system/app/Waft	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.alibaba.spkey	/system/app/AliSpKey	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.aligenie.ags	/system/app/AliGenieService	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.alipay.arome.app	/system/app/AMPE	3f294bc1	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA LARGE_HEAP 	factory /system
+com.alira.info	/system/app/raShow	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.aliyun.uuid	/system/app/UUID	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.android.bluetooth	/system/app/MtkBluetooth	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.android.bluetoothmidiservice	/system/app/BluetoothMidiService	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.android.captiveportallogin	/system/app/CaptivePortalLogin	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.android.certinstaller	/system/app/CertInstaller	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.android.companiondevicemanager	/system/app/CompanionDeviceManager	dc06a4a1	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.android.defcontainer	/system/priv-app/DefaultContainerService	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.android.externalstorage	/system/priv-app/ExternalStorageProvider	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.android.inputdevices	/system/priv-app/InputDevices	8f5cc29c	 SYSTEM HAS_CODE ALLOW_BACKUP 	factory /system
+com.android.keychain	/system/app/KeyChain	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.android.location.fused	/system/priv-app/FusedLocation	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.android.mtp	/system/priv-app/MtpDocumentsProvider	77b8f0a0	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.android.packageinstaller	/system/priv-app/PackageInstaller	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.android.pacprocessor	/system/app/PacProcessor	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.android.providers.calendar	/system/priv-app/CalendarProvider	dc06a4a1	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.android.providers.contacts	/system/priv-app/ContactsProvider	1bf3c3d3	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.android.providers.downloads	/system/priv-app/DownloadProvider	77b8f0a0	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.android.providers.media	/system/priv-app/MtkMediaProvider	77b8f0a0	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.android.providers.settings	/system/priv-app/SettingsProvider	8f5cc29c	 SYSTEM HAS_CODE ALLOW_BACKUP 	factory /system
+com.android.providers.userdictionary	/system/app/UserDictionaryProvider	1bf3c3d3	 SYSTEM HAS_CODE ALLOW_BACKUP 	factory /system
+com.android.proxyhandler	/system/priv-app/ProxyHandler	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.android.settings	/system/app/S1Settings	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.android.shell	/system/priv-app/Shell	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.android.statementservice	/system/priv-app/StatementService	dc06a4a1	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.android.storagemanager	/system/priv-app/StorageManager	dc06a4a1	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.android.systemui	/system/app/AliSystemUI	8f5cc29c	 SYSTEM HAS_CODE 	factory /system
+com.android.vpndialogs	/system/priv-app/VpnDialogs	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.android.webview	/system/app/webview	dc06a4a1	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.anthouse.ayland	/data/app/com.anthouse.ayland-mmfjTZvgvnogpqrtY4Avrg==	a049e7bd	 HAS_CODE ALLOW_CLEAR_USER_DATA 	third-party /data/app
+com.estrongs.android.pop	/system/app/ES.apk	d7f1f224	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.google.android.inputmethod.pinyin	/vendor/app/GooglePinyinIME	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP RESTORE_ANY_VERSION 	third-party /data/app
+com.ktcp.aiagent	/data/app/com.ktcp.aiagent-AACVSOzu0sDnDeil4pnfZA==	63515b22	 HAS_CODE ALLOW_CLEAR_USER_DATA 	third-party /data/app
+com.mediatek	/system/framework/mediatek-res	8f5cc29c	 SYSTEM 	factory /system
+com.mediatek.thermalmanager	/vendor/app/MTKThermalManager	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	third-party /data/app
+com.shere.assistivetouch	/system/app/easytouch.apk	47d8c4f	 SYSTEM HAS_CODE PERSISTENT ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system
+com.tgz02.aidltest	/data/app/com.tgz02.aidltest-n_XyLEJu0OHAc9PalMMr5A==	252b4d98	 DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA 	TG-Z02 (ours)
+com.tgz02.providerprobe	/data/app/com.tgz02.providerprobe-Sv5FyoyE7ySmsyVNUFmcLA==	252b4d98	 DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA 	TG-Z02 (ours)
+com.tgz02.voice	/data/app/com.tgz02.voice-3LiqCBc83RC37O_h0inXAQ==	252b4d98	 HAS_CODE ALLOW_CLEAR_USER_DATA 	TG-Z02 (ours)
+com.topjohnwu.magisk	/data/app/com.topjohnwu.magisk-EuMSu4VItaK3widDq122zw==	ba28c03b	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA UPDATED_SYSTEM_APP 	third-party /data/app
+com.topjohnwu.magisk	/system/app/magisk.apk		 SYSTEM 	factory /system
+com.web1n.permissiondog	/system/app/qxg.apk	9e35ead9	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA 	factory /system
+com.yunos	/system/framework/yunos-framework-res.apk	8f5cc29c	 SYSTEM 	factory /system
+com.yunos.tv.provision	/system/priv-app/AliProvision	8f5cc29c	 SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP 	factory /system

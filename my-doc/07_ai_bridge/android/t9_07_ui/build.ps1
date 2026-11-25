@@ -46,11 +46,17 @@ New-Item -ItemType Directory -Force $classes | Out-Null
 
 $manifest = Join-Path $here 'AndroidManifest.xml'
 $apkName = 'voice_ui.apk'
-$vn = '1.4.0'
+# T9-10-R1: the version lives in the manifest only -- one source of truth, so the committed
+# manifest, the built APK and the delivery report can never disagree again.
+$mfText = [IO.File]::ReadAllText($manifest, [Text.Encoding]::UTF8)
+$vc = [regex]::Match($mfText, 'android:versionCode="(\d+)"').Groups[1].Value
+$vn = [regex]::Match($mfText, 'android:versionName="([^"]+)"').Groups[1].Value
+if (-not $vc -or -not $vn) { throw 'manifest has no versionCode/versionName' }
+Write-Host ("== version: code={0} name={1} (from manifest)" -f $vc, $vn)
 if ($Test) {
     $manifest = Join-Path $here 'AndroidManifest.test.xml'
     $apkName = 'voice_ui_test.apk'
-    $vn = '1.4.0-test'
+    $vn = $vn + '-test'
     Write-Host "== TEST BUILD: src_test/ included, the automation driver is in this APK"
 }
 
@@ -109,7 +115,8 @@ $srcFiles = @(
     "src\com\tgz02\voice\VoiceBridgeClient.java",
     "src\com\tgz02\voice\BackendService.java",
     "src\com\tgz02\voice\BackendClient.java",
-    "src\com\tgz02\voice\BackendJson.java"
+    "src\com\tgz02\voice\BackendJson.java",
+    "src\com\tgz02\voice\RequestLedger.java"
 ) | ForEach-Object { Join-Path $here $_ }
 foreach ($f in $srcFiles) { if (-not (Test-Path $f)) { throw "missing source $f" } }
 if ($Test) {
@@ -146,7 +153,7 @@ $baseApk = Join-Path $build 'base.apk'
 & (Join-Path $bt 'aapt2.exe') link -o $baseApk -I $androidJar `
     --manifest $manifest `
     -A (Join-Path $build 'assets') `
-    --min-sdk-version 21 --target-sdk-version 27 --version-code 5 --version-name $vn
+    --min-sdk-version 21 --target-sdk-version 27 --version-code $vc --version-name $vn
 if ($LASTEXITCODE -ne 0) { throw "aapt2 link failed" }
 
 Write-Host "== verify assets inside the APK"

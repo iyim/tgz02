@@ -54,13 +54,8 @@ public class BackendService extends Service {
     private final CopyOnWriteArrayList<ITgBackendListener> listeners =
             new CopyOnWriteArrayList<ITgBackendListener>();
 
-    /** event_id -> submit time; bounded, so a long-running service cannot grow without limit */
-    private final LinkedHashMap<String, Long> submitted =
-            new LinkedHashMap<String, Long>(64, 0.75f, true) {
-                @Override protected boolean removeEldestEntry(Map.Entry<String, Long> e) {
-                    return size() > 256;
-                }
-            };
+    /** T9-10-R1: accepted-id bookkeeping (accept -> write -> commit; failure releases) */
+    private final RequestLedger ledger = new RequestLedger();
 
     private VoiceBridgeClient bridge;
     private final long startedAt = System.currentTimeMillis();
@@ -103,7 +98,7 @@ public class BackendService extends Service {
                 b.put("api_level", API_LEVEL);
                 b.put("api_version", API_VERSION);
                 b.put("listeners", listeners.size());
-                b.put("submitted_ids", submitted.size());
+                b.put("submitted_ids", ledger.size());
                 o.put("backend", b);
                 JSONObject w = new JSONObject();
                 w.put("connected", workerFresh);
@@ -121,36 +116,13 @@ public class BackendService extends Service {
             }
         }
 
-        public String submitAsk(String eventId, String text) {
-            return submit(eventId, text, "ask");
-        }
+        public String submitAsk(String eventId, String text) { return accept(eventId, "ask", text, 0, null); }
 
-        public String submitSay(String eventId, String text) {
-            return submit(eventId, text, "say");
-        }
+        public String submitSay(String eventId, String text) { return accept(eventId, "say", text, 0, null); }
 
-        public String submitStop(String eventId, int ttsId) {
-            if (ttsId <= 0) return "err:invalid_arg:tts_id must be > 0";
-            if (!VoiceBridgeClient.validEventId(eventId)) return "err:invalid_arg:bad event_id";
-            if (markDuplicate(eventId)) {
-                Log.i(TAG, "stop duplicate ignored " + eventId);
-                return eventId;
-            }
-            String err = bridge.requestStop(eventId, ttsId);
-            if (err != null) return "err:inbox_unwritable:" + err;
-            return eventId;
-        }
+        public String submitStop(String eventId, int ttsId) { return accept(eventId, "stop", null, ttsId, null); }
 
-        public String submitModelTest(String eventId, String modelId) {
-            if (!VoiceBridgeClient.validEventId(eventId)) return "err:invalid_arg:bad event_id";
-            if (markDuplicate(eventId)) {
-                Log.i(TAG, "modeltest duplicate ignored " + eventId);
-                return eventId;
-            }
-            String err = bridge.requestModelTest(eventId, modelId);
-            if (err != null) return "err:inbox_unwritable:" + err;
-            return eventId;
-        }
+        public String submitModelTest(String eventId, String modelId) { return accept(eventId, "modeltest", null, 0, modelId); }
 
         public String statusJson() {
             VoiceBridgeClient.Status s = bridge == null ? null : bridge.status();
@@ -214,30 +186,45 @@ public class BackendService extends Service {
 
     // ------------------------------------------------------------------ helpers
 
-    private String submit(String eventId, String text, String kind) {
-        if (text == null || text.length() == 0) return "err:invalid_arg:text is empty";
+    /**
+     * T9-10-R1: ONE path for all four request kinds -- accept, write, then commit.
+     *
+     * The id is recorded as accepted only after the file actually landed, so a failed write
+     * releases the id and the identical request can be retried. (Before this fix submitStop and
+     * submitModelTest marked the id before writing and never released it on failure: one failed
+     * write made that request permanently "duplicate".)
+     */
+    private String accept(String eventId, String kind, String text, int ttsId, String modelId) {
         if (!VoiceBridgeClient.validEventId(eventId)) return "err:invalid_arg:bad event_id";
-        if (markDuplicate(eventId)) {
-            // a retried submit must not produce a second turn
+        if (("ask".equals(kind) || "say".equals(kind)) && (text == null || text.length() == 0))
+            return "err:invalid_arg:text is empty";
+        if ("stop".equals(kind) && ttsId <= 0) return "err:invalid_arg:tts_id must be > 0";
+
+        if (ledger.seen(eventId)) {
             Log.i(TAG, "duplicate ignored kind=" + kind + " id=" + eventId);
-            return eventId;
+            return eventId;                  // accepted before: never write it twice
         }
-        String written = bridge.submitKind(text, kind, eventId);
+
+        String written;
+        if ("ask".equals(kind) || "say".equals(kind)) {
+            written = bridge.submitKind(text, kind, eventId);
+        } else if ("stop".equals(kind)) {
+            written = bridge.requestStop(eventId, ttsId) == null ? eventId : null;
+        } else {
+            written = bridge.requestModelTest(eventId, modelId) == null ? eventId : null;
+        }
+
         if (written == null) {
-            synchronized (submitted) { submitted.remove(eventId); }
+            ledger.release(eventId);
+            Log.w(TAG, "write failed, id released for retry: kind=" + kind + " id=" + eventId);
             return "err:inbox_unwritable:inbox not writable";
         }
+        ledger.commit(eventId);
+        Log.i(TAG, "accepted kind=" + kind + " id=" + eventId);
         return written;
     }
 
-    /** true when this id was already accepted; the caller then returns without writing again */
-    private boolean markDuplicate(String eventId) {
-        synchronized (submitted) {
-            if (submitted.containsKey(eventId)) return true;
-            submitted.put(eventId, System.currentTimeMillis());
-            return false;
-        }
-    }
+
 
     private void broadcast(String kind, String json) {
         if (json == null) return;

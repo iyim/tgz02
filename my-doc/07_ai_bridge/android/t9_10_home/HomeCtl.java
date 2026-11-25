@@ -39,6 +39,7 @@ public class HomeCtl {
 
         if ("list".equals(cmd)) { list(ipm); return; }
         if ("state".equals(cmd)) { state(ipm, args[1]); return; }
+        if ("watch".equals(cmd)) { watch(ipm, args[1], Integer.parseInt(args[2])); return; }
         if ("disable".equals(cmd) || "enable".equals(cmd)) {
             ComponentName cn = split(args[1]);
             int newState = "disable".equals(cmd) ? 2 /* DISABLED */ : 0 /* DEFAULT */;
@@ -88,6 +89,30 @@ public class HomeCtl {
         if (!(ri instanceof ResolveInfo)) return "(none)";
         ActivityInfo ai = ((ResolveInfo) ri).activityInfo;
         return ai.packageName + "/" + ai.name;
+    }
+
+    /**
+     * T9-11: sample one component state every 200 ms and print only the transitions.
+     * Started from /data/adb/service.d at boot, this answers "when" a disabled system component
+     * comes back -- the missing half of the T9-10 finding.
+     */
+    static void watch(Object ipm, String comp, int seconds) throws Exception {
+        ComponentName cn = split(comp);
+        Method g = ipm.getClass().getMethod("getComponentEnabledSetting",
+                ComponentName.class, int.class);
+        long end = System.currentTimeMillis() + seconds * 1000L;
+        Object prev = null;
+        System.out.println("WATCH " + cn.flattenToString() + " for " + seconds + "s");
+        while (System.currentTimeMillis() < end) {
+            Object v = g.invoke(ipm, cn, 0);
+            if (prev == null || !v.equals(prev)) {
+                System.out.println("T+" + (seconds - (end - System.currentTimeMillis()) / 1000)
+                        + "s ts=" + System.currentTimeMillis() + " state=" + v);
+                prev = v;
+            }
+            Thread.sleep(200);
+        }
+        System.out.println("WATCH done, last state=" + prev);
     }
 
     static void state(Object ipm, String comp) throws Exception {

@@ -44,6 +44,8 @@ public final class BackendClient {
     private boolean binding;
     private boolean revoked;               // stopPolling(): the page is gone, do not rebind
     private VoiceBridgeClient local;       // fallback poller, only when the service is unreachable
+    private int bindRetries;               // consecutive failures before the local fallback starts
+    static final int MAX_BIND_RETRIES = 3;
 
     private final VoiceBridgeClient.Status lastStatus = new VoiceBridgeClient.Status();
     private final VoiceBridgeClient.Play lastPlay = new VoiceBridgeClient.Play();
@@ -61,8 +63,11 @@ public final class BackendClient {
             ITgBackend b = ITgBackend.Stub.asInterface(binder);
             backend = b;
             binding = false;
+            bindRetries = 0;
             cancelFallbackWatchdog();
-            diag("backend: bound pid=" + safePid(b) + " (" + name.flattenToShortString() + ")");
+            stopFallback("binder connected");     // never poll the files while Binder works
+            diag("backend: bound pid=" + safePid(b) + " (" + name.flattenToShortString() + ")"
+                    + " channel=" + channel());
             try {
                 b.registerListener(remoteListener);
                 String s = b.statusJson();
@@ -79,13 +84,13 @@ public final class BackendClient {
 
         @Override public void onServiceDisconnected(ComponentName name) {
             backend = null;
-            diag("backend: service disconnected, reconnecting");
+            diag("backend: service disconnected, channel=" + channel());
             if (!revoked) scheduleBindRetry();
         }
 
         @Override public void onBindingDied(ComponentName name) {
             backend = null;
-            diag("backend: binding died");
+            diag("backend: binding died, channel=" + channel());
             if (!revoked) scheduleBindRetry();
         }
     };
@@ -114,7 +119,7 @@ public final class BackendClient {
     public void stopPolling() {
         revoked = true;
         cancelFallbackWatchdog();
-        if (local != null) { local.stopPolling(); local = null; }
+        stopFallback("page stopped");
         if (backend != null) {
             try { backend.unregisterListener(remoteListener); } catch (Throwable ignored) { }
             backend = null;
@@ -236,7 +241,7 @@ public final class BackendClient {
     private void startFallback(String why) {
         if (local != null) return;
         if (revoked) return;
-        diag("backend: local fallback (" + why + ") -- transitional path");
+        diag("backend: local fallback (" + why + ") channel=" + channel());
         local = new VoiceBridgeClient(ctx, page + "-fallback");
         local.setListener(new VoiceBridgeClient.Listener() {
             public void onReceipt(VoiceBridgeClient.Receipt r) { notifyReceipt(r); }
@@ -248,11 +253,31 @@ public final class BackendClient {
         local.start();
     }
 
+    /** T9-10-R1: Binder came back -- stop the fallback poller so only one channel is live */
+    private void stopFallback(String why) {
+        if (local == null) return;
+        local.stopPolling();
+        local = null;
+        diag("backend: fallback stopped (" + why + ") channel=" + channel());
+    }
+
+    /** which channel the UI is actually using right now; printed in every diagnostic line */
+    public String channel() {
+        if (backend != null) return "binder";
+        if (local != null) return "file-fallback";
+        return "none";
+    }
+
     private void scheduleBindRetry() {
+        bindRetries++;
+        diag("backend: bind retry " + bindRetries + "/" + MAX_BIND_RETRIES);
+        if (bindRetries > MAX_BIND_RETRIES) {
+            startFallback("service unreachable after " + MAX_BIND_RETRIES + " retries");
+            return;
+        }
         main.postDelayed(new Runnable() {
             public void run() {
                 if (revoked || backend != null || binding) return;
-                diag("backend: retrying bind");
                 bind();
             }
         }, 1000);
