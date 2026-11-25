@@ -46,11 +46,11 @@ New-Item -ItemType Directory -Force $classes | Out-Null
 
 $manifest = Join-Path $here 'AndroidManifest.xml'
 $apkName = 'voice_ui.apk'
-$vn = '1.3.0'
+$vn = '1.4.0'
 if ($Test) {
     $manifest = Join-Path $here 'AndroidManifest.test.xml'
     $apkName = 'voice_ui_test.apk'
-    $vn = '1.3.0-test'
+    $vn = '1.4.0-test'
     Write-Host "== TEST BUILD: src_test/ included, the automation driver is in this APK"
 }
 
@@ -71,6 +71,25 @@ Get-ChildItem -Recurse -Filter *.png $assetSrc | ForEach-Object {
 Write-Host ("   copied {0} PNGs into assets/ui/" -f $copyCount)
 if ($copyCount -lt 16) { throw "asset payload looks wrong ($copyCount files)" }
 
+Write-Host "== aidl (T9-10 product backend interface)"
+# One file per invocation: aidl 35.0.1 in this tree has overwritten another input when handed
+# several files at once (see android/t9_09_binder_arch/build.ps1). Inputs are hashed so a mutated
+# .aidl aborts the build instead of silently shipping the wrong interface.
+$gen = Join-Path $build 'gen'
+New-Item -ItemType Directory -Force $gen | Out-Null
+$aidlRoot = Join-Path $here 'aidl'
+$aidlFiles = @(Get-ChildItem -Recurse -Filter *.aidl $aidlRoot | ForEach-Object FullName) |
+             Sort-Object { if ($_ -like '*Listener.aidl') { 0 } else { 1 } }
+$before = @{}
+foreach ($f in $aidlFiles) { $before[$f] = (Get-FileHash $f -Algorithm SHA256).Hash }
+foreach ($f in $aidlFiles) {
+    & (Join-Path $bt 'aidl.exe') "-o$gen" "-I$aidlRoot" $f
+    if ($LASTEXITCODE -ne 0) { throw "aidl failed: $f" }
+    if ((Get-FileHash $f -Algorithm SHA256).Hash -ne $before[$f]) { throw "aidl mutated its input: $f" }
+}
+$genFiles = @(Get-ChildItem -Recurse -Filter *.java $gen | ForEach-Object FullName)
+$genFiles | ForEach-Object { Write-Host ("   gen " + $_.Substring($gen.Length + 1)) }
+
 Write-Host "== sources"
 # V2 compiled set: shell + home + pages + skill stores + model stack + legacy helpers
 $srcFiles = @(
@@ -87,12 +106,16 @@ $srcFiles = @(
     "src\com\tgz02\voice\AboutActivity.java",
     "src\com\tgz02\voice\ModelConfigActivity.java",
     "src\com\tgz02\voice\ModelStore.java",
-    "src\com\tgz02\voice\VoiceBridgeClient.java"
+    "src\com\tgz02\voice\VoiceBridgeClient.java",
+    "src\com\tgz02\voice\BackendService.java",
+    "src\com\tgz02\voice\BackendClient.java",
+    "src\com\tgz02\voice\BackendJson.java"
 ) | ForEach-Object { Join-Path $here $_ }
 foreach ($f in $srcFiles) { if (-not (Test-Path $f)) { throw "missing source $f" } }
 if ($Test) {
     $srcFiles += @(Get-ChildItem -Recurse -Filter *.java (Join-Path $here 'src_test') | ForEach-Object FullName)
 }
+$srcFiles += $genFiles
 $srcFiles | ForEach-Object { Write-Host ("   " + $_.Substring($here.Length + 1)) }
 
 Write-Host "== javac (release 8, utf-8 sources, android.jar)"
@@ -123,7 +146,7 @@ $baseApk = Join-Path $build 'base.apk'
 & (Join-Path $bt 'aapt2.exe') link -o $baseApk -I $androidJar `
     --manifest $manifest `
     -A (Join-Path $build 'assets') `
-    --min-sdk-version 21 --target-sdk-version 27 --version-code 4 --version-name $vn
+    --min-sdk-version 21 --target-sdk-version 27 --version-code 5 --version-name $vn
 if ($LASTEXITCODE -ne 0) { throw "aapt2 link failed" }
 
 Write-Host "== verify assets inside the APK"

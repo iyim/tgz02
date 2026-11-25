@@ -33,6 +33,14 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- T9-10.4: the product can be a home app. Declaring it is what makes the
+                 "replace the factory desktop" step possible at all; whether the system
+                 actually resolves to us is decided by the resolution table, see the report. -->
+            <intent-filter android:priority="100">
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <!-- T9-UI-02: the four secondary top pages (Views inside, no new activities per skill) -->
@@ -51,5 +59,13 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenSize|keyboardHidden" />
+        <!-- T9-10: the product backend. Own process (:backend), foreground, START_STICKY.
+             It is the only party that polls the worker's public files; every page reaches it
+             over AIDL. Not exported: only this package (same uid) may bind. -->
+        <service
+            android:name=".BackendService"
+            android:process=":backend"
+            android:exported="false" />
+
     </application>
 </manifest>

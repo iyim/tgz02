@@ -23,7 +23,7 @@ import android.widget.TextView;
 
 abstract class V2Shell extends Activity implements VoiceBridgeClient.Listener {
 
-    VoiceBridgeClient client;
+    BackendClient client;
     LinearLayout body;
     LinearLayout navbarHost;
     TextView hdrTitle;
@@ -52,7 +52,7 @@ abstract class V2Shell extends Activity implements VoiceBridgeClient.Listener {
     protected void onCreate(Bundle b)
     {
         super.onCreate(b);
-        client = new VoiceBridgeClient(this, navId());
+        client = new BackendClient(this, navId());
         setContentView(buildShell());
         onShellReady();
     }

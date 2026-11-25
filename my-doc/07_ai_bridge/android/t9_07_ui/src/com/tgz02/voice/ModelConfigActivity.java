@@ -40,7 +40,7 @@ import java.util.List;
 
 public final class ModelConfigActivity extends Activity implements VoiceBridgeClient.Listener {
 
-    VoiceBridgeClient client;
+    BackendClient client;
     LinearLayout box;
     LinearLayout footer;
     final Handler h = new Handler(Looper.getMainLooper());
@@ -51,7 +51,7 @@ public final class ModelConfigActivity extends Activity implements VoiceBridgeCl
     protected void onCreate(Bundle b)
     {
         super.onCreate(b);
-        client = new VoiceBridgeClient(this, "models");
+        client = new BackendClient(this, "models");
         setContentView(build());
         render();
     }

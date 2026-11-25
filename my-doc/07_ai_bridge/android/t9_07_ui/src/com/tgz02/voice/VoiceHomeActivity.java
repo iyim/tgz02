@@ -42,7 +42,7 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
 
     static final String TAG = "T908HOME";
 
-    VoiceBridgeClient client;
+    BackendClient client;
 
     LinearLayout pill;
     TextView meta;
@@ -71,7 +71,7 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
     protected void onCreate(Bundle b)
     {
         super.onCreate(b);
-        client = new VoiceBridgeClient(this, "home");
+        client = new BackendClient(this, "home");
         View root = buildScreen();
         setContentView(root);
         root.setFocusableInTouchMode(true);   /* no text field here: the IME must never open */
