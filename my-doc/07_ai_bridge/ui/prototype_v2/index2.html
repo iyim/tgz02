@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>TG-Z02 · T9-UI-01-V2 原型总览</title>
+<link rel="stylesheet" href="ds2.css">
+<style>
+  body { background:#1E2836; }
+  .wrap { padding: 24px; max-width: 2160px; }
+  h1 { font: 700 24px/1.4 var(--font); color: #E9EEF5; }
+  .lead { font: 15px/1.7 var(--font); color: #8B95A4; max-width: 980px; margin-top: 6px; }
+  h2 { font: 700 17px/1.4 var(--font); color: #FF8A3D; margin: 28px 0 12px 0;
+       border-bottom: 1px solid #33415A; padding-bottom: 8px; }
+  .grid2 { display: grid; grid-template-columns: repeat(3, 520px); gap: 16px; }
+  figure { background: #16202E; border: 1px solid #2B3648; border-radius: 12px; padding: 8px; }
+  .shot { width: 504px; height: 295px; overflow: hidden; position: relative; border-radius: 8px; }
+  .shot iframe { width: 1024px; height: 600px; border: 0;
+                 transform: scale(0.4921875); transform-origin: top left; }
+  figcaption { font: 12px/1.6 var(--font); color: #8B95A4; padding: 8px 2px 2px 2px; }
+  figcaption b { color: #E9EEF5; }
+  .tip { font: 13px/1.8 var(--font); color: #A8B4C4; background:#16202E; border-radius:10px;
+         padding: 12px 16px; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>TG-Z02 · T9-UI-01-V2 「布丁 PUDDIN」儿童友好视觉体系</h1>
+  <div class="lead">
+    全部画面按设备真实画布 1024×600（mdpi，1dp = 1px）绘制。以下每一格都是<b>活的</b>：
+    点导航能跳页、点技能卡能进详情、开关能切换、模型能新增/编辑/删除/设默认/测试、
+    记忆能分类/编辑/删除/确认，右上角「演示数据」标注固定存在。
+  </div>
+
+  <h2>一、首页九个语音状态（儿童模式）</h2>
+  <div class="grid2">
+    ${''}
+  </div>
+
+  <h2>二、技能中心 / 技能详情 / 记忆 / 设置 / 关于</h2>
+  <div class="grid2" id="g2"></div>
+
+  <h2>三、简洁模式（同一套页面结构，只换视觉）</h2>
+  <div class="grid2" id="g3"></div>
+
+  <div class="tip">
+    交互演示方法：打开 <b>app2.html?proto=1</b>，底部会有一条 PROTO 控制条——
+    可切换儿童/简洁模式、九个语音状态、▶轮播，以及五个一级页面。
+    页面内的按钮（停止播报 / 再试一次 / 结束收音 / 新增 / 编辑 / 删除 / 设为默认 / 测试连接 /
+    记住它）全部真实可点。截图静态版见 evidence/t9-ui-01-v2/shots/。
+  </div>
+</div>
+<script src="chars.js"></script>
+<script src="illustrations.js"></script>
+<script>
+const G1 = [
+  ['standby','待机'], ['wake','唤醒'], ['listening','聆听'],
+  ['asr','识别'], ['thinking','思考'], ['speaking','播报'],
+  ['stopped','停止'], ['cont','连续对话'], ['error','异常']
+];
+const G2 = [
+  ['skills','技能中心（绘本卡片）','已启用/未启用两段，插画大卡'],
+  ['skill.alarm','闹钟详情','大字号时间 + 大开关'],
+  ['skill.calendar','日程详情','插画 + 当日列表'],
+  ['skill.music','音乐（待接入）','明确"还没接入"，不伪装'],
+  ['memory','记忆中心','分类 + 待确认 + 编辑/删除'],
+  ['settings','设置','模型配置 / 主题模式 / 语音'],
+  ['models','大模型配置','明文 Key · 演示数据标注'],
+  ['about','关于','角色小档案']
+];
+const G3 = [
+  ['home&mode=calm','首页（简洁模式）','角色缩小、去暖色装饰'],
+  ['skills&mode=calm','技能中心（简洁模式）','插画降饱和、卡片变薄'],
+  ['about&mode=calm','关于（简洁模式）','同一结构']
+];
+function fig(q, name, id, cap) {
+  return `<figure><div class="shot"><iframe src="app2.html?s=${q}" scrolling="no"></iframe></div>
+    <figcaption><b>${name}</b> · ${id}<br>${cap}</figcaption></figure>`;
+}
+document.querySelector('.grid2').innerHTML = G1.map(([st, n]) =>
+  fig('home&state=' + st, '首页 · ' + n, 'home.' + st, '')).join('');
+document.getElementById('g2').innerHTML = G2.map(([s, n, id, cap]) =>
+  fig(s, n, s, cap)).join('');
+document.getElementById('g3').innerHTML = G3.map(([s, n, cap]) =>
+  fig(s, n, s + ' calm', cap)).join('');
+</script>
+</body>
+</html>

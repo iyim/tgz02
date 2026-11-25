@@ -806,6 +806,80 @@ body {
 .body.scroll::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
 .body.scroll::-webkit-scrollbar-track { background: transparent; }
 
+/* =========================================================================
+ * modal (prototype interaction only; the product uses the same metrics)
+ * ====================================================================== */
+
+.modal-layer {
+  position: absolute; inset: 0;
+  background: rgba(4, 6, 9, .62);
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 50;
+}
+.modal-layer.open { display: flex; }
+
+.modal {
+  width: 520px;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-l);
+  padding: 18px 20px 16px 20px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, .45);
+}
+.modal h3 { font-size: 16px; margin-bottom: 14px; }
+.modal .sub { font-size: 12px; color: var(--text-3); margin: -8px 0 14px 0; }
+
+.frow { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.frow.align-top { align-items: flex-start; }
+.frow label { flex: 0 0 92px; font-size: 13px; color: var(--text-2); }
+.frow input, .frow select, .frow textarea {
+  flex: 1 1 auto; min-width: 0;
+  height: 32px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-s);
+  color: var(--text);
+  padding: 0 10px;
+  font: 13px/1.4 var(--font);
+}
+.frow textarea { height: 64px; padding: 8px 10px; resize: none; }
+.frow input:focus, .frow select:focus, .frow textarea:focus { outline: none; border-color: var(--accent); }
+.frow .hint { font-size: 11px; color: var(--text-3); }
+.ferr { font-size: 12px; color: var(--err); min-height: 16px; margin: 2px 0 4px 0; }
+.mfoot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+/* =========================================================================
+ * prototype control bar (only with ?proto=1; never part of the product UI)
+ * ====================================================================== */
+
+.proto-bar {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 40px;
+  background: #05070A;
+  border-top: 1px solid #1B2430;
+  display: flex; align-items: center; gap: 5px;
+  padding: 0 10px;
+  z-index: 60;
+}
+.proto-bar .lbl {
+  font-size: 10px; color: #5A6470; letter-spacing: 1px;
+  margin-right: 4px; flex: 0 0 auto;
+}
+.proto-bar .pb {
+  height: 24px; padding: 0 9px;
+  border-radius: var(--r-pill);
+  font: 11px/24px var(--font);
+  color: #8B95A4;
+  background: transparent;
+  border: 1px solid #1B2430;
+  white-space: nowrap;
+}
+.proto-bar .pb:hover { color: #E9EEF5; border-color: #2B3644; }
+.proto-bar .pb.on { background: #1A2740; border-color: transparent; color: #BFD4FF; }
+.proto-bar .sp { flex: 1 1 auto; }
+.proto-bar .pb.warn { color: #F7DCAD; }
+
 /* review shell (index.html) only */
 .review { padding: 20px; display: grid; grid-template-columns: repeat(2, 1034px); gap: 18px; }
 .review figure { background: #05070A; border: 1px solid #1b2430; border-radius: 10px; padding: 6px; }

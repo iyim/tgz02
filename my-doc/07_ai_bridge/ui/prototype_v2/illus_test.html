@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>插画一览</title>
+<link rel="stylesheet" href="ds2.css">
+<style>
+  body { background:#20304a; padding:24px; display:flex; flex-wrap:wrap; gap:20px; }
+  .cell { background:#fff; border-radius:16px; overflow:hidden; }
+  .cell span { display:block; font:700 15px/2.4 var(--font); color:#2A3550; text-align:center; }
+</style>
+</head>
+<body>
+<script src="illustrations.js"></script>
+<script>
+const names = { alarm:'闹钟', calendar:'日程', music:'音乐', weather:'天气',
+                device:'设备控制', memory:'记忆', settings:'设置' };
+document.write(Object.keys(names).map(k =>
+  `<div class="cell">${illus(k, 380)}<span>${names[k]}</span></div>`).join(''));
+</script>
+</body>
+</html>

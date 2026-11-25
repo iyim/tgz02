@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>PUDDIN 状态表</title>
+<link rel="stylesheet" href="ds2.css">
+<style>
+  body { background:#123; padding:24px; display:flex; flex-wrap:wrap; gap:20px; }
+  .cell { background:#fff; border-radius:16px; padding:12px; text-align:center; }
+  .cell span { display:block; font:700 15px/2 var(--font); color:#2A3550; }
+</style>
+</head>
+<body>
+<script src="chars.js"></script>
+<script>
+const names = {
+  idle:'待机', awake:'唤醒', listening:'聆听', thinking:'思考', speaking:'说话',
+  happy:'开心', confused:'疑惑', sleep:'休息', error:'异常'
+};
+document.write(Object.keys(names).map(k =>
+  `<div class="cell">${char(k, 180)}<span>${names[k]}</span></div>`).join(''));
+</script>
+</body>
+</html>

@@ -187,7 +187,7 @@ abstract class Screen {
 | `SettingsActivity` | 设置（分组）+ 4 个二级页 | 拆成 5 个 `Screen` | 低：字段照搬 |
 | `ModelConfigActivity` | 设置 → 大模型配置 | 视觉重排，`ModelStore` 逻辑不动 | 低 |
 | `MoreActivity` | 删除 | 入口取消 | 无 |
-| `ConversationActivity` | 设置 → 系统 → 对话记录（只读） | 去掉输入框与发送，保留列表与清空 | 中：要保证 `VoiceBridgeClient` 的提交通道仍有调试手段（adb 脚本） |
+| `ConversationActivity` | **产品界面不再提供**（R1 修订） | 不迁移、不做只读历史页；Activity 从 manifest 移除，文字输入通道只保留 adb 调试脚本（`t9_08b_r2_dev_say.sh` 等）；worker 的语音上下文能力不受影响 | 中：代码文件暂留仓库不编译进 APK，确认后删除 |
 | —— | 技能中心、技能宿主 | 新增（T10） | 中：新建 `SkillHostActivity` |
 
 `AndroidManifest.xml` 的变化只有两处：删 `MoreActivity`、加 `SkillHostActivity`（`exported=false`）。
@@ -250,6 +250,32 @@ abstract class Screen {
 ---
 
 ## 10. 已知差异与限制（不掩饰）
+
+> **V2 增补（T9-UI-01-V2）**：视觉层被 `prototype_v2/ds2.css` 的儿童友好体系取代，
+> 但本文件的**结构层**结论全部继续有效（Screen 基类、无 Intent、技能宿主、接口边界、
+> 尺寸退化规则）。V2 增量如下：
+
+### 10a. V2 视觉资产的落地方式
+
+| 项 | 做法 |
+| --- | --- |
+| 角色 / 插画 PNG | `res/drawable-nodpi/puddin_*.png`、`illus_*.png`（固定 px，不按密度缩放；mdpi 设备 1px=1dp 正确显示） |
+| 角色动画 | 两帧：`puddin_<state>` + `puddin_<state>_blink`（T9-UI-02 生成第二帧），`ObjectAnimator` 交替 alpha；**不用 Lottie/GIF/帧动画 XML** |
+| 状态切换 | 单次 160ms `AlphaAnimation` 交叉淡入，无常驻循环 |
+| 首页九态 | `HOME_V2` 文案表（与 `app2.js` 的 `HOME` 逐字一致）+ `state→puddin_*` 资源映射表 |
+| 快捷块 | `LinearLayout` 横向 132dp 高，插画 ImageView 右下角负 margin 露出（`translationY`/`translationX`） |
+| 双主题 | `Ui3` 常量两套（kid/calm），`recreate()` 切换；与 V1 §6 相同机制 |
+| 底部导航条 | 88dp `LinearLayout` 五等分，每项 = 46dp 图标块 + 15sp 标签，选中态 `primary-w` 圆角块 |
+| 内存 | 角色页常驻 1 张 400×400（≈640KB 解码后）+ 3 张 128 缩略；插画按页 decode，离开页面 `recycle()` |
+
+### 10b. V2 的已知限制
+
+1. 原型渲染字体为 Windows YaHei，设备为 Noto Sans CJK；字宽行高一致，字形略异（同 V1 结论）。
+2. 9 态角色 PNG 为静态帧；"眨眼/呼吸"第二帧需在 T9-UI-02 从 `chars.js` 微调生成
+   （`char_test.html` 已可导出，脚本化 30 分钟内完成）。
+3. 插画在低亮度环境（夜间）对比度偏高；calm 模式已降饱和，夜间模式未在 V2 范围内。
+4. 模型配置页在 V2 原型中的表单为 HTML `<input>`，APK 落地仍走 V1 §3.6 的对话框方案
+   （EditText + 主题着色），无功能差异。
 
 | 差异 | 影响 | 处理 |
 | --- | --- | --- |
