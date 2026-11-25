@@ -1,0 +1,14 @@
+﻿{"v":1,"default_id":"m-doubao","models":[
+{"id":"m-doubao","vendor":"doubao","label":"doubao-main","api_key":"good-doubao",
+ "base_url":"http://127.0.0.1:8799/doubao/v3","model":"ep-2024-stub","endpoint_id":"ep-2024-stub",
+ "extra":{"top_p":0.9},"max_tokens":128,"temperature":0.3,"timeout_ms":8000,"enabled":true},
+{"id":"m-qwen","vendor":"qwen","label":"qwen-native","api_key":"good-qwen",
+ "base_url":"http://127.0.0.1:8799/qwen/api/v1","model":"qwen-plus","api_mode":"native",
+ "max_tokens":128,"temperature":0.5,"timeout_ms":8000,"enabled":true},
+{"id":"m-qwen-compat","vendor":"qwen","label":"qwen-compat","api_key":"good-qwen",
+ "base_url":"http://127.0.0.1:8799/qwen/compat/v1","model":"qwen-turbo","api_mode":"compat",
+ "max_tokens":128,"temperature":0.5,"timeout_ms":8000,"enabled":true},
+{"id":"m-openai","vendor":"openai","label":"openai-compat","api_key":"good-openai",
+ "base_url":"http://127.0.0.1:8799/openai/v1","model":"stub-model",
+ "max_tokens":128,"temperature":0.7,"timeout_ms":8000,"enabled":true}
+]}
