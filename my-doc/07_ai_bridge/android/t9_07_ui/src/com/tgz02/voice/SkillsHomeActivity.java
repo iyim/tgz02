@@ -11,10 +11,9 @@
  *     SkillsHomeActivity.openSkill = "alarm";
  *     startActivity(new Intent(..., SkillsHomeActivity.class));
  *
- * Skill data: alarms come from the alarm store (SkillStore), enabled flags live in
- * files/skills.json via SkillRegistry.  Alarm rows and the "add alarm" button are REAL:
- * they write alarms.json, which T10's dispatcher will read.  Music / weather / device are
- * placeholders and say so plainly.
+ * Skill data (T9-UI-03): alarms live in the unified SQLite DB via DataService (the old
+ * skills_alarms.json was migrated once and retired); skill enable flags live in the DB too.
+ * Music / weather / device are placeholders and say so plainly.
  */
 package com.tgz02.voice;
 
@@ -71,7 +70,7 @@ public class SkillsHomeActivity extends V2Shell {
             into.addView(Ui3.toggle(this, st, new Runnable() {
                 public void run() {
                     if (SKILL_ALARM.equals(detail)) alarmOn = st[0]; else calendarOn = st[0];
-                    SkillRegistry.setEnabled(detail, st[0]);
+                    DataService.get(SkillsHomeActivity.this).skillSetEnabled(detail, st[0]);
                     toast(st[0] ? "已启用" : "已停用（语音入口同时关闭）");
                     rebuild();
                 }
@@ -206,27 +205,28 @@ public class SkillsHomeActivity extends V2Shell {
         body.addView(hero);
 
         LinearLayout list = card();
-        List<SkillStore.Alarm> alarms = SkillStore.loadAlarms();
+        List<DataService.Alarm> alarms = DataService.get(this).alarmList();
         if (alarms.isEmpty()) {
             list.addView(kvRow("（空）", "还没有闹钟，点右下角新增", Ui3.text2(this)));
         }
         for (int i = 0; i < alarms.size(); i++) {
-            final SkillStore.Alarm a = alarms.get(i);
-            final int idx = i;
+            final DataService.Alarm a = alarms.get(i);
             LinearLayout r = new LinearLayout(this);
             r.setOrientation(LinearLayout.HORIZONTAL);
             r.setGravity(Gravity.CENTER_VERTICAL);
             r.setPadding(0, Ui3.dp(this, 8), 0, Ui3.dp(this, 8));
             r.setMinimumHeight(Ui3.dp(this, 64));
-            TextView time = Ui3.textBold(this, a.time, 34f, a.on ? Ui3.text(this) : Ui3.text3(this));
+            TextView time = Ui3.textBold(this, a.time, 34f, a.enabled ? Ui3.text(this) : Ui3.text3(this));
             time.setLayoutParams(new LinearLayout.LayoutParams(Ui3.dp(this, 130),
                     ViewGroup.LayoutParams.WRAP_CONTENT));
             r.addView(time);
-            r.addView(Ui3.text(this, a.label, 17f, a.on ? Ui3.text(this) : Ui3.text3(this)),
+            r.addView(Ui3.text(this, a.label, 17f, a.enabled ? Ui3.text(this) : Ui3.text3(this)),
                     new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-            final boolean[] st = new boolean[]{ a.on };
+            final boolean[] st = new boolean[]{ a.enabled };
             r.addView(Ui3.toggle(this, st, new Runnable() {
-                public void run() { SkillStore.setOn(idx, st[0]); }
+                public void run() {
+                    DataService.get(SkillsHomeActivity.this).alarmSetEnabled(a.id, st[0]);
+                }
             }));
             list.addView(r);
         }
@@ -272,10 +272,16 @@ public class SkillsHomeActivity extends V2Shell {
                 .setPositiveButton("保存", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface d, int w) {
                         String t = time.getText().toString().trim();
-                        if (!t.matches("^([01]?\\d|2[0-3]):[0-5]\\d$")) {
+                        /* kids type digits: accept "0630" and normalize to "06:30" */
+                        if (t.matches("^([01]?\\d|2[0-3])[0-5]\\d$")) {
+                            String hh = t.length() == 4 ? t.substring(0, 2) : ("0" + t.substring(0, 1));
+                            t = hh + ":" + t.substring(t.length() - 2);
+                        }
+                        if (!t.matches("^([01]\\d|2[0-3]):[0-5]\\d$")) {
                             toast("时间格式要像 07:00"); return;
                         }
-                        SkillStore.addAlarm(t, label.getText().toString().trim(), true);
+                        DataService.get(SkillsHomeActivity.this)
+                                .alarmAdd(t, label.getText().toString().trim(), true);
                         toast("已保存闹钟 " + t);
                         rebuild();
                     }
