@@ -465,4 +465,4 @@ ai_worker pid 2591 / :core pid 1148 / boot_stack done
 t909reg3 ask → outcome=ok（TTS 播报 1.7 s）
 ```
 
-`svc.apk` / `ui.apk` 作为实验证据保留安装（普通应用，无权限，不影响运行），需要时 `adb uninstall` 即可。
+`svc.apk` 在 priv-app 实验收尾时已随目录一起清除（`pm path` 为空），只剩实验用 UI（`com.tgz02.binderdemo.ui`，普通应用、零权限、不常驻）留在设备上便于复审；不需要时 `adb uninstall com.tgz02.binderdemo.ui` 即可。服务端 APK 随时可用 `build/svc.apk` 重装。
