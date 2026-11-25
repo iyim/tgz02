@@ -1,14 +1,24 @@
 /*
- * DataService.java -- T9-UI-03: the ONE data access layer for structured product data.
+ * DataService.java -- T9-UI-03 + R1: the ONE data access layer for structured product data.
  *
  * Everything the UI does with memory / alarms / schedules / skills goes through this class;
  * no page writes SQL, no page touches the DB helper.  After every successful mutation the
- * service republishes the snapshots the worker reads (memory.public.json / alarms.public.json)
- * so the C side never opens SQLite.
+ * service republishes the snapshots the worker reads (memory/alarms/skills.public.json) so
+ * the C side never opens SQLite.
  *
- * Migration: skills_alarms.json (T9-UI-02's early validation file) is imported once on first
- * run, verified, then renamed to .imported -- it is never used as a data source again and can
- * never produce duplicate rows.
+ * R1 fixes (auditor review):
+ *   - migration idempotence: each legacy import runs in ONE SQLite transaction that also
+ *     writes a marker row (migration table); the source file is archived only after the
+ *     transaction commits.  A marker with the file still present (crash between commit and
+ *     rename, or rename failure) skips import and archives the leftover -- never duplicates.
+ *     A partial import from the pre-R1 version is repaired by delete+reimport inside the
+ *     same transaction (the legacy file is the source of truth in the migration window).
+ *   - snapshot reliability: publish results are checked and logged, failures are retried at
+ *     the next mutation and at ensureSnapshots() (called on service init and when the
+ *     memory centre opens); publishes are serialized so tmp files cannot race.
+ *   - skill semantics: last_used_ms is updated only by skillTouch() (real usage); the
+ *     enabled toggle writes state 'on'/'off' and never claims a disabled skill is running.
+ *   - startup: all three snapshots are (re)published on service init, including empty data.
  */
 package com.tgz02.voice;
 
@@ -16,6 +26,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,6 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 final class DataService {
+
+    private static final String TAG = "T9DATA";
 
     /* --------------------------------------------------------------- models */
 
@@ -51,13 +64,19 @@ final class DataService {
 
     private static DataService sInst;
     private final Context ctx;
+    private final Object publishLock = new Object();
+    private volatile boolean memorySnapOk, alarmsSnapOk, skillsSnapOk;
 
     static synchronized DataService get(Context c) {
         if (sInst == null) sInst = new DataService(c.getApplicationContext());
         return sInst;
     }
 
-    private DataService(Context c) { ctx = c; migrateLegacyFiles(); }
+    private DataService(Context c) {
+        ctx = c;
+        migrateLegacyFiles();
+        ensureSnapshots();          /* P0: snapshots exist from the very first start */
+    }
 
     /* ================================================================ memory */
 
@@ -212,16 +231,19 @@ final class DataService {
 
     /* ================================================================ skills */
 
+    /**
+     * R1: the enabled toggle changes ONLY enabled + state.  last_used_ms is a usage
+     * statistic and is written by skillTouch() when the skill is actually used.
+     */
     boolean skillSetEnabled(String id, boolean on) {
         SQLiteDatabase db = Db.get(ctx).getWritableDatabase();
         ContentValues v = new ContentValues();
         v.put("enabled", on ? 1 : 0);
-        v.put("last_used_ms", Db.now());
+        v.put("state", on ? "on" : "off");        /* a disabled skill never reads "running" */
         int n = db.update("skills", v, "id=?", new String[]{ id });
-        if (n == 0) {                           /* first touch: register the row */
+        if (n == 0) {                              /* first touch: register the row */
             v.put("id", id);
             v.put("name", id);
-            v.put("state", "on");
             n = (int) db.insertWithOnConflict("skills", null, v,
                     SQLiteDatabase.CONFLICT_REPLACE);
         }
@@ -229,94 +251,144 @@ final class DataService {
         return n > 0;
     }
 
+    /** record REAL usage (skill opened/executed); never called for a config change */
     void skillTouch(String id) {
         SQLiteDatabase db = Db.get(ctx).getWritableDatabase();
         ContentValues v = new ContentValues();
         v.put("last_used_ms", Db.now());
-        db.update("skills", v, "id=?", new String[]{ id });
+        int n = db.update("skills", v, "id=?", new String[]{ id });
+        if (n == 0) {
+            v.put("id", id);
+            v.put("name", id);
+            v.put("enabled", 0);
+            v.put("state", "on");
+            db.insertWithOnConflict("skills", null, v, SQLiteDatabase.CONFLICT_REPLACE);
+        }
     }
 
     /* ================================================================ snapshots */
 
-    /** worker-readable memory snapshot; published after every memory mutation */
+    /**
+     * Publish (or re-publish) all three snapshots.  Called on service init and after any
+     * publish failure, so a worker that missed an update eventually converges.
+     */
+    void ensureSnapshots() {
+        publishMemorySnapshot();
+        publishAlarmSnapshot();
+        publishSkillSnapshot();
+    }
+
+    /** true when every snapshot is confirmed current (used by pages that want to be sure) */
+    boolean snapshotsHealthy() {
+        return memorySnapOk && alarmsSnapOk && skillsSnapOk;
+    }
+
     private void publishMemorySnapshot() {
-        try {
-            JSONObject root = new JSONObject();
-            root.put("v", 1);
-            root.put("ts_ms", Db.now());
-            int enabled = 0, pending = 0;
-            JSONArray arr = new JSONArray();
-            for (Memory m : memList(true)) {
-                JSONObject o = new JSONObject();
-                o.put("id", m.id);
-                o.put("tag", m.tag);
-                o.put("text", m.text);
-                o.put("enabled", m.enabled);
-                o.put("pending", m.pending);
-                o.put("src", m.src);
-                o.put("hits", m.hits);
-                o.put("updated_ms", m.updatedMs);
-                arr.put(o);
-                if (m.enabled && !m.pending) enabled++;
-                if (m.pending) pending++;
+        synchronized (publishLock) {
+            try {
+                JSONObject root = new JSONObject();
+                root.put("v", 1);
+                root.put("ts_ms", Db.now());
+                int enabled = 0, pending = 0;
+                JSONArray arr = new JSONArray();
+                for (Memory m : memList(true)) {
+                    JSONObject o = new JSONObject();
+                    o.put("id", m.id);
+                    o.put("tag", m.tag);
+                    o.put("text", m.text);
+                    o.put("enabled", m.enabled);
+                    o.put("pending", m.pending);
+                    o.put("src", m.src);
+                    o.put("hits", m.hits);
+                    o.put("updated_ms", m.updatedMs);
+                    arr.put(o);
+                    if (m.enabled && !m.pending) enabled++;
+                    if (m.pending) pending++;
+                }
+                root.put("enabled", enabled);
+                root.put("pending", pending);
+                root.put("memories", arr);
+                memorySnapOk = Db.exportSnapshot(ctx, "memory.public.json", root.toString());
+                if (!memorySnapOk) Log.w(TAG, "memory snapshot publish FAILED (will retry)");
+            } catch (Throwable t) {
+                memorySnapOk = false;
+                Log.w(TAG, "memory snapshot publish error: " + t);
             }
-            root.put("enabled", enabled);
-            root.put("pending", pending);
-            root.put("memories", arr);
-            Db.exportSnapshot(ctx, "memory.public.json", root.toString());
-        } catch (Throwable ignored) { }
+        }
     }
 
     private void publishAlarmSnapshot() {
-        try {
-            JSONObject root = new JSONObject();
-            root.put("v", 1);
-            root.put("ts_ms", Db.now());
-            JSONArray arr = new JSONArray();
-            for (Alarm a : alarmList()) {
-                JSONObject o = new JSONObject();
-                o.put("id", a.id);
-                o.put("time", a.time);
-                o.put("label", a.label);
-                o.put("enabled", a.enabled);
-                arr.put(o);
+        synchronized (publishLock) {
+            try {
+                JSONObject root = new JSONObject();
+                root.put("v", 1);
+                root.put("ts_ms", Db.now());
+                JSONArray arr = new JSONArray();
+                for (Alarm a : alarmList()) {
+                    JSONObject o = new JSONObject();
+                    o.put("id", a.id);
+                    o.put("time", a.time);
+                    o.put("label", a.label);
+                    o.put("enabled", a.enabled);
+                    arr.put(o);
+                }
+                root.put("alarms", arr);
+                alarmsSnapOk = Db.exportSnapshot(ctx, "alarms.public.json", root.toString());
+                if (!alarmsSnapOk) Log.w(TAG, "alarm snapshot publish FAILED (will retry)");
+            } catch (Throwable t) {
+                alarmsSnapOk = false;
+                Log.w(TAG, "alarm snapshot publish error: " + t);
             }
-            root.put("alarms", arr);
-            Db.exportSnapshot(ctx, "alarms.public.json", root.toString());
-        } catch (Throwable ignored) { }
+        }
     }
 
     private void publishSkillSnapshot() {
-        try {
-            JSONObject root = new JSONObject();
-            root.put("v", 1);
-            root.put("ts_ms", Db.now());
-            JSONArray arr = new JSONArray();
-            SQLiteDatabase db = Db.get(ctx).getReadableDatabase();
-            Cursor cur = db.rawQuery(
-                "SELECT id,name,enabled,state,sort FROM skills ORDER BY sort", null);
+        synchronized (publishLock) {
             try {
-                while (cur.moveToNext()) {
-                    JSONObject o = new JSONObject();
-                    o.put("id", Db.str(cur, "id"));
-                    o.put("name", Db.str(cur, "name"));
-                    o.put("enabled", Db.bool(cur, "enabled") == 1);
-                    o.put("state", Db.str(cur, "state"));
-                    arr.put(o);
-                }
-            } finally { cur.close(); }
-            root.put("skills", arr);
-            Db.exportSnapshot(ctx, "skills.public.json", root.toString());
-        } catch (Throwable ignored) { }
+                JSONObject root = new JSONObject();
+                root.put("v", 1);
+                root.put("ts_ms", Db.now());
+                JSONArray arr = new JSONArray();
+                SQLiteDatabase db = Db.get(ctx).getReadableDatabase();
+                Cursor cur = db.rawQuery(
+                    "SELECT id,name,enabled,state,sort FROM skills ORDER BY sort", null);
+                try {
+                    while (cur.moveToNext()) {
+                        JSONObject o = new JSONObject();
+                        o.put("id", Db.str(cur, "id"));
+                        o.put("name", Db.str(cur, "name"));
+                        o.put("enabled", Db.bool(cur, "enabled") == 1);
+                        o.put("state", Db.str(cur, "state"));
+                        arr.put(o);
+                    }
+                } finally { cur.close(); }
+                root.put("skills", arr);
+                skillsSnapOk = Db.exportSnapshot(ctx, "skills.public.json", root.toString());
+                if (!skillsSnapOk) Log.w(TAG, "skill snapshot publish FAILED (will retry)");
+            } catch (Throwable t) {
+                skillsSnapOk = false;
+                Log.w(TAG, "skill snapshot publish error: " + t);
+            }
+        }
     }
 
     /* ================================================================ migration */
 
     /**
-     * One-time import of the T9-UI-02 legacy JSON files into the unified DB:
-     *   skills_alarms.json -> alarms, skills.json -> skills.
-     * After a verified import the source file is renamed to .imported so it can never be
-     * re-imported into duplicates; a failed import leaves it in place for the next start.
+     * One-time import of the T9-UI-02 legacy JSON files into the unified DB.
+     *
+     * R1 idempotence contract:
+     *   marker row + data inserts commit in ONE transaction; the file is archived only
+     *   after that commit.  Therefore:
+     *     - crash mid-import        -> no marker, transaction rolled back, retry is clean;
+     *     - crash after commit,
+     *       before rename (or rename failure) -> marker present, file still there: skip
+     *       import and archive the leftover -- never a duplicate;
+     *     - multiple restarts       -> after the marker exists, import never runs again.
+     *   A partial import left by the pre-R1 build is repaired because the import rewrites
+     *   the whole table from the legacy file inside the transaction (the file is the only
+     *   source of truth in the migration window; post-migration rows are protected by the
+     *   marker).
      */
     private void migrateLegacyFiles() {
         importAlarms();
@@ -325,55 +397,108 @@ final class DataService {
 
     private void importAlarms() {
         File f = new File(ctx.getFilesDir(), "skills_alarms.json");
-        if (!f.isFile()) return;
+        SQLiteDatabase db = Db.get(ctx).getWritableDatabase();
+        ensureMigrationTable(db);
+        if (migrationDone(db, "alarms_v1")) {
+            if (f.isFile()) renameImported(f);      /* committed earlier, archive leftover */
+            return;
+        }
+        if (!f.isFile()) return;                    /* nothing to migrate */
         try {
-            String raw = readAll(f);
-            JSONObject root = new JSONObject(raw);
-            JSONArray arr = root.optJSONArray("alarms");
+            JSONArray arr = new JSONObject(readAll(f)).optJSONArray("alarms");
+            db.beginTransaction();
             int n = 0;
-            if (arr != null) {
-                for (int i = 0; i < arr.length(); i++) {
-                    JSONObject o = arr.optJSONObject(i);
-                    if (o == null) continue;
-                    String time = o.optString("time", "");
-                    if (time.length() == 0) continue;
-                    alarmAdd(time, o.optString("label", ""), o.optBoolean("on", true));
-                    n++;
+            try {
+                db.delete("alarms", null, null);    /* repair any partial pre-R1 import */
+                if (arr != null) {
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject o = arr.optJSONObject(i);
+                        if (o == null) continue;
+                        String time = o.optString("time", "");
+                        if (time.length() == 0) continue;
+                        ContentValues v = new ContentValues();
+                        v.put("time", time);
+                        v.put("label", o.optString("label", ""));
+                        v.put("enabled", o.optBoolean("on", true) ? 1 : 0);
+                        v.put("created_ms", Db.now());
+                        db.insert("alarms", null, v);
+                        n++;
+                    }
                 }
+                markMigration(db, "alarms_v1", n);
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();                /* crash here = rollback, no marker */
             }
-            if (renameImported(f)) {
-                android.util.Log.i("T9DATA", "alarms migrated: " + n);
-            }
+            Log.i(TAG, "alarms migrated: " + n);
+            renameImported(f);                      /* only after the commit */
         } catch (Throwable t) {
-            /* leave the file in place: the next start retries */
-            android.util.Log.w("T9DATA", "alarm migration failed: " + t);
+            Log.w(TAG, "alarm migration failed (will retry next start): " + t);
         }
     }
 
     private void importSkills() {
         File f = new File(ctx.getFilesDir(), "skills.json");
+        SQLiteDatabase db = Db.get(ctx).getWritableDatabase();
+        ensureMigrationTable(db);
+        if (migrationDone(db, "skills_v1")) {
+            if (f.isFile()) renameImported(f);
+            return;
+        }
         if (!f.isFile()) return;
         try {
-            String raw = readAll(f);
-            JSONObject root = new JSONObject(raw);
+            JSONObject root = new JSONObject(readAll(f));
             JSONObject skills = root.optJSONObject("skills");
+            db.beginTransaction();
             int n = 0;
-            if (skills != null) {
-                java.util.Iterator<String> it = skills.keys();
-                while (it.hasNext()) {
-                    String id = it.next();
-                    JSONObject o = skills.optJSONObject(id);
-                    boolean on = o == null ? true : o.optBoolean("enabled", true);
-                    skillSetEnabled(id, on);
-                    n++;
+            try {
+                db.delete("skills", null, null);    /* repair any partial pre-R1 import */
+                if (skills != null) {
+                    java.util.Iterator<String> it = skills.keys();
+                    while (it.hasNext()) {
+                        String id = it.next();
+                        JSONObject o = skills.optJSONObject(id);
+                        boolean on = o == null ? true : o.optBoolean("enabled", true);
+                        ContentValues v = new ContentValues();
+                        v.put("id", id);
+                        v.put("name", id);
+                        v.put("enabled", on ? 1 : 0);
+                        v.put("state", on ? "on" : "off");
+                        v.put("sort", n);
+                        db.insertWithOnConflict("skills", null, v,
+                                SQLiteDatabase.CONFLICT_REPLACE);
+                        n++;
+                    }
                 }
+                markMigration(db, "skills_v1", n);
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
             }
-            if (renameImported(f)) {
-                android.util.Log.i("T9DATA", "skills migrated: " + n);
-            }
+            Log.i(TAG, "skills migrated: " + n);
+            renameImported(f);
         } catch (Throwable t) {
-            android.util.Log.w("T9DATA", "skill migration failed: " + t);
+            Log.w(TAG, "skill migration failed (will retry next start): " + t);
         }
+    }
+
+    private void ensureMigrationTable(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS migration (" +
+                   "name TEXT PRIMARY KEY, done_ms INTEGER NOT NULL, items INTEGER NOT NULL)");
+    }
+
+    private boolean migrationDone(SQLiteDatabase db, String name) {
+        Cursor cur = db.rawQuery("SELECT 1 FROM migration WHERE name=?",
+                new String[]{ name });
+        try { return cur.moveToFirst(); } finally { cur.close(); }
+    }
+
+    private void markMigration(SQLiteDatabase db, String name, int items) {
+        ContentValues v = new ContentValues();
+        v.put("name", name);
+        v.put("done_ms", Db.now());
+        v.put("items", items);
+        db.insertWithOnConflict("migration", null, v, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     private static boolean renameImported(File f) {

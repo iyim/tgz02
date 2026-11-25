@@ -193,17 +193,33 @@ public final class VoiceBridgeClient {
      */
     String submit(String text)
     {
+        return submitKind(text, "ask");
+    }
+
+    /**
+     * T9-UI-03-R1: kind=say submission -- the text is spoken VERBATIM by the factory TTS.
+     * Used by the memory voice flow to speak the confirmation line ("好的，我记住了…")
+     * through the SAME validated inbox and the SAME factory TTS the product already uses.
+     * This is not a new voice engine and carries no NLU: it is the existing T9-06 semantics.
+     */
+    String say(String text)
+    {
+        return submitKind(text, "say");
+    }
+
+    private String submitKind(String text, String kind)
+    {
         String eventId = newEventId("ui");
         try {
             JSONObject o = new JSONObject();
             o.put("v", 1);
-            o.put("kind", "ask");
+            o.put("kind", kind);
             o.put("event_id", eventId);
             o.put("text", text);
             byte[] body = o.toString().getBytes("UTF-8");
             if (!writeInbox(eventId, body)) return null;
             track(eventId);
-            diag("submitted " + eventId + " bytes=" + body.length);
+            diag("submitted " + eventId + " kind=" + kind + " bytes=" + body.length);
             return eventId;
         } catch (Throwable t) {
             diag("submit failed: " + t);

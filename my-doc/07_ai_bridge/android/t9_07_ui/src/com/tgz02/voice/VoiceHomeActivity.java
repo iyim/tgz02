@@ -383,8 +383,61 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
                         ? ("回答失败：" + (t.reason.length() > 0 ? t.reason : "unknown error"))
                         : "";
                 showTurn(failed ? "刚才的问题" : "布丁说", q, a, err, false);
+                if (!failed && q.length() > 0) maybeLearnMemory(q);
             }
         });
+    }
+
+    /* ------------------------------------------------------------------ memory learning
+     *
+     * T9-UI-03-R1 (P1): the voice-first memory flow, on the EXISTING voice chain.
+     *
+     *   孩子：天猫精灵，记住我不喝咖啡
+     *   ASR 得到 "记住我不喝咖啡" -> 原厂技能路由可能已把它当问答发给模型；
+     *   这里在 turn 回来后做本地意图识别（前缀"记住"），把内容存为 pending 记忆，
+     *   并用 kind=say 让原厂 TTS 亲口确认。等确认流（记忆中心/下一次语音）走完后
+     *   记忆才生效——宁可不命中，不可错误命中。
+     *
+     *   注意边界：这只拦截"记住X"一种句式；其余句子 100% 走原有 AI 管线，
+     *   不改 worker、不改原厂唤醒/ASR/TTS、不另造语音引擎。
+     */
+    void maybeLearnMemory(String userText)
+    {
+        String trimmed = userText == null ? "" : userText.trim();
+        String[] prefixes = { "记住", "帮我记住", "记一下" };
+        String body = null;
+        for (int i = 0; i < prefixes.length; i++) {
+            if (trimmed.startsWith(prefixes[i]) && trimmed.length() > prefixes[i].length()) {
+                body = trimmed.substring(prefixes[i].length()).trim();
+                break;
+            }
+        }
+        if (body == null || body.length() == 0) return;
+
+        /* strip a leading "我" ("记住我不喝咖啡" -> "不喝咖啡") */
+        if (body.startsWith("我") && body.length() > 1) body = body.substring(1);
+        if (body.length() == 0) return;
+
+        long id = DataService.get(this).memAdd(guessTag(body), body, "对话学习", true);
+        if (id <= 0) {
+            client.say("这个我暂时记不下来，你可以在记忆中心帮我记。");
+            return;
+        }
+        client.say("好的，我快要记住了：" + body + "。你可以在记忆中心确认一下，我就不会忘啦。");
+    }
+
+    /** very small tag guess; everything lands in 事实 unless an obvious keyword matches */
+    static String guessTag(String text)
+    {
+        if (text.contains("不喝") || text.contains("不吃") || text.contains("喜欢")
+                || text.contains("讨厌") || text.contains("爱") || text.contains("偏好"))
+            return "偏好";
+        if (text.contains("女儿") || text.contains("儿子") || text.contains("爸爸")
+                || text.contains("妈妈") || text.contains("家里人") || text.contains("小名"))
+            return "关系";
+        if (text.contains("音量") || text.contains("亮度") || text.contains("蓝牙")
+                || text.contains("音箱")) return "设备";
+        return "事实";
     }
 
     public void onPlay(final VoiceBridgeClient.Play p)

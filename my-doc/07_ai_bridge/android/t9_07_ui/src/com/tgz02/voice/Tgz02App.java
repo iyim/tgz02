@@ -14,5 +14,9 @@ public class Tgz02App extends Application {
     {
         super.onCreate();
         Ui3.setMode(SettingsHomeActivity.readTheme());
+        /* T9-UI-03-R1: run migrations and publish all snapshots at process start --
+         * the worker must be able to read memory/alarms/skills even before the user
+         * opens any page. */
+        DataService.get(this);
     }
 }
