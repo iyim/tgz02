@@ -1,0 +1,50 @@
+# tg_stack.rc -- T8-15.6: boot bring-up for the accepted stack (replaces the T6 tg_supervisor.rc)
+#
+# Deployed to /system/etc/init/tg_stack.rc.
+#
+# Why it replaces the old file: the T6-era rc started a single plain supervisor with no
+# --so argument, so it fell back to its built-in default /data/local/tmp/t6/libtg_hook.so
+# and won the injection race against the accepted T8 hook. The result after every reboot
+# was an obsolete hook inside :core plus a failed injection of the T8 one
+# ("dlopen ... RTLD_NOLOAD prevented it", exit=17).
+#
+# This file starts exactly the two supervisors we actually want, plus one oneshot script
+# that brings up bridge / tts / worker / tap once :core exists.
+#
+# Notes that matter on this device (Android 8.1):
+#   * init parses EVERY regular file in /system/etc/init, regardless of the suffix, so the
+#     old file has to be removed, not renamed;
+#   * a service without seclabel is refused ("does not have a SELinux domain defined"),
+#     so u:r:init:s0 is used - it exists on every Android and the device runs Permissive;
+#   * non-oneshot services are kept alive by init (that is why killing the old supervisor
+#     only restarted it) - that property is what we want for the supervisors, and the
+#     worker/bridge bring-up is oneshot so it runs once.
+
+service tg_hook_sup /data/local/tmp/t6/tg_supervisor --injector /data/local/tmp/t8/tg_injector --so /data/local/tmp/t8/libtg_hook.so --name com.alibaba.ailabs.genie.smartapp:core --pidfile /data/local/tmp/t8/tg_supervisor.pid --log /data/local/tmp/t8/supervisor.log
+    class late_start
+    user root
+    group root system
+    seclabel u:r:init:s0
+    disabled
+
+service tg_guard_sup /data/local/tmp/t6/tg_supervisor --injector /data/local/tmp/t8/tg_injector --so /data/local/tmp/t7/libtg_ttsguard_t8156.so --name com.alibaba.ailabs.genie.smartapp:core --pidfile /data/local/tmp/t7/ttsguard.sup.pid --log /data/local/tmp/t7/ttsguard.sup.log
+    class late_start
+    user root
+    group root system
+    seclabel u:r:init:s0
+    disabled
+
+service tg_stack /system/bin/sh /data/local/tmp/t5_bridge/boot_stack.sh
+    class late_start
+    user root
+    group root system
+    seclabel u:r:init:s0
+    oneshot
+    disabled
+
+# boot_completed is late enough that /data is writable and the official app has started;
+# the script itself also waits for :core, so order between these three does not matter.
+on property:sys.boot_completed=1
+    start tg_hook_sup
+    start tg_guard_sup
+    start tg_stack

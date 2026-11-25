@@ -1,4 +1,4 @@
-﻿# tg_supervisor.rc -- T6-03：让 Android init 在开机时拉起 T6-02 的 Native Supervisor
+# tg_supervisor.rc -- T6-03：让 Android init 在开机时拉起 T6-02 的 Native Supervisor
 #
 # 部署位置：/system/etc/init/tg_supervisor.rc
 #   Android 8.1 的 init 会自动导入目录 /system/etc/init、/vendor/etc/init、/odm/etc/init

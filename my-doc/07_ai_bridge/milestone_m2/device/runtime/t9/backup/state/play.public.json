@@ -1,0 +1,13 @@
+{
+  "v": 1,
+  "pid": 17257,
+  "updated_ms": 1795478848647,
+  "state": "idle",
+  "event_id": "t6-13250-1967224-g8",
+  "tts_id": 5244028,
+  "started_ms": 1795478847153,
+  "finished_ms": 1795478848647,
+  "last_outcome": "ok",
+  "queue_depth": 0,
+  "inflight_depth": 1
+}

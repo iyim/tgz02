@@ -1,2 +1,7 @@
-﻿# device-side shell scripts must stay LF in the repository: a stray CR breaks `sh` on Android
+# device-side shell scripts must stay LF in the repository: a stray CR breaks `sh` on Android
 *.sh text eol=lf
+
+# Milestone backup: byte-for-byte fidelity. These files are pulled from the device and
+# restored to it, so git must never rewrite their line endings (CRLF would change the
+# SHA256 and, for .json/.conf, silently desynchronise the backup from the device).
+my-doc/07_ai_bridge/milestone_m2/** -text

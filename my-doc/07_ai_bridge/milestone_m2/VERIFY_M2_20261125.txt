@@ -1,0 +1,23 @@
+TG-Z02 milestone M2 -- verification record
+run at 2026-11-25 Asia/Hong_Kong, host MACTHON
+target device AILABS_S1L @ 192.168.1.9:5555 (adb over TCP, Magisk root, SELinux Permissive)
+code baseline main 4677eaa4
+
+verify_m2.ps1 -Device output:
+== host integrity (D:\tgz02\OS\system\my-doc\07_ai_bridge\milestone_m2)
+  files=91 mismatched=0 missing=0
+== device live comparison (192.168.1.9:5555)
+OK       /data/local/tmp/t5_bridge/bin/ai_worker
+OK       /data/local/tmp/t5_bridge/tts_exec.dex
+OK       /system/etc/init/tg_stack.rc
+OK       /data/local/tmp/t6/tg_supervisor
+OK       /data/local/tmp/t8/libtg_hook.so
+OK       /data/local/tmp/t7/libtg_ttsguard_t8156.so
+OK       /data/data/com.tgz02.voice/files/models.json
+OK       /data/local/tmp/t5_bridge/ai_worker/worker.conf
+OK       /data/local/tmp/t9_ui/snapshots/memory.public.json
+OK       /data/local/tmp/t9_ui/snapshots/alarms.public.json
+OK       /data/local/tmp/t9_ui/snapshots/skills.public.json
+OK       /data/app/com.tgz02.voice-gRLUchEsZ8ststZLpMr9Fg==/base.apk (installed APK)
+NOTE     stub server process exe: lrwxrwxrwx 1 root         root         0 2026-11-25 15:43 /proc/31366/exe -> /data/local/tmp/t9/t9_08c/t9_08c_stub_server (deleted)
+RESULT: PASS

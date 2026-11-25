@@ -1,4 +1,4 @@
-﻿{"v":1,"default_id":"m-doubao","models":[
+{"v":1,"default_id":"m-doubao","models":[
 {"id":"m-doubao","vendor":"doubao","label":"doubao-main","api_key":"good-doubao",
  "base_url":"http://127.0.0.1:8799/doubao/v3","model":"ep-2024-stub","endpoint_id":"ep-2024-stub",
  "extra":{"top_p":0.9},"max_tokens":128,"temperature":0.3,"timeout_ms":8000,"enabled":true},
