@@ -1,4 +1,19 @@
-# TG-Z02 设计与现有技术栈的适配说明（T9-UI-01）
+# TG-Z02 设计与现有技术栈的适配说明
+
+> **⚠️ V1 章节状态（T9-UI-02 起）**：§1–§10 中的**视觉参数已废弃**（深色 token、
+> 208dp 左侧导航、40×22 开关、32dp 按钮等均被 V2 取代）。仍然有效的只有**结构层**结论：
+> Screen 基类模式、无 Intent 解析、技能宿主、服务接口边界、d8/aapt2 工具链。
+> **唯一有效视觉规范 = `UI_DESIGN_SYSTEM_V2.md` + `prototype_v2/ds2.css`。**
+> 实际落地的 Java 实现见 `android/t9_07_ui/src/com/tgz02/voice/Ui3.java`（V2 token 的
+> Java 镜像）与各 Activity。
+>
+> T9-UI-02 落地结论（真机已验证）：
+> 1. 图片走 **APK assets/**（`aapt2 link -A`），不是 res/drawable——项目保持无 res/。
+>    Windows 上 aapt2 会把 assets 子目录分隔符写成 `\`，运行时 AssetManager 读不到，
+>    build.ps1 已加 zip entry 名归一化步骤（`\` → `/`）。
+> 2. d8 的 class 列表超 Windows 命令行长度限制 → 先打包 classes.jar 再喂 d8。
+> 3. 主题（kid/calm）持久化在 `files/ui_theme.json`，Application onCreate 恢复；
+>    真机验证切换即时生效、重启保持。
 
 > 这一份回答的是："这些画面到底能不能在**当前这个项目**里实现？"
 > 结论：能，而且不需要新增任何依赖、不需要 `res/`、不需要新建 Activity 结构。

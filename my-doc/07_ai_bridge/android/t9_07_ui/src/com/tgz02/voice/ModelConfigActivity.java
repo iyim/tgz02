@@ -77,39 +77,39 @@ public final class ModelConfigActivity extends Activity implements VoiceBridgeCl
     {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(Ui.BG);
+        root.setBackgroundColor(Ui3.bg(this));
 
-        LinearLayout bar = Ui.bar(this, Ui.BG_BAR);
-        bar.setPadding(Ui.dp(this, 18), 0, Ui.dp(this, 10), 0);
+        LinearLayout bar = Ui3.bar(this, Ui3.surface(this));
+        bar.setPadding(Ui3.dp(this, 28), Ui3.dp(this, 14), Ui3.dp(this, 28), Ui3.dp(this, 10));
         bar.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                          Ui.dp(this, 48)));
-        TextView title = Ui.text(this, "大模型配置", 18f, Ui.TEXT);
+                                                          Ui3.dp(this, 48)));
+        TextView title = Ui3.textBold(this, "设置 / 大模型配置", 24f, Ui3.text(this));
         title.setTypeface(title.getTypeface(), android.graphics.Typeface.BOLD);
         bar.addView(title);
         LinearLayout right = new LinearLayout(this);
         right.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
         bar.addView(right, new LinearLayout.LayoutParams(0,
                 ViewGroup.LayoutParams.MATCH_PARENT, 1f));
-        right.addView(Ui.action(Ui.text(this, "刷新", 14f, Ui.ACCENT), new Runnable() {
+        right.addView(Ui3.action(Ui3.text(this, "刷新", 14f, Ui3.primary2(this)), new Runnable() {
             public void run() { render(); }
         }));
-        right.addView(Ui.action(Ui.text(this, "返回", 14f, Ui.TEXT_DIM), new Runnable() {
+        right.addView(Ui3.action(Ui3.text(this, "返回", 14f, Ui3.text2(this)), new Runnable() {
             public void run() { finish(); }
         }));
         root.addView(bar);
-        root.addView(Ui.divider(this));
+        root.addView(Ui3.divider(this));
 
         ScrollView sv = new ScrollView(this);
         box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(Ui.dp(this, 18), Ui.dp(this, 10), Ui.dp(this, 18), Ui.dp(this, 18));
+        box.setPadding(Ui3.dp(this, 28), Ui3.dp(this, 12), Ui3.dp(this, 28), Ui3.dp(this, 20));
         sv.addView(box);
         root.addView(sv, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
-        root.addView(Ui.divider(this));
+        root.addView(Ui3.divider(this));
 
-        footer = Ui.bar(this, Ui.BG_BAR);
-        footer.setPadding(Ui.dp(this, 18), Ui.dp(this, 8), Ui.dp(this, 18), Ui.dp(this, 8));
-        footer.addView(Ui.action(Ui.text(this, "＋ 新增配置", 15f, Ui.ACCENT), new Runnable() {
+        footer = Ui3.bar(this, Ui3.surface(this));
+        footer.setPadding(Ui3.dp(this, 18), Ui3.dp(this, 8), Ui3.dp(this, 18), Ui3.dp(this, 8));
+        footer.addView(Ui3.action(Ui3.text(this, "＋ 新增配置", 15f, Ui3.primary2(this)), new Runnable() {
             public void run() { edit(null); }
         }));
         root.addView(footer);
@@ -125,29 +125,29 @@ public final class ModelConfigActivity extends Activity implements VoiceBridgeCl
 
         section("当前生效（后台服务实际在用的）");
         if (s.modelsActive) {
-            row("配置", describe(s.modelsVendor, s.modelsLabel, s.modelsId), Ui.TEXT);
+            row("配置", describe(s.modelsVendor, s.modelsLabel, s.modelsId), Ui3.text(this));
             row("模型", s.modelsModel + (s.modelsMode.length() > 0 ? " · " + s.modelsMode : ""),
-                Ui.TEXT_DIM);
-            row("已保存", s.modelsCount + " 套 · 热加载 " + s.modelsReloads + " 次", Ui.TEXT_DIM);
+                Ui3.text2(this));
+            row("已保存", s.modelsCount + " 套 · 热加载 " + s.modelsReloads + " 次", Ui3.text2(this));
             row("最近调用", s.modelsCalls == 0 ? "尚无调用"
                     : (s.modelsOk + " 成功 / " + s.modelsErr + " 失败 / " + s.modelsTimeout + " 超时"),
-                s.modelsErr > 0 ? Ui.WARN : Ui.TEXT_DIM);
-            if (s.modelsLastError.length() > 0) row("最近错误", s.modelsLastError, Ui.ERR);
-            if (s.modelsError.length() > 0) row("配置问题", s.modelsError, Ui.WARN);
+                s.modelsErr > 0 ? 0xFFB57708 : Ui3.text2(this));
+            if (s.modelsLastError.length() > 0) row("最近错误", s.modelsLastError, 0xFFC02626);
+            if (s.modelsError.length() > 0) row("配置问题", s.modelsError, 0xFFB57708);
         } else {
-            row("状态", s.present ? "还没有可用的模型配置" : "未连接后台服务", Ui.WARN);
-            if (s.modelsError.length() > 0) row("原因", s.modelsError, Ui.WARN);
-            row("说明", "在下面添加一套配置后立即生效（无需重启）", Ui.TEXT_FAINT);
+            row("状态", s.present ? "还没有可用的模型配置" : "未连接后台服务", 0xFFB57708);
+            if (s.modelsError.length() > 0) row("原因", s.modelsError, 0xFFB57708);
+            row("说明", "在下面添加一套配置后立即生效（无需重启）", Ui3.text3(this));
         }
         if (s.testRan) {
             row("最近测试", (s.testOk ? "成功" : "失败") + " · " + s.testMs + " ms", 
-                s.testOk ? Ui.OK : Ui.ERR);
-            row("测试详情", s.testReason, s.testOk ? Ui.TEXT_DIM : Ui.ERR);
+                s.testOk ? 0xFF14803E : 0xFFC02626);
+            row("测试详情", s.testReason, s.testOk ? Ui3.text2(this) : 0xFFC02626);
         }
 
         section("已保存的配置（" + list.size() + " / " + ModelStore.MAX_MODELS + "）");
         if (list.isEmpty()) {
-            row("（空）", "点下面的「＋ 新增配置」开始", Ui.TEXT_FAINT);
+            row("（空）", "点下面的「＋ 新增配置」开始", Ui3.text3(this));
         }
         for (int i = 0; i < list.size(); i++) {
             addCard(list.get(i), list.get(i).id.equals(defId));
@@ -157,76 +157,76 @@ public final class ModelConfigActivity extends Activity implements VoiceBridgeCl
 
     void addMemoryNote()
     {
-        section("长期记忆");
-        row("状态", "尚未实现（计划于 T9-08D）", Ui.TEXT_FAINT);
-        row("将提供", "查看 / 添加 / 编辑 / 删除 / 停用 / 清空", Ui.TEXT_FAINT);
+        section("长期记忆（T9-08D 接入）");
+        row("状态", "尚未接入 · 不展示任何演示记忆", 0xFFB57708);
+        row("将提供", "查看 / 添加 / 编辑 / 删除 / 停用 / 清空", Ui3.text3(this));
     }
 
     void addCard(final ModelStore.Model c, boolean isDefault)
     {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setBackground(Ui.roundStroke(this, Ui.BG_BAR_2, Ui.LINE, 10f));
-        card.setPadding(Ui.dp(this, 14), Ui.dp(this, 10), Ui.dp(this, 14), Ui.dp(this, 10));
+        card.setBackground(Ui3.roundStroke(this, Ui3.surface2(this), Ui3.line2(this), 10f));
+        card.setPadding(Ui3.dp(this, 14), Ui3.dp(this, 10), Ui3.dp(this, 14), Ui3.dp(this, 10));
 
         LinearLayout head = new LinearLayout(this);
         head.setOrientation(LinearLayout.HORIZONTAL);
         head.setGravity(Gravity.CENTER_VERTICAL);
         String name = c.label.length() > 0 ? c.label : c.id;
-        TextView t = Ui.text(this, name, 16f, Ui.TEXT);
+        TextView t = Ui3.textBold(this, name, 18f, Ui3.text(this));
         head.addView(t);
-        TextView v = Ui.text(this, "  " + ModelStore.vendorName(c.vendor) + " · " + c.model,
-                             13f, Ui.TEXT_DIM);
+        TextView v = Ui3.text(this, "  " + ModelStore.vendorName(c.vendor) + " · " + c.model,
+                             13f, Ui3.text2(this));
         head.addView(v);
         if (isDefault) {
-            TextView d = Ui.text(this, "  默认", 12f, Ui.OK);
+            TextView d = Ui3.text(this, "  默认", 12f, 0xFF14803E);
             head.addView(d);
         }
         if (!c.enabled) {
-            head.addView(Ui.text(this, "  已停用", 12f, Ui.WARN));
+            head.addView(Ui3.text(this, "  已停用", 12f, 0xFFB57708));
         }
         card.addView(head);
 
         String base = c.baseUrl.length() > 0 ? c.baseUrl
                                              : ModelStore.defaultBase(c.vendor, c.apiMode);
-        TextView sub = Ui.text(this, (c.isDoubao() && c.endpointId.length() > 0
+        TextView sub = Ui3.text(this, (c.isDoubao() && c.endpointId.length() > 0
                 ? ("Endpoint " + c.endpointId + " · ") : "")
-                + (base.length() > 0 ? base : "（Base URL 未填写）"), 12f, Ui.TEXT_FAINT);
+                + (base.length() > 0 ? base : "（Base URL 未填写）"), 12f, Ui3.text3(this));
         card.addView(sub);
-        TextView key = Ui.text(this, "API Key：" + (c.apiKey.length() > 0
-                ? c.apiKey : "（未填写）"), 12f, c.apiKey.length() > 0 ? Ui.TEXT_DIM : Ui.WARN);
+        TextView key = Ui3.text(this, "API Key：" + (c.apiKey.length() > 0
+                ? c.apiKey : "（未填写）"), 12f, c.apiKey.length() > 0 ? Ui3.text2(this) : 0xFFB57708);
         card.addView(key);
 
         LinearLayout acts = new LinearLayout(this);
         acts.setOrientation(LinearLayout.HORIZONTAL);
         acts.setGravity(Gravity.END);
-        acts.setPadding(0, Ui.dp(this, 6), 0, 0);
-        acts.addView(action("测试", Ui.ACCENT, new Runnable() {
+        acts.setPadding(0, Ui3.dp(this, 6), 0, 0);
+        acts.addView(action("测试", Ui3.primary2(this), new Runnable() {
             public void run() { test(c); }
         }));
-        acts.addView(action("编辑", Ui.TEXT, new Runnable() {
+        acts.addView(action("编辑", Ui3.text(this), new Runnable() {
             public void run() { edit(c); }
         }));
         if (!isDefault) {
-            acts.addView(action("设为默认", Ui.TEXT, new Runnable() {
+            acts.addView(action("设为默认", Ui3.text(this), new Runnable() {
                 public void run() { makeDefault(c); }
             }));
         }
-        acts.addView(action("删除", Ui.ERR, new Runnable() {
+        acts.addView(action("删除", 0xFFC02626, new Runnable() {
             public void run() { remove(c); }
         }));
         card.addView(acts);
 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.bottomMargin = Ui.dp(this, 10);
+        lp.bottomMargin = Ui3.dp(this, 10);
         box.addView(card, lp);
     }
 
     TextView action(String label, int color, final Runnable r)
     {
-        TextView t = Ui.text(this, label, 14f, color);
-        t.setPadding(Ui.dp(this, 12), Ui.dp(this, 6), Ui.dp(this, 12), Ui.dp(this, 6));
+        TextView t = Ui3.textBold(this, label, 15f, color);
+        t.setPadding(Ui3.dp(this, 12), Ui3.dp(this, 6), Ui3.dp(this, 12), Ui3.dp(this, 6));
         t.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) { r.run(); }
         });
@@ -291,12 +291,12 @@ public final class ModelConfigActivity extends Activity implements VoiceBridgeCl
 
         LinearLayout form = new LinearLayout(this);
         form.setOrientation(LinearLayout.VERTICAL);
-        form.setPadding(Ui.dp(this, 16), Ui.dp(this, 8), Ui.dp(this, 16), Ui.dp(this, 8));
+        form.setPadding(Ui3.dp(this, 16), Ui3.dp(this, 8), Ui3.dp(this, 16), Ui3.dp(this, 8));
 
-        final TextView vendorRow = Ui.text(this, "", 14f, Ui.ACCENT);
+        final TextView vendorRow = Ui3.text(this, "", 14f, Ui3.primary2(this));
         form.addView(fieldLabel("类型（点一下换厂商）"));
         vendorRow.setText(ModelStore.vendorName(m.vendor));
-        vendorRow.setPadding(0, Ui.dp(this, 4), 0, Ui.dp(this, 8));
+        vendorRow.setPadding(0, Ui3.dp(this, 4), 0, Ui3.dp(this, 8));
         vendorRow.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 /* 三家轮换：豆包 -> 千问 -> OpenAI 兼容 -> 豆包 */
@@ -367,8 +367,8 @@ public final class ModelConfigActivity extends Activity implements VoiceBridgeCl
 
     TextView fieldLabel(String s)
     {
-        TextView t = Ui.text(this, s, 12f, Ui.TEXT_FAINT);
-        t.setPadding(0, Ui.dp(this, 8), 0, 0);
+        TextView t = Ui3.text(this, s, 12f, Ui3.text3(this));
+        t.setPadding(0, Ui3.dp(this, 8), 0, 0);
         return t;
     }
 
@@ -380,8 +380,8 @@ public final class ModelConfigActivity extends Activity implements VoiceBridgeCl
         e.setText(value == null ? "" : value);
         e.setHint(hint);
         e.setTextSize(13f);
-        e.setTextColor(Ui.TEXT);
-        e.setHintTextColor(Ui.TEXT_FAINT);
+        e.setTextColor(Ui3.text(this));
+        e.setHintTextColor(Ui3.text3(this));
         if (multiline) {
             e.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
             e.setSingleLine(false);
@@ -408,10 +408,10 @@ public final class ModelConfigActivity extends Activity implements VoiceBridgeCl
 
     void section(String name)
     {
-        TextView t = Ui.text(this, name, 13f, Ui.ACCENT);
-        t.setPadding(0, Ui.dp(this, 14), 0, Ui.dp(this, 4));
+        TextView t = Ui3.text(this, name, 13f, Ui3.primary2(this));
+        t.setPadding(0, Ui3.dp(this, 14), 0, Ui3.dp(this, 4));
         box.addView(t);
-        box.addView(Ui.divider(this));
+        box.addView(Ui3.divider(this));
     }
 
     void row(String label, String value, int color)
@@ -419,12 +419,12 @@ public final class ModelConfigActivity extends Activity implements VoiceBridgeCl
         LinearLayout r = new LinearLayout(this);
         r.setOrientation(LinearLayout.HORIZONTAL);
         r.setGravity(Gravity.CENTER_VERTICAL);
-        r.setPadding(0, Ui.dp(this, 6), 0, Ui.dp(this, 6));
-        TextView l = Ui.text(this, label, 14f, Ui.TEXT_DIM);
-        l.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(this, 110),
+        r.setPadding(0, Ui3.dp(this, 6), 0, Ui3.dp(this, 6));
+        TextView l = Ui3.text(this, label, 14f, Ui3.text2(this));
+        l.setLayoutParams(new LinearLayout.LayoutParams(Ui3.dp(this, 110),
                                                         ViewGroup.LayoutParams.WRAP_CONTENT));
         r.addView(l);
-        TextView v = Ui.text(this, value, 14f, color);
+        TextView v = Ui3.text(this, value, 14f, color);
         r.addView(v, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         box.addView(r);
     }

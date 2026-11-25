@@ -1,13 +1,22 @@
-# build.ps1 -- T9-07: build the product UI APK (ordinary unprivileged app).
+# build.ps1 -- T9-UI-02: build the V2 kid-friendly product UI APK.
 #
 #   powershell -ExecutionPolicy Bypass -File build.ps1
 #
-# Same verified toolchain as T9-04/T9-06: javac --release 8 + d8 (build-tools 35.0.1) +
-# aapt2 + zipalign + apksigner. No res/ tree by design, so aapt2 only links the manifest.
-# The signing key is the shared probe key (one throw-away key covers all local builds).
-#   -Test  also compiles src_test/ and links AndroidManifest.test.xml: that build contains the
-#          automation driver (TestConversationActivity). The default build has no test entry
-#          point at all -- ConversationActivity never reads an Intent.
+# Same verified toolchain as T9-04..T9-08C: javac --release 8 + d8 (build-tools 35.0.1)
+# + aapt2 + zipalign + apksigner.
+#
+# T9-UI-02 change: images ship in APK **assets/** (aapt2 link -A).  The project still has
+# NO res/ tree -- aapt2 only links the manifest.  The asset payload is generated from the
+# T9-UI-01-V2 design exports (evidence/t9-ui-01-v2/assets) into assets/ui/ before the
+# link step; aapt2 embeds them under assets/ui/ inside the APK, and Ui3.java reads them
+# with AssetManager.open("ui/<name>.png").
+#
+# Compiled sources: V2 shell + pages + the T9-08C model stack.  ConversationActivity /
+# MoreActivity / SettingsActivity are no longer compiled (superseded by the V2 pages;
+# code kept in the repo for reference).
+#
+#   -Test  also compiles src_test/ and links AndroidManifest.test.xml: that build contains
+#          the automation driver. The default build has no test entry point at all.
 param(
     [string]$Sdk = "$env:LOCALAPPDATA\Android\Sdk",
     [string]$BuildTools = "35.0.1",
@@ -19,6 +28,8 @@ param(
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $here
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+Add-Type -AssemblyName System.IO.Compression
 
 $bt = Join-Path $Sdk "build-tools\$BuildTools"
 $androidJar = Join-Path $Sdk "platforms\$Platform\android.jar"
@@ -35,16 +46,50 @@ New-Item -ItemType Directory -Force $classes | Out-Null
 
 $manifest = Join-Path $here 'AndroidManifest.xml'
 $apkName = 'voice_ui.apk'
-$vn = '1.1.0'
+$vn = '1.3.0'
 if ($Test) {
     $manifest = Join-Path $here 'AndroidManifest.test.xml'
     $apkName = 'voice_ui_test.apk'
-    $vn = '1.1.0-test'
+    $vn = '1.3.0-test'
     Write-Host "== TEST BUILD: src_test/ included, the automation driver is in this APK"
 }
 
+Write-Host "== assets (from the T9-UI-01-V2 design exports)"
+$assetsDir = Join-Path $build 'assets\ui'
+New-Item -ItemType Directory -Force $assetsDir | Out-Null
+# android\t9_07_ui -> android -> 07_ai_bridge  (evidence lives under 07_ai_bridge)
+$bridgeRoot = Split-Path -Parent (Split-Path -Parent $here)
+$assetSrc = Join-Path $bridgeRoot 'evidence\t9-ui-01-v2\assets'
+if (-not (Test-Path $assetSrc)) { throw "missing V2 asset exports: $assetSrc" }
+$copyCount = 0
+Get-ChildItem -Recurse -Filter *.png $assetSrc | ForEach-Object {
+    $flavor = $_.Directory.Name          # character | illustrations
+    if ($flavor -eq 'character') { $name = $_.Name } else { $name = $_.Name }
+    Copy-Item $_.FullName (Join-Path $assetsDir $name) -Force
+    $copyCount++
+}
+Write-Host ("   copied {0} PNGs into assets/ui/" -f $copyCount)
+if ($copyCount -lt 16) { throw "asset payload looks wrong ($copyCount files)" }
+
 Write-Host "== sources"
-$srcFiles = @(Get-ChildItem -Recurse -Filter *.java (Join-Path $here 'src') | ForEach-Object FullName)
+# V2 compiled set: shell + home + pages + skill stores + model stack + legacy helpers
+$srcFiles = @(
+    "src\com\tgz02\voice\Tgz02App.java",
+    "src\com\tgz02\voice\Ui3.java",
+    "src\com\tgz02\voice\Toast2.java",
+    "src\com\tgz02\voice\V2Shell.java",
+    "src\com\tgz02\voice\VoiceHomeActivity.java",
+    "src\com\tgz02\voice\SkillsHomeActivity.java",
+    "src\com\tgz02\voice\SkillStore.java",
+    "src\com\tgz02\voice\SkillRegistry.java",
+    "src\com\tgz02\voice\MemoryCenterActivity.java",
+    "src\com\tgz02\voice\SettingsHomeActivity.java",
+    "src\com\tgz02\voice\AboutActivity.java",
+    "src\com\tgz02\voice\ModelConfigActivity.java",
+    "src\com\tgz02\voice\ModelStore.java",
+    "src\com\tgz02\voice\VoiceBridgeClient.java"
+) | ForEach-Object { Join-Path $here $_ }
+foreach ($f in $srcFiles) { if (-not (Test-Path $f)) { throw "missing source $f" } }
 if ($Test) {
     $srcFiles += @(Get-ChildItem -Recurse -Filter *.java (Join-Path $here 'src_test') | ForEach-Object FullName)
 }
@@ -58,22 +103,59 @@ Write-Host "== d8 (min-api 27)"
 $classFiles = @(Get-ChildItem -Recurse -Filter *.class $classes | ForEach-Object FullName)
 $dexOut = Join-Path $build 'dex'
 New-Item -ItemType Directory -Force $dexOut | Out-Null
-& (Join-Path $bt 'd8.bat') --min-api 27 --lib $androidJar --output $dexOut $classFiles
+# a flat jar keeps the d8 command line short (Windows 32k limit) and feeds all classes at once
+$jar = Join-Path $build 'classes.jar'
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$z = [System.IO.Compression.ZipFile]::Open($jar, [System.IO.Compression.ZipArchiveMode]::Create)
+try {
+    $rel = (Resolve-Path $classes).Path
+    foreach ($cf in $classFiles) {
+        $entryName = $cf.Substring($rel.Length + 1).Replace('\', '/')
+        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($z, $cf, $entryName) | Out-Null
+    }
+} finally { $z.Dispose() }
+& (Join-Path $bt 'd8.bat') --min-api 27 --lib $androidJar --output $dexOut $jar
 if ($LASTEXITCODE -ne 0) { throw "d8 failed" }
 $dex = Join-Path $dexOut 'classes.dex'
 
-Write-Host "== aapt2 link"
+Write-Host "== aapt2 link (manifest + assets, no res/)"
 $baseApk = Join-Path $build 'base.apk'
 & (Join-Path $bt 'aapt2.exe') link -o $baseApk -I $androidJar `
     --manifest $manifest `
-    --min-sdk-version 21 --target-sdk-version 27 --version-code 2 --version-name $vn
+    -A (Join-Path $build 'assets') `
+    --min-sdk-version 21 --target-sdk-version 27 --version-code 4 --version-name $vn
 if ($LASTEXITCODE -ne 0) { throw "aapt2 link failed" }
 
-Write-Host "== add classes.dex"
-$unsigned = Join-Path $build 'unsigned.apk'
-Copy-Item $baseApk $unsigned -Force
+Write-Host "== verify assets inside the APK"
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 Add-Type -AssemblyName System.IO.Compression
+$check = [System.IO.Compression.ZipFile]::OpenRead($baseApk)
+try {
+    $inApk = @($check.Entries | Where-Object { $_.FullName -like 'assets*ui*' })
+    Write-Host ("   assets/ui entries in APK: " + $inApk.Count)
+    if ($inApk.Count -lt 16) { throw "assets were not embedded into the APK" }
+} finally { $check.Dispose() }
+
+Write-Host "== normalize asset entry names (aapt2 on Windows writes '\' inside assets/)"
+# aapt2 -A on Windows can emit ZipEntries like "assets/ui\puddin_idle.png"; the runtime
+# AssetManager only indexes forward slashes, so rewrite every entry name here.
+$norm = Join-Path $build 'normalized.apk'
+$zin  = [System.IO.Compression.ZipFile]::OpenRead($baseApk)
+$zout = [System.IO.Compression.ZipFile]::Open($norm, [System.IO.Compression.ZipArchiveMode]::Create)
+try {
+    foreach ($e in $zin.Entries) {
+        $name = $e.FullName.Replace('\', '/')
+        $outEntry = $zout.CreateEntry($name)
+        $ins = $e.Open()
+        $outs = $outEntry.Open()
+        $ins.CopyTo($outs)
+        $outs.Close(); $ins.Close()
+    }
+} finally { $zout.Dispose(); $zin.Dispose() }
+Copy-Item $norm $baseApk -Force
+Remove-Item $norm -Force
+$unsigned = Join-Path $build 'unsigned.apk'
+Copy-Item $baseApk $unsigned -Force
 $zip = [System.IO.Compression.ZipFile]::Open($unsigned, [System.IO.Compression.ZipArchiveMode]::Update)
 try {
     $old = $zip.GetEntry('classes.dex')

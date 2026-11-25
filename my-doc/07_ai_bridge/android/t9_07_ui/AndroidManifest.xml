@@ -1,24 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  T9-08B product UI: voice-first home, settings, and a "更多功能" entrance that keeps the
-  previously built text/history screens reachable.
+  T9-UI-02: V2 kid-friendly shell.
 
-  The app is still an ordinary, unprivileged one: no permissions, no sharedUserId, no service,
-  and no intent-reading code in any of the production activities.
+  The app is still an ordinary, unprivileged one: no permissions, no sharedUserId, no
+  service, and no intent-reading code in any of the production activities.  Images ship
+  in APK assets/ (aapt2 -A), not in res/.
+
+  ConversationActivity / MoreActivity / SettingsActivity are GONE from the manifest:
+  the V2 shell replaces them (skills / memory / settings pages).  Their code files stay
+  in the repo for reference but are no longer compiled.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tgz02.voice"
-    android:versionCode="3"
-    android:versionName="1.2.0">
+    android:versionCode="4"
+    android:versionName="1.3.0">
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="27" />
 
     <application
-        android:label="语音助手"
+        android:name=".Tgz02App"
+        android:label="布丁助手"
         android:allowBackup="false"
         android:theme="@android:style/Theme.Material.NoActionBar">
 
-        <!-- the product: voice only -->
+        <!-- the product: voice-first home with the buddy -->
         <activity
             android:name=".VoiceHomeActivity"
             android:exported="true"
@@ -30,22 +35,14 @@
             </intent-filter>
         </activity>
 
-        <!-- keeps the text/history screens reachable; no launcher entry -->
-        <activity
-            android:name=".ConversationActivity"
-            android:exported="true"
-            android:launchMode="singleTask"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
+        <!-- T9-UI-02: the four secondary top pages (Views inside, no new activities per skill) -->
+        <activity android:name=".SkillsHomeActivity"  android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden" />
-
-        <activity
-            android:name=".MoreActivity"
-            android:exported="false"
+        <activity android:name=".MemoryCenterActivity" android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden" />
-
-        <activity
-            android:name=".SettingsActivity"
-            android:exported="false"
+        <activity android:name=".SettingsHomeActivity" android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity android:name=".AboutActivity" android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
         <!-- T9-08C: multi-vendor model configuration (plain-text keys, editable, hot applied) -->
