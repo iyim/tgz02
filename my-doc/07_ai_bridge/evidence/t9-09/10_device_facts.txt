@@ -1,0 +1,42 @@
+# T9-09 factory architecture facts (device capture, 2026-11-25)
+
+## packages
+package:/system/app/smartapp/smartapp.apk=com.alibaba.ailabs.genie.smartapp
+package:/data/app/com.tgz02.voice-gRLUchEsZ8ststZLpMr9Fg==/base.apk=com.tgz02.voice
+package:/system/app/GenieChildren/GenieChildren.apk=com.alibaba.ailabs.genie.children
+package:/system/app/AliGenieService/AliGenieService.apk=com.aligenie.ags
+package:/system/app/GenieLauncher/GenieLauncher.apk=com.alibaba.ailabs.genie.launcher
+
+## processes and SELinux domains
+PID     PPID    USER      NAME / domain
+326     1 system       wmt_launcher
+345     1 root         guardians
+917   280 system       com.alibaba.ailabs.genie.smartapp
+1059   280 u0_a24       com.alibaba.ailabs.genie.launcher
+1138     1 root         tg_supervisor
+1139     1 root         tg_supervisor
+1148   280 system       com.alibaba.ailabs.genie.smartapp:core
+1234   280 system       com.alibaba.ailabs.genie.smartapp:business
+1256   280 system       com.aligenie.ags
+2591     1 root         ai_worker
+
+## SELinux domains
+see 11_selinux_domains.txt (live sample)
+getenforce=Permissive
+
+## binder services relevant to voice
+23	voiceinteraction: [com.android.internal.app.IVoiceInteractionManagerService]
+105	guardians: [com.yunos.guardians.IGuardians]
+117	alibaba.ailabs.genie.resm: [com.alibaba.ailabs.genie.resmanager.IResManager]
+total binder services=125
+
+## HOME resolution
+priority=0 preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=true
+name=com.alibaba.ailabs.genie.launcher.activity.AdultHomeActivity
+packageName=com.alibaba.ailabs.genie.launcher
+name=com.alibaba.ailabs.genie.launcher.application.GDPApplication
+packageName=com.alibaba.ailabs.genie.launcher
+className=com.alibaba.ailabs.genie.launcher.application.GDPApplication
+
+## mount
+/dev/block/mmcblk0p19 on /system type ext4 (ro,seclabel,relatime,data=ordered)

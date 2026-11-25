@@ -1,0 +1,3 @@
+11-25 16:17:29.545   622   622 I PackageManager: /system/priv-app/TgSysId changed; collecting certs
+11-25 16:17:29.554   622   622 E PackageManager: Adding duplicate shared id: 1000 name=com.tgz02.binderdemo.sysid
+11-25 16:17:29.560   622   622 W PackageManager: Failed to scan /system/priv-app/TgSysId: Signature mismatch for shared user: SharedUserSetting{80851c3 android.uid.system/1000}

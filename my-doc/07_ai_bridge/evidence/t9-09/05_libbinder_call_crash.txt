@@ -1,0 +1,64 @@
+11-25 16:09:36.559  8929  8929 F libc    : Fatal signal 11 (SIGSEGV), code 1, fault addr 0x2f in tid 8929 (libbinder_probe), pid 8929 (libbinder_probe)
+11-25 16:09:36.654  8933  8933 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+11-25 16:09:36.655  8933  8933 F DEBUG   : Build fingerprint: 'alps/full_ailabs_s1l/ailabs_s1l:6.1.8-RS-20221104.1459/O11019/1667545132:user/test-keys'
+11-25 16:09:36.655  8933  8933 F DEBUG   : Revision: '0'
+11-25 16:09:36.655  8933  8933 F DEBUG   : ABI: 'arm'
+11-25 16:09:36.655  8933  8933 F DEBUG   : pid: 8929, tid: 8929, name: libbinder_probe  >>> /data/local/tmp/libbinder_probe <<<
+11-25 16:09:36.655  8933  8933 F DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x2f
+11-25 16:09:36.655  8933  8933 F DEBUG   : Cause: null pointer dereference
+11-25 16:09:36.655  8933  8933 F DEBUG   :     r0 ab30ecc0  r1 0000002f  r2 00000000  r3 00000002
+11-25 16:09:36.655  8933  8933 F DEBUG   :     r4 beca88b4  r5 ab1f3114  r6 beca88b0  r7 beca88a8
+11-25 16:09:36.655  8933  8933 F DEBUG   :     r8 ab1f3114  r9 beca88ac  sl 00000000  fp ab1f3114
+11-25 16:09:36.655  8933  8933 F DEBUG   :     ip ab1f1d98  sp beca88a0  lr ab1cc26d  pc ab1cc276  cpsr 800d0030
+11-25 16:09:36.720  8933  8933 F DEBUG   : 
+11-25 16:09:36.720  8933  8933 F DEBUG   : backtrace:
+11-25 16:09:36.720  8933  8933 F DEBUG   :     #00 pc 00044276  /system/lib/libbinder.so (android::defaultServiceManager()+265)
+11-25 16:09:36.721  8933  8933 F DEBUG   :     #01 pc 000005fc  /data/local/tmp/libbinder_probe (main+128)
+11-25 16:09:41.519  8960  8960 F libc    : Fatal signal 11 (SIGSEGV), code 1, fault addr 0x2f in tid 8960 (libbinder_probe), pid 8960 (libbinder_probe)
+11-25 16:09:41.583  8963  8963 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+11-25 16:09:41.584  8963  8963 F DEBUG   : Build fingerprint: 'alps/full_ailabs_s1l/ailabs_s1l:6.1.8-RS-20221104.1459/O11019/1667545132:user/test-keys'
+11-25 16:09:41.584  8963  8963 F DEBUG   : Revision: '0'
+11-25 16:09:41.584  8963  8963 F DEBUG   : ABI: 'arm'
+11-25 16:09:41.585  8963  8963 F DEBUG   : pid: 8960, tid: 8960, name: libbinder_probe  >>> /data/local/tmp/libbinder_probe <<<
+11-25 16:09:41.585  8963  8963 F DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x2f
+11-25 16:09:41.585  8963  8963 F DEBUG   : Cause: null pointer dereference
+11-25 16:09:41.585  8963  8963 F DEBUG   :     r0 b2a8ecc0  r1 0000002f  r2 00000000  r3 00000002
+11-25 16:09:41.586  8963  8963 F DEBUG   :     r4 bed998b4  r5 b28f1114  r6 bed998b0  r7 bed998a8
+11-25 16:09:41.586  8963  8963 F DEBUG   :     r8 b28f1114  r9 bed998ac  sl 00000000  fp b28f1114
+11-25 16:09:41.586  8963  8963 F DEBUG   :     ip b28efd98  sp bed998a0  lr b28ca26d  pc b28ca276  cpsr 800d0030
+11-25 16:09:41.605  8963  8963 F DEBUG   : 
+11-25 16:09:41.605  8963  8963 F DEBUG   : backtrace:
+11-25 16:09:41.605  8963  8963 F DEBUG   :     #00 pc 00044276  /system/lib/libbinder.so (android::defaultServiceManager()+265)
+11-25 16:09:41.606  8963  8963 F DEBUG   :     #01 pc 000005fc  /data/local/tmp/libbinder_probe (main+128)
+11-25 16:09:46.923  8978  8978 F libc    : Fatal signal 11 (SIGSEGV), code 1, fault addr 0x2f in tid 8978 (libbinder_probe), pid 8978 (libbinder_probe)
+11-25 16:09:46.966  8983  8983 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+11-25 16:09:46.966  8983  8983 F DEBUG   : Build fingerprint: 'alps/full_ailabs_s1l/ailabs_s1l:6.1.8-RS-20221104.1459/O11019/1667545132:user/test-keys'
+11-25 16:09:46.966  8983  8983 F DEBUG   : Revision: '0'
+11-25 16:09:46.966  8983  8983 F DEBUG   : ABI: 'arm'
+11-25 16:09:46.966  8983  8983 F DEBUG   : pid: 8978, tid: 8978, name: libbinder_probe  >>> /data/local/tmp/libbinder_probe <<<
+11-25 16:09:46.967  8983  8983 F DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x2f
+11-25 16:09:46.967  8983  8983 F DEBUG   : Cause: null pointer dereference
+11-25 16:09:46.967  8983  8983 F DEBUG   :     r0 ad90ecc0  r1 0000002f  r2 00000000  r3 00000002
+11-25 16:09:46.967  8983  8983 F DEBUG   :     r4 be9f48b4  r5 ad7e7114  r6 be9f48b0  r7 be9f48a8
+11-25 16:09:46.967  8983  8983 F DEBUG   :     r8 ad7e7114  r9 be9f48ac  sl 00000000  fp ad7e7114
+11-25 16:09:46.967  8983  8983 F DEBUG   :     ip ad7e5d98  sp be9f48a0  lr ad7c026d  pc ad7c0276  cpsr 800d0030
+11-25 16:09:46.986  8983  8983 F DEBUG   : 
+11-25 16:09:46.986  8983  8983 F DEBUG   : backtrace:
+11-25 16:09:46.986  8983  8983 F DEBUG   :     #00 pc 00044276  /system/lib/libbinder.so (android::defaultServiceManager()+265)
+11-25 16:09:46.986  8983  8983 F DEBUG   :     #01 pc 000005fc  /data/local/tmp/libbinder_probe (main+128)
+11-25 16:10:02.670  9017  9017 F libc    : Fatal signal 11 (SIGSEGV), code 1, fault addr 0x0 in tid 9017 (libbinder_probe), pid 9017 (libbinder_probe)
+11-25 16:10:02.699  9021  9021 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+11-25 16:10:02.700  9021  9021 F DEBUG   : Build fingerprint: 'alps/full_ailabs_s1l/ailabs_s1l:6.1.8-RS-20221104.1459/O11019/1667545132:user/test-keys'
+11-25 16:10:02.700  9021  9021 F DEBUG   : Revision: '0'
+11-25 16:10:02.700  9021  9021 F DEBUG   : ABI: 'arm'
+11-25 16:10:02.700  9021  9021 F DEBUG   : pid: 9017, tid: 9017, name: libbinder_probe  >>> /data/local/tmp/libbinder_probe <<<
+11-25 16:10:02.700  9021  9021 F DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0
+11-25 16:10:02.700  9021  9021 F DEBUG   : Cause: null pointer dereference
+11-25 16:10:02.700  9021  9021 F DEBUG   :     r0 b1c8ecc0  r1 00000000  r2 00000000  r3 00000002
+11-25 16:10:02.700  9021  9021 F DEBUG   :     r4 bef0589c  r5 b1a7d114  r6 bef05898  r7 bef05890
+11-25 16:10:02.700  9021  9021 F DEBUG   :     r8 b1a7d114  r9 bef05894  sl 00000000  fp b1a7d114
+11-25 16:10:02.700  9021  9021 F DEBUG   :     ip b1a7bd98  sp bef05888  lr b1a5626d  pc b1a56276  cpsr 800d0030
+11-25 16:10:02.716  9021  9021 F DEBUG   : 
+11-25 16:10:02.716  9021  9021 F DEBUG   : backtrace:
+11-25 16:10:02.716  9021  9021 F DEBUG   :     #00 pc 00044276  /system/lib/libbinder.so (android::defaultServiceManager()+265)
+11-25 16:10:02.716  9021  9021 F DEBUG   :     #01 pc 000006b8  /data/local/tmp/libbinder_probe (main+272)

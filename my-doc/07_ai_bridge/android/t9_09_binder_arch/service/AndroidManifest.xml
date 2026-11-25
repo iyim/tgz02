@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  T9-09 experiment, service side.
+
+  The service runs in its OWN process (:svc) so that "the UI died" and "the service died" are
+  two different events that the experiment can tell apart with pidof/dumpsys.
+  exported=true + an explicit action: the client APK is a separate package with a separate
+  signature, so the only way it can reach this service is the public binding path, i.e. the same
+  path our product UI would use if the service were part of another product package.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.tgz02.binderdemo.svc"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="27" />
+
+    <application
+        android:label="TG binder demo service"
+        android:debuggable="false">
+
+        <service
+            android:name="com.tgz02.binderdemo.DemoService"
+            android:process=":svc"
+            android:exported="true"
+            android:stopWithTask="false">
+            <intent-filter>
+                <action android:name="com.tgz02.binderdemo.BIND" />
+            </intent-filter>
+        </service>
+
+    </application>
+</manifest>

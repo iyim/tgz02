@@ -1,0 +1,20 @@
+# T9-09 priv-app deployment evidence (captured on the device, 2026-11-25)
+
+## 1. APK copied to /system/priv-app/TgBinderDemoSvc/ and device rebooted
+$ adb shell pm path com.tgz02.binderdemo.svc
+package:/system/priv-app/TgBinderDemoSvc/TgBinderDemoSvc.apk
+
+## 2. package flags (SYSTEM + UPDATED_SYSTEM_APP, two code paths)
+userId=10020
+codePath=/system/priv-app/TgBinderDemoSvc
+signatures=PackageSignatures{90a78d5 [252b4d98]}
+pkgFlags=[ SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
+
+## 3. user uninstall (= adb uninstall, the strongest a non-root user can do)
+$ adb uninstall com.tgz02.binderdemo.svc
+Failure [DELETE_FAILED_INTERNAL_ERROR]
+
+## 4. after the uninstall attempt the app is still there, served from /system
+$ adb shell pm path com.tgz02.binderdemo.svc
+package:/system/priv-app/TgBinderDemoSvc/TgBinderDemoSvc.apk
+pkgFlags=[ SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]

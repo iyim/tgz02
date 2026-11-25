@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  T9-09 experiment, UI side.
+
+  Two intent filters on the same activity on purpose:
+    * LAUNCHER  -> it can be started normally while we test the Binder link;
+    * HOME      -> it can be made the default home app with `cmd package set-home-activity`,
+                   which is the measurement for "can our own UI replace the factory launcher".
+  The activity is a measurement instrument, not product UI.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.tgz02.binderdemo.ui"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="27" />
+
+    <application
+        android:label="TG binder demo UI"
+        android:debuggable="false">
+
+        <activity
+            android:name=".UiClient"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|keyboardHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter android:priority="100">
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+    </application>
+</manifest>
