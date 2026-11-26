@@ -82,28 +82,43 @@ public class AlarmRingingActivity extends Activity {
                 Ui4.primaryW(this), Ui4.bgDeep(this), Ui4.pinkW(this)}, 0));
         root.setPadding(Ui4.dp(this, 40), Ui4.dp(this, 32), Ui4.dp(this, 40), Ui4.dp(this, 32));
 
-        /* 布丁 */
-        Bitmap pud = Ui4.artBmp(this, "puddin_happy");
-        if (pud != null) {
+        /* T9-16 用户设计：闹钟图标在左，时间大字在右（横向布局，符合 1024x600 比例） */
+        LinearLayout contentRow = new LinearLayout(this);
+        contentRow.setOrientation(LinearLayout.HORIZONTAL);
+        contentRow.setGravity(Gravity.CENTER_VERTICAL);
+        root.addView(contentRow, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        /* 左：新闹钟图标（alarm_static，抠底 RGBA） */
+        Bitmap clock = Ui4.artBmp(this, "alarm_static");
+        if (clock != null) {
             ImageView iv = new ImageView(this);
-            iv.setImageBitmap(pud);
+            iv.setImageBitmap(clock);
             iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            root.addView(iv, new LinearLayout.LayoutParams(Ui4.dp(this, 150), Ui4.dp(this, 150)));
+            LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(
+                    Ui4.dp(this, 240), Ui4.dp(this, 240));
+            clp.rightMargin = Ui4.dp(this, 28);
+            contentRow.addView(iv, clp);
         }
 
-        /* 标签 + 时间 */
-        TextView lab = Ui4.textBold(this, label, Ui4.T_H1, Ui4.text(this));
-        lab.setGravity(Gravity.CENTER);
-        root.addView(lab);
+        /* 右：标签 + 大字时间 + 提示（垂直居中） */
+        LinearLayout right = new LinearLayout(this);
+        right.setOrientation(LinearLayout.VERTICAL);
+        right.setGravity(Gravity.CENTER_VERTICAL);
+        contentRow.addView(right, new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        TextView lab = Ui4.textBold(this, label, Ui4.T_CARD, Ui4.text(this));
+        right.addView(lab);
 
         String now = new SimpleDateFormat("HH:mm", Locale.CHINA).format(new Date());
-        TextView time = Ui4.textBold(this, now, 64f, Ui4.primary2(this));
-        time.setGravity(Gravity.CENTER);
-        root.addView(time);
+        /* 时间大字：72 -> 96sp，填满右列宽度（符合页面显示比例） */
+        TextView time = Ui4.textBold(this, now, 96f, Ui4.primary2(this));
+        right.addView(time);
 
-        TextView hint = Ui4.text(this, "起床啦！布丁叫你啦", Ui4.T_BODY, Ui4.text2(this));
-        hint.setGravity(Gravity.CENTER);
-        root.addView(hint);
+        TextView hint = Ui4.text(this, "起床啦！布丁叫你啦", Ui4.T_STATE, Ui4.text2(this));
+        hint.setPadding(0, Ui4.dp(this, 8), 0, 0);
+        right.addView(hint);
 
         /* 按钮行：贪睡 / 关闭 */
         LinearLayout row = new LinearLayout(this);
@@ -111,7 +126,7 @@ public class AlarmRingingActivity extends Activity {
         row.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        rlp.topMargin = Ui4.dp(this, 28);
+        rlp.topMargin = Ui4.dp(this, 36);
         root.addView(row, rlp);
 
         TextView snooze = Ui4.btn(this, "贪睡 5 分钟", false, new Runnable() {
