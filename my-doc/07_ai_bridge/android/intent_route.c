@@ -726,7 +726,7 @@ int ir_route_bit(ir_intent it)
     case IR_MEDIA:      return T7B_ROUTE_MEDIA;
     case IR_STOP:       return T7B_ROUTE_STOP;
     case IR_EXIT:       return T7B_ROUTE_EXIT;
-    case IR_ALARM:      return T7B_ROUTE_ALARM;
+    case IR_ALARM:      return 0;                    /* T9-16：不 PASS 原厂，走自有技能 */
     case IR_NONE:
     default:            return 0;
     }

@@ -104,6 +104,9 @@ typedef struct {
      * 其它意图仍走原厂 route=native 或大模型。 */
     int         skill_dispatch;
     /* T8-14.2：device.status 独立开关（默认 0）。总开关与它同时为 1 才接管设备状态查询。 */
+    /* T9-16：自有闹钟技能开关（默认 1）。接管开 + 本开关开时，闹钟话术由 worker
+     * 技能接管（解析→写 alarm_request.public.json→App 自有闹钟），不再 PASS 原厂。 */
+    int         skill_alarm_enabled;
     int         skill_device_status;
     /* 可选：覆盖电池 capacity 路径（空 = 按候选列表自动探测，真机为 sysfs） */
     char        skill_battery_path[T8_SK_PATH_MAX];

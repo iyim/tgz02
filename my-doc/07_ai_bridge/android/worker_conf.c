@@ -67,7 +67,6 @@ static int wc_route_intents(const char *v, int *out)
         else if (strcmp(tok, "stop") == 0) mask |= T7B_ROUTE_STOP;
         else if (strcmp(tok, "time") == 0) mask |= T7B_ROUTE_TIME;
         else if (strcmp(tok, "exit") == 0) mask |= T7B_ROUTE_EXIT;  /* T8-12.20 */
-        else if (strcmp(tok, "alarm") == 0) mask |= T7B_ROUTE_ALARM; /* T9-15 */
         else if (strcmp(tok, "all") == 0) mask |= T7B_ROUTE_ALL;
         else if (strcmp(tok, "none") == 0) mask = 0;
         /* 其它名字：忽略（前向兼容，不让一个拼写错误把整份配置废掉） */
@@ -269,6 +268,12 @@ static int wc_apply(t6b_config *cfg, const char *key, const char *val, char *err
     if (strcmp(key, "skill_device_status_enabled") == 0) {
         if (wc_bool(val, &iv) != 0) goto bad;
         cfg->skill_device_status = iv;
+        return 0;
+    }
+    /* T9-16：自有闹钟技能开关（默认 1，由 t6b_config_defaults 设置；conf 里写 0 可关）。 */
+    if (strcmp(key, "skill_alarm_enabled") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->skill_alarm_enabled = iv;
         return 0;
     }
     if (strcmp(key, "skill_device_battery_path") == 0) {
@@ -474,6 +479,7 @@ int wc_write(const t6b_config *cfg, const char *path, char *err, size_t errlen)
                  "session_timeout_ms=%d\n"
                  "skill_dispatch_enabled=%d\n"
                  "skill_device_status_enabled=%d\n"
+                 "skill_alarm_enabled=%d\n"
                  "skill_device_battery_path=%s\n",
                  cfg->provider_name, cfg->deepseek.base_url, cfg->deepseek.model,
                  cfg->deepseek.api_key_file, cfg->deepseek.temperature,
@@ -485,6 +491,7 @@ int wc_write(const t6b_config *cfg, const char *path, char *err, size_t errlen)
                  cfg->session.enabled ? 1 : 0, cfg->session.timeout_ms,
                  cfg->skill_dispatch ? 1 : 0,
                  cfg->skill_device_status ? 1 : 0,
+                 cfg->skill_alarm_enabled ? 1 : 0,
                  cfg->skill_battery_path);
     if (n < 0 || (size_t)n >= sizeof(buf)) {
         if (err) snprintf(err, errlen, "config buffer too small");

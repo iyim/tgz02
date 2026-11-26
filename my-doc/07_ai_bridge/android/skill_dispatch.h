@@ -21,6 +21,7 @@
 #define T8_SK_ARGC_MAX  4
 #define T8_SK_ARG_MAX   48
 #define T8_SK_MSG_MAX   96
+#define T8_SK_TEXT_MAX  512   /* T9-16：闹钟技能需要原文（时间解析），随 req 传入 */
 
 typedef enum {
     T8_SK_NONE = 0,
@@ -35,7 +36,8 @@ typedef enum {
     T8_SK_SCREEN_OFF = 9,
     T8_SK_APP_LAUNCH = 10,    /* argv[0] = 包名/别名 */
     T8_SK_DEVICE_STATUS = 11, /* T8-14.2：设备自身状态（电池电量 / 运行时长），无参数 */
-    T8_SK_MAX = 12
+    T8_SK_ALARM_SET = 12,     /* T9-16：闹钟设置（时间/重复已由技能解析，原文在 text 字段） */
+    T8_SK_MAX = 13
 } t8_skill_id;
 
 #define T8_SK_OK          0
@@ -49,6 +51,7 @@ typedef struct {
     int         argc;
     char        argv[T8_SK_ARGC_MAX][T8_SK_ARG_MAX];
     char        session[40];      /* 触发它的会话（日志/回执关联用） */
+    char        text[T8_SK_TEXT_MAX + 1]; /* T9-16：原始话术（alarm 时间解析用），无 = 空 */
 } t8_skill_req;
 
 typedef struct {

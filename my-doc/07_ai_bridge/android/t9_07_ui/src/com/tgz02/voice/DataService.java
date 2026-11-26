@@ -58,6 +58,10 @@ final class DataService {
         public String label = "";
         public boolean enabled = true;
         public long createdMs;
+        /* T9-16：自有闹钟扩展。repeat 位：bit0=周一..bit6=周日，0=一次性；
+         * lastFiredMs 用于防系统重投递（60s 内同 id 不重复响）。 */
+        public int repeat;
+        public long lastFiredMs;
     }
 
     /* --------------------------------------------------------------- singleton */
@@ -186,7 +190,7 @@ final class DataService {
         List<Alarm> out = new ArrayList<Alarm>();
         SQLiteDatabase db = Db.get(ctx).getReadableDatabase();
         Cursor cur = db.rawQuery(
-            "SELECT id,time,label,enabled,created_ms FROM alarms ORDER BY time", null);
+            "SELECT id,time,label,enabled,created_ms,repeat,last_fired_ms FROM alarms ORDER BY time", null);
         try {
             while (cur.moveToNext()) {
                 Alarm a = new Alarm();
@@ -195,6 +199,8 @@ final class DataService {
                 a.label = Db.str(cur, "label");
                 a.enabled = Db.bool(cur, "enabled") == 1;
                 a.createdMs = Db.lng(cur, "created_ms");
+                a.repeat = Db.intCol(cur, "repeat");
+                a.lastFiredMs = Db.lng(cur, "last_fired_ms");
                 out.add(a);
             }
         } finally { cur.close(); }
@@ -220,6 +226,82 @@ final class DataService {
         int n = db.update("alarms", v, "id=?", new String[]{ String.valueOf(id) });
         if (n > 0) publishAlarmSnapshot();
         return n > 0;
+    }
+
+    /** T9-16：按 id 取一条闹钟（没有返回 null） */
+    Alarm alarmGet(long id) {
+        SQLiteDatabase db = Db.get(ctx).getReadableDatabase();
+        Cursor cur = db.rawQuery(
+            "SELECT id,time,label,enabled,created_ms,repeat,last_fired_ms FROM alarms WHERE id=?",
+            new String[]{ String.valueOf(id) });
+        try {
+            if (!cur.moveToFirst()) return null;
+            Alarm a = new Alarm();
+            a.id = Db.lng(cur, "id");
+            a.time = Db.str(cur, "time");
+            a.label = Db.str(cur, "label");
+            a.enabled = Db.bool(cur, "enabled") == 1;
+            a.createdMs = Db.lng(cur, "created_ms");
+            a.repeat = Db.intCol(cur, "repeat");
+            a.lastFiredMs = Db.lng(cur, "last_fired_ms");
+            return a;
+        } finally { cur.close(); }
+    }
+
+    /** T9-16：记录本次触发时刻（防重投递）；不改变 enabled。 */
+    boolean alarmMarkFired(long id, long firedMs) {
+        SQLiteDatabase db = Db.get(ctx).getWritableDatabase();
+        ContentValues v = new ContentValues();
+        v.put("last_fired_ms", firedMs);
+        int n = db.update("alarms", v, "id=?", new String[]{ String.valueOf(id) });
+        if (n > 0) publishAlarmSnapshot();
+        return n > 0;
+    }
+
+    /** T9-16：带重复规则的新增（语音/语音请求监控用）。返回新 id。 */
+    long alarmAddRepeat(String time, String label, boolean enabled, int repeat) {
+        SQLiteDatabase db = Db.get(ctx).getWritableDatabase();
+        ContentValues v = new ContentValues();
+        v.put("time", time);
+        v.put("label", label);
+        v.put("enabled", enabled ? 1 : 0);
+        v.put("repeat", repeat);
+        v.put("created_ms", Db.now());
+        long id = db.insert("alarms", null, v);
+        if (id > 0) publishAlarmSnapshot();
+        return id;
+    }
+
+    /** T9-16：修改时间/标签/重复规则。 */
+    boolean alarmUpdate(long id, String time, String label, int repeat) {
+        SQLiteDatabase db = Db.get(ctx).getWritableDatabase();
+        ContentValues v = new ContentValues();
+        if (time != null) v.put("time", time);
+        if (label != null) v.put("label", label);
+        v.put("repeat", repeat);
+        int n = db.update("alarms", v, "id=?", new String[]{ String.valueOf(id) });
+        if (n > 0) publishAlarmSnapshot();
+        return n > 0;
+    }
+
+    /** T9-16：关闭全部闹钟（语音关闭所有闹钟用）。返回影响行数。 */
+    int alarmDisableAll() {
+        SQLiteDatabase db = Db.get(ctx).getWritableDatabase();
+        ContentValues v = new ContentValues();
+        v.put("enabled", 0);
+        int n = db.update("alarms", v, "enabled=1", null);
+        if (n > 0) publishAlarmSnapshot();
+        return n;
+    }
+
+    /** T9-16：按时间关闭/删除（语音取消明天的闹钟第一版：匹配 HH:MM 全部关闭）。 */
+    int alarmDisableByTime(String time) {
+        SQLiteDatabase db = Db.get(ctx).getWritableDatabase();
+        ContentValues v = new ContentValues();
+        v.put("enabled", 0);
+        int n = db.update("alarms", v, "time=? AND enabled=1", new String[]{ time });
+        if (n > 0) publishAlarmSnapshot();
+        return n;
     }
 
     boolean alarmDelete(long id) {
@@ -315,6 +397,11 @@ final class DataService {
                 Log.w(TAG, "memory snapshot publish error: " + t);
             }
         }
+    }
+
+    /** T9-16：供 AlarmRequestMonitor 在查询动作后主动刷新快照 */
+    public void publishAlarmSnapshotPublic() {
+        publishAlarmSnapshot();
     }
 
     private void publishAlarmSnapshot() {

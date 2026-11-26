@@ -81,6 +81,7 @@ const char *t8_skill_name(t8_skill_id id)
     case T8_SK_SCREEN_OFF:   return "screen.off";
     case T8_SK_APP_LAUNCH:   return "app.launch";
     case T8_SK_DEVICE_STATUS: return "device.status";
+    case T8_SK_ALARM_SET: return "alarm.set";
     default:                 return "none";
     }
 }
@@ -142,6 +143,11 @@ int t8_skill_from_intent(int intent, const char *arg, const char *session, t8_sk
     case IR_DEVICE_STATUS:
         /* T8-14.2：设备自身状态（电量/运行时长），无参数 */
         t8_skill_req_init(out, T8_SK_DEVICE_STATUS, session);
+        return 1;
+    case IR_ALARM:
+        /* T9-16：闹钟。时间/重复的解析在 t9_skill_alarm_exec 里做（需要原文），
+         * 这里只挂技能 id；text 由 uttq_pop 填充。 */
+        t8_skill_req_init(out, T8_SK_ALARM_SET, session);
         return 1;
     case IR_SCREEN_ON:
         t8_skill_req_init(out, T8_SK_SCREEN_ON, session);

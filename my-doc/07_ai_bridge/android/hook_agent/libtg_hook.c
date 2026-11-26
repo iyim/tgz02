@@ -739,7 +739,7 @@ static void nlu_boot_once(void)
     v = getenv("TG_NLU_ROUTE_MASK");
     if (v != NULL && v[0] != '\0') {
         long m = strtol(v, NULL, 0);
-        if (m > 0 && m <= 0x1FF) g_nlu_mask = (int)m;  /* T9-15：上限随 T7B_ROUTE_ALL 扩到 0x1FF */
+        if (m > 0 && m <= 0xFF) g_nlu_mask = (int)m;   /* T9-16：上限回到 0xFF */
     }
 
     /* T8-05：会话表**无条件**初始化（t8_to_init 只做一次 memset + mutex_init）。

@@ -21,6 +21,7 @@
 #include "seq_gap.h"
 #include "session_ctrl.h"
 #include "skill_dispatch.h"
+#include "alarm_skill.h"
 #include "t7_dup.h"
 #include "talk_tap.h"
 #include "tg_req_seq.h"
@@ -120,6 +121,8 @@ typedef struct {
     /* T8-14.1：本轮 pend 由哪个技能执行（0 = 走 Provider）。放在 pend 之外是因为它
      * 必须跨 Provider 重试保留：重试的是"同一件事"，不是"换一条路重新问模型"。 */
     int          pend_skill_id;
+    char         pend_skill_text[T8_SK_TEXT_MAX + 1]; /* T9-16：闹钟原文（skill 执行时用） */
+    t9_alarm_ctx al;                     /* T9-16：闹钟技能上下文 */
     char         gate_hold_path[T6B_PATH_MAX];
     char         route_publish_path[T6B_PATH_MAX];
     t6b_utt      uttq[T6B_UTT_QUEUE];     /* 等待 Provider 的完整指令（最多 4 条） */
@@ -473,6 +476,7 @@ static void publish_status(t6b_worker *w, const char *state)
     w->st.sk_fail = w->sk.fail;
     w->st.sk_noimpl = w->sk.noimpl;
     w->st.sk_device_enabled = w->cfg.skill_device_status;
+    w->st.sk_alarm_enabled = w->cfg.skill_alarm_enabled;   /* T9-16 */
 
     /* Provider 观测：真实 Provider 才有 http/latency/resp_bytes；
      * 这些字段只放数字与短枚举，绝不含 key / 用户文本 / 上游正文。 */
@@ -1904,6 +1908,8 @@ static int skill_run(t6b_worker *w, t6b_reply *rep)
     memset(&req, 0, sizeof(req));
     memset(&res, 0, sizeof(res));
     t8_skill_req_init(&req, (t8_skill_id)w->pend_skill_id, w->pend.session_id);
+    /* T9-16：把原文带进技能请求（闹钟时间解析用；其他技能不用） */
+    snprintf(req.text, sizeof(req.text), "%s", w->pend_skill_text);
     /* 本轮接管的技能（time.query）不需要参数。将来的带参技能在这里用
      * t8_skill_req_arg() 填，参数只来自 intent_route 的结构化结果，绝不从自由文本现编。 */
     rc = t8_skill_execute(&w->sk, &req, &res);
@@ -2529,6 +2535,9 @@ static int skill_claim_id(const t6b_worker *w, const char *session, const ir_res
      * route_intents 而是自己的独立开关；开关关闭时整条判定直接不成立（回落 AI）。 */
     if (ir->intent == IR_DEVICE_STATUS) {
         if (!w->cfg.skill_device_status) return 0;
+    } else if (ir->intent == IR_ALARM) {
+        /* T9-16：闹钟走自有技能（无 route 位），开关独立于 route_intents */
+        if (!w->cfg.skill_alarm_enabled) return 0;
     } else if (!route_intent_enabled(w, ir->intent)) {
         return 0;
     }
@@ -2721,6 +2730,12 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
     w->pend_error[0] = '\0';
     /* T8-14.1：本轮由谁执行（0 = Provider，>0 = 技能 id）。跨重试保留同一个值。 */
     w->pend_skill_id = sk_id;
+    /* T9-16：闹钟技能需要原文做时间解析；其他技能 text 置空即可 */
+    if (sk_id != 0) {
+        snprintf(w->pend_skill_text, sizeof(w->pend_skill_text), "%s", slot->text);
+    } else {
+        w->pend_skill_text[0] = 0;
+    }
 
     /* T8-13：真实事件 -> 会话控制中心。route=ai 的 pend 建立即登记 AI 请求；
      * 若上一请求尚未终结，这里会打断并顶替（sc_on_submit 内部处理 stale）。 */
@@ -3475,6 +3490,7 @@ void t6b_config_defaults(t6b_config *c)
     c->skill_dispatch = 0;
     /* T8-14.2：device.status 默认关闭（总开关之外的第二道闸） */
     c->skill_device_status = 0;
+    c->skill_alarm_enabled = 1;                    /* T9-16：默认开 */
     c->skill_battery_path[0] = '\0';
     /* T8-15：免唤醒连续对话默认打开（这是 T8-15 交付的语义本身；不动原厂任何东西）。
      * 语义：播报结束后装填续听窗口，窗口内到达的下一句算同一对话的下一轮。 */
@@ -3920,6 +3936,14 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         if (t8_skill_register(&w.sk, T8_SK_DEVICE_STATUS, t8_skill_device_status_exec,
                               &w.dev) != T8_SK_OK) {
             always("skill register failed: device.status");
+        }
+        /* T9-16：自有闹钟技能（解析→写 alarm_request.public.json→App 注册响铃）。
+         * ctx 指向 w.al，work_dir 在下面统一填充。 */
+        t9_alarm_defaults(&w.al);
+        snprintf(w.al.work_dir, sizeof(w.al.work_dir), "%s", c->work_dir);
+        if (t8_skill_register(&w.sk, T8_SK_ALARM_SET, t9_skill_alarm_exec,
+                              &w.al) != T8_SK_OK) {
+            always("skill register failed: alarm.set");
         }
         w.st.sk_enabled = c->skill_dispatch;
         snprintf(w.st.sk_last_skill, sizeof(w.st.sk_last_skill), "%s", "none");

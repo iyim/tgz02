@@ -71,6 +71,8 @@ public class BackendService extends Service {
             broadcast("play", BackendJson.play(p));
         }
         public void onStatus(VoiceBridgeClient.Status s) {
+            /* T9-16：语音闹钟请求监控（幂等、ts_ms 单调，无新请求时近乎零开销） */
+            AlarmRequestMonitor.poll(BackendService.this);
             broadcast("status", BackendJson.status(s));
         }
         public void onDiag(String line) {

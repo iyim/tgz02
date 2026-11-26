@@ -115,6 +115,12 @@ Write-Host "== sources"
 # V2 compiled set: shell + home + pages + skill stores + model stack + legacy helpers
 $srcFiles = @(
     "src\com\tgz02\voice\Tgz02App.java",
+    "src\com\tgz02\voice\AlarmScheduler.java",
+    "src\com\tgz02\voice\AlarmReceiver.java",
+    "src\com\tgz02\voice\AlarmBootReceiver.java",
+    "src\com\tgz02\voice\AlarmRingingService.java",
+    "src\com\tgz02\voice\AlarmRingingActivity.java",
+    "src\com\tgz02\voice\AlarmRequestMonitor.java",
     "src\com\tgz02\voice\Ui3.java",
     "src\com\tgz02\voice\Ui4.java",
     "src\com\tgz02\voice\Toast2.java",

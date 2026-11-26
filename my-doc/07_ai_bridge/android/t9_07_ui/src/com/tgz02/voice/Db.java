@@ -35,7 +35,7 @@ import java.util.List;
 final class Db extends SQLiteOpenHelper {
 
     static final String NAME = "tgz02.db";
-    static final int VERSION = 1;
+    static final int VERSION = 2;   /* v2: alarms.repeat (T9-16 自有闹钟) */
 
     /* ------------------------------------------------------------------ schema */
 
@@ -117,9 +117,15 @@ final class Db extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldV, int newV) {
-        /* v1 is the first version; future migrations go here, one step per version:
-         *   if (oldV < 2) { db.execSQL("ALTER TABLE ..."); }
+        /* v1 is the first version; future migrations go here, one step per version.
          * Never drop user data in a migration. */
+        if (oldV < 2) {
+            /* T9-16: 自有闹钟的重复规则位（bit0=周一 ... bit6=周日，0=一次性）。
+             * 旧列已在 v1；老数据 repeat 默认 0 = 一次性，行为不变。 */
+            db.execSQL("ALTER TABLE alarms ADD COLUMN repeat INTEGER NOT NULL DEFAULT 0");
+            db.execSQL("ALTER TABLE alarms ADD COLUMN snooze_count INTEGER NOT NULL DEFAULT 0");
+            db.execSQL("CREATE INDEX idx_alarms_repeat ON alarms(repeat)");
+        }
     }
 
     /* ------------------------------------------------------------------ helpers */
@@ -135,6 +141,10 @@ final class Db extends SQLiteOpenHelper {
     }
 
     static int bool(Cursor cur, String col) {
+        return cur.getInt(cur.getColumnIndexOrThrow(col));
+    }
+
+    static int intCol(Cursor cur, String col) {
         return cur.getInt(cur.getColumnIndexOrThrow(col));
     }
 

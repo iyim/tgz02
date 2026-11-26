@@ -45,11 +45,11 @@ typedef enum {
     IR_DEVICE_STATUS = 9,/* T8-14.2：设备自身状态（电量/运行时长）。**原厂没有这个能力**，
                           * 因此不分配 route 位（ir_route_bit 返回 0）：命中后只可能是
                           * 自有技能接管或回落 AI，绝不会被"放行给原厂"。 */
-    IR_ALARM = 10        /* T9-15：闹钟/提醒（定闹钟/叫我起床/设个提醒）。原厂 smartapp 的
-                          * basedomain.ui.alarm 域有完整的云端闹钟链路（云端解析→ALARM_DATA_SYNC
-                          * 下发→AlarmManager.setAlarmClock→AlarmReceiver 响铃，真机验证
-                          * dumpsys alarm 有 22:00/07:30 注册、AlarmQueryReceiver 存活）。
-                          * 命中即 PASS 回原厂，绝不接管——我们的 LLM 建不了闹钟。 */
+    IR_ALARM = 10        /* T9-16：闹钟/提醒（定闹钟/叫我起床/设个提醒）。T9-15 曾放行原厂
+                          * （PASS 云端链路，真机验收通过），但 T9-16 起自有闹钟体系接管：
+                          * 与 IR_DEVICE_STATUS 同款——**不分配 route 位**（ir_route_bit 返回 0），
+                          * hook 不会 PASS 给原厂（原厂 NLU 被丢弃），worker 的闹钟技能接管
+                          * （时间解析→自有 DB→AlarmScheduler→自有响铃）。 */
 } ir_intent;
 
 typedef struct {
@@ -76,9 +76,8 @@ typedef struct {
 #define T7B_ROUTE_EXIT       0x80   /* T8-12.20：退出对话位。T7B_ROUTE_ALL 由 0x7F 扩到 0xFF，
                                      * worker_conf 的掩码校验（~T7B_ROUTE_ALL）与 libtg_hook 的
                                      * env 上限校验都引用 ALL，必须同步扩大。 */
-#define T7B_ROUTE_ALARM      0x100  /* T9-15: alarm/reminder passthrough bit. ALL extends 0xFF -> 0x1FF,
-                                      * worker_conf validation and libtg_hook env cap reference ALL. */
-#define T7B_ROUTE_ALL        0x1FF
+#define T7B_ROUTE_ALL        0xFF   /* T9-16：IR_ALARM 不占路由位（device_status 同款），
+                                      * 掩码回到 0xFF；闹钟接管走技能注册开关，不走 route 位。 */
 
 /* 判定一条 ASR 文本：1 = 属于原厂基础指令（route=native），0 = 不是（route=ai） */
 int ir_classify(const char *text, ir_result *out);
