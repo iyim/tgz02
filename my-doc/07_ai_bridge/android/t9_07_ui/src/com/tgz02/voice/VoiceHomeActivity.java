@@ -1,30 +1,22 @@
 /*
- * VoiceHomeActivity.java -- T9-UI-02: the V2 (kid-friendly) voice home.
+ * VoiceHomeActivity.java -- T9-14: the V3 home (TG-Z02-UI-V3, docs/02 §12).
  *
- * Replaces the T9-08B dark home.  Same data discipline as before:
+ * One layout, ten UI voice states (docs 9 + retained continuous = 10):
+ *   idle / wakeup / listening / recognizing / thinking / answering /
+ *   speaking / stopped / error / continuous
  *
- *   READS ONLY   <ui>/events/<seq>.json, <ui>/status.public.json, <tts>/play.public.json
- *   WRITES ONLY  inbox {"kind":"stop","tts_id":N}     (the one controlled stop path)
+ * Data discipline UNCHANGED (read-only UI over the real backend):
+ *   READS   status.public.json, events stream, play.public.json   (via BackendClient)
+ *   WRITES  inbox {"kind":"stop","tts_id":N}                       (the one stop path)
  *
- * The nine voice states map onto the real backend fields:
- *   error      worker dead / stale heartbeat
- *   speaking   play.public.json says playing (with tts_id)
- *   thinking   dialog.state == thinking
- *   listening  dialog.state == listening || status.listening
- *   asr        dialog round advanced with no reply yet  (see below)
- *   cont       dialog.state == continuous (worker's continuous window)
- *   standby    everything idle
- *   (stopped is a transient UI state right after the user taps 停止播报; it clears on the
- *    next turn event)
- *
- * The buddy image comes from APK assets (ui/puddin_*.png, exported by T9-UI-01-V2).
- * No text input, no conversation list, no demo data: everything on this screen is live.
+ * Layout (docs/03 §2.3): left character stage 400w (art 320, halo 356) + right column
+ * (greeting / dialog card flex / quick row 112). V3 assets from assets/ui/v3/.
  */
 package com.tgz02.voice;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -40,7 +32,7 @@ import android.widget.Toast;
 
 public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Listener {
 
-    static final String TAG = "T908HOME";
+    static final String TAG = "T914HOME";
 
     BackendClient client;
 
@@ -48,24 +40,25 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
     TextView meta;
     TextView greet;
     TextView sub;
-    ImageView buddy;
-    LinearLayout turnBox;
-    TextView turnWho;
-    TextView turnQ;
-    TextView turnA;
-    TextView turnErr;
-    TextView stopBtn;
+    ImageView face;
+    LinearLayout dialogCard;
+    TextView dialogRound;
+    LinearLayout dialogBody;
+    TextView dialogFoot;
+    TextView btnStop;
     LinearLayout quickRow;
     LinearLayout navbarHost;
+    FrameLayout halo;
 
     final Handler h = new Handler(Looper.getMainLooper());
 
     volatile int activeTtsId = -1;
-    boolean haveTurn;
-    boolean stopFlash;                       // true right after a successful stop tap
-    long lastRoundSeen = -1;
+    boolean stopFlash;
     long lastRoundMs = 0;
-    String lastTurnStatus = "";
+    String lastUser = "", lastReply = "", lastErr = "";
+    int lastRound = 0;
+    String curState = "idle";
+    String curFace = "idle";
 
     @Override
     protected void onCreate(Bundle b)
@@ -74,7 +67,7 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
         client = new BackendClient(this, "home");
         View root = buildScreen();
         setContentView(root);
-        root.setFocusableInTouchMode(true);   /* no text field here: the IME must never open */
+        root.setFocusableInTouchMode(true);   /* no text field: IME must never open */
         root.requestFocus();
     }
 
@@ -93,147 +86,192 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
         super.onStop();
     }
 
-    /* ---------------------------------------------------------------------- views */
+    /* ------------------------------------------------------------------ screen */
 
     private View buildScreen()
     {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(Ui3.bg(this));
+        root.setBackgroundColor(Ui4.bg(this));
+        themeRoot = root;
 
-        /* ---- main column ---- */
-        LinearLayout main = new LinearLayout(this);
-        main.setOrientation(LinearLayout.VERTICAL);
-        main.setPadding(Ui3.dp(this, 32), Ui3.dp(this, 20), Ui3.dp(this, 32), Ui3.dp(this, 12));
-        root.addView(main, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+        /* ---------------- home header 52 ---------------- */
+        LinearLayout hdr = new LinearLayout(this);
+        hdr.setOrientation(LinearLayout.HORIZONTAL);
+        hdr.setGravity(Gravity.CENTER_VERTICAL);
+        hdr.setPadding(Ui4.dp(this, 24), 0, Ui4.dp(this, 24), 0);
 
-        /* status line */
-        LinearLayout statusRow = new LinearLayout(this);
-        statusRow.setOrientation(LinearLayout.HORIZONTAL);
-        statusRow.setGravity(Gravity.CENTER_VERTICAL);
-        pill = Ui3.pill(this, "待唤醒", Ui3.text3(this), Ui3.surface2(this));
-        statusRow.addView(pill);
-        meta = Ui3.text(this, "", 17f, Ui3.text2(this));
-        meta.setPadding(Ui3.dp(this, 12), 0, 0, 0);
-        statusRow.addView(meta, new LinearLayout.LayoutParams(0,
+        LinearLayout brand = new LinearLayout(this);
+        brand.setOrientation(LinearLayout.HORIZONTAL);
+        brand.setGravity(Gravity.CENTER_VERTICAL);
+        View mark = new View(this);
+        mark.setBackground(Ui4.grad(this, new int[]{Ui4.accent(this), Ui4.primary(this)}, 11f));
+        brand.addView(mark, new LinearLayout.LayoutParams(Ui4.dp(this, 28), Ui4.dp(this, 28)));
+        TextView name = Ui4.textBold(this, "布丁", Ui4.T_CARD, Ui4.text(this));
+        name.setPadding(Ui4.dp(this, 8), 0, 0, 0);
+        brand.addView(name);
+        TextView en = Ui4.text(this, "PUDDIN", Ui4.T_AUX, Ui4.text3(this));
+        en.setPadding(Ui4.dp(this, 6), Ui4.dp(this, 4), 0, 0);
+        brand.addView(en);
+        hdr.addView(brand);
+
+        pill = Ui4.pill(this, "待机 · 等你说话", Ui4.stateW(this, "idle"), Ui4.stateInk(this, "idle"));
+        LinearLayout.LayoutParams plp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        plp.leftMargin = Ui4.dp(this, 14);
+        hdr.addView(pill, plp);
+
+        meta = Ui4.text(this, "", Ui4.T_CAP, Ui4.text2(this));
+        meta.setPadding(Ui4.dp(this, 12), 0, 0, 0);
+        hdr.addView(meta, new LinearLayout.LayoutParams(0,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        TextView chip = Ui3.text(this, "布丁 PUDDIN", 15f, Ui3.text2(this));
-        chip.setBackground(Ui3.roundStroke(this, Ui3.surface(this), Ui3.line2(this), Ui3.R_PILL));
-        chip.setPadding(Ui3.dp(this, 16), Ui3.dp(this, 8), Ui3.dp(this, 16), Ui3.dp(this, 8));
-        statusRow.addView(chip);
-        main.addView(statusRow);
 
-        /* stage: buddy + copy */
+        LinearLayout rightChips = new LinearLayout(this);
+        rightChips.setOrientation(LinearLayout.HORIZONTAL);
+        rightChips.setGravity(Gravity.CENTER_VERTICAL);
+        TextView wake = Ui4.text(this, "唤醒词「天猫精灵」", Ui4.T_CAP, Ui4.text2(this));
+        wake.setBackground(Ui4.round(this, Ui4.surface(this), Ui4.R_PILL));
+        wake.setPadding(Ui4.dp(this, 14), Ui4.dp(this, 6), Ui4.dp(this, 14), Ui4.dp(this, 6));
+        rightChips.addView(wake);
+        TextView online = Ui4.text(this, "设备在线", Ui4.T_CAP, 0xFF14803E);
+        online.setBackground(Ui4.round(this, Ui4.okW(this), Ui4.R_PILL));
+        online.setPadding(Ui4.dp(this, 14), Ui4.dp(this, 6), Ui4.dp(this, 14), Ui4.dp(this, 6));
+        LinearLayout.LayoutParams olp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        olp.leftMargin = Ui4.dp(this, 8);
+        rightChips.addView(online, olp);
+        hdr.addView(rightChips);
+        root.addView(hdr, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui4.dp(this, 52)));
+
+        /* ---------------- main grid: 400 | 1fr ---------------- */
+        LinearLayout grid = new LinearLayout(this);
+        grid.setOrientation(LinearLayout.HORIZONTAL);
+        grid.setPadding(Ui4.dp(this, 24), Ui4.dp(this, 4), Ui4.dp(this, 24), Ui4.dp(this, 12));
+        root.addView(grid, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+        mainGrid = grid;
+
+        /* left: character stage 400w */
         LinearLayout stage = new LinearLayout(this);
-        stage.setOrientation(LinearLayout.HORIZONTAL);
-        stage.setGravity(Gravity.CENTER_VERTICAL);
-        stage.setPadding(0, Ui3.dp(this, 8), 0, Ui3.dp(this, 8));
-        main.addView(stage, new LinearLayout.LayoutParams(
+        stage.setOrientation(LinearLayout.VERTICAL);
+        stage.setGravity(Gravity.CENTER);
+        halo = new FrameLayout(this);
+        halo.setBackground(Ui4.round(this, Ui4.bgDeep(this), Ui4.R_PILL));
+        face = new ImageView(this);
+        face.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        setFace("puddin_idle");
+        int facePx = Ui4.dp(this, 300);
+        FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams(facePx, facePx, Gravity.CENTER);
+        halo.addView(face, flp);
+        int haloPx = Ui4.dp(this, 348);
+        stage.addView(halo, new LinearLayout.LayoutParams(haloPx, haloPx));
+        grid.addView(stage, new LinearLayout.LayoutParams(Ui4.dp(this, 400),
+                ViewGroup.LayoutParams.MATCH_PARENT));
+
+        /* right column */
+        LinearLayout col = new LinearLayout(this);
+        col.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
+        clp.leftMargin = Ui4.dp(this, 20);
+        grid.addView(col, clp);
+        rightCol = col;
+
+        greet = Ui4.textBold(this, "你好呀！我是布丁", Ui4.T_DISPLAY, Ui4.text(this));
+        col.addView(greet);
+        sub = Ui4.text(this, "说一声「天猫精灵」，我就醒啦", Ui4.T_STATE, Ui4.text2(this));
+        sub.setPadding(0, Ui4.dp(this, 2), 0, 0);
+        col.addView(sub);
+
+        /* dialog card (flex:1, inner scroll) */
+        dialogCard = Ui4.card(this);
+        dialogCard.setPadding(Ui4.dp(this, 16), Ui4.dp(this, 12), Ui4.dp(this, 16), Ui4.dp(this, 12));
+        LinearLayout.LayoutParams dlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
+        dlp.topMargin = Ui4.dp(this, 12);
+        col.addView(dialogCard, dlp);
+
+        LinearLayout dhead = new LinearLayout(this);
+        dhead.setOrientation(LinearLayout.HORIZONTAL);
+        dhead.setGravity(Gravity.CENTER_VERTICAL);
+        TextView dt = Ui4.textBold(this, "这一轮对话", Ui4.T_BODY_SM, Ui4.text2(this));
+        dhead.addView(dt);
+        dialogRound = Ui4.text(this, "语音优先 · 无需打字", Ui4.T_CAP, Ui4.text3(this));
+        dialogRound.setGravity(Gravity.END);
+        dhead.addView(dialogRound, new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        dialogCard.addView(dhead);
+
+        ScrollView dsv = new ScrollView(this);
+        dsv.setVerticalScrollBarEnabled(false);
+        dialogBody = new LinearLayout(this);
+        dialogBody.setOrientation(LinearLayout.VERTICAL);
+        dsv.addView(dialogBody, new ScrollView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        dialogCard.addView(dsv, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
-        int buddyDp = Ui3.isCalm() ? 220 : 300;
-        FrameLayout halo = new FrameLayout(this);
-        buddy = new ImageView(this);
-        buddy.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        setBuddy("puddin_idle");
-        FrameLayout.LayoutParams blp = new FrameLayout.LayoutParams(
-                Ui3.dp(this, buddyDp), Ui3.dp(this, buddyDp), Gravity.CENTER);
-        halo.addView(buddy, blp);
-        halo.setBackground(Ui3.round(this, Ui3.bgDeep(this), Ui3.R_PILL));
-        LinearLayout.LayoutParams hlp = new LinearLayout.LayoutParams(
-                Ui3.dp(this, buddyDp + 16), Ui3.dp(this, buddyDp + 16));
-        hlp.rightMargin = Ui3.dp(this, 8);
-        stage.addView(halo, hlp);
-
-        LinearLayout copy = new LinearLayout(this);
-        copy.setOrientation(LinearLayout.VERTICAL);
-        copy.setPadding(Ui3.dp(this, 28), 0, 0, 0);
-        stage.addView(copy, new LinearLayout.LayoutParams(0,
-                ViewGroup.LayoutParams.MATCH_PARENT, 1f));
-
-        greet = Ui3.textBold(this, "你好呀！我是布丁", 34f, Ui3.text(this));
-        copy.addView(greet);
-        sub = Ui3.text(this, "说一声「天猫精灵」，我就醒啦", 20f, Ui3.text2(this));
-        sub.setPadding(0, Ui3.dp(this, 10), 0, 0);
-        copy.addView(sub);
-
-        turnBox = new LinearLayout(this);
-        turnBox.setOrientation(LinearLayout.VERTICAL);
-        turnBox.setBackground(Ui3.roundStroke(this, Ui3.surface(this), Ui3.line(this), Ui3.R_M));
-        turnBox.setPadding(Ui3.dp(this, 18), Ui3.dp(this, 14), Ui3.dp(this, 18), Ui3.dp(this, 14));
-        LinearLayout.LayoutParams tblp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        tblp.topMargin = Ui3.dp(this, 18);
-        copy.addView(turnBox, tblp);
-
-        turnWho = Ui3.text(this, "", 14f, Ui3.text3(this));
-        turnBox.addView(turnWho);
-        turnQ = Ui3.text(this, "", 19f, Ui3.text(this));
-        turnQ.setPadding(0, Ui3.dp(this, 4), 0, 0);
-        turnBox.addView(turnQ);
-        turnA = Ui3.text(this, "", 19f, Ui3.primary2(this));
-        turnA.setPadding(0, Ui3.dp(this, 6), 0, 0);
-        turnBox.addView(turnA);
-        turnErr = Ui3.text(this, "", 16f, 0xFFC02626);
-        turnErr.setPadding(0, Ui3.dp(this, 6), 0, 0);
-        turnBox.addView(turnErr);
-
-        stopBtn = Ui3.textBold(this, "■ 停止播报", 17f, 0xFFFFFFFF);
-        stopBtn.setGravity(Gravity.CENTER);
-        stopBtn.setBackground(Ui3.round(this, Ui3.primary(this), Ui3.R_S));
-        stopBtn.setPadding(0, Ui3.dp(this, 10), 0, Ui3.dp(this, 10));
-        stopBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { onStopClicked(); }
+        LinearLayout dfoot = new LinearLayout(this);
+        dfoot.setOrientation(LinearLayout.HORIZONTAL);
+        dfoot.setGravity(Gravity.CENTER_VERTICAL);
+        dialogFoot = Ui4.text(this, "布丁正在等你 · 直接说话就好", Ui4.T_CAP, Ui4.text3(this));
+        dfoot.addView(dialogFoot, new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        btnStop = Ui4.btnSm(this, "■ 停止播报", Ui4.text(this), new Runnable() {
+            public void run() { onStopClicked(); }
         });
-        LinearLayout.LayoutParams sblp = new LinearLayout.LayoutParams(
-                Ui3.dp(this, 180), ViewGroup.LayoutParams.WRAP_CONTENT);
-        sblp.topMargin = Ui3.dp(this, 12);
-        turnBox.addView(stopBtn, sblp);
+        btnStop.setVisibility(View.GONE);
+        dfoot.addView(btnStop);
+        LinearLayout.LayoutParams footLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        footLp.topMargin = Ui4.dp(this, 8);
+        dialogCard.addView(dfoot, footLp);
 
-        hideTurn();
-
-        /* ---- quick tiles ---- */
+        /* quick row 112, 3 equal */
         quickRow = new LinearLayout(this);
         quickRow.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams qlp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui3.dp(this, 132));
-        qlp.leftMargin = Ui3.dp(this, 32);
-        qlp.rightMargin = Ui3.dp(this, 32);
-        qlp.bottomMargin = Ui3.dp(this, 10);
-        root.addView(quickRow, qlp);
-
-        /* ---- bottom navbar ---- */
-        navbarHost = new LinearLayout(this);
-        navbarHost.setOrientation(LinearLayout.VERTICAL);
-        root.addView(navbarHost, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui3.dp(this, 88)));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui4.dp(this, 112));
+        qlp.topMargin = Ui4.dp(this, 14);
+        col.addView(quickRow, qlp);
 
         buildQuick();
-        buildNavbar("home");
+        root.addView(makeNavbar(), new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui4.dp(this, 88)));
+        renderDialogEmpty();
         return root;
     }
 
-    void buildNavbar(String current)
+    LinearLayout themeRoot;
+    LinearLayout mainGrid;
+    LinearLayout rightCol;
+    LinearLayout rootRef;
+
+
+    /** build the navbar and return it; the caller adds it to the root column */
+    LinearLayout makeNavbar()
     {
-        navbarHost.removeAllViews();
-        String[] ids   = { "home", "skills", "memory", "settings", "about" };
-        String[] names = { "首页", "技能", "记忆", "设置", "关于" };
-        java.lang.Runnable[] acts = {
-            new java.lang.Runnable() { public void run() { } },
-            new java.lang.Runnable() { public void run() { startActivity(
-                new Intent(VoiceHomeActivity.this, SkillsHomeActivity.class)); } },
-            new java.lang.Runnable() { public void run() { startActivity(
-                new Intent(VoiceHomeActivity.this, MemoryCenterActivity.class)); } },
-            new java.lang.Runnable() { public void run() { startActivity(
-                new Intent(VoiceHomeActivity.this, SettingsHomeActivity.class)); } },
-            new java.lang.Runnable() { public void run() { startActivity(
-                new Intent(VoiceHomeActivity.this, AboutActivity.class)); } }
-        };
-        View v = Ui3.navbar(this, current, ids, names, null, acts);
-        navbarHost.addView(v, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui3.dp(this, 88)));
+        LinearLayout bar = Ui4.navbar(this, "home",
+                new String[]{"home", "skills", "memory", "settings", "about"},
+                new String[]{"首页", "技能", "记忆", "设置", "关于"},
+                new int[]{Ui4.I_HOME, Ui4.I_SKILLS, Ui4.I_MEMORY, Ui4.I_SETTINGS, Ui4.I_INFO},
+                new java.lang.Runnable[]{
+                    new java.lang.Runnable() { public void run() { } },
+                    new java.lang.Runnable() { public void run() { startActivity(
+                        new Intent(VoiceHomeActivity.this, SkillsHomeActivity.class)); } },
+                    new java.lang.Runnable() { public void run() { startActivity(
+                        new Intent(VoiceHomeActivity.this, MemoryCenterActivity.class)); } },
+                    new java.lang.Runnable() { public void run() { startActivity(
+                        new Intent(VoiceHomeActivity.this, SettingsHomeActivity.class)); } },
+                    new java.lang.Runnable() { public void run() { startActivity(
+                        new Intent(VoiceHomeActivity.this, AboutActivity.class)); } }
+                });
+        rootBar = bar;
+        return bar;
     }
+
+    LinearLayout rootBar;
 
     void buildQuick()
     {
@@ -241,68 +279,73 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
         quickRow.setOrientation(LinearLayout.HORIZONTAL);
         quickRow.setGravity(Gravity.CENTER_VERTICAL);
 
-        /* T9-UI-02: two real skills ship enabled; lastUsedAt ordering arrives with T10,
-         * so both tiles are always shown in this fixed order (alarm first). */
-        LinearLayout.LayoutParams tileLp = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
-        tileLp.rightMargin = Ui3.dp(this, 16);
-        View t1v = quickTile("alarm", "闹钟", "说「明天七点叫我起床」",
-                SkillsHomeActivity.SKILL_ALARM);
-        quickRow.addView(t1v, tileLp);
-        View t2v = quickTile("calendar", "日程", "问「今天有什么安排」",
-                SkillsHomeActivity.SKILL_CALENDAR);
-        quickRow.addView(t2v, tileLp);
+        quickRow.addView(quickTile("illus_alarm", "闹钟", "说句话设个闹钟", SkillsHomeActivity.SKILL_ALARM),
+                lpWithMargin(this, 0));
+        quickRow.addView(quickTile("illus_calendar", "日程", "看看今天的安排", SkillsHomeActivity.SKILL_CALENDAR),
+                lpWithMargin(this, 12));
+        LinearLayout.LayoutParams lp3 = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.MATCH_PARENT, 1f);
+        lp3.leftMargin = Ui4.dp(this, 12);
 
+        /* 「全部技能」dashed card */
         LinearLayout more = new LinearLayout(this);
         more.setOrientation(LinearLayout.VERTICAL);
-        more.setBackground(Ui3.roundStroke(this, Ui3.surface(this), Ui3.line2(this), Ui3.R_M));
-        more.setPadding(Ui3.dp(this, 18), Ui3.dp(this, 12), Ui3.dp(this, 18), Ui3.dp(this, 12));
         more.setGravity(Gravity.CENTER_VERTICAL);
-        more.addView(Ui3.textBold(this, "全部技能", 24f, Ui3.text(this)));
-        more.addView(Ui3.text(this, "还有 3 个等着你", 14f, Ui3.text3(this)));
+        more.setBackground(Ui4.dashed(this, Ui4.line2(this), Ui4.R_M));
+        more.setPadding(Ui4.dp(this, 14), Ui4.dp(this, 13), Ui4.dp(this, 14), Ui4.dp(this, 13));
+        LinearLayout mt = new LinearLayout(this);
+        mt.setOrientation(LinearLayout.HORIZONTAL);
+        mt.setGravity(Gravity.CENTER_VERTICAL);
+        mt.addView(Ui4.textBold(this, "全部技能", Ui4.T_ACTION, Ui4.text(this)));
+        mt.addView(Ui4.icon(this, Ui4.I_STAR, 18, Ui4.yellow(this)));
+        more.addView(mt);
+        more.addView(Ui4.text(this, "还有 3 个等着你", Ui4.T_CAP, Ui4.text2(this)));
         more.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 startActivity(new Intent(VoiceHomeActivity.this, SkillsHomeActivity.class));
             }
         });
-        LinearLayout.LayoutParams mlp = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
-        mlp.leftMargin = Ui3.dp(this, 16);
-        quickRow.addView(more, mlp);
+        more.setLayoutParams(lp3);
+        quickRow.addView(more);
     }
 
-    /** one gradient quick tile with the skill illustration peeking from the right */
-    View quickTile(final String skill, String title, String sub, final String target)
+    static LinearLayout.LayoutParams lpWithMargin(Context c, int lm) {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.MATCH_PARENT, 1f);
+        if (lm > 0) lp.leftMargin = Ui4.dp(c, lm);
+        return lp;
+    }
+
+    /** V3 quick tile: gradient container + isolated art bottom-right + full-width text */
+    View quickTile(String art, String title, String sub, final String target)
     {
-        LinearLayout tile = new LinearLayout(this);
-        if (Ui3.isCalm()) {
-            tile.setBackground(Ui3.round(this, Ui3.surface2(this), Ui3.R_M));
-        } else {
-            int[] g = Ui3.tileGrad(skill);
-            tile.setBackground(Ui3.roundGrad(this, g[0], g[1], Ui3.R_M));
-        }
-        tile.setPadding(Ui3.dp(this, 18), Ui3.dp(this, 12), Ui3.dp(this, 18), Ui3.dp(this, 12));
-        tile.setGravity(Gravity.CENTER_VERTICAL);
+        Context c = this;
+        LinearLayout tile = new LinearLayout(c);
         tile.setOrientation(LinearLayout.VERTICAL);
+        tile.setBackground(Ui4.grad(c, Ui4.skillGrad(c,
+                "alarm".equals(target) ? "alarm" : "calendar"), Ui4.R_M));
+        tile.setPadding(Ui4.dp(c, 14), Ui4.dp(c, 13), Ui4.dp(c, 14), Ui4.dp(c, 13));
 
-        LinearLayout txt = new LinearLayout(this);
-        txt.setOrientation(LinearLayout.VERTICAL);
-        TextView t1 = Ui3.textBold(this, title, 24f, Ui3.isCalm() ? Ui3.text(this) : 0xFFFFFFFF);
-        txt.addView(t1);
-        TextView t2 = Ui3.text(this, sub, 14f, Ui3.isCalm() ? Ui3.text3(this) : 0xF2FFFFFF);
-        txt.addView(t2);
-        tile.addView(txt);
+        TextView t1 = Ui4.textBold(c, title, Ui4.T_CARD, 0xFFFFFFFF);
+        t1.setSingleLine(true);
+        TextView t2 = Ui4.text(c, sub, Ui4.T_CAP, 0xF2FFFFFF);
+        t2.setSingleLine(true);
+        tile.addView(t1);
+        tile.addView(t2);
 
-        Bitmap b = Ui3.bmp(this, "illus_" + skill);
+        android.graphics.Bitmap b = Ui4.artBmp(c, art);
         if (b != null) {
-            ImageView iv = new ImageView(this);
+            ImageView iv = new ImageView(c);
             iv.setImageBitmap(b);
             iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            LinearLayout.LayoutParams ilp = new LinearLayout.LayoutParams(
-                    Ui3.dp(this, 96), Ui3.dp(this, 72));
-            ilp.leftMargin = Ui3.dp(this, 6);
-            iv.setAlpha(Ui3.isCalm() ? 0.30f : 0.96f);
-            tile.addView(iv, ilp);
+            iv.setAlpha(0.38f);
+            /* place bottom-right inside a frame; text already laid out above */
+            LinearLayout holder = new LinearLayout(c);
+            holder.setOrientation(LinearLayout.HORIZONTAL);
+            holder.setGravity(Gravity.END | Gravity.BOTTOM);
+            holder.addView(iv, new LinearLayout.LayoutParams(Ui4.dp(c, 84), Ui4.dp(c, 84)));
+            tile.addView(holder, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
         }
         tile.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) { openSkill(target); }
@@ -317,33 +360,71 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
         startActivity(it);
     }
 
-    /* ------------------------------------------------------------------ buddy */
-
-    void setBuddy(String asset)
+    void setFace(String asset)
     {
-        Bitmap b = Ui3.bmp(this, asset);
-        if (b != null) buddy.setImageBitmap(b);
+        curFace = asset.replace("puddin_", "");
+        android.graphics.Bitmap b = Ui4.artBmp(this, asset);
+        if (b != null) face.setImageBitmap(b);
     }
 
-    /* ------------------------------------------------------------------ turn */
+    /* ------------------------------------------------------------------ dialog */
 
-    void hideTurn()
+    LinearLayout sayRow(String label, String text, int labBg, int labFg, int txtColor, boolean dim)
     {
-        turnBox.setVisibility(View.GONE);
+        LinearLayout r = new LinearLayout(this);
+        r.setOrientation(LinearLayout.HORIZONTAL);
+        r.setGravity(Gravity.TOP);
+        r.setPadding(0, Ui4.dp(this, 6), 0, Ui4.dp(this, 6));
+        TextView lab = Ui4.textBold(this, label, Ui4.T_CAP, labFg);
+        lab.setBackground(Ui4.round(this, labBg, 9f));
+        lab.setPadding(Ui4.dp(this, 8), Ui4.dp(this, 3), Ui4.dp(this, 8), Ui4.dp(this, 3));
+        r.addView(lab, new LinearLayout.LayoutParams(Ui4.dp(this, 46),
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        TextView txt = Ui4.text(this, text, dim ? Ui4.T_AUX : Ui4.T_BODY, dim ? Ui4.text3(this) : txtColor);
+        if (!dim && label.equals("布丁")) {
+            txt.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        }
+        LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        tlp.leftMargin = Ui4.dp(this, 10);
+        r.addView(txt, tlp);
+        return r;
     }
 
-    void showTurn(String who, String q, String a, String err, boolean speaking)
+    void renderDialogEmpty()
     {
-        turnBox.setVisibility(View.VISIBLE);
-        turnWho.setText(who);
-        turnWho.setVisibility(who.length() > 0 ? View.VISIBLE : View.GONE);
-        turnQ.setText(q);
-        turnQ.setVisibility(q.length() > 0 ? View.VISIBLE : View.GONE);
-        turnA.setText(a);
-        turnA.setVisibility(a.length() > 0 ? View.VISIBLE : View.GONE);
-        turnErr.setText(err);
-        turnErr.setVisibility(err.length() > 0 ? View.VISIBLE : View.GONE);
-        stopBtn.setVisibility(speaking ? View.VISIBLE : View.GONE);
+        dialogBody.removeAllViews();
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(0, Ui4.dp(this, 18), 0, 0);
+        View mic = Ui4.icon(this, Ui4.I_MIC, 22, Ui4.primary2(this));
+        mic.setBackground(Ui4.round(this, Ui4.primaryW(this), Ui4.R_PILL));
+        mic.setPadding(Ui4.dp(this, 10), Ui4.dp(this, 10), Ui4.dp(this, 10), Ui4.dp(this, 10));
+        row.addView(mic, new LinearLayout.LayoutParams(Ui4.dp(this, 42), Ui4.dp(this, 42)));
+        TextView t = Ui4.text(this, "想说什么，直接开口就好，不用点屏幕", Ui4.T_AUX, Ui4.text3(this));
+        t.setPadding(Ui4.dp(this, 12), 0, 0, 0);
+        row.addView(t);
+        dialogBody.addView(row);
+    }
+
+    void renderDialog()
+    {
+        dialogBody.removeAllViews();
+        if (lastUser.length() > 0) {
+            dialogBody.addView(sayRow("你说", lastUser,
+                    Ui4.surface2(this), Ui4.text2(this), Ui4.text(this), false));
+        }
+        if (lastErr.length() > 0) {
+            dialogBody.addView(sayRow("状态", lastErr,
+                    Ui4.errW(this), 0xFF8E2C27, 0xFF8E2C27, false));
+        } else if (lastReply.length() > 0) {
+            dialogBody.addView(sayRow("布丁", lastReply,
+                    Ui4.pinkW(this), 0xFF963E63, Ui4.text(this), false));
+        }
+        if (lastUser.length() == 0 && lastReply.length() == 0 && lastErr.length() == 0) {
+            renderDialogEmpty();
+        }
     }
 
     /* ------------------------------------------------------------------ stop */
@@ -354,15 +435,134 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
         if (id <= 0) { toast("现在没有在播报"); return; }
         String err = client.requestStop(id);
         if (err != null) { toast(err); return; }
-        stopFlash = true;                       // cleared by the next turn event
-        setBuddy("puddin_sleep");
-        Ui3.pillSet(pill, "已停止", Ui3.text3(this));
-        greet.setText("好的，停下来了");
-        sub.setText("想继续的话，再喊一声「天猫精灵」吧");
-        toast("已请求停止播报");
+        stopFlash = true;
+        applyState("stopped");
+        toast("已请求停止播报（不会继续念完）");
     }
 
     void toast(String s) { Toast.makeText(this, s, Toast.LENGTH_SHORT).show(); }
+
+    /* ------------------------------------------------------------------ state mapping
+     * The single mapping from real backend fields to the V3 ten states.
+     * Same read-only discipline as T9-UI-02/V2: everything from live backend files.
+     */
+    void updateState()
+    {
+        VoiceBridgeClient.Status s = client.status();
+        VoiceBridgeClient.Play p = client.play();
+
+        boolean workerUp = s.present && s.pid > 0 && s.tsMs > 0
+                && (System.currentTimeMillis() - s.tsMs < 6000);
+        lastRound = s.round;
+        if (!workerUp) {
+            lastErr = "后台服务还在，是模型接口没有响应";
+            applyState("error");
+            return;
+        }
+        lastErr = "";
+        if (stopFlash && !"playing".equals(p.state)) return;   // hold stopped until next turn
+
+        String d = s.dialog == null ? "idle" : s.dialog;
+        if ("playing".equals(p.state)) {
+            applyState("speaking");
+            return;
+        }
+        if ("thinking".equals(d)) {
+            applyState("thinking");
+            return;
+        }
+        if ("listening".equals(d) || s.listening) {
+            applyState("listening");
+            return;
+        }
+        if ("interrupted".equals(d)) {
+            applyState("stopped");
+            return;
+        }
+        if (recentRound()) {
+            applyState("continuous");
+            return;
+        }
+        applyState("idle");
+    }
+
+    boolean recentRound()
+    {
+        return lastRoundMs > 0 && System.currentTimeMillis() - lastRoundMs < 8000;
+    }
+
+    /** V3 ten-state visuals: title/sub/pill/dialog-face all from one place */
+    void applyState(String key)
+    {
+        curState = key;
+        int w = Ui4.stateW(this, key), ink = Ui4.stateInk(this, key), main = Ui4.stateColor(this, key);
+        Ui4.pillSet(pill, label(key), w, ink);
+        String faceAsset;
+        if ("wakeup".equals(key) || "continuous".equals(key)) faceAsset = "puddin_happy";
+        else if ("recognizing".equals(key) || "thinking".equals(key)) faceAsset = "puddin_thinking";
+        else if ("answering".equals(key) || "speaking".equals(key)) faceAsset = "puddin_speaking";
+        else if ("stopped".equals(key)) faceAsset = "puddin_sleep";
+        else if ("error".equals(key)) faceAsset = "puddin_error";
+        else faceAsset = "puddin_idle";
+        setFace(faceAsset);
+
+        if ("idle".equals(key)) {
+            greet.setText("你好呀！我是布丁");
+            sub.setText("说一声「天猫精灵」，我就醒啦");
+            dialogRound.setText("语音优先 · 无需打字");
+            dialogFoot.setText("布丁正在等你 · 直接说话就好");
+        } else if ("listening".equals(key)) {
+            greet.setText("我在听…");
+            sub.setText("说完稍等一下，我会自动结束收音");
+            dialogRound.setText("第 " + Math.max(1, lastRound) + " 轮 · 正在收音");
+            dialogFoot.setText("正在收音 · 说完停一下就好");
+        } else if ("thinking".equals(key)) {
+            greet.setText("我在想…");
+            sub.setText("让我想一想，马上就好");
+            dialogRound.setText("第 " + Math.max(1, lastRound) + " 轮 · 正在思考");
+            dialogFoot.setText("正在想一个好回答");
+        } else if ("speaking".equals(key)) {
+            greet.setText("正在回答");
+            sub.setText("说「停止」或点右下角可以打断");
+            dialogRound.setText("第 " + Math.max(1, lastRound) + " 轮 · 正在播报");
+            dialogFoot.setText("正在念给你听 · 说「停止」也能打断");
+        } else if ("stopped".equals(key)) {
+            greet.setText("好的，停下来了");
+            sub.setText("想继续的话，再喊一声「天猫精灵」吧");
+            dialogRound.setText("第 " + Math.max(1, lastRound) + " 轮 · 播报已停止");
+            dialogFoot.setText("不会继续念完 · 想继续请重新唤醒");
+        } else if ("error".equals(key)) {
+            greet.setText("呜…网络断了一下");
+            sub.setText("不是你的问题，稍等一下再试好吗");
+            dialogRound.setText("第 " + Math.max(1, lastRound) + " 轮 · 需要稍等");
+            dialogFoot.setText("稍等一下再喊我 · 或在设置里检查模型配置");
+        } else if ("continuous".equals(key)) {
+            greet.setText("还想聊什么？");
+            sub.setText("不用再说唤醒词 · 倒数 8 秒");
+            dialogRound.setText("第 " + Math.max(1, lastRound) + " 轮 · 免唤醒续聊");
+            dialogFoot.setText("8 秒内直接说 · 不用再喊「天猫精灵」");
+        } else if ("wakeup".equals(key)) {
+            greet.setText("我在！");
+            sub.setText("准备好啦，你说吧");
+            dialogRound.setText("已唤醒");
+            dialogFoot.setText("麦克风准备中 · 直接说话就好");
+        }
+        renderDialog();
+        btnStop.setVisibility("speaking".equals(key) ? View.VISIBLE : View.GONE);
+    }
+
+    static String label(String key)
+    {
+        if ("idle".equals(key))       return "待机 · 等你说话";
+        if ("listening".equals(key))  return "聆听中 · 我在听";
+        if ("thinking".equals(key))   return "思考中 · 我在想";
+        if ("speaking".equals(key))   return "播报中 · 正在回答";
+        if ("stopped".equals(key))    return "已停止播报";
+        if ("error".equals(key))      return "出了点小状况";
+        if ("continuous".equals(key)) return "连续对话 · 继续聊";
+        if ("wakeup".equals(key))     return "已唤醒 · 我在";
+        return key;
+    }
 
     /* --------------------------------------------------------- client callbacks */
 
@@ -371,36 +571,19 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
         h.post(new Runnable() {
             public void run() {
                 if (!"turn".equals(t.kind)) return;
-                haveTurn = true;
                 stopFlash = false;
-                lastTurnStatus = t.status;
-                lastRoundSeen = t.seq;
                 lastRoundMs = System.currentTimeMillis();
                 boolean failed = t.failed();
-                String q = t.user;
-                String a = failed ? "" : t.reply;
-                String err = failed
-                        ? ("回答失败：" + (t.reason.length() > 0 ? t.reason : "unknown error"))
-                        : "";
-                showTurn(failed ? "刚才的问题" : "布丁说", q, a, err, false);
-                if (!failed && q.length() > 0) maybeLearnMemory(q);
+                lastUser = t.user == null ? "" : t.user;
+                lastReply = failed ? "" : (t.reply == null ? "" : t.reply);
+                lastErr = failed ? ("回答失败：" + (t.reason.length() > 0 ? t.reason : "unknown error")) : "";
+                updateState();
+                if (!failed && lastUser.length() > 0) maybeLearnMemory(lastUser);
             }
         });
     }
 
-    /* ------------------------------------------------------------------ memory learning
-     *
-     * T9-UI-03-R1 (P1): the voice-first memory flow, on the EXISTING voice chain.
-     *
-     *   孩子：天猫精灵，记住我不喝咖啡
-     *   ASR 得到 "记住我不喝咖啡" -> 原厂技能路由可能已把它当问答发给模型；
-     *   这里在 turn 回来后做本地意图识别（前缀"记住"），把内容存为 pending 记忆，
-     *   并用 kind=say 让原厂 TTS 亲口确认。等确认流（记忆中心/下一次语音）走完后
-     *   记忆才生效——宁可不命中，不可错误命中。
-     *
-     *   注意边界：这只拦截"记住X"一种句式；其余句子 100% 走原有 AI 管线，
-     *   不改 worker、不改原厂唤醒/ASR/TTS、不另造语音引擎。
-     */
+    /* memory learning: same voice-first flow as before (unchanged contract) */
     void maybeLearnMemory(String userText)
     {
         String trimmed = userText == null ? "" : userText.trim();
@@ -413,11 +596,8 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
             }
         }
         if (body == null || body.length() == 0) return;
-
-        /* strip a leading "我" ("记住我不喝咖啡" -> "不喝咖啡") */
         if (body.startsWith("我") && body.length() > 1) body = body.substring(1);
         if (body.length() == 0) return;
-
         long id = DataService.get(this).memAdd(guessTag(body), body, "对话学习", true);
         if (id <= 0) {
             client.say("这个我暂时记不下来，你可以在记忆中心帮我记。");
@@ -426,7 +606,6 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
         client.say("好的，我快要记住了：" + body + "。你可以在记忆中心确认一下，我就不会忘啦。");
     }
 
-    /** very small tag guess; everything lands in 事实 unless an obvious keyword matches */
     static String guessTag(String text)
     {
         if (text.contains("不喝") || text.contains("不吃") || text.contains("喜欢")
@@ -446,104 +625,16 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
             public void run() {
                 if ("playing".equals(p.state) && p.ttsId > 0) activeTtsId = p.ttsId;
                 else activeTtsId = -1;
-                updateChip();
+                updateState();
             }
         });
     }
 
     public void onStatus(final VoiceBridgeClient.Status s)
     {
-        h.post(new Runnable() { public void run() { updateChip(); } });
+        h.post(new Runnable() { public void run() { updateState(); } });
     }
 
     public void onReceipt(VoiceBridgeClient.Receipt r) { }
-
     public void onDiag(String line) { android.util.Log.i(TAG, line); }
-
-    /* --------------------------------------------------------------- state chip */
-
-    /**
-     * The single mapping from real backend fields to the V2 nine states.
-     * No demo states here: everything comes from status.public.json / play.public.json.
-     */
-    void updateChip()
-    {
-        VoiceBridgeClient.Status s = client.status();
-        VoiceBridgeClient.Play p = client.play();
-
-        boolean workerUp = s.present && s.pid > 0 && s.tsMs > 0
-                && (System.currentTimeMillis() - s.tsMs < 6000);
-        if (!workerUp) {
-            setState("呜…布丁连不上后台了", "过一会儿再试试，或者检查设备",
-                    "puddin_error", "连接中断", Ui3.err(this), Ui3.errW(this), "");
-            return;
-        }
-        if (stopFlash && !"playing".equals(p.state)) {
-            /* keep the stopped visual until the next turn event arrives */
-            return;
-        }
-
-        String d = s.dialog == null ? "idle" : s.dialog;
-        if ("playing".equals(p.state)) {
-            setState("我来告诉你", "说「停止」可以打断我哦",
-                    "puddin_speaking", "正在说", Ui3.ok(this), Ui3.okW(this),
-                    "第 " + s.round + " 轮 · 原厂 TTS");
-            return;
-        }
-        if ("thinking".equals(d)) {
-            setState("让我想想…", "动动脑筋，马上就好",
-                    "puddin_thinking", "想一想", Ui3.warn(this), Ui3.warnW(this),
-                    "第 " + s.round + " 轮 · 已发送给 " + modelName(s));
-            return;
-        }
-        if ("listening".equals(d) || s.listening) {
-            setState("我在听…", "请慢慢说，不着急",
-                    "puddin_listening", "在听你说", Ui3.listen(this), colD9F5EF(),
-                    "说完稍等一下，我会自动收音");
-            return;
-        }
-        if ("interrupted".equals(d)) {
-            setState("好的，停下来了", "想继续的话，再喊一声「天猫精灵」吧",
-                    "puddin_sleep", "已停止", Ui3.text3(this), Ui3.surface2(this), "");
-            return;
-        }
-        if (s.round > 0 && recentRound()) {
-            setState("我们继续聊！", "不用再喊唤醒词，直接说吧",
-                    "puddin_happy", "接着聊", Ui3.accent(this), Ui3.accentW(this),
-                    "第 " + s.round + " 轮 · 8 秒内直接说话");
-            return;
-        }
-        setState("你好呀！我是布丁", "说一声「天猫精灵」，我就醒啦",
-                "puddin_idle", "待唤醒", Ui3.text3(this), Ui3.surface2(this),
-                "唤醒词「天猫精灵」");
-    }
-
-    static int colD9F5EF() { return 0xFFD9F5EF; }
-
-    boolean recentRound()
-    {
-        return lastRoundMs > 0 && System.currentTimeMillis() - lastRoundMs < 8000;
-    }
-
-    String modelName(VoiceBridgeClient.Status s)
-    {
-        if (s.modelsActive && s.modelsLabel.length() > 0) return s.modelsLabel;
-        if (s.model.length() > 0) return s.model;
-        return "模型";
-    }
-
-    void setState(String greetText, String subText, String buddyAsset,
-                  String pillText, int dotColor, int pillBg, String metaText)
-    {
-        greet.setText(greetText);
-        sub.setText(subText);
-        setBuddy(buddyAsset);
-        Ui3.pillSet(pill, pillText, dotColor);
-        pill.setBackground(Ui3.round(this, pillBg, Ui3.R_PILL));
-        String m = metaText;
-        if (m.length() == 0 && client.status().present) {
-            m = "大脑：" + modelName(client.status());
-        }
-        meta.setText(m);
-    }
 }

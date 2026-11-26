@@ -1,10 +1,12 @@
 /*
- * SettingsHomeActivity.java -- T9-UI-02: the V2 settings hub (kid/calm theme switch,
- * voice toggles that really persist, and the entrance to the real model config page).
+ * SettingsHomeActivity.java -- T9-14: the V3 settings hub (2x2 group cards).
  *
- * Real data: theme mode persists in files/ui_theme.json (survives restart); the voice
- * toggles persist in files/ui_voice.json.  The big-model entry opens ModelConfigActivity,
- * which keeps the T9-08C ModelStore backend untouched.
+ * Real data unchanged: theme mode persists in files/ui_theme.json (survives restart);
+ * voice toggles persist in files/ui_voice.json. The big-model entry opens
+ * ModelConfigActivity (T9-08C ModelStore backend untouched).
+ *
+ * V3 (docs/02 §3.3): two-column groups (大脑 / 外观 / 语音 / 设备), rows min 58dp,
+ * icons i-chip / i-palette / i-mic / i-power. Theme = Ui4 token switch, same layout.
  */
 package com.tgz02.voice;
 
@@ -16,18 +18,14 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class SettingsHomeActivity extends V2Shell {
+public class SettingsHomeActivity extends V3Shell {
 
     static final String THEME_PATH = "/data/data/com.tgz02.voice/files/ui_theme.json";
     static final String VOICE_PATH = "/data/data/com.tgz02.voice/files/ui_voice.json";
 
-    /* toggles use a mutable box so Ui3.toggle can flip them */
     final boolean[] wakeOn  = new boolean[]{ readFlag(VOICE_PATH, "wake", true) };
     final boolean[] contOn  = new boolean[]{ readFlag(VOICE_PATH, "cont", true) };
     final boolean[] bootOn  = new boolean[]{ readFlag(VOICE_PATH, "boot", true) };
-
-    LinearLayout bodyRoot;   // rebuilt on theme change
-    LinearLayout themeRoot;  // top-level background holder
 
     @Override
     String navId() { return "settings"; }
@@ -36,121 +34,169 @@ public class SettingsHomeActivity extends V2Shell {
     String title() { return "设置"; }
 
     @Override
-    View buildBody() { return null; }  // replaced
+    String tag() { return "给大人的配置台"; }
+
+    @Override
+    View buildBody() { return null; }
 
     void rebuild()
     {
         body.removeAllViews();
 
-        /* ---- brain (models) ---- */
-        body.addView(sectionLabel("大脑（模型）"));
-        LinearLayout mc = card();
+        LinearLayout grid = new LinearLayout(this);
+        grid.setOrientation(LinearLayout.HORIZONTAL);
+        body.addView(grid, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        LinearLayout colL = new LinearLayout(this);
+        colL.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        llp.rightMargin = Ui4.dp(this, 6);
+        grid.addView(colL, llp);
+
+        LinearLayout colR = new LinearLayout(this);
+        colR.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        rlp.leftMargin = Ui4.dp(this, 6);
+        grid.addView(colR, rlp);
+
         VoiceBridgeClient.Status s = client.status();
+
+        /* ---- brain (models) ---- */
+        addLabel(colL, Ui4.I_CHIP, "大脑（模型）");
+        LinearLayout mc = Ui4.card(this);
         String active = s.modelsActive
                 ? (ModelStore.vendorName(s.modelsVendor) + " · " + s.modelsModel)
                 : "未配置";
-        LinearLayout row = setRow("大模型配置", active + " · " + s.modelsCount + " 套");
-        TextView chev = Ui3.text(this, "›", 26f, Ui3.text3(this));
-        row.addView(chev);
+        LinearLayout row = groupRow(0, "大模型配置", active + " · " + s.modelsCount + " 套");
         row.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 startActivity(new Intent(SettingsHomeActivity.this, ModelConfigActivity.class));
             }
         });
         mc.addView(row);
-        body.addView(mc);
-
-        /* ---- theme ---- */
-        body.addView(sectionLabel("外观"));
-        LinearLayout tc = card();
-        LinearLayout tr = setRow("主题模式", "儿童友好 / 简洁，共用同一套功能");
-        LinearLayout seg = new LinearLayout(this);
-        seg.setOrientation(LinearLayout.HORIZONTAL);
-        seg.setBackground(Ui3.round(this, Ui3.surface2(this), Ui3.R_S));
-        seg.setPadding(Ui3.dp(this, 4), Ui3.dp(this, 4), Ui3.dp(this, 4), Ui3.dp(this, 4));
-        TextView kid = segBtn("儿童友好", !Ui3.isCalm());
-        TextView calm = segBtn("简洁", Ui3.isCalm());
-        kid.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { switchTheme(Ui3.MODE_KID); }
-        });
-        calm.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { switchTheme(Ui3.MODE_CALM); }
-        });
-        seg.addView(kid, new LinearLayout.LayoutParams(0,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        seg.addView(calm, new LinearLayout.LayoutParams(0,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        tr.addView(seg);
-        tc.addView(tr);
-        body.addView(tc);
+        colL.addView(mc);
 
         /* ---- voice ---- */
-        body.addView(sectionLabel("语音"));
-        LinearLayout vc = card();
-        LinearLayout vr = setRow("语音唤醒", "唤醒词「天猫精灵」· 原厂引擎");
-        vr.addView(Ui3.toggle(this, wakeOn, new Runnable() {
+        addLabel(colR, Ui4.I_MIC, "语音");
+        LinearLayout vc = Ui4.card(this);
+        LinearLayout vr = groupRow(0, "语音唤醒", "唤醒词「天猫精灵」· 原厂引擎");
+        vr.addView(Ui4.toggle(this, wakeOn, new Runnable() {
             public void run() { writeFlag(VOICE_PATH, "wake", wakeOn[0]);
                 toast(wakeOn[0] ? "语音唤醒已开" : "语音唤醒已关（仅记录偏好，引擎由后台控制）"); }
         }));
         vc.addView(vr);
-        LinearLayout cr = setRow("连续对话", "8 秒内可以接着说");
-        cr.addView(Ui3.toggle(this, contOn, new Runnable() {
+        LinearLayout cr = groupRow(0, "连续对话", "8 秒内可以接着说");
+        cr.addView(Ui4.toggle(this, contOn, new Runnable() {
             public void run() { writeFlag(VOICE_PATH, "cont", contOn[0]);
                 toast(contOn[0] ? "连续对话已开" : "连续对话已关（仅记录偏好，引擎由后台控制）"); }
         }));
         vc.addView(cr);
-        LinearLayout vol = setRow("播报音量", "与原厂 TTS 共用同一音量 · 由设备音量键控制");
-        vol.addView(Ui3.text(this, "70%", 16f, Ui3.text2(this)));
+        LinearLayout vol = groupRow(Ui4.I_VOLUME, "播报音量",
+                "与原厂 TTS 共用同一音量 · 由设备音量键控制");
+        vol.addView(Ui4.text(this, "70%", Ui4.T_BODY_SM, Ui4.text2(this)));
         vc.addView(vol);
-        body.addView(vc);
+        colR.addView(vc);
+
+        /* ---- appearance (theme) ---- */
+        addLabel(colL, Ui4.I_PALETTE, "外观");
+        LinearLayout tc = Ui4.card(this);
+        LinearLayout tr = groupRow(0, "主题模式", "儿童友好 / 简洁，共用同一套功能");
+        LinearLayout seg = Ui4.seg(this, new String[]{"儿童友好", "简洁"},
+                new boolean[]{ !Ui4.isCalm(), Ui4.isCalm() },
+                new java.lang.Runnable[]{
+                    new java.lang.Runnable() { public void run() { switchTheme("kid"); } },
+                    new java.lang.Runnable() { public void run() { switchTheme("calm"); } }
+                });
+        seg.setLayoutParams(new LinearLayout.LayoutParams(Ui4.dp(this, 190),
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        tr.addView(seg);
+        tc.addView(tr);
+        colL.addView(tc);
 
         /* ---- device ---- */
-        body.addView(sectionLabel("设备"));
-        LinearLayout dc = card();
-        LinearLayout br = setRow("开机自启", "开机就能用（由系统 init 脚本控制）");
-        br.addView(Ui3.toggle(this, bootOn, new Runnable() {
+        addLabel(colR, Ui4.I_POWER, "设备");
+        LinearLayout dc = Ui4.card(this);
+        LinearLayout br = groupRow(0, "开机自启", "开机就能用（由系统 init 脚本控制）");
+        br.addView(Ui4.toggle(this, bootOn, new Runnable() {
             public void run() { writeFlag(VOICE_PATH, "boot", bootOn[0]);
                 toast("偏好已保存"); }
         }));
         dc.addView(br);
-        LinearLayout sr = setRow("后台服务", s.present
-                ? ("运行中 · pid " + s.pid) : "未连接");
-        sr.addView(Ui3.text(this, s.present ? "正常" : "离线", 16f,
-                s.present ? Ui3.ok(this) : Ui3.err(this)));
+        LinearLayout sr = groupRow(0, "后台服务",
+                s.present ? ("运行中 · pid " + s.pid) : "未连接");
+        sr.addView(Ui4.text(this, s.present ? "正常" : "离线", Ui4.T_BODY_SM,
+                s.present ? Ui4.ok(this) : Ui4.err(this)));
         dc.addView(sr);
-        body.addView(dc);
+        colR.addView(dc);
 
-        body.addView(banner("这里只放配置；记忆在「记忆中心」，技能开关在各技能详情页",
-                Ui3.accentW(this), 0xFF1E62C8));
+        LinearLayout note = Ui4.banner(this,
+                "这里只放配置；记忆在「记忆中心」，技能开关在各技能详情页",
+                Ui4.accentW(this), 0xFF1E62C8);
+        LinearLayout.LayoutParams nlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        nlp.topMargin = Ui4.dp(this, 14);
+        body.addView(note, nlp);
     }
 
-    TextView segBtn(String label, boolean on)
+    void addLabel(LinearLayout into, int icon, String s)
     {
-        TextView t = Ui3.textBold(this, label, 16f, on ? Ui3.text(this) : Ui3.text2(this));
-        t.setGravity(Gravity.CENTER);
-        /* T9-13: never wrap the segment label; keep the button one line tall */
-        t.setSingleLine(true);
-        t.setPadding(Ui3.dp(this, 20), Ui3.dp(this, 8), Ui3.dp(this, 20), Ui3.dp(this, 8));
-        if (on) t.setBackground(Ui3.round(this, Ui3.surface(this), 10f));
-        return t;
+        LinearLayout l = new LinearLayout(this);
+        l.setOrientation(LinearLayout.HORIZONTAL);
+        l.setGravity(Gravity.CENTER_VERTICAL);
+        l.setPadding(0, Ui4.dp(this, 12), 0, Ui4.dp(this, 6));
+        l.addView(Ui4.icon(this, icon, 16, Ui4.text2(this)));
+        TextView t = Ui4.textBold(this, s, Ui4.T_AUX, Ui4.text2(this));
+        t.setPadding(Ui4.dp(this, 8), 0, 0, 0);
+        l.addView(t);
+        into.addView(l);
+    }
+
+    /** group row: title + desc, optional leading icon, min height 58 */
+    LinearLayout groupRow(int icon, String title, String desc)
+    {
+        LinearLayout r = new LinearLayout(this);
+        r.setOrientation(LinearLayout.HORIZONTAL);
+        r.setGravity(Gravity.CENTER_VERTICAL);
+        r.setPadding(Ui4.dp(this, 16), Ui4.dp(this, 8), Ui4.dp(this, 16), Ui4.dp(this, 8));
+        r.setMinimumHeight(Ui4.dp(this, 58));
+        if (icon > 0) {
+            View ic = Ui4.icon(this, icon, 22, Ui4.text2(this));
+            ic.setBackground(Ui4.round(this, Ui4.surface2(this), 13f));
+            ic.setPadding(Ui4.dp(this, 9), Ui4.dp(this, 9), Ui4.dp(this, 9), Ui4.dp(this, 9));
+            LinearLayout.LayoutParams ilp = new LinearLayout.LayoutParams(Ui4.dp(this, 40), Ui4.dp(this, 40));
+            ilp.rightMargin = Ui4.dp(this, 12);
+            r.addView(ic, ilp);
+        }
+        LinearLayout txt = new LinearLayout(this);
+        txt.setOrientation(LinearLayout.VERTICAL);
+        txt.addView(Ui4.textBold(this, title, Ui4.T_BODY_SM, Ui4.text(this)));
+        if (desc != null && desc.length() > 0) {
+            TextView d = Ui4.text(this, desc, Ui4.T_CAP, Ui4.text2(this));
+            d.setPadding(0, Ui4.dp(this, 2), 0, 0);
+            txt.addView(d);
+        }
+        r.addView(txt, new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        return r;
     }
 
     void switchTheme(String mode)
     {
-        Ui3.setMode(mode);
+        Ui4.setTheme(mode);
         writeTheme(mode);
-        toast("主题已切换：" + (Ui3.isCalm() ? "简洁" : "儿童友好"));
-        /* rebuild everything, including this activity's shell colours */
-        themeRoot.setBackgroundColor(Ui3.bg(this));
-        hdrTitle.setTextColor(Ui3.text(this));
+        toast("主题已切换：" + (Ui4.isCalm() ? "简洁" : "儿童友好"));
+        rebuildChrome();     // shell background + navbar repaint
         rebuild();
     }
 
     @Override
     void onShellReady()
     {
-        themeRoot = (LinearLayout) ((ViewGroup) getWindow().getDecorView()
-                .findViewById(android.R.id.content)).getChildAt(0);
+        Ui4.setTheme(readTheme());
+        rebuildChrome();
         client.setListener(this);
         client.start();
         rebuild();
@@ -203,10 +249,10 @@ public class SettingsHomeActivity extends V2Shell {
     {
         try {
             String raw = readAll2(THEME_PATH);
-            if (raw == null || raw.length() == 0) return Ui3.MODE_KID;
-            return new org.json.JSONObject(raw).optString("mode", Ui3.MODE_KID);
+            if (raw == null || raw.length() == 0) return "kid";
+            return new org.json.JSONObject(raw).optString("mode", "kid");
         } catch (Throwable t) {
-            return Ui3.MODE_KID;
+            return "kid";
         }
     }
 

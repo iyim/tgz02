@@ -77,6 +77,21 @@ Get-ChildItem -Recurse -Filter *.png $assetSrc | ForEach-Object {
 Write-Host ("   copied {0} PNGs into assets/ui/" -f $copyCount)
 if ($copyCount -lt 16) { throw "asset payload looks wrong ($copyCount files)" }
 
+# T9-14: V3 design assets (12 RGBA PNGs, downscaled to 640) go into assets/ui/v3/
+# alongside the old set -- parallel import, no overwrite (handoff doc Q1).
+$v3src = Join-Path $here 'assets_v3'
+if (Test-Path $v3src) {
+    $v3dst = Join-Path $build 'assets\ui\v3'
+    New-Item -ItemType Directory -Force $v3dst | Out-Null
+    $v3count = 0
+    Get-ChildItem -Filter *.png $v3src | ForEach-Object {
+        Copy-Item $_.FullName (Join-Path $v3dst $_.Name) -Force
+        $v3count++
+    }
+    Write-Host ("   copied {0} V3 PNGs into assets/ui/v3/" -f $v3count)
+    if ($v3count -lt 12) { throw "V3 asset payload looks wrong ($v3count files)" }
+}
+
 Write-Host "== aidl (T9-10 product backend interface)"
 # One file per invocation: aidl 35.0.1 in this tree has overwritten another input when handed
 # several files at once (see android/t9_09_binder_arch/build.ps1). Inputs are hashed so a mutated
@@ -101,8 +116,10 @@ Write-Host "== sources"
 $srcFiles = @(
     "src\com\tgz02\voice\Tgz02App.java",
     "src\com\tgz02\voice\Ui3.java",
+    "src\com\tgz02\voice\Ui4.java",
     "src\com\tgz02\voice\Toast2.java",
     "src\com\tgz02\voice\V2Shell.java",
+    "src\com\tgz02\voice\V3Shell.java",
     "src\com\tgz02\voice\VoiceHomeActivity.java",
     "src\com\tgz02\voice\SkillsHomeActivity.java",
     "src\com\tgz02\voice\DataService.java",

@@ -33,36 +33,38 @@ final class Ui3 {
     static final String MODE_KID  = "kid";
     static final String MODE_CALM = "calm";
 
-    private static String mode = MODE_KID;          // process-wide theme
-    static boolean isCalm() { return MODE_CALM.equals(mode); }
-    static void setMode(String m) { mode = MODE_CALM.equals(m) ? MODE_CALM : MODE_KID; }
-    static String mode() { return mode; }
+    /* T9-14: Ui3 is now a legacy shim over Ui4 (V3 tokens). The theme lives in ONE
+     * place (Ui4.theme); isCalm/setMode forward so any remaining Ui3 caller follows
+     * the V3 palette. Ui3 call sites left: ModelConfigActivity only. */
+    static boolean isCalm() { return Ui4.isCalm(); }
+    static void setMode(String m) { Ui4.setTheme(m); }
+    static String mode() { return Ui4.theme(); }
 
-    /* ============================== tokens (ds2.css) ============================== */
+    /* ============================== tokens (forwarded to Ui4 / V3) ============================== */
 
-    static int bg(Context c)      { return isCalm() ? col(0xFFF2F4F8) : col(0xFFFFF7EA); }
-    static int bgDeep(Context c)  { return isCalm() ? col(0xFFE4E8EF) : col(0xFFFFEBD2); }
-    static int surface(Context c) { return col(0xFFFFFFFF); }
-    static int surface2(Context c){ return isCalm() ? col(0xFFF2F5FA) : col(0xFFFFF3DF); }
-    static int line(Context c)    { return isCalm() ? col(0xFFE2E7EF) : col(0xFFF3E3C8); }
-    static int line2(Context c)   { return isCalm() ? col(0xFFD3DBE6) : col(0xFFE8D2AB); }
+    static int bg(Context c)      { return Ui4.bg(c); }
+    static int bgDeep(Context c)  { return Ui4.bgDeep(c); }
+    static int surface(Context c) { return Ui4.surface(c); }
+    static int surface2(Context c){ return Ui4.surface2(c); }
+    static int line(Context c)    { return Ui4.line(c); }
+    static int line2(Context c)   { return Ui4.line2(c); }
 
-    static int text(Context c)    { return isCalm() ? col(0xFF1C2432) : col(0xFF3A3040); }
-    static int text2(Context c)   { return isCalm() ? col(0xFF5C6879) : col(0xFF8A7A8F); }
-    static int text3(Context c)   { return isCalm() ? col(0xFF93A0B0) : col(0xFFB7A88F); }
+    static int text(Context c)    { return Ui4.text(c); }
+    static int text2(Context c)   { return Ui4.text2(c); }
+    static int text3(Context c)   { return Ui4.text3(c); }
 
-    static int primary(Context c)   { return isCalm() ? col(0xFF3E6FE0) : col(0xFFFF8A3D); }
-    static int primary2(Context c)  { return isCalm() ? col(0xFF2F5BC5) : col(0xFFFF6D2E); }
-    static int primaryW(Context c)  { return isCalm() ? col(0xFFE7EEFC) : col(0xFFFFE7D4); }
-    static int accent(Context c)    { return col(0xFF5FA8FF); }
-    static int accentW(Context c)   { return col(0xFFE3EEFF); }
-    static int ok(Context c)        { return col(0xFF35C46A); }
-    static int okW(Context c)       { return col(0xFFDFF5E8); }
-    static int warn(Context c)      { return col(0xFFFFB020); }
-    static int warnW(Context c)     { return col(0xFFFFF2D6); }
-    static int err(Context c)       { return col(0xFFFF5D5D); }
-    static int errW(Context c)      { return col(0xFFFFE3E3); }
-    static int listen(Context c)    { return col(0xFF31D0B4); }
+    static int primary(Context c)   { return Ui4.primary(c); }
+    static int primary2(Context c)  { return Ui4.primary2(c); }
+    static int primaryW(Context c)  { return Ui4.primaryW(c); }
+    static int accent(Context c)    { return Ui4.accent(c); }
+    static int accentW(Context c)   { return Ui4.accentW(c); }
+    static int ok(Context c)        { return Ui4.ok(c); }
+    static int okW(Context c)       { return Ui4.okW(c); }
+    static int warn(Context c)      { return Ui4.warn(c); }
+    static int warnW(Context c)     { return Ui4.warnW(c); }
+    static int err(Context c)       { return Ui4.err(c); }
+    static int errW(Context c)      { return Ui4.errW(c); }
+    static int listen(Context c)    { return Ui4.listen(c); }
 
     /* quick tile gradients (kid only; calm uses surface2) */
     static int[] tileGrad(String skill) {

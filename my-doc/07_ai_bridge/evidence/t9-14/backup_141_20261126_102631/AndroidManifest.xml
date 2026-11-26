@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  T9-UI-02: V2 kid-friendly shell.
+
+  The app is still an ordinary, unprivileged one: no permissions, no sharedUserId, no
+  service, and no intent-reading code in any of the production activities.  Images ship
+  in APK assets/ (aapt2 -A), not in res/.
+
+  ConversationActivity / MoreActivity / SettingsActivity are GONE from the manifest:
+  the V2 shell replaces them (skills / memory / settings pages).  Their code files stay
+  in the repo for reference but are no longer compiled.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.tgz02.voice"
+    android:versionCode="6"
+    android:versionName="1.4.1">
+
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="27" />
+
+    <application
+        android:name=".Tgz02App"
+        android:label="布丁助手"
+        android:allowBackup="false"
+        android:theme="@android:style/Theme.Material.NoActionBar">
+
+        <!-- the product: voice-first home with the buddy -->
+        <activity
+            android:name=".VoiceHomeActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|keyboardHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- T9-10.4: the product can be a home app. Declaring it is what makes the
+                 "replace the factory desktop" step possible at all; whether the system
+                 actually resolves to us is decided by the resolution table, see the report. -->
+            <intent-filter android:priority="100">
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- T9-UI-02: the four secondary top pages (Views inside, no new activities per skill) -->
+        <activity android:name=".SkillsHomeActivity"  android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity android:name=".MemoryCenterActivity" android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity android:name=".SettingsHomeActivity" android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity android:name=".AboutActivity" android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <!-- T9-08C: multi-vendor model configuration (plain-text keys, editable, hot applied) -->
+        <activity
+            android:name=".ModelConfigActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <!-- T9-10: the product backend. Own process (:backend), foreground, START_STICKY.
+             It is the only party that polls the worker's public files; every page reaches it
+             over AIDL. Not exported: only this package (same uid) may bind. -->
+        <service
+            android:name=".BackendService"
+            android:process=":backend"
+            android:exported="false" />
+
+    </application>
+</manifest>
