@@ -103,6 +103,8 @@ public class AlarmRingingService extends Service {
         return START_NOT_STICKY;
     }
 
+    private static final String TAG = "T916RING";
+
     private void playRing()
     {
         try {
@@ -113,18 +115,37 @@ public class AlarmRingingService extends Service {
             if (max > 0 && cur < max * 40 / 100) {
                 am.setStreamVolume(AudioManager.STREAM_ALARM, max * 40 / 100, 0);
             }
-            player = MediaPlayer.create(this, RingtoneManager.getDefaultUri(
-                    RingtoneManager.TYPE_ALARM));
-            if (player == null) {
-                player = MediaPlayer.create(this, RingtoneManager.getDefaultUri(
-                        RingtoneManager.TYPE_NOTIFICATION));
+            /* T9-16 真机修正：无声问题排查。三级 fallback + 每级失败都记日志（不再静默）：
+             *   1) 系统默认 ALARM 铃声
+             *   2) 已知存在的文件 /system/media/audio/alarms/Alarm_Beep_03.ogg（直读路径）
+             *   3) 系统默认 NOTIFICATION 铃声 */
+            android.net.Uri[] candidates = new android.net.Uri[]{
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
+                android.net.Uri.parse("file:///system/media/audio/alarms/Alarm_Beep_03.ogg"),
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION),
+            };
+            for (android.net.Uri u : candidates) {
+                try {
+                    player = MediaPlayer.create(this, u);
+                    if (player != null) {
+                        android.util.Log.i(TAG, "ring source ok: " + u);
+                        break;
+                    }
+                    android.util.Log.w(TAG, "create failed: " + u);
+                } catch (Throwable t) {
+                    android.util.Log.w(TAG, "create threw: " + u + " -- " + t);
+                }
             }
             if (player != null) {
                 player.setLooping(true);
                 player.start();
+                android.util.Log.i(TAG, "ring started");
+            } else {
+                android.util.Log.e(TAG, "all ring sources failed -- UI still shows");
             }
         } catch (Throwable t) {
             /* 播放失败也要让用户看到 UI（Activity 已弹），不崩进程 */
+            android.util.Log.e(TAG, "playRing fatal: " + t);
         }
     }
 

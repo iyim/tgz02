@@ -3940,7 +3940,10 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         /* T9-16：自有闹钟技能（解析→写 alarm_request.public.json→App 注册响铃）。
          * ctx 指向 w.al，work_dir 在下面统一填充。 */
         t9_alarm_defaults(&w.al);
-        snprintf(w.al.work_dir, sizeof(w.al.work_dir), "%s", c->work_dir);
+        /* T9-16 修正：请求 JSON 必须写到 **App 可见的快照目录**（ui_events_dir + /snapshots），
+         * 不是 worker 的 work_dir——App 的 AlarmRequestMonitor 只监听 t9_ui/snapshots/。
+         * 首次真机联调时写错了目录，导致语音建闹钟 App 收不到（界面看不到）。 */
+        snprintf(w.al.work_dir, sizeof(w.al.work_dir), "%s/snapshots", c->ui_events_dir);
         if (t8_skill_register(&w.sk, T8_SK_ALARM_SET, t9_skill_alarm_exec,
                               &w.al) != T8_SK_OK) {
             always("skill register failed: alarm.set");

@@ -288,6 +288,14 @@ public class SkillsHomeActivity extends V3Shell {
                     DataService.get(SkillsHomeActivity.this).alarmSetEnabled(a.id, st[0]);
                 }
             }));
+            /* T9-16：删除按钮（V3 迁移时丢失的功能，补回） */
+            r.addView(Ui4.btnSm(this, "删", 0xFFC02626, new Runnable() {
+                public void run() {
+                    DataService.get(SkillsHomeActivity.this).alarmDelete(a.id);
+                    toast("已删除");
+                    rebuild();
+                }
+            }));
             list.addView(r);
         }
         body.addView(list);
