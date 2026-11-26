@@ -1,0 +1,11 @@
+﻿=== T9-15 alarm intent route unit test ===
+
+[1] 正向：定闹钟/叫我起床（必须命中 alarm 且 complete）
+
+[2] 否决：知识性提问（含闹钟字样但不该放行）
+
+[3] 回归：其他意图不受影响
+
+[4] 路由位与名称
+
+=== result: 24 pass, 0 fail ===

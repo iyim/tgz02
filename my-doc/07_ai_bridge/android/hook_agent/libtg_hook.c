@@ -609,7 +609,7 @@ static volatile int g_nlu_patched;      /* 镜像：1 = 入口当前是补丁机
 static volatile int g_nlu_boot_done;    /* 1 = 一次性初始化已经结束（仅用于诊断） */
 static volatile int g_nlu_init_failed;  /* 1 = 初始化失败（此时接管必须 fail-closed） */
 static volatile int g_nlu_env_ignored;  /* 1 = 环境变量要求开接管但被拒绝（诊断） */
-static int          g_nlu_mask = 0xFF;  /* T7B_ROUTE_ALL（T8-12.20：0x7F -> 0xFF，新增 exit 位） */
+static int          g_nlu_mask = 0x1FF; /* T7B_ROUTE_ALL（T9-15：0xFF -> 0x1FF，新增 alarm 位） */
 static uint32_t     g_nlu_func;
 static uint32_t     g_nlu_orig[2];
 static void        *g_nlu_page;
@@ -739,7 +739,7 @@ static void nlu_boot_once(void)
     v = getenv("TG_NLU_ROUTE_MASK");
     if (v != NULL && v[0] != '\0') {
         long m = strtol(v, NULL, 0);
-        if (m > 0 && m <= 0xFF) g_nlu_mask = (int)m;   /* T8-12.20：上限随 T7B_ROUTE_ALL 扩到 0xFF */
+        if (m > 0 && m <= 0x1FF) g_nlu_mask = (int)m;  /* T9-15：上限随 T7B_ROUTE_ALL 扩到 0x1FF */
     }
 
     /* T8-05：会话表**无条件**初始化（t8_to_init 只做一次 memset + mutex_init）。

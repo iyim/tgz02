@@ -335,6 +335,40 @@ static int ir_match_weather(const char *n, ir_result *out)
     return 1;
 }
 
+/* ---------------- 闹钟/提醒（T9-15） ----------------
+ *
+ * 原厂 smartapp 的 basedomain.ui.alarm 域有完整的云端闹钟链路：
+ *   云端技能解析 -> ALARM_DATA_SYNC 下发 -> AlarmManager.setAlarmClock
+ *   -> AlarmReceiver 响铃（真机验证：dumpsys alarm 有 22:00/07:30 注册，
+ *   AlarmQueryReceiver 回答 Alarm is EMPTY，:business 进程存活）。
+ * 我们的 LLM 建不了闹钟；命中即 PASS 回原厂，绝不接管。
+ *
+ * 关键词边界：
+ *   - 「闹钟」「叫我起床」「提醒我」等放行；
+ *   - 否决知识性提问（为什么/怎么/说说等，与 weather 否决同款）；
+ *   - time 规则在 alarm 之前判定，时间疑问句不会被这里误吃。
+ */
+static const char *const IR_ALARM_HIT[] = {
+    "闹钟", "叫我起床", "喊我起床", "叫我起来", "提醒我", "设个提醒",
+    "提醒一下", "定个闹钟", "设个闹钟", "定闹钟", "设闹钟", "取消闹钟",
+    "关掉闹钟", "删掉闹钟", "闹钟响了", "贪睡",
+    NULL
+};
+
+static const char *const IR_ALARM_VETO[] = {
+    "为什么", "怎么", "如何", "是什么", "说说", "讲讲", "聊聊", "谈谈",
+    "起源", "历史", "发明", "原理", "故事", "儿歌", "诗",
+    NULL
+};
+
+static int ir_match_alarm(const char *n, ir_result *out)
+{
+    if (!ir_has_any(n, IR_ALARM_HIT)) return 0;
+    if (ir_has_any(n, IR_ALARM_VETO)) return 0;
+    ir_set(out, IR_ALARM, "alarm.keyword", "");
+    return 1;
+}
+
 /* ---------------- 设备自身状态（T8-14.2） ----------------
  *
  * 背景：音箱自己有多少电、开了多久，原厂没有这项能力。这是第一个"纯自有"意图 ——
@@ -652,6 +686,7 @@ int ir_classify_norm(const char *norm, ir_result *out)
           ir_match_weather(norm, r) ||
           ir_match_device_status(norm, r) ||
           ir_match_time(norm, r) ||
+          ir_match_alarm(norm, r) ||
           ir_match_media(norm, r) ||
           ir_match_volume(norm, r) ||
           ir_match_exit(norm, r);
@@ -691,6 +726,7 @@ int ir_route_bit(ir_intent it)
     case IR_MEDIA:      return T7B_ROUTE_MEDIA;
     case IR_STOP:       return T7B_ROUTE_STOP;
     case IR_EXIT:       return T7B_ROUTE_EXIT;
+    case IR_ALARM:      return T7B_ROUTE_ALARM;
     case IR_NONE:
     default:            return 0;
     }
@@ -707,6 +743,7 @@ const char *ir_intent_name(ir_intent it)
     case IR_MEDIA:      return "media";
     case IR_STOP:       return "stop";
     case IR_EXIT:       return "exit";
+    case IR_ALARM:      return "alarm";
     case IR_DEVICE_STATUS: return "device_status";
     case IR_NONE:
     default:            return "none";
@@ -724,6 +761,7 @@ int ir_intent_from_name(const char *name)
     if (strcmp(name, "media") == 0) return IR_MEDIA;
     if (strcmp(name, "stop") == 0) return IR_STOP;
     if (strcmp(name, "exit") == 0) return IR_EXIT;
+    if (strcmp(name, "alarm") == 0) return IR_ALARM;
     if (strcmp(name, "device_status") == 0) return IR_DEVICE_STATUS;
     return IR_NONE;
 }

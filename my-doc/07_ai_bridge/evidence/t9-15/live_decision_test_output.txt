@@ -1,0 +1,8 @@
+﻿OK [0] 天猫精灵定早上七点的闹钟 -> PASS(factory)    why=NONE
+OK [1] 明天早上七点叫我起床 -> PASS(factory)    why=NONE
+OK [2] 提醒我明天八点吃药    -> PASS(factory)    why=NONE
+OK [3] 闹钟是谁发明的          -> TAKE             why=AI(no native intent)
+OK [4] 今天天气怎么样          -> PASS(factory)    why=NONE
+OK [5] 把音量调到50              -> PASS(factory)    why=NONE
+OK [6] 我想听故事                -> TAKE             why=AI(no native intent)
+=== 7 pass, 0 fail ===

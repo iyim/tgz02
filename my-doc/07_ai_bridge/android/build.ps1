@@ -40,10 +40,16 @@ function Log([string]$text) {
     Write-Host $text
 }
 
+# T9-15: source list synced to the last deployed provenance (t9_07r1f_ndk_build.log,
+# the build that produced the currently-running ai_worker) -- modules dropped from
+# this list during refactors had silently broken the build.
 $Lib = @(
-    "event_reader.c", "consumer_state.c", "provider.c",
-    "mock_provider.c", "deepseek_provider.c", "worker_status.c", "worker_util.c", "seq_gap.c",
-    "conv_context.c", "worker_conf.c", "dead_letter.c"
+    "worker_util.c", "event_reader.c", "consumer_state.c", "seq_gap.c",
+    "conv_context.c", "worker_conf.c", "worker_status.c", "echo_filter.c",
+    "intent_route.c", "utterance_gate.c", "conv_session.c", "t7_dup.c",
+    "session_ctrl.c", "skill_dispatch.c", "dead_letter.c",
+    "provider.c", "mock_provider.c", "deepseek_provider.c",
+    "talk_tap.c", "tg_inbox.c", "ui_events.c", "tg_http.c", "model_provider.c", "model_cfg.c", "model_json.c", "doubao_provider.c", "openai_provider.c", "qwen_provider.c", "model_call.c"
 ) | ForEach-Object { Join-Path $Here $_ }
 
 $Targets = @(

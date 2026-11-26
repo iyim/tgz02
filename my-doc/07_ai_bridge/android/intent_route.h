@@ -42,9 +42,14 @@ typedef enum {
     IR_STOP = 7,         /* 打断播报（停止/暂停/别说了）：第一效果是立刻静音，不是让模型解释 */
     IR_EXIT = 8,         /* T8-12.20：退出对话（退出/退出一下/结束对话）——原厂 exitTalk 的触发语，
                           * 之前没有这条规则导致 DECIDE 下被当 AI 拦下，原厂退出链路走不到 */
-    IR_DEVICE_STATUS = 9 /* T8-14.2：设备自身状态（电量/运行时长）。**原厂没有这个能力**，
+    IR_DEVICE_STATUS = 9,/* T8-14.2：设备自身状态（电量/运行时长）。**原厂没有这个能力**，
                           * 因此不分配 route 位（ir_route_bit 返回 0）：命中后只可能是
                           * 自有技能接管或回落 AI，绝不会被"放行给原厂"。 */
+    IR_ALARM = 10        /* T9-15：闹钟/提醒（定闹钟/叫我起床/设个提醒）。原厂 smartapp 的
+                          * basedomain.ui.alarm 域有完整的云端闹钟链路（云端解析→ALARM_DATA_SYNC
+                          * 下发→AlarmManager.setAlarmClock→AlarmReceiver 响铃，真机验证
+                          * dumpsys alarm 有 22:00/07:30 注册、AlarmQueryReceiver 存活）。
+                          * 命中即 PASS 回原厂，绝不接管——我们的 LLM 建不了闹钟。 */
 } ir_intent;
 
 typedef struct {
@@ -71,7 +76,9 @@ typedef struct {
 #define T7B_ROUTE_EXIT       0x80   /* T8-12.20：退出对话位。T7B_ROUTE_ALL 由 0x7F 扩到 0xFF，
                                      * worker_conf 的掩码校验（~T7B_ROUTE_ALL）与 libtg_hook 的
                                      * env 上限校验都引用 ALL，必须同步扩大。 */
-#define T7B_ROUTE_ALL        0xFF
+#define T7B_ROUTE_ALARM      0x100  /* T9-15: alarm/reminder passthrough bit. ALL extends 0xFF -> 0x1FF,
+                                      * worker_conf validation and libtg_hook env cap reference ALL. */
+#define T7B_ROUTE_ALL        0x1FF
 
 /* 判定一条 ASR 文本：1 = 属于原厂基础指令（route=native），0 = 不是（route=ai） */
 int ir_classify(const char *text, ir_result *out);
