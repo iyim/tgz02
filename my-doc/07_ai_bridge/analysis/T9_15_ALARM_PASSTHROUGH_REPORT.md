@@ -57,14 +57,23 @@
 
 **结论：决策层修复已在本机 ARM 上用真实部署 .so 全量验证；最后一环（真人对设备说一句）只能由人完成。**
 
-## 6. 预期真机效果与用户验收步骤
+## 6. 真人语音端到端验收 —— **通过**（2026-11-26 19:54-19:57 补测）
 
-说"**天猫精灵，明天早上七点叫我起床**"：
-1. 决策层 PASS → 原厂 NLU/云端技能接管（回复应变成原厂风格确认，不再是 deepseek 文风）
-2. 云端建闹钟 → `ALARM_DATA_SYNC` 下发 → `dumpsys alarm` 出现 07:00 注册、`AlarmQueryReceiver` 应答从 EMPTY 变有闹钟
-3. 到点 `AlarmReceiver` 响铃（default_ring.mp3）
+用户真机实测「三分钟后的闹钟」，全链路日志实证：
 
-若云端技能解析响应正常，全程无新代码。
+| 环节 | 证据（时间戳） |
+| --- | --- |
+| 语音输入 | events.jsonl seq=12 asr_final「三分钟后的闹钟」（19:54:07，来自 :core pid 23767——新 hook） |
+| 决策层 PASS | 话术未落 LLM（对比修复前 seq=4 的 deepseek 回复），原厂云端技能接管 |
+| 云端建闹钟+下发 | dumpsys alarm 新增 *walarm*:…AlarmReceiver 注册，触发时刻 19:56:53 |
+| AlarmReceiver 触发 | AlarmHandler handleMessage 40098（19:57:08） |
+| 云端闹钟数据完整 | AlarmInfo{cron='8 57 19 26 11 ? 2026', ttsUrl=…19-57-13.mp3, 网易云铃声 musicId 597007175「你」, volume=40, repeat=3, dbId=22} |
+| 响铃执行 | AlarmClockManager: Step#3 getAlarmInfoByAlarmIdWithCurrentTime != null, playRing → AudioTrack |
+| 全屏响铃 UI | 截图 evidence/t9-15/alarm_ring_ui.png：原厂闹钟页「你 · 19:57 · 关闭」 |
+
+**五层全部验证**：云端解析 → 数据下发 → 定时注册 → 响铃执行 → 响铃 UI。云侧还自动配置了 TTS 报时 + 网易云音乐铃声，原厂完整体验恢复。AlarmDatabaseHelper 持久化（dbId=22）保证重启后 AutoStartBroadcastReceiver 重注册。
+
+证据文件：evidence/t9-15/（alarm_ring_ui.png 响铃界面 / live_decision_test_output.txt 决策实测 / final_state.png）
 
 ## 7. 回滚
 
@@ -72,6 +81,6 @@
 
 ## 8. 尚未验证
 
-1. 真人语音端到端（决策层已验证，差最后一次真实 ASR 通行）
-2. 原厂云端技能是否要求登录态/账号绑定才能建闹钟（若云侧拒绝，需看 smartapp 日志再定位——那是云端问题不是本地代码问题）
-3. `贪睡/取消闹钟/删掉闹钟` 等次级话术的原厂行为
+1. ~~真人语音端到端~~ **已于 2026-11-26 19:54 补测通过**（见 §6）
+2. 次级话术回归：贪睡/取消闹钟/删掉闹钟/提醒我 各自的原厂行为未逐一实测（决策层单测已覆盖全部会 PASS）
+3. 下次镜像重打包时需同步新二进制：ai_worker f57ff678 → /system/tgz02/bin/、libtg_hook.so c99e3730 → /system/tgz02/lib/（当前 /system 已运行时替换，镜像内仍是旧版）
