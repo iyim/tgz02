@@ -1,0 +1,74 @@
+﻿11-26 22:07:36.430 D/SessionManager(13300): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13364] sessionId = 1967687, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-26 22:07:36.474 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [13329] sessionId = 1967687
+11-26 22:07:41.473 D/SessionManager(13300): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13364] sessionId = 1971787, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-26 22:07:41.484 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:106 [13329] sessionId = 1971787, forground = 
+11-26 22:07:41.525 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [13329] sessionId = 1971787
+11-26 22:07:47.035 D/SessionManager(13300): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13364] sessionId = 1967695, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-26 22:07:47.052 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:106 [13329] sessionId = 1967695, forground = 
+11-26 22:07:47.059 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [13329] sessionId = 1967695
+11-26 22:07:52.007 D/SessionManager(13300): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13364] sessionId = 1971795, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-26 22:07:52.044 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:106 [13329] sessionId = 1971795, forground = 
+11-26 22:07:52.049 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [13329] sessionId = 1971795
+11-26 22:07:56.405 D/SessionManager(13300): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13364] sessionId = 1967703, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-26 22:07:56.424 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:106 [13329] sessionId = 1967703, forground = 
+11-26 22:07:56.437 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [13329] sessionId = 1967703
+11-26 22:08:00.961 D/SessionManager(13300): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13364] sessionId = 1971803, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-26 22:08:00.969 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:106 [13329] sessionId = 1971803, forground = 
+11-26 22:08:01.019 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [13329] sessionId = 1971803
+11-26 22:08:07.261 D/SessionManager(13300): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13364] sessionId = 1971807, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-26 22:08:07.278 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:106 [13329] sessionId = 1971807, forground = 
+11-26 22:08:07.288 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [13329] sessionId = 1971807
+11-26 22:08:14.427 D/SessionManager(13300): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13364] sessionId = 1971811, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-26 22:08:14.438 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:106 [13329] sessionId = 1971811, forground = 
+11-26 22:08:14.445 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [13329] sessionId = 1971811
+11-26 22:08:36.589 D/SessionManager(13300): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13364] sessionId = 1967720, wakeupType = 0, wakeupWord=tian mao jing ling, needLight=0, needVoice=0
+11-26 22:08:36.643 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [13329] sessionId = 1967720
+11-26 22:08:41.353 D/SessionManager(13300): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13364] sessionId = 1971820, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-26 22:08:41.393 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [13329] sessionId = 1971820
+11-26 22:08:57.012 D/SessionManager(13300): JNI_AILABS SessionManager.cpp:onStartTalk:255 [13364] sessionId = 1971825, wakeupType = 1, wakeupWord=, needLight=0, needVoice=0
+11-26 22:08:57.018 W/SessionDispatch(13300): JNI_AILABS SessionDispatch.cpp:onStartTalk:120 [13329] sessionId = 1971825
+11-26 22:07:39.878 D/AGSpeechEngine(13300): onCloudEOUEvent,646
+11-26 22:07:50.450 D/AGSpeechEngine(13300): onCloudEOUEvent,646
+11-26 22:07:59.553 D/AGSpeechEngine(13300): onCloudEOUEvent,646
+11-26 22:08:05.779 D/AGSpeechEngine(13300): onCloudEOUEvent,646
+11-26 22:08:12.918 D/AGSpeechEngine(13300): onCloudEOUEvent,646
+11-26 22:08:22.578 D/AGSpeechEngine(13300): onCloudEOUEvent,646
+11-26 22:08:40.503 D/AGSpeechEngine(13300): onCloudEOUEvent,646
+11-26 22:08:51.539 D/AGSpeechEngine(13300): onCloudEOUEvent,646
+11-26 22:09:07.128 D/AGSpeechEngine(13300): onCloudEOUEvent,646
+11-26 22:07:37.114 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147337; data=null
+11-26 22:07:40.345 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_PLAY; arg2=1967687; data=null
+11-26 22:07:41.937 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_INTERRUPT; arg2=1967687; data=null
+11-26 22:07:41.962 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_INTERRUPT; arg2=1967687; data=null
+11-26 22:07:42.738 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147340; data=null
+11-26 22:07:47.450 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147345; data=null
+11-26 22:07:52.092 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_INTERRUPT; arg2=1967695; data=null
+11-26 22:07:52.093 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_INTERRUPT; arg2=1967695; data=null
+11-26 22:07:53.218 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147349; data=null
+11-26 22:07:56.958 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147352; data=null
+11-26 22:07:59.953 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_PLAY; arg2=1967703; data=null
+11-26 22:08:01.100 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_INTERRUPT; arg2=1967703; data=null
+11-26 22:08:01.102 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_INTERRUPT; arg2=1967703; data=null
+11-26 22:08:02.408 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147357; data=null
+11-26 22:08:06.372 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_PLAY; arg2=1971803; data=null
+11-26 22:08:07.348 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_INTERRUPT; arg2=1971803; data=null
+11-26 22:08:07.349 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_INTERRUPT; arg2=1971803; data=null
+11-26 22:08:08.525 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147360; data=null
+11-26 22:08:13.279 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_PLAY; arg2=1971807; data=null
+11-26 22:08:14.503 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_INTERRUPT; arg2=1971807; data=null
+11-26 22:08:14.506 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_INTERRUPT; arg2=1971807; data=null
+11-26 22:08:15.645 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147364; data=null
+11-26 22:08:37.504 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147370; data=null
+11-26 22:08:42.087 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147374; data=null
+11-26 22:08:51.676 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_PLAY; arg2=5244527; data=null
+11-26 22:08:56.774 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=5244527; data=null
+11-26 22:08:56.774 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=5244527; data=null
+11-26 22:08:57.229 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_STATUS; arg1=AUDIO_STATUS_INTERRUPT; arg2=5244527; data=null
+11-26 22:08:57.235 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_INTERRUPT; arg2=5244527; data=null
+11-26 22:08:57.850 D/GenieAssistantUIManager(13300): onNotify. type = NOTIFY_TTS_GROUP_STATUS; arg1=AUDIO_STATUS_COMPLETE; arg2=3147378; data=null
+11-26 22:07:40.226 D/AudioManager(13300): JNI_AILABS AudioManager.cpp:processTtsStart:561 [13331] Tts start, id:1967687, text:今天昌平区阴转多云，3度到13度，空气质量指数124轻度污染，现在多云。 , pcExt:{ "forcePlay": false }, feedback:0, needSuspend:1, sessionFlag:1 wakeupType:(null)
+11-26 22:07:50.732 D/AudioManager(13300): JNI_AILABS AudioManager.cpp:processTtsStart:561 [13331] Tts start, id:1967695, text:明天昌平区晴转多云，气温-2度到9度 。, pcExt:{ "forcePlay": false }, feedback:0, needSuspend:1, sessionFlag:1 wakeupType:(null)
+11-26 22:07:59.866 D/AudioManager(13300): JNI_AILABS AudioManager.cpp:processTtsStart:561 [13331] Tts start, id:1967703, text:今天昌平区不下雨，阴转多云，3度到13度。 , pcExt:{ "forcePlay": false }, feedback:0, needSuspend:1, sessionFlag:1 wakeupType:(null)
+11-26 22:08:06.245 D/AudioManager(13300): JNI_AILABS AudioManager.cpp:processTtsStart:561 [13331] Tts start, id:1971803, text:未来昌平区大部分是晴，平均最高温10度，平均最低温-1度，无降水。, pcExt:{ "forcePlay": false }, feedback:0, needSuspend:1, sessionFlag:1 wakeupType:(null)
+11-26 22:08:13.223 D/AudioManager(13300): JNI_AILABS AudioManager.cpp:processTtsStart:561 [13331] Tts start, id:1971807, text:今天昌平区3度到13度，阴转多云，现在阴。 , pcExt:{ "forcePlay": false }, feedback:0, needSuspend:1, sessionFlag:1 wakeupType:(null)
+11-26 22:08:51.599 D/AudioManager(13300): JNI_AILABS AudioManager.cpp:processTtsStart:561 [13331] Tts start, id:5244527, text:好啦，3 分钟后 布丁闹钟的闹钟记好了，到点我叫你。, pcExt:{ "forcePlay": false }, feedback:0, needSuspend:1, sessionFlag:5 wakeupType:(null)

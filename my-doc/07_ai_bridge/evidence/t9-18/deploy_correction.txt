@@ -1,0 +1,7 @@
+﻿# CORRECTION (honest recording)
+# :core (pid 13300) booted 21:43 mapped libtg_hook.so inode 2123. The T9-18 deploy used dd in-place
+# (same inode), so :core's already-mapped text pages may still be the old code until :core restarts.
+# The live-decision test (wltest_new) dlopened /system/tgz02/lib/libtg_hook.so fresh in its own process
+# and therefore ran the NEW code (weather keywords verified 15/15 on device ARM32).
+# Production effect of the keyword update is deferred to the next :core restart (no restart forced,
+# per T9-18 execution limits: do not disturb the voice chain).

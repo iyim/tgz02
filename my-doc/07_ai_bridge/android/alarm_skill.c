@@ -1,4 +1,4 @@
-/*
+﻿/*
  * alarm_skill.c -- T9-16: TG-Z02 自有闹钟技能（worker 侧）。
  *
  * 职责（只做三件事，绝不直接操作 Android）：
@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 /* ---------- 中文时间词表（UTF-8，多字节 memcmp） ---------- */
 
@@ -69,43 +70,6 @@ static int cn_hour(const char *p, int *consumed)
      * 其余 X(0..9) 直接用；十几 <= 23 由调用方校验 */
     if (v >= 0 && v <= 23) return v;
     return -1;
-}
-
-static int cn_minute_tail(const char *p, int *consumed, int *minute)
-{
-    *minute = 0;
-    if (strncmp(p, "点半", 6) == 0) { *minute = 30; *consumed += 6; return 1; }
-    if (strncmp(p, "点一刻", 9) == 0) { *minute = 15; *consumed += 9; return 1; }
-    if (strncmp(p, "点半刻", 9) == 0) { *minute = 45; *consumed += 9; return 1; }
-    if (strncmp(p, "点", 3) == 0) {
-        *consumed += 3;
-        p += 3;
-        /* 「零五」「零五分」/「五分」/「五十五分」 */
-        int i, v = -1, c = 0;
-        for (i = 0; CN_DIGIT[i] != NULL; i++) {
-            size_t kl = strlen(CN_DIGIT[i]);
-            if (strncmp(p, CN_DIGIT[i], kl) == 0) { v = CN_DIGIT_VAL[i]; c = (int)kl; break; }
-        }
-        if (v < 0) return 1;             /* 「七点」= 整点 */
-        p += c; *consumed += c;
-        int m = v;
-        /* 「十五」「五十五」类：第二个数字 */
-        for (i = 0; CN_DIGIT[i] != NULL; i++) {
-            size_t kl = strlen(CN_DIGIT[i]);
-            if (strncmp(p, CN_DIGIT[i], kl) == 0) {
-                int d = CN_DIGIT_VAL[i];
-                if (d == 10 && m == 1) m = 10;                    /* 一十 */
-                else if (m == 1 && d >= 1 && d <= 9) m = 10 + d;  /* 十X */
-                else if (m == 10) m = d;                          /* X十 (二十->20? handled) */
-                *consumed += (int)kl;
-                break;
-            }
-        }
-        if (strncmp(p, "分", 3) == 0) *consumed += 3;
-        if (m >= 0 && m <= 59) { *minute = m; return 1; }
-        return 1;
-    }
-    return 0;                                    /* 没有「点」 */
 }
 
 static int has_any(const char *n, const char *const *list)
@@ -167,11 +131,15 @@ static int alarm_time_parse(const char *n, int *hour, int *minute, int *day_offs
     *hour = -1; *minute = -1; *day_offset = 0;
     err[0] = '\0';
 
-    /* 相对时间：「N分钟后」「N分钟以后」（N 为阿拉伯数字，归一化后只剩 ASCII 数字） */
+    /* 相对时间：「N分钟后」「N分钟以后」。N 支持两种形态：
+     *   - 阿拉伯数字（"5分钟后"）
+     *   - 中文数字（"五分钟后"「十分钟后」「十五分钟后」，最多到 九十九）
+     * T9-16 真机教训：ASR 把「五分钟后提醒我」识别成纯中文，原实现只认阿拉伯
+     * 数字导致 E_ARG 死循环。 */
     p = strstr(n, "分钟后");
     if (p == NULL) p = strstr(n, "分钟以后");
     if (p != NULL) {
-        /* 向前扫描数字 */
+        /* 优先：紧邻的阿拉伯数字 */
         const char *q = p;
         char num[8];
         int k = 0;
@@ -180,14 +148,59 @@ static int alarm_time_parse(const char *n, int *hour, int *minute, int *day_offs
         if (k > 0) {
             num[k] = '\0';
             rel_minutes = atoi(num);
-            if (rel_minutes <= 0 || rel_minutes > 720) {
-                snprintf(err, errcap, "range");
-                return 0;
+        } else {
+            /* 中文数字：从「分钟」往前扫，取最近一段可解析的中文数（一..九十九） */
+            const char *best = NULL;
+            int best_v = -1, best_len = 0;
+            const char *scan;
+            for (scan = p - 3; scan >= n + 2; scan -= 3) {
+                /* 试着从 scan 解析一个中文数（两位：X十Y / 十Y / X十 / X） */
+                const char *s = scan;
+                int v = -1, len = 0, i2;
+                int first = -1;
+                for (i2 = 0; CN_DIGIT[i2] != NULL; i2++) {
+                    size_t kl = strlen(CN_DIGIT[i2]);
+                    if (strncmp(s, CN_DIGIT[i2], kl) == 0) { first = CN_DIGIT_VAL[i2]; len = (int)kl; break; }
+                }
+                if (first < 0) continue;
+                s += len;
+                if (first == 10) {
+                    v = 10;
+                    /* 十Y */
+                    for (i2 = 0; CN_DIGIT[i2] != NULL; i2++) {
+                        size_t kl = strlen(CN_DIGIT[i2]);
+                        if (strncmp(s, CN_DIGIT[i2], kl) == 0) {
+                            int d = CN_DIGIT_VAL[i2];
+                            if (d >= 1 && d <= 9) { v = 10 + d; len += (int)kl; }
+                            break;
+                        }
+                    }
+                } else if (first >= 1 && first <= 9) {
+                    v = first;
+                    /* X十 */
+                    if (strncmp(s, "十", 3) == 0) {
+                        v = first * 10; len += 3; s += 3;
+                        for (i2 = 0; CN_DIGIT[i2] != NULL; i2++) {
+                            size_t kl = strlen(CN_DIGIT[i2]);
+                            if (strncmp(s, CN_DIGIT[i2], kl) == 0) {
+                                int d = CN_DIGIT_VAL[i2];
+                                if (d >= 1 && d <= 9) { v += d; len += (int)kl; }
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (v >= 1 && v <= 720) { best = scan; best_v = v; best_len = len; break; }
             }
-            *hour = -2;                      /* 标记为相对时间 */
+            if (best != NULL) rel_minutes = best_v;
+        }
+        if (rel_minutes > 0 && rel_minutes <= 720) {
+            *hour = -2;
             *minute = rel_minutes;
             return 1;
         }
+        snprintf(err, errcap, "range");
+        return 0;
     }
 
     /* 「明天」修饰 */
@@ -198,7 +211,6 @@ static int alarm_time_parse(const char *n, int *hour, int *minute, int *day_offs
     {
         char num[5];
         int k = 0;
-        const char *q = n;
         /* 找 "点" 的两种形式：中文「点」或数字+数字 */
         const char *dian = strstr(n, "点");
         if (dian != NULL) {
@@ -287,6 +299,10 @@ static int write_request(const t9_alarm_ctx *c, const char *body)
     if (wu_write_all(fd, body, strlen(body)) != 0) rc = -1;
     wu_close(fd);
     if (rc == 0 && wu_rename_replace(tmp, path) != 0) rc = -1;
+    /* T9-16 真机修正：worker 是 root，wu_open_wo 落盘 0600（root umask），App uid 10071
+     * 读不到 -> FileNotFoundException -> 语音建的闹钟 App 永远收不到。与 route_publish
+     * 同款：rename 后显式 chmod 0644。 */
+    if (rc == 0 && chmod(path, 0644) != 0) rc = -1;
     return rc;
 }
 
@@ -359,7 +375,9 @@ int t9_skill_alarm_exec(const t8_skill_req *req, t8_skill_result *res, void *ctx
             snprintf(res->message, sizeof(res->message),
                      "我没有听清时间，可以说\"明天早上七点叫我起床\"。");
         }
-        return T8_SK_E_ARG;
+        /* T9-16 真机修正：解析失败是**有效的对话结果**（听懂了意图但没听懂时间），
+         * 用 T8_SK_OK 把提示话术送 TTS；E_ARG 会进重试死循环且用户什么都听不到。 */
+        return T8_SK_OK;
     }
     rel = (hour == -2) ? minute : -1;
 
@@ -384,11 +402,23 @@ int t9_skill_alarm_exec(const t8_skill_req *req, t8_skill_result *res, void *ctx
         return T8_SK_E_FAIL;
     }
     {
+        /* T9-16 用户反馈：确认话术要说**具体时间**（"21:36 的闹钟"），不说"的闹钟"。
+         * 绝对时间用 HH:MM 点分口语（"21 点 36 分"），相对时间用 N 分钟。 */
+        char when_spoken[80];
+        if (rel >= 0) {
+            snprintf(when_spoken, sizeof(when_spoken), "%d 分钟后", rel);
+        } else if (minute == 0) {
+            snprintf(when_spoken, sizeof(when_spoken), "%d 点整", hour);
+        } else {
+            snprintf(when_spoken, sizeof(when_spoken), "%d 点 %d 分", hour, minute);
+        }
+        const char *day_txt = dayoff ? "明天 " : "";
         const char *rep_txt = (repeat == 0x7F) ? "，每天都会叫你"
                             : (repeat == 0x1F) ? "，工作日都会叫你"
                             : (repeat != 0) ? "，会按星期重复" : "";
+        /* T9-16 用户反馈：话术里不念 label（"布丁闹钟的闹钟"重复拗口），只念时间 */
         snprintf(res->message, sizeof(res->message),
-                 "好啦，%s的闹钟记好了%s，到点我叫你。", when, rep_txt);
+                 "好啦，%s%s的闹钟记好了%s，到点我叫你。", day_txt, when_spoken, rep_txt);
     }
     return T8_SK_OK;
 }

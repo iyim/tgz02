@@ -140,7 +140,7 @@ int main(void)
     expect_intent("你是谁", IR_NONE, NULL);
     expect_intent("东京有什么好玩的", IR_NONE, NULL);
     expect_intent("推荐一部科幻电影", IR_NONE, NULL);
-    expect_intent("帮我定个闹钟", IR_NONE, NULL);
+    expect_intent("帮我定个闹钟", IR_ALARM, "");   /* T9-15/16: alarm -> IR_ALARM (own skill), empty arg */
     expect_intent("屏幕亮度调高一点", IR_NONE, NULL);      /* 亮度 != 关屏 */
     expect_intent("把屏幕调暗一点", IR_NONE, NULL);
     expect_intent("我的生日是几号", IR_NONE, NULL);        /* 问日期 != 问时间 */

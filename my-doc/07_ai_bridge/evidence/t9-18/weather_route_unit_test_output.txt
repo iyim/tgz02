@@ -1,0 +1,34 @@
+﻿=== T9-18 weather route unit test ===
+
+[1] weather positive
+OK  today: classify("天猫精灵今天天气怎么样") -> weather complete=1 (want weather/1)
+OK  tomorrow: classify("天猫精灵明天天气怎么样") -> weather complete=1 (want weather/1)
+OK  day after: classify("天猫精灵后天天气怎么样") -> weather complete=1 (want weather/1)
+OK  rain question: classify("天猫精灵明天会下雨吗") -> weather complete=1 (want weather/1)
+OK  current temp (温度 hit): classify("天猫精灵今天多少度") -> weather complete=1 (want weather/1)
+OK  high/low temp: classify("今天最高温是多少") -> weather complete=1 (want weather/1)
+OK  aqi: classify("天猫精灵空气质量怎么样") -> weather complete=1 (want weather/1)
+OK  city slot: classify("天猫精灵北京天气怎么样") -> weather complete=1 (want weather/1)
+OK  multi day: classify("未来几天天气怎么样") -> weather complete=1 (want weather/1)
+OK  umbrella: classify("今天需要带伞吗") -> weather complete=1 (want weather/1)
+OK  uv: classify("今天紫外线强吗") -> weather complete=1 (want weather/1)
+
+[2] weather veto
+OK  how formed: classify("天猫精灵天气是怎么形成的") -> none complete=0 (want none/0)
+OK  chat: classify("天猫精灵我想聊聊天气") -> none complete=0 (want none/0)
+OK  movie name: classify("天气之子好看吗") -> none complete=0 (want none/0)
+OK  knowledge: classify("给我讲讲天气的知识") -> none complete=0 (want none/0)
+
+[3] regression
+OK  alarm passthrough->take: classify("天猫精灵定早上七点的闹钟") -> alarm complete=1 (want alarm/1)
+OK  volume: classify("把音量调到50") -> volume complete=1 (want volume/1)
+OK  time: classify("现在几点了") -> time complete=1 (want time/1)
+OK  stop: classify("停止播放") -> stop complete=1 (want stop/1)
+OK  exit: classify("天猫精灵退出") -> exit complete=1 (want exit/1)
+
+[4] route bits
+OK  weather bit = 0x02
+OK  alarm has no route bit (T9-16)
+OK  from_name(weather)
+
+=== total: pass=23 fail=0 ===

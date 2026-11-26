@@ -1,0 +1,7 @@
+﻿# T9-18 ndk build :: ai_worker_t918 (weather keywords in intent_route + alarm_skill cleanup)
+# host time: 2026-11-26 21:37:19
+# compiler output:
+
+# exit: 0
+# artifact: ai_worker_t918  364400 B  sha256=a027ef5f2327264b7ca1cfb9cc1087b6ac1efb3eaeb151e9a6b1735eb9bba292
+# live decision test rebuilt with fixed alarm expectation (T9-16 semantics) - 0 warnings - 15/15 pass on device

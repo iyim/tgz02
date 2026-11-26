@@ -1,4 +1,4 @@
-/*
+﻿/*
  * intent_route.c -- 见 intent_route.h
  *
  * 规则表结构（每张表都是 NULL 结尾的字符串数组）：
@@ -313,7 +313,9 @@ static int ir_match_volume(const char *n, ir_result *out)
 static const char *const IR_WEATHER_HIT[] = {
     "天气", "下雨", "下雪", "雨伞", "带伞", "气温", "刮风", "风大",
     "空气质量", "空气指数", "紫外线", "雾霾", "阴天", "晴天", "穿什么衣服",
-    "冷不冷", "热不热", NULL
+    "冷不冷", "热不热",
+    "多少度", "几度", "最高温", "最低温", "高温", "低温",           /* T9-18：温度问句 */
+    NULL
 };
 
 static const char *const IR_WEATHER_VETO[] = {
@@ -324,7 +326,9 @@ static const char *const IR_WEATHER_VETO[] = {
      * "聊天/知识/成因"这些明确的非查询语境，不否决裸"怎么"。 */
     "聊", "说说", "讲讲", "谈谈", "唠", "介绍", "为什么", "怎么形成",
     "形成", "成因", "原理", "科学", "科普", "诗句", "知识", "是什么意思",
-    "是什么", "怎么回事", NULL
+    "是什么", "怎么回事",
+    "水温", "体温", "室温",                                        /* T9-18：非天气的"多少度" */
+    NULL
 };
 
 static int ir_match_weather(const char *n, ir_result *out)

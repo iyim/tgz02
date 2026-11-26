@@ -1,0 +1,23 @@
+﻿[inject] tg_injector t6-01 begin
+[inject] so=/system/tgz02/lib/libtg_hook.so check_only=0
+[inject] so_size=129532 mode=0644 (target needs o+r on the file and o+x on every parent dir)
+[inject] pid=13300 (manual)
+[inject] abi=ELF32/ARM  class=1 machine=40
+[inject] already_mapped=1 (/system/tgz02/lib/libtg_hook.so)
+[inject] attached tid=13300 (thread was in /system/lib/libc.so, score=3)
+[inject] scratch=0xa9e41000 stack=0xa9e49000 trap=0xa9e50000 gadget=0xafa6aa6c
+[inject] dlopen=0xafd700ad (libdl.so)
+[inject] dlsym=0xafd700bf (libdl.so)
+[inject] dlerror=0xafd700b7 (libdl.so)
+[inject] path_written=0xa9e41100 len=32
+[inject] dlopen ok handle=0x7900676b flags=0x6
+[inject] dlsym ok install=0x8fc56770 prepare=0x8fc56510 status=0x8fc57b18
+[inject] tg_hook_prepare() = 0
+[inject] patch_range=[0x9559a53c,0x9559a544)
+[inject] nlu dlsym: prepare=0x8fc5409c install=0x8fc542d0 takeover_set=0x8fc54e28
+[inject] nlu entry=0x9559febc patch=[0x9559febc,0x9559fec4)
+[inject] nlu hook_installed=1 takeover=1 state_ready=1
+[inject] nlu entry_code=np{state=patched err=ok installs=1 skips=0 install_fails=0 refusals=0 uninstalls=0 uninstall_fails=0 restores=0 restore_fails=0 busy=0 prot_ok=1 prot_fails=0 before=[e92d4ff0 e28db01c] after=[e51ff004 b10ff000] uninst=[00000000 00000000] now=[e51ff004 b10ff000]}
+[inject] nlu stats=nlu installed=1 takeover=1 mode=decide ready=1 env_ignored=0 boot_done=1 init_failed=0 np_installs=1 np_skips=0 np_ifail=0 np_refused=0 np_uninstalls=0 np_ufail=0 np_restores=0 np_rfail=0 busy=0 prot_state=0 prot_ok=1 prot_fails=0 prot_retries=0 ctl_locks=2 ctl_busy=0 ctl_fail=0 ctl_held=0 enabled=1 init_error=0 active=0 marked=2 passed=5 dropped=0 unknown=7 overflow=0 degraded=0 failclosed=0 fc_events=0 fc_passes=0 final_seen=7 nlp_calls=7 nlp_skip=0 nlp_pass=7 nlp_failclosed=0 term_pass=6 obs_total=13 obs_release=13 obs_skip=0 obs_failclosed=0 obs_overwritten=0 obs_contended=0 obs_cap=256
+[inject] RESULT nlu-status ok installed=1 takeover=1
+[inject] detached (target thread resumed)

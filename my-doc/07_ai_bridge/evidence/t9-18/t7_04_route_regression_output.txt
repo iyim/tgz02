@@ -1,0 +1,22 @@
+﻿=== T7-04 intent route unit test ===
+
+[1] volume
+
+[1b] volume, Chinese numerals and 百分之 (real ASR strings)
+
+[2] weather
+
+[3] screen off / on
+
+[3b] media control (factory skill, must not be answered by the model)
+
+[3c] stop / interrupt (must never reach the model)
+
+[4] time
+
+[5] negatives (must stay on the AI path)
+
+[6] names / helpers
+
+SUMMARY: pass=150 fail=0
+RESULT: PASS

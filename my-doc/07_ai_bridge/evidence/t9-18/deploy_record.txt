@@ -1,0 +1,16 @@
+﻿# T9-18 device deploy record (runtime replace, rollback kept)
+# time: 2026-11-26 22:22:30
+deployed /system/tgz02/lib/libtg_hook.so  md5=bee7de5fe652b4a5f904f70c443d6b7c  sha256=882e0d783d185c5749e1a752236a6a35209f2313e090ca27dfd612c7b192308a
+backup   /data/local/tmp/t9_18_bak/libtg_hook.so.bak md5=860251a8ee02b01ee17a81bc2ca05d21  (T9-16 build c4d4c9a3 sha256)
+deployed /system/tgz02/bin/ai_worker       md5=180d0c740ce274383ff04ece630134bf  sha256=ff2aab3bda94dd7d1e72cdd3ec1c302f44331ff86fc7fc3872b32ac68e23fcd4
+backup   /data/local/tmp/t9_18_bak/ai_worker.bak    md5=804d6bab12e5d8b3d60a6ac7dab157e0
+rollback procedure:
+  su -c "mount -o remount,rw /system"
+  su -c "dd if=/data/local/tmp/t9_18_bak/libtg_hook.so.bak of=/system/tgz02/lib/libtg_hook.so"
+  su -c "dd if=/data/local/tmp/t9_18_bak/ai_worker.bak of=/system/tgz02/bin/ai_worker"
+  restart worker (run_ai_worker.sh stop/start-deepseek), :core re-inject via tg_injector --nlu-install --nlu-on
+  su -c "mount -o remount,ro /system"
+changes shipped in this deploy:
+  1. intent_route.c IR_WEATHER hit += {多少度,几度,最高温,最低温,高温,低温}; veto += {水温,体温,室温}
+  2. alarm_skill.c removed dead cn_minute_tail + unused var (warning cleanup, no behavior change)
+note: :core pid 13300 was NOT restarted; it still maps the OLD hook code (mapped at boot). The new lib file is in place for the next :core spawn and was used by the live-decision test process (dlopen /system path).
