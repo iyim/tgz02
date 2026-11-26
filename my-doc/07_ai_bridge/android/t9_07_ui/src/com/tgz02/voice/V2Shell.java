@@ -244,7 +244,9 @@ abstract class V2Shell extends Activity implements VoiceBridgeClient.Listener {
         ImageView iv = new ImageView(this);
         Bitmap b = Ui3.bmp(this, asset);
         if (b != null) iv.setImageBitmap(b);
-        iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        /* T9-13: assets are whole rounded cards; FIT_CENTER keeps the artwork intact */
+        iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        iv.setPadding(Ui3.dp(this, 12), Ui3.dp(this, 8), Ui3.dp(this, 12), Ui3.dp(this, 8));
         holder.addView(iv, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         holder.setBackground(Ui3.round(this, Ui3.surface2(this), Ui3.R_L));

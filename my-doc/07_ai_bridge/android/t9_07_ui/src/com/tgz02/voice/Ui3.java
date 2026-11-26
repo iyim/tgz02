@@ -232,7 +232,7 @@ final class Ui3 {
         LinearLayout bar = new LinearLayout(c);
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setBackground(roundTop(c, surface(c)));
-        bar.setPadding(0, dp(c, 6), 0, dp(c, 6));
+        bar.setPadding(0, dp(c, 8), 0, dp(c, 6));
         for (int i = 0; i < ids.length; i++) {
             final int idx = i;
             LinearLayout it = new LinearLayout(c);
@@ -244,12 +244,19 @@ final class Ui3 {
             block.setGravity(Gravity.CENTER);
             block.setText(on ? "\u25CF" : "\u25CB");
             block.setTextColor(on ? primary2(c) : text2(c));
-            LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(dp(c, 46), dp(c, 46));
             block.setGravity(Gravity.CENTER);
             block.setBackground(on ? round(c, primaryW(c), 16f) : null);
-            it.addView(block, blp);
+            /* T9-13: the icon block needs an explicit fixed 46x46 slot so the label below
+             * can be wrap-content and centered; a MATCH_PARENT-wide label would ignore
+             * CENTER_HORIZONTAL and pin its text to the item's left edge. */
+            it.addView(block, new LinearLayout.LayoutParams(dp(c, 46), dp(c, 46)));
             TextView lab = textBold(c, labels[i], 15f, on ? primary2(c) : text2(c));
-            it.addView(lab);
+            lab.setGravity(Gravity.CENTER_HORIZONTAL);
+            lab.setIncludeFontPadding(false);
+            LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            llp.topMargin = dp(c, 2);
+            it.addView(lab, llp);
             it.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) { if (onPick[idx] != null) onPick[idx].run(); }
             });

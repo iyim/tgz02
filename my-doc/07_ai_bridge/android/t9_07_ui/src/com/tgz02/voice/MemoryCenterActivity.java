@@ -72,7 +72,8 @@ public class MemoryCenterActivity extends V2Shell {
         if (b != null) {
             android.widget.ImageView iv = new android.widget.ImageView(this);
             iv.setImageBitmap(b);
-            iv.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+            /* T9-13: full-card display, no zoom crop */
+            iv.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
             iv.setAlpha(0.85f);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, Ui3.dp(this, 110));

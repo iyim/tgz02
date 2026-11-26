@@ -327,10 +327,12 @@ public class SkillsHomeActivity extends V2Shell {
         if (b != null) {
             android.widget.ImageView iv = new android.widget.ImageView(this);
             iv.setImageBitmap(b);
-            iv.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+            /* T9-13: the assets are whole rounded cards now; CENTER_CROP would zoom into
+             * the middle of the illustration, so show the full artwork with FIT_CENTER. */
+            iv.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
             iv.setAlpha(0.9f);
             w.addView(iv, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, Ui3.dp(this, 140)));
+                    ViewGroup.LayoutParams.MATCH_PARENT, Ui3.dp(this, 150)));
         }
         TextView cap = Ui3.textBold(this, caption, 15f,
                 Ui3.isCalm() ? Ui3.text2(this) : 0xFF3A3040);

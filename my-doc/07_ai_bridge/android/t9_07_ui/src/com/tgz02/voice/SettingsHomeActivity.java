@@ -128,7 +128,9 @@ public class SettingsHomeActivity extends V2Shell {
     {
         TextView t = Ui3.textBold(this, label, 16f, on ? Ui3.text(this) : Ui3.text2(this));
         t.setGravity(Gravity.CENTER);
-        t.setPadding(Ui3.dp(this, 18), Ui3.dp(this, 8), Ui3.dp(this, 18), Ui3.dp(this, 8));
+        /* T9-13: never wrap the segment label; keep the button one line tall */
+        t.setSingleLine(true);
+        t.setPadding(Ui3.dp(this, 20), Ui3.dp(this, 8), Ui3.dp(this, 20), Ui3.dp(this, 8));
         if (on) t.setBackground(Ui3.round(this, Ui3.surface(this), 10f));
         return t;
     }
