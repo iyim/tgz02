@@ -36,6 +36,19 @@ public class AlarmRingingActivity extends Activity {
     private long alarmId = -1;
     private int snoozeSeq = 0;
 
+    private static AlarmRingingActivity sActive;
+
+    /** T9-16 语音关闭：worker 的 cancel 请求（无时间）→ monitor → receiver → 这里静默关掉响铃 */
+    static void dismissIfActive(Context c)
+    {
+        AlarmRingingService.stopPlaying();
+        AlarmRingingService.clearSnooze();
+        AlarmScheduler.reschedule(c);
+        if (sActive != null && !sActive.isFinishing()) {
+            sActive.finish();
+        }
+    }
+
     /** receiver 调用：弹响铃界面（Android 8.1 允许 receiver startActivity） */
     static void launch(Context c, long alarmId, int snoozeSeq)
     {
@@ -115,6 +128,14 @@ public class AlarmRingingActivity extends Activity {
         row.addView(stop);
 
         setContentView(root);
+        sActive = this;
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        if (sActive == this) sActive = null;
+        super.onDestroy();
     }
 
     private void onSnooze()

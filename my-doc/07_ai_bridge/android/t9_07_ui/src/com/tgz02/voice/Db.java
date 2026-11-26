@@ -58,6 +58,8 @@ final class Db extends SQLiteOpenHelper {
         "  label TEXT NOT NULL DEFAULT ''," +
         "  enabled INTEGER NOT NULL DEFAULT 1," +
         "  last_fired_ms INTEGER NOT NULL DEFAULT 0," +
+        "  repeat INTEGER NOT NULL DEFAULT 0," +   /* T9-16: bit0=周一..bit6=周日, 0=一次性 */
+        "  snooze_count INTEGER NOT NULL DEFAULT 0," + /* T9-16: 连续贪睡计数 */
         "  created_ms INTEGER NOT NULL)";
 
     private static final String SQL_SCHEDULES =

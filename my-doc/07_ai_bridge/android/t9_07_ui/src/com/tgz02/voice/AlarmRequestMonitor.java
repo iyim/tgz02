@@ -17,6 +17,7 @@
 package com.tgz02.voice;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import org.json.JSONObject;
@@ -30,6 +31,7 @@ final class AlarmRequestMonitor {
     private static final String REQ_PATH = "/data/local/tmp/t9_ui/snapshots/alarm_request.public.json";
     private static long lastHandledTs = 0;
     private static boolean loaded = false;
+    private static int hbCount = 0;
 
     private AlarmRequestMonitor() { }
 
@@ -38,6 +40,10 @@ final class AlarmRequestMonitor {
     {
         try {
             File f = new File(REQ_PATH);
+            if (++hbCount % 60 == 1) {
+                Log.i(TAG, "poll alive: file=" + f.isFile() + " loaded=" + loaded
+                        + " lastTs=" + lastHandledTs);
+            }
             if (!f.isFile()) return;
             byte[] buf = new byte[(int) Math.min(f.length(), 4096)];
             FileInputStream in = new FileInputStream(f);
@@ -86,6 +92,8 @@ final class AlarmRequestMonitor {
                 if (id > 0) {
                     AlarmScheduler.reschedule(c);
                     Log.i(TAG, "set ok id=" + id + " time=" + time + " repeat=" + repeat);
+                    /* T9-16 用户要求：语音定闹钟弹全屏确认（大字时间，30 秒自动消失） */
+                    AlarmSetConfirmActivity.launch(c, time, repeat, label);
                 }
             } else if ("cancel".equals(action)) {
                 int h = o.optInt("hour", -1), m = o.optInt("minute", -1);
@@ -93,13 +101,22 @@ final class AlarmRequestMonitor {
                 if (h >= 0 && m >= 0) {
                     n = ds.alarmDisableByTime(String.format(java.util.Locale.CHINA, "%02d:%02d", h, m));
                 } else {
-                    n = ds.alarmDisableAll();
+                    /* T9-16 语音关闭响铃：cancel 无时间 = 关掉当前正在响的闹钟（不动 DB） */
+                    Intent dismiss = new Intent(c, AlarmReceiver.class);
+                    dismiss.setAction(AlarmReceiver.ACTION_DISMISS_RING);
+                    c.sendBroadcast(dismiss);
+                    Log.i(TAG, "cancel no-time -> dismissed active ring");
+                    return;
                 }
                 AlarmScheduler.reschedule(c);
                 Log.i(TAG, "cancel disabled=" + n);
             } else if ("off_all".equals(action)) {
                 int n = ds.alarmDisableAll();
                 AlarmScheduler.reschedule(c);
+                /* 响铃中说"关闭所有闹钟"也要停铃 */
+                Intent dismiss = new Intent(c, AlarmReceiver.class);
+                dismiss.setAction(AlarmReceiver.ACTION_DISMISS_RING);
+                c.sendBroadcast(dismiss);
                 Log.i(TAG, "off_all disabled=" + n);
             } else if ("query".equals(action)) {
                 /* 列表查询：刷新快照即可（UI 轮询同文件） */

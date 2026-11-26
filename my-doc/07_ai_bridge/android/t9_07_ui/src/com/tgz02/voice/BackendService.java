@@ -71,8 +71,6 @@ public class BackendService extends Service {
             broadcast("play", BackendJson.play(p));
         }
         public void onStatus(VoiceBridgeClient.Status s) {
-            /* T9-16：语音闹钟请求监控（幂等、ts_ms 单调，无新请求时近乎零开销） */
-            AlarmRequestMonitor.poll(BackendService.this);
             broadcast("status", BackendJson.status(s));
         }
         public void onDiag(String line) {
@@ -161,12 +159,30 @@ public class BackendService extends Service {
 
     // ------------------------------------------------------------------ lifecycle
 
+    private Thread alarmReqThread;
+
     @Override public void onCreate() {
         super.onCreate();
         startForegroundInternal();
         bridge = new VoiceBridgeClient(this, "backend");
         bridge.setListener(bridgeListener);
         bridge.start();
+        /* T9-16 修正：闹钟请求监控不能挂在 onStatus（状态不变就不触发）。
+         * 独立 500ms 轮询线程，专用。 */
+        alarmReqThread = new Thread(new Runnable() {
+            public void run() {
+                while (true) {
+                    try {
+                        AlarmRequestMonitor.poll(BackendService.this);
+                    } catch (Throwable t) {
+                        Log.w("T916REQ", "poll thread: " + t);
+                    }
+                    try { Thread.sleep(500); } catch (InterruptedException e) { return; }
+                }
+            }
+        }, "alarmreq");
+        alarmReqThread.setDaemon(true);
+        alarmReqThread.start();
         Log.i(TAG, "onCreate pid=" + Process.myPid() + " proc=" + procName());
     }
 

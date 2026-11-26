@@ -83,9 +83,9 @@ static int has_any(const char *n, const char *const *list)
 
 /* ---------- 动作 ---------- */
 
-static const char *const ACT_CANCEL[] = { "取消闹钟", "删掉闹钟", "删除闹钟", "关掉闹钟", "取消提醒", NULL };
+static const char *const ACT_CANCEL[] = { "取消闹钟", "删掉闹钟", "删除闹钟", "关掉闹钟", "关闭闹钟", "取消提醒", "关闭提醒", NULL };
 static const char *const ACT_QUERY[]  = { "查看", "什么闹钟", "哪些闹钟", "都有什么闹钟", "闹钟状态", "有什么闹钟", NULL };
-static const char *const ACT_OFFALL[] = { "关闭所有闹钟", "关闭全部闹钟", "关闭闹钟", NULL };
+static const char *const ACT_OFFALL[] = { "关闭所有闹钟", "关闭全部闹钟", NULL };
 
 static int alarm_action(const char *n)
 {

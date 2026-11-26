@@ -87,6 +87,10 @@
             android:launchMode="singleInstance"
             android:showOnLockScreen="true"
             android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity android:name=".AlarmSetConfirmActivity" android:exported="false"
+            android:launchMode="singleInstance"
+            android:showOnLockScreen="true"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
 
     </application>
 </manifest>

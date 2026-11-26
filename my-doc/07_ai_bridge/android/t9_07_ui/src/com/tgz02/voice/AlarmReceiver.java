@@ -17,10 +17,18 @@ import android.content.Intent;
 
 public class AlarmReceiver extends BroadcastReceiver {
 
+    static final String ACTION_DISMISS_RING = "com.tgz02.voice.action.ALARM_DISMISS_RING";
+
     @Override
     public void onReceive(Context c, Intent it)
     {
         String action = it == null || it.getAction() == null ? "" : it.getAction();
+
+        /* T9-16：语音关闭响铃（monitor 从 :backend 发来） */
+        if (ACTION_DISMISS_RING.equals(action)) {
+            AlarmRingingActivity.dismissIfActive(c);
+            return;
+        }
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)
                 || Intent.ACTION_TIME_CHANGED.equals(action)
