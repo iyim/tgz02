@@ -364,3 +364,76 @@ done
    preferred-activity，或直接 patch `BootUtils.jumpAndSetAdultHome`。
 2. load average 在故障后十几分钟仍维持 8~10，需要继续观察是否有残留进程自激；
    本次只确认了 BootHome 循环已经停下。
+
+## 8. 永久修复：让系统 HOME 真正解析到我们（T9-17 R4）
+
+§7 的看门狗只是止血。要彻底消掉「按 Home 先闪工厂桌面 / 工厂桌面自激」，得让系统解析出来的
+HOME 是我们。这个 ROM 的 `pm` / `cmd package` 都没有 enable/disable 子命令
+（`pm disable` 返回 `unknown command 'disable'`），`cmd package set-home-activity` 写进去的
+preferred 记录也不被采纳。于是改用**框架自己的接口**：
+
+`android/t9_10_home/HomeCtl.java`（T9-10/T9-11 就在仓库里）以 root 身份 `app_process` 运行，
+直接调 `IPackageManager.queryIntentActivities / resolveIntent / setComponentEnabledSetting`。
+uid 0 在 system_server 的权限检查里是放行的，所以能改组件状态；这是**组件级**操作
+（`DONT_KILL_APP`），不会碰工厂语音所在的 `:core` 进程。
+
+执行结果（21:00 起）：
+
+```
+$ HomeCtl list
+RESOLVED_HOME=com.alibaba.ailabs.genie.smartapp/…BootHomeActivity
+CANDIDATES=5
+com.tgz02.voice/com.tgz02.voice.VoiceHomeActivity                priority=100 enabled=1
+com.alibaba.ailabs.genie.smartapp/…BootHomeActivity              priority=0   enabled=1  <= resolved
+com.dangbei1.tvlauncher/…MainActivity                            priority=0   enabled=1
+app.orchard.tv/app.orchard.tv.MainActivity                       priority=0   enabled=1
+com.android.settings/com.android.settings.FallbackHome           priority=-1000 enabled=1
+
+$ HomeCtl disable com.alibaba.ailabs.genie.smartapp/…BootHomeActivity
+OK … -> state=2
+
+$ HomeCtl list
+RESOLVED_HOME=com.tgz02.voice/com.tgz02.voice.VoiceHomeActivity     ← 变成我们
+CANDIDATES=4
+com.tgz02.voice/…VoiceHomeActivity    priority=100 enabled=1  <= resolved
+```
+
+同法再关掉两个抢 HOME 的第三方桌面后，候选只剩我们（+系统的 FallbackHome）：
+
+```
+$ HomeCtl disable com.dangbei1.tvlauncher/…MainActivity
+$ HomeCtl disable com.dangbei1.tvlauncher/…dialog.home.HomeDialogActivity
+$ HomeCtl disable app.orchard.tv/app.orchard.tv.MainActivity
+CANDIDATES=2
+com.tgz02.voice/…VoiceHomeActivity  priority=100  <= resolved
+com.android.settings/…FallbackHome  priority=-1000
+```
+
+### 8.1 冷启动验证（2026-11-27 21:06 重启后）
+
+| 检查项 | 结果 |
+| --- | --- |
+| 前台 Activity | `com.tgz02.voice/.VoiceHomeActivity`（开机直接落在布丁首页） |
+| `BootHomeActivity` 事件数 | **0**（修复前同一窗口 800+/分钟） |
+| `RESOLVED_HOME` | `com.tgz02.voice/…VoiceHomeActivity` |
+| HOME 键 | 直接回到布丁首页（不再闪工厂桌面、不再弹当贝对话框） |
+| 工厂语音 | 存活：`smartapp:core` 在跑；直接调它的 TTS provider 仍 `onTtsStart → onTtsData → onTtsEnd` |
+
+### 8.2 持久化
+
+组件状态由 PackageManagerService 持久化在 `/data/system/users/0/package-restrictions.xml`，
+实测**重启后依然生效**。为防止工厂开机再把自己「解禁」，还加了
+`/data/adb/service.d/20_home_lock.sh`：开机后（boot_completed+5s）用 HomeCtl 重新 disable
+那 4 个组件并打印 `HomeCtl list` 到 `/data/local/tmp/home_lock/apply.log`。
+
+### 8.3 回滚
+
+```sh
+rm /data/adb/service.d/20_home_lock.sh
+CLASSPATH=/data/local/tmp/home_ctl.dex app_process /system com.tgz02.home.HomeCtl \
+    enable com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieboot.activity.BootHomeActivity
+# 其它三个组件同理 enable；或直接 rm 脚本后重启
+```
+
+仓库里对应的文件：`android/t9_10_home/HomeCtl.java`、`home_ctl.dex`、`20_home_lock.sh`、
+`takeover_watchdog.sh`（看门狗已精简为只管残留桌面：BootHome / dangbei / orchard）。
