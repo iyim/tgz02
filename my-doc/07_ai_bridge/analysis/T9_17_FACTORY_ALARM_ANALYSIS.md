@@ -437,3 +437,74 @@ CLASSPATH=/data/local/tmp/home_ctl.dex app_process /system com.tgz02.home.HomeCt
 
 仓库里对应的文件：`android/t9_10_home/HomeCtl.java`、`home_ctl.dex`、`20_home_lock.sh`、
 `takeover_watchdog.sh`（看门狗已精简为只管残留桌面：BootHome / dangbei / orchard）。
+
+## 9. 事故：天气语音「说一句就断」（T9-17 R5，2026-11-27 21:45-22:05）
+
+### 9.1 现象与复现
+
+用户："原厂的天气语音怎么不管用了" → 追问后确认：**它会说话，但说一句就断**。
+
+抓真机语音链路（hook 判定 = logcat tag `tgl`；原厂 TTS = `TtsManager`；我方 worker =
+`/data/local/tmp/t5_bridge/ai_worker/ai_worker.log`），用户说「天猫精灵，明天天气怎么样」得到：
+
+```
+21:52:42 route=native intent=weather rule=weather.keyword event=t6-1088-1966868-g4
+         seq=4 session=1966868 text_bytes=33 publish_seq=1 (factory answers; AI worker does not)
+21:52:42 native command (weather): continuity re-listen scheduled in 1200 ms
+21:52:44 START u0 {… cmp=com.alibaba.genie.waft/.ui.tpl.WaftTplActivity} from uid 10027
+21:52:44 continuity request: seq=2817298 sent (after native command) n=1
+21:52:44 continuity request: CONFIRMED by factory session=1970968 (+431 ms)
+21:52:44 factory wake (onStartTalk): session=1970968 wake_type=1 listening=1 round=1
+```
+
+也就是说：原厂天气链路本身是好的（它打开了 Waft 天气模板页，TTS 也被 TTS 守卫放行
+——守卫计数 `native_allowed=1`、`native_window=1`），**但 1.2 秒后我方 worker 按
+"native command 之后补一次续听"的老规则发出 `startTalk`，把原厂刚开始播的天气答案打断了**。
+
+### 9.2 根因
+
+`ai_worker.c` 的 native 续听规则（T8-15.3 加）：除 `media.play` 以外，所有原厂指令执行完都
+在 **1200 ms** 后补一次续听。这条规则是为"音量调到 X"这种一两秒的短回答设计的；
+天气的回答有十几秒，1.2 秒就重新开麦必然把它切断 —— 用户听到的就是"说一句就断"。
+
+T9-18 把天气关键词扩充之后，这类话术才稳定走到 native 路径，所以症状是"最近才出现"。
+
+### 9.3 修复
+
+`ai_worker.c`：天气不补续听，其它短回答（音量/时间/开关屏）保持原行为。
+
+```c
+} else if (ir.intent == IR_WEATHER) {
+    always("native command (weather): no re-listen - the factory answer is long "
+           "and startTalk would cut it");
+} else if (ir.intent != IR_STOP && ir.intent != IR_EXIT) {
+    w->native_relisten_due_ms = now_ms + 1200;
+    …
+}
+```
+
+### 9.4 隔离回放验证（不打扰真机语音链路）
+
+用真机 events.jsonl 的真实格式造两条合成 ASR final（weather + volume），在
+`/data/local/tmp/wt` 下用同一份新 worker 二进制、mock provider 跑一遍：
+
+```
+route=native intent=weather … publish_seq=1 (factory answers; AI worker does not)
+native command (weather): no re-listen - the factory answer is long and startTalk would cut it
+route=native intent=volume rule=volume.set arg=set:35 … publish_seq=2
+native command (volume): continuity re-listen scheduled in 1200 ms
+```
+
+天气不再补续听、音量仍然补 —— 行为符合预期。
+
+部署：`/system/tgz02/bin/ai_worker` sha256 `ccf378df…`（旧版备份
+`/data/local/tmp/t9_17_bak/ai_worker.before_r8`）。
+
+### 9.5 顺带发现
+
+- TTS 守卫的周期性日志 `continuity req: seq=… rejected (too old; baseline=…, now=…)` 每 2 秒一条：
+  `/data/local/tmp/t7/renew.conf` 里 `renew_ms=0`（续期关闭）但 `continuity_auto=1`，
+  守卫仍在按旧 seq 反复请求；该 seq 文件被隔离回放覆盖后 baseline 对不上。已把 renew.conf
+  恢复原样；这条噪声不影响播报，后续可以给守卫加"seq 不变就不再重试"。
+- 诊断期间临时启用过工厂 `BootHomeActivity`（确认天气播报不依赖它），已重新禁用；
+  系统 HOME 仍然解析到 `com.tgz02.voice/.VoiceHomeActivity`。

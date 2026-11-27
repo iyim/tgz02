@@ -2690,6 +2690,12 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
                  * 这类指令不会有我方 TTS，不补就断在这里（真机复现过）。 */
                 if (ir.intent == IR_MEDIA && strcmp(ir.arg, "play") == 0) {
                     always("native command (media.play): no re-listen - it would cut the music");
+                } else if (ir.intent == IR_WEATHER) {
+                    /* T9-17-R5 真机：天气的原厂播报有十几秒，1.2 秒后续听 = startTalk
+                     * 把人家的话直接打断（用户听到的就是"说一句就断"）。天气不补续听，
+                     * 等原厂自己讲完；音量/时间这类短回答仍然补。 */
+                    always("native command (weather): no re-listen - the factory answer is long "
+                           "and startTalk would cut it");
                 } else if (ir.intent != IR_STOP && ir.intent != IR_EXIT) {
                     w->native_relisten_due_ms = now_ms + 1200;
                     always("native command (%s): continuity re-listen scheduled in 1200 ms",
