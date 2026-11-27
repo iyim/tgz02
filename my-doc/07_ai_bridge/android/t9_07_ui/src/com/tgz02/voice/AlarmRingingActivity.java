@@ -2,7 +2,12 @@
  * AlarmRingingActivity.java -- T9-16: 自有全屏响铃界面（V3 视觉）。
  *
  * 由 AlarmReceiver 在闹钟触发时 startActivity 弹出（Android 8.1 允许 receiver 起 Activity）。
- * 展示：时间大字 + 闹钟标签 + 布丁 + 「贪睡」/「关闭」两个大按钮。
+ *
+ * T9-16 R4 视觉重做（与确认浮层统一，用户反馈：图标小 / 时间小 / 不居中 / 右边空白 / 按钮小）：
+ *   - 图标用 alarm_hero（裁掉透明留白），300x377；
+ *   - 内容块 wrap_content + 居中 => 图标与文字作为一个整体落在屏幕正中，左右留白对称；
+ *   - 时间 96sp -> 176sp；
+ *   - 「贪睡」「关闭」换成 92dp 高 / 26sp 字的 Ui4.btnLg，躺着也能一指点中。
  *
  * 交互：
  *   关闭 -> RingingService 停播 + 清贪睡状态 + 重调度 + finish
@@ -72,7 +77,8 @@ public class AlarmRingingActivity extends Activity {
 
         DataService ds = DataService.get(this);
         DataService.Alarm a = ds.alarmGet(alarmId);
-        String label = a != null ? a.label : "布丁闹钟";
+        String label = a != null && a.label != null && a.label.length() > 0
+                ? a.label : "布丁闹钟";
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -80,67 +86,82 @@ public class AlarmRingingActivity extends Activity {
         /* 响铃页用品牌暖色渐变底（整页铺满，无圆角） */
         root.setBackground(Ui4.grad(this, new int[]{
                 Ui4.primaryW(this), Ui4.bgDeep(this), Ui4.pinkW(this)}, 0));
-        root.setPadding(Ui4.dp(this, 40), Ui4.dp(this, 32), Ui4.dp(this, 40), Ui4.dp(this, 32));
+        root.setPadding(Ui4.dp(this, 44), Ui4.dp(this, 24), Ui4.dp(this, 44), Ui4.dp(this, 24));
 
-        /* T9-16 用户设计：闹钟图标在左，时间大字在右（横向布局，符合 1024x600 比例） */
+        /* 内容块 wrap_content + 水平居中：图标与文字合成整体，落在屏幕正中 */
         LinearLayout contentRow = new LinearLayout(this);
         contentRow.setOrientation(LinearLayout.HORIZONTAL);
         contentRow.setGravity(Gravity.CENTER_VERTICAL);
-        root.addView(contentRow, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        LinearLayout.LayoutParams rowlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        rowlp.gravity = Gravity.CENTER_HORIZONTAL;
+        root.addView(contentRow, rowlp);
 
-        /* 左：新闹钟图标（alarm_static，抠底 RGBA） */
-        Bitmap clock = Ui4.artBmp(this, "alarm_static");
+        /* 左：紧裁后的闹钟图标（原图 640x640 里只有 377x478 有内容） */
+        Bitmap clock = Ui4.artBmp(this, "alarm_hero");
         if (clock != null) {
             ImageView iv = new ImageView(this);
             iv.setImageBitmap(clock);
             iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
             LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(
-                    Ui4.dp(this, 240), Ui4.dp(this, 240));
-            clp.rightMargin = Ui4.dp(this, 28);
+                    Ui4.dp(this, 300), Ui4.dp(this, 377));
+            clp.rightMargin = Ui4.dp(this, 44);
             contentRow.addView(iv, clp);
         }
 
-        /* 右：标签 + 大字时间 + 提示（垂直居中） */
+        /* 右：标签 + 超大字时间 + 提示 + 大按钮，整列水平居中 */
         LinearLayout right = new LinearLayout(this);
         right.setOrientation(LinearLayout.VERTICAL);
-        right.setGravity(Gravity.CENTER_VERTICAL);
-        contentRow.addView(right, new LinearLayout.LayoutParams(0,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        right.setGravity(Gravity.CENTER_HORIZONTAL);
+        contentRow.addView(right, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        TextView lab = Ui4.textBold(this, label, Ui4.T_CARD, Ui4.text(this));
+        TextView lab = Ui4.textBold(this, label, 30f, Ui4.text(this));
+        lab.setGravity(Gravity.CENTER);
         right.addView(lab);
 
         String now = new SimpleDateFormat("HH:mm", Locale.CHINA).format(new Date());
-        /* 时间大字：72 -> 96sp，填满右列宽度（符合页面显示比例） */
-        TextView time = Ui4.textBold(this, now, 96f, Ui4.primary2(this));
-        right.addView(time);
+        /* 时间大字：96 -> 176sp，整页主体 */
+        TextView time = Ui4.textBold(this, now, 176f, Ui4.primary2(this));
+        time.setGravity(Gravity.CENTER);
+        time.setSingleLine(true);
+        time.setIncludeFontPadding(false);
+        LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        tlp.topMargin = Ui4.dp(this, 2);
+        right.addView(time, tlp);
 
-        TextView hint = Ui4.text(this, "起床啦！布丁叫你啦", Ui4.T_STATE, Ui4.text2(this));
-        hint.setPadding(0, Ui4.dp(this, 8), 0, 0);
-        right.addView(hint);
+        TextView hint = Ui4.text(this, "起床啦！布丁叫你啦", 24f, Ui4.text2(this));
+        hint.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams hlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        hlp.topMargin = Ui4.dp(this, 10);
+        right.addView(hint, hlp);
 
-        /* 按钮行：贪睡 / 关闭 */
+        /* 按钮行：贪睡 / 关闭（92dp 高的大按钮） */
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        rlp.topMargin = Ui4.dp(this, 36);
-        root.addView(row, rlp);
+        rlp.topMargin = Ui4.dp(this, 34);
+        right.addView(row, rlp);
 
-        TextView snooze = Ui4.btn(this, "贪睡 5 分钟", false, new Runnable() {
+        TextView snooze = Ui4.btnLg(this, "贪睡 5 分钟", false, new Runnable() {
             public void run() { onSnooze(); }
         });
         LinearLayout.LayoutParams slp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        slp.rightMargin = Ui4.dp(this, 16);
+                ViewGroup.LayoutParams.WRAP_CONTENT, Ui4.dp(this, 92));
+        slp.rightMargin = Ui4.dp(this, 24);
         row.addView(snooze, slp);
 
-        TextView stop = Ui4.btn(this, "关闭", true, new Runnable() {
+        TextView stop = Ui4.btnLg(this, "关闭", true, new Runnable() {
             public void run() { onStopClicked(); }
         });
-        row.addView(stop);
+        LinearLayout.LayoutParams stlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, Ui4.dp(this, 92));
+        stop.setMinWidth(Ui4.dp(this, 240));
+        row.addView(stop, stlp);
 
         setContentView(root);
         sActive = this;
@@ -155,7 +176,7 @@ public class AlarmRingingActivity extends Activity {
 
     private void onSnooze()
     {
-        boolean ok = AlarmRingingService.snooze(alarmId);
+        AlarmRingingService.snooze(alarmId);
         AlarmRingingService.stopPlaying();
         AlarmScheduler.reschedule(this);
         finish();

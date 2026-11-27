@@ -528,6 +528,29 @@ final class Ui4 {
         return t;
     }
 
+    /**
+     * T9-16: 全屏闹钟页专用大按钮。
+     * 1024x600 卧式屏上 44dp 的小按钮手指点不准，这里给 92dp 高 / 26sp 字 / 240dp 起宽，
+     * 让「关闭」「贪睡」「知道了」在响铃和确认两个全屏页上都是明确的命中目标。
+     */
+    static TextView btnLg(Context c, String label, boolean primary, final Runnable r) {
+        TextView t = textBold(c, label, 26f, primary ? Color.WHITE : text(c));
+        t.setGravity(Gravity.CENTER);
+        t.setSingleLine(true);
+        if (primary) {
+            t.setBackground(grad(c, new int[]{primary(c), primary2(c)}, R_M));
+        } else {
+            t.setBackground(roundStroke(c, surface(c), line2(c), R_M));
+        }
+        t.setPadding(dp(c, 44), 0, dp(c, 44), 0);
+        t.setMinimumHeight(dp(c, 92));
+        t.setMinHeight(dp(c, 92));
+        t.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) { if (r != null) r.run(); }
+        });
+        return t;
+    }
+
     static TextView btnSm(Context c, String label, int fg, final Runnable r) {
         TextView t = textBold(c, label, T_CAP, fg);
         t.setGravity(Gravity.CENTER);
