@@ -1,22 +1,15 @@
 #!/system/bin/sh
 # 20_home_lock.sh -- service.d (runs as root after boot):
-# keep the product as the system HOME by disabling the launchers that fight it,
-# through the framework's own API (IPackageManager.setComponentEnabledSetting).
+#  1) keep the product as the system HOME by disabling the launchers that fight it
+#     (IPackageManager component disable -- `pm disable` is not available on this ROM);
+#  2) keep the apps the operator removed from coming back: the factory appbox reinstalls
+#     preinstalled apps it finds missing (verified: 菜谱 came back 1 min after boot), so for
+#     those we disable the whole package -- appbox only checks "installed", and a disabled
+#     package is still installed but cannot run or show an icon.
 #
-# Why not `pm disable`: this ROM's pm/cmd package drop that subcommand (verified repeatedly).
-# Why HomeCtl: it runs as uid 0 via app_process, and uid 0 is granted component-state changes.
-#
-# Disabled components:
-#   * com.alibaba.ailabs.genie.smartapp/…genieboot.activity.BootHomeActivity
-#       its boot logic jumps to "adult home" and finishes itself; when it IS the resolved home
-#       that jump relaunches itself -> ~800 launches/minute, load average 12 (2026-11-27 20:30).
-#   * com.dangbei1.tvlauncher/…MainActivity + …dialog.home.HomeDialogActivity
-#       a sideloaded TV launcher that also grabbed the HOME key (its empty desktop is what the
-#       user saw as "桌面崩了").
-#
-# Rollback: rm /data/adb/service.d/20_home_lock.sh , then
-#   CLASSPATH=/data/local/tmp/home_ctl.dex app_process /system com.tgz02.home.HomeCtl enable <comp>
-#   (or reboot after deleting; the settings live in /data/system/users/0/package-restrictions.xml)
+# Rollback: rm /data/adb/service.d/20_home_lock.sh ; then
+#   CLASSPATH=/data/local/tmp/home_ctl.dex app_process /system com.tgz02.home.HomeCtl \
+#       enable <pkg>/<cls>      (component)  or  pkgenable <pkg>   (whole package)
 DEX=/data/local/tmp/home_ctl.dex
 LOG=/data/local/tmp/home_lock/apply.log
 mkdir -p /data/local/tmp/home_lock
@@ -29,6 +22,8 @@ done
 sleep 5
 
 echo "[$(date '+%F %T')] === 20_home_lock re-apply ===" >> "$LOG"
+
+# ---- 1) HOME 竞争者：组件级禁用 ----
 for c in \
     "com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.genie.genieboot.activity.BootHomeActivity" \
     "com.dangbei1.tvlauncher/com.dangbei.launcher.ui.main.MainActivity" \
@@ -36,4 +31,14 @@ for c in \
     "app.orchard.tv/app.orchard.tv.MainActivity" ; do
     CLASSPATH=$DEX app_process /system com.tgz02.home.HomeCtl disable "$c" >> "$LOG" 2>&1
 done
+
+# ---- 2) 用户要求移除、但原厂应用商店会装回来的：整包禁用 ----
+for p in com.alibaba.ailabs.genie.cook cn.cmvideo.car.play ; do
+    if pm list packages 2>/dev/null | grep -q "package:$p$"; then
+        CLASSPATH=$DEX app_process /system com.tgz02.home.HomeCtl pkgdisable "$p" >> "$LOG" 2>&1
+    else
+        echo "[$(date '+%F %T')] $p not installed (nothing to disable)" >> "$LOG"
+    fi
+done
+
 CLASSPATH=$DEX app_process /system com.tgz02.home.HomeCtl list >> "$LOG" 2>&1

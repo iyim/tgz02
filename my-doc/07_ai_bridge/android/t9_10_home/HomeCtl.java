@@ -15,6 +15,13 @@
  *       -> component-level enable/disable (DONT_KILL_APP), so disabling smartapp's BootHomeActivity
  *          never touches the :core process that runs the voice engine
  *
+ *   app_process /system com.tgz02.home.HomeCtl pkgstate   <pkg>
+ *   app_process /system com.tgz02.home.HomeCtl pkgdisable <pkg>
+ *   app_process /system com.tgz02.home.HomeCtl pkgenable  <pkg>
+ *       -> T9-17: 整包禁用。用在"想删掉但原厂应用商店会重新装回来"的预置应用上
+ *          （菜谱 com.alibaba.ailabs.genie.cook 实测：卸载后开机被 appbox 重装）。
+ *          appbox 只看"装没装"，所以整包 disable 之后既不会再被装回来，也点不开。
+ *
  * Every change is one framework call; nothing here edits /system or restarts a process.
  */
 package com.tgz02.home;
@@ -40,6 +47,16 @@ public class HomeCtl {
         if ("list".equals(cmd)) { list(ipm); return; }
         if ("state".equals(cmd)) { state(ipm, args[1]); return; }
         if ("watch".equals(cmd)) { watch(ipm, args[1], Integer.parseInt(args[2])); return; }
+        if ("pkgstate".equals(cmd)) { pkgstate(ipm, args[1]); return; }
+        if ("pkgmethods".equals(cmd)) { pkgmethods(ipm); return; }
+        if ("pkgdisable".equals(cmd) || "pkgenable".equals(cmd)) {
+            int newState = "pkgdisable".equals(cmd) ? 2 /* DISABLED */ : 0 /* DEFAULT */;
+            int rc = setPkgState(ipm, args[1], newState);
+            if (rc != 0) { System.out.println("FAIL rc=" + rc); return; }
+            System.out.println("OK pkg " + args[1] + " -> state=" + newState);
+            pkgstate(ipm, args[1]);
+            return;
+        }
         if ("disable".equals(cmd) || "enable".equals(cmd)) {
             ComponentName cn = split(args[1]);
             int newState = "disable".equals(cmd) ? 2 /* DISABLED */ : 0 /* DEFAULT */;
@@ -56,6 +73,57 @@ public class HomeCtl {
     static Object ipm() throws Exception {
         Class<?> ag = Class.forName("android.app.AppGlobals");
         return ag.getMethod("getPackageManager").invoke(null);
+    }
+
+    /* ---- T9-17: 整包启停（预置应用卸载后会被原厂应用商店装回来，改用整包禁用） ---- */
+
+    /** 诊断用：列出 IPackageManager 里所有带 EnabledSetting 的方法及参数类型 */
+    static void pkgmethods(Object ipm) {
+        for (Method m : ipm.getClass().getMethods()) {
+            String n = m.getName();
+            if (n.indexOf("EnabledSetting") < 0) continue;
+            StringBuilder sb = new StringBuilder();
+            sb.append(n).append('(');
+            Class<?>[] ps = m.getParameterTypes();
+            for (int i = 0; i < ps.length; i++) {
+                if (i > 0) sb.append(", ");
+                sb.append(ps[i].getSimpleName());
+            }
+            sb.append(")");
+            System.out.println("METHOD " + sb);
+        }
+    }
+
+    static int setPkgState(Object ipm, String pkg, int newState) throws Exception {
+        /* 本机实测签名（API 27）：setApplicationEnabledSetting(String, int, int, int, String)
+         * 第五个参数是 callingPackage；root 调用传 null（PMS 按 uid 兜底）。
+         * 之前按 4 参数/3 参数反射，getMethod 直接抛 NoSuchMethodException，被 RuntimeInit
+         * 当成未捕获异常 kill 掉进程（表现为 shell 里的 "Killed"）。 */
+        try {
+            Method m = ipm.getClass().getMethod("setApplicationEnabledSetting",
+                    String.class, int.class, int.class, int.class, String.class);
+            m.invoke(ipm, pkg, newState, DONT_KILL_APP, 0, null);
+            return 0;
+        } catch (NoSuchMethodException e) {
+            Method m = ipm.getClass().getMethod("setApplicationEnabledSetting",
+                    String.class, int.class, int.class, int.class);
+            m.invoke(ipm, pkg, newState, DONT_KILL_APP, 0);
+            return 0;
+        }
+    }
+
+    static void pkgstate(Object ipm, String pkg) throws Exception {
+        try {
+            Method g = ipm.getClass().getMethod("getApplicationEnabledSetting",
+                    String.class, int.class);
+            Object v = g.invoke(ipm, pkg, 0);
+            System.out.println("PKGSTATE " + pkg + " = " + v
+                    + "  (0=default 1=enabled 2=disabled 3=disabled-user 4=disabled-until-used)");
+        } catch (NoSuchMethodException e) {
+            Method g = ipm.getClass().getMethod("getApplicationEnabledSetting", String.class);
+            Object v = g.invoke(ipm, pkg);
+            System.out.println("PKGSTATE " + pkg + " = " + v);
+        }
     }
 
     @SuppressWarnings("unchecked")

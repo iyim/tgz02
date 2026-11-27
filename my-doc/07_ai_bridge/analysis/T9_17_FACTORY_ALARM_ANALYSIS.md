@@ -690,3 +690,83 @@ $ sha256sum /system/tgz02/bin/ai_worker → ccf378df…  (新，没被用到)
 dalvik-cache oat home_ctl.dex ai_worker_r9 cleanup.log cleanup_2026-11-27.log`。
 
 清理日志留在设备上：`/data/local/tmp/cleanup_2026-11-27.log`（逐条 `rm` 记录 + 前后空间）。
+
+## 13. 卸载「菜谱」「咪咕视频」与原厂 appbox 的自动重装（T9-17 R9，2026-11-27 23:00-23:12）
+
+### 13.1 卸载
+
+| 应用 | 包名 | 结果 |
+| --- | --- | --- |
+| 菜谱 v3.0.6 | `com.alibaba.ailabs.genie.cook` | `adb uninstall` → Success |
+| 咪咕视频 v3.1.9.7 | `cn.cmvideo.car.play` | `adb uninstall` → Success |
+
+注意：本机 `pm` 脚本没有 `uninstall/enable/disable/hide` 子命令（`pm uninstall` 报
+`Error: unknown command 'uninstall'`），能用的只有主机侧 `adb uninstall <pkg>`。
+
+### 13.2 但原厂会把它装回来
+
+卸掉菜谱约 1 分钟后（22:58:13）它自己回来了：
+
+```
+D PackageManager: installNewPackageLI: Package{… com.alibaba.ailabs.genie.cook}
+D PackageManager: New package installed in /data/app/com.alibaba.ailabs.genie.cook-vWLpAIaHCXF197vbQ1kh7g==
+```
+
+来源是工厂的 appbox（`ApplistDb.db` 里存着云端的应用清单 + 下载地址，例如
+`https://ailabs.alibabausercontent.com/largeFile/…_cook.apk`）：它只在"包不存在"时才补装，
+装回来之后 `data/download` 目录已经被清空，属于一次性对账。
+
+### 13.3 处置：改成「整包禁用」
+
+既然 appbox 只看"装没装"，那就让它们**保持已安装但整包禁用**：图标不出现、点不开、
+也不会再触发重装。
+
+`HomeCtl` 新增整包控制（IPackageManager，root 直调）：
+
+```
+HomeCtl pkgstate   <pkg>     # 读整包 enabled 状态
+HomeCtl pkgdisable <pkg>     # COMPONENT_ENABLED_STATE_DISABLED
+HomeCtl pkgenable  <pkg>     # 回到 DEFAULT
+HomeCtl pkgmethods           # 诊断：列出 IPackageManager 里带 EnabledSetting 的方法
+```
+
+坑：本机（API 27）的签名是
+`setApplicationEnabledSetting(String, int, int, int, String)`（第五个参数 `callingPackage`），
+按 4/3 参数反射会抛 `NoSuchMethodException`，被 `RuntimeInit` 当未捕获异常 **kill 掉进程**
+（shell 里只看到 `Killed`，exit=137）。已按实测签名修正。
+
+### 13.4 持久化
+
+`/data/adb/service.d/20_home_lock.sh` 现在开机后做两件事：
+
+1. 组件级禁用 4 个抢 HOME 的 Activity（BootHomeActivity / 当贝两个 / orchard）；
+2. 对 `com.alibaba.ailabs.genie.cook`、`cn.cmvideo.car.play` 若存在则整包禁用
+   （若被 appbox 重装，这一步把它重新按住）。
+
+真机重启（23:09）日志：
+
+```
+OK pkg com.alibaba.ailabs.genie.cook -> state=2
+OK pkg cn.cmvideo.car.play        -> state=2      ← 说明咪咕视频确实被 appbox 装回来了
+RESOLVED_HOME=com.tgz02.voice/.VoiceHomeActivity
+```
+
+重启后核对：
+
+```
+pm list packages -d → package:com.alibaba.ailabs.genie.cook / package:cn.cmvideo.car.play
+pkgstate            → 2 / 2
+am start 两个 App   → Error type 3（Activity does not exist，即包被禁用）
+语音栈              → :core / tgb_bridge / ai_worker / tg_supervisor 全部在跑
+```
+
+### 13.5 备份与恢复
+
+APK 备份在 `/data/local/tmp/t9_17_bak/`：`cook_3.0.6.apk`(7.5 MB)、`migu_3.1.9.7.apk`(26.6 MB)。
+
+```sh
+# 只是重新启用
+CLASSPATH=/data/local/tmp/home_ctl.dex app_process /system com.tgz02.home.HomeCtl pkgenable <pkg>
+# 彻底装回来
+adb install -r /data/local/tmp/t9_17_bak/<apk>
+```
