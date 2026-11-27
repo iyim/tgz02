@@ -18,6 +18,7 @@
  */
 package com.tgz02.voice;
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +30,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -41,6 +43,12 @@ public class AlarmRingingActivity extends Activity {
 
     private long alarmId = -1;
     private int snoozeSeq = 0;
+
+    /** 响铃动画：图标以「底边中点」为轴 ±5° 循环晃动（闹钟踩在两条腿上左右摇的感觉） */
+    private static final float SWING_DEG = 5f;
+    private static final long SWING_MS = 460L;
+    private ImageView clockIv;
+    private ObjectAnimator swing;
 
     private static AlarmRingingActivity sActive;
 
@@ -108,6 +116,11 @@ public class AlarmRingingActivity extends Activity {
                     Ui4.dp(this, 300), Ui4.dp(this, 377));
             clp.rightMargin = Ui4.dp(this, 44);
             contentRow.addView(iv, clp);
+            clockIv = iv;
+            /* 图标要"晃"出自身边界，父容器默认 clipChildren 会切边 */
+            contentRow.setClipChildren(false);
+            contentRow.setClipToPadding(false);
+            root.setClipChildren(false);
         }
 
         /* 右：标签 + 超大字时间 + 提示 + 大按钮，整列水平居中 */
@@ -172,8 +185,49 @@ public class AlarmRingingActivity extends Activity {
     }
 
     @Override
+    protected void onResume()
+    {
+        super.onResume();
+        /* 布局完成后再设 pivot（此时才拿到实测宽高），然后起循环晃动 */
+        if (clockIv != null) {
+            clockIv.post(new Runnable() {
+                public void run() { startSwing(); }
+            });
+        }
+    }
+
+    @Override
+    protected void onPause()
+    {
+        stopSwing();          /* 不在前台就别烧电、别在后台留动画 */
+        super.onPause();
+    }
+
+    /** ±5° 左右循环晃动：REVERSE 往返 + 先快后慢，重心落在底边中点（像闹钟踩着腿摇） */
+    private void startSwing()
+    {
+        if (clockIv == null || clockIv.getWidth() == 0) return;
+        if (swing == null) {
+            swing = ObjectAnimator.ofFloat(clockIv, "rotation", -SWING_DEG, SWING_DEG);
+            swing.setDuration(SWING_MS);
+            swing.setRepeatCount(ObjectAnimator.INFINITE);
+            swing.setRepeatMode(ObjectAnimator.REVERSE);
+            swing.setInterpolator(new AccelerateDecelerateInterpolator());
+        }
+        clockIv.setPivotX(clockIv.getWidth() / 2f);
+        clockIv.setPivotY(clockIv.getHeight());
+        if (!swing.isStarted()) swing.start();
+    }
+
+    private void stopSwing()
+    {
+        if (swing != null && swing.isStarted()) swing.cancel();
+    }
+
+    @Override
     protected void onDestroy()
     {
+        stopSwing();
         if (sActive == this) sActive = null;
         super.onDestroy();
     }
