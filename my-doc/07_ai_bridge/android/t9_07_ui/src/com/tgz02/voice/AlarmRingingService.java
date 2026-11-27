@@ -7,13 +7,19 @@
  *   用户点"贪睡" -> stop + 记录 pendingSnooze{at, id, seq} -> AlarmScheduler.reschedule
  *   用户点"停止" -> stop + 一次性闹钟已由 receiver 关闭 / 重复闹钟调下一次
  *
- * 铃声源优先级（复用原则）：
- *   1) files/alarm_ring.mp3（用户自定义，未来版本）
- *   2) 原厂 smartapp 已验证的云端铃声我们不复用（版权/依赖）；本版使用系统默认
- *      铃声 RingtoneManager.getDefault(TYPE_ALARM)，真实设备可播放。
+ * T9-17 增强（对齐原厂体感，但不依赖云）：
+ *   1) 音量渐强：30% -> 70%（不低于用户当前音量），15 秒内 30 步推上去；
+ *      响铃结束（关闭/贪睡/5 分钟自动停）恢复用户原本的闹钟音量。
+ *   2) 响铃说话：本机没有系统 TTS 引擎（tts_default_synth=null、无 TTS_SERVICE），
+ *      改用原厂 TTS 的 provider 入口（见 FactoryTts）说一句带时间的提醒；
+ *      说话瞬间把铃声压到 12% 避免盖住人声，说完恢复。
+ *      首句 1.5 秒后说，之后每 90 秒一次，最多 3 次；说不出来只记日志，不影响响铃。
  *
- * 静音保护：播放前把 ALARM 流音量提到不低于 40%（若用户设了 0，尊重用户——
- * 但 RTC_WAKEUP 响铃属于用户主动设置，默认推到可用音量）。
+ * 铃声源优先级（复用原则）：
+ *   1) 用户在「闹钟铃声」页选的铃声（可能是 /sdcard/Alarms 里的文件）
+ *   2) 系统默认 ALARM 铃声
+ *   3) /system/media/audio/alarms/Alarm_Beep_03.ogg（本机确实存在）
+ *   4) 系统默认通知音
  *
  * 贪睡间隔：5 分钟（产品定值）；连续贪睡 3 次后自动停止（防无限响）。
  */
@@ -27,7 +33,11 @@ import android.media.AudioManager;
 import android.media.RingtoneManager;
 import android.media.MediaPlayer;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+
+import java.util.Calendar;
 
 public class AlarmRingingService extends Service {
 
@@ -39,6 +49,29 @@ public class AlarmRingingService extends Service {
 
     static final int SNOOZE_MINUTES = 5;
     static final int SNOOZE_MAX = 3;
+
+    private static final String TAG = "T916RING";
+
+    /* ---- T9-17 音量渐强 ---- */
+    private static final long RAMP_MS = 15_000L;         /* 15 秒推到位 */
+    private static final long RAMP_STEP_MS = 500L;
+    private static final int RAMP_START_PCT = 30;        /* 起播 30% */
+    private static final int RAMP_TARGET_PCT = 70;       /* 目标 70%（用户原本更高就保持更高） */
+    private static final int FLOOR_PCT = 30;             /* 渐强开始前的最低音量 */
+
+    /* ---- T9-17 响铃说话 ---- */
+    private static final long SPEAK_FIRST_MS = 1_500L;   /* 先让铃声起个头再说话 */
+    private static final long SPEAK_EVERY_MS = 90_000L;
+    private static final int SPEAK_MAX = 3;
+    private static final float DUCK_VOLUME = 0.12f;      /* 说话时铃声压低 */
+
+    private static Handler H;
+    private static Context sCtx;
+    private static Runnable rampTick, speakTick, unduckTick;
+    private static int rampIndex;
+    private static int speakCount;
+    private static int savedVolume = -1;
+    private static boolean ducked;
 
     public static void startRinging(Context c, long alarmId, int seq)
     {
@@ -74,6 +107,8 @@ public class AlarmRingingService extends Service {
     public void onCreate()
     {
         super.onCreate();
+        sCtx = getApplicationContext();
+        H = new Handler(Looper.getMainLooper());
         /* 前台服务：Android 8.1 必须先建 NotificationChannel，否则 startForeground 崩
          * （RemoteServiceException: invalid channel） */
         String chId = "t916_alarm_ring";
@@ -95,25 +130,25 @@ public class AlarmRingingService extends Service {
     public int onStartCommand(Intent it, int flags, int startId)
     {
         if (it == null) { stopSelf(); return START_NOT_STICKY; }
-        stopPlaying();
+        stopPlaying();               /* 清掉上一轮（含渐强/说话/音量恢复） */
         playRing();
+        beginVolumeRamp();
+        scheduleSpeak();
         /* 铃声最长约 5 分钟自动停（防无人处理一直响耗电） */
-        android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
-        h.postDelayed(new Runnable() { public void run() { stopPlaying(); } }, 5 * 60_000L);
+        H.postDelayed(new Runnable() { public void run() { stopPlaying(); } }, 5 * 60_000L);
         return START_NOT_STICKY;
     }
-
-    private static final String TAG = "T916RING";
 
     private void playRing()
     {
         try {
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            /* 响铃至少给 40% 音量（用户当前 ALARM 流音量低于 40% 时推上去） */
+            /* 起播前至少给 FLOOR_PCT（用户原音量更高就不动，由渐强接管） */
             int cur = am.getStreamVolume(AudioManager.STREAM_ALARM);
             int max = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
-            if (max > 0 && cur < max * 40 / 100) {
-                am.setStreamVolume(AudioManager.STREAM_ALARM, max * 40 / 100, 0);
+            if (savedVolume < 0) savedVolume = cur;
+            if (max > 0 && cur < max * FLOOR_PCT / 100) {
+                am.setStreamVolume(AudioManager.STREAM_ALARM, max * FLOOR_PCT / 100, 0);
             }
             /* T9-16 真机修正：无声问题排查。三级 fallback + 每级失败都记日志（不再静默）：
              *   0) 用户选的铃声（设置 → 闹钟铃声，可指向 /sdcard/Alarms 里的文件）
@@ -154,8 +189,147 @@ public class AlarmRingingService extends Service {
         }
     }
 
+    /* ================================================================ 音量渐强 */
+
+    private void beginVolumeRamp()
+    {
+        final AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (am == null || H == null) return;
+        final int max = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+        if (max <= 0) return;
+
+        int cur = am.getStreamVolume(AudioManager.STREAM_ALARM);
+        int start = max * RAMP_START_PCT / 100;
+        int target = max * RAMP_TARGET_PCT / 100;
+        if (cur > target) target = cur;          /* 用户本来就开得更大：不要给他调小 */
+        if (start > target) start = target;
+        if (cur > start && cur >= start) {
+            /* 起播音量 = min(cur, target)，避免先把用户音量拽下来再推上去 */
+            start = Math.min(cur, target);
+        }
+        am.setStreamVolume(AudioManager.STREAM_ALARM, start, 0);
+
+        final int from = start, to = target;
+        final int steps = (int) (RAMP_MS / RAMP_STEP_MS);
+        rampIndex = 0;
+        rampTick = new Runnable() {
+            public void run() {
+                rampIndex++;
+                int v = from + (to - from) * rampIndex / steps;
+                if (v > to) v = to;
+                try { am.setStreamVolume(AudioManager.STREAM_ALARM, v, 0); } catch (Throwable ignored) { }
+                if (rampIndex < steps && rampTick != null) H.postDelayed(rampTick, RAMP_STEP_MS);
+            }
+        };
+        H.postDelayed(rampTick, RAMP_STEP_MS);
+        android.util.Log.i(TAG, "volume ramp " + start + " -> " + to + " over " + RAMP_MS + "ms");
+    }
+
+    private static void stopRampAndRestoreVolume()
+    {
+        if (H != null && rampTick != null) H.removeCallbacks(rampTick);
+        rampTick = null;
+        rampIndex = 0;
+        if (savedVolume >= 0) {
+            try {
+                if (sCtx != null) {
+                    AudioManager am = (AudioManager) sCtx.getSystemService(Context.AUDIO_SERVICE);
+                    if (am != null) am.setStreamVolume(AudioManager.STREAM_ALARM, savedVolume, 0);
+                }
+            } catch (Throwable ignored) {
+            }
+            savedVolume = -1;
+        }
+    }
+
+    /* ================================================================== 说话 */
+
+    private void scheduleSpeak()
+    {
+        if (H == null) return;
+        speakCount = 0;
+        speakTick = new Runnable() {
+            public void run() {
+                if (speakCount >= SPEAK_MAX) return;
+                speakCount++;
+                String text = ringText();
+                duck(true);
+                android.util.Log.i(TAG, "speak#" + speakCount + ": " + text);
+                FactoryTts.speak(AlarmRingingService.this, text);
+                /* 本机拿不到 TTS 完成回调：按字数估时长（中文约 4.5 字/秒 + 0.8s 起播） */
+                long dur = 800L + text.length() * 230L;
+                if (H != null) {
+                    unduckTick = new Runnable() { public void run() { duck(false); } };
+                    H.postDelayed(unduckTick, dur);
+                    if (speakCount < SPEAK_MAX) H.postDelayed(speakTick, SPEAK_EVERY_MS);
+                }
+            }
+        };
+        H.postDelayed(speakTick, SPEAK_FIRST_MS);
+    }
+
+    private static void stopSpeak()
+    {
+        if (H != null) {
+            if (speakTick != null) H.removeCallbacks(speakTick);
+            if (unduckTick != null) H.removeCallbacks(unduckTick);
+        }
+        speakTick = null;
+        unduckTick = null;
+        speakCount = 0;
+        duck(false);
+    }
+
+    private static void duck(boolean on)
+    {
+        if (player == null) return;
+        try {
+            player.setVolume(on ? DUCK_VOLUME : 1f, on ? DUCK_VOLUME : 1f);
+            ducked = on;
+        } catch (Throwable ignored) {
+        }
+    }
+
+    /** 响铃话术：带具体时间，不念"布丁闹钟"（与确认话术同一口径） */
+    static String ringText()
+    {
+        Calendar cal = Calendar.getInstance();
+        int h = cal.get(Calendar.HOUR_OF_DAY);
+        int m = cal.get(Calendar.MINUTE);
+        StringBuilder sb = new StringBuilder();
+        sb.append(cnNum(h)).append("点");
+        if (m == 0) {
+            sb.append("啦");
+        } else if (m == 30) {
+            sb.append("半啦");
+        } else if (m < 10) {
+            sb.append("零").append(cnNum(m)).append("分啦");
+        } else {
+            sb.append(cnNum(m)).append("分啦");
+        }
+        sb.append("，该起床了");
+        return sb.toString();
+    }
+
+    static String cnNum(int n)
+    {
+        final String[] d = {"零", "一", "二", "三", "四", "五", "六", "七", "八", "九"};
+        if (n < 0) return "零";
+        if (n < 10) return d[n];
+        if (n < 20) return n == 10 ? "十" : "十" + d[n - 10];
+        if (n < 100) {
+            int t = n / 10, o = n % 10;
+            return d[t] + "十" + (o == 0 ? "" : d[o]);
+        }
+        return String.valueOf(n);
+    }
+
+    /* ================================================================== 停止 */
+
     static void stopPlaying()
     {
+        stopSpeak();
+        stopRampAndRestoreVolume();
         try {
             if (player != null) {
                 if (player.isPlaying()) player.stop();

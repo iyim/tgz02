@@ -1,0 +1,53 @@
+# T9-17 响铃增强真机证据（音量渐强 + 响铃说话）
+
+设备：AILABS_S1L / Android 8.1 / adb 192.168.1.9:5555
+APK：voice_ui.apk sha256 3b241090ca4524946ee39811a8e5fbdc7764f78e66f5f3f1cd9c458766121715（1.6.0 / vc8）
+前置：`media volume --stream 4 --set 6`（把闹钟音量压到 6，观察渐强与恢复）
+
+## 1. 真闹钟到点（19:52，label=渐强测试，由 alarm_request 合成建单）
+
+```
+11-27 19:52:00.131  T916RING W create failed: content://settings/system/alarm_alert
+11-27 19:52:00.186  T916RING I ring source ok: file:///system/media/audio/alarms/Alarm_Beep_03.ogg (selected=系统默认闹钟铃声)
+11-27 19:52:00.189  T916RING I ring started
+11-27 19:52:00.207  T916RING I volume ramp 30 -> 70 over 15000ms
+11-27 19:52:01.708  T916RING I speak#1: 十九点五十二分啦，该起床了
+11-27 19:52:01.719  T916TTS  I speak queued in 9ms len=13 cursor=true
+```
+
+渐强过程（`media volume --stream 4 --get` 采样）：
+
+| 时刻 | STREAM_ALARM |
+| --- | --- |
+| 起播前（用户原值） | 6 |
+| +5s | 50 |
+| +16s（到位） | 70 |
+| 点「关闭」后 | **6（恢复用户原值）** |
+
+## 2. 响铃说话链路（原厂云端 TTS，provider 入口）
+
+```
+11-27 19:53:13.661  T916RING I volume ramp 30 -> 70 over 15000ms
+11-27 19:53:15.163  T916RING I speak#1: 十九点五十三分啦，该起床了
+11-27 19:53:15.169   TtsManager W playTts:295 isInterrupted, sessionId = 0
+11-27 19:53:15.171   TtsManager W playTts:388 tts = 十九点五十三分啦，该起床了, asrLogId = NULL
+11-27 19:53:15.172   GenieTable E play curSessionId = 5246724, ttsInfo = TtsInfo{..., pkg='com.tgz02.voice'}
+11-27 19:53:15.173  T916TTS  I speak queued in 8ms len=13 cursor=true
+11-27 19:53:15.216   TtsManager D onTtsStart: sessionId = 5246724, isStreaming = 1
+11-27 19:53:15.259   TtsManager D onTtsData: TTS_TIME receive stream data actually
+11-27 19:53:15.321   TtsManager D onTtsEnd: sessionId = 5246724
+```
+
+要点：
+- 本机**没有系统 TTS**（`settings get secure tts_default_synth` = null，无 `android.intent.action.TTS_SERVICE`），
+  所以走原厂 `content://com.alibaba.ailabs.genie.assistant.provider/GenieApi` 的 method=4；
+- 请求体里 `pkg=com.tgz02.voice`、`ignoreMute=true`，原厂日志确认 `playTts -> allow-listed`；
+- **不要读返回游标**：原厂返回的跨进程 cursor 一取窗口就抛
+  `NullPointerException: Attempt to get length of null array`（BulkCursorProxy.getWindow），
+  而播报副作用在 query() 返回前已发生，所以只 `close()` 不 `moveToFirst()`。
+
+## 3. 未做 / 已知边界
+
+- 拿不到原厂 TTS 的完成回调：说话时长按「0.8s 起播 + 230ms/字」估算，到点把铃声音量恢复（不是精确对齐）；
+- TTS 需要原厂进程在线 + 网络可用；离线时只有日志 `speak failed`，铃声不受影响；
+- 说话时铃声压到 12%，说完回 100%（播放器级音量，不动系统音量）。
