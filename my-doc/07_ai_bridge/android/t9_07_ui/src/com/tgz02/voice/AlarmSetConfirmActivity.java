@@ -18,6 +18,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -59,32 +60,46 @@ public class AlarmSetConfirmActivity extends Activity {
                 Ui4.primaryW(this), Ui4.bgDeep(this), Ui4.pinkW(this)}, 0));
         root.setPadding(Ui4.dp(this, 40), Ui4.dp(this, 32), Ui4.dp(this, 40), Ui4.dp(this, 32));
 
-        Bitmap pud = Ui4.artBmp(this, "puddin_happy");
-        if (pud != null) {
+        /* T9-16 用户设计（与响铃页一致）：闹钟图标在左，时间大字在右 */
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        root.addView(row, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        Bitmap clock = Ui4.artBmp(this, "alarm_static");
+        if (clock != null) {
             ImageView iv = new ImageView(this);
-            iv.setImageBitmap(pud);
+            iv.setImageBitmap(clock);
             iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            root.addView(iv, new LinearLayout.LayoutParams(Ui4.dp(this, 170), Ui4.dp(this, 170)));
+            LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(
+                    Ui4.dp(this, 240), Ui4.dp(this, 240));
+            clp.rightMargin = Ui4.dp(this, 28);
+            row.addView(iv, clp);
         }
 
-        TextView title = Ui4.textBold(this, "闹钟记好了", Ui4.T_H1, Ui4.text(this));
-        title.setGravity(Gravity.CENTER);
-        root.addView(title);
+        LinearLayout right = new LinearLayout(this);
+        right.setOrientation(LinearLayout.VERTICAL);
+        right.setGravity(Gravity.CENTER_VERTICAL);
+        row.addView(right, new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
-        /* 大字时间（用户点名要大，像原厂） */
-        TextView tv = Ui4.textBold(this, time, 72f, Ui4.primary2(this));
-        tv.setGravity(Gravity.CENTER);
-        root.addView(tv);
+        TextView title = Ui4.textBold(this, "闹钟记好了", Ui4.T_H1, Ui4.text(this));
+        right.addView(title);
+
+        /* 大字时间（用户点名要大，像原厂）：72 -> 96sp */
+        TextView tv = Ui4.textBold(this, time, 96f, Ui4.primary2(this));
+        right.addView(tv);
 
         /* 重复规则 */
         String rep = repeat == 0 ? "一次性" : repeat == 0x7F ? "每天" : repeat == 0x1F ? "工作日" : "按星期重复";
         TextView rtxt = Ui4.text(this, rep + " · " + label, Ui4.T_BODY, Ui4.text2(this));
-        rtxt.setGravity(Gravity.CENTER);
-        root.addView(rtxt);
+        rtxt.setPadding(0, Ui4.dp(this, 8), 0, 0);
+        right.addView(rtxt);
 
         TextView hint = Ui4.text(this, "到点布丁叫你 · 界面稍后自动消失", Ui4.T_CAP, Ui4.text3(this));
-        hint.setGravity(Gravity.CENTER);
-        root.addView(hint);
+        hint.setPadding(0, Ui4.dp(this, 6), 0, 0);
+        right.addView(hint);
 
         setContentView(root);
         h.postDelayed(autoFinish, AUTO_DISMISS_MS);
