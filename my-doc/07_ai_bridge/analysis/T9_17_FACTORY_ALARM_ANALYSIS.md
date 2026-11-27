@@ -508,3 +508,72 @@ native command (volume): continuity re-listen scheduled in 1200 ms
   恢复原样；这条噪声不影响播报，后续可以给守卫加"seq 不变就不再重试"。
 - 诊断期间临时启用过工厂 `BootHomeActivity`（确认天气播报不依赖它），已重新禁用；
   系统 HOME 仍然解析到 `com.tgz02.voice/.VoiceHomeActivity`。
+
+## 10. 收尾：所有原厂指令都不再续听 + 部署路径的坑（T9-17 R6）
+
+### 10.1 用户要求
+
+「音量 / 时间 / 开关屏 / 放音乐，都不要续听」——即取消 native 指令之后的自动 `startTalk`。
+原因是这类续听会在原厂播报还没说完时重新开麦，把答案切断（天气那次"说一句就断"就是这个）。
+
+### 10.2 改动
+
+`ai_worker.c` 里原来按意图分支的续听逻辑，统一改成不排队：
+
+```c
+always("native command (%s): no re-listen (it would cut the factory answer)",
+       ir_intent_name(ir.intent));
+```
+
+隔离回放（同一份新二进制、mock provider、4 条合成 ASR final）结果：
+
+```
+route=native intent=weather … publish_seq=1 → native command (weather): no re-listen (…)
+route=native intent=volume  … publish_seq=2 → native command (volume):  no re-listen (…)
+route=native intent=time    … publish_seq=3 → native command (time):    no re-listen (…)
+route=native intent=media   … publish_seq=4 → native command (media):   no re-listen (…)
+```
+
+### 10.3 部署路径的坑（这次真正卡住的点）
+
+用户反馈"还是被打断"，复查发现**修复根本没生效**：`/system/tgz02/bin/ai_worker` 换了新二进制，
+但设备上真正被启动的是另一份：
+
+```
+$ readlink /proc/<pid>/exe
+/data/local/tmp/t5_bridge/bin/ai_worker      ← 启动脚本 BIN=$D/bin/ai_worker
+$ sha256sum
+1add1012…   ← 旧二进制（不含修复）
+ccf378df…   ← 我部署的 /system 那份（没被用到）
+```
+
+`run_ai_worker.sh` 里写死 `BIN=$D/bin/ai_worker`（注释说明了"二进制放 bin/：不能和状态目录同名"），
+而 `/system/tgz02/bin/ai_worker` 只是早期 boot-stack 路径的镜像。**两份必须同时更新**。
+
+部署脚本固化为 `android/deploy_worker_both.sh`：停 worker → 同时覆盖
+`/data/local/tmp/t5_bridge/bin/ai_worker` 与 `/system/tgz02/bin/ai_worker` → 用
+`run_ai_worker.sh start` 拉起 → 打印运行进程的 `readlink /proc/<pid>/exe` 与 sha256 自证。
+
+### 10.4 真机验证（22:09，用户真人语音）
+
+```
+worker : route=native intent=weather … publish_seq=1 (factory answers; AI worker does not)
+worker : native command (weather): no re-listen (it would cut the factory answer)
+tgt    : onTtsStart ALLOW id=1966916 by=native_window intent=weather seq=1 … text_bytes=45
+TtsMgr : onTtsStart sessionId = 1966916, tts = 明天昌平区晴，气温-2度到10度 。
+TtsMgr : onTtsData … onTtsEnd sessionId = 1966916
+SessionManager: onStartTalk(1966916) → onStopTalk(normal) 之后没有新的 startTalk
+```
+
+用户确认：**这次天气完整播完了**。
+
+当前部署：`/data/local/tmp/t5_bridge/bin/ai_worker` = `/system/tgz02/bin/ai_worker`
+= sha256 `13bcf6fe…`（运行进程 21110 自证同 hash；旧版备份在 `/data/local/tmp/t9_17_bak/`）。
+
+### 10.5 遗留噪声
+
+TTS 守卫（:core 内）每 2 秒打印一条
+`continuity req: seq=… rejected (too old; baseline=…, now=…)`：
+`/data/local/tmp/t7/renew.conf` 里 `renew_ms=0` 但 `continuity_auto=1`，守卫仍在按一个旧 seq 重试。
+请求被拒绝、不影响播报，属日志噪声；要清掉需要给守卫加"seq 未变化就不重试"或重启 :core，
+留作后续清理项。

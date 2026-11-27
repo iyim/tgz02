@@ -2686,21 +2686,12 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
                        ir_intent_name(ir.intent), ir.rule, ir.arg, slot->event_id, slot->seq,
                        slot->session, (int)strlen(slot->text), slot->merges, slot->held_ms,
                        w->st.route_seq);
-                /* T8-15.3：非停止/退出类的原厂指令执行完，补一次续听请求 ——
-                 * 这类指令不会有我方 TTS，不补就断在这里（真机复现过）。 */
-                if (ir.intent == IR_MEDIA && strcmp(ir.arg, "play") == 0) {
-                    always("native command (media.play): no re-listen - it would cut the music");
-                } else if (ir.intent == IR_WEATHER) {
-                    /* T9-17-R5 真机：天气的原厂播报有十几秒，1.2 秒后续听 = startTalk
-                     * 把人家的话直接打断（用户听到的就是"说一句就断"）。天气不补续听，
-                     * 等原厂自己讲完；音量/时间这类短回答仍然补。 */
-                    always("native command (weather): no re-listen - the factory answer is long "
-                           "and startTalk would cut it");
-                } else if (ir.intent != IR_STOP && ir.intent != IR_EXIT) {
-                    w->native_relisten_due_ms = now_ms + 1200;
-                    always("native command (%s): continuity re-listen scheduled in 1200 ms",
-                           ir_intent_name(ir.intent));
-                }
+                /* T9-17-R6（用户要求）：所有原厂指令都不再补续听。
+                 * 续听 = startTalk，会把原厂正在播的答案打断：天气十几秒、音量/时间两三秒、
+                 * 媒体播放直接切歌。用户明确要求「音量/时间/开关屏/放音乐都不要续听」，
+                 * 所以这里统一不排队；要继续说就重新唤醒（原厂会话窗口本身不受影响）。 */
+                always("native command (%s): no re-listen (it would cut the factory answer)",
+                       ir_intent_name(ir.intent));
                 return 1;
             } else {
                 /* ---- T7-05 ②：标记没写成功 -> 不能静默跳过 AI，改走模型 ---- */
