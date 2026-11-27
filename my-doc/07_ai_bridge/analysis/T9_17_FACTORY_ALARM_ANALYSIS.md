@@ -577,3 +577,71 @@ TTS 守卫（:core 内）每 2 秒打印一条
 `/data/local/tmp/t7/renew.conf` 里 `renew_ms=0` 但 `continuity_auto=1`，守卫仍在按一个旧 seq 重试。
 请求被拒绝、不影响播报，属日志噪声；要清掉需要给守卫加"seq 未变化就不重试"或重启 :core，
 留作后续清理项。
+
+## 11. 澄清：刷包之后到底跑的是哪个 ai_worker（T9-17 R7）
+
+用户问得很对：「重新刷包后脚本程序不都在 `/system/tgz02/` 下吗，怎么还会执行 `/data/local/tmp` 里的程序？」
+
+### 11.1 镜像里的启动链（T9-12 定稿，刷包后走这条）
+
+```
+/system/etc/init/tg_stack.rc
+  on property:sys.boot_completed=1
+      start tg_hook_sup  → /system/tgz02/bin/tg_supervisor --so /system/tgz02/lib/libtg_hook.so
+      start tg_guard_sup → …--so /system/tgz02/lib/libtg_ttsguard_t8156.so
+      start tg_stack     → /system/bin/sh /system/tgz02/bin/boot_stack.sh
+                             ├─ BRIDGE = /system/tgz02/scripts/run_bridge.sh
+                             ├─ TTS    = /system/tgz02/tts/run_tts_exec.sh
+                             └─ WORKER = /system/tgz02/scripts/run_ai_worker.sh
+                                            └─ run_ai_worker.sh.accepted
+                                                 D=/data/local/tmp/t5_bridge      ← 只放状态/日志
+                                                 BIN=/system/tgz02/bin/ai_worker   ← 程序在镜像里
+```
+
+也就是说：**刷包后程序确实全部从 `/system/tgz02/bin` 执行**，`/data/local/tmp/t5_bridge`
+只保存 `work/`、`ai_worker/`（状态/日志）、`tts/`（队列）、`secret/`（key）。
+`/system/tgz02/scripts/prepare_data_dirs.sh` 负责创建这些可写目录（明确写着"never writes a
+program outside the image"，它不往 /data 拷任何程序）。
+
+### 11.2 那为什么实际跑到了 /data 下
+
+`/data/local/tmp/t5_bridge/` 里还留着**开发期**的一对启动脚本，它们的 `BIN` 指向自己目录：
+
+```
+--- /system/tgz02/scripts/run_ai_worker.sh.accepted
++++ /data/local/tmp/t5_bridge/run_ai_worker.sh.accepted
+-D=/data/local/tmp/t5_bridge
+-BIN=/system/tgz02/bin/ai_worker   # T9-12: binary lives in the read-only image
++BIN=$D/bin/ai_worker              # 二进制放 bin/：不能和状态目录 $D/ai_worker 同名
+```
+
+我这几天重启 worker 用的是 `/data/local/tmp/t5_bridge/run_ai_worker.sh start`（开发期习惯），
+于是 `BIN=$D/bin/ai_worker` → 跑的是 `/data/local/tmp/t5_bridge/bin/ai_worker`
+（那时是 `1add1012…`，一份旧二进制）。而我把新二进制只写进了 `/system/tgz02/bin/ai_worker`，
+所以"改了没生效"。真机自证：
+
+```
+$ readlink /proc/16156/exe → /data/local/tmp/t5_bridge/bin/ai_worker
+$ sha256sum /proc/16156/exe → 1add1012…   (旧)
+$ sha256sum /system/tgz02/bin/ai_worker → ccf378df…  (新，没被用到)
+```
+
+### 11.3 收尾
+
+1. 已改用镜像启动器 `/system/tgz02/scripts/run_ai_worker.sh start` 重启，运行进程自证：
+   ```
+   pid 23055 exe=/system/tgz02/bin/ai_worker
+   sha256=13bcf6fe…
+   ```
+2. 把开发期那对脚本改名，防止再被误用：
+   ```
+   /data/local/tmp/t5_bridge/run_ai_worker.sh          → run_ai_worker.sh.dev_only
+   /data/local/tmp/t5_bridge/run_ai_worker.sh.accepted → run_ai_worker.sh.accepted.dev_only
+   /data/local/tmp/t5_bridge/bin/ai_worker             → bin/ai_worker.dev_only
+   ```
+3. 部署脚本固化为 `android/deploy_worker.sh <新二进制>`：停 worker → 写 `/system/tgz02/bin/ai_worker`
+   → 用**镜像启动器**拉起 → 断言 `readlink /proc/<pid>/exe` 必须是
+   `/system/tgz02/bin/ai_worker`，否则报 `DEPLOY FAILED`。以后不会再出现"换了镜像里的、
+   跑的是 /data 的"。
+4. `/data/local/tmp/t5_bridge` 保留的只是状态（work/ai_worker/tts/secret），与程序无关；
+   刷包本身不需要拷贝任何程序到 /data。
