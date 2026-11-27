@@ -67,6 +67,7 @@ public class AlarmRingingService extends Service {
 
     private static Handler H;
     private static Context sCtx;
+    private static long curAlarmId = -1;
     private static Runnable rampTick, speakTick, unduckTick;
     private static int rampIndex;
     private static int speakCount;
@@ -130,6 +131,7 @@ public class AlarmRingingService extends Service {
     public int onStartCommand(Intent it, int flags, int startId)
     {
         if (it == null) { stopSelf(); return START_NOT_STICKY; }
+        curAlarmId = it.getLongExtra(AlarmScheduler.EXTRA_ID, -1);
         stopPlaying();               /* 清掉上一轮（含渐强/说话/音量恢复） */
         playRing();
         beginVolumeRamp();
@@ -290,7 +292,8 @@ public class AlarmRingingService extends Service {
         }
     }
 
-    /** 响铃话术：带具体时间，不念"布丁闹钟"（与确认话术同一口径） */
+    /** 响铃话术：带具体时间 + 用户当时说的目的（起床/吃药/开会…）
+     *  T9-17 用户反馈："闹钟不一定是起床，不能每次都说起床" —— 目的语来自闹钟标签。 */
     static String ringText()
     {
         Calendar cal = Calendar.getInstance();
@@ -307,8 +310,29 @@ public class AlarmRingingService extends Service {
         } else {
             sb.append(cnNum(m)).append("分啦");
         }
-        sb.append("，该起床了");
+        String label = alarmLabel();
+        if (label.length() == 0) {
+            sb.append("，闹钟响啦");
+        } else {
+            sb.append("，").append(label).append("啦");
+        }
         return sb.toString();
+    }
+
+    /** 当前响铃闹钟的标签；没有/是默认标签时返回空串 */
+    private static String alarmLabel()
+    {
+        if (sCtx == null || curAlarmId <= 0) return "";
+        try {
+            DataService.Alarm a = DataService.get(sCtx).alarmGet(curAlarmId);
+            if (a == null || a.label == null) return "";
+            String l = a.label.trim();
+            if (l.length() == 0) return "";
+            if ("布丁闹钟".equals(l) || "闹钟".equals(l) || "提醒".equals(l)) return "";
+            return l;
+        } catch (Throwable t) {
+            return "";
+        }
     }
 
     static String cnNum(int n)

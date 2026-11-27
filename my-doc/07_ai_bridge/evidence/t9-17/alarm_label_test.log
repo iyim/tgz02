@@ -1,0 +1,87 @@
+# T9-17 R2 证据：闹钟目的语（label）识别 + 响铃话术跟随目的
+
+设备：AILABS_S1L / Android 8.1 / adb 192.168.1.9:5555
+worker：`/system/tgz02/bin/ai_worker` sha256 `b425b122…`（含 label 解析与中文分钟/小时修正）
+APK：`voice_ui.apk` sha256 `21b9d5b2…`（1.6.0 / vc8）
+
+## 1. 解析器离线自测（worker 新增 `--self-test-alarm`）
+
+```
+$ ai_worker --self-test-alarm "5分钟后提醒我起床"
+speech=好啦，5 分钟后的闹钟记好了，到点提醒你起床。
+json={"v":1,...,"rel_minutes":5,"repeat":0,"label":"起床",...}
+
+"明天早上七点叫我开会"
+speech=好啦，明天 7 点整的闹钟记好了，到点提醒你开会。
+json={...,"hour":7,"minute":0,"day_offset":1,"label":"开会"}
+
+"每天晚上十点提醒我吃药"
+speech=好啦，22 点整的闹钟记好了，到点提醒你吃药。
+json={...,"hour":22,"minute":0,"repeat":127,"label":"吃药"}
+
+"五点五十提醒我赶班车"
+speech=好啦，5 点 50 分的闹钟记好了，到点提醒你赶班车。
+json={...,"hour":5,"minute":50,"label":"赶班车"}
+
+"七点零五叫我起床"
+speech=好啦，7 点 5 分的闹钟记好了，到点提醒你起床。
+json={...,"hour":7,"minute":5,"label":"起床"}
+
+"九点四十五叫我开会"
+speech=好啦，9 点 45 分的闹钟记好了，到点提醒你开会。
+json={...,"hour":9,"minute":45,"label":"开会"}
+
+"十一点二十提醒我吃饭"
+speech=好啦，11 点 20 分的闹钟记好了，到点提醒你吃饭。
+json={...,"hour":11,"minute":20,"label":"吃饭"}
+
+"二十三点提醒我关灯"
+speech=好啦，23 点整的闹钟记好了，到点提醒你关灯。
+json={...,"hour":23,"minute":0,"label":"关灯"}
+
+"十三点三十叫我午睡"
+speech=好啦，13 点 30 分的闹钟记好了，到点提醒你午睡。
+json={...,"hour":13,"minute":30,"label":"午睡"}
+
+"八点半提醒我打卡"
+speech=好啦，8 点 30 分的闹钟记好了，到点提醒你打卡。
+json={...,"hour":8,"minute":30,"label":"打卡"}
+
+"帮我定个闹钟"            (没有目的语/没有时间)
+speech=我没有听清时间，可以说"明天早上七点叫我起床"。
+json=(none)
+```
+
+顺带修掉两个中文数字 bug（同一轮发现）：
+
+| 输入 | 修复前 | 修复后 |
+| --- | --- | --- |
+| 五点**五十** | 5:05 | **5:50** |
+| **十一**点二十 | 1:20 | **11:20** |
+| **二十三**点 | 13:00 | **23:00** |
+
+## 2. 真机端到端（20:24 的「吃药」闹钟）
+
+```
+20:24:00.185 T916RING I ring source ok: file:///system/media/audio/alarms/Alarm_Beep_03.ogg (selected=系统默认闹钟铃声)
+20:24:00.186 T916RING I ring started
+20:24:00.202 T916RING I volume ramp 30 -> 70 over 15000ms
+20:24:01.704 T916RING I speak#1: 二十点二十四分啦，吃药啦
+20:24:01.717 T916TTS  I speak queued in 9ms len=11 cursor=true
+TtsManager  D onTtsStart: sessionId = 5245662, isStreaming = 1, tts = 二十点二十四分啦，吃药啦
+TtsManager  D onTtsEnd:   sessionId = 5245662
+```
+
+- 响铃页：标题显示 `吃药`，提示语 `该吃药啦`（原来固定 `起床啦！布丁叫你啦`）→ 截图 `ring_label_yaochi.png`
+- 话术：`二十点二十四分啦，吃药啦`（原来固定 `…，该起床了`）
+
+## 3. 语义约定
+
+| 场景 | label | 响铃话术 | 响铃页提示 |
+| --- | --- | --- | --- |
+| 说"提醒我起床" | 起床 | 七点啦，起床啦 | 该起床啦 |
+| 说"提醒我吃药" | 吃药 | 七点啦，吃药啦 | 该吃药啦 |
+| 没说目的 | 闹钟 | 七点啦，闹钟响啦 | 闹钟响啦，布丁叫你啦 |
+| 旧数据 `布丁闹钟` | 布丁闹钟 | 同上（当空处理） | 同上 |
+
+确认话术也带上目的：`好啦，明天 7 点整的闹钟记好了，到点提醒你开会。`

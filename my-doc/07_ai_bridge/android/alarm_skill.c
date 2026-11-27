@@ -1,4 +1,4 @@
-﻿/*
+/*
  * alarm_skill.c -- T9-16: TG-Z02 自有闹钟技能（worker 侧）。
  *
  * 职责（只做三件事，绝不直接操作 Android）：
@@ -37,39 +37,68 @@ static const char *const CN_DIGIT[] = {
 };
 static const int CN_DIGIT_VAL[] = { 0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
-/* 解析「十」「十五」「二十」「七」这类小时表达，返回 0..23，-1 = 不认识 */
+/* 解析「十」「十五」「二十」「七」这类小时表达，返回 0..23，-1 = 不认识。
+ * T9-17 修正："十一点" 原来被当成 1 点（反向扫描先撞到「一」就收工）；现在
+ * 支持 十/十X/X十/X十Y，并让调用方优先尝试两位写法。 */
 static int cn_hour(const char *p, int *consumed)
 {
     int i, v = -1, c = 0;
-    /* 两位词优先匹配（"十四"），词表顺序即此意 */
-    for (i = 0; CN_DIGIT[i] != NULL; i++) {
-        size_t kl = strlen(CN_DIGIT[i]);
-        if (strncmp(p, CN_DIGIT[i], kl) == 0) {
-            v = CN_DIGIT_VAL[i];
-            c = (int)kl;
-            break;
-        }
-    }
-    if (v < 0) return -1;
-    p += c;
-    *consumed += c;
-    /* 「十X」：当前是「十」且后面还有数字 */
-    if (v == 10) {
+    *consumed = 0;
+
+    /* 十 / 十X */
+    if (strncmp(p, "十", 3) == 0) {
+        v = 10;
+        c = 3;
+        p += 3;
         for (i = 0; CN_DIGIT[i] != NULL; i++) {
             size_t kl = strlen(CN_DIGIT[i]);
             if (strncmp(p, CN_DIGIT[i], kl) == 0) {
                 int d = CN_DIGIT_VAL[i];
-                if (d == 10) { v = 20; *consumed += (int)kl; }        /* 二十 */
-                else if (d >= 1 && d <= 9) { v = 10 + d; *consumed += (int)kl; } /* 十X */
+                if (d >= 1 && d <= 9) { v += d; c += (int)kl; }
                 break;
             }
         }
+        *consumed = c;
         return (v >= 0 && v <= 23) ? v : -1;
     }
-    /* 「X十Y」已在上面处理；「X十」本身 = X*10，但小时里「二十」已处理，
-     * 其余 X(0..9) 直接用；十几 <= 23 由调用方校验 */
-    if (v >= 0 && v <= 23) return v;
-    return -1;
+
+    for (i = 0; CN_DIGIT[i] != NULL; i++) {
+        size_t kl = strlen(CN_DIGIT[i]);
+        if (strncmp(p, CN_DIGIT[i], kl) == 0) { v = CN_DIGIT_VAL[i]; c = (int)kl; break; }
+    }
+    if (v < 0) return -1;
+    p += c;
+
+    /* 早上的「零X」= X 点（"零点五"不常见，这里只处理整点前的零） */
+    if (v == 0) {
+        for (i = 0; CN_DIGIT[i] != NULL; i++) {
+            size_t kl = strlen(CN_DIGIT[i]);
+            if (strncmp(p, CN_DIGIT[i], kl) == 0) {
+                int d = CN_DIGIT_VAL[i];
+                if (d >= 1 && d <= 9) { v = d; c += (int)kl; }
+                break;
+            }
+        }
+        *consumed = c;
+        return v;
+    }
+
+    /* X十 / X十Y（二十 / 二十三点） */
+    if (v >= 1 && v <= 2 && strncmp(p, "十", 3) == 0) {
+        v *= 10;
+        c += 3;
+        p += 3;
+        for (i = 0; CN_DIGIT[i] != NULL; i++) {
+            size_t kl = strlen(CN_DIGIT[i]);
+            if (strncmp(p, CN_DIGIT[i], kl) == 0) {
+                int d = CN_DIGIT_VAL[i];
+                if (d >= 1 && d <= 9) { v += d; c += (int)kl; }
+                break;
+            }
+        }
+    }
+    *consumed = c;
+    return (v >= 0 && v <= 23) ? v : -1;
 }
 
 static int has_any(const char *n, const char *const *list)
@@ -118,6 +147,158 @@ static int alarm_repeat(const char *n, int *repeat)
     if (mask != 0) { *repeat = mask; return 1; }
     *repeat = 0;                                 /* 一次性 */
     return 0;
+}
+
+/* ---------- 目的标签（T9-17："5 分钟后提醒我起床" -> 起床） ---------- */
+
+/* 提示词：命中位置最靠后的那个决定目的语起点（长度优先，避免"提醒我"吃掉"记得提醒我"） */
+static const char *const LABEL_MARKERS[] = {
+    "记得提醒我", "提醒一下我", "到时候告诉我", "到时告诉我",
+    "提醒我", "叫醒我", "叫我", "喊我", "让我", "记得", NULL
+};
+/* 目的语前的动词/助词，去掉不影响语义 */
+static const char *const LABEL_LEAD[] = { "去", "一下", "赶紧", "开始", NULL };
+/* 目的语后的语气词/时态尾巴 */
+static const char *const LABEL_TAIL[] = {
+    "的时候", "的时间", "啦", "了", "吧", "呀", "啊", "哦", "呢", "嘛", "哈", "呗", NULL
+};
+
+static int is_punct_at(const char *p)
+{
+    unsigned char a = (unsigned char)p[0];
+    if (a == '\0') return 1;
+    if (a == ',' || a == '.' || a == '!' || a == '?' || a == ';' || a == ':') return 1;
+    /* 全角：，。！？；： */
+    if (a == 0xEF && (unsigned char)p[1] == 0xBC) {
+        unsigned char t = (unsigned char)p[2];
+        if (t == 0x8C || t == 0x81 || t == 0x9F || t == 0x9B || t == 0x9A) return 1;
+    }
+    /* 全角：。、 */
+    if (a == 0xE3 && (unsigned char)p[1] == 0x80) {
+        unsigned char t = (unsigned char)p[2];
+        if (t == 0x82 || t == 0x81) return 1;
+    }
+    return 0;
+}
+
+/* 返回 1 = 取到了有意义的目的语；0 = 没有（调用方用"闹钟"兜底） */
+static int alarm_label(const char *n, char *out, size_t cap)
+{
+    const char *p = n, *best = NULL;
+    size_t len = 0, i, o = 0;
+    int cut = 1;
+
+    if (out == NULL || cap < 8) return 0;
+    out[0] = '\0';
+    if (n == NULL || n[0] == '\0') return 0;
+
+    for (i = 0; LABEL_MARKERS[i] != NULL; i++) {
+        const char *q = n, *hit = NULL;
+        size_t ml = strlen(LABEL_MARKERS[i]);
+        while ((q = strstr(q, LABEL_MARKERS[i])) != NULL) { hit = q; q += ml; }
+        if (hit != NULL) {
+            const char *after = hit + ml;
+            if (best == NULL || after > best) best = after;
+        }
+    }
+    if (best != NULL) p = best;
+
+    while (*p != '\0' && (*p == ' ' || *p == '\t')) p++;
+    for (i = 0; LABEL_LEAD[i] != NULL; i++) {
+        size_t kl = strlen(LABEL_LEAD[i]);
+        if (strncmp(p, LABEL_LEAD[i], kl) == 0) { p += kl; break; }
+    }
+
+    while (p[len] != '\0' && !is_punct_at(p + len)) len++;
+    while (cut) {
+        cut = 0;
+        for (i = 0; LABEL_TAIL[i] != NULL; i++) {
+            size_t lf = strlen(LABEL_TAIL[i]);
+            if (lf > 0 && len >= lf && memcmp(p + len - lf, LABEL_TAIL[i], lf) == 0) {
+                len -= lf;
+                cut = 1;
+                break;
+            }
+        }
+    }
+    while (len > 0 && p[len - 1] == ' ') len--;
+
+    /* 按 UTF-8 边界拷贝，同时剔除 JSON 里非法的 " 和 \ */
+    for (i = 0; i < len && o + 1 < cap; ) {
+        unsigned char ch = (unsigned char)p[i];
+        int need = (ch < 0x80) ? 1 : ((ch >> 5) == 0x6 ? 2 : ((ch >> 4) == 0xE ? 3 : 4));
+        if (i + (size_t)need > len) break;
+        if (ch == (unsigned char)'"' || ch == (unsigned char)'\\') { i += need; continue; }
+        if (o + (size_t)need + 1 > cap) break;
+        memcpy(out + o, p + i, need);
+        o += need;
+        i += need;
+    }
+    out[o] = '\0';
+    return out[0] != '\0';
+}
+
+/* 解析「分」表达：零五 / 五 / 十五 / 二十 / 五十 / 四十五 -> 0..59，-1 = 不认识。
+ * T9-17 真机回归："五点五十提醒我赶班车" 原来解析成 5:05（五十只取了「五」）。 */
+static int cn_minute(const char *p, int *consumed)
+{
+    int i, v = -1, c = 0;
+    *consumed = 0;
+
+    /* 「十」开头：十 / 十五 / 十九 */
+    if (strncmp(p, "十", 3) == 0) {
+        v = 10;
+        c = 3;
+        p += 3;
+        for (i = 0; CN_DIGIT[i] != NULL; i++) {
+            size_t kl = strlen(CN_DIGIT[i]);
+            if (strncmp(p, CN_DIGIT[i], kl) == 0) {
+                int d = CN_DIGIT_VAL[i];
+                if (d >= 1 && d <= 9) { v += d; c += (int)kl; }
+                break;
+            }
+        }
+        *consumed = c;
+        return v;
+    }
+
+    for (i = 0; CN_DIGIT[i] != NULL; i++) {
+        size_t kl = strlen(CN_DIGIT[i]);
+        if (strncmp(p, CN_DIGIT[i], kl) == 0) { v = CN_DIGIT_VAL[i]; c = (int)kl; break; }
+    }
+    if (v < 0) return -1;
+    p += c;
+
+    /* 「零X」= 个位（"七点零五"） */
+    if (v == 0) {
+        for (i = 0; CN_DIGIT[i] != NULL; i++) {
+            size_t kl = strlen(CN_DIGIT[i]);
+            if (strncmp(p, CN_DIGIT[i], kl) == 0) {
+                int d = CN_DIGIT_VAL[i];
+                if (d >= 1 && d <= 9) { v = d; c += (int)kl; }
+                break;
+            }
+        }
+        *consumed = c;
+        return v;
+    }
+
+    /* 「X十」「X十Y」：二十 / 五十 / 四十五 */
+    if (v >= 1 && v <= 5 && strncmp(p, "十", 3) == 0) {
+        v *= 10;
+        c += 3;
+        p += 3;
+        for (i = 0; CN_DIGIT[i] != NULL; i++) {
+            size_t kl = strlen(CN_DIGIT[i]);
+            if (strncmp(p, CN_DIGIT[i], kl) == 0) {
+                int d = CN_DIGIT_VAL[i];
+                if (d >= 1 && d <= 9) { v += d; c += (int)kl; }
+                break;
+            }
+        }
+    }
+    *consumed = c;
+    return (v >= 0 && v <= 59) ? v : -1;
 }
 
 /* ---------- 时间解析 ---------- */
@@ -219,16 +400,24 @@ static int alarm_time_parse(const char *n, int *hour, int *minute, int *day_offs
             h = cn_hour(dian > n ? dian - 3 * 1 : dian, &c);   /* 「点」前一个字可能是数字词 */
             /* 更稳：从「点」往前找中文数字词 */
             {
-                const char *back = dian;
-                int tried;
+                /* 从「点」往前按 3/2/1 个字试：二十三点 -> 二十 / 十三 / 三。
+                 * 必须先试长的，否则「二十三点」会被截成「十三」。 */
+                const char *s3 = dian - 9;
+                const char *s2 = dian - 6;
+                const char *s1 = dian - 3;
+                int back_bytes = 0;
                 h = -1;
-                for (tried = 0; tried < 3 && h < 0; tried++) {
-                    int back_bytes = 0;
-                    const char *s = back - 3;
-                    if (s < n) break;
-                    h = cn_hour(s, &back_bytes);
-                    if (h >= 0) { c = back_bytes; break; }
-                    back = s;
+                if (s3 >= n) {
+                    h = cn_hour(s3, &back_bytes);
+                    if (h >= 0) c = back_bytes;
+                }
+                if (h < 0 && s2 >= n) {
+                    h = cn_hour(s2, &back_bytes);
+                    if (h >= 0) c = back_bytes;
+                }
+                if (h < 0 && s1 >= n) {
+                    h = cn_hour(s1, &back_bytes);
+                    if (h >= 0) c = back_bytes;
                 }
             }
             if (h >= 0) {
@@ -237,25 +426,11 @@ static int alarm_time_parse(const char *n, int *hour, int *minute, int *day_offs
                 if (strncmp(p, "半", 3) == 0) { m = 30; }
                 else if (strncmp(p, "一刻", 6) == 0) { m = 15; }
                 else {
-                    int i2, v = -1, cc = 0;
-                    for (i2 = 0; CN_DIGIT[i2] != NULL; i2++) {
-                        size_t kl = strlen(CN_DIGIT[i2]);
-                        if (strncmp(p, CN_DIGIT[i2], kl) == 0) { v = CN_DIGIT_VAL[i2]; cc = (int)kl; break; }
-                    }
-                    if (v >= 0) {
-                        p += cc;
-                        m = v;
-                        for (i2 = 0; CN_DIGIT[i2] != NULL; i2++) {
-                            size_t kl = strlen(CN_DIGIT[i2]);
-                            if (strncmp(p, CN_DIGIT[i2], kl) == 0) {
-                                int d2 = CN_DIGIT_VAL[i2];
-                                if (m == 1 && d2 >= 1 && d2 <= 9) m = 10 + d2;   /* 十五 */
-                                else if (m == 1 && d2 == 10) m = 10;
-                                *minute = m;
-                                break;
-                            }
-                        }
-                    }
+                    int i2;
+                    int cc = 0;
+                    int mv = cn_minute(p, &cc);
+                    (void) i2;
+                    if (mv >= 0) { m = mv; p += cc; }
                 }
                 /* 上午/下午/晚上 修正 */
                 if (strstr(n, "下午") != NULL || strstr(n, "晚上") != NULL) {
@@ -381,8 +556,11 @@ int t9_skill_alarm_exec(const t8_skill_req *req, t8_skill_result *res, void *ctx
     }
     rel = (hour == -2) ? minute : -1;
 
-    /* label = 去掉触发词后的原文太复杂，第一版固定「布丁闹钟」+会话号后4位 */
-    snprintf(label, sizeof(label), "布丁闹钟");
+    /* T9-17 用户反馈：闹钟不一定是起床，目的语要留下来
+     * （"5 分钟后提醒我起床" -> label=起床；说不上目的才用「闹钟」） */
+    if (!alarm_label(n, label, sizeof(label))) {
+        snprintf(label, sizeof(label), "闹钟");
+    }
 
     if (rel >= 0) {
         snprintf(when, sizeof(when), "%d 分钟后", rel);
@@ -416,9 +594,16 @@ int t9_skill_alarm_exec(const t8_skill_req *req, t8_skill_result *res, void *ctx
         const char *rep_txt = (repeat == 0x7F) ? "，每天都会叫你"
                             : (repeat == 0x1F) ? "，工作日都会叫你"
                             : (repeat != 0) ? "，会按星期重复" : "";
-        /* T9-16 用户反馈：话术里不念 label（"布丁闹钟的闹钟"重复拗口），只念时间 */
-        snprintf(res->message, sizeof(res->message),
-                 "好啦，%s%s的闹钟记好了%s，到点我叫你。", day_txt, when_spoken, rep_txt);
+        /* T9-16 用户反馈：话术里不念 label（"布丁闹钟的闹钟"重复拗口），只念时间；
+         * T9-17 补充：如果听出了目的（起床/吃药/开会…），末尾要带上它，
+         * 否则用户不知道这个闹钟是干什么的。 */
+        if (strcmp(label, "闹钟") != 0) {
+            snprintf(res->message, sizeof(res->message),
+                     "好啦，%s%s的闹钟记好了，到点提醒你%s。", day_txt, when_spoken, label);
+        } else {
+            snprintf(res->message, sizeof(res->message),
+                     "好啦，%s%s的闹钟记好了%s，到点我叫你。", day_txt, when_spoken, rep_txt);
+        }
     }
     return T8_SK_OK;
 }

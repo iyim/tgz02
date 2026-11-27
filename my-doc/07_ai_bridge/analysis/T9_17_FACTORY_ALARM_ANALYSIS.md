@@ -247,3 +247,49 @@ TtsManager D onTtsEnd: sessionId = 5246724
 `
 
 构建 sha256 3b241090…（1.6.0 / vc8）。设备侧测试闹钟已清空，闹钟音量恢复为测试前的 6。
+
+---
+
+## 6. 实现（T9-17 R2）：闹钟目的语识别 + 响铃话术跟随目的
+
+用户反馈两件事：
+1. 「闹钟不一定是起床，你不能每次都说起床」——响铃话术/界面写死了「起床」；
+2. 「我说 5 分钟后提醒我起床，闹钟信息里没有识别到起床」——label 一直是写死的「布丁闹钟」。
+
+### 6.1 worker：从话术里抽出目的语（larm_label()）
+
+- 提示词表（从后往前取最靠后命中的那个）：记得提醒我 / 提醒一下我 / 到时候告诉我 / 提醒我 / 叫醒我 / 叫我 / 喊我 / 让我 / 记得；
+- 取提示词之后的原文，去掉前导动词（去 / 一下 / 赶紧 / 开始）、在第一个标点处截断、
+  循环去掉尾部语气词（了 / 吧 / 呀 / 啊 / 哦 / 呢 / 嘛 / 哈 / 呗 / 的时候 / 的时间）；
+- 按 UTF-8 边界截断（T8_SK_ARG_MAX=48 字节），剔除 " 和 \ 保证 JSON 合法；
+- 抽不到 → label = 闹钟（不再写死「布丁闹钟」）。
+
+### 6.2 worker：中文时间两个真 bug（同一轮回归时暴露）
+
+| 输入 | 修复前 | 根因 | 修复后 |
+| --- | --- | --- | --- |
+| 五点**五十** | 5:05 | 分钟解析只吃到「五」，十 落到 m==1 分支外 | **5:50** |
+| **十一**点二十 | 1:20 | 「点」前反向扫描先撞到「一」就当 1 点收工 | **11:20** |
+| **二十三**点 | 13:00 | 反向只扫 2 个字，二十 被截成 十三 | **23:00** |
+
+新增 cn_minute()（零X / X / 十X / X十 / X十Y），重写 cn_hour()（十/X十/X十Y），
+反向扫描改为“先试 3 字、再 2 字、最后 1 字”。
+
+### 6.3 worker 新增离线自测入口
+
+i_worker --self-test-alarm "5分钟后提醒我起床" → 打印 code / speech / 写出的 JSON，
+不启动主循环、不碰设备。11 条用例见 evidence/t9-17/alarm_label_test.log。
+
+### 6.4 App：响铃话术与提示语跟随 label
+
+- AlarmRingingService.ringText()：<时间>啦，<label>啦；label 为空/闹钟/布丁闹钟 时 ，闹钟响啦；
+  label 从 DataService.alarmGet(curAlarmId) 取（onStartCommand 记录 alarm id）。
+- AlarmRingingActivity：提示语 该<label>啦，空标签回落 闹钟响啦，布丁叫你啦。
+
+真机证据：20:24「吃药」闹钟 → 界面标题 吃药、提示 该吃药啦、语音 二十点二十四分啦，吃药啦，
+原厂 TTS onTtsStart/onTtsEnd 正常（见 evidence/t9-17/alarm_label_test.log + ing_label_yaochi.png）。
+
+部署：worker /system/tgz02/bin/ai_worker sha256 425b122…（备份在 /data/local/tmp/t9_17_bak/），
+APK 21b9d5b2…。注意：/system 只读，替换二进制前要 mount -o rw,remount /system，
+且运行中的二进制会 Text file busy —— 必须先 kill -INT <pid> 再 cp，最后用
+/data/local/tmp/t5_bridge/run_ai_worker.sh start 拉起。

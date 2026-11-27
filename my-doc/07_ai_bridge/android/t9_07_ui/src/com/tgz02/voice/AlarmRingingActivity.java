@@ -148,7 +148,12 @@ public class AlarmRingingActivity extends Activity {
         tlp.topMargin = Ui4.dp(this, 2);
         right.addView(time, tlp);
 
-        TextView hint = Ui4.text(this, "起床啦！布丁叫你啦", 24f, Ui4.text2(this));
+        /* 提示语跟着闹钟的目的走（T9-17：闹钟不一定是起床）。
+         * 标签为空时才用"闹钟响啦"兜底。 */
+        String hintText = (label.length() == 0 || "布丁闹钟".equals(label) || "闹钟".equals(label))
+                ? "闹钟响啦，布丁叫你啦"
+                : ("该" + label + "啦");
+        TextView hint = Ui4.text(this, hintText, 24f, Ui4.text2(this));
         hint.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams hlp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);

@@ -4367,6 +4367,45 @@ int main(int argc, char **argv)
 
         if (strcmp(a, "--help") == 0 || strcmp(a, "-h") == 0) { usage(); return 0; }
         else if (strcmp(a, "--verbose") == 0) { cfg.verbose = 1; continue; }
+        else if (strcmp(a, "--self-test-alarm") == 0) {
+            /* T9-17：离线验证闹钟技能解析（标签/时间/话术），不进主循环、不碰设备。
+             * 用法：ai_worker --self-test-alarm "5分钟后提醒我起床" */
+            t9_alarm_ctx actx;
+            t8_skill_req sreq;
+            t8_skill_result sres;
+            const char *txt = NULL;
+            char jpath[256];
+            FILE *jfp;
+
+            if (need_str(argc, argv, i, &txt)) goto bad;
+            memset(&actx, 0, sizeof(actx));
+            t9_alarm_defaults(&actx);
+            snprintf(actx.work_dir, sizeof(actx.work_dir), "%s", "/data/local/tmp/t9_17_selftest");
+            (void)wu_mkdir_p(actx.work_dir);
+
+            memset(&sreq, 0, sizeof(sreq));
+            sreq.argc = 0;
+            snprintf(sreq.session, sizeof(sreq.session), "%s", "selftest");
+            snprintf(sreq.text, sizeof(sreq.text), "%s", txt);
+
+            snprintf(jpath, sizeof(jpath), "%s/alarm_request.public.json", actx.work_dir);
+            (void)wu_unlink(jpath);          /* 每次自测从干净状态开始 */
+
+            memset(&sres, 0, sizeof(sres));
+            rc = t9_skill_alarm_exec(&sreq, &sres, &actx);
+            printf("text=%s\ncode=%d\nspeech=%s\n", txt, rc, sres.message);
+            jfp = fopen(jpath, "r");
+            if (jfp != NULL) {
+                char jbuf[512];
+                size_t jn = fread(jbuf, 1, sizeof(jbuf) - 1, jfp);
+                jbuf[jn] = '\0';
+                printf("json=%s\n", jbuf);
+                fclose(jfp);
+            } else {
+                printf("json=(none)\n");
+            }
+            return 0;
+        }
 #if defined(T6B_DL_TESTING) && defined(T6B_DL_TEST_ENV)
         /* T7-10：测试构建专属入口（生产构建里这一整段都不存在，连字符串都没有） */
         else if (strcmp(a, "--marker-selftest") == 0) {
