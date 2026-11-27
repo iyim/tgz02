@@ -116,19 +116,24 @@ public class AlarmRingingService extends Service {
                 am.setStreamVolume(AudioManager.STREAM_ALARM, max * 40 / 100, 0);
             }
             /* T9-16 真机修正：无声问题排查。三级 fallback + 每级失败都记日志（不再静默）：
+             *   0) 用户选的铃声（设置 → 闹钟铃声，可指向 /sdcard/Alarms 里的文件）
              *   1) 系统默认 ALARM 铃声
              *   2) 已知存在的文件 /system/media/audio/alarms/Alarm_Beep_03.ogg（直读路径）
              *   3) 系统默认 NOTIFICATION 铃声 */
+            android.net.Uri chosen = AlarmSound.resolve(this);
             android.net.Uri[] candidates = new android.net.Uri[]{
+                chosen,
                 RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
                 android.net.Uri.parse("file:///system/media/audio/alarms/Alarm_Beep_03.ogg"),
                 RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION),
             };
             for (android.net.Uri u : candidates) {
+                if (u == null) continue;
                 try {
                     player = MediaPlayer.create(this, u);
                     if (player != null) {
-                        android.util.Log.i(TAG, "ring source ok: " + u);
+                        android.util.Log.i(TAG, "ring source ok: " + u
+                                + " (selected=" + AlarmSound.selectedTitle(this) + ")");
                         break;
                     }
                     android.util.Log.w(TAG, "create failed: " + u);

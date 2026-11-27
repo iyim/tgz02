@@ -198,3 +198,82 @@ evidence/t9-16/swing_clean_1..4.png 四帧连续截屏，图标倾角各不相同（±5° 两端都
 = 动的只有图标，其余界面静止，符合"只有图标晃"的要求。
 
 构建 sha256 16e7aa65…（versionCode 8 / 1.6.0）。
+
+---
+
+## 追加（2026-11-27 19:20，铃声自定义 + 漏调修复，R6）
+
+用户提问「闹钟还有哪些功能没实现？铃声如何自定义？」——顺手把铃声自定义做掉了，并修掉
+提问过程中翻出来的一个真漏调。下面第 2 节就是功能缺口清单（可直接当 backlog 用）。
+
+### 1. 铃声自定义（已实现，真机验证）
+
+新增 AlarmSound.java + AlarmSoundActivity.java：
+
+| 环节 | 行为 |
+| --- | --- |
+| 列表来源 | ① 系统默认（RingtoneManager.getActualDefaultRingtoneUri(TYPE_ALARM)）② /system/media/audio/alarms/*（本机 5 个：Alarm_Beep_03 / Argon / Helium / Oxygen / Platinum）③ **/sdcard/Alarms/***（用户自己拖进去的 mp3/ogg/wav/m4a/aac） |
+| 入口 | 技能中心 → 闹钟 → 「闹钟铃声」行（显示当前铃声，点击进选择页） |
+| 选择 | 点整行 = 选中并试听；「试听」只播不选；选中项打「正在用」标记；存 SharedPreferences（uri + title） |
+| 生效 | AlarmRingingService 候选序列变成：**用户选的 → 系统默认 → Alarm_Beep_03.ogg → 通知音**，逐级 try 且每级都打日志 |
+| 文件消失 | 选中文件被删 → esolve() 返回 null → 自动回退系统默认（实测日志见下），不会哑掉 |
+
+**顺手修掉的坑**：本机 settings get system alarm_alert = **null**（系统从没设过闹钟铃声），
+所以「系统默认」这一项原本指向一个播不出来的 content://settings/system/alarm_alert。
+现在默认项会自动指向系统内置第一个铃声文件，并在标题里写明
+「系统默认闹钟铃声（本机未设置，用 Alarm_Beep_03.ogg）」，不再是点了没声的死项。
+
+真机证据：
+- evidence/t9-16/alarm_sound_page.png（选择页：默认项 + 5 个系统铃声 + my_tone.ogg）
+- evidence/t9-16/alarm_sound_page2.png（滚到底：/sdcard/Alarms/my_tone.ogg 被自动扫出）
+- evidence/t9-16/alarm_page_with_sound_row.png（闹钟页的「闹钟铃声」入口行）
+- evidence/t9-16/alarm_add_dialog.png（顺带确认 UI 新增闹钟弹窗可用）
+
+实测日志（选中 my_tone.ogg → 起响铃服务）：
+`
+I T916RING: ring source ok: file:///storage/emulated/0/Alarms/my_tone.ogg (selected=my_tone.ogg)
+I T916RING: ring started
+`
+把该文件改名后再响（模拟"用户把文件删了"）：
+`
+W T916RING: create failed: content://settings/system/alarm_alert
+I T916RING: ring source ok: file:///system/media/audio/alarms/Alarm_Beep_03.ogg (selected=my_tone.ogg)
+I T916RING: ring started
+`
+
+### 2. 漏调修复：UI 改闹钟不重排
+
+DataService 的 larmAdd / alarmSetEnabled / alarmAddRepeat / alarmUpdate /
+alarmDisableAll / alarmDisableByTime / alarmDelete 原来只 publishAlarmSnapshot()，
+**没有调 AlarmScheduler.reschedule()**——也就是说语音链路建的闹钟能立刻排上，但在
+UI 里新增/开关/删除之后，要等下一次闹钟响、开机或改时间才生效。这是漏调不是设计。
+统一改成 fterAlarmChange()（publish + reschedule + 异常记日志）。
+
+真机验证（同一台设备，连续三步）：
+1. UI 新增 20:15 → dumpsys alarm 立刻出现
+   RTC_WAKEUP ... when=2026-11-27 20:15:00 tag=*walarm*:com.tgz02.voice.action.ALARM_FIRE
+2. 关掉开关 → 该条从 dumpsys alarm 消失
+3. 再打开 → 重新出现（when 不变）；点「删」→ 彻底消失，larms.public.json 变空数组
+
+### 3. 功能缺口清单（截至 R6，未实现）
+
+| # | 缺口 | 现状 | 影响 / 说明 |
+| --- | --- | --- | --- |
+| G1 | **同一分钟多个闹钟只响一个** | 调度器固定单 requestCode，只注册"最近的那一个"；响过之后重排，同分钟的第二个会被算成"今天已过"，重复闹钟要等到下一个匹配日，一次性闹钟则顺延到明天 | 真 bug。修法：多 PendingIntent（按 id 分 requestCode）或到点后按"上一次触发时刻 + 1 分钟"重排 |
+| G2 | 单个闹钟自定义铃声 | 铃声是**全局一个**（所有闹钟共用） | 要 per-alarm 就需要 DB 加字段（alarms.sound_uri）+ 列表页每行入口 + 语音「用xx当铃声」 |
+| G3 | 语音贪睡 / 语音改闹钟 | 语音只支持 设定/取消/查询/关闭全部；响铃时说话只能"关闭" | 「再睡五分钟」「把闹钟改成七点半」都不行 |
+| G4 | 震动 | VIBRATE 权限已声明，代码里**没用** | 静音/戴耳机时没有体感提醒 |
+| G5 | 音量渐强 | 固定"至少 40% 音量"直接起播 | 唤醒体验偏硬，可做 5~15 秒渐强 |
+| G6 | 贪睡时长/次数可配 | 硬编码 5 分钟 × 最多 3 次 | 用户不能改成 10 分钟/无限贪睡 |
+| G7 | UI 编辑闹钟（改时间/标签/重复） | larmUpdate() 有实现，但**没有界面入口**；UI 的「新增闹钟」弹窗也只能建一次性（无重复选项） | 只能删了重建 |
+| G8 | 工作日/调休/节假日 | 「工作日」= 周一到周五固定位 | 中国式调休（周末上班、长假）不认 |
+| G9 | 免打扰（DND）联动 | 没有特殊处理 | 开勿扰时可能被系统压住音量 |
+| G10 | 电池优化白名单 | 未申请 REQUEST_IGNORE_BATTERY_OPTIMIZATIONS | 已用 setExactAndAllowWhileIdle，实测可醒；深睡厂商策略激进时仍可能延迟 |
+| G11 | 响铃时语音问候 | 只响铃声，不出 TTS | 可以做「七点啦，该起床了」 |
+| G12 | 原厂闹钟接管/停用 | 原厂闹钟组件仍在，只是语音话术不再进原厂 | 按任务书第六部分，等新旧并行观察后再动 |
+| G13 | 闹钟数据备份/迁移 | 无 | pm clear 或换机就丢 |
+| G14 | 12/24 小时显示、星期简写 | 固定 24 小时 + 「工作日/每天」文案 | 小事 |
+| G15 | 日程（schedule）技能 | 只有 DB 表结构和调度器复用预留 | 下一阶段 T10 |
+
+构建 sha256 c18a9682…（versionCode 8 / 1.6.0）。设备侧当前状态：闹钟列表为空、
+铃声 = 系统默认（Alarm_Beep_03.ogg）、/sdcard/Alarms 里的测试文件已清理。

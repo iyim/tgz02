@@ -300,6 +300,35 @@ public class SkillsHomeActivity extends V3Shell {
         }
         body.addView(list);
 
+        /* T9-16 R6：铃声入口——自定义铃声走这里（系统铃声 / 自己放进 /sdcard/Alarms 的文件） */
+        LinearLayout sndCard = Ui4.card(this);
+        sndCard.setPadding(Ui4.dp(this, 16), 0, Ui4.dp(this, 16), 0);
+        LinearLayout.LayoutParams sndlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        sndlp.topMargin = Ui4.dp(this, 12);
+        body.addView(sndCard, sndlp);
+        LinearLayout sndRow = new LinearLayout(this);
+        sndRow.setOrientation(LinearLayout.HORIZONTAL);
+        sndRow.setGravity(Gravity.CENTER_VERTICAL);
+        sndRow.setMinimumHeight(Ui4.dp(this, 56));
+        TextView sk = Ui4.textBold(this, "闹钟铃声", Ui4.T_BODY_SM, Ui4.text(this));
+        sk.setLayoutParams(new LinearLayout.LayoutParams(Ui4.dp(this, 130),
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        sndRow.addView(sk);
+        TextView sv = Ui4.text(this, AlarmSound.selectedTitle(this), Ui4.T_CAP, Ui4.text2(this));
+        sv.setSingleLine(true);
+        sv.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+        sndRow.addView(sv, new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        sndRow.addView(Ui4.text(this, "›", Ui4.T_H1, Ui4.text3(this)));
+        sndRow.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startActivity(new android.content.Intent(SkillsHomeActivity.this,
+                        AlarmSoundActivity.class));
+            }
+        });
+        sndCard.addView(sndRow);
+
         /* zone ④ status hint */
         LinearLayout note = Ui4.banner(this,
                 "闹钟由本机时钟触发 · 停用技能或关机时不会响 · 本页数据为设备真实闹钟",

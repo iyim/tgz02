@@ -20,6 +20,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- T9-16 R6：读取 /sdcard/Alarms 里用户自放的铃声文件（危险权限，运行期申请） -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="27" />
 
@@ -90,6 +92,9 @@
         <activity android:name=".AlarmSetConfirmActivity" android:exported="false"
             android:launchMode="singleInstance"
             android:showOnLockScreen="true"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <!-- T9-16 R6：闹钟铃声选择页（技能中心 → 闹钟 → 闹钟铃声） -->
+        <activity android:name=".AlarmSoundActivity" android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
     </application>

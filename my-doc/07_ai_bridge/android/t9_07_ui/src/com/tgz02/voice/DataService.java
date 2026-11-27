@@ -207,6 +207,18 @@ final class DataService {
         return out;
     }
 
+    /** T9-16 R6：任何改动闹钟集合的写操作都要立刻重排。
+     *  之前只有语音链路（AlarmRequestMonitor）会调 reschedule，UI 里新增/开关/删除
+     *  之后要等下一次触发、开机或时间变更才生效——是漏调，不是设计。 */
+    private void afterAlarmChange() {
+        publishAlarmSnapshot();
+        try {
+            AlarmScheduler.reschedule(ctx);
+        } catch (Throwable t) {
+            android.util.Log.w("T916AL", "reschedule after change: " + t);
+        }
+    }
+
     long alarmAdd(String time, String label, boolean enabled) {
         SQLiteDatabase db = Db.get(ctx).getWritableDatabase();
         ContentValues v = new ContentValues();
@@ -215,7 +227,7 @@ final class DataService {
         v.put("enabled", enabled ? 1 : 0);
         v.put("created_ms", Db.now());
         long id = db.insert("alarms", null, v);
-        if (id > 0) publishAlarmSnapshot();
+        if (id > 0) afterAlarmChange();
         return id;
     }
 
@@ -224,7 +236,7 @@ final class DataService {
         ContentValues v = new ContentValues();
         v.put("enabled", on ? 1 : 0);
         int n = db.update("alarms", v, "id=?", new String[]{ String.valueOf(id) });
-        if (n > 0) publishAlarmSnapshot();
+        if (n > 0) afterAlarmChange();
         return n > 0;
     }
 
@@ -268,7 +280,7 @@ final class DataService {
         v.put("repeat", repeat);
         v.put("created_ms", Db.now());
         long id = db.insert("alarms", null, v);
-        if (id > 0) publishAlarmSnapshot();
+        if (id > 0) afterAlarmChange();
         return id;
     }
 
@@ -280,7 +292,7 @@ final class DataService {
         if (label != null) v.put("label", label);
         v.put("repeat", repeat);
         int n = db.update("alarms", v, "id=?", new String[]{ String.valueOf(id) });
-        if (n > 0) publishAlarmSnapshot();
+        if (n > 0) afterAlarmChange();
         return n > 0;
     }
 
@@ -290,7 +302,7 @@ final class DataService {
         ContentValues v = new ContentValues();
         v.put("enabled", 0);
         int n = db.update("alarms", v, "enabled=1", null);
-        if (n > 0) publishAlarmSnapshot();
+        if (n > 0) afterAlarmChange();
         return n;
     }
 
@@ -300,14 +312,14 @@ final class DataService {
         ContentValues v = new ContentValues();
         v.put("enabled", 0);
         int n = db.update("alarms", v, "time=? AND enabled=1", new String[]{ time });
-        if (n > 0) publishAlarmSnapshot();
+        if (n > 0) afterAlarmChange();
         return n;
     }
 
     boolean alarmDelete(long id) {
         SQLiteDatabase db = Db.get(ctx).getWritableDatabase();
         int n = db.delete("alarms", "id=?", new String[]{ String.valueOf(id) });
-        if (n > 0) publishAlarmSnapshot();
+        if (n > 0) afterAlarmChange();
         return n > 0;
     }
 
