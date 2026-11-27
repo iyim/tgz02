@@ -209,87 +209,158 @@ classes2.dex 命中 1 次、classes3.dex 命中 2 次 → 确实有代码直接�
 
 ---
 
-## 5. ʵ�֣�T9-17 R1������ԭ����"����˵�� + ������ǿ"�ᵽ�����Լ�������
+## 5. 实现（T9-17 R1）：把原厂的"响铃说话 + 音量渐强"搬到我们自己的闹钟
 
-���������£������� AlarmRingingService����������ҳ���֣���
+做了两件事，都落在 `AlarmRingingService`（不动响铃页布局）：
 
-### 5.1 ������ǿ
+### 5.1 音量渐强
 
-- �� 30% �� 15 ���� 30 ���Ƶ� 70%��RAMP_MS=15000 / RAMP_STEP_MS=500����
-- **������û�������С**�����û�ԭ���� >70%��Ŀ��ֵȡ�û���ǰֵ��
-- ����������ر� / ̰˯ / 5 �����Զ�ͣ���� STREAM_ALARM �ָ�������ǰ��ԭֵ��
-- ���ʵ�⣺ԭֵ 6 �� +5s 50 �� +16s 70 �� �㡸�رա���ص� 6��
+- 起播 `30%` → `15` 秒内 30 步推到 `70%`（`RAMP_MS=15000 / RAMP_STEP_MS=500`）；
+- **不会把用户音量调小**：若用户原本就 >70%，目标值取用户当前值；
+- 响铃结束（关闭 / 贪睡 / 5 分钟自动停）把 `STREAM_ALARM` 恢复到响铃前的原值；
+- 真机实测：原值 6 → +5s 50 → +16s 70 → 点「关闭」后回到 6。
 
-### 5.2 ����˵��������û��ϵͳ TTS����ԭ�� TTS �� provider ��ڣ�
+### 5.2 响铃说话（本机没有系统 TTS，用原厂 TTS 的 provider 入口）
 
-- ���� FactoryTts��content://com.alibaba.ailabs.genie.assistant.provider/GenieApi
-  query(selection = {"method":4,"data":{"tts":"<�ı�>", "pkg":"com.tgz02.voice", "ignoreMute":true, ...}})��
-- ������ʱ�����ɡ�������ʱ�䡢�����ǩ���ߵ����������� / �ߵ������������ /
-  ʮ�ŵ���ʮ�������������ˣ�cnNum() ���� 0~59 ���������֣���
-- ���ࣺ�𲥺� 1.5 ��˵��һ�䣬֮��ÿ 90 ��һ�Σ���� 3 �Σ�
-- ˵��ʱ����������ѹ�� 12%������������������0.8s + 230ms/�֡���ʱ��ָ� 100%��
-- ʧ��ֻ����־������Ӱ�����塣
-- �ӣ�**���ܶ����ص� cursor**��ԭ�� provider ���ؿ���� cursor��һ moveToFirst()
-  ���� NullPointerException: Attempt to get length of null array��BulkCursorProxy.getWindow����
-  �������������� query() ����ǰ�ͷ����� ���� ֻ close() ���ɡ�
+- 新增 `FactoryTts`：`content://com.alibaba.ailabs.genie.assistant.provider/GenieApi`
+  `query(selection = {"method":4,"data":{"tts":"<文本>", "pkg":"com.tgz02.voice", "ignoreMute":true, ...}})`；
+- 话术按时间生成、含具体时间、不念标签：`七点啦` / `七点半啦` / `十九点五十三分啦`；
+- 节奏：起播后 1.5 秒说第一句，之后每 90 秒一次，最多 3 次；
+- 说话时把铃声音量压到 12%（播放器级），按「0.8s + 230ms/字」估时后恢复 100%；
+- 失败只记日志，绝不影响响铃。
+- 坑：**不能读返回的 cursor**。原厂 provider 返回跨进程 cursor，一 `moveToFirst()`
+  就抛 `NullPointerException: Attempt to get length of null array`（BulkCursorProxy.getWindow），
+  而播报副作用在 `query()` 返回前就发生了 —— 只 `close()` 即可。
 
-### 5.3 ���֤��
+### 5.3 真机证据
 
-evidence/t9-17/ring_enhance.log��evidence/t9-17/ring_ramp_tts.png��19:52 ������ȫ�����壩��
+`evidence/t9-17/ring_enhance.log`、`evidence/t9-17/ring_ramp_tts.png`（19:52 真闹钟全屏响铃）。
 
-`
+```
 T916RING I ring started
 T916RING I volume ramp 30 -> 70 over 15000ms
-T916RING I speak#1: ʮ�ŵ���ʮ��������������
+T916RING I speak#1: 十九点五十二分啦
 T916TTS  I speak queued in 9ms len=13 cursor=true
 TtsManager D onTtsStart: sessionId = 5246724, isStreaming = 1
 TtsManager D onTtsEnd: sessionId = 5246724
-`
+```
 
-���� sha256 3b241090����1.6.0 / vc8�����豸�������������գ����������ָ�Ϊ����ǰ�� 6��
+构建 sha256 `3b241090…`（1.6.0 / vc8）。
 
----
+## 6. 实现（T9-17 R2）：闹钟目的语识别 + 响铃话术跟随目的
 
-## 6. ʵ�֣�T9-17 R2��������Ŀ����ʶ�� + ���廰������Ŀ��
+用户反馈两件事：
 
-�û����������£�
-1. �����Ӳ�һ�����𴲣��㲻��ÿ�ζ�˵�𴲡��������廰��/����д���ˡ��𴲡���
-2. ����˵ 5 ���Ӻ��������𴲣�������Ϣ��û��ʶ���𴲡�����label һֱ��д���ġ��������ӡ���
+1. 「闹钟不一定是起床，你不能每次都说起床」——响铃话术/界面写死了「起床」；
+2. 「我说 5 分钟后提醒我起床，闹钟信息里没有识别到起床」——label 一直是写死的「布丁闹钟」。
 
-### 6.1 worker���ӻ�������Ŀ���larm_label()��
+### 6.1 worker：从话术里抽出目的语（`alarm_label()`）
 
-- ��ʾ�ʱ����Ӻ���ǰȡ������е��Ǹ������ǵ������� / ����һ���� / ��ʱ������� / ������ / ������ / ���� / ���� / ���� / �ǵã�
-- ȡ��ʾ��֮���ԭ�ģ�ȥ��ǰ�����ʣ�ȥ / һ�� / �Ͻ� / ��ʼ�����ڵ�һ����㴦�ضϡ�
-  ѭ��ȥ��β�������ʣ��� / �� / ѽ / �� / Ŷ / �� / �� / �� / �� / ��ʱ�� / ��ʱ�䣩��
-- �� UTF-8 �߽�ضϣ�T8_SK_ARG_MAX=48 �ֽڣ����޳� " �� \ ��֤ JSON �Ϸ���
-- �鲻�� �� label = ���ӣ�����д�����������ӡ�����
+- 提示词表（取最靠后命中的那个）：`记得提醒我 / 提醒一下我 / 到时候告诉我 / 提醒我 / 叫醒我 / 叫我 / 喊我 / 让我 / 记得`；
+- 取提示词之后的原文，去掉前导动词（`去 / 一下 / 赶紧 / 开始`）、在第一个标点处截断、
+  循环去掉尾部语气词（`了 / 吧 / 呀 / 啊 / 哦 / 呢 / 嘛 / 哈 / 呗 / 的时候 / 的时间`）；
+- 按 UTF-8 边界截断（`T8_SK_ARG_MAX=48` 字节），剔除 `"` 和 `\` 保证 JSON 合法；
+- 抽不到 → label = `闹钟`（不再写死「布丁闹钟」）。
 
-### 6.2 worker������ʱ�������� bug��ͬһ�ֻع�ʱ��¶��
+### 6.2 worker：中文时间两个真 bug（同一轮回归时暴露）
 
-| ���� | �޸�ǰ | ���� | �޸��� |
+| 输入 | 修复前 | 根因 | 修复后 |
 | --- | --- | --- | --- |
-| ���**��ʮ** | 5:05 | ���ӽ���ֻ�Ե����塹��ʮ �䵽 m==1 ��֧�� | **5:50** |
-| **ʮһ**���ʮ | 1:20 | ���㡹ǰ����ɨ����ײ����һ���͵� 1 ���չ� | **11:20** |
-| **��ʮ��**�� | 13:00 | ����ֻɨ 2 ���֣���ʮ ���س� ʮ�� | **23:00** |
+| 五点**五十** | 5:05 | 分钟解析只吃到「五」 | **5:50** |
+| **十一**点二十 | 1:20 | 「点」前反向扫描先撞到「一」就当 1 点 | **11:20** |
+| **二十三**点 | 13:00 | 反向只扫 2 个字，`二十` 被截成 `十三` | **23:00** |
 
-���� cn_minute()����X / X / ʮX / Xʮ / XʮY������д cn_hour()��ʮ/Xʮ/XʮY����
-����ɨ���Ϊ������ 3 �֡��� 2 �֡���� 1 �֡���
+新增 `cn_minute()`（零X / X / 十X / X十 / X十Y），重写 `cn_hour()`（十/X十/X十Y），
+反向扫描改为"先试 3 字、再 2 字、最后 1 字"。
 
-### 6.3 worker ���������Բ����
+### 6.3 worker 新增离线自测入口
 
-i_worker --self-test-alarm "5���Ӻ���������" �� ��ӡ code / speech / д���� JSON��
-��������ѭ���������豸��11 �������� evidence/t9-17/alarm_label_test.log��
+`ai_worker --self-test-alarm "5分钟后提醒我起床"` → 打印 code / speech / 写出的 JSON，
+不启动主循环、不碰设备。11 条用例见 `evidence/t9-17/alarm_label_test.log`。
 
-### 6.4 App�����廰������ʾ����� label
+### 6.4 App：响铃话术与提示语跟随 label
 
-- AlarmRingingService.ringText()��<ʱ��>����<label>����label Ϊ��/����/�������� ʱ ������������
-  label �� DataService.alarmGet(curAlarmId) ȡ��onStartCommand ��¼ alarm id����
-- AlarmRingingActivity����ʾ�� ��<label>�����ձ�ǩ���� ����������������������
+- `AlarmRingingService.ringText()`：`<时间>啦，<label>啦`；label 为空/`闹钟`/`布丁闹钟` 时 `，闹钟响啦`；
+  label 从 `DataService.alarmGet(curAlarmId)` 取（`onStartCommand` 记录 alarm id）。
+- `AlarmRingingActivity`：提示语 `该<label>啦`，空标签回落 `闹钟响啦，布丁叫你啦`。
 
-���֤�ݣ�20:24����ҩ������ �� ������� ��ҩ����ʾ �ó�ҩ�������� ��ʮ���ʮ�ķ�������ҩ����
-ԭ�� TTS onTtsStart/onTtsEnd �������� evidence/t9-17/alarm_label_test.log + ing_label_yaochi.png����
+真机证据：20:24「吃药」闹钟 → 界面标题 `吃药`、提示 `该吃药啦`、语音 `二十点二十四分啦，吃药啦`，
+原厂 TTS `onTtsStart/onTtsEnd` 正常（`evidence/t9-17/alarm_label_test.log` + `ring_label_yaochi.png`）。
 
-����worker /system/tgz02/bin/ai_worker sha256 425b122���������� /data/local/tmp/t9_17_bak/����
-APK 21b9d5b2����ע�⣺/system ֻ�����滻������ǰҪ mount -o rw,remount /system��
-�������еĶ����ƻ� Text file busy ���� ������ kill -INT <pid> �� cp�������
-/data/local/tmp/t5_bridge/run_ai_worker.sh start ����
+部署：worker `/system/tgz02/bin/ai_worker` sha256 `b425b122…`（备份在 `/data/local/tmp/t9_17_bak/`），
+APK `21b9d5b2…`。注意：`/system` 只读，替换二进制前要 `mount -o rw,remount /system`，
+且运行中的二进制会 `Text file busy` —— 必须先 `kill -INT <pid>` 再 `cp`，最后用
+`/data/local/tmp/t5_bridge/run_ai_worker.sh start` 拉起。
+
+## 7. 事故：桌面（HOME）循环崩溃与修复（T9-17 R3，2026-11-27 20:30-20:40）
+
+### 7.1 现象
+
+用户报"桌面程序崩了"。真机取证：
+
+```
+11-27 20:30:59.70 am_finish_activity  BootHomeActivity,app-request
+11-27 20:30:59.73 am_create_activity  BootHomeActivity,android.intent.action.MAIN,flags=0x10000000
+11-27 20:30:59.74 am_restart_activity BootHomeActivity
+...（同一秒内 4267/4268/4269/4270/4271 …，每个实例存活约 30 ms）
+```
+
+- 60 秒内 `am_create_activity BootHomeActivity` **818 次**，`dumpsys activity` 里堆了 **919 个** ActivityRecord；
+- 设备 load average 从 ~1 涨到 **12+**，整机卡死；
+- 之后 HOME 又落到侧载的 `com.dangbei1.tvlauncher`，它的桌面是空的（5 个「+」占位），用户看到的就是这一屏。
+
+### 7.2 根因
+
+工厂 `genieboot.BootHomeActivity` 的启动逻辑是「跳到 adult home 然后 finish 自己」
+（`BootUtils.jumpAndSetAdultHome()`，反编译见
+`full/sources/com/alibaba/ailabs/genie/genieboot/utils/BootUtils.java:197`）。
+当系统解析出的 HOME **就是它自己**时：启动 → 跳 home（= 自己）→ finish → 再启动 … 无限自激。
+
+系统为什么会解析到它自己：
+
+- `cmd package resolve-activity -a MAIN -c HOME` 一直返回 `BootHomeActivity isDefault=true`；
+- 用 `cmd package set-home-activity --user 0 com.tgz02.voice/.VoiceHomeActivity`（root，返回 Success，
+  `/data/system/users/0/package-restrictions.xml` 里确实写了 `always=true` 的偏好记录），
+  但解析结果仍然是 BootHome —— 这个偏好对当前 ROM 的 HOME 解析不生效；
+- 本机 `pm disable / disable-user / hide` 全部报 `unknown command`，也不允许把竞争桌面停用
+  （`BootHomeActivity` 与工厂语音同属 `com.alibaba.ailabs.genie.smartapp`，更不能停）。
+
+### 7.3 处置
+
+1. 立即止血：重启设备（自激循环被打断，系统回到正常启动序列）。
+2. 恢复 T9-11 的对抗手段，但改成**只对桌面生效**的看门狗
+   （`android/t9_10_home/takeover_watchdog.sh`，部署在 `/data/adb/service.d/takeover.sh`，开机自启）：
+
+```sh
+while : ; do
+  sleep 5
+  top=$(dumpsys activity activities | grep -m1 mResumedActivity)
+  case "$top" in
+      *com.tgz02.voice*)            : ;;   # 我们的 UI 在前台：不动
+      *BootHomeActivity*|*dangbei*) am start -n com.tgz02.voice/.VoiceHomeActivity ;;
+                                           # 桌面抢了前台：抢回来
+      *)                            : ;;   # 用户开着真正的 App：绝不打扰
+  esac
+done
+```
+
+与 T9-11 的 45 秒窗口不同，这一版**常驻但只针对桌面**，所以不会和用户操作打架；
+开机后还会先执行一次 `cmd package set-home-activity` + `am start` 抢默认桌面。
+
+### 7.4 验证
+
+- 装好后 20 秒内 `BootHomeActivity` 事件数 1274 → 1274（零增长），前台稳定在
+  `com.tgz02.voice/.VoiceHomeActivity`；
+- 主动按 Home 键（`input keyevent 3`）做对抗测试：BootHome 起来并开始自激（5 秒内 +300 事件），
+  看门狗在 ≤5 秒内把我们的 UI 抢回前台，循环随之停止；
+- 桌面截图 `evidence/t9-17/desktop_after_fix.png`（布丁首页正常）；
+  故障时的空桌面 `evidence/t9-17/desktop_now.png`。
+
+### 7.5 残留风险 / 未做完
+
+1. **按 Home 键仍会先闪 1~5 秒工厂桌面**（解析不吃我们的偏好），看门狗随后抢回。
+   要彻底消除，需要让系统 HOME 真解析到我们——这版 ROM 上目前没找到可用接口
+   （`set-home-activity` 无效、`pm disable` 不可用）；下一步可考虑改 `packages.xml` 的
+   preferred-activity，或直接 patch `BootUtils.jumpAndSetAdultHome`。
+2. load average 在故障后十几分钟仍维持 8~10，需要继续观察是否有残留进程自激；
+   本次只确认了 BootHome 循环已经停下。
