@@ -645,3 +645,48 @@ $ sha256sum /system/tgz02/bin/ai_worker → ccf378df…  (新，没被用到)
    跑的是 /data 的"。
 4. `/data/local/tmp/t5_bridge` 保留的只是状态（work/ai_worker/tts/secret），与程序无关；
    刷包本身不需要拷贝任何程序到 /data。
+
+## 12. /data/local/tmp 遗留脚本清理（T9-17 R8，2026-11-27 22:26）
+
+用户要求："tmp 目录的遗留脚本全部删除"。
+
+### 12.1 先查依赖，再动手
+
+清理前确认"谁引用了 tmp 里的东西"：
+
+- `/system/etc/init/tg_stack.rc`、`/system/tgz02/scripts/*.sh`、`/system/tgz02/bin/boot_stack.sh`、
+  `/data/adb/service.d/*.sh` 里**没有任何**一条引用 `/data/local/tmp/*.sh`；
+- `tgb_bridge` 用的是抽象 socket（`abstract:tgz2_asr_bridge`），`/data/local/tmp/tgz2_uds`
+  只是 11-18 的文件 socket 试验残留（无进程打开它）。
+
+因此 tmp 下的脚本/样本/旧二进制都是纯遗留物，可以删；要保留的是**运行态**。
+
+### 12.2 保留清单（白名单）
+
+| 保留 | 原因 |
+| --- | --- |
+| `t5_bridge/` | worker 状态：`work/`（ASR 事件）、`ai_worker/`（conf/pid/log/context）、`tts/`（队列）、`secret/`（key） |
+| `t9_ui/` | App ↔ worker 通道：`inbox/ result/ rejected/ events/ snapshots/ status.public.json` |
+| `t7/`、`t8/` | supervisor 的 pid/log（`tg_stack.rc` 里写死路径） |
+| `t9_11/`、`home_lock/` | 首页看门狗 / 首页锁的日志 |
+| `t9_16_bak/`、`t9_17_bak/` | 最近两次部署的二进制备份（回滚用） |
+| `home_ctl.dex` | `HomeCtl`（`20_home_lock.sh` 每次开机调用它禁用抢 HOME 的组件） |
+| `ai_worker_r9` | 当前部署的 worker 二进制副本 |
+| `dalvik-cache/`、`oat/` | `app_process` 的 ART 缓存（`HomeCtl` 运行时用） |
+
+### 12.3 删除结果
+
+分三轮（顶层脚本 → 顶层样本/日志/镜像/旧二进制 → 白名单之外的其余全部）：
+
+- 删除条目 **277 项**：`*.sh` 开发脚本（`dev_*`, `dep_*`, `d*.sh`, `al*.sh`, `diag_*` …）、
+  旧 `ai_worker_*` 二进制 13 份、`libtg_hook_p*.so`、`dg*.so`、`*.wav` 录音样本、
+  `fs*` 磁盘镜像、`req*.json`、`pr_*.xml`、`tgz02*.db` 副本、`t4/t5/t503/t6/t702/t9/…` 等开发目录；
+- `/data` 空闲空间 787,568 KB → **854,220 KB**（第一轮之前更少，共释放约 100 MB 量级）；
+- 复核运行态：worker `pid 23055 → /system/tgz02/bin/ai_worker`、`tgb_bridge`、两个
+  `tg_supervisor`、首页看门狗、App 两个进程全部在跑；`HomeCtl list` 仍返回
+  `RESOLVED_HOME=com.tgz02.voice/.VoiceHomeActivity`。
+
+最终 `/data/local/tmp` 只剩 14 项：`t5_bridge t9_ui t7 t8 t9_11 t9_16_bak t9_17_bak home_lock
+dalvik-cache oat home_ctl.dex ai_worker_r9 cleanup.log cleanup_2026-11-27.log`。
+
+清理日志留在设备上：`/data/local/tmp/cleanup_2026-11-27.log`（逐条 `rm` 记录 + 前后空间）。
