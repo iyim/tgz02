@@ -24,6 +24,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
@@ -115,6 +116,9 @@ public class AlarmSetConfirmActivity extends Activity {
                 : repeat == 0x1F ? "工作日" : "按星期重复";
         TextView rtxt = Ui4.text(this, rep + " · " + label, 24f, Ui4.text2(this));
         rtxt.setGravity(Gravity.CENTER);
+        rtxt.setSingleLine(true);
+        rtxt.setEllipsize(TextUtils.TruncateAt.END);   /* ASR 出来的长标签不许撑破居中块 */
+        rtxt.setMaxWidth(Ui4.dp(this, 560));
         LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         rlp.topMargin = Ui4.dp(this, 10);

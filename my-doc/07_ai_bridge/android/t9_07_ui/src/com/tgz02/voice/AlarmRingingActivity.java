@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -118,6 +119,9 @@ public class AlarmRingingActivity extends Activity {
 
         TextView lab = Ui4.textBold(this, label, 30f, Ui4.text(this));
         lab.setGravity(Gravity.CENTER);
+        lab.setSingleLine(true);
+        lab.setEllipsize(TextUtils.TruncateAt.END);   /* 长标签不许撑破居中块 */
+        lab.setMaxWidth(Ui4.dp(this, 560));
         right.addView(lab);
 
         String now = new SimpleDateFormat("HH:mm", Locale.CHINA).format(new Date());

@@ -161,8 +161,13 @@ hook \c4d4c9a3\；APK 1.6.0（21:41 构建，含删除按钮/回退铃声/monito
 真机证据（1024×600 实机截图，安装后重启进程）：
 - `evidence/t9-16/confirm_r4.png`（语音定闹钟确认浮层：图标 300×377 + 176sp 时间 + 大按钮，整体居中）
 - `evidence/t9-16/ring_r4.png`（响铃页同规格：贪睡/关闭 均为 92dp 大按钮）
+- `evidence/t9-16/confirm_r4_longlabel.png` / `ring_r4_longlabel.png`（ASR 长标签 + 工作日重复：
+  标签行单行 + END 省略 + maxWidth 560dp，不会把居中块撑歪）
 
 构建 sha256 `7ead8c89…`，versionCode 8 / 1.6.0；安装后 `am force-stop` + 重启进程验证
 （`install -r` 会留着旧进程跑旧代码，这条坑重复踩过一次，已写进流程）。
 测试过程中写入的 3 条重复测试闹钟（id 9/10/11）与 1 条旧测试项（id 8）已从 DB 清空，
 设备当前闹钟列表为空，等用户真人语音验收。
+
+长标签防护后重新构建 sha256 `55d1105c…`，装同一版本号覆盖（`install -r` + force-stop + 重启），
+两张长标签截图即该版本实机结果。
