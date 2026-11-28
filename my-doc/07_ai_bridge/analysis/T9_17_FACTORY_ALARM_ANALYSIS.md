@@ -1361,6 +1361,88 @@ pm path com.alipay.arome.app             → 空
 
 所以验证原厂 TTS 时，必须先把前台切回 `com.tgz02.voice`。这不是本次改动的副作用（删 aicare 前后行为一致），只是之前几次测试碰巧都不在工厂 UI 里。
 
+---
+
+## 20. T9-19d：时间与闹公交回原厂（不接管、不续听）
+
+### 20.1 为什么以前是自研
+
+T9-15 时 IR_ALARM 分过 route 位（0x100），原厂闹钟真机验收通过；T9-16 为了做"自有闹钟体系"把位收回（`ir_route_bit(IR_ALARM)` 返回 0），于是 hook 恒 TAKE —— 原厂 NLU 被丢弃，worker 的闹钟技能接管（时间解析→自有 DB→AlarmScheduler→自有响铃）。时间（IR_TIME）则一直被 time 技能接管，播报文本是硬编码的英文 `now %02d:%02d`（`skill_dispatch.c:270`），这就是"问时间说英文"的来源。
+
+### 20.2 决定权在谁手上
+
+两层判定，必须先分清：
+
+| 层 | 文件 | 作用 |
+| --- | --- | --- |
+| NLU 接管 | `libtg_hook.so` → `t8_to_on_final` | `enabled = hit && (route_mask & ir_route_bit(intent))`；**enabled=1 且参数完整 → PASS（原厂执行并播报）**，否则 TAKE（原厂 NLU 被跳过） |
+| 技能/原生路由 | `ai_worker` | `skill_claim_id` 先抢（技能已注册 + route 位开），抢不到才走 native（写放行标记让 guard 放过原厂答案），再不行才走模型 |
+
+所以"交回原厂"要在两处同时成立：
+1. intent 必须有 route 位且 mask 打开 → hook 才 PASS；
+2. 技能不能注册 → worker 才不会抢答（抢答时没写放行标记，guard 会把原厂答案 DROP）。
+
+### 20.3 改动
+
+```c
+/* intent_route.h */
+#define T7B_ROUTE_ALARM  0x100
+#define T7B_ROUTE_ALL    0x1FF      /* 由 0xFF 恢复；掩码校验与 hook 上限都引用 ALL */
+
+/* intent_route.c */
+case IR_ALARM: return T7B_ROUTE_ALARM;   /* 由 return 0 改回 */
+
+/* hook_agent/libtg_hook.c */
+if (m > 0 && m <= 0x1FF) g_nlu_mask = (int)m;   /* 原为 0xFF */
+slog("nlu boot: … mask=0x%03x …")               /* 原为 %02x */
+
+/* worker_conf.c */
+else if (strcmp(tok, "alarm") == 0) mask |= T7B_ROUTE_ALARM;
+if (strcmp(key, "skill_time_enabled") == 0) { … }      /* 新配置项 */
+
+/* ai_worker.h / ai_worker.c */
+int skill_time_enabled;                                 /* 新字段，默认 1 */
+if (!c->skill_time_enabled)  → 不注册 T8_SK_TIME_QUERY
+if (!c->skill_alarm_enabled) → 不注册 T8_SK_ALARM_SET
+```
+
+设备侧 `worker.conf`：
+
+```
+skill_time_enabled=0
+skill_alarm_enabled=0
+```
+
+### 20.4 部署与实测
+
+```
+/system/tgz02/bin/ai_worker          f2ecbf56…  (原 13bcf6fe…)
+/system/tgz02/lib/libtg_hook.so      91af8a45…  (原 882e0d78…)
+```
+
+重启后 worker 启动日志（`/data/local/tmp/t5_bridge/ai_worker/ai_worker.log`）：
+
+```
+route: enabled=1 intents=0x1ff (volume=1 weather=1 screen_off=1 time=1 screen_on=1 media=1 exit=1)
+skill: time.query NOT registered (skill_time_enabled=0) -> time goes to the factory through the native route
+skill: alarm.set NOT registered (skill_alarm_enabled=0) -> alarms go back to the factory
+```
+
+- `intents=0x1ff`：闹钟位 0x100 已在掩码里 → hook 对 IR_ALARM **PASS**；
+- 两个技能都未注册 → `skill_claim_id` 恒返回 0 → 时间/闹钟落到 native 路由：写 `native_route.public.json` 放行标记，原厂自己播报；
+- native 路径从 T9-17 R6 起就**统一不续听**（`native command (%s): no re-listen`），所以这两类指令都不会再自动开麦。
+
+部署注意：这台机器 `mount -o rw,remount /system` 在 `su -c` 下会报
+`not user mountable in fstab`，必须 `su --mount-master -c` 执行（与第 19 章读 `/data/data` 是同一个 namespace 坑）。
+
+### 20.5 影响与回滚
+
+- 问时间 → 原厂中文播报（"现在是上午十点十三分"这类），再也不会说 `now 10:13`；
+- 定闹钟 → 原厂闹钟（原厂列表里能看到、按原厂逻辑响），自研 `alarms` 表保持 0 行；
+- 自研闹钟代码（`AlarmScheduler` / `AlarmRingingService` / `t9_skill_alarm_exec`）全部保留但不再被触发，DB 里 0 条闹钟，不会有残留响铃；
+- 回滚：`skill_time_enabled=1` / `skill_alarm_enabled=1` 两个开关即可恢复接管（闹钟还要把 `T7B_ROUTE_ALARM` 位重新关掉，见 20.3 的反向改动）。
+
+
 
 
 

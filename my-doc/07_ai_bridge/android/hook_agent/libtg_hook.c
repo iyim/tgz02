@@ -739,7 +739,7 @@ static void nlu_boot_once(void)
     v = getenv("TG_NLU_ROUTE_MASK");
     if (v != NULL && v[0] != '\0') {
         long m = strtol(v, NULL, 0);
-        if (m > 0 && m <= 0xFF) g_nlu_mask = (int)m;   /* T9-16：上限回到 0xFF */
+        if (m > 0 && m <= 0x1FF) g_nlu_mask = (int)m;   /* T9-19d：允许闹钟位 0x100 */
     }
 
     /* T8-05：会话表**无条件**初始化（t8_to_init 只做一次 memset + mutex_init）。
@@ -761,7 +761,7 @@ static void nlu_boot_once(void)
         (void)nls_set_takeover(&g_nlu_sw, 0);
     }
 
-    slog("nlu boot: t8_to_init=%d ready=%d init_failed=%d mask=0x%02x env_on=%d env_ignored=%d "
+    slog("nlu boot: t8_to_init=%d ready=%d init_failed=%d mask=0x%03x env_on=%d env_ignored=%d "
          "installed=%d takeover=%d (runtime switch only)",
          rc, g_to.mutex_ready, g_nlu_init_failed, g_nlu_mask, env_on, g_nlu_env_ignored,
          nls_installed(&g_nlu_sw), nls_takeover(&g_nlu_sw));

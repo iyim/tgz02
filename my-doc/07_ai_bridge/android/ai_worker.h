@@ -107,6 +107,7 @@ typedef struct {
     /* T9-16：自有闹钟技能开关（默认 1）。接管开 + 本开关开时，闹钟话术由 worker
      * 技能接管（解析→写 alarm_request.public.json→App 自有闹钟），不再 PASS 原厂。 */
     int         skill_alarm_enabled;
+int         skill_time_enabled;   /* T9-19d：为 0 时不注册 time 技能 -> 落 native 路由 -> 原厂播报 */
     int         skill_device_status;
     /* 可选：覆盖电池 capacity 路径（空 = 按候选列表自动探测，真机为 sysfs） */
     char        skill_battery_path[T8_SK_PATH_MAX];

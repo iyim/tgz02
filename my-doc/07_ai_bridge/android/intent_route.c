@@ -1,4 +1,4 @@
-﻿/*
+/*
  * intent_route.c -- 见 intent_route.h
  *
  * 规则表结构（每张表都是 NULL 结尾的字符串数组）：
@@ -730,7 +730,7 @@ int ir_route_bit(ir_intent it)
     case IR_MEDIA:      return T7B_ROUTE_MEDIA;
     case IR_STOP:       return T7B_ROUTE_STOP;
     case IR_EXIT:       return T7B_ROUTE_EXIT;
-    case IR_ALARM:      return 0;                    /* T9-16：不 PASS 原厂，走自有技能 */
+    case IR_ALARM:      return T7B_ROUTE_ALARM;      /* T9-19d：放行原厂闹钟 */
     case IR_NONE:
     default:            return 0;
     }

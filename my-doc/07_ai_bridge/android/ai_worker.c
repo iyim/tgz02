@@ -3488,6 +3488,7 @@ void t6b_config_defaults(t6b_config *c)
     /* T8-14.2：device.status 默认关闭（总开关之外的第二道闸） */
     c->skill_device_status = 0;
     c->skill_alarm_enabled = 1;                    /* T9-16：默认开 */
+    c->skill_time_enabled = 1;                     /* T9-19d：默认开；写 0 交回原厂播报 */
     c->skill_battery_path[0] = '\0';
     /* T8-15：免唤醒连续对话默认打开（这是 T8-15 交付的语义本身；不动原厂任何东西）。
      * 语义：播报结束后装填续听窗口，窗口内到达的下一句算同一对话的下一轮。 */
@@ -3916,9 +3917,15 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         }
 
         /* T8-14.1：自有技能注册表。**只注册 time.query**（本轮唯一的真实闭环），
-         * 其余技能保持未注册 = 永不接管，原厂音量/媒体/屏幕路径完全不变。 */
+         * 其余技能保持未注册 = 永不接管，原厂音量/媒体/屏幕路径完全不变。
+         * T9-19d（用户要求）：skill_time_enabled=0 时**不注册** time.query，
+         * 于是 skill_claim_id 返回 0，这条命令落到 native 路由 —— 写放行标记、
+         * 由原厂自己播报（中文、原厂音色），并且 native 路径一律不续听。 */
         t8_skill_registry_init(&w.sk);
-        if (t8_skill_register(&w.sk, T8_SK_TIME_QUERY, t8_skill_time_exec, NULL) != T8_SK_OK) {
+        if (!c->skill_time_enabled) {
+            always("skill: time.query NOT registered (skill_time_enabled=0) -> "
+                   "time goes to the factory through the native route");
+        } else if (t8_skill_register(&w.sk, T8_SK_TIME_QUERY, t8_skill_time_exec, NULL) != T8_SK_OK) {
             always("skill register failed: time.query (skill dispatch stays inert)");
         }
         /* T8-14.2：设备状态技能的数据源路径。battery_path 空 = 按候选列表自动探测；
@@ -3941,8 +3948,13 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
          * 不是 worker 的 work_dir——App 的 AlarmRequestMonitor 只监听 t9_ui/snapshots/。
          * 首次真机联调时写错了目录，导致语音建闹钟 App 收不到（界面看不到）。 */
         snprintf(w.al.work_dir, sizeof(w.al.work_dir), "%s/snapshots", c->ui_events_dir);
-        if (t8_skill_register(&w.sk, T8_SK_ALARM_SET, t9_skill_alarm_exec,
-                              &w.al) != T8_SK_OK) {
+        if (!c->skill_alarm_enabled) {
+            /* T9-19d（用户要求）：闹钟交回原厂 —— 不注册技能，IR_ALARM 现在有
+             * route 位（0x100），hook 直接 PASS，原厂自己建闹钟并播报。 */
+            always("skill: alarm.set NOT registered (skill_alarm_enabled=0) -> "
+                   "alarms go back to the factory");
+        } else if (t8_skill_register(&w.sk, T8_SK_ALARM_SET, t9_skill_alarm_exec,
+                                     &w.al) != T8_SK_OK) {
             always("skill register failed: alarm.set");
         }
         w.st.sk_enabled = c->skill_dispatch;

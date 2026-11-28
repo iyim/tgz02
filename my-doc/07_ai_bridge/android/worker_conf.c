@@ -67,6 +67,7 @@ static int wc_route_intents(const char *v, int *out)
         else if (strcmp(tok, "stop") == 0) mask |= T7B_ROUTE_STOP;
         else if (strcmp(tok, "time") == 0) mask |= T7B_ROUTE_TIME;
         else if (strcmp(tok, "exit") == 0) mask |= T7B_ROUTE_EXIT;  /* T8-12.20 */
+        else if (strcmp(tok, "alarm") == 0) mask |= T7B_ROUTE_ALARM; /* T9-19d */
         else if (strcmp(tok, "all") == 0) mask |= T7B_ROUTE_ALL;
         else if (strcmp(tok, "none") == 0) mask = 0;
         /* 其它名字：忽略（前向兼容，不让一个拼写错误把整份配置废掉） */
@@ -274,6 +275,12 @@ static int wc_apply(t6b_config *cfg, const char *key, const char *val, char *err
     if (strcmp(key, "skill_alarm_enabled") == 0) {
         if (wc_bool(val, &iv) != 0) goto bad;
         cfg->skill_alarm_enabled = iv;
+        return 0;
+    }
+    /* T9-19d：时间技能开关（默认 1）。写 0 = 不注册 time.query，时间交回原厂播报。 */
+    if (strcmp(key, "skill_time_enabled") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->skill_time_enabled = iv;
         return 0;
     }
     if (strcmp(key, "skill_device_battery_path") == 0) {
