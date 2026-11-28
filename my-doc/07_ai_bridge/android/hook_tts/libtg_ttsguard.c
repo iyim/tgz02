@@ -484,6 +484,19 @@ static int tg_start_pre(int self, int id, const void *info)
     }
 
     (void)caller_is_binder(comm, sizeof(comm));
+
+    /* T9-19e2：原厂闹钟的确认语是本地 NLG 模板，几乎即时产出；
+     * worker 的 utterance gate 有 450 ms debounce，标记永远晚到（实测 12:20:43 的答案
+     * 对应标记 12:20:59 才写）。闹钟已经交回原厂，这两句确认必须能听见，
+     * 所以按措辞直接放行 —— 不再依赖标记的时序。 */
+    if (text != NULL && text[0] != '\0' &&
+        (strstr(text, "闹钟") != NULL || strstr(text, "提醒") != NULL)) {
+        INC(g_native_allowed);
+        slog("onTtsStart ALLOW id=%d by=alarm_wording streaming=%u text=\"%s\"",
+             id, streaming, text);
+        return 1;
+    }
+
     INC(g_dropped);
     slog("onTtsStart DROP id=%d streaming=%u comm=%s text=\"%s\" (factory NLU answer)",
          id, streaming, comm, text != NULL ? text : "(null)");

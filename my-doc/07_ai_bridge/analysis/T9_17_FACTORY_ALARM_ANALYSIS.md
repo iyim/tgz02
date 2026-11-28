@@ -1515,6 +1515,45 @@ tg_supervisor ×2 / ai_worker              全部在跑
 
 `--inbox` 只接受 `ask`（文字提问）/`say`/`stop`/`modeltest` 四种 kind，没有 `asr_final`。想验证路由只能靠真实语音，或者往 `work/events.jsonl` 追事件（会牵动 consumer offset，风险更高，不建议）。
 
+### 21.6 第二轮：放宽 session 匹配还不够，最终按措辞放行
+
+21.3 的改动上线后用户再试，仍然听不到确认。同一时刻的日志把原因钉死了：
+
+```
+12:20:43.099 tgt: onTtsStart DROP id=1969115 text="已为你设置好今天中午十二点二十五分的闹钟"
+12:20:58.906 tgt: onTtsStart DROP id=1969121 text="您在今天中午十二点二十五分已经有一个闹钟"
+
+对应标记（12:20:59 才写入）：
+{"seq":3,"wall_ms":1795839659354,"exp_ms":1795839667354,"asr_session":"1969121","intent":"alarm"}
+```
+
+`wall_ms` 折算是 **12:20:59.354**，比它要放行的那句答案（12:20:58.906）晚了 448 ms —— 正好是 utterance gate 的 debounce。也就是说：**标记永远追不上答案**，无论怎么放宽"窗口内 session 匹配"都没用，因为答案到达时文件里躺着的还是上一条（甚至已过期）。
+
+最终改法：不再依赖时序，按**措辞**放行。闹钟已经交回原厂，这两句确认必须能听见：
+
+```c
+/* libtg_ttsguard.c, tg_start_pre()，在 DROP 之前 */
+if (text != NULL && text[0] != '\0' &&
+    (strstr(text, "闹钟") != NULL || strstr(text, "提醒") != NULL)) {
+    INC(g_native_allowed);
+    slog("onTtsStart ALLOW id=%d by=alarm_wording streaming=%u text=\"%s\"",
+         id, streaming, text);
+    return 1;
+}
+```
+
+成本与边界：任何含"闹钟/提醒"字样的工厂回答都会被放行。由于闹钟不再由我们接管，这个方向本来就只有工厂在说话，误放行不会造成双答；真正需要守卫的还是"普通对话被工厂抢答"那一类。
+
+新守卫 `c5dc37e7…` 通过同一个 Magisk 模块覆盖，重启后核对：
+
+```
+/system/tgz02/lib/libtg_ttsguard_t8156.so  c5dc37e7…
+tg_supervisor ×2                           在跑（重新注入完成）
+```
+
+验收时 `tgt` 日志应出现 `by=alarm_wording` 而不是 `DROP`。
+
+
 
 
 
