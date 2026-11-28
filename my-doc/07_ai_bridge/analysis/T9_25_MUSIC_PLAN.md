@@ -432,3 +432,60 @@ T925MUSIC: focus change=-2 / 1        ← 工厂短暂持焦点：暂停；GAIN 
 - `evidence/t9-25/shots/01_player.png` … `07_home_tile.png`
 - `evidence/t9-25/07_impl_logs.txt`（本次真机日志摘录）
 - `evidence/t9_25_ndk_build.log`（worker 交叉编译：0 warning / 0 error）
+---
+
+# 12. T9-26 收尾：全部回到 /system（2026-11-28 22:16 重启后）
+
+## 12.1 为什么之前一直跑在 /data/local/tmp
+
+`/system` 是只读分区（`mount -o rw,remount /system` → `not user mountable in fstab`），
+所以更新走的是 **Magisk 模块 magic-mount**：把文件放
+`/data/adb/modules/t9_25_music/system/tgz02/{bin,lib}/`，**开机时**由 Magisk 覆盖到
+`/system/tgz02/` 同名路径。overlay 只在 boot 阶段绑定，所以不重启就一直是旧的
+`/data/local/tmp/ai_worker.new` 在跑 —— 这不是"忘了换"，是没重启。
+
+## 12.2 重启后的实测
+
+```
+$ md5sum /system/tgz02/bin/ai_worker /system/tgz02/lib/libtg_hook.so
+bc4ff597f77b96f0b4671e2bb1303585  /system/tgz02/bin/ai_worker     ← 模块里的新构建
+b81cb770fdc20b13902b0f450c061ae3  /system/tgz02/lib/libtg_hook.so  ← 含 IR_MUSIC 的新 hook
+（重启前分别是 cfd8e520 / 50202bf1）
+
+$ ps -A -o PID,ARGS | grep ai_worker
+ 1690 ai_worker --work-dir /data/local/tmp/t5_bridge/work ...      ← 命令行里没有 tmp 路径
+```
+
+hook 注入同样是从 /system 走的：
+
+```
+inj| dlopen ok handle=0x756f7a69 flags=0x6
+inj| tg_hook_install() = 0 (threads resumed)   hook_status=0 hooked=1
+sup: inject end: pid=1047 exit=0 hooked=1 elapsed=933ms ok     ← 目标 = smartapp:core
+```
+
+## 12.3 切歌链路（重启后复测）
+
+```
+$ /system/tgz02/bin/ai_worker --self-test-music "下一曲"
+intent=music rule=music.ctrl arg=next complete=1
+[aiw] skill music: no re-listen for 60s ...
+code=0 speech=换下一首
+→ App: cmd=next ×2 → playing: Burning dur=230640ms
+```
+
+`native_route.public.json` 没有被写上 media —— 新 hook 不再把音乐话术"放行给原厂"。
+
+## 12.4 现场清理
+
+`/data/local/tmp` 里只留备份，不再有任何会跑起来的二进制：
+
+```
+/data/local/tmp/t9_25_backup/ai_worker.t9_26.bak
+/data/local/tmp/t9_25_backup/libtg_hook.t9_26.bak
+```
+
+以后更新 worker / hook 的唯一正确姿势：改源码 → 构建 → 拷进
+`/data/adb/modules/t9_25_music/system/tgz02/{bin,lib}/` → **重启**。不要再从
+`/data/local/tmp` 手动 `nohup` 起进程（那是调试期的临时做法，容易和开机自启的那份
+打架，两份同时存在时 `pidof` 也会看花眼）。
