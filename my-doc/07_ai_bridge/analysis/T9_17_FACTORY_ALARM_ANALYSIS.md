@@ -1209,6 +1209,94 @@ su --mount-master -c "ls ..."
 
 同时，`pm uninstall` 在设备端 `su -c` 下报 `unknown command 'uninstall'`；用主机 `adb uninstall` 即可。
 
+---
+
+## 18. T9-19b：「支付宝小程序」= arome 容器
+
+### 18.1 它是谁
+
+原厂「空间清理」(`com.alibaba.ailabs.cleaner.activity.CleanerMainActivity`) 里那一行：
+
+```
+支付宝小程序…     147.0 MB      很久未使用
+```
+
+对应的是 **`com.alipay.arome.app`** —— 支付宝小程序运行时容器（Arome），不是我们装的东西：
+
+```
+/system/app/AMPE/AMPE.apk     27 435 939 B (26.8MB)
+userId=10019   versionName=10.2.3.1775   versionCode=517   targetSdk=29
+flags=[ SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA LARGE_HEAP ]    ← 非 PERSISTENT
+```
+
+配套还有 `com.alibaba.genie.waft`（`/system/app/Waft/Waft.apk`，184 KB）—— WAFT 小程序框架，负责把 `waft://` 请求转给容器。appbox 清单里 3 个 `businessType='applet'` 的入口都靠它：
+
+| appName | appid | actionUrl |
+| --- | --- | --- |
+| 人教点读机 | 2020042456013 | `webapp://…/open?appId=…` |
+| 蚂蚁森林 | 2020082832006 | `waft://open?genieAppId=2020082832006&code=ant_forest` |
+| 听书 | 2020091150002 | `webapp://…/open?appId=…` |
+
+### 18.2 147 MB 是怎么来的
+
+```
+/system/app/AMPE/AMPE.apk                     26.8 MB   APK
+/data/data/com.alipay.arome.app              79.0 MB   data
+  ├─ app_h5container                         32.2 MB   小程序 H5 运行时缓存
+  ├─ app_plugins_lib                         28.5 MB   插件库
+  ├─ files                                    9.6 MB
+  └─ app_ucmsdk                               8.6 MB   UC 内核缓存
+                                              ------
+                                              ~106 MB  + oat/dex ≈ 清理器报的 147 MB
+```
+
+进程态检查：`ps -A | grep arome` = 空，说明它从没被朗读命令用过，纯占空间。
+
+### 18.3 处置
+
+```sh
+# 1. 备份 APK
+cp /system/app/AMPE/AMPE.apk /data/local/tmp/t9_19_bak/AMPE-arome-10.2.3.1775.apk
+
+# 2. 改名，让 PackageManager 不再扫描（同 osupdate / EasyTouch 的做法）
+mount -o rw,remount /system
+mv /system/app/AMPE/AMPE.apk /system/app/AMPE/AMPE.apk.bak
+sync && mount -o ro,remount /system
+
+# 3. 删掉 80 MB 数据
+rm -rf /data/data/com.alipay.arome.app
+```
+
+重启后：
+
+```
+pm list packages | grep -i arome   → PACKAGE-GONE
+「空间清理」页面                     → 不再出现「支付宝小程序」这一行
+/data 可用空间                      → 601 MB → 800 MB
+free                                → 206 MB
+原厂 TTS                           → onTtsData → onTtsEnd 正常
+```
+
+`com.alibaba.genie.waft` **保留**（184 KB，框架本身不占资源），只是它以后找不到容器会失败。
+
+### 18.4 影响
+
+- 语音/界面里"打开蚂蚁森林""打开人教点读机"这类小程序指令会失败（容器不在）；
+- 语音识别、TTS、闹钟、桌面、应用管理全部不受影响（实测 TTS 链路完整）；
+- 原厂「空间清理」里剩下的条目：权限狗 3 MB、爱家看护 31 MB、菜谱 37 MB、MT管理器 40 MB。
+
+### 18.5 回滚
+
+```sh
+mount -o rw,remount /system
+mv /system/app/AMPE/AMPE.apk.bak /system/app/AMPE/AMPE.apk
+mount -o ro,remount /system && reboot
+# APK 备份：/data/local/tmp/t9_19_bak/AMPE-arome-10.2.3.1775.apk
+```
+
+首次打开小程序时容器会重建 `/data/data/com.alipay.arome.app`，数据是缓存，不需要备份。
+
+
 
 
 
