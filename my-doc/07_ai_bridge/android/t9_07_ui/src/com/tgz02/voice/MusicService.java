@@ -58,11 +58,18 @@ public final class MusicService extends Service
     static final int LOOP_OFF = 0, LOOP_ALL = 1, LOOP_ONE = 2;
 
     /**
-     * Hard ceiling for the media stream. The operator asked for it after a test run was too
-     * loud: everything -- the guard, the UI bar and the voice "声音大一点" path -- clamps here,
-     * so no route can push STREAM_MUSIC above half.
+     * Volume policy (reworked after the operator reported that the keys did nothing):
+     *
+     *   - there is NO artificial ceiling; the user may go to 100 with the volume keys;
+     *   - a change made while the factory is NOT speaking is taken as the user's wish and
+     *     adopted as the new target (that is what the keys are);
+     *   - a drop that happened WHILE the factory was speaking is restored afterwards,
+     *     because that one is not the user (see 03_factory_tts_duck.log).
+     *
+     * The old code restored "target" on every tick where volume looked low, which fought the
+     * volume keys and made them appear broken.
      */
-    static final int MAX_VOLUME = 50;
+    static final int MAX_VOLUME = 100;
 
     /* ------------------------------------------------------------------ state */
 
@@ -91,6 +98,12 @@ public final class MusicService extends Service
     private int loopMode = LOOP_ALL;
     private boolean shuffle;
     private int targetVolume;
+    /** volume bookkeeping: one downward step is a finger, several in a row are the factory */
+    private int lastSeenVolume = -1;
+    private int dropSteps;
+    private int volumeBeforeDrop;
+    private long lastRestoreAt;
+    private int restoreTo = -1;
     private long pendingSeekMs = -1;
     private AudioManager am;
     private MediaSession session;
@@ -696,11 +709,28 @@ public final class MusicService extends Service
             pause();
             resumeOnGain = false;
         } else if (change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+            /* when the factory does take focus, remember the volume so GAIN can put it back */
+            restoreTo = targetVolume;
             if (playing) { resumeOnGain = true; pause(); }
         } else if (change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
-            /* the factory speaks: leave the volume alone here, it ducks the stream itself */
+            restoreTo = targetVolume;
         } else if (change == AudioManager.AUDIOFOCUS_GAIN) {
             if (resumeOnGain) { resumeOnGain = false; resume(); }
+            restoreVolume("factory speech ended");
+        }
+    }
+
+    /** put back what the factory's duck took, but only if it is still gone */
+    private void restoreVolume(String why)
+    {
+        int want = restoreTo;
+        restoreTo = -1;
+        if (want <= 0 || am == null) return;
+        want = Math.max(0, Math.min(MAX_VOLUME, want));
+        int cur = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        if (cur < want - 3) {
+            try { am.setStreamVolume(AudioManager.STREAM_MUSIC, want, 0); } catch (Throwable ignored) { }
+            Log.i(TAG, "volume restored (" + why + "): " + cur + " -> " + want);
         }
     }
 
@@ -724,25 +754,78 @@ public final class MusicService extends Service
         guard.start();
     }
 
+    /**
+     * Runs about once a second. Three cases, in this order:
+     *   1. factory is listening -> drop to 25% (no AEC on this unit, the mic has to win);
+     *   2. factory is speaking  -> leave its duck alone, remember what to give back;
+     *   3. idle                 -> if it just spoke, restore what it took; otherwise adopt the
+     *                              current volume as the user's (that is the volume keys).
+     */
+    /**
+     * Volume supervision, once a second. Neither dialog.state nor audio focus told us when the
+     * factory ducks (measured: it lowers STREAM_MUSIC several steps with dialog=idle and no
+     * focus request), so the discriminator is the shape of the change:
+     *
+     *   - one step down  = a finger on the volume key  -> adopt it, never fight it;
+     *   - two or more in a row = the factory's duck    -> put back the value before the burst.
+     *
+     * While it is listening we drop to 25% ourselves (no AEC on this unit).
+     */
     private void tick()
     {
         if (am == null) return;
         int cur = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-        String st = voiceState();
-        if (!playing) {
-            /* not playing: still repair an obviously ducked volume once idle */
-            if ("idle".equals(st) && cur < targetVolume - 3) am.setStreamVolume(
-                    AudioManager.STREAM_MUSIC, targetVolume, 0);
-            return;
-        }
-        if ("listening".equals(st)) {
+        long now = System.currentTimeMillis();
+
+        if (playing && "listening".equals(voiceState())) {
             int want = Math.max(5, targetVolume * 25 / 100);
             if (cur != want) am.setStreamVolume(AudioManager.STREAM_MUSIC, want, 0);
-        } else if ("speaking".equals(st)) {
-            /* the factory is talking: its own duck is the correct level, don't fight it */
-        } else if (cur < targetVolume - 3) {
-            am.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, 0);
-            Log.i(TAG, "volume guard: " + cur + " -> " + targetVolume);
+            lastSeenVolume = want;
+            dropSteps = 0;
+            return;
+        }
+
+        boolean dropped = lastSeenVolume >= 0 && cur < lastSeenVolume;
+        boolean rose = lastSeenVolume >= 0 && cur > lastSeenVolume;
+
+        if (dropped) {
+            if (dropSteps == 0) volumeBeforeDrop = lastSeenVolume;
+            dropSteps++;
+            lastSeenVolume = cur;
+            /* a burst, and we have not just restored (a held key must still win eventually) */
+            if (dropSteps >= 2 && now - lastRestoreAt > 5000
+                    && volumeBeforeDrop - cur >= 1 && volumeBeforeDrop >= 10) {
+                Log.i(TAG, "volume restored (factory duck burst): " + cur + " -> "
+                        + volumeBeforeDrop);
+                am.setStreamVolume(AudioManager.STREAM_MUSIC, volumeBeforeDrop, 0);
+                targetVolume = Math.min(MAX_VOLUME, volumeBeforeDrop);
+                Music.setVolume(this, targetVolume);
+                lastSeenVolume = volumeBeforeDrop;
+                lastRestoreAt = now;
+                dropSteps = 0;
+                notifyUi();
+            }
+            return;
+        }
+
+        if (rose) {
+            dropSteps = 0;
+            lastSeenVolume = cur;
+            if (cur != targetVolume) {
+                targetVolume = Math.min(MAX_VOLUME, cur);
+                Music.setVolume(this, targetVolume);
+                Log.i(TAG, "volume set by user: " + targetVolume);
+                notifyUi();
+            }
+            return;
+        }
+
+        /* unchanged: quietly follow it (covers a single press we sampled after it settled) */
+        lastSeenVolume = cur;
+        if (cur != targetVolume && now - lastRestoreAt > 1500 && dropSteps == 0) {
+            targetVolume = Math.min(MAX_VOLUME, cur);
+            Music.setVolume(this, targetVolume);
+            notifyUi();
         }
     }
 
