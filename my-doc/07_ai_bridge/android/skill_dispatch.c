@@ -82,6 +82,7 @@ const char *t8_skill_name(t8_skill_id id)
     case T8_SK_APP_LAUNCH:   return "app.launch";
     case T8_SK_DEVICE_STATUS: return "device.status";
     case T8_SK_ALARM_SET: return "alarm.set";
+    case T8_SK_MUSIC: return "music";
     default:                 return "none";
     }
 }
@@ -148,6 +149,11 @@ int t8_skill_from_intent(int intent, const char *arg, const char *session, t8_sk
         /* T9-16：闹钟。时间/重复的解析在 t9_skill_alarm_exec 里做（需要原文），
          * 这里只挂技能 id；text 由 uttq_pop 填充。 */
         t8_skill_req_init(out, T8_SK_ALARM_SET, session);
+        return 1;
+    case IR_MUSIC:
+        /* T9-25：音乐。argv[0] 是动作，歌名从原文里抽（ir_music_query）。 */
+        t8_skill_req_init(out, T8_SK_MUSIC, session);
+        if (a[0] != '\0') (void)t8_skill_req_arg(out, a);
         return 1;
     case IR_SCREEN_ON:
         t8_skill_req_init(out, T8_SK_SCREEN_ON, session);

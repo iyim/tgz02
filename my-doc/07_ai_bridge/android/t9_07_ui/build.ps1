@@ -146,7 +146,12 @@ $srcFiles = @(
     "src\com\tgz02\voice\BackendService.java",
     "src\com\tgz02\voice\BackendClient.java",
     "src\com\tgz02\voice\BackendJson.java",
-    "src\com\tgz02\voice\RequestLedger.java"
+    "src\com\tgz02\voice\RequestLedger.java",
+    "src\com\tgz02\voice\Music.java",
+    "src\com\tgz02\voice\CoverCache.java",
+    "src\com\tgz02\voice\Glyph.java",
+    "src\com\tgz02\voice\MusicService.java",
+    "src\com\tgz02\voice\MusicActivity.java"
 ) | ForEach-Object { Join-Path $here $_ }
 foreach ($f in $srcFiles) { if (-not (Test-Path $f)) { throw "missing source $f" } }
 if ($Test) {

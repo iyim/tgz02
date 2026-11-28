@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   T9-UI-02: V2 kid-friendly shell.
 
@@ -12,8 +12,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tgz02.voice"
-    android:versionCode="13"
-    android:versionName="1.11.0">
+    android:versionCode="14"
+    android:versionName="1.12.0">
 
     <!-- T9-16：自有闹钟所需权限（全部为普通权限，无需用户授权弹窗） -->
     <uses-permission android:name="android.permission.SCHEDULE_ALARM" />
@@ -26,6 +26,9 @@
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <!-- T9-21: 网页配置服务监听局域网端口，需要 INTERNET 权限 -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- T9-25：原生播放器。前台服务保活 + 恢复被原厂播报压低的媒体音量 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="27" />
 
@@ -85,6 +88,13 @@
             android:name=".BackendService"
             android:process=":backend"
             android:exported="false" />
+
+        <!-- T9-25：原生播放器（封面 / 歌词 / 队列）。服务承载播放状态，
+             页面只是它的一个视图；语音命令也落在这个服务上。 -->
+        <activity android:name=".MusicActivity" android:exported="false"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <service android:name=".MusicService" android:exported="false" />
 
         <!-- T9-16：自有闹钟。AlarmReceiver 是 AlarmScheduler 的唯一 PendingIntent 目标；
              RingingActivity 由 receiver 直接 startActivity（Android 8.1 允许）；

@@ -288,6 +288,15 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
         quickRow.addView(alarmTile, lpWithMargin(this, 0));
         quickRow.addView(quickTile("illus_calendar", "日程", "看看今天的安排", SkillsHomeActivity.SKILL_CALENDAR),
                 lpWithMargin(this, 12));
+
+        /* T9-25：音乐卡片直接进原生播放器（原生播放器自带封面与歌词） */
+        View musicTile = quickTile("illus_music", "音乐", "说「播放晴天」", "music");
+        musicTile.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startActivity(new Intent(VoiceHomeActivity.this, MusicActivity.class));
+            }
+        });
+        quickRow.addView(musicTile, lpWithMargin(this, 12));
         LinearLayout.LayoutParams lp3 = new LinearLayout.LayoutParams(0,
                 ViewGroup.LayoutParams.MATCH_PARENT, 1f);
         lp3.leftMargin = Ui4.dp(this, 12);
@@ -328,7 +337,8 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
         LinearLayout tile = new LinearLayout(c);
         tile.setOrientation(LinearLayout.VERTICAL);
         tile.setBackground(Ui4.grad(c, Ui4.skillGrad(c,
-                "alarm".equals(target) ? "alarm" : "calendar"), Ui4.R_M));
+                "alarm".equals(target) ? "alarm"
+                        : ("music".equals(target) ? "music" : "calendar")), Ui4.R_M));
         tile.setPadding(Ui4.dp(c, 14), Ui4.dp(c, 13), Ui4.dp(c, 14), Ui4.dp(c, 13));
 
         TextView t1 = Ui4.textBold(c, title, Ui4.T_CARD, 0xFFFFFFFF);

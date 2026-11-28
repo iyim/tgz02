@@ -45,10 +45,17 @@ typedef enum {
     IR_DEVICE_STATUS = 9,/* T8-14.2：设备自身状态（电量/运行时长）。**原厂没有这个能力**，
                           * 因此不分配 route 位（ir_route_bit 返回 0）：命中后只可能是
                           * 自有技能接管或回落 AI，绝不会被"放行给原厂"。 */
-    IR_ALARM = 10        /* T9-16：闹钟/提醒（定闹钟/叫我起床/设个提醒）。
+    IR_ALARM = 10,       /* T9-16：闹钟/提醒（定闹钟/叫我起床/设个提醒）。
                           * T9-19d（用户要求"回归原厂闹钟"）：重新分配 route 位
                           * T7B_ROUTE_ALARM(0x100)，位一旦被 mask 打开，hook 就 PASS 给
                           * 原厂 NLU（原厂执行并播报），worker 不再注册闹钟技能。 */
+    IR_MUSIC = 11        /* T9-25：音乐播放与控制（自有原生播放器）。
+                          * 和 IR_DEVICE_STATUS 一样**不分配 route 位**（ir_route_bit 返回 0），
+                          * 所以永远不会被"放行给原厂"。理由是真机实测：这个号下原厂没有
+                          * 可播的音乐服务，用户说"播放晴天"它答
+                          * "我控制不了音箱里的应用"（events/000000000330.json）。
+                          *   arg=play                  -> 歌名/歌手在原文里，由技能再抽一次
+                          *   arg=pause|resume|next|prev -> 纯控制 */
 } ir_intent;
 
 typedef struct {
@@ -94,5 +101,9 @@ int ir_normalize(const char *text, char *out, size_t cap);
 
 const char *ir_intent_name(ir_intent it);
 int ir_intent_from_name(const char *name);
+
+/* T9-25：从原始话术里抽出"要搜什么"："播放周杰伦的晴天" -> "周杰伦的晴天"。
+ * 抽不到（只有"播放/放首歌"）返回 0，调用方按"没指定歌"处理（放我的喜欢）。 */
+int ir_music_query(const char *text, char *out, size_t cap);
 
 #endif /* T7R4_INTENT_ROUTE_H */

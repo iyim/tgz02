@@ -37,7 +37,9 @@ typedef enum {
     T8_SK_APP_LAUNCH = 10,    /* argv[0] = 包名/别名 */
     T8_SK_DEVICE_STATUS = 11, /* T8-14.2：设备自身状态（电池电量 / 运行时长），无参数 */
     T8_SK_ALARM_SET = 12,     /* T9-16：闹钟设置（时间/重复已由技能解析，原文在 text 字段） */
-    T8_SK_MAX = 13
+    T8_SK_MUSIC = 13,         /* T9-25：音乐播放/控制。argv[0] = play|pause|resume|next|prev，
+                               * "播放什么"从 text 原文里抽（见 ir_music_query） */
+    T8_SK_MAX = 14
 } t8_skill_id;
 
 #define T8_SK_OK          0

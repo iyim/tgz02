@@ -1,0 +1,47 @@
+﻿# T9-25 实施期真机日志摘录（2026-11-28 20:20-20:45）
+
+## 1. 服务端从局域网可达（无令牌 401 / 带令牌 200）
+adb shell curl -s -o /dev/null -w '%{http_code}' http://192.168.1.5:8848/api/session
+401
+adb shell curl -s -H 'X-Tg-Token: <token>' -w '\nHTTP:%{http_code}\n' http://192.168.1.5:8848/api/session
+{"logged_in": true, "valid": true, "reason": "ok", "nickname": "Mack", ...}
+HTTP:200
+
+## 2. error(-38) 的真面目（不是解码失败）
+E MediaPlayerNative: Attempt to call getDuration in wrong state: mPlayer=0x9331a520, mCurrentState=4
+E MediaPlayerNative: error (-38, 0)
+D MediaPlayer: handleMessage msg:(100, -38, 0)
+W T925MUSIC: player error what=-38 extra=0 track=发如雪
+W T925MUSIC: skip after failure #1
+→ 修复后同一首歌第一次就播：
+I T925MUSIC: playing: 发如雪 dur=296453ms
+
+## 3. 语音链路（不开麦自测）
+$ ai_worker --self-test-music "播放周杰伦的晴天"
+text=播放周杰伦的晴天
+intent=music rule=music.play arg=play complete=1
+query=周杰伦的晴天
+[aiw] 2026-11-28T20:40:32 skill music: play q=周杰伦的晴天
+code=0 speech=好，播放周杰伦的晴天
+Starting service: Intent { act=com.tgz02.voice.action.MUSIC_CMD cmp=com.tgz02.voice/.MusicService (has extras) }
+Starting: Intent { cmp=com.tgz02.voice/.MusicActivity }
+→ App 侧：
+I T925MUSIC: cmd=play arg=周杰伦的晴天 vol=-1
+I T925MUSIC: playing: 晴天 dur=243989ms
+
+## 4. 控制类与否定类
+text=暂停            intent=music rule=music.ctrl arg=pause  speech=暂停了
+text=下一首          intent=music rule=music.ctrl arg=next   speech=换下一首
+text=继续播放        intent=music rule=music.ctrl arg=resume speech=接着放
+text=放首歌          intent=music rule=music.play            speech=好，放你的我喜欢
+text=今天天气怎么样  intent=weather rule=weather.keyword      (未被音乐抢走)
+
+## 5. 音量守卫（工厂 duck 后拉回）
+I T925MUSIC: volume guard: 5 -> 60
+I T925MUSIC: focus change=-2   (AUDIOFOCUS_LOSS_TRANSIENT -> pause)
+I T925MUSIC: focus change=1    (GAIN -> auto resume)
+
+## 6. 崩溃（已修）
+E AndroidRuntime: java.lang.IllegalStateException: ScrollView can host only one direct child
+    at com.tgz02.voice.MusicActivity.showList(MusicActivity.java:583)
+    at com.tgz02.voice.MusicActivity.renderQueue(MusicActivity.java:592)

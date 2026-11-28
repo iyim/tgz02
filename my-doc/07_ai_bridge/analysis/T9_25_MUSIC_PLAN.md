@@ -338,3 +338,97 @@ adb install -r musicprobe.apk
 adb shell "am start -n com.tgz02.musicprobe/.Probe --es url '$URL' --ei seconds 12 --ei volume 60"
 adb logcat -s kgprobe:V
 ```
+
+---
+
+# 11. 实施结果（同日 20:20–20:45，真机验证）
+
+## 11.1 落地形态：写在桌面 App 里，不是第二个 APK
+
+理由（都是这个工程的既有约束）：
+
+| 需要的东西 | 同 App | 独立 App |
+|---|---|---|
+| 读 `status.public.json`（判"工厂在说话/在听"） | `root:u0_a71 0640`，本 uid 可读 | 读不到 |
+| 写 `/data/local/tmp/t9_ui/inbox` | `u0_a71 0700` | 写不进去 |
+| 首页卡片 / 主题 / 图标 | 直接复用 `Ui4` + `quickTile` | 两套主题 |
+| 前台服务保活 | 跟桌面 App 同一条策略 | 要单独保活 |
+
+需要"隔离"时用进程解决（`android:process=":music"`），同 uid、同签名、同一份代码。
+
+## 11.2 交付物
+
+APK **1.12.0 / versionCode 14**（`voice_ui.apk`，4.24 MB），新增 5 个类：
+
+| 文件 | 行数 | 职责 |
+|---|---|---|
+| `Music.java` | ~520 | 协议层：search / playlists / tracks / play / lyric + LRC 解析 + `files/music.conf` |
+| `MusicService.java` | ~700 | 播放引擎：队列、AudioFocus、音量守卫、前台通知、MediaSession、`am` 命令入口 |
+| `MusicActivity.java` | ~700 | 1024×600 播放页：封面、歌词（逐行高亮+自动滚动）、进度/音量条、队列/歌单 |
+| `CoverCache.java` | ~150 | 封面两级缓存（LruCache + files/covers） |
+| `Glyph.java` | ~150 | 矢量图标（播放/暂停/上一首/下一首/耳机/列表/返回/搜索），不依赖字体 |
+
+改动：`VoiceHomeActivity`（首页加音乐卡片）、`AndroidManifest.xml`（服务/页面/权限/版本）、`build.ps1`（源文件表）。
+
+服务端（`D:\Code\py2\kugou-web`，另一个仓库）：`app.py` 增加 `KUGOU_BIND` / `KUGOU_TOKEN`，非 loopback 请求必须带 `X-Tg-Token`；`.env` 设 `KUGOU_BIND=0.0.0.0`。
+
+Worker（C）：`intent_route` 新增 `IR_MUSIC`（无 route 位）+ `ir_music_query()`、`skill_dispatch` 新增 `T8_SK_MUSIC`、`ai_worker` 新增 `t9_skill_music_exec` 与注册分支、`worker_conf` 新增 `skill_music_enabled`，并加 `--self-test-music "<话术>"` 便于不开麦验证整条链路。
+
+## 11.3 语音链路（实测分类结果）
+
+```
+$ ai_worker --self-test-music "播放周杰伦的晴天"
+text=播放周杰伦的晴天
+intent=music rule=music.play arg=play complete=1
+query=周杰伦的晴天
+[aiw] skill music: play q=周杰伦的晴天
+code=0 speech=好，播放周杰伦的晴天
+Starting service: Intent { ... cmp=com.tgz02.voice/.MusicService }
+Starting: Intent { cmp=com.tgz02.voice/.MusicActivity }
+```
+App 侧：`cmd=play arg=周杰伦的晴天` → `playing: 晴天 dur=243989ms`（原版，不是翻唱）。
+
+| 话术 | 意图 | 命令 | 回话 |
+|---|---|---|---|
+| 播放周杰伦的晴天 | music.play | play + 歌名 | 好，播放周杰伦的晴天 |
+| 放首歌 / 播放音乐 | music.play | playlist 我喜欢 | 好，放你的我喜欢 |
+| 暂停 | music.ctrl | pause | 暂停了 |
+| 继续播放 | music.ctrl | resume | 接着放 |
+| 下一首 / 切歌 | music.ctrl | next | 换下一首 |
+| 今天天气怎么样 | weather（未被音乐抢走） | — | 原厂 |
+
+传输方式：worker 是 root，直接
+`am start-foreground-service -n com.tgz02.voice/.MusicService -a com.tgz02.voice.action.MUSIC_CMD --es cmd play --es arg <歌名>`
+——不用新协议、不用 App 轮询。`skill_music_enabled=0` 时 `IR_MUSIC` 退回 `IR_MEDIA`，行为回到"放行给原厂"。
+
+## 11.4 路上踩到的四个坑（都已修）
+
+1. **`error(-38)` 假故障**：UI 每 200ms 取进度，`getDuration()` 在 `prepareAsync()` 期间被调用，`MediaPlayerNative` 直接抛
+   `error (-38, 0)`，而 `onError` 把它当成"这首歌放不了"→ 连跳 6 首。
+   修法：`positionMs()`/`durationMs()` 只在 `prepared` 后调用，未就绪时用搜索结果里的 `Duration` 兜底。
+2. **`ScrollView can host only one direct child`**：队列面板把 `listBox` 作为第二个子 View 加进 `rightScroll` → 点"队列"必崩。
+   修法：歌词与列表都放进同一个 `rightContent`，只切 `visibility`。
+3. **天气抢歌名**：`播放周杰伦的晴天` 命中 `weather.keyword`（"晴天"）。修法：音乐判定提到天气之前。
+4. **"继续播放"被当成点歌**：从"播放"关键词先判。修法：控制词先判。
+5. （附带）`release()`+`new MediaPlayer()` 的销毁/创建竞态也会出 `-38`，改为**整个服务复用一个实例**，切歌只 `reset()`。
+
+## 11.5 音量守卫实测生效
+
+```
+T925MUSIC: volume guard: 5 -> 60      ← 工厂播报把 STREAM_MUSIC 压到 5，播报结束后守卫拉回
+T925MUSIC: focus change=-2 / 1        ← 工厂短暂持焦点：暂停；GAIN 后自动续播
+```
+`listening` 状态下守卫主动降到 target 的 25%（无 AEC），`speaking` 状态不抢（让工厂自己的 duck 生效）。
+
+## 11.6 现场状态与依赖
+
+- 设备：`/data/adb/modules/t9_25_music/system/tgz02/bin/ai_worker`（377 KB，重启后由 Magisk 覆盖到 `/system/tgz02/bin/ai_worker`）；`worker.conf` 增 `skill_music_enabled=1`。
+- 服务端：`http://192.168.1.5:8848`，令牌写在设备 `files/music.conf`（0600，root 写入，App 只读）。真机验证：无令牌 401 / 带令牌 200。
+- 音质：该账号 `vip_type=0`，实测只发 `qu128`；每日会员到账后 `_best_source` 会自动升到 320k/flac，不需要改代码。
+- 尚未做：二维码登录（当前靠 `music.conf` 里注入 token）、原生文本搜索框（设备没有可用输入法，搜索走语音）、离线缓存。
+
+## 11.7 截图与日志
+
+- `evidence/t9-25/shots/01_player.png` … `07_home_tile.png`
+- `evidence/t9-25/07_impl_logs.txt`（本次真机日志摘录）
+- `evidence/t9_25_ndk_build.log`（worker 交叉编译：0 warning / 0 error）

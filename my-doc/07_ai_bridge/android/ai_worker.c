@@ -1973,6 +1973,101 @@ static int tts_probe_stage(const t6b_worker *w, const char *eid, const char **st
  *      -1 = 失败（rep->status = T6B_P_ERROR）—— 调用方按 Provider 失败处理：
  *           偏移不动、按退避重试、超限进死信；绝不当成成功，也不静默丢弃事件。
  */
+/* ---------------- T9-25：音乐技能（自有原生播放器） ----------------
+ *
+ * 这个技能自己不碰音频：它把命令投给 App 的 MusicService，由那边解析直链、播放、
+ * 显示封面与歌词。为什么用 am 而不是写文件再让 App 轮询：
+ *   - MusicService 是本 APK 的 non-exported 服务，普通 uid 起不来，worker 是 root，
+ *     `am start-foreground-service` 可以（真机实测通）；
+ *   - 少一条协议、少一个轮询线程，命令是同步送达的。
+ * 命令动词是白名单，歌名从原文里抽（ir_music_query），不接受任意参数拼进命令行。
+ */
+static int t9_music_am(const char *cmd, const char *arg)
+{
+    pid_t pid;
+
+    pid = vfork();
+    if (pid == 0) {
+        if (arg != NULL && arg[0] != '\0') {
+            execl("/system/bin/am", "am", "start-foreground-service",
+                  "-n", "com.tgz02.voice/.MusicService",
+                  "-a", "com.tgz02.voice.action.MUSIC_CMD",
+                  "--es", "cmd", cmd, "--es", "arg", arg, (char *)NULL);
+        } else {
+            execl("/system/bin/am", "am", "start-foreground-service",
+                  "-n", "com.tgz02.voice/.MusicService",
+                  "-a", "com.tgz02.voice.action.MUSIC_CMD",
+                  "--es", "cmd", cmd, (char *)NULL);
+        }
+        _exit(127);
+    }
+    return (pid > 0) ? 0 : -1;
+}
+
+/** 把播放界面顶到前台，用户能看见封面和歌词（失败不影响播放） */
+static void t9_music_ui(void)
+{
+    pid_t pid = vfork();
+    if (pid == 0) {
+        execl("/system/bin/am", "am", "start", "-n",
+              "com.tgz02.voice/.MusicActivity", (char *)NULL);
+        _exit(127);
+    }
+}
+
+static int t9_skill_music_exec(const t8_skill_req *req, t8_skill_result *res, void *ctx)
+{
+    const char *cmd;
+    char q[192];
+    int rc;
+    (void)ctx;
+
+    if (res == NULL || req == NULL) return T8_SK_E_ARG;
+    res->code = T8_SK_E_FAIL;
+    res->message[0] = '\0';
+
+    cmd = (req->argc > 0 && req->argv[0][0] != '\0') ? req->argv[0] : "play";
+
+    if (strcmp(cmd, "play") == 0) {
+        if (ir_music_query(req->text, q, sizeof(q)) > 0) {
+            rc = t9_music_am("play", q);
+            t9_music_ui();
+            if (rc != 0) {
+                snprintf(res->message, sizeof(res->message), "播放器叫不起来");
+                always("skill music: play failed (am exec) q=%s", q);
+                return T8_SK_E_FAIL;
+            }
+            snprintf(res->message, sizeof(res->message), "好，播放%s", q);
+            always("skill music: play q=%s", q);
+        } else {
+            rc = t9_music_am("playlist", "我喜欢");
+            t9_music_ui();
+            if (rc != 0) {
+                snprintf(res->message, sizeof(res->message), "播放器叫不起来");
+                return T8_SK_E_FAIL;
+            }
+            snprintf(res->message, sizeof(res->message), "好，放你的我喜欢");
+            always("skill music: play (no query) -> playlist 我喜欢");
+        }
+    } else if (strcmp(cmd, "next") == 0) {
+        if (t9_music_am("next", NULL) != 0) { snprintf(res->message, sizeof(res->message), "切不了歌"); return T8_SK_E_FAIL; }
+        snprintf(res->message, sizeof(res->message), "换下一首");
+    } else if (strcmp(cmd, "prev") == 0) {
+        if (t9_music_am("prev", NULL) != 0) { snprintf(res->message, sizeof(res->message), "切不了歌"); return T8_SK_E_FAIL; }
+        snprintf(res->message, sizeof(res->message), "上一首");
+    } else if (strcmp(cmd, "pause") == 0) {
+        if (t9_music_am("pause", NULL) != 0) { snprintf(res->message, sizeof(res->message), "停不下来"); return T8_SK_E_FAIL; }
+        snprintf(res->message, sizeof(res->message), "暂停了");
+    } else if (strcmp(cmd, "resume") == 0) {
+        if (t9_music_am("resume", NULL) != 0) { snprintf(res->message, sizeof(res->message), "放不了"); return T8_SK_E_FAIL; }
+        snprintf(res->message, sizeof(res->message), "接着放");
+    } else {
+        return T8_SK_E_ARG;
+    }
+    res->code = T8_SK_OK;
+    return T8_SK_OK;
+}
+
 static int skill_run(t6b_worker *w, t6b_reply *rep)
 {
     t8_skill_req req;
@@ -2614,6 +2709,9 @@ static int skill_claim_id(const t6b_worker *w, const char *session, const ir_res
     } else if (ir->intent == IR_ALARM) {
         /* T9-16：闹钟走自有技能（无 route 位），开关独立于 route_intents */
         if (!w->cfg.skill_alarm_enabled) return 0;
+    } else if (ir->intent == IR_MUSIC) {
+        /* T9-25：音乐走自有播放器（无 route 位），开关独立于 route_intents */
+        if (!w->cfg.skill_music_enabled) return 0;
     } else if (!route_intent_enabled(w, ir->intent)) {
         return 0;
     }
@@ -2646,6 +2744,12 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
     memset(&sk_req, 0, sizeof(sk_req));
     classified = ir_classify(slot->text, &ir);
     sk_id = skill_claim_id(w, slot->session, &ir, classified, &sk_req);
+    /* T9-25：音乐技能没接管（开关关掉 / 没注册）时，把 IR_MUSIC 退回 IR_MEDIA。
+     * 于是"播放/暂停/下一首"重新走上"放行给原厂"的老路径，行为与加音乐之前一致。 */
+    if (sk_id == 0 && classified && ir.intent == IR_MUSIC) {
+        ir.intent = IR_MEDIA;
+        snprintf(ir.rule, sizeof(ir.rule), "%s", "music.fallback_media");
+    }
     if (sk_id != 0) {
         /* 接管：本条不再写原厂放行标记、也不进大模型；由 pend 上的技能 id 决定执行者 */
         w->st.sk_claimed++;
@@ -3564,6 +3668,7 @@ void t6b_config_defaults(t6b_config *c)
     /* T8-14.2：device.status 默认关闭（总开关之外的第二道闸） */
     c->skill_device_status = 0;
     c->skill_alarm_enabled = 1;                    /* T9-16：默认开 */
+    c->skill_music_enabled = 1;                    /* T9-25：默认开（自有原生播放器） */
     c->skill_time_enabled = 1;                     /* T9-19d：默认开；写 0 交回原厂播报 */
     /* T9-23：模型配置只有一份（App 的 models.json）。为 1 时若 models.json 缺失/无效，
      * worker 明确失败退出，绝不静默退回 mock —— 否则用户会以为在用真模型。 */
@@ -4036,6 +4141,14 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
                                      &w.al) != T8_SK_OK) {
             always("skill register failed: alarm.set");
         }
+        /* T9-25：音乐技能（自有原生播放器）。关掉时 IR_MUSIC 退回 IR_MEDIA。 */
+        if (!c->skill_music_enabled) {
+            always("skill: music NOT registered (skill_music_enabled=0) -> playback "
+                   "commands fall back to the factory through IR_MEDIA");
+        } else if (t8_skill_register(&w.sk, T8_SK_MUSIC, t9_skill_music_exec, NULL)
+                   != T8_SK_OK) {
+            always("skill register failed: music");
+        }
         w.st.sk_enabled = c->skill_dispatch;
         snprintf(w.st.sk_last_skill, sizeof(w.st.sk_last_skill), "%s", "none");
         snprintf(w.st.sk_last_result, sizeof(w.st.sk_last_result), "%s", "none");
@@ -4469,6 +4582,43 @@ int main(int argc, char **argv)
 
         if (strcmp(a, "--help") == 0 || strcmp(a, "-h") == 0) { usage(); return 0; }
         else if (strcmp(a, "--verbose") == 0) { cfg.verbose = 1; continue; }
+        else if (strcmp(a, "--self-test-music") == 0) {
+            /* T9-25：离线/在线验证音乐链路（不经过 ASR，不需要说话）：
+             * 分类 -> 抽歌名 -> 真的调 am 把命令投给 App 的 MusicService。
+             * 用法：ai_worker --self-test-music "播放周杰伦的晴天" */
+            t8_skill_req mreq;
+            t8_skill_result mres;
+            ir_result mir;
+            char q[192];
+            const char *txt = NULL;
+
+            if (need_str(argc, argv, i, &txt)) goto bad;
+            memset(&mir, 0, sizeof(mir));
+            memset(&mreq, 0, sizeof(mreq));
+            memset(&mres, 0, sizeof(mres));
+            printf("text=%s\n", txt);
+            if (!ir_classify(txt, &mir)) {
+                printf("intent=(none)  -- would go to AI\n");
+                return 0;
+            }
+            printf("intent=%s rule=%s arg=%s complete=%d\n",
+                   ir_intent_name(mir.intent), mir.rule, mir.arg, mir.complete);
+            if (mir.intent != IR_MUSIC) {
+                printf("not a music intent\n");
+                return 0;
+            }
+            q[0] = '\0';
+            if (strcmp(mir.arg, "play") == 0) {
+                if (ir_music_query(txt, q, sizeof(q)) > 0) printf("query=%s\n", q);
+                else printf("query=(none) -> playlist 我喜欢\n");
+            }
+            t8_skill_req_init(&mreq, T8_SK_MUSIC, "selftest");
+            snprintf(mreq.text, sizeof(mreq.text), "%s", txt);
+            if (mir.arg[0] != '\0') (void)t8_skill_req_arg(&mreq, mir.arg);
+            rc = t9_skill_music_exec(&mreq, &mres, NULL);
+            printf("code=%d speech=%s\n", rc, mres.message);
+            return 0;
+        }
         else if (strcmp(a, "--self-test-alarm") == 0) {
             /* T9-17：离线验证闹钟技能解析（标签/时间/话术），不进主循环、不碰设备。
              * 用法：ai_worker --self-test-alarm "5分钟后提醒我起床" */

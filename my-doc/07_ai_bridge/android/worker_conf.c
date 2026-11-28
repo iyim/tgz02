@@ -277,6 +277,13 @@ static int wc_apply(t6b_config *cfg, const char *key, const char *val, char *err
         cfg->skill_alarm_enabled = iv;
         return 0;
     }
+    /* T9-25：音乐技能开关（默认 1）。写 0 = 不注册 music，IR_MUSIC 退回 IR_MEDIA，
+     * 播放类话术回到"放行给原厂"的老行为。 */
+    if (strcmp(key, "skill_music_enabled") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->skill_music_enabled = iv;
+        return 0;
+    }
     /* T9-19d：时间技能开关（默认 1）。写 0 = 不注册 time.query，时间交回原厂播报。 */
     if (strcmp(key, "skill_time_enabled") == 0) {
         if (wc_bool(val, &iv) != 0) goto bad;

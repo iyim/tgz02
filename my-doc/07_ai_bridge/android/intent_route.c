@@ -520,6 +520,98 @@ static int ir_match_screen_on(const char *n, ir_result *out)
     return 0;
 }
 
+/* ---------------- 音乐播放（T9-25：自有原生播放器） ----------------
+ *
+ * 为什么单独一条意图而不是复用 IR_MEDIA：IR_MEDIA 语义是"放行给原厂"，而原厂这个
+ * 号下没有音乐服务（实测回"我控制不了音箱里的应用"）。音乐必须由我们自己的
+ * MusicService 执行，所以它是一条没有 route 位的自有技能意图。
+ *
+ * 关掉 skill_music_enabled 时，Worker 会把它退回 IR_MEDIA（见 ai_worker 的
+ * music.fallback_media），行为与加音乐之前一字不差。
+ */
+static const char *const IR_MUSIC_PLAY[] = {
+    "播放", "放一首", "放首", "放个", "放点", "来一首", "来首", "来点",
+    "我想听", "想听", "我要听", "听一下", "听一首", "播一首", "播首", "唱一首", "唱首", NULL
+};
+
+static const char *const IR_MUSIC_CTRL[] = {
+    "暂停", "继续播放", "接着放", "接着播", "继续播", "下一首", "上一首", "切歌",
+    "换一首", "换首歌", "别放了", "停止播放", NULL
+};
+
+/* 问"有什么歌/推荐/为什么"是要建议，不是要播放；音量归 IR_VOLUME */
+static const char *const IR_MUSIC_VETO[] = {
+    "怎么", "为什么", "是什么", "什么意思", "推荐", "有什么", "哪首", "哪些",
+    "介绍", "音量", "声音", "大声", "小声", "播放器", NULL
+};
+
+static int ir_match_music(const char *n, ir_result *out)
+{
+    if (ir_has_any(n, IR_MUSIC_VETO)) return 0;
+    /* 控制词先判："继续播放"/"暂停播放" 里也含"播放"，先判点歌会被当成点歌。 */
+    if (ir_has_any(n, IR_MUSIC_CTRL)) {
+        const char *a = "pause";
+        if (ir_has(n, "继续") || ir_has(n, "接着")) a = "resume";
+        else if (ir_has(n, "下一首") || ir_has(n, "切歌") ||
+                 ir_has(n, "换一首") || ir_has(n, "换首歌")) a = "next";
+        else if (ir_has(n, "上一首")) a = "prev";
+        ir_set(out, IR_MUSIC, "music.ctrl", a);
+        return 1;
+    }
+    if (ir_has_any(n, IR_MUSIC_PLAY)) {
+        ir_set(out, IR_MUSIC, "music.play", "play");
+        return 1;
+    }
+    return 0;
+}
+
+int ir_music_query(const char *text, char *out, size_t cap)
+{
+    static const char *const STRIP[] = { "歌曲", "一首", "首", "个", "点", "歌", "的", NULL };
+    char norm[IR_TEXT_MAX];
+    int i, n;
+    const char *p;
+    size_t o;
+
+    if (out == NULL || cap == 0) return 0;
+    out[0] = '\0';
+    if (text == NULL) return 0;
+    n = ir_normalize(text, norm, sizeof(norm));
+    if (n <= 0) return 0;
+
+    p = NULL;
+    for (i = 0; IR_MUSIC_PLAY[i] != NULL; i++) {
+        const char *hit = strstr(norm, IR_MUSIC_PLAY[i]);
+        if (hit == NULL) continue;
+        if (p == NULL || hit < p) p = hit + strlen(IR_MUSIC_PLAY[i]);
+    }
+    if (p == NULL) return 0;
+
+    /* 去掉"一首/首/个/点/歌/的"这类量词与助词，剩下的就是搜索词 */
+    for (;;) {
+        int stripped = 0;
+        for (i = 0; STRIP[i] != NULL; i++) {
+            size_t len = strlen(STRIP[i]);
+            if (strncmp(p, STRIP[i], len) == 0) { p += len; stripped = 1; break; }
+        }
+        if (!stripped) break;
+    }
+
+    o = strlen(p);
+    while (o > 0) {                       /* 去掉句尾语气词 */
+        if (o >= 3 && (strncmp(p + o - 3, "吧", 3) == 0 || strncmp(p + o - 3, "啊", 3) == 0 ||
+                       strncmp(p + o - 3, "呢", 3) == 0 || strncmp(p + o - 3, "哦", 3) == 0)) {
+            o -= 3;
+            continue;
+        }
+        break;
+    }
+    if (o >= cap) o = cap - 1;
+    memcpy(out, p, o);
+    out[o] = '\0';
+    return (int)o;
+}
+
 /* ---------------- 播放控制（原厂技能） ---------------- */
 
 static const char *const IR_MEDIA_HIT[] = {
@@ -687,6 +779,9 @@ int ir_classify_norm(const char *norm, ir_result *out)
     hit = ir_match_stop(norm, r) ||
           ir_match_screen_off(norm, r) ||
           ir_match_screen_on(norm, r) ||
+          /* T9-25：音乐排在天气之前 —— "播放周杰伦的晴天"里"晴天"是歌名，
+           * 排在天气后面会被 weather.keyword 抢走（真机自测复现过）。 */
+          ir_match_music(norm, r) ||
           ir_match_weather(norm, r) ||
           ir_match_device_status(norm, r) ||
           ir_match_time(norm, r) ||
@@ -731,6 +826,7 @@ int ir_route_bit(ir_intent it)
     case IR_STOP:       return T7B_ROUTE_STOP;
     case IR_EXIT:       return T7B_ROUTE_EXIT;
     case IR_ALARM:      return T7B_ROUTE_ALARM;      /* T9-19d：放行原厂闹钟 */
+    case IR_MUSIC:      return 0;                    /* T9-25：自有播放器，永不放行 */
     case IR_NONE:
     default:            return 0;
     }
@@ -748,6 +844,7 @@ const char *ir_intent_name(ir_intent it)
     case IR_STOP:       return "stop";
     case IR_EXIT:       return "exit";
     case IR_ALARM:      return "alarm";
+    case IR_MUSIC:      return "music";
     case IR_DEVICE_STATUS: return "device_status";
     case IR_NONE:
     default:            return "none";
@@ -766,6 +863,7 @@ int ir_intent_from_name(const char *name)
     if (strcmp(name, "stop") == 0) return IR_STOP;
     if (strcmp(name, "exit") == 0) return IR_EXIT;
     if (strcmp(name, "alarm") == 0) return IR_ALARM;
+    if (strcmp(name, "music") == 0) return IR_MUSIC;
     if (strcmp(name, "device_status") == 0) return IR_DEVICE_STATUS;
     return IR_NONE;
 }
