@@ -1,0 +1,54 @@
+说法                     标注               M1(Dice)           score/margin M2(模板)            
+------------------------------------------------------------------------------------------------
+把音乐声音调小一点              factory.volume   ai X                0.00/0.00      factory.volume    
+现在有点吵                  factory.volume   ai X                0.00/0.00      ai X              
+能不能轻一点                 factory.volume   ai X                0.00/0.00      factory.volume    
+声音太大了                  factory.volume   ai X                0.00/0.00      factory.volume    
+播放周杰伦的晴天               music.play       music.play          1.00/0.80      music.play        
+来点动静                   music.play       music.play          1.00/1.00      ai X              
+放首歌听听                  music.play       music.play          1.00/0.67      music.play        
+我想听点轻的                 music.play       music.play          1.00/1.00      ai X              
+播放一首轻音乐                music.play       ai X                0.22/0.07      music.play        
+给我来首粤语歌                music.play       ai X                0.00/0.00      music.play        
+放首周杰伦                  music.play       ai X                0.36/0.36      music.play        
+暂停                     music.ctrl       music.ctrl          1.00/1.00      music.ctrl        
+继续播放                   music.ctrl       music.ctrl          1.00/0.80      music.ctrl        
+下一曲                    music.ctrl       music.ctrl          1.00/1.00      music.ctrl        
+换首歌                    music.ctrl       music.ctrl          1.00/0.67      music.ctrl        
+把音乐关了                  music.ctrl       ai X                0.00/0.00      music.ctrl        
+再放一遍                   music.ctrl       ai X                0.00/0.00      ai X              
+还剩多少电                  device.status    device.status       1.00/1.00      device.status     
+你运行多久了                 device.status    device.status       1.00/1.00      device.status     
+开机多长时间                 device.status    device.status       1.00/1.00      device.status     
+电量还有吗                  device.status    ai X                0.22/0.22      device.status     
+今天天气怎么样                factory.weather  ai X                0.00/0.00      factory.weather   
+明天会下雨吗                 factory.weather  ai X                0.18/0.18      factory.weather   
+今天适合出门吗                factory.weather  ai X                0.00/0.00      factory.weather   
+今天北京天气怎么样              factory.weather  ai X                0.00/0.00      factory.weather   
+明天早上七点叫我起床             factory.alarm    ai X                0.13/0.13      factory.alarm     
+定个闹钟                   factory.alarm    ai X                0.00/0.00      factory.alarm     
+现在几点了                  factory.time     ai X                0.00/0.00      factory.time      
+今天星期几                  factory.time     ai X                0.00/0.00      factory.time      
+关闭屏幕                   factory.screen   ai X                0.00/0.00      ai X              
+记住我不吃香菜                memory.add       memory.add          1.00/1.00      memory.add        
+帮我记住明天买牛奶              memory.add       memory.add          1.00/1.00      memory.add        
+记一下密码是六个八              memory.add       memory.add          1.00/1.00      memory.add        
+给我讲一个恐龙故事              ai               ai                  0.00/0.00      ai                
+你叫什么名字                 ai               ai                  0.00/0.00      ai                
+给我介绍一下这个设备             ai               ai                  0.12/0.12      ai                
+东京有什么好玩的               ai               ai                  0.00/0.00      ai                
+帮我算一下三加五               ai               ai                  0.15/0.15      ai                
+这首歌真好听                 ai               ai                  0.29/0.06      ai                
+播放器怎么设置                ai               ai                  0.22/0.07      ai                
+音乐是怎么压缩的               ai               ai                  0.00/0.00      ai                
+电池是什么原理                ai               ai                  0.18/0.18      device.status X   
+------------------------------------------------------------------------------------------------
+验证集规模        : 42 句（人工标注，非生产精度）
+M1 Dice 正确      : 23/42 = 54.8%   误接管原厂: 0 句   弃权给上层: 28 句
+M2 模板 正确      : 36/42 = 85.7%   误接管原厂: 0 句   弃权给上层: 13 句
+M3 模板+Dice 补  : 38/42 = 90.5%
+M1/M2 冲突句数     : 0（需要仲裁规则，不能静默取其一）
+
+过拟合演示（把 M2 的失败项补进词表后重测）：
+  当前失败项      : 现在有点吵→factory.volume; 来点动静→music.play; 我想听点轻的→music.play; 再放一遍→music.ctrl; 关闭屏幕→factory.screen; 电池是什么原理→ai
+  补词后理论正确率: 42/42 = 100.0%（受限于补词者的想象力，不可持续）
