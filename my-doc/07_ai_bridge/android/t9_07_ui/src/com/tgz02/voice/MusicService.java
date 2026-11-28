@@ -57,6 +57,13 @@ public final class MusicService extends Service
 
     static final int LOOP_OFF = 0, LOOP_ALL = 1, LOOP_ONE = 2;
 
+    /**
+     * Hard ceiling for the media stream. The operator asked for it after a test run was too
+     * loud: everything -- the guard, the UI bar and the voice "声音大一点" path -- clamps here,
+     * so no route can push STREAM_MUSIC above half.
+     */
+    static final int MAX_VOLUME = 50;
+
     /* ------------------------------------------------------------------ state */
 
     interface Ui { void onMusic(); }
@@ -210,7 +217,7 @@ public final class MusicService extends Service
         INSTANCE = this;
         am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        targetVolume = Music.volume(this);
+        targetVolume = Math.max(0, Math.min(MAX_VOLUME, Music.volume(this)));
         shuffle = getSharedPreferences("music", MODE_PRIVATE).getBoolean("shuffle", false);
         loopMode = getSharedPreferences("music", MODE_PRIVATE).getInt("loop", LOOP_ALL);
         buildChannel();
@@ -655,7 +662,7 @@ public final class MusicService extends Service
 
     void setTargetVolume(int v, boolean apply)
     {
-        targetVolume = Math.max(0, Math.min(100, v));
+        targetVolume = Math.max(0, Math.min(MAX_VOLUME, v));
         Music.setVolume(this, targetVolume);
         if (apply && am != null) {
             try { am.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, 0); }

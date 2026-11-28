@@ -361,8 +361,9 @@ public final class MusicActivity extends Activity implements MusicService.Ui {
         vol.setOnChange(new Bar.OnChange() {
             public void onChange(Bar b, float p, boolean committed)
             {
+                /* the bar spans 0..MAX_VOLUME, not 0..100: the ceiling is a product rule */
                 if (committed) MusicService.send(MusicActivity.this, "vol", null,
-                        Math.round(p * 100));
+                        Math.round(p * MusicService.MAX_VOLUME));
             }
         });
         LinearLayout.LayoutParams vlp = new LinearLayout.LayoutParams(Ui4.dp(this, 130),
@@ -462,7 +463,8 @@ public final class MusicActivity extends Activity implements MusicService.Ui {
             shuffleChip.setTextColor(MusicService.shuffleNow() ? Ui4.primary(this)
                     : Ui4.text2(this));
         }
-        if (vol != null) vol.setProgress(MusicService.volumeNow() / 100f);
+        if (vol != null) vol.setProgress(MusicService.volumeNow()
+                / (float) MusicService.MAX_VOLUME);
 
         String err = MusicService.errorNow();
         if (hint != null) {

@@ -133,11 +133,12 @@ public final class Music {
 
     /** the volume the player restores after the factory ducks it (see MusicService) */
     static int volume(Context c) {
-        return prefs(c).getInt(K_VOLUME, 60);
+        return Math.min(MusicService.MAX_VOLUME, prefs(c).getInt(K_VOLUME, 40));
     }
 
     static void setVolume(Context c, int v) {
-        prefs(c).edit().putInt(K_VOLUME, Math.max(0, Math.min(100, v))).apply();
+        prefs(c).edit().putInt(K_VOLUME,
+                Math.max(0, Math.min(MusicService.MAX_VOLUME, v))).apply();
     }
 
     /* ------------------------------------------------------------------- model */
