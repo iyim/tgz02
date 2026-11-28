@@ -1973,6 +1973,9 @@ static int tts_probe_stage(const t6b_worker *w, const char *eid, const char **st
  *      -1 = 失败（rep->status = T6B_P_ERROR）—— 调用方按 Provider 失败处理：
  *           偏移不动、按退避重试、超限进死信；绝不当成成功，也不静默丢弃事件。
  */
+/* 前置声明：音乐技能要写"别再自动开麦"截止时间（定义在文件后面，T9-26） */
+static void aiw_write_listen_hold(t6b_worker *w, int hold_ms, long long now_ms);
+
 /* ---------------- T9-25：音乐技能（自有原生播放器） ----------------
  *
  * 这个技能自己不碰音频：它把命令投给 App 的 MusicService，由那边解析直链、播放、
@@ -2020,11 +2023,24 @@ static int t9_skill_music_exec(const t8_skill_req *req, t8_skill_result *res, vo
     const char *cmd;
     char q[192];
     int rc;
-    (void)ctx;
 
     if (res == NULL || req == NULL) return T8_SK_E_ARG;
     res->code = T8_SK_E_FAIL;
     res->message[0] = '\0';
+
+    /* T9-26（用户要求）：点歌之后禁止原厂弹"续听"。
+     * 续听 = 守卫替原厂 startTalk 再开一次麦，屏幕上会跳出"我在听"；歌都已经在放了，
+     * 这时候再开麦既打断听歌、又容易把音乐声当命令。用与"停止/退出"同一把旋钮：
+     * 写 listen_hold 截止时间（守卫读到就把自动续听丢掉），并撤掉排队中的续听请求。
+     * 唤醒词不受影响 —— 用户想说话仍然喊"天猫精灵"。
+     * 放在技能里而不是路由分支：自测入口也能覆盖，且语义就是"这个技能要放歌"。 */
+    if (ctx != NULL) {
+        t6b_worker *w = (t6b_worker *)ctx;
+        aiw_write_listen_hold(w, 60000, wu_now_ms());
+        w->native_relisten_due_ms = 0;
+        w->native_rel_waiting = 0;
+        always("skill music: no re-listen for 60s (music is playing; wake word still works)");
+    }
 
     cmd = (req->argc > 0 && req->argv[0][0] != '\0') ? req->argv[0] : "play";
 
@@ -4145,7 +4161,7 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         if (!c->skill_music_enabled) {
             always("skill: music NOT registered (skill_music_enabled=0) -> playback "
                    "commands fall back to the factory through IR_MEDIA");
-        } else if (t8_skill_register(&w.sk, T8_SK_MUSIC, t9_skill_music_exec, NULL)
+        } else if (t8_skill_register(&w.sk, T8_SK_MUSIC, t9_skill_music_exec, &w)
                    != T8_SK_OK) {
             always("skill register failed: music");
         }
@@ -4615,7 +4631,18 @@ int main(int argc, char **argv)
             t8_skill_req_init(&mreq, T8_SK_MUSIC, "selftest");
             snprintf(mreq.text, sizeof(mreq.text), "%s", txt);
             if (mir.arg[0] != '\0') (void)t8_skill_req_arg(&mreq, mir.arg);
-            rc = t9_skill_music_exec(&mreq, &mres, NULL);
+            /* 给技能一个"只带默认配置"的 worker 上下文：这样自测也会真的写 listen_hold，
+             * 和正式运行时走同一条"禁止续听"路径（否则自测是另一条代码路，验不出问题） */
+            {
+                t6b_worker *nw = (t6b_worker *)calloc(1, sizeof(t6b_worker));
+                if (nw != NULL) {
+                    t6b_config_defaults(&nw->cfg);
+                    rc = t9_skill_music_exec(&mreq, &mres, nw);
+                    free(nw);
+                } else {
+                    rc = t9_skill_music_exec(&mreq, &mres, NULL);
+                }
+            }
             printf("code=%d speech=%s\n", rc, mres.message);
             return 0;
         }
