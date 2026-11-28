@@ -21,12 +21,16 @@
 #include "seq_gap.h"
 #include "session_ctrl.h"
 #include "skill_dispatch.h"
+#include "skill_registry.h"     /* T9-29 P0：统一技能注册表（默认关） */
+#include "skill_manifest.h"
+#include "skill_ownership.h"    /* T9-29 P1：归属表 / 租约 / 回执（默认关） */
 #include "alarm_skill.h"
 #include "t7_dup.h"
 #include "talk_tap.h"
 #include "tg_req_seq.h"
 #include "tg_inbox.h"
 #include "model_provider.h"
+#include "model_json.h"
 
 /* T9-08C: App 私有目录下的多厂商模型配置（App 写、worker 读；root 可读 app 私有文件）。 */
 #define T6B_MODELS_PATH_DEFAULT "/data/data/com.tgz02.voice/files/models.json"
@@ -118,6 +122,16 @@ typedef struct {
     long long    last_ui_status_ms;      /* status.public.json 的上次刷新时刻 */
     long long    wall_started_ms;        /* 启动墙钟（uptime 只能同一个时钟相减） */
     t8_skill_registry sk;                /* T8-14.1：自有技能注册表（默认不接管任何意图） */
+    /* T9-29 P0：统一技能注册表。reg_active=0 时下列字段一律不参与任何判定。 */
+    sk_registry  reg;
+    int          reg_active;             /* 1 = 注册表已初始化并参与 Shadow 统计 */
+    unsigned long reg_hits;              /* Shadow 判定与生产路径一致（同样判给 local） */
+    unsigned long reg_diff;              /* 两者不一致（P1 要消掉的差异） */
+    unsigned long reg_snap_off;          /* App 快照强制关闭的技能数 */
+    char         reg_err[96];            /* 初始化/清单错误（状态可见） */
+    own_ctx      own;                    /* T9-29 P1：归属表上下文（默认 inactive） */
+    int          own_on;                 /* 1 = 归属表已生效，执行前要过 own_can_exec */
+    unsigned long own_gate_skip;         /* 因闸门拒绝而没有执行本地技能的条数 */
     t8_dev_ctx   dev;                    /* T8-14.2：device.status 的数据源路径 */
     /* T8-14.1：本轮 pend 由哪个技能执行（0 = 走 Provider）。放在 pend 之外是因为它
      * 必须跨 Provider 重试保留：重试的是"同一件事"，不是"换一条路重新问模型"。 */
@@ -1474,10 +1488,15 @@ static int aiw_inbox_enqueue(void *ctx, const char *event_id, const char *text,
             pid_t pid;
 
             if (strncmp(target, name, strlen(name)) != 0) continue;
-            pid = vfork();
-            if (pid == 0) {
-                execl("/system/bin/am", "am", "start", "-n", opens[i].comp, (char *)NULL);
-                _exit(127);
+            {
+                const char *argv[6];
+
+                argv[0] = "am";
+                argv[1] = "start";
+                argv[2] = "-n";
+                argv[3] = opens[i].comp;
+                argv[4] = NULL;
+                pid = wu_spawn("/system/bin/am", argv);
             }
             always("inbox open: target=%s comp=%s pid=%d", name, opens[i].comp, (int)pid);
             return (pid > 0) ? 0 : -1;
@@ -1892,7 +1911,9 @@ static void aiw_ui_publish_status(t6b_worker *w, int force)
                  "\"reloads\":%lld,\"error\":\"%s\",\"calls\":%lu,\"ok\":%lu,\"err\":%lu,"
                  "\"timeout\":%lu,\"last_http\":%d,\"last_class\":\"%s\",\"last_error\":\"%s\","
                  "\"last_ms\":%lld,\"test\":{\"id\":\"%s\",\"ran\":%d,\"ok\":%d,\"ms\":%lld,"
-                 "\"reason\":\"%s\"}}}",
+                 "\"reason\":\"%s\"}},"
+                 "\"registry\":{\"on\":%d,\"shadow\":%d,\"count\":%d,\"hash\":\"%08lx\","
+                 "\"loaded\":%d,\"rejected\":%lu,\"hits\":%lu,\"diff\":%lu,\"snap_off\":%lu}}",
                  w->st.updated_at[0] != '\0' ? w->st.updated_at : "-", wu_wall_ms(),
                  wu_self_pid(),
                  w->st.state[0] != '\0' ? w->st.state : "starting",
@@ -1914,7 +1935,10 @@ static void aiw_ui_publish_status(t6b_worker *w, int force)
                  w->mp.list.count, (long long)w->mp.reloads, m_err_esc,
                  w->mp.calls, w->mp.ok, w->mp.err, w->mp.timeouts, w->mp.last_http,
                  m_cls_esc, m_last_esc, w->mp.last_latency_ms,
-                 m_tid_esc, w->mp.test_ran, w->mp.test_ok, w->mp.test_ms, m_treason_esc);    if (n <= 0 || n >= (int)sizeof(js)) {
+                 m_tid_esc, w->mp.test_ran, w->mp.test_ok, w->mp.test_ms, m_treason_esc,
+                 w->reg_active, w->cfg.skill_registry_shadow, w->reg.count,
+                 w->reg.rules_hash & 0xFFFFFFFFUL, w->reg.manifest_loaded,
+                 w->reg.manifest_rejects, w->reg_hits, w->reg_diff, w->reg_snap_off);    if (n <= 0 || n >= (int)sizeof(js)) {
         aiw_ui_note_error(w, "status record too large");
         return;
     }
@@ -1987,35 +2011,33 @@ static void aiw_write_listen_hold(t6b_worker *w, int hold_ms, long long now_ms);
  */
 static int t9_music_am(const char *cmd, const char *arg)
 {
-    pid_t pid;
+    const char *argv[12];
+    int n = 0;
 
-    pid = vfork();
-    if (pid == 0) {
-        if (arg != NULL && arg[0] != '\0') {
-            execl("/system/bin/am", "am", "start-foreground-service",
-                  "-n", "com.tgz02.voice/.MusicService",
-                  "-a", "com.tgz02.voice.action.MUSIC_CMD",
-                  "--es", "cmd", cmd, "--es", "arg", arg, (char *)NULL);
-        } else {
-            execl("/system/bin/am", "am", "start-foreground-service",
-                  "-n", "com.tgz02.voice/.MusicService",
-                  "-a", "com.tgz02.voice.action.MUSIC_CMD",
-                  "--es", "cmd", cmd, (char *)NULL);
-        }
-        _exit(127);
+    argv[n++] = "am";
+    argv[n++] = "start-foreground-service";
+    argv[n++] = "-n";
+    argv[n++] = "com.tgz02.voice/.MusicService";
+    argv[n++] = "-a";
+    argv[n++] = "com.tgz02.voice.action.MUSIC_CMD";
+    argv[n++] = "--es";
+    argv[n++] = "cmd";
+    argv[n++] = cmd;
+    if (arg != NULL && arg[0] != '\0') {
+        argv[n++] = "--es";
+        argv[n++] = "arg";
+        argv[n++] = arg;
     }
-    return (pid > 0) ? 0 : -1;
+    argv[n] = NULL;
+    return (wu_spawn("/system/bin/am", argv) > 0) ? 0 : -1;
 }
 
 /** 把播放界面顶到前台，用户能看见封面和歌词（失败不影响播放） */
 static void t9_music_ui(void)
 {
-    pid_t pid = vfork();
-    if (pid == 0) {
-        execl("/system/bin/am", "am", "start", "-n",
-              "com.tgz02.voice/.MusicActivity", (char *)NULL);
-        _exit(127);
-    }
+    const char *argv[] = { "am", "start", "-n", "com.tgz02.voice/.MusicActivity", NULL };
+
+    (void)wu_spawn("/system/bin/am", argv);
 }
 
 static int t9_skill_music_exec(const t8_skill_req *req, t8_skill_result *res, void *ctx)
@@ -2144,6 +2166,299 @@ static int skill_run(t6b_worker *w, t6b_reply *rep)
            "(offset NOT advanced, event kept for retry)",
            name, w->pend.event_id, rc, t0);
     return -1;
+}
+
+/* ---------------- T9-29 P0：统一技能注册表 ----------------
+ *
+ * 这一层只做三件事，且**都不改变生产行为**：
+ *   1) 把编译期能力表登记起来（含 owner / 参数 / 执行白名单 / rules_hash）；
+ *   2) 把"运行期真实开关"灌进去：既有 skill_*_enabled（conf）+ App 的 skills.public.json 快照；
+ *   3) 在路由处做 Shadow 比对：注册表"如果接管"会选哪个技能，与现有引擎的结论是否一致。
+ *
+ * 注意：即便 skill_registry_shadow=0，P0 的构建也**不接管**（下面有显式拒绝），
+ * 真正的接管随 P1（ownership）一起上线，避免"注册表先行、归属没跟上"造成双执行。
+ */
+static int aiw_registry_app_ids(const char *app, const char *out[4])
+{
+    out[0] = NULL;
+    if (app == NULL) return 0;
+    if (strcmp(app, "alarm") == 0) { out[0] = "alarm.set"; return 1; }
+    if (strcmp(app, "music") == 0) { out[0] = "music.play"; out[1] = "music.ctrl"; return 2; }
+    if (strcmp(app, "device") == 0) { out[0] = "device.status"; return 1; }
+    return 0;   /* calendar：日程还没接语音，忽略 */
+}
+
+/* 读 App 下沉的技能开关快照：只能**关**，不能开（配置/编译期决定能开的范围） */
+static void aiw_registry_apply_snapshot(t6b_worker *w)
+{
+    static char buf[2048];
+    char path[T6B_PATH_MAX];
+    char key[24];
+    size_t len = 0;
+    mj j;
+    int seen = 0;
+
+    if (w == NULL || !w->cfg.ui_events_enabled) return;
+    snprintf(path, sizeof(path), "%s/snapshots/skills.public.json", w->cfg.ui_events_dir);
+    if (wu_read_file(path, buf, sizeof(buf), &len) != 0 || len == 0) {
+        always("registry: no App skill snapshot (%s) -> config defaults only", path);
+        return;
+    }
+    mj_open(&j, buf, len);
+    if (mj_obj_open(&j) != 0) {
+        always("registry: App snapshot is not an object (ignored)");
+        return;
+    }
+    while (mj_obj_next(&j, key, sizeof(key))) {
+        if (strcmp(key, "skills") == 0) {
+            if (mj_arr_open(&j) != 0) break;
+            while (mj_arr_next(&j)) {
+                char id[SK_ID_MAX] = "";
+                int enabled = -1;
+                const char *reg_ids[4];
+                int n, k;
+
+                if (mj_obj_open(&j) != 0) break;
+                while (mj_obj_next(&j, key, sizeof(key))) {
+                    if (strcmp(key, "id") == 0) {
+                        size_t used = 0;
+
+                        if (mj_str_value(&j, id, sizeof(id), &used) != 0) id[0] = '\0';
+                    } else if (strcmp(key, "enabled") == 0) {
+                        int c = mj_peek_c(&j);
+
+                        if (c == 't' || c == 'f') { enabled = (c == 't'); (void)mj_skip(&j); }
+                        else {
+                            double d = 0.0;
+
+                            if (mj_num_value(&j, &d) == 0) enabled = (d != 0.0);
+                            else (void)mj_skip(&j);
+                        }
+                    } else {
+                        (void)mj_skip(&j);
+                    }
+                }
+                seen++;
+                n = aiw_registry_app_ids(id, reg_ids);
+                for (k = 0; k < n; k++) {
+                    int idx = sk_registry_find(&w->reg, reg_ids[k]);
+
+                    if (idx < 0) continue;
+                    if (enabled == 0 && sk_registry_enabled(&w->reg, idx)) {
+                        (void)sk_registry_set_enabled(&w->reg, idx, 0);
+                        w->reg_snap_off++;
+                        always("registry: App snapshot disabled %s (was on by config)", reg_ids[k]);
+                    }
+                }
+            }
+        } else {
+            (void)mj_skip(&j);
+        }
+    }
+    always("registry: App snapshot merged (%d entries, %lu skill(s) forced off)",
+           seen, w->reg_snap_off);
+}
+
+/* 写一份注册表快照（状态文件旁边，供证据与排查；不含正文） */
+static void aiw_registry_write_snapshot(t6b_worker *w)
+{
+    static char js[2048];
+    char path[T6B_PATH_MAX], tmp[T6B_PATH_MAX];
+    int n, fd;
+
+    if (w == NULL || w->reg.count <= 0) return;
+    n = sk_registry_dump_json(&w->reg, js, sizeof(js));
+    if (n <= 0) {
+        always("registry: snapshot dump failed (json too long)");
+        return;
+    }
+    snprintf(path, sizeof(path), "%s/registry.public.json", w->cfg.state_dir);
+    snprintf(tmp, sizeof(tmp), "%s.tmp", path);
+    fd = wu_open_wo(tmp);
+    if (fd < 0) {
+        always("registry: snapshot open failed (errno=%d)", errno);
+        return;
+    }
+    if (wu_write_all(fd, js, (size_t)n) != 0 || wu_fsync(fd) != 0) {
+        always("registry: snapshot write failed");
+        wu_close(fd);
+        (void)wu_unlink(tmp);
+        return;
+    }
+    (void)wu_close(fd);
+#ifndef _WIN32
+    (void)chmod(tmp, 0644);
+#endif
+    if (wu_rename_replace(tmp, path) != 0) {
+        always("registry: snapshot rename failed");
+        (void)wu_unlink(tmp);
+        return;
+    }
+    always("registry: snapshot written %s (%d bytes)", path, n);
+}
+
+/* 把运行期真实开关灌进注册表。owner 的允许范围由 skill_registry_set_owner 决定
+ * （time/alarm/music 可 factory<->local，device.status 可 local<->ai，其余归死）。 */
+static void aiw_registry_apply_config(sk_registry *r, const t6b_config *c)
+{
+    #define SK_SET_ENABLE(idv, onv) do { \
+        int i_ = sk_registry_find(r, idv); \
+        if (i_ >= 0) (void)sk_registry_set_enabled(r, i_, (onv) ? 1 : 0); \
+    } while (0)
+    #define SK_SET_OWNER(idv, ownv) do { \
+        int i_ = sk_registry_find(r, idv); \
+        if (i_ >= 0 && sk_registry_set_owner(r, i_, ownv) != 0) \
+            always("registry: owner switch rejected for %s", idv); \
+    } while (0)
+
+    if (r == NULL || c == NULL) return;
+    SK_SET_ENABLE("music.play", c->skill_music_enabled && c->skill_dispatch);
+    SK_SET_ENABLE("music.ctrl", c->skill_music_enabled && c->skill_dispatch);
+    SK_SET_ENABLE("device.status", c->skill_device_status && c->skill_dispatch);
+    SK_SET_ENABLE("time.query", c->skill_time_enabled && c->skill_dispatch);
+    SK_SET_ENABLE("alarm.set", c->skill_alarm_enabled && c->skill_dispatch);
+
+    SK_SET_OWNER("music.play", (c->skill_music_enabled && c->skill_dispatch) ? SK_OWN_LOCAL : SK_OWN_FACTORY);
+    SK_SET_OWNER("music.ctrl", (c->skill_music_enabled && c->skill_dispatch) ? SK_OWN_LOCAL : SK_OWN_FACTORY);
+    SK_SET_OWNER("device.status", (c->skill_device_status && c->skill_dispatch) ? SK_OWN_LOCAL : SK_OWN_AI);
+    SK_SET_OWNER("time.query", (c->skill_time_enabled && c->skill_dispatch) ? SK_OWN_LOCAL : SK_OWN_FACTORY);
+    SK_SET_OWNER("alarm.set", (c->skill_alarm_enabled && c->skill_dispatch) ? SK_OWN_LOCAL : SK_OWN_FACTORY);
+    #undef SK_SET_ENABLE
+    #undef SK_SET_OWNER
+}
+
+/* 归属映射片段：{"volume":"factory",...,"music":"local","device_status":"local"}
+ * 供 ownership.json 使用（hook 生效期只看这个，不看 mask）。 */
+static int aiw_owner_json(const sk_registry *r, char *out, size_t cap)
+{
+    size_t o = 0;
+    int it, n, first = 1;
+
+    if (out == NULL || cap < 8) return -1;
+    out[0] = '\0';
+    n = snprintf(out, cap, "{");
+    if (n < 0) return -1;
+    o = (size_t)n;
+
+    for (it = IR_VOLUME; it <= IR_MUSIC; it++) {
+        const char *id = NULL;
+        sk_owner own = sk_registry_owner_of_intent(r, (ir_intent)it, &id);
+
+        n = snprintf(out + o, cap - o, "%s\"%s\":\"%s\"", first ? "" : ",",
+                     ir_intent_name((ir_intent)it), sk_owner_name(own));
+        if (n < 0 || (size_t)n >= cap - o) return -1;
+        o += (size_t)n;
+        first = 0;
+    }
+    n = snprintf(out + o, cap - o, "}");
+    if (n < 0 || (size_t)n >= cap - o) return -1;
+    return (int)(o + (size_t)n);
+}
+
+static void aiw_registry_init(t6b_worker *w)
+{
+    t6b_config *c;
+    char path[T6B_PATH_MAX];
+    char err[96];
+    int rc, idx;
+
+    if (w == NULL) return;
+    c = &w->cfg;
+    w->reg_active = 0;
+    w->reg_err[0] = '\0';
+
+    if (!c->skill_registry_enabled) {
+        always("registry: DISABLED (skill_registry_enabled=0) -> behaviour is exactly T9-26");
+        return;
+    }
+    if (sk_registry_init(&w->reg) != 0) {
+        snprintf(w->reg_err, sizeof(w->reg_err), "table self-check failed");
+        always("registry: init FAILED (table self-check) -> registry inert");
+        return;
+    }
+
+    aiw_registry_apply_config(&w->reg, c);
+
+    /* 清单：路径为空时用 <state_dir>/skills.json；不存在不是错误 */
+    if (c->skills_manifest[0] != '\0') snprintf(path, sizeof(path), "%s", c->skills_manifest);
+    else snprintf(path, sizeof(path), "%s/skills.json", c->state_dir);
+    err[0] = '\0';
+    rc = sk_manifest_load(&w->reg, path, err, sizeof(err));
+    if (rc > 0) {
+        int i;
+
+        always("registry: manifest loaded %s (rejects=%lu params_ignored=%lu)",
+               path, w->reg.manifest_rejects, sk_manifest_params_ignored(&w->reg));
+        for (i = 0; i < w->reg.reject_count; i++) {
+            always("registry: manifest REJECT id=%s reason=%s",
+                   w->reg.reject_id[i], w->reg.reject_reason[i]);
+        }
+    } else if (rc == 0) {
+        always("registry: no manifest at %s -> compile-time defaults", path);
+    } else {
+        snprintf(w->reg_err, sizeof(w->reg_err), "%s", err[0] != '\0' ? err : "manifest error");
+        always("registry: manifest ERROR (%s) -> compile-time defaults kept",
+               err[0] != '\0' ? err : "?");
+    }
+
+    aiw_registry_apply_snapshot(w);
+
+    w->reg_active = 1;
+
+    /* 启动日志：一眼能看出"谁归谁、谁开着"（这是 P0 的核心可观测性） */
+    always("registry: enabled=1 shadow=%d count=%d rules_hash=%08lx manifest=%d reject=%lu "
+           "owner_mask=0x%03x",
+           c->skill_registry_shadow, w->reg.count,
+           w->reg.rules_hash & 0xFFFFFFFFUL, w->reg.manifest_loaded,
+           w->reg.manifest_rejects, sk_registry_factory_mask(&w->reg));
+    {
+        static const char *const watch[] = {
+            "music.play", "music.ctrl", "device.status", "time.query", "alarm.set", NULL
+        };
+        int i;
+
+        for (i = 0; watch[i] != NULL; i++) {
+            idx = sk_registry_find(&w->reg, watch[i]);
+            if (idx < 0) continue;
+            always("registry: %-14s owner=%-7s on=%d",
+                   watch[i], sk_owner_name(sk_registry_owner(&w->reg, idx)),
+                   sk_registry_enabled(&w->reg, idx));
+        }
+    }
+    if (!c->skill_registry_shadow) {
+        /* P0 的自我保护：接管能力随 P1 上线前，shadow=0 也不生效。 */
+        always("registry: shadow=0 requested, but THIS BUILD NEVER TAKES OVER "
+               "(P0 delivers registry + shadow only; ownership lands in P1) -> shadow kept");
+        c->skill_registry_shadow = 1;
+    }
+    aiw_registry_write_snapshot(w);
+
+    /* ---- T9-29 P1：归属表（默认关；关着时连文件都不碰） ---- */
+    if (c->skill_ownership_enabled) {
+        char oj[512];
+        char oerr[96];
+        const char *dir = (c->ownership_dir[0] != '\0') ? c->ownership_dir : "/data/misc/tgz02";
+
+        if (aiw_owner_json(&w->reg, oj, sizeof(oj)) <= 0) {
+            always("ownership: cannot build the owner map -> ownership NOT started "
+                   "(local skills stay on the pre-P1 path)");
+        } else {
+            oerr[0] = '\0';
+            if (own_init(&w->own, dir, c->hook_build, w->reg.rules_hash,
+                         sk_registry_factory_mask(&w->reg), oj, wu_now_ms(),
+                         oerr, sizeof(oerr)) == 0) {
+                w->own_on = 1;
+                always("ownership: ACTIVE gen=%lld dir=%s activate_in=%dms lease=%dms owner=%s",
+                       w->own.gen, dir, OWN_ACTIVATE_MS, OWN_LEASE_MS, oj);
+            } else {
+                w->own_on = 0;
+                always("ownership: FAILED to write the table (%s) -> local skills will NOT "
+                       "execute until this is fixed (I1: never double-execute)", oerr);
+            }
+        }
+    } else {
+        always("ownership: DISABLED (skill_ownership_enabled=0) -> no table, no ack, no gate");
+    }
 }
 
 /* ---------------- Provider 调用与重试（P1-2） ---------------- */
@@ -2760,12 +3075,59 @@ static int uttq_pop_to_pend(t6b_worker *w, long long now_ms)
     memset(&sk_req, 0, sizeof(sk_req));
     classified = ir_classify(slot->text, &ir);
     sk_id = skill_claim_id(w, slot->session, &ir, classified, &sk_req);
+
+    /* T9-29 P1：归属闸门。归属表生效时必须先证明"hook 会 TAKE 且这一条归我"，
+     * 否则不执行（I1 不双执行）。拒绝后不硬造回答：让后面的 native/AI 分支去接手，
+     * 这与 T9_28 "不静默" 的要求一致。 */
+    if (w->own_on && sk_id != 0) {
+        const char *why = NULL;
+        long long oms = wu_now_ms();
+
+        if (!own_can_exec(&w->own, slot->session, slot->text, oms, &why)) {
+            w->own_gate_skip++;
+            always("ownership GATE: event=%s skill=%s rejected (%s) -> not executing locally "
+                   "(owner stays with factory/ai; nothing is spoken twice)",
+                   slot->event_id, t8_skill_name((t8_skill_id)sk_id), why != NULL ? why : "?");
+            sk_id = 0;
+        }
+    }
     /* T9-25：音乐技能没接管（开关关掉 / 没注册）时，把 IR_MUSIC 退回 IR_MEDIA。
      * 于是"播放/暂停/下一首"重新走上"放行给原厂"的老路径，行为与加音乐之前一致。 */
     if (sk_id == 0 && classified && ir.intent == IR_MUSIC) {
         ir.intent = IR_MEDIA;
         snprintf(ir.rule, sizeof(ir.rule), "%s", "music.fallback_media");
     }
+    /* ---- T9-29 P0：注册表 Shadow 比对 ----
+     * 只回答一个问题：注册表"如果接管"会选哪个技能？和现有引擎的结论一样吗？
+     * 无论结果如何都不改变执行路径（本构建不具备接管能力，见 aiw_registry_init）。
+     * 差异计数 reg_diff 就是 P1 要消掉的工作量，也是"归属与执行是否一致"的仪表。 */
+    if (w->reg_active) {
+        int ridx = sk_registry_claim(&w->reg, ir.intent, ir.arg);
+        int reg_local = (ridx >= 0) && sk_registry_enabled(&w->reg, ridx) &&
+                        (sk_registry_owner(&w->reg, ridx) == SK_OWN_LOCAL);
+        int eng_local = (sk_id != 0);
+        const char *rid = (ridx >= 0) ? sk_registry_at(&w->reg, ridx)->id : "-";
+
+        if (reg_local && !eng_local) {
+            w->reg_diff++;
+            always("registry SHADOW diff(+reg): event=%s intent=%s arg=%s registry=%s "
+                   "engine=none (shadow only, nothing changed)",
+                   slot->event_id, ir_intent_name(ir.intent),
+                   ir.arg[0] != '\0' ? ir.arg : "-", rid);
+        } else if (!reg_local && eng_local) {
+            w->reg_diff++;
+            always("registry SHADOW diff(-reg): event=%s intent=%s engine=%s registry=none "
+                   "(shadow only, nothing changed)",
+                   slot->event_id, ir_intent_name(ir.intent),
+                   t8_skill_name((t8_skill_id)sk_id));
+        } else if (reg_local) {
+            w->reg_hits++;
+            if (ridx >= 0) w->reg.rt[ridx].claims++;
+            always("registry SHADOW match: event=%s intent=%s skill=%s",
+                   slot->event_id, ir_intent_name(ir.intent), rid);
+        }
+    }
+
     if (sk_id != 0) {
         /* 接管：本条不再写原厂放行标记、也不进大模型；由 pend 上的技能 id 决定执行者 */
         w->st.sk_claimed++;
@@ -3613,6 +3975,8 @@ static int worker_loop(t6b_worker *w, const char **exit_reason)
         aiw_inbox_poll(w);
         /* T9-08C: pick up a model config the App just saved (no-op when unchanged) */
         aiw_model_poll(w);
+        /* T9-29 P1: renew the ownership lease (no-op unless ownership is on and 2 s passed) */
+        if (w->own_on) (void)own_heartbeat(&w->own, wu_now_ms());
         /* T9-07R1: answer one queued UI text question through the provider (no-op when idle) */
         aiw_text_turn(w);
         /* T9-07: refresh the UI status snapshot (throttled inside; no-op when disabled) */
@@ -3689,6 +4053,14 @@ void t6b_config_defaults(t6b_config *c)
     /* T9-23：模型配置只有一份（App 的 models.json）。为 1 时若 models.json 缺失/无效，
      * worker 明确失败退出，绝不静默退回 mock —— 否则用户会以为在用真模型。 */
     c->models_required = 1;
+    /* T9-29 P0：统一技能注册表默认关闭（关闭时注册表连初始化都不参与判定），
+     * 打开后先 Shadow：只统计"如果由注册表接管会走哪个技能"，不改生产路径。 */
+    c->skill_registry_enabled = 0;
+    c->skill_registry_shadow = 1;
+    c->skills_manifest[0] = '\0';
+    c->skill_ownership_enabled = 0;
+    c->ownership_dir[0] = '\0';
+    c->hook_build[0] = '\0';
     c->skill_battery_path[0] = '\0';
     /* T8-15：免唤醒连续对话默认打开（这是 T8-15 交付的语义本身；不动原厂任何东西）。
      * 语义：播报结束后装填续听窗口，窗口内到达的下一句算同一对话的下一轮。 */
@@ -4169,6 +4541,9 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         snprintf(w.st.sk_last_skill, sizeof(w.st.sk_last_skill), "%s", "none");
         snprintf(w.st.sk_last_result, sizeof(w.st.sk_last_result), "%s", "none");
 
+        /* T9-29 P0：统一技能注册表（默认关；打开后只 Shadow，不接管） */
+        aiw_registry_init(&w);
+
         w.st.route_enabled = c->route_native;
         w.st.route_intents = c->route_intents;
         snprintf(w.st.route_publish_file, sizeof(w.st.route_publish_file), "%s",
@@ -4466,6 +4841,63 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
 
 /* ---------------- main ---------------- */
 
+/* T9-29 P0：注册表自测入口（不开麦、不消费事件、不执行技能）
+ *
+ * 用法：ai_worker --conf <worker.conf> --self-test-registry "播放周杰伦的晴天"
+ *
+ * 为什么要这个入口：注册表的价值在"归属与开关"，而这两样在真机上的组合（music 开、
+ * time/alarm 关、App 快照可能又关一个）很难靠"说一句话看反应"验证。这个入口把
+ * "这句话会被谁接、依据是什么"直接打印出来，真机和 host 走同一条代码路径。
+ */
+static int t929_self_test_registry(const t6b_config *c, const char *text)
+{
+    sk_registry r;
+    ir_result ir;
+    char path[T6B_PATH_MAX];
+    char err[96];
+    int hit, ridx;
+    const char *id;
+
+    if (c == NULL || text == NULL) return 2;
+    if (sk_registry_init(&r) != 0) {
+        printf("registry_init=FAILED(table self-check)\n");
+        return 2;
+    }
+    aiw_registry_apply_config(&r, c);
+
+    if (c->skills_manifest[0] != '\0') snprintf(path, sizeof(path), "%s", c->skills_manifest);
+    else snprintf(path, sizeof(path), "%s/skills.json", c->state_dir);
+    err[0] = '\0';
+    (void)sk_manifest_load(&r, path, err, sizeof(err));
+
+    printf("registry: count=%d rules_hash=%08lx manifest=%d rejects=%lu mask=0x%03x\n",
+           r.count, r.rules_hash & 0xFFFFFFFFUL, r.manifest_loaded, r.manifest_rejects,
+           sk_registry_factory_mask(&r));
+    printf("manifest: path=%s result=%s\n", path,
+           r.manifest_loaded ? "loaded" : (err[0] != '\0' ? err : "absent"));
+
+    hit = ir_classify(text, &ir);
+    printf("text=%s\nintent=%s\nrule=%s\narg=%s\ncomplete=%d\n",
+           text, hit ? ir_intent_name(ir.intent) : "none", hit ? ir.rule : "-",
+           hit ? ir.arg : "-", hit ? ir.complete : 0);
+    if (!hit) {
+        printf("claim=none(no-intent)\n");
+        return 0;
+    }
+    ridx = sk_registry_claim(&r, ir.intent, ir.arg);
+    if (ridx < 0) {
+        printf("claim=none(unregistered-intent)\n");
+        return 0;
+    }
+    id = sk_registry_at(&r, ridx)->id;
+    printf("skill=%s\nowner=%s\non=%d\n",
+           id, sk_owner_name(sk_registry_owner(&r, ridx)), sk_registry_enabled(&r, ridx));
+    printf("decision=%s\n",
+           (sk_registry_owner(&r, ridx) == SK_OWN_FACTORY) ? "PASS(factory-executes)"
+                                                          : "TAKE(we-execute-or-model)");
+    return 0;
+}
+
 static void usage(void)
 {
     fprintf(stdout,
@@ -4645,6 +5077,25 @@ int main(int argc, char **argv)
             }
             printf("code=%d speech=%s\n", rc, mres.message);
             return 0;
+        }
+        else if (strcmp(a, "--self-test-token") == 0) {
+            /* T9-29 P1：打印一条语音的决策令牌（调试/联调用，与 Hook 同一份实现）。
+             * 用法：ai_worker --self-test-token <session> <text> <gen> */
+            char tok[OWN_TOK_MAX];
+
+            if (i + 3 >= argc) goto bad;
+            if (own_token(argv[i + 1], argv[i + 2], atoll(argv[i + 3]), tok, sizeof(tok)) != 0) {
+                printf("token=FAILED\n");
+                return 2;
+            }
+            printf("%s\n", tok);
+            return 0;
+        }
+        else if (strcmp(a, "--self-test-registry") == 0) {
+            /* T9-29 P0：注册表自测（归属/开关/Shadow 判定）。
+             * 用法：ai_worker --conf <conf> --self-test-registry "播放周杰伦的晴天" */
+            if (need_str(argc, argv, i, &v)) goto bad;
+            return t929_self_test_registry(&cfg, v);
         }
         else if (strcmp(a, "--self-test-alarm") == 0) {
             /* T9-17：离线验证闹钟技能解析（标签/时间/话术），不进主循环、不碰设备。

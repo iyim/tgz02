@@ -111,6 +111,14 @@ int         skill_time_enabled;   /* T9-19d：为 0 时不注册 time 技能 -> 
 int         skill_music_enabled;  /* T9-25：为 0 时不注册 music 技能 -> IR_MUSIC 退回 IR_MEDIA
                                    * （即恢复"放行给原厂"的老行为） */
 int         models_required;      /* T9-23：1 = 只认 models.json，缺失/无效就明确失败，不静默 mock */
+    /* T9-29 P0：统一技能注册表（默认关；打开后先 Shadow，只统计不接管） */
+    int         skill_registry_enabled;
+    int         skill_registry_shadow;
+    char        skills_manifest[T6B_PATH_MAX];   /* 空 = <state_dir>/skills.json */
+    /* T9-29 P1：归属表 / 租约 / 回执（默认关；关闭时连文件都不碰） */
+    int         skill_ownership_enabled;
+    char        ownership_dir[T6B_PATH_MAX];     /* 空 = /data/misc/tgz02 */
+    char        hook_build[24];                  /* 期望的 hook 构建指纹（空 = 不校验） */
     int         skill_device_status;
     /* 可选：覆盖电池 capacity 路径（空 = 按候选列表自动探测，真机为 sysfs） */
     char        skill_battery_path[T8_SK_PATH_MAX];

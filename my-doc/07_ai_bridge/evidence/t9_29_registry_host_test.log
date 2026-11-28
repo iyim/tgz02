@@ -1,0 +1,93 @@
+﻿# T9-29 P0 registry host test
+# host time: 2026-11-28 23:07:17
+
+# --- build ---
+  build ok (0 warning): ai_worker_t929.exe
+  build ok (0 warning): t9_29_registry_unit_test.exe
+
+# --- C contract test ---
+  | == registry ==
+  | == manifest ==
+  | 
+  | PASS 69  FAIL 0
+  PASS registry/manifest contract test exits 0
+  PASS contract test reports FAIL 0
+
+# --- case A: registry DISABLED (default) ---
+  | [aiw] 2026-11-28T23:07:31 registry: DISABLED (skill_registry_enabled=0) -> behaviour is exactly T9-26
+  | [aiw] 2026-11-28T23:07:31 skill dispatch: enabled=1 registered=1 time_query=1 (off = native routing untouched)
+  | [aiw] 2026-11-28T23:07:31 skill device.status: switch=0 battery=(unavailable) uptime=/proc/uptime
+  | [aiw] 2026-11-28T23:07:31 route=skill skill=time.query event=e-a-1 session=s-a rule=time.keyword arg=- (native routing skipped for this utterance)
+  | [aiw] 2026-11-28T23:07:31 route=skill event=e-a-1 seq=1 session=s-a skill=time.query text_bytes=12
+  | [aiw] 2026-11-28T23:07:31 skill ok: skill=time.query event=e-a-1 code=OK took=0ms reply_bytes=9
+  | [aiw] 2026-11-28T23:07:31 skill tts queued: skill=time.query event=e-a-1
+  PASS A: time is claimed by the skill
+  PASS A: no registry decision and no table (fully inert; only the DISABLED line)
+  PASS A: exactly one TTS item queued
+  PASS A: no registry snapshot written
+
+# --- case B: registry ENABLED + shadow ---
+  | [aiw] 2026-11-28T23:07:32 registry: no manifest at D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t9_29\B_shadow\state/skills.json -> compile-time defaults
+  | [aiw] 2026-11-28T23:07:32 registry: enabled=1 shadow=1 count=14 rules_hash=cea6602f manifest=0 reject=0 owner_mask=0x0f7
+  | [aiw] 2026-11-28T23:07:32 registry: music.play     owner=local   on=1
+  | [aiw] 2026-11-28T23:07:32 registry: music.ctrl     owner=local   on=1
+  | [aiw] 2026-11-28T23:07:32 registry: device.status  owner=ai      on=0
+  | [aiw] 2026-11-28T23:07:32 registry: time.query     owner=local   on=1
+  | [aiw] 2026-11-28T23:07:32 registry: alarm.set      owner=local   on=1
+  | [aiw] 2026-11-28T23:07:32 registry: snapshot written D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t9_29\B_shadow\state/registry.public.json (1014 bytes)
+  | [aiw] 2026-11-28T23:07:32 ownership: DISABLED (skill_ownership_enabled=0) -> no table, no ack, no gate
+  | [aiw] 2026-11-28T23:07:32 skill dispatch: enabled=1 registered=1 time_query=1 (off = native routing untouched)
+  | [aiw] 2026-11-28T23:07:32 skill device.status: switch=0 battery=(unavailable) uptime=/proc/uptime
+  | [aiw] 2026-11-28T23:07:32 registry SHADOW match: event=e-b-1 intent=time skill=time.query
+  | [aiw] 2026-11-28T23:07:32 route=skill skill=time.query event=e-b-1 session=s-b rule=time.keyword arg=- (native routing skipped for this utterance)
+  | [aiw] 2026-11-28T23:07:32 route=skill event=e-b-1 seq=1 session=s-b skill=time.query text_bytes=12
+  PASS B: registry initialised
+  PASS B: time.query registered as local/on
+  PASS B: shadow match logged for the event
+  PASS B: execution path unchanged (still route=skill)
+  PASS B: same number of TTS items as A
+  PASS B: registry snapshot written
+  PASS B: snapshot lists the whole table
+  PASS B: snapshot marks time.query local
+  PASS B: snapshot keeps weather factory
+
+# --- case C: manifest disables time.query (shadow must NOT take over) ---
+  | [aiw] 2026-11-28T23:07:33 registry: manifest loaded D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t9_29\C_manifest\state/skills.json (rejects=0 params_ignored=0)
+  | [aiw] 2026-11-28T23:07:33 registry: enabled=1 shadow=1 count=14 rules_hash=cea6602f manifest=1 reject=0 owner_mask=0x0f7
+  | [aiw] 2026-11-28T23:07:33 registry: music.play     owner=local   on=1
+  | [aiw] 2026-11-28T23:07:33 registry: music.ctrl     owner=local   on=1
+  | [aiw] 2026-11-28T23:07:33 registry: device.status  owner=ai      on=0
+  | [aiw] 2026-11-28T23:07:33 registry: time.query     owner=local   on=0
+  | [aiw] 2026-11-28T23:07:33 registry: alarm.set      owner=local   on=1
+  | [aiw] 2026-11-28T23:07:33 registry: snapshot written D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t9_29\C_manifest\state/registry.public.json (1014 bytes)
+  | [aiw] 2026-11-28T23:07:33 registry SHADOW diff(-reg): event=e-c-1 intent=time engine=time.query registry=none (shadow only, nothing changed)
+  | [aiw] 2026-11-28T23:07:33 route=skill skill=time.query event=e-c-1 session=s-c rule=time.keyword arg=- (native routing skipped for this utterance)
+  | [aiw] 2026-11-28T23:07:33 route=skill event=e-c-1 seq=1 session=s-c skill=time.query text_bytes=12
+  PASS C: manifest loaded from state dir
+  PASS C: shadow reports the disagreement (registry says no)
+  PASS C: production path still executes (shadow only)
+  PASS C: still exactly one TTS item
+  PASS C: snapshot shows time.query off after manifest narrowing
+
+# --- case D: ownership ON but no hook ack -> local skill must NOT execute ---
+  | [aiw] 2026-11-28T23:07:34 ownership: ACTIVE gen=1 dir=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t9_29\D_noack\own activate_in=1500ms lease=7500ms owner={"volume":"factory","weather":"factory","screen_off":"factory","time":"local","screen_on":"factory","media":"factory","stop":"factory","exit":"factory","device_status":"ai","alarm":"local","music":"local"}
+  | [aiw] 2026-11-28T23:07:36 ownership GATE: event=e-d-1 skill=time.query rejected (no-ack) -> not executing locally (owner stays with factory/ai; nothing is spoken twice)
+  | [aiw] 2026-11-28T23:07:36 route=native intent=time rule=time.keyword arg= event=e-d-1 seq=1 session=s-d text_bytes=12 merges=0 held_ms=0 publish_seq=1 (factory answers; AI worker does not)
+  PASS D: ownership table written
+  PASS D: ownership.json exists
+  PASS D: gate rejects without ack
+  PASS D: local skill NOT executed
+  PASS D: nothing queued locally (no double answer)
+  PASS D: fell through to the factory (I2: not silent)
+
+# --- case E: ownership ON + matching ack (take token) -> execute ---
+  ack: gen=1 tok=66e7f359 hash=cea6602f
+  | [aiw] 2026-11-28T23:07:38 ownership: ACTIVE gen=1 dir=D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\out\t9_29\E_ack\own activate_in=1500ms lease=7500ms owner={"volume":"factory","weather":"factory","screen_off":"factory","time":"local","screen_on":"factory","media":"factory","stop":"factory","exit":"factory","device_status":"ai","alarm":"local","music":"local"}
+  | [aiw] 2026-11-28T23:07:40 route=skill skill=time.query event=e-e-1 session=s-e rule=time.keyword arg=- (native routing skipped for this utterance)
+  | [aiw] 2026-11-28T23:07:40 route=skill event=e-e-1 seq=1 session=s-e skill=time.query text_bytes=12
+  | [aiw] 2026-11-28T23:07:40 skill ok: skill=time.query event=e-e-1 code=OK took=0ms reply_bytes=9
+  PASS E: gate did NOT reject (ack + token match)
+  PASS E: local skill executed
+  PASS E: exactly one TTS item queued
+
+# result: PASS 29  FAIL 0

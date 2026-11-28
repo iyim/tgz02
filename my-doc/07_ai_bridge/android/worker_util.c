@@ -349,6 +349,32 @@ long long wu_sleep_ms(long long ms)
 #endif
 }
 
+/*
+ * T9-29：跨平台的"起一个子进程"。
+ * Android 上 ai_worker 以 root 运行，用 am 起服务/开页面；Windows 上没有这些东西，
+ * 返回 -1 + ENOSYS 让调用方按"起不来"处理（host 单测因此也能链接整个 worker）。
+ */
+int wu_spawn(const char *path, const char *const *argv)
+{
+    if (path == NULL || argv == NULL) { errno = EINVAL; return -1; }
+#ifdef _WIN32
+    (void)path; (void)argv;
+    errno = ENOSYS;
+    return -1;
+#else
+    {
+        pid_t pid = vfork();
+
+        if (pid < 0) return -1;
+        if (pid == 0) {
+            execv(path, (char *const *)argv);   /* vfork 的子进程里只允许 exec/_exit */
+            _exit(127);
+        }
+        return (int)pid;
+    }
+#endif
+}
+
 int wu_pid_alive(long long pid)
 {
     if (pid <= 1) return 0;

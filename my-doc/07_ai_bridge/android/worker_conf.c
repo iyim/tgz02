@@ -296,6 +296,38 @@ static int wc_apply(t6b_config *cfg, const char *key, const char *val, char *err
         cfg->models_required = iv;
         return 0;
     }
+    /* T9-29 P0：统一技能注册表。
+     *   skill_registry_enabled=0（默认）—— 注册表完全不参与判定，行为与 T9-26 一致；
+     *   skill_registry_shadow=1（默认）—— 打开注册表后也只统计/记日志，不接管执行。
+     * 两者都写 0/1；注册表第一次真正改变行为必须显式把 shadow 写成 0。 */
+    if (strcmp(key, "skill_registry_enabled") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->skill_registry_enabled = iv;
+        return 0;
+    }
+    if (strcmp(key, "skill_registry_shadow") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->skill_registry_shadow = iv;
+        return 0;
+    }
+    if (strcmp(key, "skills_manifest") == 0) {
+        if (wc_copy(cfg->skills_manifest, sizeof(cfg->skills_manifest), val) != 0) goto bad;
+        return 0;
+    }
+    /* T9-29 P1：归属表（默认关）。打开后 worker 才写 ownership.json / 读回执 / 按闸门执行。 */
+    if (strcmp(key, "skill_ownership_enabled") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->skill_ownership_enabled = iv;
+        return 0;
+    }
+    if (strcmp(key, "ownership_dir") == 0) {
+        if (wc_copy(cfg->ownership_dir, sizeof(cfg->ownership_dir), val) != 0) goto bad;
+        return 0;
+    }
+    if (strcmp(key, "hook_build") == 0) {
+        if (wc_copy(cfg->hook_build, sizeof(cfg->hook_build), val) != 0) goto bad;
+        return 0;
+    }
     if (strcmp(key, "skill_device_battery_path") == 0) {
         if (wc_copy(cfg->skill_battery_path,
                     sizeof(cfg->skill_battery_path), val) != 0) goto bad;

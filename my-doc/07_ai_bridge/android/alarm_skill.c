@@ -332,7 +332,7 @@ static int alarm_time_parse(const char *n, int *hour, int *minute, int *day_offs
         } else {
             /* 中文数字：从「分钟」往前扫，取最近一段可解析的中文数（一..九十九） */
             const char *best = NULL;
-            int best_v = -1, best_len = 0;
+            int best_v = -1;
             const char *scan;
             for (scan = p - 3; scan >= n + 2; scan -= 3) {
                 /* 试着从 scan 解析一个中文数（两位：X十Y / 十Y / X十 / X） */
@@ -371,7 +371,7 @@ static int alarm_time_parse(const char *n, int *hour, int *minute, int *day_offs
                         }
                     }
                 }
-                if (v >= 1 && v <= 720) { best = scan; best_v = v; best_len = len; break; }
+                if (v >= 1 && v <= 720) { best = scan; best_v = v; break; }
             }
             if (best != NULL) rel_minutes = best_v;
         }

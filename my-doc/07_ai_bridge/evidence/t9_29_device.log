@@ -1,0 +1,104 @@
+# T9-29 device evidence (2026-11-28 23:08:46)
+
+## binary on device
+af71742d4d75ae6fa3ed17c6202cddf7  /data/local/tmp/t9_29/ai_worker
+-rwxr-xr-x 1 shell shell 421920 2026-11-28 23:07 /data/local/tmp/t9_29/ai_worker
+
+## P0: registry self-test (6 utterances, live worker.conf)
+--- binary ---
+af71742d4d75ae6fa3ed17c6202cddf7  /data/local/tmp/t9_29/ai_worker
+
+--- case 1: live conf (music on, time/alarm off) ---
+registry: count=14 rules_hash=cea6602f manifest=0 rejects=0 mask=0x1ff
+manifest: path=/data/local/tmp/t9_29/state/skills.json result=cannot read manifest
+text=播放周杰伦的晴天
+intent=music
+rule=music.play
+arg=play
+complete=1
+skill=music.play
+owner=local
+on=1
+decision=TAKE(we-execute-or-model)
+
+registry: count=14 rules_hash=cea6602f manifest=0 rejects=0 mask=0x1ff
+manifest: path=/data/local/tmp/t9_29/state/skills.json result=cannot read manifest
+text=下一曲
+intent=music
+rule=music.ctrl
+arg=next
+complete=1
+skill=music.ctrl
+owner=local
+on=1
+decision=TAKE(we-execute-or-model)
+
+registry: count=14 rules_hash=cea6602f manifest=0 rejects=0 mask=0x1ff
+manifest: path=/data/local/tmp/t9_29/state/skills.json result=cannot read manifest
+text=今天天气怎么样
+intent=weather
+rule=weather.keyword
+arg=
+complete=1
+skill=weather.query
+owner=factory
+on=0
+decision=PASS(factory-executes)
+
+registry: count=14 rules_hash=cea6602f manifest=0 rejects=0 mask=0x1ff
+manifest: path=/data/local/tmp/t9_29/state/skills.json result=cannot read manifest
+text=明天早上七点叫我起床
+intent=alarm
+rule=alarm.keyword
+arg=
+complete=1
+skill=alarm.set
+owner=factory
+on=0
+decision=PASS(factory-executes)
+
+registry: count=14 rules_hash=cea6602f manifest=0 rejects=0 mask=0x1ff
+manifest: path=/data/local/tmp/t9_29/state/skills.json result=cannot read manifest
+text=现在几点
+intent=time
+rule=time.keyword
+arg=
+complete=1
+skill=time.query
+owner=factory
+on=0
+decision=PASS(factory-executes)
+
+registry: count=14 rules_hash=cea6602f manifest=0 rejects=0 mask=0x1ff
+manifest: path=/data/local/tmp/t9_29/state/skills.json result=cannot read manifest
+text=还剩多少电
+intent=device_status
+rule=device.power
+arg=
+complete=1
+skill=device.status
+owner=local
+on=1
+decision=TAKE(we-execute-or-model)
+
+--- case 2: registry enabled (shadow) on the same conf ---
+(self-test reads flags from conf; registry enable is a worker.conf key)
+skill_dispatch_enabled=1
+
+skill_time_enabled=0
+skill_alarm_enabled=0
+
+## P1: ownership table + heartbeat (worker side)
+--- run (4s, empty event stream) ---
+[aiw] 2026-11-28T23:08:47 registry: enabled=1 shadow=1 count=14 rules_hash=cea6602f manifest=0 reject=0 owner_mask=0x0f7
+[aiw] 2026-11-28T23:08:47 ownership: ACTIVE gen=1 dir=/data/local/tmp/t9_29/p1/own activate_in=1500ms lease=7500ms owner={"volume":"factory","weather":"factory","screen_off":"factory","time":"local","screen_on":"factory","media":"factory","stop":"factory","exit":"factory","device_status":"ai","alarm":"local","music":"local"}
+
+--- ownership.json (after heartbeat) ---
+total 4
+-rw-r--r-- 1 root root 406 2026-11-28 23:08 ownership.json
+{"v":1,"proto":2,"gen":1,"seq":4,"writer_pid":13718,"boot_ms":3227172,"not_before_ms":3222578,"exp_ms":3234672,"heartbeat_ms":2000,"requires_hook_build":"","rules_hash":"cea6602f","mask":247,"owner":{"volume":"factory","weather":"factory","screen_off":"factory","time":"local","screen_on":"factory","media":"factory","stop":"factory","exit":"factory","device_status":"ai","alarm":"local","music":"local"}}
+
+--- registry.public.json (first 400B) ---
+{"count":14,"rules_hash":"cea6602f","manifest":0,"rejects":0,"skills":[{"id":"volume.set","owner":"factory","on":0,"exec":"none","t8":1},{"id":"volume.step","owner":"factory","on":0,"exec":"none","t8":2},{"id":"volume.mute","owner":"factory","on":0,"exec":"none","t8":3},{"id":"weather.query","owner":"factory","on":0,"exec":"none","t8":14},{"id":"time.query","owner":"local","on":1,"exec":"none","t8
+--- ack exists? (hook not implemented yet => must be absent) ---
+absent (expected in P1 worker-only stage)

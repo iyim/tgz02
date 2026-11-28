@@ -48,6 +48,7 @@ $Lib = @(
     "conv_context.c", "worker_conf.c", "worker_status.c", "echo_filter.c",
     "intent_route.c", "utterance_gate.c", "conv_session.c", "t7_dup.c",
     "session_ctrl.c", "skill_dispatch.c", "dead_letter.c",
+    "skill_registry.c", "skill_manifest.c", "skill_ownership.c", "own_token.c",
     "provider.c", "mock_provider.c", "deepseek_provider.c",
     "talk_tap.c", "tg_inbox.c", "ui_events.c", "alarm_skill.c", "tg_http.c", "model_provider.c", "model_cfg.c", "model_json.c", "doubao_provider.c", "openai_provider.c", "qwen_provider.c", "model_call.c"
 ) | ForEach-Object { Join-Path $Here $_ }

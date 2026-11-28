@@ -87,6 +87,17 @@ long long wu_sleep_ms(long long ms);
 /* 进程是否存活（Linux: kill(pid,0)；Windows: OpenProcess + WaitForSingleObject） */
 int wu_pid_alive(long long pid);
 
+/*
+ * 启动一个外部程序并立即返回（不等待它结束）。
+ *   Android/Linux: vfork + execv；成功返回子进程 pid（>0），失败 -1。
+ *   Windows: 设备侧命令（am 等）不存在，直接返回 -1 且 errno = ENOSYS。
+ *
+ * 为什么放在这里：ai_worker.c 里有多处"调 am 起服务/开页面"的代码，
+ * 直接写 vfork 会让 host 单测无法链接（Windows 没有 vfork）。T9-29 起统一走本函数。
+ * argv 必须以 NULL 结尾；本函数不修改它。
+ */
+int wu_spawn(const char *path, const char *const *argv);
+
 /* ---------------- 单实例锁（内核 advisory lock） ----------------
  *
  * POSIX: open(O_CREAT|O_RDWR) 后 flock(LOCK_EX|LOCK_NB)，成功后 **fd 一直持有到进程退出**。
