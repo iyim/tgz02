@@ -1914,6 +1914,99 @@ w.prov_models ? "models config"
 
 这样"改模型只改 models.json、改行为只改 worker.conf"，边界就干净了。
 
+---
+
+## 27. T9-23：模型配置合并成一套（models.json 为唯一来源）
+
+### 27.1 做了什么
+
+按"App 配置唯一"的要求，把 `worker.conf` 里的模型段整个删掉，密钥搬进 `models.json`：
+
+**worker.conf 删除**（备份 `/data/local/tmp/t9_23_bak/worker.conf.orig`）：
+
+```
+provider=deepseek
+base_url=http://192.168.1.13:8790/v1
+model=deepseek-flash
+api_key_file=/data/local/tmp/t5_bridge/secret/deepseek_api_key
+```
+
+**worker.conf 新增**：
+
+```
+models_required=1
+```
+
+**models.json 的 api_key 写入真实密钥**（36 字符，从 `secret/deepseek_api_key` 搬过来）：
+
+```json
+{"v":1,"default_id":"4090","models":[{"id":"4090","vendor":"openai",
+ "label":"家里那台 4090","base_url":"http://192.168.1.13:8790/v1",
+ "api_key":"<36 字符已写入>","model":"deepseek-flash",…}]}
+```
+
+权限保持 `u0_a71:u0_a71` / `0600`（App 私有目录，root 与 App 自己可读）。
+
+### 27.2 关键改动：不再静默退回 mock
+
+删掉 `provider=` 之后，worker 的默认 provider 是 `mock`，`models.json` 一旦缺失就会**悄悄用假模型回答** —— 这是最坏的失败模式。新增 `models_required`（默认 1）：
+
+```c
+if (!w.prov_models && c->models_enabled && c->models_required) {
+    always("no usable model: %s — worker.conf no longer carries a provider. "
+           "Configure the model in 设置 → 大模型配置 (web page) so that %s exists.", …);
+    status_init_failure(&w, "no_model", "models.json missing or invalid");
+    return 4;                       /* 明确失败退出，不静默 mock */
+}
+```
+
+### 27.3 实测
+
+**正常路径**（models.json 在）：
+
+```
+19:07:14 model config: 1 configuration(s) loaded, default_id=4090
+19:07:14 provider ready: models id=4090 vendor=openai model=deepseek-flash
+         base=http://192.168.1.13:8790/v1 conf=…/models.json
+```
+
+**把 models.json 改名后的失败路径**：
+
+```
+19:09:22 model config: … has no usable model (cannot stat …) - falling back to provider=mock
+19:09:22 no usable model: cannot stat … — worker.conf no longer carries a provider.
+         Configure the model in 设置 → 大模型配置 (web page) so that … exists.
+worker running? 0 proc        ← 进程没起来（退出码 4）
+```
+
+**恢复后**：
+
+```
+19:09:28 provider ready: models id=4090 …
+19:09:28 start pid=4682 … provider=models … (models config)
+worker running? 1 proc
+```
+
+顺带确认了 26.3 改的三态日志：`(models config)` / `(network enabled)` / `(mock only, no network)` 现在按真实 provider 报。
+
+### 27.4 现在两边的职责
+
+| 文件 | 管什么 |
+| --- | --- |
+| `models.json`（App / 网页配置） | **模型的全部**：id、vendor、base_url、model、**api_key**、max_tokens、timeout |
+| `worker.conf` | 只有运行参数：context、gate、session、continuous_dialog、skill_*、route-intents、`models_required` |
+
+改模型 → 网页/设置页；改行为 → `worker.conf`。模型配置热重载照旧（`aiw_model_poll` 按 mtime 检测，秒级生效）。
+
+### 27.5 回滚
+
+```sh
+cp /data/local/tmp/t9_23_bak/worker.conf.orig /data/local/tmp/t5_bridge/ai_worker/worker.conf
+cp /data/local/tmp/t9_23_bak/models.json.orig  /data/data/com.tgz02.voice/files/models.json
+# 并退出 models_required=1，或把 worker 退回 a0556dce 之前的版本
+```
+
+
 
 
 

@@ -3531,6 +3531,9 @@ void t6b_config_defaults(t6b_config *c)
     c->skill_device_status = 0;
     c->skill_alarm_enabled = 1;                    /* T9-16：默认开 */
     c->skill_time_enabled = 1;                     /* T9-19d：默认开；写 0 交回原厂播报 */
+    /* T9-23：模型配置只有一份（App 的 models.json）。为 1 时若 models.json 缺失/无效，
+     * worker 明确失败退出，绝不静默退回 mock —— 否则用户会以为在用真模型。 */
+    c->models_required = 1;
     c->skill_battery_path[0] = '\0';
     /* T8-15：免唤醒连续对话默认打开（这是 T8-15 交付的语义本身；不动原厂任何东西）。
      * 语义：播报结束后装填续听窗口，窗口内到达的下一句算同一对话的下一轮。 */
@@ -4166,6 +4169,18 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
                    mpath, w.mp.cfg_error[0] != '\0' ? w.mp.cfg_error : "not readable",
                    c->provider_name);
         }
+    }
+    /* T9-23：模型配置唯一的来源是 App 的 models.json。worker.conf 不再承载
+     * provider/base_url/model，所以这里不能再悄悄退回 mock —— 明确失败并给出指引。 */
+    if (!w.prov_models && c->models_enabled && c->models_required) {
+        always("no usable model: %s — worker.conf no longer carries a provider. "
+               "Configure the model in 设置 → 大模型配置 (web page) so that %s exists.",
+               w.mp.cfg_error[0] != '\0' ? w.mp.cfg_error : "models.json missing",
+               (c->models_path[0] != '\0') ? c->models_path : T6B_MODELS_PATH_DEFAULT);
+        status_init_failure(&w, "no_model", "models.json missing or invalid");
+        t6b_reader_free(&w.rd);
+        lock_release(&w);
+        return 4;
     }
     /* Provider 选择（T5-06C）：mock = 零网络；deepseek = 真实 HTTPS。
      * 真实 Provider 初始化失败必须退出（退出码 4），绝不悄悄退回 mock。 */

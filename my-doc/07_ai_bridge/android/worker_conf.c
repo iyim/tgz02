@@ -283,6 +283,12 @@ static int wc_apply(t6b_config *cfg, const char *key, const char *val, char *err
         cfg->skill_time_enabled = iv;
         return 0;
     }
+    /* T9-23：模型只认 App 的 models.json（1，默认）。写 0 才允许回落到 provider= 的兜底。 */
+    if (strcmp(key, "models_required") == 0) {
+        if (wc_bool(val, &iv) != 0) goto bad;
+        cfg->models_required = iv;
+        return 0;
+    }
     if (strcmp(key, "skill_device_battery_path") == 0) {
         if (wc_copy(cfg->skill_battery_path,
                     sizeof(cfg->skill_battery_path), val) != 0) goto bad;
