@@ -1613,6 +1613,47 @@ static void aiw_text_turn(t6b_worker *w)
 }
 
 /*
+ * T9-22：合并两套配置里唯一真正分裂的地方 —— 密钥。
+ *
+ * 现状：models.json 有 api_key 字段，但 worker.conf 也有一份 api_key_file。
+ * 网页上只填"地址 + 模型名"时 api_key 是空的，请求就会没有凭证；用户不得不把
+ * key 再抄一遍。这里补上继承：models.json 没写 key 就沿用 worker.conf 的 key 文件。
+ * 显式写了 api_key 的配置不受影响。
+ */
+static void aiw_model_inherit_key(t6b_worker *w)
+{
+    const char *kf;
+    int i;
+
+    if (w == NULL || !w->mp.active) return;
+    kf = w->cfg.deepseek.api_key_file;
+    if (kf == NULL || kf[0] == '\0') return;
+
+    for (i = 0; i < w->mp.list.count && i < MC_MAX_MODELS; i++) {
+        model_cfg *m = &w->mp.list.items[i];
+        char kb[512];
+        size_t kn = 0, a, b;
+
+        if (strcmp(m->id, w->mp.info.id) != 0) continue;
+        if (m->api_key[0] != '\0') return;          /* 已显式配置，不覆盖 */
+        if (wu_read_file(kf, kb, sizeof(kb), &kn) != 0 || kn == 0) return;
+
+        a = 0;
+        b = kn;
+        while (a < kn && (kb[a] == '\n' || kb[a] == '\r' || kb[a] == ' ' || kb[a] == '\t')) a++;
+        while (b > a && (kb[b - 1] == '\n' || kb[b - 1] == '\r'
+                         || kb[b - 1] == ' ' || kb[b - 1] == '\t')) b--;
+        if (b <= a || (b - a) >= sizeof(m->api_key)) return;
+
+        memcpy(m->api_key, kb + a, b - a);
+        m->api_key[b - a] = '\0';
+        always("model config: api_key empty in models.json -> inherited from %s (id=%s)",
+               kf, m->id);
+        return;
+    }
+}
+
+/*
  * T9-08C：模型配置热加载。
  *
  * App 保存 models.json 后，下一个请求就该用新配置 —— 不重启 worker、不重编译。
@@ -1641,6 +1682,7 @@ static void aiw_model_poll(t6b_worker *w)
         always("model config became usable: provider switched to models (%s/%s)",
                w->mp.info.vendor, w->mp.info.model);
     }
+    aiw_model_inherit_key(w);        /* T9-22：热重载后同样补齐 key */
     if (w->mp.active) {
         /* 状态里报告的"当前模型"必须跟真的在用的一致（热切换后不能还写着老模型名） */
         snprintf(w->st.provider, sizeof(w->st.provider), "%s",
@@ -4102,6 +4144,7 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
         }
         mp_init(&w.mp, mpath, tg_http_libcurl_xport(), NULL);
         if (mp_reload(&w.mp) >= 0 && w.mp.active) {
+            aiw_model_inherit_key(&w);        /* T9-22：models.json 没写 key 就继承 */
             mp_provider_open(&w.prov, &w.mp);
             if (t6b_provider_init(&w.prov, err, sizeof(err)) != 0) {
                 always("provider init failed (models): %s", err);
@@ -4187,7 +4230,8 @@ int t6b_worker_run(const t6b_config *c, t6b_status *out)
 
     always("start pid=%lld events=%s state=%s provider=%s offset=%lld (%s)",
            w.st.pid, w.events_path, w.state_path, w.st.provider, w.state.offset,
-           w.prov_deepseek ? "network enabled" : "mock only, no network");
+           w.prov_models ? "models config"
+                         : (w.prov_deepseek ? "network enabled" : "mock only, no network"));
     publish_status(&w, "running");
 
     rc = worker_loop(&w, &exit_reason);

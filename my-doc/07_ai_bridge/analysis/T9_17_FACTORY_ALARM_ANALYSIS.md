@@ -1843,6 +1843,78 @@ models.json：
 - **二维码**：项目里没有 zxing 的 jar（只有反编译出的 smali），要么引入 `com.google.zxing:core` 的 jar，要么自己实现 QR 编码。当前用大字地址代替，手机浏览器手输一次即可；
 - **保存后免重启**：worker 只在启动时读 models.json。要热生效，得让 worker 监视文件 mtime（改 `ai_worker.c` 重编译），或者在页面里提供一个"重启语音后台"的动作（App 没有 root，做不到）。
 
+---
+
+## 26. T9-22：worker.conf 与 models.json 为什么是两套，以及本次如何合并
+
+### 26.1 两套的来历与职责
+
+| | `worker.conf` | `models.json` |
+| --- | --- | --- |
+| 引入阶段 | T6/T7（单 provider 时代） | T9-08C（多厂商多模型） |
+| 格式 | `key=value` 平铺 | JSON + 模型数组 |
+| 位置 | `/data/local/tmp/t5_bridge/ai_worker/`（root 600） | `/data/data/com.tgz02.voice/files/`（App 私有） |
+| 管什么 | provider 名、base_url、model、**api_key_file**、采样参数、上下文/会话/技能/路由等全部运行参数 | 模型列表：id/vendor/base_url/model/**api_key**/超时/最大 token |
+| 谁写 | 部署脚本 | App 的 ModelStore（设置页 / 网页配置） |
+
+优先级（`ai_worker.c` 4104 起）：
+
+```c
+if (models_enabled && models.json 有可用模型) {
+    mp_init/mp_reload → provider = models      // 完全用 models.json
+} else if (provider_name == "deepseek") {
+    t6b_ds_open(&c->deepseek)                  // 回落到 worker.conf
+}
+```
+
+也就是说 **models.json 一旦有有效模型，worker.conf 里的 provider/base_url/model 就完全不参与**，只剩别的运行参数生效。
+
+### 26.2 真正分裂的只有一处：密钥
+
+`models.json` 有 `api_key` 字段，`worker.conf` 有 `api_key_file`。网页上只填"地址 + 模型名"时 `api_key` 是空的，请求就没有凭证 —— 用户被迫把 key 再抄一遍，这才是"两套"最难受的地方。
+
+本次补上继承（`aiw_model_inherit_key()`）：
+
+```c
+/* models.json 没写 key 就沿用 worker.conf 的 key 文件；显式写了就不覆盖 */
+if (m->api_key[0] == '\0' && wu_read_file(kf, kb, ...) == 0) {
+    memcpy(m->api_key, kb + a, b - a);
+    always("model config: api_key empty in models.json -> inherited from %s (id=%s)", kf, m->id);
+}
+```
+
+调用点两处，保证启动和热重载都覆盖：启动分支（4104 后）、`aiw_model_poll()` 热重载后。
+
+真机验证：
+
+```
+18:50:04 model config: api_key empty in models.json -> inherited from
+         /data/local/tmp/t5_bridge/secret/deepseek_api_key (id=4090)
+18:50:04 model config: 1 configuration(s) loaded, default_id=4090
+18:50:04 provider ready: models id=4090 vendor=openai model=deepseek-flash ...
+```
+
+### 26.3 顺带更正两处此前的错误描述
+
+1. **热重载一直是支持的**。`aiw_model_poll()` 每拍调 `mp_poll()`（内部 `mc_reload_if_changed` 按 mtime+size 判断），文件一变立刻重读，配置从无到有还会自动把 provider 切到 models。上一节写的"保存后必须重启"是错的 —— 只有**首次**建立 models.json 且 worker 启动时文件还不存在，才需要等下一拍（也是秒级）。
+
+2. **`start ... (mock only, no network)` 是日志文案 bug**。这一行只判断 `prov_deepseek`，走 models 路径时错报成 mock。已改成三态：
+
+```c
+w.prov_models ? "models config"
+              : (w.prov_deepseek ? "network enabled" : "mock only, no network")
+```
+
+### 26.4 还能进一步合并的地方（未做）
+
+`worker.conf` 里的 `provider=` / `base_url=` / `model=` 现在只是"models.json 不可用时的兜底"。如果确认不再需要这个兜底，可以把这三行删掉，让 `worker.conf` 只保留：
+
+- 模型无关的运行参数（上下文、gate、session、连续对话、技能开关、route-intents）
+- `api_key_file`（模型密钥的唯一来源）
+
+这样"改模型只改 models.json、改行为只改 worker.conf"，边界就干净了。
+
+
 
 
 
