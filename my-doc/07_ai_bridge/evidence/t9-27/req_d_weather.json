@@ -1,0 +1,6 @@
+{"model":"deepseek-flash","messages":[{"role":"system","content":"你是设备语音助手，只能通过工具调用控制本机技能。"},{"role":"user","content":"今天天气怎么样"}],"tools":[
+ {"type":"function","function":{"name":"music.play","description":"播放歌曲或歌单","parameters":{"type":"object","properties":{"query":{"type":"string","description":"歌名或歌手"}},"required":["query"]}}},
+ {"type":"function","function":{"name":"music.ctrl","description":"播放控制：暂停/继续/下一首/上一首","parameters":{"type":"object","properties":{"action":{"type":"string","enum":["pause","resume","next","prev"]}},"required":["action"]}}},
+ {"type":"function","function":{"name":"volume.step","description":"调大或调小音量","parameters":{"type":"object","properties":{"direction":{"type":"string","enum":["up","down"]}},"required":["direction"]}}},
+ {"type":"function","function":{"name":"device.status","description":"查询本机电量和运行时长","parameters":{"type":"object","properties":{}}}}
+],"tool_choice":"auto","max_tokens":200,"stream":false}

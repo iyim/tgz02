@@ -1,0 +1,12 @@
+# T9-27 tool-call probe (2026-11-28 22:27:55)
+# endpoint=http://192.168.1.13:8790/v1/chat/completions model=deepseek-flash
+
+a_play       finish=tool_calls   tools=[music.play({"query": "周杰伦 晴天"})] content='' took=1110ms  # 明确点歌：期望 music.play(query=周杰伦 晴天)
+b_vague      finish=tool_calls   tools=[music.play({"query": "热门流行歌单"})] content='' took=2326ms  # 模糊说法：观察模型会不会自己编 query
+c_multi      finish=tool_calls   tools=[music.play({"query": "周杰伦"})] content='' took=1323ms  # 两个动作一句话：观察是否只返回一个 tool_call
+d_weather    finish=stop         tools=[] content='抱歉，我目前还不能查询天气，只能控制本机的音乐播放、音量调节，以及查看设备电量和运行时长。需要我帮你放首歌，或查一下设备状态吗？' took=1567ms  # 原厂归属能力：工具表里没有天气，观察模型行为
+e_ood        finish=stop         tools=[] content='抱歉，我没办法帮您订机票——我只是这台设备的语音助手，能控制的只有本机的音乐播放、音量调节和查看设备状态（电量、运行时长），没有订票、联网查询这类功能。 订机票...' took=1833ms  # 域外请求：观察是否老实拒绝
+f_stop       finish=tool_calls   tools=[music.ctrl({"action": "pause"})] content='' took=1234ms  # 没有 stop 动作只有 pause：观察映射结果
+g_volume     finish=tool_calls   tools=[volume.step({"direction": "down"})] content='' took=1103ms  # 隐含方向：期望 volume.step(down)
+h_status     finish=tool_calls   tools=[device.status({})] content='' took=1094ms  # 读类技能：期望 device.status
+i_context    finish=stop         tools=[] content='我这边没有刚才的播放记录，不确定您指的是哪一首。要不要我再放一遍上一首？或者您告诉我歌名或歌手，我直接播。' took=2949ms  # 依赖上下文：观察无上下文时模型怎么回

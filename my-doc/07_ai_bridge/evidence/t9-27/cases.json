@@ -1,0 +1,11 @@
+[
+ {"id":"a_play",    "utt":"播放周杰伦的晴天",         "note":"明确点歌：期望 music.play(query=周杰伦 晴天)"},
+ {"id":"b_vague",   "utt":"来点动静",                 "note":"模糊说法：观察模型会不会自己编 query"},
+ {"id":"c_multi",   "utt":"放首周杰伦然后切下一曲",   "note":"两个动作一句话：观察是否只返回一个 tool_call"},
+ {"id":"d_weather", "utt":"今天天气怎么样",           "note":"原厂归属能力：工具表里没有天气，观察模型行为"},
+ {"id":"e_ood",     "utt":"帮我订一张明天去上海的机票","note":"域外请求：观察是否老实拒绝"},
+ {"id":"f_stop",    "utt":"把音乐关了",               "note":"没有 stop 动作只有 pause：观察映射结果"},
+ {"id":"g_volume",  "utt":"声音太大了",               "note":"隐含方向：期望 volume.step(down)"},
+ {"id":"h_status",  "utt":"还剩多少电",               "note":"读类技能：期望 device.status"},
+ {"id":"i_context", "utt":"那个再放一遍",             "note":"依赖上下文：观察无上下文时模型怎么回"}
+]
