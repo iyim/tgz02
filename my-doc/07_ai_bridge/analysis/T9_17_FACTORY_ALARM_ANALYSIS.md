@@ -1553,6 +1553,101 @@ tg_supervisor ×2                           在跑（重新注入完成）
 
 验收时 `tgt` 日志应出现 `by=alarm_wording` 而不是 `DROP`。
 
+---
+
+## 22. T9-19f：appbox 自动预装逻辑的解剖与「占位包」方案
+
+### 22.1 它到底在哪判断"要不要装"
+
+`com.alibaba.ailabs.base.util.PreinstallManager`（23 KB，被 `MarketDownloadService.onStartCommand` 调用）：
+
+```java
+checkPreinstallAndUpload(list, listener) {
+    for (MarketAppItemBean bean : list) {
+        if (!isUpload(bean)) {
+            if (isPreinstall(bean)) installApp(bean, listener);   // 下载 + 安装
+        } else {
+            updateApp(bean, listener);                            // 升级
+        }
+    }
+}
+
+isPreinstall(bean) {
+    if (!"false".equals(bean.getUninstallable()) || !"apk".equals(bean.getBusinessType()))
+        return false;
+    return !SystemUtil.isApkAvailable(bean.getPackageName());     // ← 判定点
+}
+```
+
+两个判定函数（`com.alibaba.ailabs.appbox.utils.SystemUtil`）：
+
+```java
+isApkAvailable(pkg):
+    ApplicationInfo ai = pm.getApplicationInfo(pkg, 128);
+    return ai != null;                 // 只看"包能不能查到"，不校验签名、不看 enabled
+
+isApkShouldUpdate(pkg, verCode):
+    return pm.getPackageInfo(pkg,128).versionCode < verCode;   // 只看版本号
+```
+
+`installApp()` 最终走 `Market3TaskManager.downloadAndInstall(url, …)` → `PackageInstaller` 会话（`/data/app/vmdl*.tmp`），`installerPackageName` 被写成 `what is use for ?` —— 这就是每次都能看到那个字符串的原因。
+
+### 22.2 为什么前面的办法都不够
+
+| 尝试 | 结果 |
+| --- | --- |
+| 改 `ApplistDb.db`（删 4 行可下载项） | 服务器 2 分钟内同步回 16 行 |
+| hosts 屏蔽 `ailabs.alibabausercontent.com` | 有效，但商店图标和"用户主动安装"一起被废掉 |
+| 禁用 `MarketDownloadService` | **无效** —— 重启后 3 分钟，菜谱（13:36:02）和旭慧生活（13:36:47）照样被装回，说明还有别的触发路径（`MarketServerTaskMgr` / `BoxApplication.init`） |
+
+### 22.3 方案：同包名占位包
+
+既然判定是 `getApplicationInfo != null` + `versionCode >= 清单值`，那就给它一个"查得到、版本号最大、什么都干不了"的包：
+
+```xml
+<manifest package="com.alibaba.ailabs.genie.cook"
+          android:versionCode="2147483647"
+          android:versionName="9.9.9-placeholder">
+  <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="27" />
+  <application android:label="cook" android:hasCode="false" android:allowBackup="false" />
+</manifest>
+```
+
+- 8 532 B / 个（真包：菜谱 21 MB、旭慧生活 81 MB）；
+- 无 activity、无 service、无权限、无代码 → 不出现在任何列表里，不占内存；
+- `versionCode = 2147483647` → `isApkShouldUpdate` 永远 false，也不会被"升级"覆盖；
+- 清单里的 `appVersionCode`：菜谱 2100300006、旭慧生活 39，都远小于它。
+
+构建：`placeholder/build.ps1`（aapt2 link + apksigner，与主 APK 同一 keystore）。
+
+### 22.4 实测
+
+```
+13:39  卸载真菜谱（21 MB）→ 装 cook 占位
+13:40  装 ayland 占位
+13:40  重启
+13:43  （3 分钟后）菜谱仍是 9.9.9-placeholder
+13:44  重启
+13:48  （4 分半后）
+        com.alibaba.ailabs.genie.cook   PLACEHOLDER-OK (9.9.9-placeholder)
+        com.anthouse.ayland             PLACEHOLDER-OK (9.9.9-placeholder)
+        com.alibaba.ailabs.genie.camera REAL PACKAGE (1.0.93)   ← 保留真包
+       DNS: ailabs.alibabausercontent.com → 123.129.244.9（CDN 已解锁）
+       free 299 MB
+```
+
+对比之前"重启 3 分钟必回"的表现，这次两个包都没有被替换，且商店图标正常、CDN 可达 —— **自动预装被掐掉，用户主动安装不受影响**。
+
+### 22.5 覆盖范围与维护
+
+- 已处理：`com.alibaba.ailabs.genie.cook`、`com.anthouse.ayland`
+- 故意保留真包：`com.alibaba.ailabs.genie.camera`（相机，19 MB，用户可能要拍照）、`com.alibaba.ailabs.genie.intermediary`（手势，5 MB）
+- 占位 APK 已放在设备 `/data/local/tmp/t9_19f_placeholder/`，仓库在 `placeholder/`
+- 若某个占位包被人手动卸载（于是 appbox 又会下载真包），跑一次
+  `t9_19f_reapply_placeholders.ps1` 即可恢复（主机侧 `adb uninstall` + `adb install`）。
+  设备端 `pm install` / `cmd package install` 在这台 ROM 上都不可用（前者不认子命令，后者要求 `-S` 流式），所以自愈只能从主机做。
+
+
 
 
 
