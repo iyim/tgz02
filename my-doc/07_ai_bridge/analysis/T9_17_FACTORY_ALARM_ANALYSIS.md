@@ -1296,6 +1296,72 @@ mount -o ro,remount /system && reboot
 
 首次打开小程序时容器会重建 `/data/data/com.alipay.arome.app`，数据是缓存，不需要备份。
 
+---
+
+## 19. T9-19c：菜谱为什么还在、爱家看护移除
+
+### 19.1 菜谱还在，是因为当初做的是"禁用"而不是"卸载"
+
+```sh
+dumpsys package com.alibaba.ailabs.genie.cook
+  codePath=/data/app/com.alibaba.ailabs.genie.cook-vWLpAIaHCXF197vbQ1kh7g==
+  flags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ]        ← 没有 SYSTEM，纯 /data 应用
+  User 0: … enabled=2                             ← 我们设的 DISABLED
+  /data/app 目录 21.5 MB（APK 7.5 MB + oat + lib）
+```
+
+`pkgdisable` 只写 PackageManager 的 enabled 状态，**包仍然安装着，APK 文件也还在**，所以「空间清理」照常把它列为已安装应用、按 APK+dex+data 算出 37 MB。
+
+之前不敢真删，是因为 appbox 会补装。现在 17.4 已经把下载主机掐掉，`adb uninstall` 就是真删。
+
+| 包 | 位置 | 真删动作 |
+| --- | --- | --- |
+| `com.alibaba.ailabs.genie.cook` | 只在 `/data/app`（appbox 装的，无系统副本） | `adb uninstall` 就没了 |
+
+### 19.2 爱家看护要分两层删
+
+```sh
+flags=[ SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA UPDATED_SYSTEM_APP ]
+  /system/app/GenieAicare/GenieAicare.apk   2.6 MB（目录 19 MB，含 oat+lib）
+  /data/app/…aicare-zsBAkMuEJlOe5ygOiDbDbw==  11.4 MB（目录 30.5 MB）
+```
+
+它是**预置系统应用 + /data 里的更新版本**，所以单独 `adb uninstall` 只会退回系统版本，必须两层都处理：
+
+```sh
+adb uninstall com.alibaba.ailabs.genie.aicare          # 删 /data 更新 → 回退到系统版
+mount -o rw,remount /system
+mv /system/app/GenieAicare/GenieAicare.apk \
+   /system/app/GenieAicare/GenieAicare.apk.bak          # 让 PackageManager 不再扫描
+sync && mount -o ro,remount /system
+rm -rf /data/data/com.alibaba.ailabs.genie.aicare /data/app/com.alibaba.ailabs.genie.aicare-*
+```
+
+### 19.3 结果
+
+```
+pm path com.alibaba.ailabs.genie.cook    → 空
+pm path com.alibaba.ailabs.genie.aicare  → 空
+pm path com.alipay.arome.app             → 空
+「空间清理」页面                          → 菜谱 / 爱家看护 / 支付宝小程序 全部消失
+/data 可用                               → 800 MB → 851 MB
+```
+
+现在「空间清理」里只剩：GenieRTC 103 MB（已禁用但 APK 还在）、相机 19 MB、屏保 10 MB、GenieIOT 0 MB。
+
+### 19.4 一个测试注意点
+
+在 smartapp 自己的界面（例如「空间清理」）位于前台时，通过 `content://…GenieApi` 打进去的 TTS 请求**不会播报**——hook 统计里 `play_seen=0`，回到我们的桌面后再发同一个请求立刻正常：
+
+```
+回到 VoiceHomeActivity 后：
+10:55:17.733 TtsManager: onTtsEnd sessionId = 5246411
+文本命中 3 次
+```
+
+所以验证原厂 TTS 时，必须先把前台切回 `com.tgz02.voice`。这不是本次改动的副作用（删 aicare 前后行为一致），只是之前几次测试碰巧都不在工厂 UI 里。
+
+
 
 
 
