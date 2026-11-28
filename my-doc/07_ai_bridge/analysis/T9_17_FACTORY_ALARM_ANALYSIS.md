@@ -1647,6 +1647,49 @@ isApkShouldUpdate(pkg, verCode):
   `t9_19f_reapply_placeholders.ps1` 即可恢复（主机侧 `adb uninstall` + `adb install`）。
   设备端 `pm install` / `cmd package install` 在这台 ROM 上都不可用（前者不认子命令，后者要求 `-S` 流式），所以自愈只能从主机做。
 
+---
+
+## 23. T9-19g：桌面程序内置「应用商店」入口（APK 1.9.0）
+
+### 23.1 位置
+
+设置 → 设备，紧跟「应用管理」：
+
+```
+应用管理   本机 11 个应用，点一下就能打开
+应用商店   原厂精灵商店 · 浏览和安装其他应用
+开机自启   …
+后台服务   运行中 · pid 1805
+```
+
+### 23.2 启动方式（踩过的坑）
+
+`MarketMainActivity.onDataLoaded()` 会取 `getIntent().getData().getQueryParameter("tabName")`，**data 为 null 直接 NPE 崩溃**（第一次用 `am start -n` 试就是这样闪退的）。`market://` scheme 又不能单独匹配 activity（filter 还要求 path），所以必须**显式 component + 带 data**：
+
+```java
+Intent it = new Intent(Intent.ACTION_VIEW);
+it.setClassName("com.alibaba.ailabs.genie.smartapp",
+                "com.alibaba.ailabs.appbox.activity.MarketMainActivity");
+it.setData(Uri.parse("market://com.alibaba.ailabs.geniemarket?tabName=x&scene=home&myApp=0"));
+it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+startActivity(it);
+```
+
+失败时 `toast("打不开应用商店：<ExceptionName>")`，不会崩。
+
+### 23.3 真机验证
+
+```
+点击前：mResumedActivity = com.tgz02.voice/.SettingsHomeActivity
+点击后：mResumedActivity = com.alibaba.ailabs.genie.smartapp/
+                           com.alibaba.ailabs.appbox.activity.MarketMainActivity
+```
+
+商店完整呈现（精选推荐 / 影音娱乐 / 儿童 / 教育 / 游戏 / 休闲娱乐 / 生活服务 / 我的应用），图标全部正常 —— 因为 22 章已经把 CDN 解锁，且预装应用由占位包挡住。
+
+APK：**1.9.0 / versionCode 11**（`66dfa471…`）。
+
+
 
 
 

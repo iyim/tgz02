@@ -128,6 +128,15 @@ public class SettingsHomeActivity extends V3Shell {
             }
         });
         dc.addView(ar);
+        /* T9-19g：原厂应用商店入口。
+         * MarketMainActivity 必须带 data URI 启动：onDataLoaded() 里会取
+         * getIntent().getData().getQueryParameter("tabName")，data 为 null 直接 NPE。 */
+        LinearLayout mk = groupRow(Ui4.I_SETTINGS, "应用商店",
+                "原厂精灵商店 · 浏览和安装其他应用");
+        mk.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) { openFactoryMarket(); }
+        });
+        dc.addView(mk);
         LinearLayout br = groupRow(0, "开机自启", "开机就能用（由系统 init 脚本控制）");
         br.addView(Ui4.toggle(this, bootOn, new Runnable() {
             public void run() { writeFlag(VOICE_PATH, "boot", bootOn[0]);
@@ -190,6 +199,22 @@ public class SettingsHomeActivity extends V3Shell {
         r.addView(txt, new LinearLayout.LayoutParams(0,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         return r;
+    }
+
+    /** T9-19g：启动原厂应用商店（appbox 的 MarketMainActivity，必须带 data URI） */
+    void openFactoryMarket()
+    {
+        try {
+            Intent it = new Intent(Intent.ACTION_VIEW);
+            it.setClassName("com.alibaba.ailabs.genie.smartapp",
+                    "com.alibaba.ailabs.appbox.activity.MarketMainActivity");
+            it.setData(android.net.Uri.parse(
+                    "market://com.alibaba.ailabs.geniemarket?tabName=x&scene=home&myApp=0"));
+            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(it);
+        } catch (Throwable t) {
+            toast("打不开应用商店：" + t.getClass().getSimpleName());
+        }
     }
 
     /** how many apps the drawer would list (excludes this one, hides disabled packages) */
