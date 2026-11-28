@@ -35,7 +35,8 @@ done
 # ---- 2) 用户要求移除、但原厂应用商店会装回来的：整包禁用 ----
 #     osupdate 也是整包禁用：它每分钟把系统日志打成 dfmount zip 上传阿里服务器，
 #     全部失败且无退避，7 天攒下 10157 个 / 41MB，CPU 长期 85%。禁用后循环停摆。
-for p in com.alibaba.ailabs.genie.cook cn.cmvideo.car.play com.alibaba.ailabs.genie.osupdate ; do
+#     genie.iot（GenieIOT，智能家居/物联网桥，13MB，常驻 :service ~66MB）也整包禁用。
+for p in com.alibaba.ailabs.genie.cook cn.cmvideo.car.play com.alibaba.ailabs.genie.osupdate com.alibaba.ailabs.genie.iot ; do
     if pm list packages 2>/dev/null | grep -q "package:$p$"; then
         CLASSPATH=$DEX app_process /system com.tgz02.home.HomeCtl pkgdisable "$p" >> "$LOG" 2>&1
     else

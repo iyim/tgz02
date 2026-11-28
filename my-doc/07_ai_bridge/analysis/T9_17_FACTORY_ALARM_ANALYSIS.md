@@ -876,3 +876,90 @@ CLASSPATH=/data/local/tmp/home_ctl.dex app_process /system com.tgz02.home.HomeCt
 
 `smartapp:core` 仍占 ~64%，归因到两个 `xengine_main` 线程（43.4% + 17.3%，累计 296 / 118 分钟），即阿里的语音前端（唤醒 + 降噪 + AGC）常驻推理。`tgl`/`tgt` 标签日志为 0，与本项目 hook 无关。待单独排查。
 
+---
+
+## 15. T9-18：后台进程盘点与 GenieIoT 禁用
+
+### 15.1 重启后的后台清单（按 RSS 排序）
+
+| 进程 | RSS | 说明 |
+| --- | --- | --- |
+| `com.alibaba.ailabs.genie.smartapp` | 118 MB | 工厂语音主进程 |
+| `…smartapp:core` | 106 MB | 语音引擎/XEngine（hook 注入点） |
+| `…smartapp:business` | 86 MB | 工厂业务模块 |
+| `com.alibaba.ailabs.genie.rtc` | 85 MB | 阿里 RTC 音视频通话 |
+| `com.tgz02.voice` | 78 MB | 本项目桌面 |
+| `com.topjohnwu.magisk` | 75 MB | root 框架 |
+| `com.android.systemui` | 74 MB | 系统 UI |
+| `com.topjohnwu.magisk:root:0` | 70 MB | root 框架 |
+| `com.aligenie.ags` | 64 MB | 阿里统计/接入（analytics） |
+| `com.shere.assistivetouch.service` | 61 MB | EasyTouch 悬浮球 |
+| `…assistivetouch:xg_service_v3` | 56 MB | EasyTouch 推送通道 |
+| `com.android.settings:SettingsProvider` | 46 MB | 系统设置 provider |
+| `com.android.bluetooth` | 43 MB | 蓝牙 |
+| `com.google.android.inputmethod.pinyin` | 42 MB | 输入法 |
+| `com.alibaba.ailabs.genie.osupdate` | 38 MB | 已禁用（PERSISTENT 空转） |
+| `com.shere.assistivetouch` | 34 MB | EasyTouch 主进程 |
+| `com.tgz02.voice:backend` | 27 MB | 本项目语音桥 |
+| `com.android.keychain` | 24 MB | 系统 |
+| `com.android.packageinstaller` | 24 MB | 系统 |
+
+内存 984 MB，禁 IoT 前 used 940 / free 44；禁后 used 831 / free 153。
+
+### 15.2 GenieIoT 身份
+
+```
+/system/app/GenieIoT/GenieIoT.apk   12 826 963 B   v2.1.2.0
+userId=1000   sharedUser=android.uid.system   （无 PERSISTENT）
+进程：com.alibaba.ailabs.genie.iot:service  ~66 MB
+服务：HouseService / AnalyticsService / LogService
+Provider：IOTProvider(ipc.service) / SecondInstaller(ipc.second.server) /
+          IoTLocalExecuteProvider(local_execute.service) / PaletteProvider(agui)
+权限：READ_LOGS / KILL_BACKGROUND_PROCESSES / SYSTEM_ALERT_WINDOW / WRITE_SETTINGS /
+      INTERACT_ACROSS_USERS / BLUETOOTH / 定位 / 联网 / 前台服务
+```
+
+它是智能家居/物联网桥（设备接入、场景执行、本地执行、调色板通道），与语音识别链路无耦合：进程虽在连 smartapp 的 `AgisProvider`（作为 client），但没有任何包反向依赖它的 provider。
+
+### 15.3 处置与验证
+
+```sh
+备份  /data/local/tmp/t9_18_bak/GenieIoT-2.1.2.0.apk
+禁用  HomeCtl pkgdisable com.alibaba.ailabs.genie.iot   → state=2
+固化  20_home_lock.sh 的 pkgdisable 列表加入该包
+```
+
+禁用后进程不会自杀（老 ROM 对 sharedUid 包不 kill），需 `kill -9`；40 秒内无重生，`dumpsys activity providers` 中该包记录归 0，`dumpsys alarm` / `jobscheduler` 也无残留调度。
+
+重启后复核：
+
+```
+PKGSTATE com.alibaba.ailabs.genie.iot = 2
+IOT-NOT-RUNNING
+RESOLVED_HOME=com.tgz02.voice/com.tgz02.voice.VoiceHomeActivity
+语音栈：smartapp / :core / :business / ags / tgz02.voice / :backend /
+        ai_worker / tgb_bridge / 2×tg_supervisor 全部在跑
+```
+
+### 15.4 副作用
+
+`com.alibaba.ailabs.genie.rtc` 每 30 s 轮询一次调色板服务：
+
+```
+D IPCRouter: … uri = com.alibaba.ailabs.genie.iot.palette.service
+E ActivityThread: Failed to find provider info for com.alibaba.ailabs.genie.iot.palette.service
+D IPCRouter: … binder = null        ← 取到 null 后走默认，不崩
+```
+
+只影响语音界面主题配色（回落到默认色）与一条 30 s 一次的 E 日志，不影响识别、TTS、桌面。
+
+### 15.5 还能再砍的候选（未执行）
+
+| 目标 | 可回收 | 代价 |
+| --- | --- | --- |
+| `com.shere.assistivetouch` 三进程 | ~151 MB | 丢悬浮球/快捷手势（正是早上遮挡桌面的东西） |
+| `com.alibaba.ailabs.genie.rtc` | ~85 MB | 丢视频通话/远程看护 |
+| `com.aligenie.ags` | ~64 MB | 丢阿里统计上报（纯数据采集） |
+| `com.google.android.inputmethod.pinyin` | ~42 MB | 丢软键盘（本项目语音优先，几乎不用） |
+
+
