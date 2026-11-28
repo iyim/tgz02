@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   T9-UI-02: V2 kid-friendly shell.
 
@@ -12,8 +12,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tgz02.voice"
-    android:versionCode="9"
-    android:versionName="1.7.0">
+    android:versionCode="10"
+    android:versionName="1.8.0">
 
     <!-- T9-16：自有闹钟所需权限（全部为普通权限，无需用户授权弹窗） -->
     <uses-permission android:name="android.permission.SCHEDULE_ALARM" />
@@ -22,6 +22,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- T9-16 R6：读取 /sdcard/Alarms 里用户自放的铃声文件（危险权限，运行期申请） -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- T9-18：应用管理长按卸载，需要向系统发起 ACTION_DELETE（普通权限） -->
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="27" />
 

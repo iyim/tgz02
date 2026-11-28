@@ -1065,5 +1065,150 @@ mount -o ro,remount /system && reboot
                            AliGenieService-2.5.3.apk, Rtc-base.apk, easytouch-4.6.1.apk}
 ```
 
+---
+
+## 17. T9-19：appbox 的解剖与根治、两个 probe App、应用管理的卸载
+
+### 17.1 我们自己的两个 probe App（已卸载）
+
+| 包 | 路径 | 来源 | 处理 |
+| --- | --- | --- | --- |
+| `com.tgz02.aidltest` | `/data/app/...` DEBUGGABLE v1.0 | T9-04 AIDL 阶段的联调用例（2026-11-24 14:49 装） | `adb uninstall` → Success |
+| `com.tgz02.providerprobe` | `/data/app/...` DEBUGGABLE v1.0 | T9-05 Provider 阶段的联调用例（2026-11-24 15:08 装） | `adb uninstall` → Success |
+
+都是 `/data` 应用，卸载即消失，源码仍在 `android/t9_04_aidl`、`android/t9_05_provider`，需要时可重新装。卸载后应用管理里的"TG-Z02 AIDL probe / provider probe"两项同时消失。
+
+### 17.2 appbox 是什么
+
+它不是独立应用，是 **smartapp 内部的应用商店模块**：
+
+```
+sources/com/alibaba/ailabs/appbox/            219 个类
+  ├─ download/MarketDownloadService.java     下载服务（独立进程 :download）
+  ├─ download/{InstallBean,DownloadBean}.java
+  ├─ common/installafter9/InstallAfter9.java 安装（API 28+ 路径）
+  ├─ common/installunder9/InstallUnder9.java 安装（API <28 路径，本机走这条）
+  ├─ adapter/applist/ApplistWithHeaderAdapter.java
+  └─ fragment/{recommendvh/MarketItemView, MarketDetailsFragment}.java
+```
+
+数据在 `/data/data/com.alibaba.ailabs.genie.smartapp/databases/ApplistDb.db`（Room + SQLite）：
+
+```sql
+applist(id, appid, actionValue, appName, businessType, appVersionCode, appVersionName,
+        downloadUrl, downloadSize, installSize, packageName, icon, deleteType,
+        isOffline, fromType)                      -- 16 行
+applistsort(sortIndex, appid)                     -- 与 applist 一一对应
+child_app_list / child_app_list_sort / marketitem / applist_recent
+```
+
+`businessType` 决定行为：`apk` + `http(s)` 的 `downloadUrl` = **会被下载安装**；`h5`/`applet`/`genie://` 只是入口。实测这 4 行是安装源：
+
+| appName | packageName | downloadUrl |
+| --- | --- | --- |
+| 旭慧生活 | `com.anthouse.ayland` | `…/largeFile/1629183160338_app-wuye-release.apk` |
+| 手势 | `com.alibaba.ailabs.genie.intermediary` | `…/genie-screen-apk/Release_platform_57159_signed.apk` |
+| 菜谱 | `com.alibaba.ailabs.genie.cook` | `…/largeFile/1654854444717_cook.apk` |
+| 相机 | `com.alibaba.ailabs.genie.camera` | `…/largeFile/1647488005241_Release_platform_77056_signed.apk` |
+
+安装权限来自 smartapp 自己：`INSTALL_PACKAGES` / `DELETE_PACKAGES` 均为 `granted=true`（uid 1000 系统签名）。所以它装应用**不需要用户点任何确认**，也不走 PackageInstaller 的可见流程。
+
+旭慧生活的 `installerPackageName` 是 `what is use for ?` —— 安装方把 installer 名字写成了这句占位字符串，是该渠道包的典型特征。
+
+### 17.3 改数据库为什么不算根治
+
+把上表 4 行连同 `applistsort` 一起删掉（16 行 → 12 行）、推回数据库、重启，结果：
+
+```
+10:30  写入 12 行（md5 026a04ba…，integrity_check = ok）
+10:32  重启完成，smartapp 启动后从服务器同步，16 行全部回来（md5 f489af20…）
+10:32:48  旭慧生活被重新下载安装（/data/app/com.anthouse.ayland-GCLIvtinpG1ZPLxdbiLm6A==）
+```
+
+`fromType='server'` 说明清单本来就从云上拉，本地改数据只能撑过一次同步。**数据不是根，下载通道才是根。**
+
+### 17.4 根治：在 DNS 层掐掉下载主机
+
+清单里所有 `downloadUrl` 都指向同一个主机：
+
+```
+https://ailabs.alibabausercontent.com/largeFile/*.apk
+https://ailabs.alibabausercontent.com/genie-screen-apk/*.apk
+```
+
+于是：
+
+```sh
+mount -o rw,remount /system
+printf '127.0.0.1\tailabs.alibabausercontent.com\n' >> /system/etc/hosts
+sync && mount -o ro,remount /system
+```
+
+验证：
+
+```
+ping ailabs.alibabausercontent.com → PING ailabs.alibabausercontent.com (127.0.0.1)
+重启后 pm path com.anthouse.ayland → 空（145 秒、再 10 分钟均未回来）
+```
+
+代价：同一主机上的图标（`/images/…png`）和 UC 内核 `libkernelu4_zip_uc.so` 也一并不可达 —— 应用市场里的图标会缺图，UC 内核是内置浏览器的可选加速件，本项目不用。
+
+**回归验证（关键）**：原厂 TTS 走的是另一条链路，屏蔽后完全正常：
+
+```
+10:36:35.660 AudioManager: playTTS, stream:5246163
+10:36:35.661 PlaybackService: playTTS 语音链路测试一二三
+10:36:35.699 TtsManager: onTtsData  receive stream data
+10:36:35.721 TtsManager: onTtsEnd   sessionId = 5246163
+```
+
+回滚：`/data/local/tmp/t9_19_bak/hosts.orig`。
+
+补充：这一步是"掐通道"，不是"禁功能"。若以后需要应用市场的自动安装能力，删掉这一行 hosts 即可恢复。
+
+### 17.5 旭慧生活的卸载
+
+```sh
+adb uninstall com.anthouse.ayland     # Success（81 MB / v1.0.39）
+```
+
+它和菜谱、咪咕视频属于同一类——清单里的 `apk` 项，只要通道可用就会被补装。17.4 之后已不再回来。
+
+`home_lock` 脚本里保持对 `cook` / `cmvideo` 的整包禁用；`anthouse` 若某天又出现，用
+`HomeCtl pkgdisable com.anthouse.ayland` 即可。
+
+### 17.6 应用管理 v1.8.0：长按卸载
+
+`AppListActivity` 加了长按菜单（APK **1.8.0 / versionCode 10**）：
+
+```
+长按卡片 → MT管理器
+           bin.mt.plus
+           第三方应用 · 可卸载
+           [应用信息]  [取消] [卸载]
+```
+
+- 「卸载」→ `Intent.ACTION_DELETE` + `package:` URI → 系统 `com.android.packageinstaller/.UninstallerActivity` 确认框（普通应用唯一的合法卸载路径，manifest 加了 `REQUEST_DELETE_PACKAGES`）；
+- 「应用信息」→ `Settings.ACTION_APPLICATION_DETAILS_SETTINGS`；
+- 系统应用会在对话框里直接标注"系统应用 · 无法从这里卸载"，点卸载只提示不跳转。
+
+真机验证：长按 MT管理器 → 弹菜单 → 点卸载 → `mResumedActivity = com.android.packageinstaller/.UninstallerActivity`（"要卸载此应用吗？"）→ 点取消返回，`bin.mt.plus` 仍在。
+
+### 17.7 一个必须记住的坑：Magisk 的 mount namespace
+
+`su -c` 与 `su --mount-master -c` **看到的 /data/data 不一样**：
+
+```
+su -c "ls /data/data/com.alibaba.ailabs.genie.smartapp/databases"
+  → Permission denied            （uid 0，SELinux Permissive，仍然不行）
+su --mount-master -c "ls ..."
+  → ApplistDb.db / agis / …      （正常）
+```
+
+所以读改系统应用的数据目录，必须 `su --mount-master -c`。
+
+同时，`pm uninstall` 在设备端 `su -c` 下报 `unknown command 'uninstall'`；用主机 `adb uninstall` 即可。
+
+
 
 

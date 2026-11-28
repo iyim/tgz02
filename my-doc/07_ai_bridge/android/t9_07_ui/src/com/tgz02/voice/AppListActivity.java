@@ -179,6 +179,10 @@ public final class AppListActivity extends V3Shell {
         c.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) { launch(e); }
         });
+        /* long press = manage: uninstall (via the system dialog) or open app info */
+        c.setOnLongClickListener(new View.OnLongClickListener() {
+            public boolean onLongClick(View v) { showMenu(e); return true; }
+        });
 
         ImageView iv = new ImageView(this);
         if (e.icon != null) iv.setImageDrawable(e.icon);
@@ -211,6 +215,60 @@ public final class AppListActivity extends V3Shell {
             startActivity(e.intent);
         } catch (Throwable t) {
             toast("打不开「" + e.label + "」：" + t.getClass().getSimpleName());
+        }
+    }
+
+    /* ------------------------------------------------------------ app management */
+
+    void showMenu(final Entry e)
+    {
+        String kind = isSystemApp(e.pkg) ? "系统应用 · 无法从这里卸载" : "第三方应用 · 可卸载";
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(e.label)
+                .setMessage(e.pkg + "\n" + kind)
+                .setPositiveButton("卸载", new android.content.DialogInterface.OnClickListener() {
+                    public void onClick(android.content.DialogInterface d, int w) { uninstall(e); }
+                })
+                .setNeutralButton("应用信息", new android.content.DialogInterface.OnClickListener() {
+                    public void onClick(android.content.DialogInterface d, int w) { appInfo(e); }
+                })
+                .setNegativeButton("取消", null)
+                .show();
+    }
+
+    /** the system uninstall dialog: it is the only path an unprivileged app may use */
+    void uninstall(Entry e)
+    {
+        if (isSystemApp(e.pkg)) {
+            toast("「" + e.label + "」是系统应用，卸载请在系统设置里操作");
+            return;
+        }
+        try {
+            Intent it = new Intent(Intent.ACTION_DELETE, android.net.Uri.parse("package:" + e.pkg));
+            startActivity(it);
+        } catch (Throwable t) {
+            toast("无法卸载：" + t.getClass().getSimpleName());
+        }
+    }
+
+    void appInfo(Entry e)
+    {
+        try {
+            Intent it = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    android.net.Uri.parse("package:" + e.pkg));
+            startActivity(it);
+        } catch (Throwable t) {
+            toast("打不开应用信息");
+        }
+    }
+
+    boolean isSystemApp(String pkg)
+    {
+        try {
+            android.content.pm.ApplicationInfo ai = getPackageManager().getApplicationInfo(pkg, 0);
+            return (ai.flags & android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0;
+        } catch (Throwable t) {
+            return false;
         }
     }
 }
