@@ -1,0 +1,18 @@
+﻿# 实测 1：MediaPlayer 播酷狗直链（真机 192.168.1.9）
+# com.tgz02.musicprobe/.Probe --es url <CDN .ogg> --ei seconds 10 --ei volume(默认)
+11-28 20:03:18.656 I kgprobe : onCreate url=http://fs.youthandroid2.kugou.com/202611282001/46cb54983838af616b05c58a7b025b53/v3/a1a416e6e4ae0fdccd51bd29c123dd91/yp/full/ap3116_us2046073783_mi107330871156286961601867245203073948751_pi411_mo51_mx0_qu128_pa967177915_ct110000_s1059021018.ogg seconds=10 focus=true
+11-28 20:03:18.662 I kgprobe : requestAudioFocus=1
+11-28 20:03:18.732 I kgprobe : prepareAsync
+11-28 20:03:19.322 I kgprobe : prepared duration=296453ms
+11-28 20:03:19.325 I kgprobe : started
+11-28 20:03:19.741 I kgprobe : t=1s pos=80 delta=81 vol=20/100
+11-28 20:03:20.744 I kgprobe : t=2s pos=1083 delta=1003 vol=20/100
+11-28 20:03:21.746 I kgprobe : t=3s pos=2086 delta=1003 vol=20/100
+11-28 20:03:22.749 I kgprobe : t=4s pos=3088 delta=1002 vol=20/100
+11-28 20:03:23.751 I kgprobe : t=5s pos=4090 delta=1002 vol=20/100
+11-28 20:03:24.754 I kgprobe : t=6s pos=5092 delta=1002 vol=20/100
+11-28 20:03:25.759 I kgprobe : t=7s pos=6096 delta=1004 vol=20/100
+11-28 20:03:26.761 I kgprobe : t=8s pos=7101 delta=1005 vol=20/100
+11-28 20:03:27.764 I kgprobe : t=9s pos=8103 delta=1002 vol=20/100
+11-28 20:03:28.766 I kgprobe : t=10s pos=9105 delta=1002 vol=20/100
+11-28 20:03:28.791 I kgprobe : done

@@ -1,0 +1,17 @@
+﻿# 实测 4：HOME 键之后继续播放（音量被工厂 duck 到 44 后仍然稳定推进）
+=== t+10s press HOME
+=== foreground now: mResumedActivity: com.tgz02.voice/.VoiceHomeActivity
+11-28 20:06:26.913 I kgprobe : t=29s pos=29064 delta=1039 vol=44/100
+11-28 20:06:27.948 I kgprobe : t=30s pos=30098 delta=1034 vol=44/100
+11-28 20:06:28.974 I kgprobe : t=31s pos=31124 delta=1026 vol=44/100
+11-28 20:06:30.013 I kgprobe : t=32s pos=32164 delta=1040 vol=44/100
+11-28 20:06:38.334 I kgprobe : t=40s pos=40484 delta=1039 vol=44/100
+11-28 20:06:38.370 I kgprobe : done
+
+# 播放期间播放器/解码进程与可用内存
+  363 media.extractor
+  370 media.codec
+ 1183 com.tgz02.voice:backend
+10626 com.tgz02.musicprobe
+MemFree:          172716 kB
+MemAvailable:     444176 kB

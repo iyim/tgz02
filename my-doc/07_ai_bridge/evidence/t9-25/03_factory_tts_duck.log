@@ -1,0 +1,28 @@
+﻿# 实测 3：工厂 TTS 对 STREAM_MUSIC 的 ducking —— 60 -> 31 / 80 -> 44，且不还原
+# 播放中注入工厂播报：{"kind":"say","text":"现在是晚上八点"} -> inbox
+11-28 20:04:13:109 setStreamVolume(stream:STREAM_MUSIC index:60 flags:0x0) from com.tgz02.musicprobe
+11-28 20:04:42:312 adjustSuggestedStreamVolume(sugg:USE_DEFAULT_STREAM_TYPE dir:ADJUST_LOWER flags:0x1011) from android/MediaSessionService uid:1000
+11-28 20:04:42:350 adjustSuggestedStreamVolume(sugg:USE_DEFAULT_STREAM_TYPE dir:ADJUST_SAME  flags:0x1014) from android/MediaSessionService uid:1000
+11-28 20:04:43:198 adjustSuggestedStreamVolume(dir:ADJUST_LOWER flags:0x1011) from android/MediaSessionService uid:1000
+11-28 20:04:43:212 adjustSuggestedStreamVolume(dir:ADJUST_SAME  flags:0x1014) from android/MediaSessionService uid:1000
+11-28 20:04:43:574 adjustSuggestedStreamVolume(dir:ADJUST_LOWER flags:0x1011) from android/MediaSessionService uid:1000
+11-28 20:04:43:612 adjustSuggestedStreamVolume(dir:ADJUST_SAME  flags:0x1014) from android/MediaSessionService uid:1000
+11-28 20:04:44:009 adjustSuggestedStreamVolume(dir:ADJUST_LOWER flags:0x1011) from android/MediaSessionService uid:1000
+11-28 20:04:44:024 adjustSuggestedStreamVolume(dir:ADJUST_SAME  flags:0x1014) from android/MediaSessionService uid:1000
+11-28 20:04:44:499 adjustSuggestedStreamVolume(dir:ADJUST_LOWER flags:0x1011) from android/MediaSessionService uid:1000
+11-28 20:04:44:516 adjustSuggestedStreamVolume(dir:ADJUST_SAME  flags:0x1014) from android/MediaSessionService uid:1000
+
+# 播放侧同时表现（kgprobe 每秒采样）
+11-28 20:04:42.351 I kgprobe : t=29s pos=28342 delta=1002 vol=56/100
+11-28 20:04:43.352 I kgprobe : t=30s pos=29354 delta=1012 vol=50/100
+11-28 20:04:44.356 I kgprobe : t=31s pos=30356 delta=1002 vol=37/100
+11-28 20:04:45.361 I kgprobe : t=32s pos=31359 delta=1003 vol=31/100
+11-28 20:04:49.368 I kgprobe : t=36s pos=35369 delta=1001 vol=31/100    <-- 播报结束后没有恢复
+
+# 焦点并未被抢：我们仍是 GAIN，loss: none（duck 是"调流音量"，不是焦点 ducking）
+Audio Focus stack entries:
+  pack: com.tgz02.musicprobe -- gain: GAIN -- loss: none -- notified: true -- uid: 10024
+
+# 第二次（初始 80）：80 -> 69 -> 44，之后一直 44
+11-28 20:06:15.408 I kgprobe : t=18s pos=17556 delta=1042 vol=69/100
+11-28 20:06:16.478 I kgprobe : t=19s pos=18600 delta=1044 vol=44/100

@@ -1,0 +1,16 @@
+﻿# 实测 2：CDN 直链从设备直取（无需反代）与 Range 支持
+adb shell curl -s -o /dev/null -m 20 -w 'code=%{http_code} type=%{content_type} size=%{size_download} time=%{time_total}s'
+  http://fs.youthandroid2.kugou.com/.../ap3116_us2046073783_..._qu128_....ogg
+code=200 type=application/octet-stream size=3557435 time=0.933176s
+
+adb shell curl -s -r 0-1023 -o /dev/null -m 15 -w 'range_code=%{http_code} got=%{size_download}'
+range_code=206 got=1024
+
+# 设备到酷狗的网络（直连，无代理）
+adb shell ping -c 2 -W 3 gateway.kugou.com
+PING kgnopipv6bj.kugou.com (111.206.97.106) 56(84) bytes of data.
+64 bytes from 111.206.97.106: icmp_seq=1 ttl=56 time=5.83 ms
+64 bytes from 111.206.97.106: icmp_seq=2 ttl=56 time=5.53 ms
+adb shell curl -s -m 8 -o /dev/null -w 'lyrics:%{http_code} %{time_total}s' https://lyrics.kugou.com/
+lyrics:200 0.244999s
+ssl_verify_result=0

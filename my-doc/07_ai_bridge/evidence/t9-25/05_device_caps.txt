@@ -1,0 +1,26 @@
+﻿# 实测 5：设备能力快照（2026-11-28）
+ro.product.model      AILABS_S1L
+ro.build.version      6.1.8-RS-20221104.1459  (Android 8.1 / API 27)
+ro.product.cpu.abilist  armeabi-v7a,armeabi     4 核 ARMv7 (BogoMIPS 38.96)
+dalvik.vm.heapsize    256m
+MemTotal              1008628 kB   MemAvailable 444176 kB
+/data 可用            746 MB
+屏幕                  1024x600 mdpi
+
+# 可解码音频（/vendor/etc/media_codecs*.xml 的 type= 去重）
+audio/3gpp  audio/alac  audio/amr-wb  audio/ape  audio/flac  audio/g711-alaw
+audio/g711-mlaw  audio/gsm  audio/mp4a-latm  audio/mpeg  audio/opus  audio/raw
+audio/vorbis  audio/x-adpcm-dvi-ima  audio/x-adpcm-ms  audio/x-ms-wma  audio/x-ms-wmapro
+
+# 音频输出：单扬声器；STREAM_MUSIC 当时 20/100
+- STREAM_MUSIC: Muted: false  Min: 0  Max: 100  Devices: speaker
+
+# 音效链：没有 AEC
+dumpsys media.audio_flinger -> "XML effect configuration failed to load." / "0 Effect Chains"
+/vendor/etc/audio_effects*  -> 不存在
+
+# WebView 存在（仅作备选方案评估用）
+package:com.android.webview
+
+# system/bin 里有 curl（无 python / sqlite / ffmpeg）
+curl

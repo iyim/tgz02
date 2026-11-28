@@ -1,0 +1,17 @@
+﻿# 实测 6：音质档位取决于账号权益（vip_type=0 时只给 128k ogg）
+GET /api/debug/priv?hash=1F7E7659B9FFF4FB6F71562A61BBC25F&quality=320
+vip_type=0
+picked: q=128 how=A1A416E6E4AE0FDCCD51BD29C123DD91
+
+quality        level privilege pay_type fail_process
+128                2        10        3           12
+320                4        10        3           12
+flac               5        10        3           12
+high               6        10        3           12
+viper_atmos        0        10        3           36
+viper_tape         0        10        3           36
+viper_clear        0        10        3           36
+multitrack         0        10        3           12
+
+# 实际直链：qu128，容器 ogg
+http://fs.youthandroid2.kugou.com/202611282001/.../yp/full/ap3116_us2046073783_..._qu128_....ogg
