@@ -1766,6 +1766,84 @@ devicesettingInfo::localASREnergyThreshold 60   → 85        ← 即便再开�
 
 `ScreenWakeManager` 是工厂的 Java 类，调的是 `PowerManager.wakeUp(reason="ScreenWakeManager")`。我们的 hook 在 native 层（JNI 表），拦不到这个 Java → Binder 调用；系统侧也没有"只允许某应用亮屏/不许亮屏"的开关。所以只能从**触发源**下手：减少误触发（本次做法），或者在息屏时主动让工厂退出会话。
 
+---
+
+## 25. T9-21：网页配置大模型 + 设置页看不到配置的原因（APK 1.10.0）
+
+### 25.1 为什么"已经配好了却看不到"
+
+```
+/data/data/com.tgz02.voice/files/  →  只有 bootstrap.log，没有 models.json
+worker 日志：model config: …/models.json has no usable model … falling back to provider=deepseek
+```
+
+两套配置一直在各走各的：
+
+| 位置 | 内容 | 谁在读 |
+| --- | --- | --- |
+| `/data/local/tmp/t5_bridge/ai_worker/worker.conf` | `provider=deepseek`、`base_url=http://192.168.1.13:8790/v1`、`model=deepseek-flash`、`api_key_file=…` | worker 启动时的兜底配置 |
+| `/data/data/com.tgz02.voice/files/models.json` | **不存在** | `ModelStore`（设置页显示的就是它） |
+
+所以语音其实一直是通的（走 worker.conf），但设置页只会念 `models.json`，自然显示"未配置 · 0 套"。网页配置把 `models.json` 建起来之后，两边就对齐了。
+
+### 25.2 网页配置服务
+
+`ConfigServer.java`：项目没有 gradle/第三方依赖，所以 HTTP 用 `ServerSocket` 手写，只支持 GET/POST + Content-Length，监听 8080 → 8088 → 8090 → 18080（占用就往下试）。
+
+- `GET /`：手机友好的表单（厂商、名称、base_url、model、api_key）+ 当前已保存的列表；
+- `POST /save`：写 `models.json`（复用 `ModelStore.save`），页面回显"已保存 + 生成的 id"；
+- `GET /json`：返回 `{"url":...}`，给自动化用；
+- 服务是进程级单例，离开页面不停（用户可能还要在手机上慢慢填）。
+
+`WebConfigActivity.java`：设置 → 大模型配置 → 右侧「网页配置」，页面上大字显示 `http://192.168.1.9:8080`，附启停按钮和已保存配置列表。
+
+Manifest 加了 `android.permission.INTERNET`（监听端口需要）。
+
+### 25.3 一个必须处理的坑：模型 id 的字符集
+
+第一版把中文名直接当 `id` 写进 models.json，worker 启动就报：
+
+```
+model config reload failed: model entry has no usable id
+```
+
+`mc_valid_id()` 只接受 `[A-Za-z0-9._-]`：
+
+```c
+int ok = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') ||
+         (ch >= '0' && ch <= '9') || ch == '-' || ch == '_' || ch == '.';
+```
+
+改成 `safeId()`：中文只留在 `label`（给人看），`id` 一律压成 slug；全被剥光时退化成 `m<时间戳>`。所以"家里那台 4090"最终得到 `id=4090`。
+
+### 25.4 真机验证
+
+```
+设备页面：http://192.168.1.9:8080（大字）
+主机 GET  http://192.168.1.9:8080/        → HTTP 200，2207 B 完整表单
+主机 POST http://192.168.1.9:8080/save    → 已保存：家里那台 4090 → http://192.168.1.13:8790/v1
+                                              （id=4090，重启语音后台后生效）
+
+models.json：
+{"v":1,"default_id":"4090","models":[{"id":"4090","vendor":"openai",
+ "label":"家里那台 4090","base_url":"http://192.168.1.13:8790/v1",
+ "api_key":"","model":"deepseek-flash",…}]}
+
+重启后 worker：
+16:56:14 model config: 1 configuration(s) loaded, default_id=4090
+16:56:14 provider ready: models id=4090 vendor=openai model=deepseek-flash
+         label='家里那台 4090' base=http://192.168.1.13:8790/v1 timeout=30000ms
+         conf=/data/data/com.tgz02.voice/files/models.json
+```
+
+设置页随即显示：**大模型配置 — OpenAI 兼容 · deepseek-flash · 1 套**。
+
+### 25.5 还没做的（下一步可加）
+
+- **二维码**：项目里没有 zxing 的 jar（只有反编译出的 smali），要么引入 `com.google.zxing:core` 的 jar，要么自己实现 QR 编码。当前用大字地址代替，手机浏览器手输一次即可；
+- **保存后免重启**：worker 只在启动时读 models.json。要热生效，得让 worker 监视文件 mtime（改 `ai_worker.c` 重编译），或者在页面里提供一个"重启语音后台"的动作（App 没有 root，做不到）。
+
+
 
 
 

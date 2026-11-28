@@ -76,6 +76,15 @@ public class SettingsHomeActivity extends V3Shell {
                 startActivity(new Intent(SettingsHomeActivity.this, ModelConfigActivity.class));
             }
         });
+        /* T9-21：小屏填表太难受，提供网页配置入口 */
+        LinearLayout webBtn = new LinearLayout(this);
+        webBtn.setGravity(Gravity.CENTER_VERTICAL);
+        webBtn.addView(Ui4.btn(this, "网页配置", false, new Runnable() {
+            public void run() {
+                startActivity(new Intent(SettingsHomeActivity.this, WebConfigActivity.class));
+            }
+        }));
+        row.addView(webBtn);
         mc.addView(row);
         colL.addView(mc);
 

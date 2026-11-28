@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   T9-UI-02: V2 kid-friendly shell.
 
@@ -12,8 +12,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tgz02.voice"
-    android:versionCode="11"
-    android:versionName="1.9.0">
+    android:versionCode="12"
+    android:versionName="1.10.0">
 
     <!-- T9-16：自有闹钟所需权限（全部为普通权限，无需用户授权弹窗） -->
     <uses-permission android:name="android.permission.SCHEDULE_ALARM" />
@@ -24,6 +24,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!-- T9-18：应用管理长按卸载，需要向系统发起 ACTION_DELETE（普通权限） -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <!-- T9-21: 网页配置服务监听局域网端口，需要 INTERNET 权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="27" />
 
@@ -64,6 +66,9 @@
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
         <!-- T9-18: 应用管理（内置应用抽屉，替代第三方悬浮球的应用列表） -->
+        <!-- T9-21: 网页配置（起 HTTP 服务，浏览器填表） -->
+        <activity android:name=".WebConfigActivity" android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
         <activity android:name=".AppListActivity" android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
