@@ -1689,6 +1689,84 @@ startActivity(it);
 
 APK：**1.9.0 / versionCode 11**（`66dfa471…`）。
 
+---
+
+## 24. T9-20：息屏后自己亮屏并弹出"续听"——工厂的误唤醒
+
+### 24.1 现场证据
+
+`logcat -b events` 与 `PowerManagerService` 的原始记录：
+
+```
+14:01:54.749  PowerManagerService: Going to sleep due to power button (uid 1000)
+14:01:55.066  screen_toggled: 0                       ← 息屏
+
+14:59:02.726  PowerManagerService: Waking up from sleep (uid=1000 reason=ScreenWakeManager)
+14:59:02.747  screen_toggled: 1                       ← 无按键、无闹钟、无 USB，自己亮
+
+14:59:02.924  WindowManager: Relayout Window{genieui-main} oldVis=8 newVis=0
+              ← 工厂的语音浮层显示出来（用户看到的"续听"界面）
+14:59:03.211  Screen on took 481 ms
+```
+
+worker 侧对同一时刻的观察（它只是旁观者）：
+
+```
+[aiw] 14:59:02 factory wake (onStartTalk): session=1973125 wake_type=1 listening=1 round=0
+[aiw] 14:59:12 factory stop talk (EOU round=0 reason=0): listening=0
+[aiw] 14:59:15 dialog closed: reason=deadline reached rounds_done=0
+```
+
+判据很硬：**`uid=1000`（工厂）自己调 `PowerManager.wakeUp()`，reason 就是 `ScreenWakeManager`（工厂自己的类）**；`onStartTalk` 也是工厂先发起，worker 记录的是"factory wake"。所以不是我们的 continuous dialog 在续听，也不是按键/定时唤醒。
+
+### 24.2 它为什么会被"唤醒"
+
+三个事实叠在一起：
+
+1. **麦克风常开**：`dumpsys power` 里 `PARTIAL_WAKE_LOCK 'AudioIn' (uid=1041 ws=WorkSource{1000})` 从开机一直持有（2 小时 23 分没释放），`WorkSource` 是 uid 1000 —— 工厂在持续采集；
+2. **本地 VAD 常开**（`runtime.xml`）：
+   ```
+   devicesettingInfo::localASR = true
+   devicesettingInfo::localASREnergyThreshold = 60      ← 能量阈值
+   devicesettingInfo::localASREnergyJudgeTime = 1750
+   nightmodeInfo::dsbEasyWakeup = true
+   devicesettingInfo::asrOnGW = true
+   ```
+   能量阈值 60 偏低，环境里正常的说话、电视声、关门声都能越过它；
+3. 一旦越过，工厂就走完整唤醒流程：**亮屏（`ScreenWakeManager`）→ 显示 `genieui-main` → 开麦 10 秒**，没听到内容再 EOU 收场。
+
+这就是"没人唤醒它、它自己弹出续听"的全部机制。
+
+### 24.3 处置
+
+改 `/data/data/com.alibaba.ailabs.genie.smartapp/shared_prefs/runtime.xml`：
+
+```
+devicesettingInfo::localASR               true  → false     ← 关掉常驻本地识别
+devicesettingInfo::localASREnergyThreshold 60   → 85        ← 即便再开，阈值也抬高
+```
+
+重启后复核（改的值在重启后仍然保持）：
+
+```
+<boolean name="devicesettingInfo::localASR" value="false" />
+<int name="devicesettingInfo::localASREnergyThreshold" value="85" />
+```
+
+`AudioIn` wake lock 在重启后依旧被持有 —— 说明**唤醒词监听还在**（这是"天猫精灵"唤醒必需的），被关掉的只是那层"听到动静就当有人在说话"的本地能量判定。
+
+备份：`/data/local/tmp/t9_20_bak/runtime.xml.orig`。
+
+### 24.4 还要观察的两件事
+
+1. 息屏放几小时，看是否还会有 `reason=ScreenWakeManager` 的唤醒（`logcat -b events | grep screen_toggled` 即可核对）；
+2. 正常说"天猫精灵"是否还能唤醒 —— 如果唤醒变迟钝，说明 `localASR` 同时承担了唤醒前的能量门控，那就把它改回 `true`、只保留阈值 85。
+
+### 24.5 为什么不能直接禁止亮屏
+
+`ScreenWakeManager` 是工厂的 Java 类，调的是 `PowerManager.wakeUp(reason="ScreenWakeManager")`。我们的 hook 在 native 层（JNI 表），拦不到这个 Java → Binder 调用；系统侧也没有"只允许某应用亮屏/不许亮屏"的开关。所以只能从**触发源**下手：减少误触发（本次做法），或者在息屏时主动让工厂退出会话。
+
+
 
 
 
