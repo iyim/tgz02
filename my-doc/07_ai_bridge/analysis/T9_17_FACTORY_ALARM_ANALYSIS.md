@@ -2006,6 +2006,92 @@ cp /data/local/tmp/t9_23_bak/models.json.orig  /data/data/com.tgz02.voice/files/
 # 并退出 models_required=1，或把 worker 退回 a0556dce 之前的版本
 ```
 
+---
+
+## 28. T9-24：首页闹钟卡片直通原厂闹钟（APK 1.11.0）
+
+### 28.1 为什么不能直接 `startActivity`
+
+`com.alibaba.genie.alarm.ui.AlarmListActivity` 在 smartapp 的 manifest 里长这样：
+
+```xml
+<activity android:launchMode="singleInstance"
+          android:name="com.alibaba.genie.alarm.ui.AlarmListActivity"
+          android:process=":business" android:screenOrientation="landscape" …>
+    <meta-data android:name="AUTO_SIZE" …/>
+```
+
+**既没有 `android:exported`，也没有 intent-filter** → 按 Android 规则等于 `exported="false"`。
+
+后果：
+- `am start`（shell uid 2000）能开 —— 我第一次手动验证时就是这么打开的；
+- 我们的 App（u0_a71）调用会被 `SecurityException` 拦住，`catch` 到之后只弹了个 toast。
+
+### 28.2 方案：走已有的 inbox 通道，让 root worker 代开
+
+App 本来就能写 `/data/local/tmp/t9_ui/inbox`（`requestStop` / `requestModelTest` 都是这条路），worker 是 root，可以调 `am start`。于是加一种请求：
+
+**`tg_inbox.h`**
+
+```c
+#define TI_KIND_OPEN  "open"
+```
+
+**`ai_worker.c`**（`aiw_inbox_enqueue` 里，白名单，不接受任意组件名）
+
+```c
+if (kind != NULL && strcmp(kind, TI_KIND_OPEN) == 0) {
+    static const struct { const char *name; const char *comp; } opens[] = {
+        { "alarm",    "…/com.alibaba.genie.alarm.ui.AlarmListActivity" },
+        { "market",   "…/appbox.activity.MarketMainActivity" },
+        { "settings", "com.android.settings/.Settings" }
+    };
+    …
+    pid = vfork();
+    if (pid == 0) { execl("/system/bin/am", "am", "start", "-n", opens[i].comp, NULL); _exit(127); }
+}
+```
+
+**App 侧**（`VoiceHomeActivity.openFactoryAlarm()`）写一条 `{"v":1,"kind":"open","event_id":…,"text":"alarm"}` 到 inbox 即可，仍然不碰 root。
+
+### 28.3 踩的坑：kind 还有第二道白名单
+
+第一版 worker 收到请求但日志写着：
+
+```
+last_reject=open-a1795866108080: unsupported kind
+```
+
+`tg_inbox.c` 的解析层有自己的 kind 白名单（防止把 typo 的 "ask" 静默当成 "say"）：
+
+```c
+if (strcmp(val, TI_KIND_SAY) != 0 && strcmp(val, TI_KIND_ASK) != 0 &&
+    strcmp(val, TI_KIND_STOP) != 0 && strcmp(val, TI_KIND_MODELTEST) != 0 &&
+    strcmp(val, TI_KIND_OPEN) != 0) {        /* ← T9-24 补上这一项 */
+    if (err && errlen) snprintf(err, errlen, "unsupported kind");
+```
+
+两处都加过之后才通。
+
+### 28.4 实测
+
+```
+点击前：mResumedActivity = com.tgz02.voice/.VoiceHomeActivity
+点击后：mResumedActivity = com.alibaba.ailabs.genie.smartapp/
+                           com.alibaba.genie.alarm.ui.AlarmListActivity
+
+worker 日志：
+19:43:01 inbox open: target=alarm comp=…/AlarmListActivity pid=3977
+19:43:01 inbox: handled=1 accepted=1 rejected=0 …
+```
+
+首页卡片副标题也从「说句话设个闹钟」改成「点开原厂闹钟」，与实际行为一致；语音设闹钟仍然走原厂（T9-19d 的路由改动不受影响）。
+
+### 28.5 顺带打开的另一扇门
+
+同一个 `open` 请求现在也支持 `market`（应用商店）和 `settings`。如果以后还有别的"App 打不开但用户想点"的原厂页面，只要往 `opens[]` 表里加一行即可 —— 组件名是写死的，App 无法传入任意值。
+
+
 
 
 

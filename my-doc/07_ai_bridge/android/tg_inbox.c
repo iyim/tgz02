@@ -361,7 +361,8 @@ int ti_parse_msg(const char *buf, size_t len, ti_msg *m, char *err, size_t errle
                 /* unknown types are refused instead of being guessed: a typo must not silently
                  * turn "ask" into "speak it verbatim", and it must never turn "stop" into one */
                 if (strcmp(val, TI_KIND_SAY) != 0 && strcmp(val, TI_KIND_ASK) != 0 &&
-                    strcmp(val, TI_KIND_STOP) != 0 && strcmp(val, TI_KIND_MODELTEST) != 0) {
+                    strcmp(val, TI_KIND_STOP) != 0 && strcmp(val, TI_KIND_MODELTEST) != 0 &&
+                    strcmp(val, TI_KIND_OPEN) != 0) {   /* T9-24: root 代开原厂页面 */
                     if (err && errlen) snprintf(err, errlen, "unsupported kind");
                     return -1;
                 }

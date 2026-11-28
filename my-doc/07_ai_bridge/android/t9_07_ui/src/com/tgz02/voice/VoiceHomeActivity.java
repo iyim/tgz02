@@ -279,8 +279,13 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
         quickRow.setOrientation(LinearLayout.HORIZONTAL);
         quickRow.setGravity(Gravity.CENTER_VERTICAL);
 
-        quickRow.addView(quickTile("illus_alarm", "闹钟", "说句话设个闹钟", SkillsHomeActivity.SKILL_ALARM),
-                lpWithMargin(this, 0));
+        /* T9-24：闹钟卡片直接打开原厂闹钟列表（技能页仍可从语音进入） */
+        View alarmTile = quickTile("illus_alarm", "闹钟", "点开原厂闹钟",
+                SkillsHomeActivity.SKILL_ALARM);
+        alarmTile.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) { openFactoryAlarm(); }
+        });
+        quickRow.addView(alarmTile, lpWithMargin(this, 0));
         quickRow.addView(quickTile("illus_calendar", "日程", "看看今天的安排", SkillsHomeActivity.SKILL_CALENDAR),
                 lpWithMargin(this, 12));
         LinearLayout.LayoutParams lp3 = new LinearLayout.LayoutParams(0,
@@ -358,6 +363,37 @@ public class VoiceHomeActivity extends Activity implements VoiceBridgeClient.Lis
         Intent it = new Intent(this, SkillsHomeActivity.class);
         it.putExtra("skill", skillId);
         startActivity(it);
+    }
+
+    /* T9-24：闹钟卡片直接进原厂闹钟列表。
+     * 为什么不让 App 自己 startActivity：AlarmListActivity 在 manifest 里没有
+     * android:exported、也没有 intent-filter，按规则就是 exported=false，
+     * 普通 uid 调用会被 SecurityException 拦下（shell/root 才进得去）。
+     * 所以走已有的 inbox 通道，让 root worker 用 am start 代开。 */
+    void openFactoryAlarm()
+    {
+        try {
+            java.io.File dir = new java.io.File("/data/local/tmp/t9_ui/inbox");
+            String id = "open-a" + System.currentTimeMillis();
+            String body = "{\"v\":1,\"kind\":\"open\",\"event_id\":\"" + id
+                    + "\",\"text\":\"alarm\"}";
+            java.io.File tmp = new java.io.File(dir, "." + id + ".json.tmp");
+            java.io.File dst = new java.io.File(dir, id + ".json");
+            java.io.FileOutputStream fos = new java.io.FileOutputStream(tmp, false);
+            try {
+                fos.write(body.getBytes("UTF-8"));
+                fos.flush();
+                fos.getFD().sync();
+            } finally {
+                fos.close();
+            }
+            if (!tmp.renameTo(dst)) {
+                tmp.delete();
+                Toast2.show(this, "打开闹钟失败：请求没有写进去");
+            }
+        } catch (Throwable t) {
+            Toast2.show(this, "打开闹钟失败：" + t.getClass().getSimpleName());
+        }
     }
 
     void setFace(String asset)

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * tg_inbox.h -- T9-06R1: the UI -> worker submit channel (resource-bounded).
  *
  * Design change from T9-06 (review finding P1): the inbox is NO LONGER a world-writable
@@ -52,6 +52,7 @@
  * 走 Inbox 而不是让 App 自己发 HTTP：这样"测试连接"用的就是真正回答用户的那条调用路径。
  */
 #define TI_KIND_MODELTEST  "modeltest"
+#define TI_KIND_OPEN       "open"      /* T9-24: 让 root worker 代开未导出的原厂页面 */
 #define TI_KIND_MAX        12
 
 /* tts_id is a positive 32-bit id; the parser refuses anything outside this range. */

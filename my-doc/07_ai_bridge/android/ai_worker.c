@@ -40,6 +40,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>      /* T9-24: fork/execl for "open" requests */
 
 #ifdef _WIN32
 #  include <fcntl.h>
@@ -1450,6 +1451,39 @@ static int aiw_inbox_enqueue(void *ctx, const char *event_id, const char *text,
         }
         always("inbox stop accepted: event=%s target_tts_id=%ld", event_id, tts_id);
         return 0;   /* accepted: the executor will act on it during the current playback */
+    }
+
+    /*
+     * T9-24: kind = "open" -> 让 root worker 代开一个"App 打不开"的原厂页面。
+     * 背景：com.alibaba.genie.alarm.ui.AlarmListActivity 在 manifest 里既没有
+     * android:exported 也没有 intent-filter，按规则等于 exported=false；shell/root
+     * 用 am start 能开，普通应用（u0_a71）会被 SecurityException 拦住。
+     * 这里只认白名单目标，绝不接受任意组件名或命令。
+     */
+    if (kind != NULL && strcmp(kind, TI_KIND_OPEN) == 0) {
+        static const struct { const char *name; const char *comp; } opens[] = {
+            { "alarm",    "com.alibaba.ailabs.genie.smartapp/com.alibaba.genie.alarm.ui.AlarmListActivity" },
+            { "market",   "com.alibaba.ailabs.genie.smartapp/com.alibaba.ailabs.appbox.activity.MarketMainActivity" },
+            { "settings", "com.android.settings/.Settings" }
+        };
+        const char *target = (text != NULL) ? text : "";
+        size_t i;
+
+        for (i = 0; i < sizeof(opens) / sizeof(opens[0]); i++) {
+            const char *name = opens[i].name;
+            pid_t pid;
+
+            if (strncmp(target, name, strlen(name)) != 0) continue;
+            pid = vfork();
+            if (pid == 0) {
+                execl("/system/bin/am", "am", "start", "-n", opens[i].comp, (char *)NULL);
+                _exit(127);
+            }
+            always("inbox open: target=%s comp=%s pid=%d", name, opens[i].comp, (int)pid);
+            return (pid > 0) ? 0 : -1;
+        }
+        if (err && errlen) snprintf(err, errlen, "open target is not allow-listed");
+        return -1;
     }
 
     if (text == NULL || text_bytes <= 0) return -1;
