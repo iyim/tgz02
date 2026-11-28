@@ -770,3 +770,109 @@ CLASSPATH=/data/local/tmp/home_ctl.dex app_process /system com.tgz02.home.HomeCt
 # 彻底装回来
 adb install -r /data/local/tmp/t9_17_bak/<apk>
 ```
+
+---
+
+## 14. T9-18：桌面"消失"与 osupdate 负载
+
+### 14.1 桌面程序没有死，是被第三方浮层盖住了
+
+现象：过夜后桌面不显示。
+
+实测（`dumpsys window windows`，`#0` 在最上层）：
+
+```
+#5  Dialog
+#6  Dialog
+#7  genieui-main                       ← 工厂语音浮层
+#8  com.shere.assistivetouch  (焦点)   ← 「选择应用」全屏页
+#9  com.shere.assistivetouch
+#10 com.shere.assistivetouch
+#11 com.shere.assistivetouch
+#12 com.tgz02.voice/VoiceHomeActivity  ← 我们的桌面，被压在最后
+```
+
+- Activity 栈只有一项：`mResumedActivity = com.tgz02.voice/.VoiceHomeActivity`；
+- 屏幕 `mWakefulness=Awake`、`Display Power: state=ON`；
+- 因此桌面 **没崩、没被杀、没丢 HOME**，是 `EasyTouch`（`com.shere.assistivetouch`）开了 4 个 overlay 窗口，其中一个全屏「选择应用」抢了焦点，桌面收不到触摸。
+
+处置：`am force-stop com.shere.assistivetouch` → `mCurrentFocus`/`mObscuringWindow` 立刻回到 `VoiceHomeActivity`。
+
+注意：EasyTouch 会自启，悬浮球会再出现。若它再弹全屏页，同一命令可清。
+
+### 14.2 osupdate 为什么长期吃 85% CPU
+
+```
+PID 903  com.alibaba.ailabs.genie.osupdate   84.8% CPU   累计 404 分钟（开机 620 分钟）
+         load average: 7.88 8.18 8.49（4 核）
+```
+
+行为链：
+
+1. 每 ~60 s 把系统日志打包成 `D43F…_AILABS_S1L_<时间>_dfmount_.zip`；
+2. 逐个上传到阿里（`adashbc.ut.taobao.com`，`app_sslcache/` 里留了证书缓存）；
+3. 上传全部失败（`E tv_osupdate: upload file fail: …`），**无退避、无上限**，立刻换下一个文件重来；
+4. 7 天累积 `/data/user/0/…/files/log` = **10157 个 zip / 41 MB**，队列越长循环越久。
+
+日志样本：
+
+```
+I tv_osupdate: upload log file: D43F…_20261128.090306_dfmount_.zip
+E tv_osupdate: upload file fail: /data/user/0/…/20261128.090306_dfmount_.zip
+  → 下一个 zip，再失败，再下一个
+```
+
+### 14.3 处置（已执行并重启验证）
+
+1. 备份 `Osupdate.apk` → `/data/local/tmp/t9_18_bak/Osupdate-9.0.1.0.apk`；
+2. 清空上传队列：10157 个 → 0（最新 20 个留档在 `t9_18_bak/log_keep/`）；
+3. 整包禁用：`HomeCtl pkgdisable com.alibaba.ailabs.genie.osupdate` → `state=2`；
+4. 把上述两步写进 `/data/adb/service.d/20_home_lock.sh`（每次开机复核 + 队列 >5 个就裁）。
+
+效果：
+
+| 指标 | 处置前 | 处置后 |
+| --- | --- | --- |
+| osupdate CPU | 84.8% | ~0（`/proc/<pid>/stat` 180 s 内 utime 38 ticks） |
+| `tv_osupdate` 日志 | 每秒数条 | 180 s 内 0 条 |
+| zip 队列 | 10157 个 / 41 MB | 0 |
+| 系统 idle（`top`） | 12% | 197%~281% |
+| load average | 8.18 | 6.4 → 下降中 |
+
+重启后复核：`PKGSTATE … osupdate = 2`、zip 0 个、无新增日志、`RESOLVED_HOME=com.tgz02.voice/.VoiceHomeActivity`。
+
+### 14.4 它到底是什么，能不能"卸载"
+
+身份：
+
+```
+/system/app/Osupdate/Osupdate.apk   2 071 892 B   v9.0.1.0
+userId=1000  sharedUser=android.uid.system
+flags=[ SYSTEM HAS_CODE PERSISTENT ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
+组件：UpdateService(IUpdateService) / UpdateActivity(osupdate:// scheme)
+      AppConfigInfoProvider(authority com.alibaba.ailabs.genie.osupdate.AppConfigInfoProvider)
+      UpdateBroadcastReceiver
+声明权限：com.alibaba.ailabs.genie.osupdate.appconfiginfo.READ / .WRITE
+请求权限：INTERNET / RECEIVE_BOOT_COMPLETED / REBOOT / DELETE_PACKAGES / DEVICE_POWER …
+```
+
+结论分三层：
+
+1. **`adb uninstall` 不解决问题**：它是 `/system` 分区应用，卸载只对 user 0 打标记，重启 PackageManager 重新扫描即恢复；这台 ROM 的 `pm` 连 `uninstall` 子命令都没有。
+2. **整包禁用够用**：CPU 84% → 0，日志与队列归零，重启保持。副作用：进程仍被 `PERSISTENT` 拉起（空转 0% CPU），OTA/FOTA 升级能力失效（自建包本来不用）。
+3. **要"彻底消失"只能动 /system**：`mount -o rw,remount /system` 后把 `/system/app/Osupdate` 改名（如 `Osupdate.bak`），重启后包不存在、进程不存在。可回滚（改回来）。风险点：`AppConfigInfoProvider` 会随之消失；已核对 smartapp 的 dex（`_analysis\apk\smartapp`、`_analysis\t506d\jadx_out`）**无任何 `osupdate` 引用**，`/system/etc/init`、`/system/etc/permissions` 也无引用。
+
+### 14.5 备份与回滚
+
+```sh
+# 重新启用（不用动 /system）
+CLASSPATH=/data/local/tmp/home_ctl.dex app_process /system com.tgz02.home.HomeCtl pkgenable com.alibaba.ailabs.genie.osupdate
+# APK 备份
+/data/local/tmp/t9_18_bak/Osupdate-9.0.1.0.apk
+/data/local/tmp/t9_18_bak/log_keep/    # 清队列前留档的 20 个 zip
+```
+
+### 14.6 剩余负载（未处理）
+
+`smartapp:core` 仍占 ~64%，归因到两个 `xengine_main` 线程（43.4% + 17.3%，累计 296 / 118 分钟），即阿里的语音前端（唤醒 + 降噪 + AGC）常驻推理。`tgl`/`tgt` 标签日志为 0，与本项目 hook 无关。待单独排查。
+
