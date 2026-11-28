@@ -6,7 +6,7 @@
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\ai_worker D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ai_worker.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_session.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t7_dup.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\session_ctrl.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\dead_letter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\talk_tap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\tg_inbox.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ui_events.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\alarm_skill.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\tg_http.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\model_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\model_cfg.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\model_json.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\doubao_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\openai_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\qwen_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\model_call.c
 (no compiler output: 0 warning, 0 error)
 exit: 0
-artifact: ai_worker  377928 B  sha256=2872146be0137dabda1261bc772f100d80f364ea5a3f386251f321635d74b9e6
+artifact: ai_worker  377896 B  sha256=155db96f8960e6f7f2c40ede2dc54c86b088f5a39525495ff1c825f2a9c7c4c4
 # --- readelf -h (ELF header) ---
 ELF Header:
   Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
@@ -18,9 +18,9 @@ ELF Header:
   Type:                              DYN (Shared object file)
   Machine:                           ARM
   Version:                           0x1
-  Entry point address:               0x2a50
+  Entry point address:               0x2b40
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          376448 (bytes into file)
+  Start of section headers:          376416 (bytes into file)
   Flags:                             0x5000200, Version5 EABI, soft-float ABI
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)
@@ -34,12 +34,12 @@ Dynamic section at offset 0x49d2c contains 28 entries:
   Tag        Type                         Name/Value
  0x00000003 (PLTGOT)                     0x4ae74
  0x00000002 (PLTRELSZ)                   768 (bytes)
- 0x00000017 (JMPREL)                     0x22b8
+ 0x00000017 (JMPREL)                     0x23a8
  0x00000014 (PLTREL)                     REL
  0x00000011 (REL)                        0xce0
- 0x00000012 (RELSZ)                      5592 (bytes)
+ 0x00000012 (RELSZ)                      5832 (bytes)
  0x00000013 (RELENT)                     8 (bytes)
- 0x6ffffffa (RELCOUNT)                   695
+ 0x6ffffffa (RELCOUNT)                   725
  0x00000015 (DEBUG)                      0x0
  0x00000006 (SYMTAB)                     0x200
  0x0000000b (SYMENT)                     16 (bytes)
@@ -48,11 +48,11 @@ Dynamic section at offset 0x49d2c contains 28 entries:
  0x6ffffef5 (GNU_HASH)                   0xbb0
  0x00000001 (NEEDED)                     Shared library: [libdl.so]
  0x00000001 (NEEDED)                     Shared library: [libc.so]
- 0x00000020 (PREINIT_ARRAY)              0x4a1c4
+ 0x00000020 (PREINIT_ARRAY)              0x4a148
  0x00000021 (PREINIT_ARRAYSZ)            0x8
- 0x00000019 (INIT_ARRAY)                 0x4a1cc
+ 0x00000019 (INIT_ARRAY)                 0x4a150
  0x0000001b (INIT_ARRAYSZ)               8 (bytes)
- 0x0000001a (FINI_ARRAY)                 0x4a1d4
+ 0x0000001a (FINI_ARRAY)                 0x4a158
  0x0000001c (FINI_ARRAYSZ)               8 (bytes)
  0x0000001e (FLAGS)                      BIND_NOW
  0x6ffffffb (FLAGS_1)                    Flags: NOW
@@ -63,15 +63,15 @@ Dynamic section at offset 0x49d2c contains 28 entries:
 # --- readelf -l (INTERP) ---
   INTERP         0x000154 0x00000154 0x00000154 0x00013 0x00013 R   0x1
       [Requesting program interpreter: /system/bin/linker]
-  LOAD           0x000000 0x00000000 0x00000000 0x488f4 0x488f4 R E 0x1000
-  LOAD           0x0491c4 0x0004a1c4 0x0004a1c4 0x00e58 0x14fc0d RW  0x1000
+  LOAD           0x000000 0x00000000 0x00000000 0x48c44 0x48c44 R E 0x1000
+  LOAD           0x049148 0x0004a148 0x0004a148 0x00ed4 0x14fc89 RW  0x1000
    01     .interp 
    02     .interp .note.android.ident .dynsym .dynstr .gnu.hash .gnu.version .gnu.version_r .rel.dyn .rel.plt .plt .text .ARM.exidx .rodata .ARM.extab 
 
 # cmd : D:\tgz02\OS\_analysis\tools\android-ndk-r21e\toolchains\llvm\prebuilt\windows-x86_64\bin\armv7a-linux-androideabi26-clang.cmd -O2 -Wall -Wextra -std=gnu99 -fPIE -pie -I D:\tgz02\OS\system\my-doc\07_ai_bridge\android -o D:\tgz02\OS\system\my-doc\07_ai_bridge\android\out\worker_unit_test D:\tgz02\OS\system\my-doc\07_ai_bridge\tests\worker_unit_test.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_util.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\event_reader.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\consumer_state.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\seq_gap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_context.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_conf.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\worker_status.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\echo_filter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\intent_route.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\utterance_gate.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\conv_session.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\t7_dup.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\session_ctrl.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\skill_dispatch.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\dead_letter.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\mock_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\deepseek_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\talk_tap.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\tg_inbox.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\ui_events.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\alarm_skill.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\tg_http.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\model_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\model_cfg.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\model_json.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\doubao_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\openai_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\qwen_provider.c D:\tgz02\OS\system\my-doc\07_ai_bridge\android\model_call.c
 (no compiler output: 0 warning, 0 error)
 exit: 0
-artifact: worker_unit_test  412968 B  sha256=11c02be1ce09eaa3e51a39b2ccbdcfc0980fdb6bc5d8f0b4457b0408bdd0c31a
+artifact: worker_unit_test  412932 B  sha256=ecf3ae6bd0fd5a0763beb2b650cebfa782b74d240fc5ae74e0085b05fdbd3e86
 # --- readelf -h (ELF header) ---
 ELF Header:
   Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
@@ -83,9 +83,9 @@ ELF Header:
   Type:                              DYN (Shared object file)
   Machine:                           ARM
   Version:                           0x1
-  Entry point address:               0x2a40
+  Entry point address:               0x2b30
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          411488 (bytes into file)
+  Start of section headers:          411452 (bytes into file)
   Flags:                             0x5000200, Version5 EABI, soft-float ABI
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)
@@ -99,12 +99,12 @@ Dynamic section at offset 0x4ed5c contains 28 entries:
   Tag        Type                         Name/Value
  0x00000003 (PLTGOT)                     0x4fe94
  0x00000002 (PLTRELSZ)                   704 (bytes)
- 0x00000017 (JMPREL)                     0x234c
+ 0x00000017 (JMPREL)                     0x243c
  0x00000014 (PLTREL)                     REL
  0x00000011 (REL)                        0xc14
- 0x00000012 (RELSZ)                      5944 (bytes)
+ 0x00000012 (RELSZ)                      6184 (bytes)
  0x00000013 (RELENT)                     8 (bytes)
- 0x6ffffffa (RELCOUNT)                   740
+ 0x6ffffffa (RELCOUNT)                   770
  0x00000015 (DEBUG)                      0x0
  0x00000006 (SYMTAB)                     0x200
  0x0000000b (SYMENT)                     16 (bytes)
@@ -113,11 +113,11 @@ Dynamic section at offset 0x4ed5c contains 28 entries:
  0x6ffffef5 (GNU_HASH)                   0xaf4
  0x00000001 (NEEDED)                     Shared library: [libdl.so]
  0x00000001 (NEEDED)                     Shared library: [libc.so]
- 0x00000020 (PREINIT_ARRAY)              0x4f094
+ 0x00000020 (PREINIT_ARRAY)              0x4f018
  0x00000021 (PREINIT_ARRAYSZ)            0x8
- 0x00000019 (INIT_ARRAY)                 0x4f09c
+ 0x00000019 (INIT_ARRAY)                 0x4f020
  0x0000001b (INIT_ARRAYSZ)               8 (bytes)
- 0x0000001a (FINI_ARRAY)                 0x4f0a4
+ 0x0000001a (FINI_ARRAY)                 0x4f028
  0x0000001c (FINI_ARRAYSZ)               8 (bytes)
  0x0000001e (FLAGS)                      BIND_NOW
  0x6ffffffb (FLAGS_1)                    Flags: NOW
@@ -128,8 +128,8 @@ Dynamic section at offset 0x4ed5c contains 28 entries:
 # --- readelf -l (INTERP) ---
   INTERP         0x000154 0x00000154 0x00000154 0x00013 0x00013 R   0x1
       [Requesting program interpreter: /system/bin/linker]
-  LOAD           0x000000 0x00000000 0x00000000 0x4d2bc 0x4d2bc R E 0x1000
-  LOAD           0x04e094 0x0004f094 0x0004f094 0x00f74 0x13f1b5 RW  0x1000
+  LOAD           0x000000 0x00000000 0x00000000 0x4d614 0x4d614 R E 0x1000
+  LOAD           0x04e018 0x0004f018 0x0004f018 0x00ff0 0x13f231 RW  0x1000
    01     .interp 
    02     .interp .note.android.ident .dynsym .dynstr .gnu.hash .gnu.version .gnu.version_r .rel.dyn .rel.plt .plt .text .ARM.exidx .rodata .ARM.extab 
 

@@ -534,28 +534,54 @@ static const char *const IR_MUSIC_PLAY[] = {
     "我想听", "想听", "我要听", "听一下", "听一首", "播一首", "播首", "唱一首", "唱首", NULL
 };
 
-static const char *const IR_MUSIC_CTRL[] = {
-    "暂停", "继续播放", "接着放", "接着播", "继续播", "下一首", "上一首", "切歌",
-    "换一首", "换首歌", "别放了", "停止播放", NULL
-};
-
 /* 问"有什么歌/推荐/为什么"是要建议，不是要播放；音量归 IR_VOLUME */
 static const char *const IR_MUSIC_VETO[] = {
     "怎么", "为什么", "是什么", "什么意思", "推荐", "有什么", "哪首", "哪些",
     "介绍", "音量", "声音", "大声", "小声", "播放器", NULL
 };
 
+static const char *const IR_MUSIC_CTRL[] = {
+    "暂停", "继续播放", "接着放", "接着播", "继续播",
+    /* T9-26 修：真机上用户说的是"下一曲"而不是"下一首"，词表里没有就落到大模型，
+     * 它只会回"我切不了"。这里把"首/曲/支/个"等口语量词都补上。 */
+    "下一首", "下一曲", "下一首歌", "下一首歌儿", "下首", "下一支", "下个",
+    "上一首", "上一曲", "上一首歌", "上首", "上一支", "上个",
+    "切歌", "切一首", "切一下", "切个",
+    "换歌", "换一首", "换首歌", "换下一首", "换一个", "换个",
+    "别放了", "停止播放", NULL
+};
+
+/* 兜底：说到"换/切/下一/上一"又提到歌/曲/音乐，就是在切歌 —— 词表永远补不全，
+ * 但"动词 + 歌"这个组合很稳定（"下一曲""换首歌""切一下曲子""放首别的"）。 */
+static const char *ir_music_ctrl_fallback(const char *n)
+{
+    int verb = ir_has(n, "换") || ir_has(n, "切") || ir_has(n, "下一") || ir_has(n, "上一") ||
+               ir_has(n, "下首") || ir_has(n, "上首");
+    int noun = ir_has(n, "歌") || ir_has(n, "曲") || ir_has(n, "音乐") || ir_has(n, "这首");
+
+    if (!verb || !noun) return NULL;
+    if (ir_has(n, "上一") || ir_has(n, "上首") || ir_has(n, "前一首")) return "prev";
+    return "next";
+}
+
 static int ir_match_music(const char *n, ir_result *out)
 {
+    const char *fb;
+
     if (ir_has_any(n, IR_MUSIC_VETO)) return 0;
     /* 控制词先判："继续播放"/"暂停播放" 里也含"播放"，先判点歌会被当成点歌。 */
     if (ir_has_any(n, IR_MUSIC_CTRL)) {
         const char *a = "pause";
         if (ir_has(n, "继续") || ir_has(n, "接着")) a = "resume";
-        else if (ir_has(n, "下一首") || ir_has(n, "切歌") ||
-                 ir_has(n, "换一首") || ir_has(n, "换首歌")) a = "next";
-        else if (ir_has(n, "上一首")) a = "prev";
+        else if (ir_has(n, "下一") || ir_has(n, "下首") || ir_has(n, "切") ||
+                 ir_has(n, "换") || ir_has(n, "下个")) a = "next";
+        else if (ir_has(n, "上一") || ir_has(n, "上首") || ir_has(n, "上个")) a = "prev";
         ir_set(out, IR_MUSIC, "music.ctrl", a);
+        return 1;
+    }
+    fb = ir_music_ctrl_fallback(n);
+    if (fb != NULL) {
+        ir_set(out, IR_MUSIC, "music.ctrl_fallback", fb);
         return 1;
     }
     if (ir_has_any(n, IR_MUSIC_PLAY)) {
