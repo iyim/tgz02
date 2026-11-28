@@ -39,6 +39,12 @@ public final class Music {
 
     private Music() { }
 
+    private static final String TAG = "T925MUSIC";
+
+    static void logw(String where, Throwable t) {
+        android.util.Log.w(TAG, where + ": " + t);
+    }
+
     /* ------------------------------------------------------------------ config */
 
     private static final String PREF = "music";
@@ -408,8 +414,68 @@ public final class Music {
             }
         }
 
-        public static Lrc lyric(Context c, Track t) {
+        /* -------------------------------------------------------------- account */
+
+        /** one QR-login attempt: the key to poll, the url to draw, and where it stands */
+        public static final class Login {
+            public String key = "";
+            public String url = "";
+            public String status = "";
+            public boolean loggedIn;
+        }
+
+        public static Login qrStart(Context c) {
+            Login out = new Login();
             try {
+                JSONObject o = get(c, "/api/login/qr");
+                if (o == null) return out;
+                out.key = o.optString("key", "");
+                out.url = o.optString("url", "");
+            } catch (Throwable t) {
+                logw("qrStart", t);
+            }
+            return out;
+        }
+
+        /** status: 0/1 waiting, 2 scanned (waiting for confirm), 4 confirmed */
+        public static Login qrCheck(Context c, String key) {
+            Login out = new Login();
+            try {
+                JSONObject o = get(c, "/api/login/qr/check?key=" + enc(key));
+                if (o == null) return out;
+                out.status = String.valueOf(o.optInt("status", 0));
+                out.loggedIn = o.optBoolean("logged_in", false)
+                        || "4".equals(o.optString("status", ""));
+            } catch (Throwable t) {
+                logw("qrCheck", t);
+            }
+            return out;
+        }
+
+        public static boolean logout(Context c) {
+            try {
+                JSONObject o = get(c, "/api/logout");
+                return o != null && o.optBoolean("ok", false);
+            } catch (Throwable t) {
+                return false;
+            }
+        }
+
+        /** {nickname, vipType, userId} of the service's current session */
+        public static String[] account(Context c) {
+            try {
+                JSONObject o = get(c, "/api/session");
+                if (o == null) return new String[] { "", "", "" };
+                return new String[] {
+                        o.optString("nickname", ""),
+                        String.valueOf(o.optInt("vip_type", 0)),
+                        String.valueOf(o.optLong("userid", 0)) };
+            } catch (Throwable t) {
+                return new String[] { "", "", "" };
+            }
+        }
+
+        public static Lrc lyric(Context c, Track t) {            try {
                 String path = "/api/lyric?hash=" + enc(t.hash);
                 if (t.durationSec > 0) path += "&duration=" + t.durationSec;
                 JSONObject o = get(c, path);

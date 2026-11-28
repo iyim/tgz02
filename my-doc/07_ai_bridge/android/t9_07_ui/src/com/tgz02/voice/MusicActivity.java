@@ -36,7 +36,7 @@ import java.util.List;
 
 public final class MusicActivity extends Activity implements MusicService.Ui {
 
-    private static final int MODE_LYRIC = 0, MODE_QUEUE = 1, MODE_PLAYLIST = 2;
+    private static final int MODE_LYRIC = 0, MODE_QUEUE = 1, MODE_PLAYLIST = 2, MODE_ACCOUNT = 3;
 
     private final Handler h = new Handler(Looper.getMainLooper());
 
@@ -76,6 +76,7 @@ public final class MusicActivity extends Activity implements MusicService.Ui {
             mode = MODE_LYRIC;
         }
         refreshAll();
+        if (getIntent() != null && getIntent().getBooleanExtra("qr", false)) openAccount();
     }
 
     @Override protected void onStart()
@@ -88,9 +89,12 @@ public final class MusicActivity extends Activity implements MusicService.Ui {
     @Override protected void onStop()
     {
         h.removeCallbacks(tick);
+        stopQrPoll();
         MusicService.removeUi(this);
         super.onStop();
     }
+
+    private void toast(String s) { Toast2.show(this, s); }
 
     public void onMusic() { refreshAll(); }
 
@@ -149,6 +153,7 @@ public final class MusicActivity extends Activity implements MusicService.Ui {
         bar.addView(chip("歌词", new Runnable() { public void run() { setMode(MODE_LYRIC); } }));
         bar.addView(chip("队列", new Runnable() { public void run() { setMode(MODE_QUEUE); } }));
         bar.addView(chip("我的歌单", new Runnable() { public void run() { openPlaylists(); } }));
+        bar.addView(chip("账号", new Runnable() { public void run() { openAccount(); } }));
         return bar;
     }
 
@@ -543,11 +548,14 @@ public final class MusicActivity extends Activity implements MusicService.Ui {
         }
         for (int i = 0; i < lrc.size(); i++) {
             String s = lrc.lines[i];
-            TextView tv = Ui4.text(this, s.length() == 0 ? " " : s, Ui4.T_ACTION, Ui4.text3(this));
-            tv.setPadding(0, Ui4.dp(this, 7), 0, Ui4.dp(this, 7));
+            /* 22sp 挤在左边、右边空一片：放大到 30sp 并居中，一行最多两行折行 */
+            TextView tv = Ui4.text(this, s.length() == 0 ? " " : s, 30f, Ui4.text3(this));
+            tv.setGravity(Gravity.CENTER);
+            tv.setPadding(Ui4.dp(this, 8), Ui4.dp(this, 11), Ui4.dp(this, 8), Ui4.dp(this, 11));
             tv.setMaxLines(2);
             tv.setEllipsize(TextUtils.TruncateAt.END);
-            lyricBox.addView(tv);
+            lyricBox.addView(tv, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
     }
 
@@ -577,6 +585,7 @@ public final class MusicActivity extends Activity implements MusicService.Ui {
     private void setMode(int m)
     {
         mode = m;
+        if (m != MODE_ACCOUNT) stopQrPoll();
         if (m == MODE_LYRIC) {
             rightHeader.setText("歌词");
             listBox.setVisibility(View.GONE);
@@ -778,6 +787,201 @@ public final class MusicActivity extends Activity implements MusicService.Ui {
                 }
             });
             listBox.addView(r);
+        }
+    }
+
+    /* ------------------------------------------------------------------ account */
+
+    private Runnable qrPoll;
+    private String qrKey = "";
+    private String qrStatusText = "";
+
+    private void openAccount()
+    {
+        mode = MODE_ACCOUNT;
+        rightHeader.setText("账号");
+        showList();
+        stopQrPoll();
+        /* 调试用（只有 adb 能触发）：--ez qr true 直接看扫码面板，不退出当前登录态 */
+        if (getIntent() != null && getIntent().getBooleanExtra("qr", false)) {
+            getIntent().removeExtra("qr");
+            startQr();
+            return;
+        }
+        listBox.removeAllViews();
+        listBox.addView(Ui4.text(this, "正在读取账号…", Ui4.T_BODY, Ui4.text3(this)));
+        new Thread(new Runnable() {
+            public void run() {
+                final String[] acc = Music.Api.account(MusicActivity.this);
+                h.post(new Runnable() {
+                    public void run() { if (mode == MODE_ACCOUNT) renderAccount(acc); }
+                });
+            }
+        }, "t925-account").start();
+    }
+
+    private void renderAccount(String[] acc)
+    {
+        listBox.removeAllViews();
+        String nick = acc == null ? "" : acc[0];
+        String vip = acc == null ? "0" : acc[1];
+        String uid = acc == null ? "" : acc[2];
+        boolean logged = nick != null && nick.length() > 0;
+
+        if (logged) {
+            LinearLayout card = new LinearLayout(this);
+            card.setOrientation(LinearLayout.VERTICAL);
+            card.setPadding(Ui4.dp(this, 16), Ui4.dp(this, 14), Ui4.dp(this, 16), Ui4.dp(this, 14));
+            card.setBackground(Ui4.round(this, Ui4.surface(this), 16f));
+            card.addView(Ui4.textBold(this, nick, Ui4.T_CARD, Ui4.text(this)));
+            String line = "用户 ID " + uid + " · " + ("0".equals(vip) ? "未开通会员（128k）"
+                    : "会员（可到 320k / FLAC）");
+            TextView sub = Ui4.text(this, line, Ui4.T_CAP, Ui4.text2(this));
+            sub.setPadding(0, Ui4.dp(this, 4), 0, Ui4.dp(this, 12));
+            card.addView(sub);
+            TextView out = Ui4.text(this, "退出登录", Ui4.T_BODY, Ui4.err(this));
+            out.setPadding(0, Ui4.dp(this, 4), 0, 0);
+            out.setClickable(true);
+            out.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) { confirmLogout(); }
+            });
+            card.addView(out);
+            LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            clp.topMargin = Ui4.dp(this, 8);
+            listBox.addView(card, clp);
+            listBox.addView(Ui4.text(this, "账号登录在音乐服务端（192.168.1.5:8848），"
+                    + "换账号 = 重新扫码；退出后需要扫码才能播会员歌单。", Ui4.T_CAP,
+                    Ui4.text3(this)));
+            return;
+        }
+        startQr();
+    }
+
+    private void confirmLogout()
+    {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("退出登录")
+                .setMessage("会清掉音乐服务端保存的酷狗登录态，下次要重新扫码。只影响音乐，不影响语音和其他功能。")
+                .setPositiveButton("退出", new android.content.DialogInterface.OnClickListener() {
+                    public void onClick(android.content.DialogInterface d, int w) { doLogout(); }
+                })
+                .setNegativeButton("取消", null)
+                .show();
+    }
+
+    private void doLogout()
+    {
+        listBox.removeAllViews();
+        listBox.addView(Ui4.text(this, "正在退出…", Ui4.T_BODY, Ui4.text3(this)));
+        new Thread(new Runnable() {
+            public void run() {
+                final boolean ok = Music.Api.logout(MusicActivity.this);
+                h.post(new Runnable() {
+                    public void run() {
+                        if (mode != MODE_ACCOUNT) return;
+                        toast(ok ? "已退出登录" : "退出失败，检查后端");
+                        openAccount();
+                    }
+                });
+            }
+        }, "t925-logout").start();
+    }
+
+    private void startQr()
+    {
+        listBox.removeAllViews();
+        TextView hint = Ui4.text(this, "还没登录。打开酷狗 App 扫下面的码（或概念版），"
+                + "扫完这里会自动刷新。", Ui4.T_BODY_SM, Ui4.text2(this));
+        hint.setPadding(0, 0, 0, Ui4.dp(this, 8));
+        listBox.addView(hint);
+        final ImageView qr = new ImageView(this);
+        qr.setBackground(Ui4.round(this, 0xFFFFFFFF, 12f));
+        qr.setPadding(Ui4.dp(this, 10), Ui4.dp(this, 10), Ui4.dp(this, 10), Ui4.dp(this, 10));
+        listBox.addView(qr, new LinearLayout.LayoutParams(Ui4.dp(this, 300), Ui4.dp(this, 300)));
+        qrStatusText = "正在生成二维码…";
+        final TextView status = Ui4.text(this, qrStatusText, Ui4.T_CAP, Ui4.text3(this));
+        status.setPadding(0, Ui4.dp(this, 8), 0, 0);
+        listBox.addView(status);
+
+        new Thread(new Runnable() {
+            public void run() {
+                final Music.Api.Login lg = Music.Api.qrStart(MusicActivity.this);
+                h.post(new Runnable() {
+                    public void run() {
+                        if (mode != MODE_ACCOUNT) return;
+                        if (lg.key.length() == 0 || lg.url.length() == 0) {
+                            status.setText("拿不到二维码（后端没连上？）");
+                            status.setTextColor(Ui4.err(MusicActivity.this));
+                            return;
+                        }
+                        qrKey = lg.key;
+                        Bitmap bmp = qrBitmap(lg.url, 300);
+                        if (bmp != null) qr.setImageBitmap(bmp);
+                        status.setText("等扫码 · 用酷狗 App 扫");
+                        startQrPoll(status);
+                    }
+                });
+            }
+        }, "t925-qr").start();
+    }
+
+    private void startQrPoll(final TextView status)
+    {
+        stopQrPoll();
+        qrPoll = new Runnable() {
+            public void run() {
+                if (mode != MODE_ACCOUNT || qrKey.length() == 0) return;
+                new Thread(new Runnable() {
+                    public void run() {
+                        final Music.Api.Login r = Music.Api.qrCheck(MusicActivity.this, qrKey);
+                        h.post(new Runnable() {
+                            public void run() {
+                                if (mode != MODE_ACCOUNT) return;
+                                if (r.loggedIn) {
+                                    stopQrPoll();
+                                    toast("登录成功");
+                                    openAccount();
+                                    return;
+                                }
+                                if ("2".equals(r.status)) {
+                                    status.setText("已扫码 · 在手机上点确认");
+                                    status.setTextColor(Ui4.primary(MusicActivity.this));
+                                } else {
+                                    status.setText("等扫码 · 用酷狗 App 扫（" + r.status + "）");
+                                }
+                                if (qrPoll != null) h.postDelayed(qrPoll, 1600);
+                            }
+                        });
+                    }
+                }, "t925-qrcheck").start();
+            }
+        };
+        h.postDelayed(qrPoll, 1500);
+    }
+
+    private void stopQrPoll()
+    {
+        if (qrPoll != null) h.removeCallbacks(qrPoll);
+        qrPoll = null;
+    }
+
+    /** zxing core draws the login url; the PNG stays in memory only (no screen capture) */
+    private Bitmap qrBitmap(String text, int px)
+    {
+        try {
+            com.google.zxing.common.BitMatrix m = new com.google.zxing.qrcode.QRCodeWriter()
+                    .encode(text, com.google.zxing.BarcodeFormat.QR_CODE, px, px);
+            int w = m.getWidth(), hh = m.getHeight();
+            int[] pix = new int[w * hh];
+            for (int y = 0; y < hh; y++) {
+                for (int x = 0; x < w; x++) {
+                    pix[y * w + x] = m.get(x, y) ? 0xFF101010 : 0xFFFFFFFF;
+                }
+            }
+            return Bitmap.createBitmap(pix, w, hh, Bitmap.Config.ARGB_8888);
+        } catch (Throwable t) {
+            return null;
         }
     }
 

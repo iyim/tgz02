@@ -161,7 +161,14 @@ $srcFiles += $genFiles
 $srcFiles | ForEach-Object { Write-Host ("   " + $_.Substring($here.Length + 1)) }
 
 Write-Host "== javac (release 8, utf-8 sources, android.jar)"
-& $javac --release 8 -encoding UTF-8 -nowarn -classpath $androidJar -d $classes $srcFiles
+# T9-26：libs/*.jar 参与编译与 dex —— 目前只有 zxing core（扫码登录要把 URL 画成二维码）
+$libDir = Join-Path $here 'libs'
+$libJars = @()
+if (Test-Path $libDir) { $libJars = @(Get-ChildItem -Path $libDir -Filter *.jar | ForEach-Object { $_.FullName }) }
+$libJars | ForEach-Object { Write-Host ("   lib: " + $_) }
+$cp = $androidJar
+if ($libJars.Count -gt 0) { $cp = $androidJar + ';' + ($libJars -join ';') }
+& $javac --release 8 -encoding UTF-8 -nowarn -classpath $cp -d $classes $srcFiles
 if ($LASTEXITCODE -ne 0) { throw "javac failed" }
 
 Write-Host "== d8 (min-api 27)"
@@ -179,7 +186,7 @@ try {
         [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($z, $cf, $entryName) | Out-Null
     }
 } finally { $z.Dispose() }
-& (Join-Path $bt 'd8.bat') --min-api 27 --lib $androidJar --output $dexOut $jar
+& (Join-Path $bt 'd8.bat') --min-api 27 --lib $androidJar --output $dexOut $jar @libJars
 if ($LASTEXITCODE -ne 0) { throw "d8 failed" }
 $dex = Join-Path $dexOut 'classes.dex'
 
