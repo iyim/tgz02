@@ -12,8 +12,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tgz02.voice"
-    android:versionCode="8"
-    android:versionName="1.6.0">
+    android:versionCode="9"
+    android:versionName="1.7.0">
 
     <!-- T9-16：自有闹钟所需权限（全部为普通权限，无需用户授权弹窗） -->
     <uses-permission android:name="android.permission.SCHEDULE_ALARM" />
@@ -59,6 +59,10 @@
         <activity android:name=".SettingsHomeActivity" android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden" />
         <activity android:name=".AboutActivity" android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <!-- T9-18: 应用管理（内置应用抽屉，替代第三方悬浮球的应用列表） -->
+        <activity android:name=".AppListActivity" android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
         <!-- T9-08C: multi-vendor model configuration (plain-text keys, editable, hot applied) -->

@@ -137,6 +137,7 @@ $srcFiles = @(
     "src\com\tgz02\voice\MemoryCenterActivity.java",
     "src\com\tgz02\voice\SettingsHomeActivity.java",
     "src\com\tgz02\voice\AboutActivity.java",
+    "src\com\tgz02\voice\AppListActivity.java",
     "src\com\tgz02\voice\ModelConfigActivity.java",
     "src\com\tgz02\voice\ModelStore.java",
     "src\com\tgz02\voice\VoiceBridgeClient.java",

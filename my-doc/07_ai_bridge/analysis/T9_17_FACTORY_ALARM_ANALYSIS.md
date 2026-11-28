@@ -962,4 +962,108 @@ D IPCRouter: … binder = null        ← 取到 null 后走默认，不崩
 | `com.aligenie.ags` | ~64 MB | 丢阿里统计上报（纯数据采集） |
 | `com.google.android.inputmethod.pinyin` | ~42 MB | 丢软键盘（本项目语音优先，几乎不用） |
 
+---
+
+## 16. T9-18：批量清退（rtc / ags / osupdate / EasyTouch）与内置应用管理
+
+### 16.1 处置清单与实测结果
+
+| 包 | 位置 | 手段 | 结果 |
+| --- | --- | --- | --- |
+| `com.alibaba.ailabs.genie.rtc` | `/data/app`（UPDATED_SYSTEM_APP，36 MB） | `pkgdisable` | state=2，进程 0，85 MB 回收 |
+| `com.aligenie.ags` | `/system/app/AliGenieService` | `pkgdisable` | state=2，进程 0，64 MB 回收 |
+| `com.alibaba.ailabs.genie.osupdate` | `/system/app/Osupdate` | APK 改名 `Osupdate.apk.bak` | 包消失，进程 0，38 MB 回收 |
+| `com.shere.assistivetouch`（EasyTouch 4.6.1） | `/system/app/easytouch.apk` | APK 改名 `easytouch.apk.bak` | 包消失，三进程 0，151 MB 回收 |
+
+关键教训：**只改目录名没用**。第一次把 `/system/app/Osupdate` 改成 `Osupdate.bak` 后，PackageManager 仍然扫到并加载了 `package:/system/app/Osupdate.bak/Osupdate.apk`——它递归扫描 `/system/app/**/*.apk`，不看目录名。必须把 **APK 文件本身**改成非 `.apk` 后缀（`Osupdate.apk.bak`）才会真正从包列表里消失。EasyTouch 因此一次做对。
+
+两个包能"真删"还有一个前提：`/system` 是 ext4，`mount -o rw,remount /system` 可写，改完 `sync` + remount ro。`app.orchard.tv` / dangbei 那类 `/data` 应用则可以直接 `adb uninstall`。
+
+### 16.2 重启后全量复核
+
+```
+osupdate                 GONE          （pm path 无输出）
+com.shere.assistivetouch GONE
+iot / rtc / ags / cook / 咪咕视频   state=2（全部）
+进程：osupdate 0 · shere 0 · genie.rtc 0 · aligenie.ags 0 · genie.iot 0
+语音栈：smartapp / :core / :business / tgz02.voice / :backend /
+        ai_worker / tgb_bridge / 2×tg_supervisor 全部在跑
+RESOLVED_HOME = com.tgz02.voice/com.tgz02.voice.VoiceHomeActivity（priority=100）
+free: 123 MB → 252 MB
+```
+
+### 16.3 语音链路回归（清退后必测）
+
+原因：`aligenie.ags` 挂着 `AccessService` / `AnalyticsService`，`genie.iot` 挂着调色板 Provider，都要确认原厂 TTS 没被带坏。
+
+用与 `FactoryTts.java` **完全相同的 payload** 打原厂 Provider：
+
+```sh
+J='{"method":4,"data":{"sessionId":0,"tts":"语音链路测试一二三","isOpenMic":false,
+     "ignoreMute":true,"feedback":false,"secretKey":"","pkg":"com.tgz02.voice","wakeupType":1}}'
+content query --uri content://com.alibaba.ailabs.genie.assistant.provider/GenieApi --where "$J"
+```
+
+实测链路完整：
+
+```
+10:14:09.076 PlaybackService: playTTS, agmcId:5244230, type:'tts', ext:'{ "forcePlay": true }'
+10:14:09.077 PlaybackService: playTTS 语音链路测试一二三 doesn't contain wakeup word
+10:14:09.092 TtsManager: onTtsData  TTS_TIME receive stream data actually
+10:14:09.125 TtsManager: onTtsEnd   sessionId = 5244230
+```
+
+两个坑记在这里：
+
+1. payload **必须带全** `sessionId/isOpenMic/feedback/secretKey/pkg/wakeupType`，只给 `tts`+`pkg` 时 Provider 不报错也不播报，容易被误判成"被禁坏了"。
+2. 查询结果**不要读 cursor**，跨进程 cursor 取窗口必抛 `NullPointerException: Attempt to get length of null array`；副作用在 `query()` 返回前已经发生。
+
+### 16.4 新增：设置 → 应用管理（替代 EasyTouch 的应用抽屉）
+
+`AppListActivity.java`（APK v1.7.0 / versionCode 9）：
+
+- 入口：设置页「设备」卡片第一行「应用管理 · 本机 N 个应用，点一下就能打开」；
+- 内容：`queryIntentActivities(MAIN/LAUNCHER)` 全量列出，4 列网格，每格 = 图标 + 名称 + 包名；
+- **同包去重**：一个包可能有多个 LAUNCHER activity（smartapp 就出现三次），按包名只保留第一个，16 个候选 → 15 个；
+- 启动用显式 `component`（`setClassName(pkg, activity)`），不依赖 `getLaunchIntentForPackage`；
+- 已禁用的包天然不出现（`queryIntentActivities` 对 unprivileged 调用者本身就过滤 disabled）；
+- 点「刷新」重新枚举。
+
+真机验证：`mResumedActivity = com.tgz02.voice/.AppListActivity`；点 ES文件浏览器 → `mResumedActivity = com.estrongs.android.pop/.view.FileExplorerActivity`；按 HOME 回到 `VoiceHomeActivity`。
+
+### 16.5 现在的后台（清退后）
+
+| 进程 | RSS |
+| --- | --- |
+| `smartapp` | 113 MB |
+| `smartapp:core` | 100 MB |
+| `smartapp:business` | 81 MB |
+| `com.tgz02.voice` | 74 MB |
+| `systemui` | 56 MB |
+| `bluetooth` | 30 MB |
+| 输入法 | 30 MB |
+| `tgz02.voice:backend` | 27 MB |
+| `keychain` | 20 MB |
+| `packageinstaller` | 19 MB |
+
+内存 984 MB，free 252 MB（早上 123 MB）。剩下的主要是工厂语音三兄弟（294 MB）——那是产品赖以工作的引擎，不动。
+
+### 16.6 备份与回滚
+
+```sh
+# /data 应用：重新启用
+CLASSPATH=/data/local/tmp/home_ctl.dex app_process /system com.tgz02.home.HomeCtl pkgenable <pkg>
+
+# /system 里被改名的 APK：改回来 + 重启
+mount -o rw,remount /system
+mv /system/app/Osupdate.bak/Osupdate.apk.bak /system/app/Osupdate.bak/Osupdate.apk
+mv /system/app/easytouch.apk.bak /system/app/easytouch.apk
+mount -o ro,remount /system && reboot
+
+# APK 备份
+/data/local/tmp/t9_18_bak/{Osupdate-9.0.1.0.apk, GenieIoT-2.1.2.0.apk,
+                           AliGenieService-2.5.3.apk, Rtc-base.apk, easytouch-4.6.1.apk}
+```
+
+
 

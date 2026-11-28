@@ -119,6 +119,15 @@ public class SettingsHomeActivity extends V3Shell {
         /* ---- device ---- */
         addLabel(colR, Ui4.I_POWER, "设备");
         LinearLayout dc = Ui4.card(this);
+        /* T9-18: the app drawer that replaces EasyTouch's overlay */
+        LinearLayout ar = groupRow(Ui4.I_SKILLS, "应用管理",
+                "本机 " + launchableCount() + " 个应用，点一下就能打开");
+        ar.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startActivity(new Intent(SettingsHomeActivity.this, AppListActivity.class));
+            }
+        });
+        dc.addView(ar);
         LinearLayout br = groupRow(0, "开机自启", "开机就能用（由系统 init 脚本控制）");
         br.addView(Ui4.toggle(this, bootOn, new Runnable() {
             public void run() { writeFlag(VOICE_PATH, "boot", bootOn[0]);
@@ -183,8 +192,29 @@ public class SettingsHomeActivity extends V3Shell {
         return r;
     }
 
-    void switchTheme(String mode)
+    /** how many apps the drawer would list (excludes this one, hides disabled packages) */
+    int launchableCount()
     {
+        try {
+            Intent probe = new Intent(Intent.ACTION_MAIN, null);
+            probe.addCategory(Intent.CATEGORY_LAUNCHER);
+            java.util.List<android.content.pm.ResolveInfo> hits =
+                    getPackageManager().queryIntentActivities(probe, 0);
+            if (hits == null) return 0;
+            int n = 0;
+            for (int i = 0; i < hits.size(); i++) {
+                android.content.pm.ResolveInfo ri = hits.get(i);
+                if (ri == null || ri.activityInfo == null) continue;
+                if (getPackageName().equals(ri.activityInfo.packageName)) continue;
+                n++;
+            }
+            return n;
+        } catch (Throwable t) {
+            return 0;
+        }
+    }
+
+    void switchTheme(String mode)    {
         Ui4.setTheme(mode);
         writeTheme(mode);
         toast("主题已切换：" + (Ui4.isCalm() ? "简洁" : "儿童友好"));
