@@ -1442,6 +1442,80 @@ skill: alarm.set NOT registered (skill_alarm_enabled=0) -> alarms go back to the
 - 自研闹钟代码（`AlarmScheduler` / `AlarmRingingService` / `t9_skill_alarm_exec`）全部保留但不再被触发，DB 里 0 条闹钟，不会有残留响铃；
 - 回滚：`skill_time_enabled=1` / `skill_alarm_enabled=1` 两个开关即可恢复接管（闹钟还要把 `T7B_ROUTE_ALARM` 位重新关掉，见 20.3 的反向改动）。
 
+---
+
+## 21. T9-19e：闹钟"不行"的真相 —— 答案被守卫拦掉了
+
+### 21.1 现象与事实
+
+用户反馈"时间可以了，但闹钟还是不行"。真机日志显示**工厂其实建成功了**：
+
+```
+11:19:28.086 I/tgt: onTtsStart DROP id=1969550 text="已为你设置好今天上午十一点二十二分的闹钟" (factory NLU answer)
+11:19:48.614 I/tgt: onTtsStart DROP id=1969555 text="您在今天上午十一点二十二分已经有一个闹钟" (factory NLU answer)
+```
+
+打开工厂闹钟页（`com.alibaba.genie.alarm.ui.AlarmListActivity`）确实有两个闹钟：11:22「那片田野那片海」、11:24「橘色告白」。
+
+**所以闹钟功能是好的，问题是确认语音被 `libtg_ttsguard_t8156.so` 丢掉了**——用户什么都没听到，自然认为没成功。
+
+### 21.2 为什么被丢
+
+守卫放行原厂答案只有一条路径：读 `/data/local/tmp/t5_bridge/work/native_route.public.json` 里的放行标记，然后要求 `标记.session == onTtsStart 的 sessionId`。
+
+两处同时出问题：
+
+1. **键名不一致**：worker 写的是 `"asr_session":"1969550"`，守卫只找 `"session":`。于是每条标记都被当成"没有 session"，精确匹配从未生效。
+2. **竞态**：闹钟的原厂答复是本地 NLG 模板（"已为你设置好…"），几乎是即时产出的；而 worker 的 utterance gate 有 450 ms debounce，等它判完意图、写完标记，工厂的答案已经送去 TTS 了。实测 11:19:28.086 的 DROP，对应标记 seq=4 还没落地。
+
+时间（IR_TIME）没暴露这个问题，是因为云端 TTS 合成要 1~2 秒，标记早就写好了。
+
+### 21.3 修复（两层）
+
+```c
+/* native_marker.c: nm_parse —— 两个键名都认 */
+if (strstr(buf, "\"session\":") != NULL) sess_key = "session";
+else if (strstr(buf, "\"asr_session\":") != NULL) sess_key = "asr_session";
+
+/* native_marker.c: nm_decide —— alarm / time 允许窗口放行 */
+if (m->intent[0] != '\0' &&
+    (strcmp(m->intent, "alarm") == 0 || strcmp(m->intent, "time") == 0)) {
+    if (st != NULL) st->hit_window++;
+    return 1;
+}
+```
+
+只对 `alarm` / `time` 放宽：这两类一次指令只对应一条答案，窗口内放行不会误伤；音量/天气/媒体/开关屏继续要求 session 精确匹配。
+
+### 21.4 部署（这次 `/system` 不能 remount，改用 Magisk 模块）
+
+重启前后都试过 `mount -o rw,remount /system`（`su -c` 与 `su --mount-master -c` 两种），都返回：
+
+```
+mount: '/dev/block/platform/soc/11120000.mmc/by-name/system' not user mountable in fstab
+```
+
+改用 Magisk 的 magic mount 覆盖，不需要写 /system，重启即生效：
+
+```
+/data/adb/modules/t9_19e_guard/module.prop
+/data/adb/modules/t9_19e_guard/system/tgz02/lib/libtg_ttsguard_t8156.so
+```
+
+重启后核对：
+
+```
+/system/tgz02/lib/libtg_ttsguard_t8156.so  76766996…   （模块覆盖成功）
+/system/tgz02/bin/ai_worker                f2ecbf56…
+/system/tgz02/lib/libtg_hook.so            91af8a45…
+tg_supervisor ×2 / ai_worker              全部在跑
+```
+
+### 21.5 顺带记录：inbox 不能注入 ASR
+
+`--inbox` 只接受 `ask`（文字提问）/`say`/`stop`/`modeltest` 四种 kind，没有 `asr_final`。想验证路由只能靠真实语音，或者往 `work/events.jsonl` 追事件（会牵动 consumer offset，风险更高，不建议）。
+
+
 
 
 

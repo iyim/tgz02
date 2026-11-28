@@ -72,22 +72,31 @@ int nm_parse(const char *buf, size_t len, nm_marker *out)
     /* T7-05-R1：三种情况必须分开，否则窗口兜底会被一个坏字段打开。
      *   1) 没有 "session" 字段      -> 兼容旧格式，走窗口兜底；
      *   2) 有字段且是合法十进制正整数 -> 必须按 session 精确匹配；
-     *   3) 有字段但是空/非数字/带尾巴/溢出/<=0 -> 整个标记无效，拒绝放行。 */
-    if (strstr(buf, "\"session\":") != NULL) {
-        char *end = NULL;
+     *   3) 有字段但是空/非数字/带尾巴/溢出/<=0 -> 整个标记无效，拒绝放行。
+     * T9-19e：Worker 实际写出的是 "asr_session"，此前这里只找 "session"，
+     * 于是每条标记都被当成"无 session"，精确匹配从未生效。两个键名都认。 */
+    {
+        const char *sess_key = NULL;
 
-        if (nm_str(buf, "session", sess, sizeof(sess)) != 0 || sess[0] == '\0') {
-            out->valid = 0;                 /* 字段存在但取不到值 */
-            return -1;
+        if (strstr(buf, "\"session\":") != NULL) sess_key = "session";
+        else if (strstr(buf, "\"asr_session\":") != NULL) sess_key = "asr_session";
+
+        if (sess_key != NULL) {
+            char *end = NULL;
+
+            if (nm_str(buf, sess_key, sess, sizeof(sess)) != 0 || sess[0] == '\0') {
+                out->valid = 0;                 /* 字段存在但取不到值 */
+                return -1;
+            }
+            errno = 0;
+            v = strtoll(sess, &end, 10);
+            if (errno == ERANGE || end == sess || *end != '\0' || v <= 0) {
+                out->valid = 0;                 /* 非数字 / 溢出 / 负数 / 有残留字符 */
+                return -1;
+            }
+            out->session = v;
+            out->have_session = 1;
         }
-        errno = 0;
-        v = strtoll(sess, &end, 10);
-        if (errno == ERANGE || end == sess || *end != '\0' || v <= 0) {
-            out->valid = 0;                 /* 非数字 / 溢出 / 负数 / 有残留字符 */
-            return -1;
-        }
-        out->session = v;
-        out->have_session = 1;
     }
     (void)nm_str(buf, "intent", out->intent, sizeof(out->intent));
     (void)nm_str(buf, "event_id", ev, sizeof(ev));
@@ -120,6 +129,16 @@ int nm_decide(const nm_marker *m, int ontts_id, long long now_wall,
     /* 窗口兜底：只给"标记里确实没有 session"的情况。
      * T7-04 的写法是 session 对不上也放行，等价于把 8 s 内所有原厂回答都放出去。 */
     if (!m->have_session) {
+        if (st != NULL) st->hit_window++;
+        return 1;
+    }
+    /* T9-19e：alarm / time 的原厂答案几乎是即时生成的（本地 NLG 模板），
+     * worker 的 utterance gate 有 450 ms debounce，等它写完标记，工厂的答案早就
+     * 送去 TTS 了 —— 真机实测 11:19:28.086 的"已为你设置好…闹钟"就是这样被拦掉的。
+     * 这两类意图一次指令只对应一条答案，窗口内放行不会误伤，所以放宽。
+     * 其它意图（音量/天气/媒体/开关屏）继续要求 session 精确匹配。 */
+    if (m->intent[0] != '\0' &&
+        (strcmp(m->intent, "alarm") == 0 || strcmp(m->intent, "time") == 0)) {
         if (st != NULL) st->hit_window++;
         return 1;
     }
